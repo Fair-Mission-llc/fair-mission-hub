@@ -26,7 +26,7 @@
 13. [Automated messages reference](#13-automated-messages-reference)
 14. [Member engagement and the roster lifecycle](#14-member-engagement-and-the-roster-lifecycle)
 15. [Volunteer time quarantine](#15-volunteer-time-quarantine)
-16. [Council Wide Settings and platform limits](#16-council-wide-settings-and-platform-limits)
+16. [Council Wide Settings and platform settings](#16-council-wide-settings-and-platform-settings)
 17. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
@@ -129,6 +129,8 @@ Each link has one plain-English sentence that tells what the page does.
 A few pages read differently for leaders. For example, a member reads that **Annual Budget Projections** shows the budget. A leader also reads that budget keepers draft and approve the budget there.
 A module that your council switched off is not in the guide, because the module is not in your sidebar.
 
+The **Your time limits** part of the guide lists the time windows and reminder days in force for you now. The guide reads the numbers from your council's settings and the platform settings each time the page opens. A member sees the limits that a member meets: the expense window, the logging window, the hours reminders, the invitation lead time and the sign-in length. A leader also sees every other time setting. The settings that no feature uses yet are listed last under **Saved for future features (not used yet)**.
+
 ### 2.3 Read your Navigation Guide
 
 > **Prerequisite (who can do this):** Every signed-in member.
@@ -142,9 +144,10 @@ A module that your council switched off is not in the guide, because the module 
 2. Read the first line. The line shows how you are signed in, for example *You are signed in as: Council Officer (Grand Knight)*.
 3. Read each pillar. The pillars and links are in the same order as your sidebar.
 4. Select a link name to open that page.
-5. Read **In the top bar** for the Messaging menu and your name menu.
+5. Read **Your time limits** for your council's time windows and reminder days.
+6. Read **In the top bar** for the Messaging menu and your name menu.
 
-**Expected result:** The page lists every link that your sidebar shows, with one sentence for each link.
+**Expected result:** The page lists every link that your sidebar shows, with one sentence for each link. **Your time limits** shows your council's current numbers.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -308,7 +311,7 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** The platform creates one meeting per month, July through June. Each meeting lasts 120 minutes.
-Invitations are released 5 days before each meeting.
+Invitations are released 5 days before each meeting by default. A Super Admin sets the number of days for every council (section 16.6).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -953,7 +956,7 @@ A budget gauge turns gold at 85% of the cap. The gauge turns red past 100%.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The hours look low. | Members log shift hours up to 3 months later. | Check the month again later. |
+| The hours look low. | Members log hours up to 90 days later, by default (section 16.3). | Check the month again later. |
 | The gauges show no caps. | The budget is not approved. | Approve the budget (6.13). |
 
 ### 7.2 Read the growth and hours charts
@@ -1395,7 +1398,7 @@ The platform has no background scheduler. An Admin runs the sync by hand.
 
 **Expected result:** The changes save. Phones show the new values on the next load.
 
-The outbound email settings are not on this page. Set them on the **Credentials Vault** page (10.8). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (16.6).
+The outbound email settings are not on this page. Set them on the **Credentials Vault** page (10.8). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (16.8).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1464,7 +1467,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 ![Global Charities Registry (/charities/registry)](../generated/dashboard_visual_catalog/charities_registry.png)
 <!-- /KEEP_IMAGE -->
 
-The base dues rate, the tenant type and the **Platform Limits** are not on **Global Governance Matrices**. A Super Admin sets them on **Global System Parameters** (sections 16.4 to 16.6).
+The base dues rate, the tenant type and the **Platform Settings** are not on **Global Governance Matrices**. A Super Admin sets them on **Global System Parameters** (sections 16.5 to 16.8).
 
 **Expected result:** Every council sees the new value.
 
@@ -1480,7 +1483,7 @@ The base dues rate, the tenant type and the **Platform Limits** are not on **Glo
 - **Nothing cascades.** The platform refuses to delete a record that other records use. The message names the record in use.
 - Examples: a shift with sign-ups, a member with logged hours, a lookup value in use.
 - One exception: a deleted distribution list also deletes the list's member entries.
-- **Time windows** protect records. Shift hours close after 3 months. Activity hours close after 6 months.
+- **Time windows** protect records. Shift hours and activity hours close after the council's logging window. The default is 90 days (section 16.3).
 - **Approved budgets** are frozen for everyone.
 
 ---
@@ -1536,8 +1539,8 @@ The platform sends no message when an expense report changes status. The member 
 | --- | --- | --- | --- |
 | A shift starts in 24 hours | A reminder email with a calendar file | Every volunteer on the shift | The event's shift roster |
 | A meeting starts in 24 hours | A reminder email with a calendar file and the agenda | Every invitee | **Meeting Center** |
-| Day 5 after a shift with no hours | A text reminder | The volunteer | **Executive Dashboard** → **Shifts awaiting hours** |
-| Every 7 days after that | A follow-up text, until the shift is 3 months old | The volunteer | Same panel. The row shows **Closed** when the window ends. |
+| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Executive Dashboard** → **Shifts awaiting hours** |
+| Every 7 days after that (the council can change the days, section 16.3) | A follow-up text, until the shift is older than the logging window (90 days by default) | The volunteer | Same panel. The row shows **Closed** when the window ends. |
 | An officer sends an urgent alert | A phone push alert and a bell entry, kept 6 months | Members with the chosen skills or shifts | **Council Messages & Alerts** → **Dispatch High-Priority Push Notification Alert** |
 | A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on **Affiliated Roster** or **Supreme Council Sync** |
 | A member requests a password reset | An email with a 6-digit code, valid 15 minutes | The member | None. The member resets the password alone. |
@@ -1591,7 +1594,7 @@ Cash, budgets and the general ledger stay on the **Executive Dashboard** and the
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| A volunteer is missing from the month. | The volunteer did not log hours yet. | Ask the volunteer to log the hours. Shift hours close after 3 months. |
+| A volunteer is missing from the month. | The volunteer did not log hours yet. | Ask the volunteer to log the hours. Hours close after the logging window, 90 days by default. |
 | The devotions card shows 0. | No member logged devotions on the phone. | Tell members about **My devotions** on the phone Home screen. |
 
 ### 14.3 Concept: personal impact and the canonization shield
@@ -1844,21 +1847,52 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 
 ---
 
-## 16. Council Wide Settings and platform limits
+## 16. Council Wide Settings and platform settings
 
-### 16.1 Concept: council settings and platform limits
+### 16.1 Concept: council settings and platform settings
 
-Some limits belong to one council. Other limits belong to every council at once.
+Some numbers belong to one council. Other numbers belong to every council at once.
 
 | Kind | Who changes it | Where | What it holds |
 | --- | --- | --- | --- |
-| Council Wide Settings | The council's Admins and officers, or a Super Admin | Sidebar → System Settings → **Council Wide Settings** | The volunteer time limits and the inactive-member window of one council |
-| Platform Limits | Super Admins only | Sidebar → System Settings → **Global System Parameters** → **Platform Limits** | The recording time limit and two character limits for every council |
+| Council Wide Settings | The council's Admins and officers, or a Super Admin | Sidebar → System Settings → **Council Wide Settings** | The volunteer time limits, the time windows and the reminder timing of one council |
+| Platform Settings | Super Admins only | Sidebar → System Settings → **Global System Parameters** → **Platform Settings** | The invitation lead time, the sign-in length, the record retention, the recording time limit and two character limits for every council |
 | Base dues rate and tenant type | Super Admins only | Sidebar → System Settings → **Global System Parameters** → **Global Council Parameters Dashboard** | The dues rate and the organization type of one council |
 
 A new council starts with the default values. A change applies to the next entry that a member saves. A change never moves hours that are already logged or held.
 
-### 16.2 Concept: the four council settings
+The time windows and reminder days were fixed numbers in earlier versions. Each council now sets its own numbers.
+
+### 16.2 Concept: the setting cards and the (i) help
+
+Both settings pages group the fields into cards. Each card has a navy title bar and its own save button.
+
+| Page | Cards, in order |
+| --- | --- |
+| **Council Wide Settings** | **Financial Submissions**, **Volunteer & Meeting Operations**, **Reminder Cadences** |
+| **Global System Parameters** → **Platform Settings** | **Reminder Cadences**, **Sign-in & Records**, **Recording & Text Limits** |
+
+Each field has a round **(i)** button beside its label. Select **(i)** to open a help window. The help window tells where the number is used and what the number changes. The help window also shows the allowed values. Select **Close**, press **Esc** or select outside the window to close it.
+
+Some fields show a red **Not used yet** tag. The portal saves the number for a future feature. The number changes nothing today. The help window of the field says the same.
+
+<!-- KEEP_IMAGE: council wide settings capture -->
+![Council Wide Settings (/setup/council-settings)](../generated/dashboard_visual_catalog/setup_council-settings.png)
+<!-- /KEEP_IMAGE -->
+
+The screenshot above shows the page before the cards were added. The fields and their labels are the same.
+
+### 16.3 Concept: the council settings
+
+**Financial Submissions** card:
+
+| On-screen label | Default | Allowed values | What the setting controls |
+| --- | --- | --- | --- |
+| **Days after an event or meeting to submit expenses** | 30 days | 1 to 365 | The expense filing window (section 6). A report that names an event or a meeting can be submitted from its first day through this many days after it ends. |
+| **Days before an unsubmitted expense draft expires** | 90 days | 7 to 730 | **Not used yet.** Drafts do not expire today. |
+| **Days a charity proposal stays open for a vote** | 14 days | 1 to 90 | **Not used yet.** The council votes at the next Monthly meeting at least 10 days away. |
+
+**Volunteer & Meeting Operations** card:
 
 | On-screen label | Default | Allowed values | What the setting controls |
 | --- | --- | --- | --- |
@@ -1866,73 +1900,102 @@ A new council starts with the default values. A change applies to the next entry
 | **Most hours a member may report on one activity in one day** | 5.0 hours | 0.25 to 24, in quarter hours | The 5.0-hour rule (section 15.2) |
 | **Extra hours allowed past a scheduled shift** | 1.0 hour | 0 to 8, in quarter hours | The shift padding rule (section 15.3) |
 | **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **🔍 Check for Inactive Members** (section 14.9) |
+| **Days back a member may log volunteer time** | 90 days | 7 to 730 | The logging window. A member may log shift time and activity time this many days back. |
+| **Hours before a shift that sign-ups close** | 2 hours | 0 to 72, in quarter hours | **Not used yet.** Members may sign up until a shift ends. |
+| **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | **Not used yet.** The portal does not track a due date for minutes. |
+| **Days of notice before a special election** | 60 days | 1 to 365 | **Not used yet.** A mid-year nomination stays open for 14 days. |
+
+**Reminder Cadences** card:
+
+| On-screen label | Default | Allowed values | What the setting controls |
+| --- | --- | --- | --- |
+| **Days after a shift before the first hours reminder** | 5 days | 1 to 60 | The first text reminder to a volunteer with no logged hours (section 13) |
+| **Days between follow-up hours reminders** | 7 days | 1 to 60 | The follow-up text reminders (section 13) |
+| **Days before an officer is reminded to sign an expense report** | 3 days | 1 to 60 | **Not used yet.** No signature reminder is sent today. |
 
 A value of 0 for **Extra hours allowed past a scheduled shift** sends every report longer than the scheduled shift to review.
 
-### 16.3 Change the Council Wide Settings
+The logging window replaces two older limits: 3 months for shift time and 6 months for activity time. A council that wants the old activity limit can enter `183` days.
+
+The logging window also ends the hours reminders. A shift older than the window shows **Closed** on the **Shifts awaiting hours** panel, and the reminders stop.
+
+### 16.4 Change the Council Wide Settings
 
 > **Prerequisite (who can do this):** You must be a council Admin or a council officer of the council, or a Super Admin. Other members do not see this page.
 
-**Goal:** Set your council's volunteer time limits and its inactive-member window.
+**Goal:** Set your council's volunteer time limits, time windows and reminder timing.
 
 **Start point:** Sidebar → System Settings → **Council Wide Settings**.
 
 **Steps:**
 1. Super Admins only: choose the council in **Council** at the top of the page.
-2. In **Volunteer time limits**, enter the new numbers.
-3. Select **Save time limits**.
-4. In **Inactive members**, enter the number of days.
-5. Select **Save inactive-member window**.
+2. Find the card that holds the setting (section 16.3).
+3. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
+4. Enter the new number.
+5. Select the save button of the card, for example **Save Financial Submissions**.
 
-<!-- KEEP_IMAGE: council wide settings capture -->
-![Council Wide Settings (/setup/council-settings)](../generated/dashboard_visual_catalog/setup_council-settings.png)
-<!-- /KEEP_IMAGE -->
-
-**Expected result:** A message says "Saved for council" with the council number. The next hours that a member logs follow the new limits.
+**Expected result:** A message says "Saved for council" with the council number. The new numbers apply from now on.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The page is not in the sidebar. | You are not an Admin or an officer of the council. | Ask a council Admin to make the change. |
+| A number in another card went back to its old value. | Each card saves only its own fields. | Enter the number again and select the save button of that card. |
 | The message says the value "must be a multiple of 0.25 hours". | Hours use 15-minute steps. | Enter a value such as `4.5` or `4.75`. |
-| The message says the value must be "from" one number "to" another. | The value is outside the allowed range (section 16.2). | Enter a value inside the range. |
-| The message says "Nothing changed." | Every number is the same as the saved value. | Change a number, then save. |
+| The message says the value must be "from" one number "to" another. | The value is outside the allowed range (section 16.3). | Enter a value inside the range. |
+| The message says "Nothing changed." | Every number in the card is the same as the saved value. | Change a number, then save. |
+| A field with **Not used yet** has no effect. | No feature reads the number yet. | No fix is needed. Keep the default. |
 
-### 16.4 Concept: the Global System Parameters page
+### 16.5 Concept: the Global System Parameters page
 
 The **Global System Parameters** page holds the numbers that sit above the settings of one council. Only Super Admins see the page.
 
 | Card | What the card holds | Applies to |
 | --- | --- | --- |
 | **Global Council Parameters Dashboard** | The base dues rate and the tenant type (Knights of Columbus council or a white-labelled organization) | One council at a time |
-| **Platform Limits** | The oral history recording time limit (15 minutes by default), the diary entry character limit and the prayer intention character limit | Every council at once |
+| **Platform Settings** | Three cards of numbers (section 16.6) | Every council at once |
 
-The two cards were on **Global Governance Matrices** in earlier versions. The **Feature Flags Control Center** holds only the on/off module switches. The control center has no numbers.
+The **Platform Settings** card had the name **Platform Limits** in earlier versions. The cards were on **Global Governance Matrices** before that. The **Feature Flags Control Center** holds only the on/off module switches.
 
-### 16.5 Change the platform limits
+### 16.6 Concept: the platform settings
+
+| Card | On-screen label | Default | Allowed values | What the setting controls |
+| --- | --- | --- | --- | --- |
+| **Reminder Cadences** | **Days before a scheduled meeting that invitations appear** | 5 days | 1 to 60 | When the invitations of a cadence meeting reach the members (section 4). Meetings that are already built keep their release dates. |
+| **Sign-in & Records** | **Hours a portal sign-in lasts** | 8 hours | 1 to 168 | When the portal server ends a web sign-in. The member then signs in again. |
+| **Sign-in & Records** | **Days to keep audit records** | 180 days | 30 to 3,650 | **Not used yet.** The portal keeps every record today. |
+| **Recording & Text Limits** | **Oral history recording time limit** | 900 seconds | 60 to 3,600 | The oral history recorder |
+| **Recording & Text Limits** | **Diary entry character limit** | 4,000 characters | 100 to 4,000 | The spiritual diary and the testimonial note |
+| **Recording & Text Limits** | **Prayer intention character limit** | 500 characters | 50 to 500 | The Council Prayer Intentions List |
+
+A sign-in that already started keeps its old end time. The new sign-in length applies from the next sign-in.
+
+### 16.7 Change the platform settings
 
 > **Prerequisite (who can do this):** You must be a Super Admin.
-> **Warning:** the limits apply to every council at once.
+> **Warning:** the settings apply to every council at once.
 
-**Goal:** Set the limits that every council shares.
+**Goal:** Set the numbers that every council shares.
 
-**Start point:** Sidebar → System Settings → **Global System Parameters** → **Platform Limits**.
+**Start point:** Sidebar → System Settings → **Global System Parameters** → **Platform Settings**.
 
 **Steps:**
-1. Enter the **Oral history recording time limit** in seconds. The default is 900 seconds (15 minutes).
-2. Enter the **Diary entry character limit**. The default and the largest value is 4,000 characters.
-3. Enter the **Prayer intention character limit**. The default and the largest value is 500 characters.
-4. Select **Save platform limits**.
+1. Find the card that holds the setting (section 16.6).
+2. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
+3. Enter the new number.
+4. Select the save button of the card, for example **Save Sign-in & Records**. The new numbers apply to every council at once.
 
-**Expected result:** A message says "Platform limits saved." The recorder, the diary box and the prayer intention box use the new limits.
+**Expected result:** A message says "Platform settings saved." When you change **Hours a portal sign-in lasts**, the message also says that the portal server uses the new sign-in length from the next sign-in.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A character limit does not go above its default. | The default is the largest size that the council records can store. | Keep the limit at the default or lower. |
 | A recording stopped early. | The recording time limit is lower than the speaker needed. | Raise the limit. The largest value is 3,600 seconds (60 minutes). |
+| The message says that the portal server did not take the new sign-in length. | Your web sign-in on the server ended. | Sign out. Sign in again. Save the number again. |
+| Meeting invitations still appear 5 days before the meeting. | The meetings were built before the change. | No fix is needed. Meetings built after the change use the new number. |
 
-### 16.6 Set a council's base dues rate and tenant type
+### 16.8 Set a council's base dues rate and tenant type
 
 > **Prerequisite (who can do this):** You must be a Super Admin.
 > **Warning:** a new tenant type changes the sidebar and the labels of every member of the council at once.

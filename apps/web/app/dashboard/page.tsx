@@ -28,11 +28,11 @@ import {
   canReviewVolunteerQuarantine,
   canViewExecutiveAudits,
   currentFraternalYear,
+  councilWideSettings,
   formatShiftWhen,
-  HOURS_REMINDER_FIRST_DAY,
+  hoursReminderCadence,
   hoursRemindersDue,
   NO_SHOW_AUDIT_MONTHS,
-  SHIFT_HISTORY_MONTHS,
   type MonthlySummary,
 } from '@kofc/shared';
 import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetParts';
@@ -192,18 +192,22 @@ function NoShowAudit({ councilId }: { councilId: number }) {
 
 function AwaitingHours({ councilId }: { councilId: number }) {
   const awaiting = useLoad(() => db.reports.listShiftsAwaitingHours(councilId), [councilId]);
+  // Sprint 7E: the council's own reminder delay, cadence and logging window.
+  const council = useLoad(() => db.councils.get(councilId), [councilId]).data;
+  const cadence = hoursReminderCadence(council);
+  const windowDays = councilWideSettings(council).volunteer_logging_window_days;
   const rows = awaiting.data ?? [];
-  const overdue = rows.filter((r) => !r.closed && r.daysSinceShift >= HOURS_REMINDER_FIRST_DAY).length;
+  const overdue = rows.filter((r) => !r.closed && r.daysSinceShift >= cadence.delayDays).length;
   return (
-    <Panel title={`Shifts awaiting hours (${rows.length})`} actions={overdue > 0 ? <Pill tone="red">{overdue} past {HOURS_REMINDER_FIRST_DAY} days</Pill> : null}>
+    <Panel title={`Shifts awaiting hours (${rows.length})`} actions={overdue > 0 ? <Pill tone="red">{overdue} past {cadence.delayDays} days</Pill> : null}>
       {awaiting.error ? <Notice tone="error">{awaiting.error}</Notice> : null}
       {awaiting.data && rows.length === 0 ? <Empty>Every volunteer on a past shift has logged their hours.</Empty> : null}
       {rows.length > 0 ? (
         <div className="max-h-[28rem] overflow-y-auto">
           <Table caption="Past shifts whose volunteers have not logged hours" head={['Member', 'Phone', 'Shift', 'Event', 'Days since', 'Reminders']}>
             {rows.map((r) => {
-              const late = !r.closed && r.daysSinceShift >= HOURS_REMINDER_FIRST_DAY;
-              const due = hoursRemindersDue(r);
+              const late = !r.closed && r.daysSinceShift >= cadence.delayDays;
+              const due = hoursRemindersDue(r, cadence);
               return (
                 <tr key={r.signup.id} className={cx(late && 'border-l-8 border-brand-red')}>
                   <Td className="font-bold">{formatPersonName(r.firstName, r.lastName)}</Td>
@@ -216,7 +220,7 @@ function AwaitingHours({ councilId }: { councilId: number }) {
                   <Td className={cx('font-bold', late && 'text-brand-red')}>{r.daysSinceShift}</Td>
                   <Td>
                     {r.closed ? (
-                      <Pill tone="outline">Closed: past {SHIFT_HISTORY_MONTHS} months</Pill>
+                      <Pill tone="outline">Closed: past {windowDays} days</Pill>
                     ) : late ? (
                       <>
                         <Pill tone="red">⚠ Overdue</Pill>
@@ -225,7 +229,7 @@ function AwaitingHours({ councilId }: { councilId: number }) {
                         </span>
                       </>
                     ) : (
-                      <span className="text-xs text-muted">First reminder on day {HOURS_REMINDER_FIRST_DAY}</span>
+                      <span className="text-xs text-muted">First reminder on day {cadence.delayDays}</span>
                     )}
                   </Td>
                 </tr>
@@ -235,8 +239,8 @@ function AwaitingHours({ councilId }: { councilId: number }) {
         </div>
       ) : null}
       <p className="mt-2 text-xs text-muted">
-        Members who checked in but have not reported time. A text reminder goes out on day {HOURS_REMINDER_FIRST_DAY} and weekly after that, until the{' '}
-        {SHIFT_HISTORY_MONTHS}-month logging window closes.
+        Members who checked in but have not reported time. A text reminder goes out on day {cadence.delayDays} and every {cadence.cadenceDays} days
+        after that, until the {windowDays}-day logging window closes. Council Wide Settings sets these numbers.
       </p>
     </Panel>
   );

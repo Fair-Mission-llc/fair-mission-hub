@@ -966,3 +966,21 @@ One row (id 1) of the universal limits every council shares, seeded at the defau
 •	prayer_intention_max_length (INT, NOT NULL, DEFAULT 500) — The longest prayer intention. 50 to 500 (the column's size).
 Editing. councils.getPlatformSettings (anyone) and councils.setPlatformSettings (Active Super Admin only, SUPER_ADMIN_REQUIRED), the Platform Limits card on Global System Parameters (/system-settings/global-settings; /lookups before the Sprint 7C Extension). history.addDiaryEntry and prayers.addIntention apply the character limits; the web recorder applies the time cap.
 ________________________________________
+# 32. Timing settings (Sprint 7E)
+Schema version 64. Rules: council-settings.ts (COUNCIL_WIDE_SETTING_RULES and PLATFORM_SETTING_RULES carry each setting's range, card group, (i) help text and inUse mark). Edited the same way as section 31, on the grouped cards of /setup/council-settings and /system-settings/global-settings.
+[Council] (new columns)
+•	er_submission_window_days (INT, NOT NULL, DEFAULT 30) — An expense report linked to an event or meeting can be submitted from its first day through this many days after it ends (expenses.submitReport, EXPENSE_WINDOW_CLOSED). 1 to 365. The phone Report tab's shift lock uses the same window.
+•	volunteer_logging_window_days (INT, NOT NULL, DEFAULT 90) — eventTime.logHours and activityTime.logHours / addQuarterHour refuse dates more than this many days back (SHIFT_REPORT_TOO_OLD, ACTIVITY_DATE_TOO_OLD); reports.listShiftsAwaitingHours marks older rows closed. Replaces the 3-month shift and 6-month activity walls. 7 to 730. Read from the logging member's council.
+•	reminder_delay_days (INT, NOT NULL, DEFAULT 5) — The unlogged-hours text reminder goes out this many days after the shift. 1 to 60.
+•	reminder_cadence_days (INT, NOT NULL, DEFAULT 7) — Then one every this many days until logged or closed. 1 to 60.
+•	expense_draft_expiry_days (INT, NOT NULL, DEFAULT 90) — Saved for a future feature; nothing reads it. 7 to 730.
+•	charity_proposal_voting_days (INT, NOT NULL, DEFAULT 14) — Saved for a future feature; nothing reads it. 1 to 90.
+•	shift_signup_lock_hours (DECIMAL(5,2), NOT NULL, DEFAULT 2.0) — Saved for a future feature; nothing reads it. 0 to 72, in 0.25 steps.
+•	officer_signature_reminder_days (INT, NOT NULL, DEFAULT 3) — Saved for a future feature; nothing reads it. 1 to 60.
+•	meeting_minutes_due_days (INT, NOT NULL, DEFAULT 7) — Saved for a future feature; nothing reads it. 1 to 60.
+•	special_election_notice_days (INT, NOT NULL, DEFAULT 60) — Saved for a future feature; nothing reads it. 1 to 365.
+[PlatformSettings] (new columns)
+•	cadence_invitation_horizon_days (INT, NOT NULL, DEFAULT 5) — meetings.populateAnnualCadence sets each new meeting's InviteReleaseDate this many days before it. Meetings already built keep theirs. 1 to 60.
+•	user_session_expiry_hours (INT, NOT NULL, DEFAULT 8) — The portal server session (HMAC cookie) lasts this many hours from sign-in. The server reads its own data copy; Global System Parameters also posts a change to /api/platform-settings (Super Admin session). 1 to 168.
+•	audit_log_retention_days (INT, NOT NULL, DEFAULT 180) — Saved for a future purge job; nothing reads it. 30 to 3,650.
+________________________________________

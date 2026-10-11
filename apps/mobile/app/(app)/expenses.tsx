@@ -40,7 +40,6 @@ import {
   SPACING,
   toIsoDate,
   EXPENSE_DESCRIPTION_MAX_LENGTH,
-  EXPENSE_SUBMISSION_GRACE_DAYS,
   EXPENSE_VENDOR_MAX_LENGTH,
   MISSING_RECEIPT_REASON_MAX_LENGTH,
   type ExpenseLineDraft,
@@ -48,6 +47,7 @@ import {
   type ExpenseReportDetail,
 } from '@kofc/shared';
 import { Dropdown } from '@/components/Dropdown';
+import { useCouncilTimings } from '@/lib/council-timings';
 import { FeatureGate } from '@/components/FeatureGate';
 import { NavStrip } from '@/components/NavStrip';
 import { ReceiptScanTile, SCAN_RECEIPT_TITLE } from '@/components/ReceiptScanTile';
@@ -100,6 +100,7 @@ function ExpenseDraftForm({
   const theme = useTheme();
   const { color, radius, space, touchTarget } = theme;
   const user = useUser();
+  const windowDays = useCouncilTimings().er_submission_window_days;
   const nextKey = useRef(0);
   const keyed = (line: ExpenseLineDraft): Row => ({ ...line, key: nextKey.current++ });
   const [reference, setReference] = useState(() => (detail ? expenseReferenceKey(detail.report) : ''));
@@ -122,15 +123,15 @@ function ExpenseDraftForm({
         // Activities run without dates, so they are always open for filing.
         if (group === 'Activities') return true;
         const span = expenseReferenceSpan(c.key, refs);
-        return c.key === reference || (span !== null && expenseWindowState(span, today) === 'open');
+        return c.key === reference || (span !== null && expenseWindowState(span, today, windowDays) === 'open');
       })
       .map((c) => ({ value: c.key, label: c.label }));
-  }, [refs, spentFor, reference, today]);
+  }, [refs, spentFor, reference, today, windowDays]);
   const needsPick = spentFor !== 'general' && reference === '';
 
   // Sprint 5Z-6: outside the linked event's or meeting's submission window the submit button is padlocked.
   const span = expenseReferenceSpan(reference, refs);
-  const locked = span ? expenseWindowLockMessage(span, today) : null;
+  const locked = span ? expenseWindowLockMessage(span, today, windowDays) : null;
 
   const setCell = <K extends keyof ExpenseLineDraft>(key: number, field: K, value: ExpenseLineDraft[K]) =>
     setRows((now) => now.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
@@ -199,7 +200,7 @@ function ExpenseDraftForm({
             message={
               spentFor === 'activity'
                 ? 'This council has no activities yet.'
-                : `No ${spentFor}s are open for expense filing today. Filing opens when the ${spentFor} starts and closes ${EXPENSE_SUBMISSION_GRACE_DAYS} days after it ends.`
+                : `No ${spentFor}s are open for expense filing today. Filing opens when the ${spentFor} starts and closes ${windowDays} days after it ends.`
             }
           />
         ) : (
@@ -356,8 +357,9 @@ function ExpenseReportCard({ detail, refs, today, onEdit }: { detail: ExpenseRep
   const { color, space } = useTheme();
   const { report, disbursement } = detail;
   const badge = expenseStatusBadge(report);
+  const windowDays = useCouncilTimings().er_submission_window_days;
   const span = report.Status === 'Draft' ? expenseReferenceSpan(expenseReferenceKey(report), refs) : null;
-  const locked = span ? expenseWindowLockMessage(span, today) : null;
+  const locked = span ? expenseWindowLockMessage(span, today, windowDays) : null;
   return (
     <Card accent={badge.tone === 'redOutline' ? color.red : report.Status === 'Submitted' ? color.gold : color.navy}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.md }}>

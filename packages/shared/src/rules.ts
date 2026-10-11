@@ -25,10 +25,12 @@ import type { Donation, Meeting, MeetingResponseStatus, Member, Shift } from './
 export const HOURS_STEP = 0.25;
 /** No single entry can exceed one day. */
 export const MAX_HOURS_PER_ENTRY = 24;
-/** Activity time may be logged or changed this many months back. */
-export const ACTIVITY_HISTORY_MONTHS = 6;
-/** Retrospective shift time may be reported this many months back. */
-export const SHIFT_HISTORY_MONTHS = 3;
+/**
+ * Sprint 7E: shift time and activity time may be logged or changed this many days back, by default. Each council sets its
+ * own Council.volunteer_logging_window_days (council-settings.ts). This one window replaces the 3-month shift wall and
+ * the 6-month activity wall.
+ */
+export const DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS = 90;
 export const MIN_PASSWORD_LENGTH = 8;
 /**
  * Credentials.Password value of a pre-provisioned member who has not chosen a
@@ -191,6 +193,14 @@ export function subtractMonths(today: Date, months: number): string {
   return toIsoDate(new Date(year, month, Math.min(today.getDate(), lastDay)));
 }
 
+/** The calendar date `days` before `today` (YYYY-MM-DD, local time). */
+export function subtractDays(today: Date, days: number): string {
+  return toIsoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - days));
+}
+
+/** The first day time may still be logged for: `windowDays` (the council's logging window) before `now`. */
+export const loggingWindowStart = (now: Date, windowDays: number = DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS): string => subtractDays(now, windowDays);
+
 /** Returns `value` when it is a real calendar date in YYYY-MM-DD form, otherwise throws. */
 export function assertIsoDate(value: unknown, label: string): string {
   const m = typeof value === 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null;
@@ -228,27 +238,27 @@ export function assertValidHours(hours: unknown, label = 'Hours'): number {
   return hours;
 }
 
-/** Activity time can be logged or changed for dates up to 6 months back. */
-export function assertActivityDateAllowed(activityDate: unknown, now: Date): string {
+/** Activity time can be logged or changed for dates up to the council's logging window back (default 90 days). */
+export function assertActivityDateAllowed(activityDate: unknown, now: Date, windowDays: number = DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS): string {
   const date = assertIsoDate(activityDate, 'Activity date');
-  const earliest = subtractMonths(now, ACTIVITY_HISTORY_MONTHS);
+  const earliest = loggingWindowStart(now, windowDays);
   if (date < earliest) {
     throw new BusinessRuleError(
       'ACTIVITY_DATE_TOO_OLD',
-      `Activity date ${date} is more than ${ACTIVITY_HISTORY_MONTHS} months in the past; the earliest date you can log or change is ${earliest} (today is ${toIsoDate(now)}).`,
+      `Activity date ${date} is more than ${windowDays} days in the past; the earliest date you can log or change is ${earliest} (today is ${toIsoDate(now)}).`,
       { activityDate: date, earliest, today: toIsoDate(now) },
     );
   }
   return date;
 }
 
-/** Retrospective shift time can be reported for shifts up to 3 months back. */
-export function assertShiftReportAllowed(shiftDate: string, now: Date, shiftId?: number): void {
-  const earliest = subtractMonths(now, SHIFT_HISTORY_MONTHS);
+/** Retrospective shift time can be reported for shifts up to the council's logging window back (default 90 days). */
+export function assertShiftReportAllowed(shiftDate: string, now: Date, shiftId?: number, windowDays: number = DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS): void {
+  const earliest = loggingWindowStart(now, windowDays);
   if (shiftDate < earliest) {
     throw new BusinessRuleError(
       'SHIFT_REPORT_TOO_OLD',
-      `Shift${shiftId === undefined ? '' : ` ${shiftId}`} took place on ${shiftDate}, more than ${SHIFT_HISTORY_MONTHS} months ago; the earliest shift date you can report time for is ${earliest} (today is ${toIsoDate(now)}).`,
+      `Shift${shiftId === undefined ? '' : ` ${shiftId}`} took place on ${shiftDate}, more than ${windowDays} days ago; the earliest shift date you can report time for is ${earliest} (today is ${toIsoDate(now)}).`,
       { shiftId, shiftDate, earliest, today: toIsoDate(now) },
     );
   }

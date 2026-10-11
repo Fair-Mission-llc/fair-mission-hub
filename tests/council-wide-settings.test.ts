@@ -36,15 +36,16 @@ describe('Schema 62', () => {
     expect(schema).toContain('ALTER TABLE [Council] ADD [max_shift_padding_hours] DECIMAL(5,2) NOT NULL DEFAULT 1.0;');
     expect(schema).toContain('ALTER TABLE [Council] ADD [inactivity_threshold_days] INT NOT NULL DEFAULT 365;');
     expect(schema).toContain('CREATE TABLE [PlatformSettings]');
-    expect(TABLES.PlatformSettings.columns.map((c) => c.name)).toEqual(['id', 'oral_history_max_seconds', 'diary_text_max_length', 'prayer_intention_max_length']);
-    expect(read('Seed.sql')).toMatch(/INSERT INTO \[PlatformSettings\][^;]*VALUES \(1, 900, 4000, 500\);/);
+    // Sprint 7E (schema 64) appends three more PlatformSettings columns after these.
+    expect(TABLES.PlatformSettings.columns.map((c) => c.name).slice(0, 4)).toEqual(['id', 'oral_history_max_seconds', 'diary_text_max_length', 'prayer_intention_max_length']);
+    expect(read('Seed.sql')).toMatch(/INSERT INTO \[PlatformSettings\][^;]*VALUES \(1, 900, 4000, 500[,)]/);
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[2-9]|[7-9]\d);/);
   });
 });
 
 describe('council wide settings (pure)', () => {
   it('reads defaults for missing values', () => {
-    expect(councilWideSettings(null)).toEqual({
+    expect(councilWideSettings(null)).toMatchObject({
       quarantine_max_daily_activities: 5,
       quarantine_max_single_hours: 5,
       max_shift_padding_hours: 1,
@@ -101,7 +102,7 @@ describe('council wide settings (pure)', () => {
 
 describe('platform settings (pure)', () => {
   it('fills defaults, refuses values past the column sizes, and applies the prayer limit', () => {
-    expect(platformSettings(undefined)).toEqual({ id: 1, oral_history_max_seconds: 900, diary_text_max_length: 4000, prayer_intention_max_length: 500 });
+    expect(platformSettings(undefined)).toMatchObject({ id: 1, oral_history_max_seconds: 900, diary_text_max_length: 4000, prayer_intention_max_length: 500 });
     expect(cleanPlatformSettings({ oral_history_max_seconds: 600 })).toEqual({ oral_history_max_seconds: 600 });
     expect(() => cleanPlatformSettings({ prayer_intention_max_length: 501 })).toThrow(/from 50 to 500/);
     expect(() => cleanPlatformSettings({ diary_text_max_length: 4001 })).toThrow(/from 100 to 4,000/);
@@ -156,7 +157,7 @@ describe.each(drivers)('$name driver: council wide settings', (d) => {
 
   it('keeps the platform settings for Super Admins and applies the prayer limit', async () => {
     const db = await d.make();
-    expect(await db.councils.getPlatformSettings()).toEqual({ id: 1, oral_history_max_seconds: 900, diary_text_max_length: 4000, prayer_intention_max_length: 500 });
+    expect(await db.councils.getPlatformSettings()).toMatchObject({ id: 1, oral_history_max_seconds: 900, diary_text_max_length: 4000, prayer_intention_max_length: 500 });
     await expectRule(db.councils.setPlatformSettings(MEMBER.admin, { oral_history_max_seconds: 600 }), 'SUPER_ADMIN_REQUIRED');
     const saved = await db.councils.setPlatformSettings(MEMBER.superAdmin, { oral_history_max_seconds: 600, prayer_intention_max_length: 60 });
     expect(saved).toMatchObject({ oral_history_max_seconds: 600, prayer_intention_max_length: 60, diary_text_max_length: 4000 });
@@ -191,6 +192,6 @@ describe('Council Wide Settings page and plain-English labels', () => {
     for (const old of ['Clear Hours to Ledger', 'Delete Fraudulent Time', 'Code to Ledger', '📜 Approve Expense', 'Countersign Expense', 'Run inactivity sweep']) {
       expect(guide).not.toContain(old);
     }
-    expect(guide).toContain('## 16. Council Wide Settings and platform limits');
+    expect(guide).toContain('## 16. Council Wide Settings and platform settings'); // renamed in Sprint 7E
   });
 });

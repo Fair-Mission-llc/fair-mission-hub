@@ -226,7 +226,10 @@ export const PROPOSED_MOTION_DEFAULT_MINUTES = 5;
 // them until Meeting.InviteReleaseDate, CADENCE_INVITE_LEAD_DAYS calendar days before the meeting. That keeps a
 // year of monthly invitations from crowding the phone's meeting list.
 
-/** Calendar days before a cadence meeting that its invitations reach members' feeds. */
+/**
+ * Calendar days before a cadence meeting that its invitations reach members' feeds, by default. Since Sprint 7E Super
+ * Admins set it for every council at once (PlatformSettings.cadence_invitation_horizon_days, council-settings.ts).
+ */
 export const CADENCE_INVITE_LEAD_DAYS = 5;
 
 /** Who a cadence's meetings may invite: the built-in distribution groups, or nobody (invite by hand later). */
@@ -246,8 +249,8 @@ export function cadenceInviteMode(group: CadenceRecipientGroup): 'allActive' | '
   return 'none';
 }
 
-/** The day a cadence meeting on `date` releases its invitations: CADENCE_INVITE_LEAD_DAYS days before. */
-export const cadenceInviteReleaseDate = (date: string): string => addDays(date, -CADENCE_INVITE_LEAD_DAYS);
+/** The day a cadence meeting on `date` releases its invitations: `leadDays` (the platform's invitation horizon) before. */
+export const cadenceInviteReleaseDate = (date: string, leadDays: number = CADENCE_INVITE_LEAD_DAYS): string => addDays(date, -leadDays);
 
 /** True once the meeting's invitations may appear in members' feeds on `today` (YYYY-MM-DD). */
 export const isInvitationReleased = (m: Partial<Pick<Meeting, 'InviteReleaseDate'>>, today: string): boolean =>

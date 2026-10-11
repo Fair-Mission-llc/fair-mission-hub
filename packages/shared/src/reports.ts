@@ -26,8 +26,9 @@ import {
   FEEDBACK_MAX_LENGTH,
   donationMethodKind,
   mayChangeLesson,
+  DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS,
+  loggingWindowStart,
   rollupEventFunds,
-  SHIFT_HISTORY_MONTHS,
   subtractMonths,
   summarizeDonations,
   toIsoDate,
@@ -223,20 +224,28 @@ export function buildNoShowAudit(rows: readonly (SignupContextRow & { reason: No
 
 /**
  * How a shift with unlogged hours stands today. `closed` mirrors assertShiftReportAllowed exactly: once the
- * shift is older than SHIFT_HISTORY_MONTHS, eventTime.logHours refuses it. `loggableThrough` is the last day
- * that still accepts it.
+ * shift is older than the council's logging window (`windowDays`, Sprint 7E), eventTime.logHours refuses it.
+ * `loggableThrough` is the last day that still accepts it.
  */
-export function awaitingHoursStatus(shiftDate: string, now: Date): { daysSinceShift: number; closed: boolean; loggableThrough: string } {
+export function awaitingHoursStatus(
+  shiftDate: string,
+  now: Date,
+  windowDays: number = DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS,
+): { daysSinceShift: number; closed: boolean; loggableThrough: string } {
   const [y, m, d] = shiftDate.slice(0, 10).split('-').map(Number);
   return {
     daysSinceShift: daysBetween(shiftDate, toIsoDate(now)),
-    closed: shiftDate < subtractMonths(now, SHIFT_HISTORY_MONTHS),
-    loggableThrough: subtractMonths(new Date(y, m - 1, d), -SHIFT_HISTORY_MONTHS),
+    closed: shiftDate < loggingWindowStart(now, windowDays),
+    loggableThrough: toIsoDate(new Date(y, m - 1, d + windowDays)),
   };
 }
 
 /** reports.listShiftsAwaitingHours from the council's past, non-no-show signups that have no EventTime row. */
-export function buildShiftsAwaitingHours(rows: readonly SignupContextRow[], now: Date): ShiftAwaitingHours[] {
+export function buildShiftsAwaitingHours(
+  rows: readonly SignupContextRow[],
+  now: Date,
+  windowDays: number = DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS,
+): ShiftAwaitingHours[] {
   return [...rows].sort(byShiftThenName).map(({ signup, shift, event, member }) => ({
     signup,
     shift,
@@ -246,7 +255,7 @@ export function buildShiftsAwaitingHours(rows: readonly SignupContextRow[], now:
     lastName: member.MemberLastName,
     phone: member.Phone,
     email: member.Email,
-    ...awaitingHoursStatus(shift.ShiftDate, now),
+    ...awaitingHoursStatus(shift.ShiftDate, now, windowDays),
   }));
 }
 

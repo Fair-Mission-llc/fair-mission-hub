@@ -133,12 +133,16 @@ describe.each(drivers)('$name driver: eventTime.logHours', (d) => {
     expect(d.count(db, 'EventTime')).toBe(0);
   });
 
-  it('rejects a shift more than 3 months in the past', async () => {
+  it("rejects a shift older than the council's 90-day logging window, and takes it once the council widens the window", async () => {
     const db = await d.make();
     const shift = await shiftByName(db, 'Hall Setup'); // 120 days ago
     const err = await expectRule(db.eventTime.logHours(MEMBER.member, shift.id, 2), 'SHIFT_REPORT_TOO_OLD');
-    expect(err.message).toContain('3 months');
+    expect(err.message).toContain('90 days');
     expect(d.count(db, 'EventTime')).toBe(0);
+    // Sprint 7E: Council.volunteer_logging_window_days drives the wall.
+    await db.councils.setCouncilWideSettings(MEMBER.superAdmin, 1, { volunteer_logging_window_days: 150 });
+    await db.eventTime.logHours(MEMBER.member, shift.id, 2);
+    expect(d.count(db, 'EventTime')).toBe(1);
   });
 
   it('requires the member to have signed up for the shift', async () => {
@@ -169,12 +173,16 @@ describe.each(drivers)('$name driver: activityTime.logHours', (d) => {
     expect(d.count(db, 'ActivityTime')).toBe(0);
   });
 
-  it('accepts a date exactly 6 months back and rejects the day before it', async () => {
+  it('accepts a date exactly 90 days back and rejects the day before it, then follows the council window', async () => {
     const db = await d.make();
-    await db.activityTime.logHours(MEMBER.member, 1, 1, '2026-03-20');
-    const err = await expectRule(db.activityTime.logHours(MEMBER.member, 1, 1, '2026-03-19'), 'ACTIVITY_DATE_TOO_OLD');
-    expect(err.message).toContain('2026-03-20');
+    await db.activityTime.logHours(MEMBER.member, 1, 1, '2026-06-22');
+    const err = await expectRule(db.activityTime.logHours(MEMBER.member, 1, 1, '2026-06-21'), 'ACTIVITY_DATE_TOO_OLD');
+    expect(err.message).toContain('2026-06-22');
     expect(d.count(db, 'ActivityTime')).toBe(1);
+    // Sprint 7E: a council that widens Council.volunteer_logging_window_days takes the older date.
+    await db.councils.setCouncilWideSettings(MEMBER.superAdmin, 1, { volunteer_logging_window_days: 200 });
+    await db.activityTime.logHours(MEMBER.member, 1, 1, '2026-03-19');
+    expect(d.count(db, 'ActivityTime')).toBe(2);
   });
 
   it('rejects impossible dates and unknown activities', async () => {

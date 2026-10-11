@@ -4,18 +4,28 @@
 // links this member's sidebar shows - the same feature flags and tenant gate apply - each with one plain-English
 // sentence, then the header's menus. An ordinary member's guide therefore holds no leadership or finance desks. Black
 // on white, bold labels, for easy reading.
+// Sprint 7E: "Your time limits" lists the windows and reminder timings in force for this member right now
+// (navigationTimings), read live from their council's settings and the platform's, never fixed numbers.
 import Link from 'next/link';
-import { navigationGuide, whiteLabel } from '@kofc/shared';
+import { navigationGuide, navigationTimings, whiteLabel } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
+import { usePlatformSettings } from '@/components/SettingsParts';
 import { NAV } from '@/components/Sidebar';
 import { PageTitle } from '@/components/ui';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
+import { useLoad } from '@/lib/use-load';
+import { db } from '@/services/db';
 
 export default function NavigationGuidePage() {
   const user = useUser();
   const tenant = useTenantType();
   const guide = navigationGuide(user, useFeatureFlags(), tenant);
   const text = (s: string) => whiteLabel(s, tenant);
+  const council = useLoad(() => db.councils.get(user.councilId), [user.councilId]);
+  const platform = usePlatformSettings();
+  const timings = navigationTimings(user, council.data, platform);
+  const inUse = timings.filter((t) => t.inUse);
+  const planned = timings.filter((t) => !t.inUse);
   return (
     <RequireArea area="navigation-guide">
       <PageTitle>Navigation Guide</PageTitle>
@@ -46,6 +56,40 @@ export default function NavigationGuidePage() {
             </dl>
           </section>
         ))}
+        <section aria-labelledby="guide-timings" className="border-t-2 border-black pt-3">
+          <h2 id="guide-timings" className="mb-1 text-lg font-bold uppercase tracking-wide">
+            Your time limits
+          </h2>
+          <p className="mb-2 text-base">
+            These are your council&apos;s settings right now. Council leaders change them on Council Wide Settings; Super Admins change the shared ones
+            on Global System Parameters.
+          </p>
+          {council.loading && !council.data ? <p className="text-base">Loading your council&apos;s settings…</p> : null}
+          <dl className="flex flex-col gap-2">
+            {inUse.map((t) => (
+              <div key={t.name}>
+                <dt className="text-base font-bold">
+                  {t.label}: {t.value}
+                </dt>
+                <dd className="text-base">
+                  {t.hint} <span className="text-sm">({t.scope === 'platform' ? 'shared by every council' : t.groupTitle})</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {planned.length > 0 ? (
+            <>
+              <h3 className="mb-1 mt-3 text-base font-bold">Saved for future features (not used yet)</h3>
+              <ul className="flex list-disc flex-col gap-1 pl-6">
+                {planned.map((t) => (
+                  <li key={t.name} className="text-base">
+                    {t.label}: {t.value}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+        </section>
         <section aria-labelledby="guide-top-bar" className="border-t-2 border-black pt-3">
           <h2 id="guide-top-bar" className="mb-2 text-lg font-bold uppercase tracking-wide">
             In the top bar

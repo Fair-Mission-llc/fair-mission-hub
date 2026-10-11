@@ -8,11 +8,28 @@
 // The guide never lists a link the viewer cannot open, so an ordinary member's guide carries no administrative or
 // financial desks. A few links that everyone sees read differently for council leadership (an Admin, a seated officer or
 // a Super Admin), who can do more there; an ordinary member always gets the member wording.
+//
+// Sprint 7E: the guide also lists the time limits that apply to the viewer right now (navigationTimings): their own
+// council's settings and the platform's, read live, so the page never quotes a fixed number. Council leadership also
+// sees the settings saved for future features, marked as not used yet.
 // =========================================================================
+import {
+  COUNCIL_WIDE_SETTING_NAMES,
+  COUNCIL_WIDE_SETTING_RULES,
+  councilWideSettings,
+  formatSettingValue,
+  PLATFORM_SETTING_NAMES,
+  PLATFORM_SETTING_RULES,
+  platformSettings,
+  SETTING_GROUPS,
+  type SettingGroupId,
+  type SettingRule,
+} from './council-settings';
 import type { SessionUser } from './contract';
 import { ALL_FEATURES_ON, type FeatureFlags } from './features';
 import { isAdmin, isSuperAdmin, portalAreas, portalSidebar, type PortalNavGroup, type PortalNavItem } from './permissions';
 import { DEFAULT_TENANT_TYPE, type TenantType } from './tenant';
+import type { Council, PlatformSettings } from './types';
 
 type Viewer = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[]; isBudgetDirector?: boolean };
 
@@ -77,8 +94,14 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   'answers/sop': { member: "Reads the council's standard operating procedures." },
   councils: { member: 'Adds, edits and deletes councils and their registration details.' },
   'feature-flags': { member: "Switches each council's optional modules on and off." },
-  'system-settings/global-settings': { member: "Sets each council's base dues rate and organization type, and the recording and character limits every council shares." },
-  'setup/council-settings': { member: "Sets the council's daily volunteer limits, the shift padding and the window for marking members inactive." },
+  'system-settings/global-settings': {
+    member:
+      "Sets each council's base dues rate and organization type, and the settings every council shares: the meeting invitation lead time, the sign-in length, and the recording and character limits.",
+  },
+  'setup/council-settings': {
+    member:
+      "Sets the council's own numbers in three cards: the expense filing window, the volunteer time limits and logging window, and the hours reminder timing. Click (i) beside a field for what it does.",
+  },
   members: { member: "Keeps the council's member roster: member types, roles and skills." },
   'supreme-sync': { member: 'Checks and files the Supreme Council reports (Forms 1728 and 1295) and syncs the roster.' },
   'council-lookups': { member: "Keeps the council's own lists: activities, donation types, payment methods and agenda templates." },
@@ -131,6 +154,68 @@ export interface NavigationGuide {
   summary: string;
   groups: NavigationGuideGroup[];
   topBar: { item: keyof typeof TOP_BAR_EXPLANATIONS; explanation: string }[];
+}
+
+/** One live time limit on the guide (Sprint 7E). */
+export interface NavigationTimingLine {
+  name: string;
+  label: string;
+  /** The value with its unit, e.g. '30 days'. */
+  value: string;
+  /** What it does, in one sentence (the setting's hint). */
+  hint: string;
+  group: SettingGroupId;
+  groupTitle: string;
+  /** 'council' for the viewer's council's own setting, 'platform' for one every council shares. */
+  scope: 'council' | 'platform';
+  inUse: boolean;
+}
+
+/** The time limits shown to everyone: the ones a member meets when logging time, filing expenses or answering invitations. */
+const MEMBER_TIMINGS = new Set<string>([
+  'er_submission_window_days',
+  'volunteer_logging_window_days',
+  'reminder_delay_days',
+  'reminder_cadence_days',
+  'cadence_invitation_horizon_days',
+  'user_session_expiry_hours',
+]);
+
+/** Settings in days or hours: the guide's time limits. */
+const isTiming = (unit: string) => unit === 'days' || unit === 'hours';
+
+/**
+ * The time limits in force for `u` (Sprint 7E), from their council's stored settings and the platform row, read live.
+ * Every member sees the ones they meet themselves; council leadership sees every timing setting, including those saved
+ * for future features (inUse false).
+ */
+export function navigationTimings(
+  u: Viewer,
+  council: Partial<Council> | null | undefined,
+  platform: Partial<PlatformSettings> | null | undefined,
+): NavigationTimingLine[] {
+  const leader = isNavigationLeader(u);
+  const councilValues = councilWideSettings(council);
+  const platformValues = platformSettings(platform);
+  const lines: NavigationTimingLine[] = [];
+  const add = (name: string, rule: SettingRule, value: number, scope: 'council' | 'platform') => {
+    if (!isTiming(rule.unit) || (!leader && !MEMBER_TIMINGS.has(name))) return;
+    lines.push({
+      name,
+      label: rule.label,
+      value: formatSettingValue(rule, value),
+      hint: rule.hint,
+      group: rule.group,
+      groupTitle: SETTING_GROUPS[rule.group].title,
+      scope,
+      inUse: rule.inUse,
+    });
+  };
+  for (const name of COUNCIL_WIDE_SETTING_NAMES) add(name, COUNCIL_WIDE_SETTING_RULES[name], councilValues[name], 'council');
+  for (const name of PLATFORM_SETTING_NAMES) add(name, PLATFORM_SETTING_RULES[name], platformValues[name], 'platform');
+  // In use first, then by card, keeping the settings' own order inside a card.
+  const order = (l: NavigationTimingLine) => (l.inUse ? 0 : 10) + ['financial', 'operations', 'reminders', 'security', 'limits'].indexOf(l.group);
+  return lines.map((l, i) => ({ l, i })).sort((a, b) => order(a.l) - order(b.l) || a.i - b.i).map(({ l }) => l);
 }
 
 /** The guide for `u`: their own sidebar, pillar by pillar, each link with its explanation, then the header links. */

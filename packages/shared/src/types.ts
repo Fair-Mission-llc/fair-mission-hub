@@ -111,6 +111,22 @@ export interface Council {
   quarantine_max_single_hours?: number | null;
   max_shift_padding_hours?: number | null;
   inactivity_threshold_days?: number | null;
+  /**
+   * Sprint 7E (Schema 64): the timing settings (council-settings.ts). In use: the expense filing window after an event or
+   * meeting ends (DEFAULT 30), how many days back volunteer time may be logged (DEFAULT 90), and the unlogged-hours
+   * reminders' first delay (DEFAULT 5) and follow-up cadence (DEFAULT 7). Saved for features that do not exist yet: the
+   * other six. A missing value reads as the default.
+   */
+  er_submission_window_days?: number | null;
+  volunteer_logging_window_days?: number | null;
+  reminder_delay_days?: number | null;
+  reminder_cadence_days?: number | null;
+  expense_draft_expiry_days?: number | null;
+  charity_proposal_voting_days?: number | null;
+  shift_signup_lock_hours?: number | null;
+  officer_signature_reminder_days?: number | null;
+  meeting_minutes_due_days?: number | null;
+  special_election_notice_days?: number | null;
 }
 
 /**
@@ -125,6 +141,12 @@ export interface PlatformSettings {
   diary_text_max_length: number;
   /** The longest prayer intention in characters (DEFAULT 500, at most the column's 500). */
   prayer_intention_max_length: number;
+  /** Sprint 7E: days before a cadence meeting that its invitations reach members' feeds (DEFAULT 5). */
+  cadence_invitation_horizon_days: number;
+  /** Sprint 7E: hours a portal server session lasts after sign-in (DEFAULT 8). */
+  user_session_expiry_hours: number;
+  /** Sprint 7E: days to keep audit records (DEFAULT 180). Saved for a future purge job; nothing reads it yet. */
+  audit_log_retention_days: number;
 }
 
 export interface AffiliatedCouncils {

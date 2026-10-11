@@ -277,7 +277,10 @@ export function assertExpenseCharityRequestLink(
   }
 }
 
-/** How many days after a linked event or meeting ends its expense sheets may still be submitted (Sprint 5Z-5). */
+/**
+ * How many days after a linked event or meeting ends its expense sheets may still be submitted (Sprint 5Z-5), by
+ * default. Since Sprint 7E each council sets its own (Council.er_submission_window_days, council-settings.ts).
+ */
 export const EXPENSE_SUBMISSION_GRACE_DAYS = 30;
 
 /**
@@ -308,36 +311,42 @@ export const meetingExpenseSpan = (m: Pick<Meeting, 'id' | 'Date'> & Partial<Pic
 /** Where `today` falls against a span's submission window. */
 export type ExpenseWindowState = 'not-open' | 'open' | 'closed';
 
-/** The last day a span's expenses may be submitted: EXPENSE_SUBMISSION_GRACE_DAYS after it ends. */
-export const expenseWindowCloses = (span: ExpenseWindowSpan): string => addDays(span.end, EXPENSE_SUBMISSION_GRACE_DAYS);
+/** The last day a span's expenses may be submitted: `windowDays` (the council's submission window) after it ends. */
+export const expenseWindowCloses = (span: ExpenseWindowSpan, windowDays: number = EXPENSE_SUBMISSION_GRACE_DAYS): string => addDays(span.end, windowDays);
 
 /** 'not-open' before the span starts, 'closed' after expenseWindowCloses, otherwise 'open' (both ends inclusive). */
-export function expenseWindowState(span: ExpenseWindowSpan, today: string): ExpenseWindowState {
+export function expenseWindowState(span: ExpenseWindowSpan, today: string, windowDays: number = EXPENSE_SUBMISSION_GRACE_DAYS): ExpenseWindowState {
   if (today < span.start) return 'not-open';
-  if (today > expenseWindowCloses(span)) return 'closed';
+  if (today > expenseWindowCloses(span, windowDays)) return 'closed';
   return 'open';
 }
 
 /** The lock line the forms show beside a span outside its window, or null when it is open. */
-export function expenseWindowLockMessage(span: ExpenseWindowSpan, today: string): string | null {
-  const state = expenseWindowState(span, today);
+export function expenseWindowLockMessage(span: ExpenseWindowSpan, today: string, windowDays: number = EXPENSE_SUBMISSION_GRACE_DAYS): string | null {
+  const state = expenseWindowState(span, today, windowDays);
   if (state === 'open') return null;
   if (state === 'not-open') return `Submission opens ${formatDate(span.start)}, when the ${span.kind} starts. Save a draft until then.`;
-  return `Submission closed ${formatDate(expenseWindowCloses(span))}, ${EXPENSE_SUBMISSION_GRACE_DAYS} days after the ${span.kind} ended.`;
+  return `Submission closed ${formatDate(expenseWindowCloses(span, windowDays))}, ${windowDays} days after the ${span.kind} ended.`;
 }
 
 /**
  * expenses.submitReport timeline rule (Sprint 5Z-5; meetings too since Sprint 5Z-6): a sheet linked to an event or a
- * meeting may be submitted only from the day it starts through EXPENSE_SUBMISSION_GRACE_DAYS days after it ends, both
+ * meeting may be submitted only from the day it starts through `windowDays` (the council's
+ * er_submission_window_days, default EXPENSE_SUBMISSION_GRACE_DAYS) days after it ends, both
  * inclusive, by the local calendar date of `now`. Earlier rejects EXPENSE_WINDOW_NOT_OPEN, later EXPENSE_WINDOW_CLOSED.
  * Every linked span must be open. Drafts may be saved at any time, and a sheet linking nothing is not limited. Call after
  * assertExpenseLinks.
  */
-export function assertExpenseSubmissionWindow(status: 'Draft' | 'Submitted', spans: readonly ExpenseWindowSpan[], now: Date): void {
+export function assertExpenseSubmissionWindow(
+  status: 'Draft' | 'Submitted',
+  spans: readonly ExpenseWindowSpan[],
+  now: Date,
+  windowDays: number = EXPENSE_SUBMISSION_GRACE_DAYS,
+): void {
   if (status !== 'Submitted') return;
   const today = toIsoDate(now);
   for (const span of spans) {
-    const state = expenseWindowState(span, today);
+    const state = expenseWindowState(span, today, windowDays);
     const details = { kind: span.kind, id: span.id, startDate: span.start, endDate: span.end, today };
     if (state === 'not-open') {
       throw new BusinessRuleError(
@@ -349,8 +358,8 @@ export function assertExpenseSubmissionWindow(status: 'Draft' | 'Submitted', spa
     if (state === 'closed') {
       throw new BusinessRuleError(
         'EXPENSE_WINDOW_CLOSED',
-        `Expenses for ${span.kind} ${span.id} had to be submitted within ${EXPENSE_SUBMISSION_GRACE_DAYS} days of its end (${span.end}); the window closed on ${expenseWindowCloses(span)}.`,
-        { ...details, closesOn: expenseWindowCloses(span) },
+        `Expenses for ${span.kind} ${span.id} had to be submitted within ${windowDays} days of its end (${span.end}); the window closed on ${expenseWindowCloses(span, windowDays)}.`,
+        { ...details, closesOn: expenseWindowCloses(span, windowDays) },
       );
     }
   }

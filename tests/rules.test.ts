@@ -4,6 +4,7 @@ import {
   assertIsoDate,
   assertPasswordAcceptable,
   assertShiftReportAllowed,
+  loggingWindowStart,
   assertValidHours,
   BusinessRuleError,
   isSha256Hex,
@@ -55,19 +56,27 @@ describe('subtractMonths', () => {
 });
 
 describe('history windows (today is 2026-09-20)', () => {
-  it('allows activity dates back to exactly 6 months and rejects the day before', () => {
-    expect(assertActivityDateAllowed('2026-03-20', NOW)).toBe('2026-03-20');
-    expect(codeOf(() => assertActivityDateAllowed('2026-03-19', NOW))).toBe('ACTIVITY_DATE_TOO_OLD');
+  it('allows activity dates back to exactly 90 days by default and rejects the day before', () => {
+    expect(assertActivityDateAllowed('2026-06-22', NOW)).toBe('2026-06-22');
+    expect(codeOf(() => assertActivityDateAllowed('2026-06-21', NOW))).toBe('ACTIVITY_DATE_TOO_OLD');
   });
 
-  it('allows shift reports back to exactly 3 months and rejects the day before', () => {
-    expect(() => assertShiftReportAllowed('2026-06-20', NOW, 7)).not.toThrow();
-    expect(codeOf(() => assertShiftReportAllowed('2026-06-19', NOW, 7))).toBe('SHIFT_REPORT_TOO_OLD');
+  it('allows shift reports back to exactly 90 days by default and rejects the day before', () => {
+    expect(() => assertShiftReportAllowed('2026-06-22', NOW, 7)).not.toThrow();
+    expect(codeOf(() => assertShiftReportAllowed('2026-06-21', NOW, 7))).toBe('SHIFT_REPORT_TOO_OLD');
+  });
+
+  it("follows the council's own logging window (Sprint 7E)", () => {
+    expect(loggingWindowStart(NOW, 30)).toBe('2026-08-21');
+    expect(assertActivityDateAllowed('2026-08-21', NOW, 30)).toBe('2026-08-21');
+    expect(codeOf(() => assertActivityDateAllowed('2026-08-20', NOW, 30))).toBe('ACTIVITY_DATE_TOO_OLD');
+    expect(() => assertShiftReportAllowed('2026-01-01', NOW, 7, 365)).not.toThrow();
+    expect(codeOf(() => assertShiftReportAllowed('2026-08-20', NOW, 7, 30))).toBe('SHIFT_REPORT_TOO_OLD');
   });
 
   it('explains the rejection with the dates involved', () => {
-    expect(() => assertActivityDateAllowed('2025-01-01', NOW)).toThrow(/2025-01-01.*6 months.*2026-03-20/);
-    expect(() => assertShiftReportAllowed('2026-01-01', NOW, 9)).toThrow(/Shift 9.*2026-01-01.*3 months.*2026-06-20/);
+    expect(() => assertActivityDateAllowed('2025-01-01', NOW)).toThrow(/2025-01-01.*90 days.*2026-06-22/);
+    expect(() => assertShiftReportAllowed('2026-01-01', NOW, 9)).toThrow(/Shift 9.*2026-01-01.*90 days.*2026-06-22/);
   });
 
   it.each(['2026-2-3', '2026-02-30', 'yesterday', '', 20260920])('rejects malformed date %s', (d) =>

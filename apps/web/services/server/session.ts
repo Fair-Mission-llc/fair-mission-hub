@@ -55,9 +55,10 @@ export async function signInOnServer(username: string, password: string, now = n
     return { ok: false, status: 401, message: 'The username or password is not correct.' };
   }
   throttle.clear(key);
-  const [member, statuses] = await Promise.all([db.members.get(user.memberId), db.lookups.list('MemberStatus')]);
+  const [member, statuses, platform] = await Promise.all([db.members.get(user.memberId), db.lookups.list('MemberStatus'), db.councils.getPlatformSettings()]);
   const activeId = statuses.find((st) => st.Status === 'Active')?.id;
-  const claims = sessionClaimsFor(user, member !== null && member.StatusID === activeId, now);
+  // Sprint 7E: the session lasts the platform's user_session_expiry_hours, read from the server's own copy of the data.
+  const claims = sessionClaimsFor(user, member !== null && member.StatusID === activeId, now, platform.user_session_expiry_hours * 60 * 60);
   return { ok: true, user, cookie: sessionCookieHeader(await signSessionToken(claims, portalSessionSecret()), secureCookies()) };
 }
 

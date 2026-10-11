@@ -4,6 +4,7 @@ import {
   awaitingHoursStatus,
   canBrowseLessonsRegistry,
   canManageCouncilLookups,
+  hoursReminderCadence,
   hoursReminderStage,
   hoursRemindersDue,
   planCouncilLookupSave,
@@ -226,9 +227,20 @@ describe('unlogged-hours reminder cadence', () => {
   });
 
   it('closes a shift exactly where eventTime.logHours starts refusing it', () => {
-    expect(awaitingHoursStatus('2026-06-20', NOW)).toEqual({ daysSinceShift: 92, closed: false, loggableThrough: '2026-09-20' });
-    expect(awaitingHoursStatus('2026-06-19', NOW)).toMatchObject({ closed: true, loggableThrough: '2026-09-19' });
-    expect(awaitingHoursStatus('2026-09-15', NOW)).toMatchObject({ daysSinceShift: 5, closed: false, loggableThrough: '2026-12-15' });
+    expect(awaitingHoursStatus('2026-06-22', NOW)).toEqual({ daysSinceShift: 90, closed: false, loggableThrough: '2026-09-20' });
+    expect(awaitingHoursStatus('2026-06-21', NOW)).toMatchObject({ closed: true, loggableThrough: '2026-09-19' });
+    expect(awaitingHoursStatus('2026-09-15', NOW)).toMatchObject({ daysSinceShift: 5, closed: false, loggableThrough: '2026-12-14' });
+    // Sprint 7E: the council's own logging window.
+    expect(awaitingHoursStatus('2026-08-20', NOW, 30)).toMatchObject({ closed: true, loggableThrough: '2026-09-19' });
+    expect(awaitingHoursStatus('2026-08-21', NOW, 30)).toMatchObject({ closed: false, loggableThrough: '2026-09-20' });
+  });
+
+  it("follows the council's own reminder delay and cadence (Sprint 7E)", () => {
+    const cadence = hoursReminderCadence({ reminder_delay_days: 3, reminder_cadence_days: 2 });
+    expect(cadence).toEqual({ delayDays: 3, cadenceDays: 2 });
+    expect([2, 3, 4, 5, 7].map((n) => hoursReminderStage({ daysSinceShift: n, closed: false }, cadence))).toEqual([null, 0, null, 1, 2]);
+    expect([2, 3, 5, 6].map((n) => hoursRemindersDue({ daysSinceShift: n }, cadence))).toEqual([0, 1, 2, 2]);
+    expect(hoursReminderCadence(null)).toEqual({ delayDays: 5, cadenceDays: 7 });
   });
 });
 
@@ -374,7 +386,7 @@ describe.each(drivers)('$name driver: executive audits', (d) => {
     await expectRule(db.reports.listNoShowsAudit(999), 'INVALID_INPUT');
   });
 
-  it('lists past signups still missing hours, flagging those past the 3-month wall as closed', async () => {
+  it('lists past signups still missing hours, flagging those past the 90-day logging window as closed', async () => {
     const db = await d.make();
     const seeded = await db.reports.listShiftsAwaitingHours(OWN);
     expect(seeded.every((r) => !r.signup.NoShow && r.shift.ShiftDate < day(0))).toBe(true);
@@ -387,7 +399,7 @@ describe.each(drivers)('$name driver: executive audits', (d) => {
       [twelve, 12, false],
       [hundred, 100, true],
     ]);
-    expect(rows[0]).toMatchObject({ memberId: MEMBER.member, event: { EventName: 'Summer Service Days' }, loggableThrough: '2026-12-15' });
+    expect(rows[0]).toMatchObject({ memberId: MEMBER.member, event: { EventName: 'Summer Service Days' }, loggableThrough: '2026-12-14' });
     expect(rows[0].phone).not.toBe('');
 
     const unaffiliated = (await db.councils.list()).find((c) => c.id !== OWN && c.id !== OTHER)!;
@@ -407,7 +419,7 @@ describe.each(drivers)('$name driver: executive audits', (d) => {
       [1, (await db.events.listSignups(twelve))[0].id],
     ]);
     expect(packets[0].sms.text).toContain('Please log your hours for "Shift 5 days ago"');
-    expect(packets[0].sms.text).toContain('through 2026-12-15');
+    expect(packets[0].sms.text).toContain('through 2026-12-14');
     expect(packets[1].sms.text).toContain('friendly follow-up');
     expect(logged).toHaveLength(2);
     expect(logged[0][0]).toBe('[hours-reminder]');
@@ -418,6 +430,22 @@ describe.each(drivers)('$name driver: executive audits', (d) => {
 
     await db.eventTime.logHours(MEMBER.member, five, 3);
     expect((await runHoursReminderSweep(db, { now: NOW, log: () => {} })).map((p) => p.stage)).toEqual([1]);
+  });
+
+  it("sends reminders on each council's own delay and cadence (Sprint 7E)", async () => {
+    const db = await d.make();
+    const [three, twelve] = await pastShifts(db, [3, 12]);
+    const signups = [(await db.events.listSignups(three))[0].id, (await db.events.listSignups(twelve))[0].id];
+    const ours = async () =>
+      (await runHoursReminderSweep(db, { now: NOW, log: () => {} })).filter((p) => signups.includes(p.signupId)).map((p) => [p.stage, p.signupId]);
+    // Day 3 is no reminder day by default (day 5, then weekly); day 12 is the first follow-up.
+    expect(await ours()).toEqual([[1, signups[1]]]);
+    // A council that reminds after 3 days, then every 3 days, reminds both: day 3 is the first, day 12 the third follow-up.
+    await db.councils.setCouncilWideSettings(MEMBER.superAdmin, OWN, { reminder_delay_days: 3, reminder_cadence_days: 3 });
+    expect(await ours()).toEqual([
+      [0, signups[0]],
+      [3, signups[1]],
+    ]);
   });
 });
 

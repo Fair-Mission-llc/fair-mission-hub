@@ -584,6 +584,106 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 365
         }
+      },
+      {
+        "name": "er_submission_window_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 30
+        }
+      },
+      {
+        "name": "volunteer_logging_window_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 90
+        }
+      },
+      {
+        "name": "reminder_delay_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 5
+        }
+      },
+      {
+        "name": "reminder_cadence_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 7
+        }
+      },
+      {
+        "name": "expense_draft_expiry_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 90
+        }
+      },
+      {
+        "name": "charity_proposal_voting_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 14
+        }
+      },
+      {
+        "name": "shift_signup_lock_hours",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 2
+        }
+      },
+      {
+        "name": "officer_signature_reminder_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 3
+        }
+      },
+      {
+        "name": "meeting_minutes_due_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 7
+        }
+      },
+      {
+        "name": "special_election_notice_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 60
+        }
       }
     ],
     "foreignKeys": [],
@@ -6821,6 +6921,36 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 500
         }
+      },
+      {
+        "name": "cadence_invitation_horizon_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 5
+        }
+      },
+      {
+        "name": "user_session_expiry_hours",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 8
+        }
+      },
+      {
+        "name": "audit_log_retention_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 180
+        }
       }
     ],
     "foreignKeys": [],
@@ -7635,7 +7765,10 @@ export const SEED_DATA: readonly SeedTable[] = [
         "id": 1,
         "oral_history_max_seconds": 900,
         "diary_text_max_length": 4000,
-        "prayer_intention_max_length": 500
+        "prayer_intention_max_length": 500,
+        "cadence_invitation_horizon_days": 5,
+        "user_session_expiry_hours": 8,
+        "audit_log_retention_days": 180
       }
     ]
   }

@@ -5,12 +5,15 @@
 //
 // Pure Web Crypto, no Node-only APIs, so the API routes and the unit tests share it. The secret never leaves the server
 // (services/server/secrets.ts); this module only takes it as an argument.
-import type { MemberWriteActor, SessionUser } from '@kofc/shared';
+import { DEFAULT_USER_SESSION_EXPIRY_HOURS, type MemberWriteActor, type SessionUser } from '@kofc/shared';
 
 /** The cookie the token rides in: HttpOnly, SameSite=Strict, scoped to /api. */
 export const PORTAL_SESSION_COOKIE = 'kofc_portal_session';
-/** How long a session lasts after sign-in. */
-export const PORTAL_SESSION_TTL_SECONDS = 8 * 60 * 60;
+/**
+ * How long a session lasts after sign-in, by default. Since Sprint 7E a Super Admin sets it for every council at once
+ * (PlatformSettings.user_session_expiry_hours, DEFAULT_USER_SESSION_EXPIRY_HOURS = 8); sign-in passes that value in.
+ */
+export const PORTAL_SESSION_TTL_SECONDS = DEFAULT_USER_SESSION_EXPIRY_HOURS * 60 * 60;
 /** Shortest PORTAL_SESSION_SECRET accepted. */
 export const PORTAL_SESSION_SECRET_MIN_LENGTH = 32;
 
@@ -61,8 +64,8 @@ function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
   return diff === 0;
 }
 
-/** Claims for `user`, valid for PORTAL_SESSION_TTL_SECONDS from `now`. */
-export function sessionClaimsFor(user: SessionUser, active: boolean, now: Date): PortalSessionClaims {
+/** Claims for `user`, valid for `ttlSeconds` (the platform's session length; PORTAL_SESSION_TTL_SECONDS by default) from `now`. */
+export function sessionClaimsFor(user: SessionUser, active: boolean, now: Date, ttlSeconds: number = PORTAL_SESSION_TTL_SECONDS): PortalSessionClaims {
   const iat = Math.floor(now.getTime() / 1000);
   return {
     memberId: user.memberId,
@@ -74,7 +77,7 @@ export function sessionClaimsFor(user: SessionUser, active: boolean, now: Date):
     isBudgetDirector: user.isBudgetDirector,
     active,
     iat,
-    exp: iat + PORTAL_SESSION_TTL_SECONDS,
+    exp: iat + ttlSeconds,
   };
 }
 
@@ -126,7 +129,7 @@ export function readCookie(header: string | null, name: string): string | null {
 
 /**
  * The Set-Cookie header for a session token. No Max-Age, so the browser drops it when it closes; the token's own `exp`
- * ends it after PORTAL_SESSION_TTL_SECONDS regardless. `token` null clears the cookie.
+ * ends it after the platform's session length regardless. `token` null clears the cookie.
  */
 export function sessionCookieHeader(token: string | null, secure: boolean): string {
   const attrs = ['Path=/api', 'HttpOnly', 'SameSite=Strict', ...(secure ? ['Secure'] : [])];

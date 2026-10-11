@@ -513,6 +513,7 @@ import {
   cleanCouncilWideSettings,
   cleanPlatformSettings,
   councilWideSettings,
+  type CouncilWideSettings,
   platformSettings,
   PLATFORM_SETTINGS_ID,
 } from '@kofc/shared';
@@ -2442,6 +2443,7 @@ export class MemoryDataService implements DataService {
           clean.Status,
           [...(linkedEvent ? [eventExpenseSpan(linkedEvent)] : []), ...(linkedMeeting ? [meetingExpenseSpan(linkedMeeting)] : [])],
           this.now(),
+          this.councilSettingsOf(s, councilId).er_submission_window_days,
         );
         // The workflow engine decides the stored Status: a new sheet starts as Draft, and only a Draft is saved or submitted.
         const status = nextExpenseStatus(draft?.Status ?? null, clean.Status === 'Submitted' ? 'submit' : 'saveDraft', clean.id);
@@ -3113,7 +3115,7 @@ export class MemoryDataService implements DataService {
       return s.transaction(() => {
         const shift = this.requireShift(s, shiftId);
         this.requireMember(s, memberId);
-        assertShiftReportAllowed(shift.ShiftDate as string, this.now(), shiftId);
+        assertShiftReportAllowed(shift.ShiftDate as string, this.now(), shiftId, this.loggingWindowOf(s, memberId));
         if (!s.rows('EventSignup').some((e) => e.ShiftID === shiftId && e.MemberID === memberId)) {
           throw new BusinessRuleError(
             'NOT_SIGNED_UP',
@@ -3151,8 +3153,8 @@ export class MemoryDataService implements DataService {
   activityTime: DataService['activityTime'] = {
     logHours: async (memberId, activityId, hours, date, notes) => {
       assertValidHours(hours);
-      assertActivityDateAllowed(date, this.now());
       const s = await this.ready();
+      assertActivityDateAllowed(date, this.now(), this.loggingWindowOf(s, memberId));
       return s.transaction(() => {
         const member = this.requireMember(s, memberId);
         if (!s.rows('Activities').some((a) => a.id === activityId)) {
@@ -3172,8 +3174,8 @@ export class MemoryDataService implements DataService {
     },
 
     addQuarterHour: async (memberId, activityId, date) => {
-      assertActivityDateAllowed(date, this.now());
       const s = await this.ready();
+      assertActivityDateAllowed(date, this.now(), this.loggingWindowOf(s, memberId));
       return s.transaction(() => {
         const member = this.requireMember(s, memberId);
         if (!s.rows('Activities').some((a) => a.id === activityId)) {
@@ -3360,7 +3362,7 @@ export class MemoryDataService implements DataService {
         if (s.rows('EventTime').some((t) => t.ShiftID === signup.ShiftID && t.MemberID === signup.MemberID)) continue;
         rows.push(row);
       }
-      return buildShiftsAwaitingHours(rows, now);
+      return buildShiftsAwaitingHours(rows, now, this.councilSettingsOf(s, councilId).volunteer_logging_window_days);
     },
   };
 
@@ -3417,6 +3419,17 @@ export class MemoryDataService implements DataService {
       }
     }
     return quarantineReasons({ ...entry, dayActivityKeys, otherHoursSameActivity }, councilWideSettings(council as Partial<Council> | undefined));
+  }
+
+  /** A council's Council Wide Settings (Sprint 7C, timing settings since Sprint 7E), with the defaults for a missing council. */
+  private councilSettingsOf(s: MemoryStore, councilId: number): CouncilWideSettings {
+    return councilWideSettings(s.rows('Council').find((c) => c.id === councilId) as Partial<Council> | undefined);
+  }
+
+  /** How many days back the member may log time: their council's volunteer_logging_window_days (Sprint 7E). */
+  private loggingWindowOf(s: MemoryStore, memberId: number): number {
+    const member = s.rows('Member').find((m) => m.id === memberId);
+    return this.councilSettingsOf(s, (member?.CouncilID as number | undefined) ?? -1).volunteer_logging_window_days;
   }
 
   /** The universal limits (Sprint 7C), with the defaults when the row is missing. */
@@ -3739,7 +3752,7 @@ export class MemoryDataService implements DataService {
             OwnerID: null,
             IsMultiDay: 0,
             EndDate: null,
-            InviteReleaseDate: cadenceInviteReleaseDate(date),
+            InviteReleaseDate: cadenceInviteReleaseDate(date, this.platformSettingsOf(s).cadence_invitation_horizon_days),
           };
           createdIds.push(this.insertMeeting(meeting, cadenceInviteMode(config.DefaultRecipientGroup)));
         }

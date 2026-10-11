@@ -35,8 +35,8 @@ o	Capacity Lock rule: If a shift requires 5 volunteers (MinNumberVolunteers) and
 •	Dropdown Increments: To log time, navigate to your completed shifts list. Use the quick scroller to pick hours and minutes (options restricted to :00, :15, :30, :45). The system automatically formats your entry into standard quarters (e.g., 1 hr 15 mins saves as 1.25 behind the scenes).
 •	Ongoing Council Activities: Ongoing initiatives (like charitable collections or parish maintenance) don't require advance shift signups. Go to the Activities Tab, select an activity name, pick your hours, and save it instantly.
 •	The 3-Month / 6-Month Time Locks:
-o	You have up to 3 months to log or correct hours against a shift you missed or completed.
-o	You have up to 6 months to adjust entries logged against ongoing untracked council activities. Beyond these windows, entries freeze to protect fiscal and archival records.
+o	You have up to 90 days (your council can change this) to log or correct hours against a shift you completed.
+o	You have the same window to adjust entries logged against ongoing council activities. Beyond these windows, entries freeze to protect fiscal and archival records.
 💬 Messaging and Attachment Drawers
 •	Threaded Communication: To keep main threads clean, tap any main message notice to open a dedicated sub-comment window.
 •	Media Vault: Drag and drop PDFs, spreadsheet trackers, or project images straight into your message row. They stay saved in the stream forever for council reference.

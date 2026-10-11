@@ -7,13 +7,13 @@
 //     and refuses a full (locked) shift, so the desk only offers rows with room.
 //   - Fraternal roster: Active members of my council and its sister councils with their phone and email, the same
 //     contact details the council's shared roster sheet already gives every member.
-//   - Hour ledger: log time against a shift I worked (SHIFT_HISTORY_MONTHS back) or a council activity
-//     (ACTIVITY_HISTORY_MONTHS back), with my logged history underneath. The drivers enforce both walls again.
+//   - Hour ledger: log time against a shift I worked or a council activity, back to the council's logging window
+//     (Council.volunteer_logging_window_days, Sprint 7E), with my logged history underneath. The drivers enforce the
+//     window again.
 // Sprint 6A: when the council switches off flag_complex_shifts, the two shift tabs and the shift half of the hour ledger
 // go, leaving the roster and the activity log.
 import { useState, type ReactNode } from 'react';
 import {
-  ACTIVITY_HISTORY_MONTHS,
   councilLabel,
   describeError,
   feedWindow,
@@ -25,19 +25,19 @@ import {
   isQuarantinedHours,
   isShiftFull,
   isUrgent,
+  loggingWindowStart,
   MINUTE_OPTIONS,
   padMinutes,
   pickerResult,
   quarantinedHoursMessage,
-  SHIFT_HISTORY_MONTHS,
   shiftStatus,
   sortCouncils,
-  subtractMonths,
   toIsoDate,
   visibleFeed,
   type Council,
   type Shift,
 } from '@kofc/shared';
+import { useCouncilTimings } from '@/components/SettingsParts';
 import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
 import { formatFullDate, formatPersonName, formatPhone } from '@/lib/format';
 import { useFeatureFlags, useUser } from '@/lib/session';
@@ -340,8 +340,9 @@ function HourLedger() {
   const { run, banner } = useAction();
   const [busy, setBusy] = useState(false);
   const today = toIsoDate(new Date());
-  const shiftWall = subtractMonths(new Date(), SHIFT_HISTORY_MONTHS);
-  const activityWall = subtractMonths(new Date(), ACTIVITY_HISTORY_MONTHS);
+  const windowDays = useCouncilTimings().volunteer_logging_window_days;
+  const shiftWall = loggingWindowStart(new Date(), windowDays);
+  const activityWall = shiftWall;
 
   const data = useLoad(async () => {
     const [shifts, activities] = await Promise.all([
@@ -425,7 +426,7 @@ function HourLedger() {
         {shiftsOn ? (
           <LogForm title="Report time on a shift" onSubmit={logShift} busy={busy} submitLabel="Save shift hours">
             {loggable.length === 0 ? (
-              <Empty>No shift from the last {SHIFT_HISTORY_MONTHS} months to report. Hours for older shifts can no longer be logged.</Empty>
+              <Empty>No shift from the last {windowDays} days to report. Hours for older shifts can no longer be logged.</Empty>
             ) : (
               <>
                 <Field label="Shift I worked" hint={`Shifts back to ${formatFullDate(shiftWall)}. Logging again replaces the earlier hours.`}>

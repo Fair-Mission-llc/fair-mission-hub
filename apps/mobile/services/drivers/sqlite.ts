@@ -515,6 +515,7 @@ import {
   cleanCouncilWideSettings,
   cleanPlatformSettings,
   councilWideSettings,
+  type CouncilWideSettings,
   COUNCIL_WIDE_SETTING_NAMES,
   platformSettings,
   PLATFORM_SETTING_NAMES,
@@ -756,8 +757,11 @@ const DB_NAME = 'kofc.db';
  *     max_shift_padding_hours, inactivity_threshold_days) and PlatformSettings, the universal limits (Sprint 7C).
  * 63: no table change - the Setup pillar became System Settings and the base dues rate, tenant type and Platform Limits
  *     moved to the Super Admin's Global System Parameters page; the bump marks the release (Sprint 7C Extension).
+ * 64: the timing settings - ten Council columns (er_submission_window_days, volunteer_logging_window_days,
+ *     reminder_delay_days, reminder_cadence_days and six saved for future features) and three PlatformSettings columns
+ *     (cadence_invitation_horizon_days, user_session_expiry_hours, audit_log_retention_days) (Sprint 7E).
  */
-const SCHEMA_VERSION = 63;
+const SCHEMA_VERSION = 64;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1531,9 +1535,9 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         assertMaySetPlatformSettings(await this.memberWriteActor(db, actorId));
         const next = { ...(await this.platformSettingsOf(db)), ...clean };
-        // Only the three known columns, so the names are safe to interpolate.
+        // Only the known columns, so the names are safe to interpolate.
         await db.runAsync(
-          `INSERT OR REPLACE INTO [PlatformSettings] ([id], ${PLATFORM_SETTING_NAMES.map((c) => `[${c}]`).join(', ')}) VALUES (?, ?, ?, ?)`,
+          `INSERT OR REPLACE INTO [PlatformSettings] ([id], ${PLATFORM_SETTING_NAMES.map((c) => `[${c}]`).join(', ')}) VALUES (?, ${PLATFORM_SETTING_NAMES.map(() => '?').join(', ')})`,
           [PLATFORM_SETTINGS_ID, ...PLATFORM_SETTING_NAMES.map((c) => next[c])],
         );
       });
@@ -2852,6 +2856,7 @@ export class SqliteDataService implements DataService {
           clean.Status,
           [...(linkedEvent ? [eventExpenseSpan(linkedEvent)] : []), ...(linkedMeeting ? [meetingExpenseSpan(linkedMeeting)] : [])],
           this.now(),
+          (await this.councilSettingsOf(db, councilId)).er_submission_window_days,
         );
         // The workflow engine decides the stored Status: a new sheet starts as Draft, and only a Draft is saved or submitted.
         const status = nextExpenseStatus(draft?.Status ?? null, clean.Status === 'Submitted' ? 'submit' : 'saveDraft', clean.id);
@@ -3670,7 +3675,7 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         const shift = await this.requireShift(db, shiftId);
         await this.requireMember(db, memberId);
-        assertShiftReportAllowed(shift.ShiftDate, this.now(), shiftId);
+        assertShiftReportAllowed(shift.ShiftDate, this.now(), shiftId, await this.loggingWindowOf(db, memberId));
         const signup = await db.getFirstAsync<{ id: number }>(
           'SELECT [id] FROM [EventSignup] WHERE [ShiftID] = ? AND [MemberID] = ?',
           [shiftId, memberId],
@@ -3730,8 +3735,8 @@ export class SqliteDataService implements DataService {
   activityTime: DataService['activityTime'] = {
     logHours: async (memberId, activityId, hours, date, notes) => {
       assertValidHours(hours);
-      assertActivityDateAllowed(date, this.now());
       const db = await this.ready();
+      assertActivityDateAllowed(date, this.now(), await this.loggingWindowOf(db, memberId));
       let timeId = 0;
       let held: VolunteerQuarantine | null = null;
       await db.withTransactionAsync(async () => {
@@ -3758,8 +3763,8 @@ export class SqliteDataService implements DataService {
     },
 
     addQuarterHour: async (memberId, activityId, date) => {
-      assertActivityDateAllowed(date, this.now());
       const db = await this.ready();
+      assertActivityDateAllowed(date, this.now(), await this.loggingWindowOf(db, memberId));
       let timeId = 0;
       let held: VolunteerQuarantine | null = null;
       await db.withTransactionAsync(async () => {
@@ -3970,7 +3975,11 @@ export class SqliteDataService implements DataService {
         [toIsoDate(now), councilId],
       );
       const context = await this.signupContexts(db, found.map((f) => f.signupId));
-      return buildShiftsAwaitingHours(found.map((f) => context.get(f.signupId)!), now);
+      return buildShiftsAwaitingHours(
+        found.map((f) => context.get(f.signupId)!),
+        now,
+        (await this.councilSettingsOf(db, councilId)).volunteer_logging_window_days,
+      );
     },
   };
 
@@ -4043,6 +4052,20 @@ export class SqliteDataService implements DataService {
         ? day.filter((d) => d.type === 'MANUAL' && d.activityId === entry.activityId).reduce((sum, d) => sum + d.hours, 0)
         : 0;
     return quarantineReasons({ ...entry, dayActivityKeys, otherHoursSameActivity }, councilWideSettings(member));
+  }
+
+  /** A council's Council Wide Settings (Sprint 7C, timing settings since Sprint 7E), with the defaults for a missing council. */
+  private async councilSettingsOf(db: SQLite.SQLiteDatabase, councilId: number): Promise<CouncilWideSettings> {
+    return councilWideSettings(await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]));
+  }
+
+  /** How many days back the member may log time: their council's volunteer_logging_window_days (Sprint 7E). */
+  private async loggingWindowOf(db: SQLite.SQLiteDatabase, memberId: number): Promise<number> {
+    const council = await db.getFirstAsync<Council>(
+      'SELECT c.* FROM [Member] m JOIN [Council] c ON c.[id] = m.[CouncilID] WHERE m.[id] = ?',
+      [memberId],
+    );
+    return councilWideSettings(council).volunteer_logging_window_days;
   }
 
   /** The universal limits (Sprint 7C), with the defaults when the row is missing. */
@@ -4430,7 +4453,7 @@ export class SqliteDataService implements DataService {
             OwnerID: null,
             IsMultiDay: 0,
             EndDate: null,
-            InviteReleaseDate: cadenceInviteReleaseDate(date),
+            InviteReleaseDate: cadenceInviteReleaseDate(date, (await this.platformSettingsOf(db)).cadence_invitation_horizon_days),
           };
           createdIds.push(await this.insertMeeting(db, meeting, cadenceInviteMode(cadence.DefaultRecipientGroup)));
         }

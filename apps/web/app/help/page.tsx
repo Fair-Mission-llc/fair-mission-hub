@@ -2,25 +2,24 @@
 // Online Help Center: the troubleshooting workflows of docs/MEMBER_USER_GUIDE.md and docs/ADMIN_USER_GUIDE.md as a
 // searchable question-and-answer accordion, plus a feedback and bug-report form (feedback.submit) and, for Super Admins
 // only, the feedback inbox (feedback.listInbox). Open to every signed-in member. The time windows and limits quoted
-// come from the shared rule constants, so an answer cannot drift from what the drivers enforce.
+// come from the shared rule constants, so an answer cannot drift from what the drivers enforce. Sprint 7E: the logging
+// window and the hours reminder cadence are the member's own council's settings (useCouncilTimings), read live.
 import { useState, type FormEvent } from 'react';
 import {
-  ACTIVITY_HISTORY_MONTHS,
   ALERT_HISTORY_MONTHS,
+  type CouncilWideSettings,
   councilLabel,
   describeError,
   FEEDBACK_MAX_LENGTH,
   FEED_HORIZON_MONTHS,
-  HOURS_REMINDER_FIRST_DAY,
-  HOURS_REMINDER_REPEAT_DAYS,
   MAX_HOURS_PER_ENTRY,
   MIN_PASSWORD_LENGTH,
   NO_SHOW_AUDIT_MONTHS,
   NO_SHOW_WINDOW_MONTHS,
   PRIORITY_WITHIN_DAYS,
-  SHIFT_HISTORY_MONTHS,
   isSuperAdmin,
 } from '@kofc/shared';
+import { useCouncilTimings } from '@/components/SettingsParts';
 import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Table, Td, Textarea } from '@/components/ui';
 import { formatPhone } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -38,7 +37,8 @@ interface Section {
   topics: Topic[];
 }
 
-const SECTIONS: Section[] = [
+/** The help topics, quoting the council's own timing settings `t` (Sprint 7E). */
+const helpSections = (t: CouncilWideSettings): Section[] => [
   {
     title: 'Signing in and your password',
     audience: 'Everyone',
@@ -133,14 +133,14 @@ const SECTIONS: Section[] = [
       {
         q: 'How far back can I log time?',
         a: [
-          `Shifts: up to ${SHIFT_HISTORY_MONTHS} months after the shift date. Council activities: dates up to ${ACTIVITY_HISTORY_MONTHS} months back.`,
+          `Shifts and council activities: up to ${t.volunteer_logging_window_days} days back. Your council sets this number on Council Wide Settings.`,
           'After that the entry is frozen to protect the council’s records, and the shift shows Closed in your history.',
         ],
       },
       {
         q: 'Why did I get a text reminder about hours?',
         a: [
-          `You signed up for a shift but have not logged hours. The first reminder goes out ${HOURS_REMINDER_FIRST_DAY} days after the shift, then one every ${HOURS_REMINDER_REPEAT_DAYS} days, and reminders stop once the ${SHIFT_HISTORY_MONTHS}-month window closes.`,
+          `You signed up for a shift but have not logged hours. The first reminder goes out ${t.reminder_delay_days} days after the shift, then one every ${t.reminder_cadence_days} days, and reminders stop once the ${t.volunteer_logging_window_days}-day window closes.`,
         ],
       },
     ],
@@ -268,7 +268,7 @@ const SECTIONS: Section[] = [
         q: 'What is the Shifts awaiting hours list?',
         a: [
           'Volunteers who worked a past shift (not no-shows) and have not logged hours, with their phone number.',
-          `From day ${HOURS_REMINDER_FIRST_DAY} the row turns red as ⚠ Overdue and shows the log-by date. Rows past ${SHIFT_HISTORY_MONTHS} months show Closed because the hours can no longer be recorded.`,
+          `From day ${t.reminder_delay_days} the row turns red as ⚠ Overdue and shows the log-by date. Rows past ${t.volunteer_logging_window_days} days show Closed because the hours can no longer be recorded.`,
         ],
       },
       {
@@ -311,7 +311,7 @@ const SECTIONS: Section[] = [
         a: [
           'Total labor hours: shift plus activity hours logged in the month. Unique Knights participating: distinct members who logged any time.',
           'Net balance: cash plus electronic funds raised minus spend for the month’s events. Community outreach: actual attendees at those events.',
-          `Figures grow as members log hours, which may be up to ${SHIFT_HISTORY_MONTHS} months after a shift, so re-check a recent month later.`,
+          `Figures grow as members log hours, which may be up to ${t.volunteer_logging_window_days} days after a shift, so re-check a recent month later.`,
         ],
       },
       {
@@ -456,11 +456,12 @@ function FeedbackInbox({ version }: { version: number }) {
 
 export default function HelpPage() {
   const user = useUser();
+  const timings = useCouncilTimings();
   const [sent, setSent] = useState(0);
   const [query, setQuery] = useState('');
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const searching = words.length > 0;
-  const shown = SECTIONS.map((s) => ({ ...s, topics: s.topics.filter((t) => matches(t, words)) })).filter((s) => s.topics.length > 0);
+  const shown = helpSections(timings).map((s) => ({ ...s, topics: s.topics.filter((t) => matches(t, words)) })).filter((s) => s.topics.length > 0);
   const count = shown.reduce((n, s) => n + s.topics.length, 0);
 
   return (

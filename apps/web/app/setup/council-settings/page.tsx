@@ -5,24 +5,28 @@
 // a Super Admin picks any council. The data service checks the same rule (assertMayEditCouncilWideSettings).
 // The universal limits every council shares (recording time, character limits) are on Global System Parameters
 // (/system-settings/global-settings, Sprint 7C Extension), for Super Admins.
+//
+// Sprint 7E: the ten timing settings join them (the expense filing window, the volunteer logging window, the hours
+// reminder delay and cadence, and six saved for future features). The fields sit in three high-contrast cards -
+// Financial Submissions, Volunteer & Meeting Operations and Reminder Cadences - and each has an (i) button that explains
+// it in a popup (GroupedSettingsCards).
 import { useState } from 'react';
 import {
   councilLabel,
   councilWideSettings,
+  COUNCIL_SETTING_GROUP_ORDER,
+  COUNCIL_WIDE_SETTING_NAMES,
   COUNCIL_WIDE_SETTING_RULES,
   isSuperAdmin,
   sortCouncils,
   type Council,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
-import { NumberSettingsForm } from '@/components/SettingsParts';
-import { Notice, PageTitle, Panel, Select } from '@/components/ui';
+import { GroupedSettingsCards } from '@/components/SettingsParts';
+import { Notice, PageTitle, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
-
-const GUARD_NAMES = ['quarantine_max_daily_activities', 'quarantine_max_single_hours', 'max_shift_padding_hours'] as const;
-const ROSTER_NAMES = ['inactivity_threshold_days'] as const;
 
 function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () => Promise<void> }) {
   const user = useUser();
@@ -30,42 +34,22 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
   const save = async (changed: Partial<typeof values>) => {
     const saved = await db.councils.setCouncilWideSettings(user.memberId, council.id, changed);
     await onSaved();
-    return `Saved for council ${saved.CouncilNumber}. The new limits apply to the next hours a member logs.`;
+    return `Saved for council ${saved.CouncilNumber}. The new numbers apply from now on.`;
   };
   return (
     <>
-      <Panel title="Volunteer time limits">
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted">
-            A member&apos;s hours that go past one of these limits wait on the Executive Dashboard for the Grand Knight, Deputy Grand Knight or an Admin
-            to approve or reject. Admins, elected officers, Trustees and the event&apos;s owner are never held.
-          </p>
-          <NumberSettingsForm
-            key={`guards-${council.id}-${GUARD_NAMES.map((n) => values[n]).join('-')}`}
-            names={GUARD_NAMES}
-            rules={COUNCIL_WIDE_SETTING_RULES}
-            values={values}
-            submitLabel="Save time limits"
-            onSave={save}
-          />
-        </div>
-      </Panel>
-      <Panel title="Inactive members">
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted">
-            <strong>🔍 Check for Inactive Members</strong> on the member roster marks a plain member Inactive after this many days with no logged service.
-            Admins and Super Admins are never marked.
-          </p>
-          <NumberSettingsForm
-            key={`roster-${council.id}-${values.inactivity_threshold_days}`}
-            names={ROSTER_NAMES}
-            rules={COUNCIL_WIDE_SETTING_RULES}
-            values={values}
-            submitLabel="Save inactive-member window"
-            onSave={save}
-          />
-        </div>
-      </Panel>
+      <p className="mb-4 text-base">
+        Each card saves on its own. Click <strong>(i)</strong> beside a field to see where and how the number changes the portal. A field marked{' '}
+        <strong>Not used yet</strong> is saved for a future feature and changes nothing today.
+      </p>
+      <GroupedSettingsCards
+        formKey={`${council.id}-${COUNCIL_WIDE_SETTING_NAMES.map((n) => values[n]).join('-')}`}
+        names={COUNCIL_WIDE_SETTING_NAMES}
+        rules={COUNCIL_WIDE_SETTING_RULES}
+        values={values}
+        groups={COUNCIL_SETTING_GROUP_ORDER}
+        onSave={save}
+      />
     </>
   );
 }

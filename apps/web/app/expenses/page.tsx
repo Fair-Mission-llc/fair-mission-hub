@@ -4,8 +4,8 @@
 // was spent on, saves it as a draft or submits it to the council's leadership, and follows it through Submitted,
 // Approved and Reimbursed (with the check that paid it). A sheet leadership returned comes back as a draft with a
 // red banner quoting their reason until it is resubmitted. The drivers show a member only their own sheets.
-// Sprint 5Z-6: a sheet naming an event or meeting outside its submission window (from the day it starts through 30 days
-// after it ends) shows a padlock and its submit button is disabled; it can still be saved as a draft.
+// Sprint 5Z-6: a sheet naming an event or meeting outside its submission window (from the day it starts through the council's
+// er_submission_window_days, DEFAULT 30, after it ends; Sprint 7E) shows a padlock and its submit button is disabled; it can still be saved as a draft.
 // Sprint 6H: 'Link to Vetted Charity Request' names the council's vetted charitable request the receipts were spent for
 // (charities.listLinkableCharitableRequests), saved as ExpenseReport.charity_request_id. The signature desks then
 // pre-select that request's target budget line.
@@ -46,6 +46,7 @@ import {
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { ExpenseSheetItems, ExpenseStatusPill, HonorVoucherBadge, ReceiptLink } from '@/components/ExpenseParts';
+import { useCouncilTimings } from '@/components/SettingsParts';
 import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Select, Table, Td, Textarea } from '@/components/ui';
 import { formatFullDate, formatMoney } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -126,7 +127,8 @@ function ExpenseSheetForm({
   const [notice, setNotice] = useState<string | null>(null);
   const choices = useMemo(() => expenseReferenceChoices(refs), [refs]);
   const span = expenseReferenceSpan(reference, refs);
-  const locked = span ? expenseWindowLockMessage(span, today) : null;
+  const windowDays = useCouncilTimings().er_submission_window_days;
+  const locked = span ? expenseWindowLockMessage(span, today, windowDays) : null;
 
   const setCell = <K extends keyof ExpenseLineDraft>(key: number, field: K, value: ExpenseLineDraft[K]) =>
     setRows((now) => now.map((r) => (r.key === key ? { ...r, [field]: value } : r)));

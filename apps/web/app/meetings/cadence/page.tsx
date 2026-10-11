@@ -8,7 +8,7 @@
 // Admins and Grand Knight and to Super Admins (canManageCouncilCadence; the data layer checks again).
 import { useState } from 'react';
 import {
-  CADENCE_INVITE_LEAD_DAYS,
+  platformSettings,
   CADENCE_LOCATION_MAX_LENGTH,
   CADENCE_ORDINALS,
   CADENCE_RECIPIENT_GROUPS,
@@ -34,6 +34,7 @@ import {
   type Meeting,
 } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
+import { usePlatformSettings } from '@/components/SettingsParts';
 import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -67,6 +68,7 @@ function CadenceForm({
   onCancel: () => void;
 }) {
   const user = useUser();
+  const leadDays = platformSettings(usePlatformSettings()).cadence_invitation_horizon_days;
   const open = types.filter((t) => t.id === editing?.MeetingTypeID || !takenTypeIds.includes(t.id));
   const rule = editing ? parseCadencePattern(editing.CadencePattern) : { ordinal: 'First' as CadenceOrdinal, weekday: 'Tuesday' as CadenceWeekday };
   const [typeId, setTypeId] = useState<number | null>(editing?.MeetingTypeID ?? open[0]?.id ?? null);
@@ -153,7 +155,7 @@ function CadenceForm({
       <Field label="Start time" hint="Each meeting runs two hours.">
         {(id) => <Input id={id} type="time" value={start} onChange={(e) => setStart(e.target.value)} required />}
       </Field>
-      <Field label="Default recipient group" hint={`Invitations reach members ${CADENCE_INVITE_LEAD_DAYS} days before each meeting.`}>
+      <Field label="Default recipient group" hint={`Invitations reach members ${leadDays} days before each meeting.`}>
         {(id) => (
           <Select id={id} value={group} onChange={(e) => setGroup(e.target.value as CadenceRecipientGroup)}>
             {CADENCE_RECIPIENT_GROUPS.map((g) => (
@@ -182,13 +184,14 @@ function CadenceForm({
 // ---- the drip-release canvas -----------------------------------------------------
 
 function DripCanvas({ config, year, meetings, today }: { config: CouncilCadenceConfig; year: string; meetings: Meeting[]; today: string }) {
+  const leadDays = platformSettings(usePlatformSettings()).cadence_invitation_horizon_days;
   const times = cadenceMeetingTimes(config.DefaultStartTime);
   const byDate = new Map(meetings.filter((m) => m.MeetingTypeID === config.MeetingTypeID).map((m) => [m.Date.slice(0, 10), m]));
   return (
     <ol className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4" aria-label={`Drip-release canvas for ${year}`}>
       {cadenceDatesForYear(config.CadencePattern, year).map((date) => {
         const meeting = byDate.get(date);
-        const release = meeting?.InviteReleaseDate ?? cadenceInviteReleaseDate(date);
+        const release = meeting?.InviteReleaseDate ?? cadenceInviteReleaseDate(date, leadDays);
         const past = date < today;
         const released = meeting ? isInvitationReleased(meeting, today) : release <= today;
         return (
@@ -217,6 +220,7 @@ function DripCanvas({ config, year, meetings, today }: { config: CouncilCadenceC
 // ---- the page ----------------------------------------------------------------------
 
 function CadenceEngine() {
+  const leadDays = platformSettings(usePlatformSettings()).cadence_invitation_horizon_days;
   const user = useUser();
   const scope = useCouncilScope();
   const councilId = scope.councilId;
@@ -259,7 +263,7 @@ function CadenceEngine() {
       const skipped = result.skippedDates.length;
       return `Laid down ${result.created.length} ${typeName.get(config.MeetingTypeID) ?? ''} meeting${result.created.length === 1 ? '' : 's'} for ${year}${
         skipped > 0 ? `; ${skipped} date${skipped === 1 ? ' was' : 's were'} already on the calendar` : ''
-      }. Invitations go out ${CADENCE_INVITE_LEAD_DAYS} days before each meeting.`;
+      }. Invitations go out ${leadDays} days before each meeting.`;
     });
 
   const remove = (config: CouncilCadenceConfig) =>

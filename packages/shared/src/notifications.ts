@@ -11,7 +11,7 @@
 // =========================================================================
 import type { DataService, ShiftAwaitingHours } from './contract';
 import { awaitingHoursStatus } from './reports';
-import { MIN_PASSWORD_LENGTH, toIsoDate } from './rules';
+import { DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS, MIN_PASSWORD_LENGTH, toIsoDate } from './rules';
 import type { Meeting, Member, Shift, Event as CouncilEvent } from './types';
 
 /** How far ahead of the start a reminder goes out. */
@@ -353,35 +353,63 @@ export function startNotificationScheduler(
 // ---- unlogged-hours reminders (Sprint 5L) ------------------------------------
 // A gentle text-message nudge for volunteers who worked a shift but never logged their hours: the first one
 // exactly HOURS_REMINDER_FIRST_DAY days after the ShiftDate, then at most one every HOURS_REMINDER_REPEAT_DAYS
-// days while the hours stay unlogged, and none once the shift is past the 3-month logging wall
+// days while the hours stay unlogged, and none once the shift is past the council's logging window
 // (ShiftAwaitingHours.closed), since eventTime.logHours would refuse the hours by then. No SMS gateway exists
 // yet, so the sweep prints each message with console.log.
+//
+// Sprint 7E: both numbers, and the logging window, are now each council's own settings (Council.reminder_delay_days,
+// reminder_cadence_days and volunteer_logging_window_days; council-settings.ts). The constants are the defaults.
 
-/** Days after the ShiftDate that the first reminder goes out. */
+/** Days after the ShiftDate that the first reminder goes out, by default (Council.reminder_delay_days). */
 export const HOURS_REMINDER_FIRST_DAY = 5;
-/** Days between follow-up reminders. */
+/** Days between follow-up reminders, by default (Council.reminder_cadence_days). */
 export const HOURS_REMINDER_REPEAT_DAYS = 7;
+
+/** When a council's hours reminders go out: the first after `delayDays`, then one every `cadenceDays`. */
+export interface HoursReminderCadence {
+  delayDays: number;
+  cadenceDays: number;
+}
+
+export const DEFAULT_HOURS_REMINDER_CADENCE: HoursReminderCadence = { delayDays: HOURS_REMINDER_FIRST_DAY, cadenceDays: HOURS_REMINDER_REPEAT_DAYS };
+
+const positiveWhole = (v: unknown, fallback: number): number => (typeof v === 'number' && Number.isInteger(v) && v > 0 ? v : fallback);
+
+/** A council's reminder cadence from its stored columns, with the defaults for missing values. */
+export const hoursReminderCadence = (
+  council: { reminder_delay_days?: number | null; reminder_cadence_days?: number | null } | null | undefined,
+): HoursReminderCadence => ({
+  delayDays: positiveWhole(council?.reminder_delay_days, HOURS_REMINDER_FIRST_DAY),
+  cadenceDays: positiveWhole(council?.reminder_cadence_days, HOURS_REMINDER_REPEAT_DAYS),
+});
+
 /** How often startHoursReminderScheduler sweeps: once a day, matching the day-based cadence. */
 export const HOURS_REMINDER_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Which reminder is due today for a shift `daysSinceShift` days ago: 0 for the first (day 5), 1, 2, ... for the
- * weekly follow-ups (days 12, 19, ...), or null when none is due today or the row is closed. Due on exact days,
+ * Which reminder is due today for a shift `daysSinceShift` days ago under the council's `cadence`: 0 for the first
+ * (by default day 5), 1, 2, ... for the follow-ups (by default weekly: days 12, 19, ...), or null when none is due today or the row is closed. Due on exact days,
  * so a once-a-day sweep sends each reminder once even without remembering what it sent.
  */
-export function hoursReminderStage(status: Pick<ShiftAwaitingHours, 'daysSinceShift' | 'closed'>): number | null {
-  if (status.closed || status.daysSinceShift < HOURS_REMINDER_FIRST_DAY) return null;
-  const since = status.daysSinceShift - HOURS_REMINDER_FIRST_DAY;
-  return since % HOURS_REMINDER_REPEAT_DAYS === 0 ? since / HOURS_REMINDER_REPEAT_DAYS : null;
+export function hoursReminderStage(
+  status: Pick<ShiftAwaitingHours, 'daysSinceShift' | 'closed'>,
+  cadence: HoursReminderCadence = DEFAULT_HOURS_REMINDER_CADENCE,
+): number | null {
+  if (status.closed || status.daysSinceShift < cadence.delayDays) return null;
+  const since = status.daysSinceShift - cadence.delayDays;
+  return since % cadence.cadenceDays === 0 ? since / cadence.cadenceDays : null;
 }
 
 /**
  * How many reminders the cadence (day 5, then weekly) has called for by `daysSinceShift`, for the dashboard's
  * awaiting-hours panel: 0 before day 5. Closed rows get no more reminders, so the panel shows them as closed instead.
  */
-export function hoursRemindersDue(status: Pick<ShiftAwaitingHours, 'daysSinceShift'>): number {
-  if (status.daysSinceShift < HOURS_REMINDER_FIRST_DAY) return 0;
-  return 1 + Math.floor((status.daysSinceShift - HOURS_REMINDER_FIRST_DAY) / HOURS_REMINDER_REPEAT_DAYS);
+export function hoursRemindersDue(
+  status: Pick<ShiftAwaitingHours, 'daysSinceShift'>,
+  cadence: HoursReminderCadence = DEFAULT_HOURS_REMINDER_CADENCE,
+): number {
+  if (status.daysSinceShift < cadence.delayDays) return 0;
+  return 1 + Math.floor((status.daysSinceShift - cadence.delayDays) / cadence.cadenceDays);
 }
 
 export interface TextMessagePayload {
@@ -439,9 +467,12 @@ export async function runHoursReminderSweep(db: DataService, options: HoursRemin
   const sent = options.sent ?? new Set<string>();
   const packets: HoursReminderPacket[] = [];
   for (const council of await db.councils.list()) {
+    // Sprint 7E: each council's own reminder cadence and logging window.
+    const cadence = hoursReminderCadence(council);
+    const windowDays = positiveWhole(council.volunteer_logging_window_days, DEFAULT_VOLUNTEER_LOGGING_WINDOW_DAYS);
     for (const row of await db.reports.listShiftsAwaitingHours(council.id)) {
-      const entry = { ...row, ...awaitingHoursStatus(row.shift.ShiftDate, now) };
-      const stage = hoursReminderStage(entry);
+      const entry = { ...row, ...awaitingHoursStatus(row.shift.ShiftDate, now, windowDays) };
+      const stage = hoursReminderStage(entry, cadence);
       if (stage === null || !entry.phone.trim()) continue;
       const packet = buildHoursReminder(entry, stage);
       if (sent.has(packet.key)) continue;

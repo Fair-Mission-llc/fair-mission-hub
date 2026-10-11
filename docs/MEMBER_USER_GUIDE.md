@@ -481,10 +481,12 @@ The phone never asks for a passcode instead of a scan.
 
 | You log | Window |
 | --- | --- |
-| A council activity on the web | Dates up to 6 months before today |
+| A council activity on the web | Dates up to 90 days before today |
 | A council activity on the phone | Today only |
-| A shift on the web | Shifts up to 3 months before today |
-| A shift on the phone | From the event start to 30 days after the event ends, inside the 3-month window |
+| A shift on the web | Shifts up to 90 days before today |
+| A shift on the phone | From the event start to 30 days after the event ends, inside the 90-day window |
+
+The numbers in the table are the defaults. Your council can change the 90 days and the 30 days. The **Navigation Guide** shows your council's numbers under **Your time limits**.
 
 After a window closes, the platform locks the entry. The lock protects the council's records.
 
@@ -494,7 +496,9 @@ You get a text reminder when you signed up for a shift and logged no hours.
 
 - The first reminder goes out 5 days after the shift.
 - A new reminder goes out every 7 days.
-- Reminders stop when the shift is more than 3 months old.
+- Reminders stop when the shift is more than 90 days old.
+
+The numbers are the defaults. Your council can change them. The **Navigation Guide** shows your council's numbers.
 
 ### 4.1 Log activity time with the biometric gate
 
@@ -615,9 +619,9 @@ Time that you saved earlier today stays saved.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The button shows **🔒 Reporting locked**. | The event has not started, or the event ended more than 30 days ago. | Use the web **Hour ledger** within 3 months of the shift. |
+| The button shows **🔒 Reporting locked**. | The event has not started, or the event ended more than 30 days ago. | Use the web **Hour ledger** within 90 days of the shift. |
 | The **A shift I worked** sub-tab is missing. | Your council switched off the **Event shifts** module. | Log activity time only. |
-| *"You have no shifts in the last 3 months to report time for."* | You have no shift in the window. | Log activity time instead. |
+| *"You have no shifts in the last 90 days to report time for."* | You have no shift in the window. | Log activity time instead. |
 
 ### 4.5 Log hours in the web portal
 
@@ -640,8 +644,8 @@ Time that you saved earlier today stays saved.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The shift is not in **Shift I worked**. | The shift is more than 3 months old. | Ask your council Admin to check the record. |
-| The date is refused. | The date is more than 6 months ago. | The window is closed. Ask your council Admin. |
+| The shift is not in **Shift I worked**. | The shift is older than the logging window (90 days by default). | Ask your council Admin to check the record. |
+| The date is refused. | The date is older than the logging window (90 days by default). | The window is closed. Ask your council Admin. |
 
 ### 4.6 Review your hour history
 
@@ -666,7 +670,7 @@ Time that you saved earlier today stays saved.
 | **Logged** | The hours are saved. |
 | **Hours needed** | You worked the shift. You did not log hours yet. |
 | **No-show** | An Admin marked you absent. |
-| **Closed** | The 3-month window has passed. |
+| **Closed** | The logging window (90 days by default) has passed. |
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -684,7 +688,7 @@ Time that you saved earlier today stays saved.
 
 ### Concept: invitations
 
-Officers schedule council meetings and invite members. Some invitations are released 5 days before the meeting.
+Officers schedule council meetings and invite members. Some invitations are released 5 days before the meeting. The number of days can change.
 An invitation does not show in your list before the release day.
 
 ### Concept: the full-text agenda
@@ -833,10 +837,10 @@ Two officers sign the report. Then the council pays you by check.
 
 The platform sends no email or text about expense reports. Check the status tag.
 
-### Concept: the 30-day submission window
+### Concept: the submission window
 
 A report for an event or a meeting has a submission window. The window opens on the first day of the event or meeting.
-The window closes 30 days after the last day. You may save a draft at any time.
+The window closes 30 days after the last day, by default. Your council can change the 30 days. You may save a draft at any time.
 A **General** report has no window.
 
 ### 6.1 File an expense report on the phone
@@ -864,7 +868,7 @@ A **General** report has no window.
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"Locked. Submission opens …"* | The event or meeting has not started. | Save a draft. Submit on or after the first day. |
-| *"Locked. Submission closed …"* | More than 30 days have passed since the end. | Contact the Financial Secretary. |
+| *"Locked. Submission closed …"* | More than 30 days (or your council's number) have passed since the end. | Contact the Financial Secretary. |
 | The event is not in the list. | The window is closed or not open yet. | Use **General** only if the cost has no event or meeting. |
 
 ### 6.2 File an expense report in the web portal
@@ -1281,9 +1285,9 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | *"Not logged: Face ID or fingerprint was not confirmed."* | The scan failed or was cancelled. | Tap the activity tile again (4.1). |
 | Taps say **QUEUED** | The phone uses the slide gate. | Drag **Slide to Log Hours** to the right end (4.2). |
 | The slide circle springs back | You let go too early. | Drag the circle all the way to the right end. |
-| **🔒 Reporting locked** on a shift | The 30-day phone window is closed. | Use the web **Hour ledger** within 3 months. |
+| **🔒 Reporting locked** on a shift | The 30-day phone window is closed. | Use the web **Hour ledger** within 90 days. |
 | Hours refused as an invalid step | The value is not a 15-minute step. | Use :00, :15, :30 or :45. |
-| Activity date refused | The date is more than 6 months ago. | The window is closed. Ask your council Admin. |
+| Activity date refused | The date is older than the logging window (90 days by default). | The window is closed. Ask your council Admin. |
 | The gold agenda highlight does not move | The phone lost its connection. | Check your data or Wi-Fi connection. |
 | *"Locked. Submission closed …"* on an expense | The 30-day expense window is closed. | Contact the Financial Secretary. |
 | QR code missing | The council has no image for the method. | Take cash or card. Tell your council Admin. |
@@ -1320,7 +1324,7 @@ The platform sends no message about expense reports. Read the status tag (sectio
 | 24 hours before your shift | A reminder email with a calendar file | **Home** → **My shifts** |
 | 24 hours before your meeting | A reminder email with a calendar file and the agenda | **Mtgs** → **My Invites** |
 | 5 days after a shift with no hours | A text reminder | **Report** tab, or the web **Hour ledger** |
-| Every 7 days after that | A follow-up text, until the shift is 3 months old | Same as above |
+| Every 7 days after that | A follow-up text, until the shift is older than the logging window (90 days by default) | Same as above |
 | An officer sends an urgent alert | A phone push alert and a bell entry | The bell in the web portal keeps 6 months of alerts |
 | An Admin adds you to the roster | A welcome email with the app steps and a setup code | Ask your council Admin if the email is missing |
 | You request a password reset | An email with a 6-digit code that expires in 15 minutes | The reset screen (2.6) |

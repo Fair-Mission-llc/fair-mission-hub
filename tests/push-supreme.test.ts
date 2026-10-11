@@ -314,6 +314,8 @@ describe.each(drivers)('$name driver: Supreme Council Alchemer sync', (d) => {
     const log = vi.fn();
     const db = await makeWith(d, { log });
     const [activity] = await db.activities.listByCouncil(OWN);
+    // Sprint 7E: April is past the 90-day default logging window, so the council widens its window first.
+    await db.councils.setCouncilWideSettings(MEMBER.superAdmin, OWN, { volunteer_logging_window_days: 365 });
     await db.activityTime.logHours(MEMBER.member, activity.id, 2.5, '2026-04-10');
     await db.activityTime.logHours(MEMBER.admin, activity.id, 1.25, '2026-06-30');
     await db.activityTime.logHours(MEMBER.admin, activity.id, 4, '2026-07-01'); // after the period
@@ -466,6 +468,8 @@ describe.each(drivers)('$name driver: Supreme preview, period choice and history
   it('previews exactly what a sync files, for a chosen period, without writing anything', async () => {
     const db = await makeWith(d, { log: vi.fn() });
     const [activity] = await db.activities.listByCouncil(OWN);
+    // Sprint 7E: April is past the 90-day default logging window, so the council widens its window first.
+    await db.councils.setCouncilWideSettings(MEMBER.superAdmin, OWN, { volunteer_logging_window_days: 365 });
     await db.activityTime.logHours(MEMBER.member, activity.id, 1.5, '2026-04-10');
     const preview = await db.supreme.previewReport(MEMBER.admin, OWN, 'CouncilAudit', { year: 2026, half: 1 });
     expect(preview.volunteerHours.total).toBe(1.5);

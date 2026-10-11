@@ -4,10 +4,12 @@
 //     15 minutes more; a toast flashes the new total. Taps queue, so rapid taps never race each other's transaction.
 //     Sprint 6A patch: bigger tiles, and a pocket gate (lib/pocket-gate.ts) - a tap logs only after Face ID or a
 //     fingerprint passes; on a phone without biometrics, taps wait until the member drags Slide to Log Hours.
-//   - A shift I worked (only while the council keeps flag_complex_shifts on): pick a shift (up to 3 months back), then
+//   - A shift I worked (only while the council keeps flag_complex_shifts on): pick a shift (back to the council's logging
+//     window, Council.volunteer_logging_window_days since Sprint 7E), then
 //     step the time in 15-minute steps and save. A shift with no hours logged yet starts at its own length
 //     (shifts.getShiftDefaultLength, Sprint 5Y-6).
-// Sprint 5Z-6: a shift whose event has not started, or ended more than 30 days ago (expenseWindowState), is padlocked
+// Sprint 5Z-6: a shift whose event has not started, or ended more than the council's
+// er_submission_window_days ago (expenseWindowState; 30 by default), is padlocked
 // and grayed, and Save stays disabled while it is chosen.
 // Sprint 6C: in the large text layout (useTheme) the tiles fill the width one per row and stand at least 140 points
 // tall, black with a thick gold edge and large white type; the slide bar's thumb and every button grow to match.
@@ -21,9 +23,9 @@ import {
   HOURS_STEP,
   isQuarantinedHours,
   quarantinedHoursMessage,
+  councilWideSettings,
+  loggingWindowStart,
   MAX_HOURS_PER_ENTRY,
-  SHIFT_HISTORY_MONTHS,
-  subtractMonths,
   toIsoDate,
   type Activities,
 } from '@kofc/shared';
@@ -440,9 +442,14 @@ function ShiftReport({ onToast }: { onToast: (toast: Toast) => void }) {
 
   const state = useLoad(async () => {
     const today = new Date();
-    const shifts = await db.events.listMemberShifts(user.memberId, { fromDate: subtractMonths(today, SHIFT_HISTORY_MONTHS), toDate: toIsoDate(today) });
-    return { today: toIsoDate(today), shifts: shifts.reverse() };
-  }, [user.memberId]);
+    // Sprint 7E: the council's own logging window and expense window.
+    const settings = councilWideSettings(await db.councils.get(user.councilId));
+    const shifts = await db.events.listMemberShifts(user.memberId, {
+      fromDate: loggingWindowStart(today, settings.volunteer_logging_window_days),
+      toDate: toIsoDate(today),
+    });
+    return { today: toIsoDate(today), shifts: shifts.reverse(), settings };
+  }, [user.memberId, user.councilId]);
   const { data } = state;
 
   // The shift the time is being filled for, so a slow default for a shift no longer chosen is dropped.
@@ -472,7 +479,7 @@ function ShiftReport({ onToast }: { onToast: (toast: Toast) => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, shiftId]);
 
-  const lockOf = (event: Parameters<typeof eventExpenseSpan>[0]) => (data ? expenseWindowLockMessage(eventExpenseSpan(event), data.today) : null);
+  const lockOf = (event: Parameters<typeof eventExpenseSpan>[0]) => (data ? expenseWindowLockMessage(eventExpenseSpan(event), data.today, data.settings.er_submission_window_days) : null);
   const chosen = data?.shifts.find((s) => s.shift.id === shiftId);
   const locked = chosen ? lockOf(chosen.event) : null;
   const canSave = shiftId !== null && hours > 0 && !busy && locked === null;
@@ -500,7 +507,7 @@ function ShiftReport({ onToast }: { onToast: (toast: Toast) => void }) {
       {data ? (
         <Section title="Which shift?">
           {data.shifts.length === 0 ? (
-            <EmptyState message={`You have no shifts in the last ${SHIFT_HISTORY_MONTHS} months to report time for.`} />
+            <EmptyState message={`You have no shifts in the last ${data.settings.volunteer_logging_window_days} days to report time for.`} />
           ) : (
             data.shifts.map(({ shift, event, hoursLogged }) => {
               const selected = shift.id === shiftId;

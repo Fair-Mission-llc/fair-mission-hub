@@ -588,7 +588,8 @@ export interface ShiftAwaitingHours {
   /** Whole calendar days from ShiftDate to today. */
   daysSinceShift: number;
   /**
-   * True once the shift is past the SHIFT_HISTORY_MONTHS wall: eventTime.logHours refuses it
+   * True once the shift is past the council's logging window (Council.volunteer_logging_window_days, Sprint 7E):
+   * eventTime.logHours refuses it
    * (SHIFT_REPORT_TOO_OLD), so the row is kept for the record but no reminder goes out.
    */
   closed: boolean;

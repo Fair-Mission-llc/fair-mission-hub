@@ -3035,3 +3035,51 @@ GO
 -- (councils.setGlobalParameters) and the PlatformSettings row (councils.setPlatformSettings), which used to sit on
 -- /lookups. The phone database version moves to 63 to mark the release.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 7E: TIMING SETTINGS (schema version 64)
+--
+-- Day and hour numbers that were fixed in code, or that the council asked to plan for, become settings
+-- (council-settings.ts). Ten Council columns, edited by the council's Admins and officers on /setup/council-settings
+-- (councils.setCouncilWideSettings):
+--   - er_submission_window_days: an expense report linked to an event or meeting can be submitted through this many
+--     days after it ends (was EXPENSE_SUBMISSION_GRACE_DAYS = 30);
+--   - volunteer_logging_window_days: shift and activity time may be logged this many days back. It replaces the
+--     3-month shift wall and the 6-month activity wall with one window, DEFAULT 90;
+--   - reminder_delay_days, reminder_cadence_days: the unlogged-hours text reminder goes out this many days after the
+--     shift, then every this many days (were HOURS_REMINDER_FIRST_DAY = 5 and HOURS_REMINDER_REPEAT_DAYS = 7);
+--   - expense_draft_expiry_days, charity_proposal_voting_days, shift_signup_lock_hours, officer_signature_reminder_days,
+--     meeting_minutes_due_days, special_election_notice_days: saved for features that do not exist yet. Nothing reads
+--     them, and the settings page says so.
+-- Three PlatformSettings columns, edited by Super Admins on /system-settings/global-settings:
+--   - cadence_invitation_horizon_days: a cadence meeting's invitations reach members' feeds this many days before the
+--     meeting (was CADENCE_INVITE_LEAD_DAYS = 5);
+--   - user_session_expiry_hours: the portal's server session lasts this many hours (was 8 hours in session-token.ts);
+--   - audit_log_retention_days: saved for a future purge job; nothing reads it yet.
+-- =========================================================================
+ALTER TABLE [Council] ADD [er_submission_window_days] INT NOT NULL DEFAULT 30;
+GO
+ALTER TABLE [Council] ADD [volunteer_logging_window_days] INT NOT NULL DEFAULT 90;
+GO
+ALTER TABLE [Council] ADD [reminder_delay_days] INT NOT NULL DEFAULT 5;
+GO
+ALTER TABLE [Council] ADD [reminder_cadence_days] INT NOT NULL DEFAULT 7;
+GO
+ALTER TABLE [Council] ADD [expense_draft_expiry_days] INT NOT NULL DEFAULT 90;
+GO
+ALTER TABLE [Council] ADD [charity_proposal_voting_days] INT NOT NULL DEFAULT 14;
+GO
+ALTER TABLE [Council] ADD [shift_signup_lock_hours] DECIMAL(5,2) NOT NULL DEFAULT 2.0;
+GO
+ALTER TABLE [Council] ADD [officer_signature_reminder_days] INT NOT NULL DEFAULT 3;
+GO
+ALTER TABLE [Council] ADD [meeting_minutes_due_days] INT NOT NULL DEFAULT 7;
+GO
+ALTER TABLE [Council] ADD [special_election_notice_days] INT NOT NULL DEFAULT 60;
+GO
+ALTER TABLE [PlatformSettings] ADD [cadence_invitation_horizon_days] INT NOT NULL DEFAULT 5;
+GO
+ALTER TABLE [PlatformSettings] ADD [user_session_expiry_hours] INT NOT NULL DEFAULT 8;
+GO
+ALTER TABLE [PlatformSettings] ADD [audit_log_retention_days] INT NOT NULL DEFAULT 180;
+GO

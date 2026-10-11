@@ -93,7 +93,7 @@ Known limit: the server's member copy is seeded separately from the browser's in
 
 ---
 
-## 3. Schema version history (1 to 63)
+## 3. Schema version history (1 to 64)
 
 Taken from the changelog comment above `SCHEMA_VERSION` in `apps/mobile/services/drivers/sqlite.ts`. Version 1 is the original schema from `Specifications.txt` (councils, parishes, pastors, members, events, shifts, meetings, activities, time logs, messages, distribution lists, lessons learned and the lookup tables). **Version 20 was skipped**; the numbering goes from 19 to 21.
 
@@ -162,6 +162,7 @@ Taken from the changelog comment above `SCHEMA_VERSION` in `apps/mobile/services
 | 61 | 7B | `VolunteerQuarantine`, `Council.feature_volunteer_quarantine` |
 | 62 | 7C | Council-wide settings columns, `PlatformSettings` |
 | 63 | 7C Ext | No table change; marks the System Settings and Global System Parameters release |
+| 64 | 7E | Timing settings: ten `Council` columns (expense window, logging window, reminder delay and cadence, six saved for future features) and three `PlatformSettings` columns (invitation horizon, session hours, audit retention) |
 
 ---
 
