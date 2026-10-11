@@ -165,6 +165,7 @@ Taken from the changelog comment above `SCHEMA_VERSION` in `apps/mobile/services
 | 64 | 7E | Timing settings: ten `Council` columns (expense window, logging window, reminder delay and cadence, six saved for future features) and three `PlatformSettings` columns (invitation horizon, session hours, audit retention) |
 | 65 | 7F | `CouncilAccessRequests` table, `JournalEntry.payment_method` (CASH/CARD/CHECK, the first CHECK constraint), `CouncilAssetsInventory.photo_url`, a 'Check' donation method; Super Admin read-only impersonation and the Co-Watching Remote Assistance desk (no tables) |
 | 66 | 7F Ext | `JournalEntry.payment_method` and its CHECK dropped for `payment_method_id` (FK `DonationMethod`: Cash, Credit Card, Venmo, Zelle, Zeffy, Parishsoft, Check); asset photos saved on the portal server's disk, uploadable by the Deputy Grand Knight and Trustees |
+| 67 | 7F Ext 2 | `Donation.CheckNumber` (required for Check donations, phone and web); asset photos back in Google Drive under Assets / <asset name> (disk folder removed); Deputy Grand Knight made a full asset manager; phone Council Assets screen |
 
 ---
 

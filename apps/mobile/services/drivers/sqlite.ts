@@ -770,7 +770,7 @@ const DB_NAME = 'kofc.db';
  *     reminder_delay_days, reminder_cadence_days and six saved for future features) and three PlatformSettings columns
  *     (cadence_invitation_horizon_days, user_session_expiry_hours, audit_log_retention_days) (Sprint 7E).
  */
-const SCHEMA_VERSION = 66;
+const SCHEMA_VERSION = 67;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -2595,8 +2595,8 @@ export class SqliteDataService implements DataService {
         await this.withFundsSync(db, [clean.EventID], async () => {
           const res = await db.runAsync(
             `INSERT INTO [Donation] ([CouncilID], [DonationDate], [DonationMethodID], [DonationTypeID], [Donor],
-                                     [DonationDesciption], [EventID], [DonationAmount], [DonationPhotoURL], [RecordedBy])
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                     [DonationDesciption], [EventID], [DonationAmount], [DonationPhotoURL], [RecordedBy], [CheckNumber])
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               clean.CouncilID,
               clean.DonationDate,
@@ -2608,6 +2608,7 @@ export class SqliteDataService implements DataService {
               clean.DonationAmount,
               clean.DonationPhotoURL ?? null,
               actorId,
+              clean.CheckNumber ?? null,
             ],
           );
           id = res.lastInsertRowId;

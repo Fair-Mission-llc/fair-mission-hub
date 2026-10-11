@@ -1,4 +1,4 @@
-import { isDriveFileId } from '@kofc/shared';
+import { driveThumbnailUrl, isDriveFileId } from '@kofc/shared';
 
 /**
  * The image source for a stored photo reference. Links (blob:, http(s):, data:) are used as they are; a plain
@@ -7,10 +7,8 @@ import { isDriveFileId } from '@kofc/shared';
  */
 export function photoSrc(path: string): string | null {
   // Sprint 6D: a bare Google Drive file id from the archival vault is shown through Drive's thumbnail service.
-  if (isDriveFileId(path)) return `https://drive.google.com/thumbnail?id=${encodeURIComponent(path)}&sz=w1600`;
+  if (isDriveFileId(path)) return driveThumbnailUrl(path);
   if (/^(blob:|https?:|data:)/i.test(path)) return path;
-  // Sprint 7F Extension: a file the portal server keeps (asset photos, /api/media/assets/...) is served from its own route.
-  if (path.startsWith('/api/media/')) return path;
   if (/^(file|content|ph|assets-library):/i.test(path)) return null;
   return `/media/${path.replace(/^\/+/, '').split('/').map(encodeURIComponent).join('/')}`;
 }

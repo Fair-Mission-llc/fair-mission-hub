@@ -1007,3 +1007,11 @@ Schema version 66.
 [CouncilAssetsInventory] (no column change)
 •	photo_url — Now a portal path /api/media/assets/<council>/<file>: POST /api/assets/photo saves the image on the server's disk (ASSET_MEDIA_DIR, default .media/assets, git-ignored) after checking its bytes (JPEG, PNG, GIF, WebP, HEIC; 10 MB). Written by expenses.setAssetPhoto (cleanAssetPhotoUrl refuses script, data and blob: links); no longer part of updateAssetRecord. Readers and photo writers: the asset managers plus the council's Deputy Grand Knight and Trustees (mayAttachAssetPhoto).
 ________________________________________
+# 35. Check donations and Drive asset folders (Sprint 7F Extension 2)
+Schema version 67.
+[Donation] (new column)
+•	CheckNumber (VARCHAR(50), NULL) — The number printed on a donation check. Required when the method's kind is 'check', refused for any other method (assertDonationFitsMethod); editable through donations.update (DONATION_EDITABLE_COLUMNS). Captured by the phone Donate form (CHECK NUMBER (REQUIRED)) and the web Donations History form.
+[CouncilAssetsInventory] (no column change)
+•	photo_url — A Google Drive file id again (cleanAssetPhotoUrl accepts nothing else). /api/assets/photo files the image under Fraternal Enterprise Suite / Assets / <asset name> (DriveVaultKind 'asset', assetDriveFolderName) and answers 503 when the council's Drive is off; the schema 66 .media/assets disk folder and /api/media route are removed. Shown on the web through photoSrc and on the phone's read-only Council Assets screen through driveThumbnailUrl.
+•	Access — The council's Deputy Grand Knight is now a full asset manager (assertMayManageCouncilAssets, canManageCouncilAssets) beside the Grand Knight and the expense leadership; Trustees keep inventory reading and photos only (mayAttachAssetPhoto). No create or delete method exists for asset rows: they come from approved long-term-asset expense sheets.
+________________________________________

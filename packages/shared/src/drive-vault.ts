@@ -11,7 +11,7 @@
 // =========================================================================
 import { BusinessRuleError } from './rules';
 
-export type DriveVaultKind = 'minutes' | 'voucher' | 'media' | 'flyer' | 'oral_history';
+export type DriveVaultKind = 'minutes' | 'voucher' | 'media' | 'flyer' | 'oral_history' | 'asset';
 
 export const DRIVE_VAULT_ROOT = 'Fraternal Enterprise Suite';
 export const DRIVE_VAULT_FOLDERS: Readonly<Record<DriveVaultKind, string>> = {
@@ -21,6 +21,8 @@ export const DRIVE_VAULT_FOLDERS: Readonly<Record<DriveVaultKind, string>> = {
   flyer: 'Flyers',
   // Sprint 6K: the Oral History Testimonials recorded on the Team Legacy dashboard (/history).
   oral_history: 'Oral Histories',
+  // Sprint 7F Extension 2: council asset photos, one folder per asset (Assets / <asset name>).
+  asset: 'Assets',
 };
 /** Largest file the vault accepts (25 MB). */
 export const DRIVE_VAULT_MAX_BYTES = 25 * 1024 * 1024;
@@ -33,6 +35,7 @@ const ACCEPTED: Readonly<Record<DriveVaultKind, (mime: string) => boolean>> = {
   media: (m) => m.startsWith('image/') || m.startsWith('video/') || m === PDF,
   flyer: (m) => m === 'text/html' || m === PDF,
   oral_history: (m) => m.startsWith('audio/'),
+  asset: (m) => m.startsWith('image/'),
 };
 
 /** Longest event folder name under Media (Event.EventName is VARCHAR(100)). */
@@ -59,7 +62,22 @@ export function cleanDriveVaultSubfolder(value: unknown): string | null {
  * already cleaned by cleanDriveVaultSubfolder); the other kinds ignore it.
  */
 export const driveVaultFolderPath = (kind: DriveVaultKind, subfolder?: string | null): string[] =>
-  kind === 'media' && subfolder ? [DRIVE_VAULT_ROOT, DRIVE_VAULT_FOLDERS.media, subfolder] : [DRIVE_VAULT_ROOT, DRIVE_VAULT_FOLDERS[kind]];
+  (kind === 'media' || kind === 'asset') && subfolder ? [DRIVE_VAULT_ROOT, DRIVE_VAULT_FOLDERS[kind], subfolder] : [DRIVE_VAULT_ROOT, DRIVE_VAULT_FOLDERS[kind]];
+
+/**
+ * Sprint 7F Extension 2: an asset's own folder under Assets - its name, trimmed, with white space collapsed and any
+ * slash, backslash or control character turned into "-", so a name like "Grill / smoker" stays one folder. At most
+ * DRIVE_VAULT_SUBFOLDER_MAX_LENGTH characters; "Unnamed asset" for a blank name.
+ */
+export function assetDriveFolderName(assetName: unknown): string {
+  const name = (typeof assetName === 'string' ? assetName : '')
+    .replace(/[\\/\u0000-\u001f\u007f]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, DRIVE_VAULT_SUBFOLDER_MAX_LENGTH)
+    .trim();
+  return name === '' ? 'Unnamed asset' : name;
+}
 
 export function isDriveVaultKind(value: unknown): value is DriveVaultKind {
   return typeof value === 'string' && Object.prototype.hasOwnProperty.call(DRIVE_VAULT_FOLDERS, value);
@@ -91,3 +109,6 @@ export function cleanFlyerFileId(value: unknown): string | null {
 
 /** The Drive viewer page for a stored file id. */
 export const driveFileViewUrl = (fileId: string): string => `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/view`;
+
+/** Sprint 7F Extension 2: the image of a stored file id from Drive's thumbnail service, `width` pixels wide (web and phone). */
+export const driveThumbnailUrl = (fileId: string, width = 1600): string => `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w${width}`;

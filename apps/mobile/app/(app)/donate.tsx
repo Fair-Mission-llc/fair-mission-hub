@@ -6,7 +6,7 @@
 //  2. The method is one tap on a large tile. Venmo/Zelle/Zeffy/Parishsoft show the council's QR code for
 //     the donor to scan; physical items ask for a description and estimated value, and may carry a
 //     verification photo taken with the phone camera from the "Take Verification Photo" tile (stored in
-//     DonationPhotoURL).
+//     DonationPhotoURL). Sprint 7F Extension 2: a Check tile asks for the check number (required, Donation.CheckNumber).
 //  3. The form is pre-filled from the session defaults; the member corrects the amount if the donor gave
 //     something different, then records it or cancels.
 // While a session is running, the event's donations from every phone are listed, newest first.
@@ -55,6 +55,8 @@ interface DonationValues {
   donor: string;
   description: string;
   photoPath: string | null;
+  /** Sprint 7F Extension 2: required for a Check donation, null otherwise. */
+  checkNumber: string | null;
 }
 
 /** Amount text to dollars; blank is null. Anything else non-numeric is an error naming the field. */
@@ -164,6 +166,9 @@ function DonationForm({
 }) {
   const { color, space } = useTheme();
   const isItem = option.kind === 'item';
+  // Sprint 7F Extension 2: a Check donation must carry the number printed on the check.
+  const isCheck = option.kind === 'check';
+  const [checkNumber, setCheckNumber] = useState('');
   const [amount, setAmount] = useState(defaults.amount != null ? String(defaults.amount) : '');
   const [typeId, setTypeId] = useState<number | null>(defaults.donationTypeId ?? types[0]?.id ?? null);
   const [donor, setDonor] = useState('');
@@ -181,11 +186,19 @@ function DonationForm({
     if ('error' in parsed) return setError(parsed.error);
     if (parsed.value === null) return setError(`Enter the ${amountLabel.toLowerCase()}.`);
     if (isItem && description.trim() === '') return setError('Describe the donated items, e.g. "3 boxes of canned food".');
+    if (isCheck && checkNumber.trim() === '') return setError('Enter the check number printed on the check.');
     if (typeId === null) return setError('Choose a donation type.');
     setBusy(true);
     setError(null);
     try {
-      await onRecord({ amount: parsed.value, typeId, donor: donor.trim(), description: description.trim(), photoPath: isItem ? photoPath : null });
+      await onRecord({
+        amount: parsed.value,
+        typeId,
+        donor: donor.trim(),
+        description: description.trim(),
+        photoPath: isItem ? photoPath : null,
+        checkNumber: isCheck ? checkNumber.trim() : null,
+      });
     } catch (err) {
       setError(describeError(err));
       setBusy(false);
@@ -232,6 +245,19 @@ function DonationForm({
         <Field label={amountLabel.toUpperCase()}>
           <AppInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" style={{ fontSize: 22 }} />
         </Field>
+        {isCheck ? (
+          <Field label="CHECK NUMBER (REQUIRED)">
+            <AppInput
+              value={checkNumber}
+              onChangeText={setCheckNumber}
+              maxLength={50}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="The number printed on the check"
+              accessibilityLabel="Check number, required"
+            />
+          </Field>
+        ) : null}
         {types.length > 0 ? (
           <Field label="DONATION TYPE">
             <Dropdown title="Donation type" value={typeId} options={types.map((t) => ({ value: t.id, label: t.DonationType }))} onChange={setTypeId} />
@@ -329,6 +355,7 @@ function DonateScreenBody() {
       Donor: v.donor || null,
       DonationDesciption: v.description || null,
       DonationPhotoURL: v.photoPath,
+      CheckNumber: v.checkNumber,
     });
     const where = session.active ? ` for ${session.eventName}` : ' as a standalone donation';
     setMessage({ tone: 'info', text: `Recorded ${money(saved.DonationAmount)} by ${option.method.DonationMethod}${where}. Thank the donor!` });

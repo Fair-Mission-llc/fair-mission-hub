@@ -107,6 +107,8 @@ export default function AppLayout() {
         <Tabs.Screen name="settings" options={{ ...tab('Settings'), href: null }} />
         {/* Sprint 7A Extension: the Shared Member Center, opened from the card on Home. */}
         <Tabs.Screen name="member-center" options={{ ...tab('Member Center'), href: null }} />
+        {/* Sprint 7F Extension 2: the read-only Council Assets panel, opened from the expense card on Home. */}
+        <Tabs.Screen name="assets" options={{ ...tab('Council Assets'), href: null }} />
       </Tabs>
     </FaithCenterProvider>
   );

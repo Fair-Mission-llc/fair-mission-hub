@@ -1,27 +1,41 @@
-// POST /api/assets/photo - an asset photo upload (Sprint 7F Extension). Multipart form: `file` (one image) and
-// `councilId`. The caller's portal session must belong to someone cleared for that council's inventory
-// (mayAttachAssetPhoto: the asset managers, the Deputy Grand Knight, the Trustees). The image is checked by its bytes
-// (JPEG, PNG, GIF, WebP or HEIC, at most 10 MB), saved on the server's disk (services/server/asset-media.ts) and the
-// answer is its portal path { saved: true, path }, which the browser stores with expenses.setAssetPhoto.
+// POST /api/assets/photo - an asset photo upload (Sprint 7F Extension; Google Drive since Extension 2). Multipart form:
+// `file` (one image), `councilId` and `assetName`. The caller's portal session must belong to someone cleared for that
+// council's inventory (mayAttachAssetPhoto: the asset managers - now including the Deputy Grand Knight - and the
+// Trustees). The image goes to the council's shared drive under
+//   Fraternal Enterprise Suite / Assets / <asset name>   (assetDriveFolderName)
+// and the answer is its Drive file id { saved: true, fileId }, which the browser stores with expenses.setAssetPhoto.
+// Unlike /api/drive-vault, the uploader need not be an Admin. With the council's Drive switched off the route answers
+// 503 and saves nothing: there is no local fallback, so a stored photo is always a persistent Drive file.
 import { NextResponse } from 'next/server';
-import { mayAttachAssetPhoto } from '@kofc/shared';
-import { ASSET_PHOTO_MAX_BYTES, saveAssetPhoto, sniffAssetImage } from '@/services/server/asset-media';
+import { assertDriveVaultUpload, assetDriveFolderName, describeError, mayAttachAssetPhoto } from '@kofc/shared';
+import { councilDriveCredentials, councilDriveOffReason, driveVaultClient } from '@/services/server/credentials-vault';
 import { requirePortalSession } from '@/services/server/session';
 
 export async function POST(req: Request) {
   const form = await req.formData().catch(() => null);
   const councilId = Number(form?.get('councilId'));
   const file = form?.get('file');
-  if (!Number.isInteger(councilId) || councilId <= 0 || !(file instanceof Blob)) {
+  if (!Number.isInteger(councilId) || councilId <= 0 || !(file instanceof File)) {
     return NextResponse.json({ saved: false, message: 'Send one image file and the council id.' }, { status: 400 });
   }
   const session = await requirePortalSession(req, (actor) => mayAttachAssetPhoto(actor, councilId), { saved: false });
   if ('denied' in session) return session.denied;
-  if (file.size > ASSET_PHOTO_MAX_BYTES) return NextResponse.json({ saved: false, message: 'The photo is larger than 10 MB.' }, { status: 400 });
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const kind = sniffAssetImage(bytes);
-  if (!kind) return NextResponse.json({ saved: false, message: 'The file is not a JPEG, PNG, GIF, WebP or HEIC image.' }, { status: 400 });
-  const path = await saveAssetPhoto(councilId, bytes, kind.ext);
-  console.info(`[assets] member ${session.claims.memberId} saved an asset photo for council ${councilId}: ${path}`);
-  return NextResponse.json({ saved: true, path });
+
+  try {
+    assertDriveVaultUpload({ kind: 'asset', name: file.name, mimeType: file.type || 'application/octet-stream', size: file.size });
+  } catch (err) {
+    return NextResponse.json({ saved: false, message: describeError(err) }, { status: 400 });
+  }
+  const creds = councilDriveCredentials(councilId);
+  if (!creds) return NextResponse.json({ saved: false, message: councilDriveOffReason(councilId) }, { status: 503 });
+
+  const folder = assetDriveFolderName(form?.get('assetName'));
+  try {
+    const fileId = await driveVaultClient(creds).upload('asset', { name: file.name, mimeType: file.type, data: new Uint8Array(await file.arrayBuffer()) }, folder);
+    console.info(`[assets] member ${session.claims.memberId} filed a photo of "${folder}" for council ${councilId}: ${fileId}`);
+    return NextResponse.json({ saved: true, fileId });
+  } catch (err) {
+    console.error('[assets] Drive upload failed:', describeError(err));
+    return NextResponse.json({ saved: false, message: 'Google Drive did not accept the photo. Try again later.' }, { status: 502 });
+  }
 }

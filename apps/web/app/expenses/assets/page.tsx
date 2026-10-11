@@ -3,13 +3,13 @@
 // "This item is a long-term Council Asset" on the Authorization Desk, the workflow engine writes its CouncilAssetsInventory
 // row and the desk opens this page at ?asset=<id>. The name and cost basis come from the sheet; the approver adds the
 // serial number, where the item is kept and notes (expenses.updateAssetRecord). Without ?asset the page lists the
-// inventory. Open to the council's expense leadership and its Grand Knight (canManageCouncilAssets); the drivers check
-// assertMayManageCouncilAssets.
+// inventory. Open to the council's expense leadership, its Grand Knight and (Sprint 7F Extension 2) its Deputy Grand
+// Knight (canManageCouncilAssets); the drivers check assertMayManageCouncilAssets.
 // Sprint 7F: the Asset Photo Vault. The form takes one image per asset and saves it at once as photo_url; the inventory
-// shows each photo as a thumbnail. Sprint 7F Extension: every upload goes to the portal server's shared asset folder
-// (/api/assets/photo), whoever sends it, so the photo lasts across sessions; the Drive vault is no longer used here. The
-// council's Deputy Grand Knight and Trustees may open the inventory and add photos too (canAttachAssetPhoto); only the
-// asset managers (canManageCouncilAssets) change the other details.
+// shows each photo as a thumbnail. Sprint 7F Extension 2: every upload goes through /api/assets/photo to the council's
+// Google Drive, under Fraternal Enterprise Suite / Assets / <asset name>, whoever sends it, and photo_url keeps the Drive
+// file id, drawn through Drive's thumbnail service. The council's Trustees may open the inventory and add photos too
+// (canAttachAssetPhoto); only the asset managers change the other details.
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -35,18 +35,19 @@ import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-/** Where asset photos are uploaded (Sprint 7F Extension). */
+/** Where asset photos are uploaded (Sprint 7F Extension; Google Drive since Extension 2). */
 const ASSET_PHOTO_ROUTE = '/api/assets/photo';
 
-/** Saves the image on the portal server and answers its portal path; throws the server's reason when it refuses. */
-async function uploadAssetPhoto(councilId: number, file: File): Promise<string> {
+/** Files the image in the council's Drive under Assets / <asset name> and answers its Drive file id; throws the server's reason. */
+async function uploadAssetPhoto(asset: Pick<CouncilAssetsInventory, 'council_id' | 'asset_name'>, file: File): Promise<string> {
   const form = new FormData();
-  form.set('councilId', String(councilId));
+  form.set('councilId', String(asset.council_id));
+  form.set('assetName', asset.asset_name);
   form.set('file', file);
   const res = await fetch(ASSET_PHOTO_ROUTE, { method: 'POST', body: form }).catch(() => null);
-  const body = (await res?.json().catch(() => null)) as { saved?: boolean; path?: string; message?: string } | null;
-  if (!res?.ok || !body?.saved || !body.path) throw new Error(body?.message ?? 'The portal server did not save the photo. Try again.');
-  return body.path;
+  const body = (await res?.json().catch(() => null)) as { saved?: boolean; fileId?: string; message?: string } | null;
+  if (!res?.ok || !body?.saved || !body.fileId) throw new Error(body?.message ?? 'Google Drive did not save the photo. Try again.');
+  return body.fileId;
 }
 
 /** An asset's photo, or a dashed placeholder; `size` is the square edge in pixels. */
@@ -107,7 +108,7 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
       let link: string | null = null;
       if (file) {
         if (!file.type.startsWith('image/')) throw new Error(`${file.name} is not an image.`);
-        link = await uploadAssetPhoto(asset.council_id, file);
+        link = await uploadAssetPhoto({ council_id: asset.council_id, asset_name: name.trim() || asset.asset_name }, file);
       }
       const saved = await db.expenses.setAssetPhoto(user.memberId, asset.id, link);
       setPhoto(saved.photo_url ?? null);
@@ -151,7 +152,7 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
           <AssetPhoto asset={{ asset_name: asset.asset_name, photo_url: photo }} size={128} />
           <div className="flex flex-col gap-2">
             <p className="text-sm font-bold">Asset photo</p>
-            <p className="text-xs text-muted">One picture of the item, saved as soon as you choose it. JPEG, PNG, WebP or HEIC.</p>
+            <p className="text-xs text-muted">One picture of the item, filed in the council Google Drive under Assets / {asset.asset_name} as soon as you choose it.</p>
             <label className="inline-flex cursor-pointer items-center rounded border-2 border-navy bg-white px-3 py-1 text-sm font-bold hover:bg-gold">
               {photo ? 'Replace photo' : 'Upload photo'}
               <input

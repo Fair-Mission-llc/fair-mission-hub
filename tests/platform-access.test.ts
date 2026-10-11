@@ -1,11 +1,10 @@
 // Sprint 7F (Schema 65): council access requests from the sign-in page, CHECK payments in the ledger, asset photos,
 // the Super Admin's read-only impersonation and the Co-Watching Remote Assistance desk.
-// Sprint 7F Extension (Schema 66): payment methods bound to the DonationMethod lookup by foreign key, and asset photos
-// saved on the portal server, uploadable by the Deputy Grand Knight and Trustees too.
+// Sprint 7F Extension (Schema 66): payment methods bound to the DonationMethod lookup by foreign key.
+// Sprint 7F Extension 2 (Schema 67): asset photos filed in Google Drive under Assets / <asset name>, the Deputy Grand
+// Knight as a full asset manager, and check numbers on Check donations (Donation.CheckNumber), web and phone.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   ACCESS_REQUEST_NOTIFY_EMAIL,
@@ -15,8 +14,14 @@ import {
   BusinessRuleError,
   canOpenRemoteAssistanceDesk,
   cleanAccessRequest,
+  assetDriveFolderName,
+  assertDonationFitsMethod,
   canAttachAssetPhoto,
+  canManageCouncilAssets,
   cleanAssetPhotoUrl,
+  DONATION_EDITABLE_COLUMNS,
+  driveThumbnailUrl,
+  driveVaultFolderPath,
   cleanAssetRecordChanges,
   cleanJournalPayment,
   donationFundsBucket,
@@ -26,6 +31,7 @@ import {
   journalPaymentOptions,
   mayAttachAssetPhoto,
   mayImpersonateMember,
+  mayManageCouncilAssets,
   mayRequestRemoteAssistance,
   mayWatchRemoteAssistance,
   portalAreas,
@@ -35,7 +41,6 @@ import {
   type SendGridMailRequest,
 } from '@kofc/shared';
 import { MemoryDataService } from '../apps/web/services/drivers/memory';
-import { readAssetPhoto, saveAssetPhoto, sniffAssetImage } from '../apps/web/services/server/asset-media';
 import { photoSrc } from '../apps/web/lib/media';
 import { TABLES } from '../apps/web/services/generated/schema.generated';
 import { SCHEMA_STATEMENTS } from '../apps/mobile/services/generated/schema.sqlite';
@@ -213,66 +218,119 @@ describe.each(drivers)('Sprint 7F ($name driver)', (d) => {
 });
 
 describe('asset photos', () => {
-  it('accepts a server path or a link, clears with null, and refuses script, data and browser-only links', () => {
-    expect(cleanAssetPhotoUrl('/api/media/assets/1/0b5e6a0e-1f2a-4c3d-9e8f-0123456789ab.jpg')).toBe('/api/media/assets/1/0b5e6a0e-1f2a-4c3d-9e8f-0123456789ab.jpg');
-    expect(cleanAssetPhotoUrl(null)).toBeNull();
-    expect(() => cleanAssetPhotoUrl('javascript:alert(1)')).toThrow(/uploaded file or a web link/);
-    expect(() => cleanAssetPhotoUrl('blob:http://localhost/abc')).toThrow(/uploaded file or a web link/);
-    expect(() => cleanAssetPhotoUrl('x'.repeat(2001))).toThrow();
-    // The photo is its own method now, not one of the form's details.
-    expect(() => cleanAssetRecordChanges({ photo_url: 'x' } as never)).toThrow(/no editable field "photo_url"/);
-    expect(photoSrc('/api/media/assets/1/a.jpg')).toBe('/api/media/assets/1/a.jpg');
+  const DRIVE_ID = '1AbCdEfGhIjKlMnOpQrStUvWxYz012345';
+
+  it('files photos in Drive under Assets / <asset name>', () => {
+    expect(driveVaultFolderPath('asset', 'Grill - smoker')).toEqual(['Fraternal Enterprise Suite', 'Assets', 'Grill - smoker']);
+    expect(assetDriveFolderName('  Grill /  smoker ')).toBe('Grill - smoker');
+    expect(assetDriveFolderName('Tent\\poles\t2')).toBe('Tent-poles-2');
+    expect(assetDriveFolderName('')).toBe('Unnamed asset');
+    expect(assetDriveFolderName('x'.repeat(300))).toHaveLength(100);
+    expect(driveThumbnailUrl(DRIVE_ID, 400)).toBe(`https://drive.google.com/thumbnail?id=${DRIVE_ID}&sz=w400`);
+    expect(photoSrc(DRIVE_ID)).toBe(driveThumbnailUrl(DRIVE_ID));
   });
 
-  it('lets the Deputy Grand Knight and Trustees add photos, but only the managers change the details', () => {
+  it('keeps only a Drive file id as the photo, or null', () => {
+    expect(cleanAssetPhotoUrl(DRIVE_ID)).toBe(DRIVE_ID);
+    expect(cleanAssetPhotoUrl(null)).toBeNull();
+    for (const bad of ['/api/media/assets/1/a.jpg', 'https://example.org/grill.jpg', 'blob:http://localhost/abc', 'javascript:alert(1)']) {
+      expect(() => cleanAssetPhotoUrl(bad)).toThrow(/filed in the council Google Drive/);
+    }
+    // The photo is its own method, not one of the form's details.
+    expect(() => cleanAssetRecordChanges({ photo_url: 'x' } as never)).toThrow(/no editable field "photo_url"/);
+  });
+
+  it('makes the Deputy Grand Knight a full asset manager and leaves Trustees with photos only', () => {
     const dgk = actor({ roles: ['Deputy Grand Knight'], officer: true });
     const trustee = actor({ roles: ['Trustee 2'], officer: true });
+    expect(mayManageCouncilAssets(dgk, OWN)).toBe(true);
+    expect(mayManageCouncilAssets({ ...dgk, councilId: 2 }, OWN)).toBe(false);
+    expect(mayManageCouncilAssets({ ...dgk, active: false }, OWN)).toBe(false);
+    expect(mayManageCouncilAssets(trustee, OWN)).toBe(false);
     for (const a of [dgk, trustee, superAdmin, admin]) expect(mayAttachAssetPhoto(a, OWN)).toBe(true);
-    for (const a of [member, officer, { ...dgk, councilId: 2 }, { ...trustee, active: false }]) expect(mayAttachAssetPhoto(a, OWN)).toBe(false);
+    for (const a of [member, officer, { ...trustee, councilId: 2 }, { ...trustee, active: false }]) expect(mayAttachAssetPhoto(a, OWN)).toBe(false);
     const web = (roles: string[]) => ({ memberId: 9, councilId: OWN, memberType: 'Member' as const, isOfficer: true, roles });
-    expect(canAttachAssetPhoto(web(['Deputy Grand Knight']), OWN)).toBe(true);
+    expect(canManageCouncilAssets(web(['Deputy Grand Knight']), OWN)).toBe(true);
+    expect(canManageCouncilAssets(web(['Trustee 1']), OWN)).toBe(false);
     expect(canAttachAssetPhoto(web(['Trustee 1']), OWN)).toBe(true);
     expect(canAttachAssetPhoto(web(['Recorder']), OWN)).toBe(false);
   });
 
-  it('saves the photo on the asset row through setAssetPhoto', async () => {
+  it('saves the Drive id on the asset row through setAssetPhoto', async () => {
     const db = new MemoryDataService({ now: () => new Date(NOW) });
     await db.init();
     const asset = db.debugStore.insert('CouncilAssetsInventory', { council_id: OWN, asset_name: 'Grill', purchase_date: '2026-09-01 00:00:00', cost_basis: 400 });
-    const path = '/api/media/assets/1/0b5e6a0e-1f2a-4c3d-9e8f-0123456789ab.jpg';
-    expect((await db.expenses.setAssetPhoto(MEMBER.superAdmin, asset.id as number, path)).photo_url).toBe(path);
+    expect((await db.expenses.setAssetPhoto(MEMBER.superAdmin, asset.id as number, DRIVE_ID)).photo_url).toBe(DRIVE_ID);
+    await expectRule(db.expenses.setAssetPhoto(MEMBER.superAdmin, asset.id as number, '/api/media/assets/1/a.jpg'), 'INVALID_INPUT');
     await expectRule(db.expenses.setAssetPhoto(MEMBER.member, asset.id as number, null), 'ADMIN_REQUIRED');
     await expectRule(db.expenses.setAssetPhoto(MEMBER.superAdmin, 999, null), 'RECORD_NOT_FOUND');
     expect((await db.expenses.setAssetPhoto(MEMBER.superAdmin, asset.id as number, null)).photo_url).toBeNull();
   });
 
-  it('keeps uploads on the server disk, checked by their bytes, under stored names only', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'kofc-assets-'));
-    try {
-      const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 1, 2, 3]);
-      expect(sniffAssetImage(png)).toEqual({ ext: 'png', type: 'image/png' });
-      expect(sniffAssetImage(new TextEncoder().encode('<script>alert(1)</script>'))).toBeNull();
-      const path = await saveAssetPhoto(4, png, 'png', dir);
-      expect(path).toMatch(/^\/api\/media\/assets\/4\/[0-9a-f-]{36}\.png$/);
-      const [, , , , council, file] = path.split('/');
-      expect(await readAssetPhoto(council, file, dir)).toMatchObject({ type: 'image/png' });
-      expect(await readAssetPhoto(council, '../../secrets.png', dir)).toBeNull();
-      expect(await readAssetPhoto('..', file, dir)).toBeNull();
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
+  it('uploads through the Drive route for every cleared officer, with the local disk folder gone', () => {
+    const route = read('apps/web/app/api/assets/photo/route.ts');
+    expect(route).toContain('mayAttachAssetPhoto(actor, councilId)');
+    expect(route).toContain("driveVaultClient(creds).upload('asset'");
+    expect(route).toContain('assetDriveFolderName(');
+    expect(route).not.toContain('hasAdminRights');
+    const page = read('apps/web/app/expenses/assets/page.tsx');
+    expect(page).toContain("form.set('assetName', asset.asset_name)");
+    expect(page).toContain('db.expenses.setAssetPhoto(user.memberId, asset.id, link)');
+    expect(page).not.toMatch(/archiveToDriveVault|localFileLink/);
+    expect(read('.gitignore')).not.toContain('.media/');
+    expect(() => read('apps/web/services/server/asset-media.ts')).toThrow();
+    expect(() => read('apps/web/app/api/media/assets/[council]/[file]/route.ts')).toThrow();
   });
 
-  it('uploads from the asset form to the server for everyone, with no Drive vault or browser-only link', () => {
-    const page = read('apps/web/app/expenses/assets/page.tsx');
-    expect(page).toContain('accept="image/*"');
-    expect(page).toContain("const ASSET_PHOTO_ROUTE = '/api/assets/photo'");
-    expect(page).toContain('db.expenses.setAssetPhoto(user.memberId, asset.id, link)');
-    expect(page).not.toContain('archiveToDriveVault');
-    expect(page).not.toContain('localFileLink');
-    expect(page).toContain("head={['Photo', 'Asset'");
-    expect(read('apps/web/app/api/assets/photo/route.ts')).toContain('mayAttachAssetPhoto(actor, councilId)');
-    expect(read('.gitignore')).toContain('.media/');
+  it('shows the photos on the phone in a read-only Council Assets panel', () => {
+    const screen = read('apps/mobile/app/(app)/assets.tsx');
+    expect(screen).toContain('driveThumbnailUrl(asset.photo_url!, 400)');
+    expect(screen).toContain('db.expenses.listAssetsInventory(user.memberId, user.councilId)');
+    expect(read('apps/mobile/app/(app)/_layout.tsx')).toContain('<Tabs.Screen name="assets"');
+    expect(read('apps/mobile/app/(app)/index.tsx')).toContain("canAttachAssetPhoto(user, user.councilId) ? <Button title=\"Council assets\"");
+  });
+});
+
+describe('Schema 67: check donations', () => {
+  it('adds Donation.CheckNumber and bumps the phone version', () => {
+    expect(read('Schema.sql')).toContain('ALTER TABLE [Donation] ADD [CheckNumber] VARCHAR(50) NULL;');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[7-9]|[7-9]\d);/);
+    expect(TABLES.Donation.columns.find((c) => c.name === 'CheckNumber')).toMatchObject({ kind: 'text', notNull: false });
+    expect(DONATION_EDITABLE_COLUMNS).toContain('CheckNumber');
+  });
+
+  it('requires a check number on a Check donation and refuses one on any other method', () => {
+    expect(() => assertDonationFitsMethod('check', { DonationDesciption: null, CheckNumber: '2041' })).not.toThrow();
+    expect(() => assertDonationFitsMethod('check', { DonationDesciption: null, CheckNumber: null })).toThrow(/check number/);
+    expect(() => assertDonationFitsMethod('cash', { DonationDesciption: null, CheckNumber: '2041' })).toThrow(/Only a donation by check/);
+    expect(() => assertDonationFitsMethod('qr', { DonationDesciption: null })).not.toThrow();
+  });
+
+  it('asks for the check number on the phone and web forms', () => {
+    const phone = read('apps/mobile/app/(app)/donate.tsx');
+    expect(phone).toContain('<Field label="CHECK NUMBER (REQUIRED)">');
+    expect(phone).toContain("if (isCheck && checkNumber.trim() === '') return setError('Enter the check number printed on the check.');");
+    expect(phone).toContain('CheckNumber: v.checkNumber,');
+    expect(read('apps/web/app/donations/page.tsx')).toContain('<Field label="Check number">');
+  });
+});
+
+describe.each(drivers)('Sprint 7F Extension 2 ($name driver)', (d) => {
+  it('records a Check donation with its number, and refuses it without one', async () => {
+    const db = await d.make();
+    const options = await db.donations.listMethods(OWN);
+    const check = options.find((o) => o.kind === 'check')!;
+    const cash = options.find((o) => o.kind === 'cash')!;
+    const typeId = (await db.donations.listTypes(OWN))[0].id;
+    const base = { CouncilID: OWN, DonationTypeID: typeId, DonationAmount: 50 };
+    expect(check.method.DonationMethod).toBe('Check');
+    await expectRule(db.donations.record(MEMBER.admin, { ...base, DonationMethodID: check.method.id }), 'INVALID_INPUT');
+    await expectRule(db.donations.record(MEMBER.admin, { ...base, DonationMethodID: cash.method.id, CheckNumber: '2041' }), 'INVALID_INPUT');
+    const saved = await db.donations.record(MEMBER.admin, { ...base, DonationMethodID: check.method.id, CheckNumber: ' 2041 ' });
+    expect(saved).toMatchObject({ CheckNumber: '2041', DonationAmount: 50 });
+    // Switching a correction to cash must drop the number.
+    await expectRule(db.donations.update(MEMBER.admin, saved.id, { DonationMethodID: cash.method.id }), 'INVALID_INPUT');
+    expect(await db.donations.update(MEMBER.admin, saved.id, { DonationMethodID: cash.method.id, CheckNumber: null })).toMatchObject({ CheckNumber: null });
   });
 });
 

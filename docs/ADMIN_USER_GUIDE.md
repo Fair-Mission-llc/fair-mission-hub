@@ -2081,7 +2081,39 @@ The ledger records how money came in. The **Payment method** list on the revenue
 - **Physical Items** is never a payment method, because items are not money.
 - An older ledger line, or a line that is not a payment, has no payment method.
 
-A donation by check counts in the cash column of the event, because the council deposits checks with the cash.
+A donation by check counts in the cash column of the event, because the council deposits checks with the cash. The donation records the check number too (section 17.3.1).
+
+### 17.3.1 Concept: check numbers on donations
+
+A donation by check now records the number printed on the check. The number helps the Financial Secretary match each check to the bank deposit.
+
+- On the phone, the **Donate** tab shows a **Check** tile when the council turned Check on. The Check form has a **CHECK NUMBER (REQUIRED)** field.
+- On the web, the **Donations History** form shows a **Check number** field when **Check** is the method.
+- A donation by check cannot be saved without a check number. A donation by any other method cannot have a check number.
+
+### 17.3.2 Record a donation by check on the phone
+
+> **Who can do this:** Every member who takes donations.
+
+**Goal:** Record a check donation with its check number.
+
+**Start point:** Phone → **Donate** tab.
+
+**Steps:**
+1. Tap the **Check** tile.
+2. Enter the amount in **AMOUNT**.
+3. Enter the number printed on the check in **CHECK NUMBER (REQUIRED)**.
+4. Choose the **DONATION TYPE**.
+5. Enter the donor name, if the donor gives it.
+6. Tap **Record donation**.
+
+**Expected result:** A message says "Recorded" with the amount and "by Check". The donation shows in the list.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The message says "Enter the check number printed on the check." | The **CHECK NUMBER (REQUIRED)** field is empty. | Enter the check number, then tap **Record donation** again. |
+| There is no **Check** tile. | The council did not turn Check on. | Ask an Admin to turn Check on in **Council Lookup Tables**. |
 
 ### 17.4 Log revenue and its payment method
 
@@ -2109,43 +2141,49 @@ A donation by check counts in the cash column of the event, because the council 
 | A method, such as Zeffy, is not in the **Payment method** list. | The council did not turn that method on. | Ask an Admin to turn the method on in **Council Lookup Tables**. |
 | The message says the method "is not one this council has enabled for payments." | An Admin turned the method off after the page opened. | Reload the page, then choose an enabled method. |
 
-### 17.5 Concept: shared asset photos
+### 17.5 Concept: asset photos in Google Drive
 
-Each council asset can have one photo. The photo shows on the asset form and as a small picture in the assets inventory.
+Each council asset can have one photo. The portal files every asset photo in the council's shared Google Drive. Each asset has its own folder:
 
-The portal server keeps every asset photo in one shared folder. The photo stays with the asset for every member who opens the asset, on any computer. An Admin does not need to approve or upload the photo.
+`Fraternal Enterprise Suite / Assets / <asset name>`
+
+The asset record keeps the Drive file. The photo stays with the asset for every member who opens the asset, on any computer and on the phone. An Admin does not need to upload the photo.
 
 | Who | Sees the inventory | Adds or removes a photo | Changes the name, status, serial number, location and notes |
 | --- | --- | --- | --- |
-| Grand Knight, Admins, Financial Secretary, Treasurer, Super Admins | Yes | Yes | Yes |
-| Deputy Grand Knight, Trustees | Yes | Yes | No |
+| Grand Knight, Deputy Grand Knight (DGK), Admins, Financial Secretary, Treasurer, Super Admins | Yes | Yes | Yes |
+| Trustees | Yes | Yes | No |
 | Other members | No | No | No |
 
-The portal accepts JPEG, PNG, GIF, WebP and HEIC images up to 10 MB. The portal checks the file contents, not only the file name.
+The Deputy Grand Knight is a full asset manager because the DGK directs the council's programs and their equipment.
+
+The portal accepts image files up to 25 MB. The council's Google Drive must be connected in **Credentials Vault**. When Drive is not connected, the portal saves no photo.
+
+On the phone, the **Council assets** button on the **Home** tab opens a list of the assets with their photos. The phone list is for viewing only.
 
 ### 17.6 Add a photo to a council asset
 
 > **Who can do this:** The council's Grand Knight, Deputy Grand Knight, Trustees, Admins, Financial Secretary and Treasurer, or a Super Admin.
 
-**Goal:** Attach a photo of the item to its asset record, for every member who opens the record.
+**Goal:** File a photo of the item in the council Google Drive and attach the photo to its asset record.
 
-**Start point:** Sidebar → Finances → **My Expense Reports** → **Council assets** → **Add photo** (or **Edit**) on the asset row.
+**Start point:** Sidebar → Finances → **My Expense Reports** → **Council assets** → **Edit** (or **Add photo**) on the asset row.
 
 **Steps:**
 1. Select **Upload photo** in the **Asset photo** box.
-2. Choose an image file. The portal server saves the photo at once.
+2. Choose an image file. The portal files the photo in Drive at once.
 3. To change the photo, select **Replace photo** and choose another image.
-4. To remove the photo, select **Remove photo**.
+4. To remove the photo from the asset, select **Remove photo**. The file stays in Drive.
 
-**Expected result:** The photo shows on the asset form. The message says "Saved the photo of" and the asset name. The inventory shows the photo in the **Photo** column. The photo is still there after you sign out and sign in again.
+**Expected result:** The photo shows on the asset form. The message says "Saved the photo of" and the asset name. The photo is in Drive under **Assets / <asset name>**. The inventory and the phone list show the photo.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The message says "The file is not a JPEG, PNG, GIF, WebP or HEIC image." | The file is a document, a video or a damaged image. | Choose a JPEG, PNG, GIF, WebP or HEIC image. |
-| The message says "The photo is larger than 10 MB." | The image file is too large. | Make the image smaller, then upload it again. |
-| The message says to sign in again. | Your server session ended. | Sign out, sign in again, then upload the photo. |
-| The form shows the details but no **Save asset details** button. | You are the Deputy Grand Knight or a Trustee. | Ask an asset manager to change the details. You can still add the photo. |
+| The message says "The Drive vault is not configured." or "DRIVE_VAULT_LIVE is not on." | The council's Google Drive is not connected or not switched on. | Ask an Admin to connect Google Drive in **Credentials Vault**. Ask the portal host to switch the Drive vault on. |
+| The message says the file "is not a file type the Assets folder takes." | The file is not an image. | Choose a photo file. |
+| The message says "Google Drive did not accept the photo. Try again later." | Google Drive did not answer. | Wait a few minutes, then upload the photo again. |
+| The form shows the details but no **Save asset details** button. | You are a Trustee. | Ask an asset manager to change the details. You can still add the photo. |
 
 ### 17.7 Concept: user impersonation (view as a member)
 

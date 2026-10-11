@@ -3150,3 +3150,17 @@ ADD FOREIGN KEY([payment_method_id])
 REFERENCES [DonationMethod]([id])
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO
+
+-- =========================================================================
+-- Sprint 7F Extension 2: CHECK DONATIONS AND DRIVE ASSET FOLDERS (schema version 67)
+--
+-- - Donation.CheckNumber: the number of a donation by paper check. Required when the donation's method is Check (kind
+--   'check'), refused for any other method (assertDonationFitsMethod). The phone's Donate screen and the web Donations
+--   History form ask for it when Check is chosen.
+-- - No table change for asset photos: CouncilAssetsInventory.photo_url holds a Google Drive file id again. The schema 66
+--   server-disk folder (.media/assets) is gone; /api/assets/photo files each photo in the council's shared drive under
+--   Fraternal Enterprise Suite / Assets / <asset name> (driveVaultFolderPath 'asset'). The council's Deputy Grand Knight
+--   is now a full asset manager, beside the Grand Knight and the expense leadership; Trustees still add photos only.
+-- =========================================================================
+ALTER TABLE [Donation] ADD [CheckNumber] VARCHAR(50) NULL;
+GO

@@ -7,6 +7,7 @@
 // =========================================================================
 import type { AssetRecordChanges } from './contract';
 import { DEPUTY_GRAND_KNIGHT_ROLE, GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
+import { isDriveFileId } from './drive-vault';
 import { assertMayAuditCouncilExpenses, assertText, BusinessRuleError, mayAuditCouncilExpenses, type MemberWriteActor } from './rules';
 import type { CouncilAssetsInventory, CouncilAssetStatus, ExpenseReport } from './types';
 import { ASSET_NAME_MAX_LENGTH, COUNCIL_ASSET_STATUSES } from './workflow';
@@ -54,21 +55,23 @@ export function cleanAssetRecordChanges(input: AssetRecordChanges): AssetRecordC
 }
 
 /**
- * Sprint 7F Extension: an asset's photo_url - normally the portal path of an image saved on the server
- * (/api/media/assets/<council>/<file>), or an http(s) link, a Drive file id or null. Never script or data links:
- * INVALID_INPUT, as for an over-long value.
+ * Sprint 7F Extension 2: an asset's photo_url - the Google Drive file id /api/assets/photo answers after filing the image
+ * under Assets / <asset name>, or null to clear it. Anything else (a link, a server path, script): INVALID_INPUT.
  */
 export function cleanAssetPhotoUrl(value: unknown): string | null {
   const photo = optionalText(value, 'Asset photo', ASSET_PHOTO_URL_MAX_LENGTH);
-  if (photo !== null && /^\s*(javascript|vbscript|data|blob):/i.test(photo)) {
-    throw new BusinessRuleError('INVALID_INPUT', 'An asset photo must be an uploaded file or a web link.', { field: 'photo_url' });
+  if (photo !== null && !isDriveFileId(photo)) {
+    throw new BusinessRuleError('INVALID_INPUT', 'An asset photo must be an image filed in the council Google Drive.', { field: 'photo_url' });
   }
   return photo;
 }
 
-/** The council's Active Grand Knight: the officer whose approval creates the asset row. */
-const isCouncilGrandKnight = (actor: MemberWriteActor, councilId: number): boolean =>
-  actor.active && actor.councilId === councilId && (actor.roles ?? []).includes(GRAND_KNIGHT_ROLE);
+/**
+ * The council's Active Grand Knight - whose approval creates the asset row - and, since Sprint 7F Extension 2, its Active
+ * Deputy Grand Knight, the council's program director, who manages the property beside him.
+ */
+const isCouncilAssetLead = (actor: MemberWriteActor, councilId: number): boolean =>
+  actor.active && actor.councilId === councilId && (actor.roles ?? []).some((r) => r === GRAND_KNIGHT_ROLE || r === DEPUTY_GRAND_KNIGHT_ROLE);
 
 /**
  * Reading and completing the council's asset records (Sprint 6P): the expense leadership (an Active Admin, Financial
@@ -76,24 +79,25 @@ const isCouncilGrandKnight = (actor: MemberWriteActor, councilId: number): boole
  * Active Grand Knight, who lands on the asset form after approving. ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED otherwise.
  */
 export function assertMayManageCouncilAssets(actor: MemberWriteActor, councilId: number, action: string): void {
-  if (isCouncilGrandKnight(actor, councilId)) return;
+  if (isCouncilAssetLead(actor, councilId)) return;
   assertMayAuditCouncilExpenses(actor, councilId, action);
 }
 
 /** assertMayManageCouncilAssets as a yes/no. */
 export const mayManageCouncilAssets = (actor: MemberWriteActor, councilId: number): boolean =>
-  isCouncilGrandKnight(actor, councilId) || mayAuditCouncilExpenses(actor, councilId);
+  isCouncilAssetLead(actor, councilId) || mayAuditCouncilExpenses(actor, councilId);
 
 /**
- * Sprint 7F Extension: the officers who look after the council's property besides the asset managers - its Deputy Grand
- * Knight and its three Trustees. They may read the inventory and add photos, not change the other details.
+ * Sprint 7F Extension: the officers who look after the council's property besides the asset managers - its three
+ * Trustees (the Deputy Grand Knight became a full asset manager in Extension 2). They may read the inventory and add
+ * photos, not change the other details.
  */
-export const ASSET_PHOTO_OFFICER_ROLES: readonly string[] = [DEPUTY_GRAND_KNIGHT_ROLE, ...TRUSTEE_ROLE_NAMES];
+export const ASSET_PHOTO_OFFICER_ROLES: readonly string[] = [...TRUSTEE_ROLE_NAMES];
 
 const isCouncilPropertyOfficer = (actor: MemberWriteActor, councilId: number): boolean =>
   actor.active && actor.councilId === councilId && (actor.roles ?? []).some((r) => ASSET_PHOTO_OFFICER_ROLES.includes(r));
 
-/** Reading the inventory and adding photos: the asset managers, plus the council's Active Deputy Grand Knight and Trustees. */
+/** Reading the inventory and adding photos: the asset managers, plus the council's Active Trustees. */
 export const mayAttachAssetPhoto = (actor: MemberWriteActor, councilId: number): boolean =>
   mayManageCouncilAssets(actor, councilId) || isCouncilPropertyOfficer(actor, councilId);
 

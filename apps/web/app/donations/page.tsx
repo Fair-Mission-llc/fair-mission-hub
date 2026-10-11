@@ -37,6 +37,8 @@ interface FormDraft {
   Donor: string;
   DonationDesciption: string;
   DonationPhotoURL: string;
+  /** Sprint 7F Extension 2: the check number of a Check donation. */
+  CheckNumber: string;
 }
 
 const KIND_LABEL: Record<CouncilDonationOption['kind'], string> = {
@@ -58,6 +60,7 @@ function blankDraft(methods: CouncilDonationOption[], types: DonationType[], tod
     Donor: '',
     DonationDesciption: '',
     DonationPhotoURL: '',
+    CheckNumber: '',
   };
 }
 
@@ -70,6 +73,7 @@ const draftFrom = (d: Donation): FormDraft => ({
   Donor: d.Donor ?? '',
   DonationDesciption: d.DonationDesciption ?? '',
   DonationPhotoURL: d.DonationPhotoURL ?? '',
+  CheckNumber: d.CheckNumber ?? '',
 });
 
 /** The typed fields both `record` and `update` accept; the driver validates them again. */
@@ -84,6 +88,7 @@ function toFields(d: FormDraft): Omit<NewDonation, 'CouncilID'> & { DonationDate
     Donor: d.Donor.trim() || null,
     DonationDesciption: d.DonationDesciption.trim() || null,
     DonationPhotoURL: d.DonationPhotoURL.trim() || null,
+    CheckNumber: d.CheckNumber.trim() || null,
   };
 }
 
@@ -118,7 +123,8 @@ function DonationForm({
     setBusy(true);
     setMessage(null);
     try {
-      setMessage({ tone: 'info', text: await onSubmit(draft) });
+      // Only a Check donation keeps a check number; one typed before switching methods is dropped.
+      setMessage({ tone: 'info', text: await onSubmit(kind === 'check' ? draft : { ...draft, CheckNumber: '' }) });
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     } finally {
@@ -168,6 +174,11 @@ function DonationForm({
         <Field label={kind === 'item' ? 'Estimated value ($)' : 'Amount ($)'}>
           {(id) => <Input id={id} inputMode="decimal" required value={draft.DonationAmount} onChange={(e) => set('DonationAmount')(e.target.value)} />}
         </Field>
+        {kind === 'check' ? (
+          <Field label="Check number">
+            {(id) => <Input id={id} required maxLength={50} value={draft.CheckNumber} onChange={(e) => set('CheckNumber')(e.target.value)} />}
+          </Field>
+        ) : null}
         <Field label="Date">
           {(id) => <Input id={id} type="date" required max={today} value={draft.DonationDate} onChange={(e) => set('DonationDate')(e.target.value)} />}
         </Field>

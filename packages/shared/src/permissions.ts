@@ -428,15 +428,16 @@ export const canLinkMeetingDrive = (u: Actor, meeting: Pick<Meeting, 'CouncilID'
  * there): the council's expense leadership and its Grand Knight, who lands on the form after approving an asset sheet.
  */
 export const canManageCouncilAssets = (u: Actor, councilId: number): boolean =>
-  canAuditCouncilExpenses(u, councilId) || (isGrandKnight(u) && u.councilId === councilId);
+  canAuditCouncilExpenses(u, councilId) ||
+  // Sprint 7F Extension 2: the Deputy Grand Knight manages the council's property beside the Grand Knight.
+  (u.councilId === councilId && (isGrandKnight(u) || (u.roles ?? []).includes(DEPUTY_GRAND_KNIGHT_ROLE)));
 
 /**
  * Sprint 7F Extension: the assets inventory and its photo upload, mirroring assertMayAttachAssetPhoto - the asset
- * managers above, plus the council's Deputy Grand Knight and Trustees (who see the inventory and add photos only).
+ * managers above, plus the council's Trustees (who see the inventory and add photos only).
  */
 export const canAttachAssetPhoto = (u: Actor, councilId: number): boolean =>
-  canManageCouncilAssets(u, councilId) ||
-  (u.councilId === councilId && (u.roles ?? []).some((r) => r === DEPUTY_GRAND_KNIGHT_ROLE || (TRUSTEE_ROLE_NAMES as readonly string[]).includes(r)));
+  canManageCouncilAssets(u, councilId) || (u.councilId === councilId && (u.roles ?? []).some((r) => (TRUSTEE_ROLE_NAMES as readonly string[]).includes(r)));
 
 /**
  * The Planning Hours form on an event (Sprint 6P), mirroring assertMayLogPlanningTime: the event's owner, an officer or

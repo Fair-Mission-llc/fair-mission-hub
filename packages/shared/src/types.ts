@@ -624,6 +624,7 @@ export interface Donation {
   DonationAmount: number;             // for physical items, the estimated value
   DonationPhotoURL?: string | null;
   RecordedBy?: number | null;         // the member who recorded it; stamped by donations.record, never changed
+  CheckNumber?: string | null;        // VARCHAR(50), Sprint 7F Extension 2: required for a Check donation, else null
 }
 
 export interface Skill {

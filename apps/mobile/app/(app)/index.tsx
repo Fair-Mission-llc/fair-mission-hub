@@ -11,7 +11,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { isUrgent, toIsoDate, withoutEndedShifts } from '@kofc/shared';
+import { canAttachAssetPhoto, isUrgent, toIsoDate, withoutEndedShifts } from '@kofc/shared';
 import { LiturgicalBanner } from '@/components/FaithCenter';
 import { DevotionalTracker } from '@/components/DevotionalTracker';
 import { PrayerIntentions } from '@/components/PrayerIntentions';
@@ -105,6 +105,8 @@ export default function DashboardScreen() {
                     : `${data.expenseSummary.open} report${data.expenseSummary.open === 1 ? '' : 's'} not yet reimbursed.`}
                 </AppText>
                 <Button title="My expense reports" variant="secondary" onPress={() => router.push('/expenses')} />
+                {/* Sprint 7F Extension 2: the asset managers, Deputy Grand Knight and Trustees inspect the council's property. */}
+                {canAttachAssetPhoto(user, user.councilId) ? <Button title="Council assets" variant="secondary" onPress={() => router.push('/assets')} /> : null}
               </Card>
             </Section>
           ) : null}

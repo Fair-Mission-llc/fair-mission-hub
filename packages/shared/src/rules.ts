@@ -444,14 +444,20 @@ export function cleanNewDonation(input: NewDonation, now: Date): CleanDonation {
     EventID: input.EventID == null ? null : assertInteger(input.EventID, 'Event', 1),
     DonationAmount: amount,
     DonationPhotoURL: optionalText(input.DonationPhotoURL, 'Donation photo link', 255),
+    CheckNumber: optionalText(input.CheckNumber, 'Check number', 50),
   };
 }
 
-/** Physical items are recorded with a description of what was given (the amount is its estimated value). */
-export function assertDonationFitsMethod(kind: DonationMethodKind, donation: Pick<NewDonation, 'DonationDesciption'>): void {
+/**
+ * Physical items are recorded with a description of what was given (the amount is its estimated value). Sprint 7F
+ * Extension 2: a Check donation needs its check number, and no other method may carry one.
+ */
+export function assertDonationFitsMethod(kind: DonationMethodKind, donation: Pick<NewDonation, 'DonationDesciption' | 'CheckNumber'>): void {
   if (kind === 'item' && !donation.DonationDesciption) {
     throw invalid('A physical-item donation needs a description of the items.', { kind });
   }
+  if (kind === 'check' && !donation.CheckNumber) throw invalid('Enter the check number of a donation by check.', { kind, field: 'CheckNumber' });
+  if (kind !== 'check' && donation.CheckNumber) throw invalid('Only a donation by check has a check number.', { kind, field: 'CheckNumber' });
 }
 
 /** Specifications: "Event donations can be made during or after an event." */
@@ -476,6 +482,7 @@ export const DONATION_EDITABLE_COLUMNS = [
   'EventID',
   'DonationAmount',
   'DonationPhotoURL',
+  'CheckNumber',
 ] as const satisfies readonly (keyof DonationChanges)[];
 
 /**
