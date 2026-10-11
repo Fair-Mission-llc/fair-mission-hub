@@ -78,6 +78,7 @@ Every seeded account uses the password `dev-pass-secure-9912`. These are develop
 | `hector.trustee@kofc15295.org` | Trustee |
 | `bill.treasurer@kofc15295.org` | Treasurer |
 | `brian.recorder@kofc15295.org` | Recorder |
+| `gk_user@stmarys.org`, `fs_user@`, `treasurer_user@`, `dgk_user@`, `historian_user@`, `member_alpha@`, `member_beta@` | The seven anonymous Conference Room Pilot personas (Phase 7I). They are the newest holders of the GK, FS, Treasurer and DGK seats, so seat lists and the live console show them. `docs/INDIVIDUAL_PILOT_SCRIPTS.pdf` walks through their data |
 
 The full list is in the `[Credentials]` inserts in `Seed.sql`.
 

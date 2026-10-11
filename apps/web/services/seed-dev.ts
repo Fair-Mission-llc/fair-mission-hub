@@ -55,7 +55,7 @@ export function buildDevMeetings(
         Date: daysFrom(today, 7),
         'Time Start': '19:00:00',
         'Time End': '21:00:00',
-        Location: 'St. Jude Parish Hall',
+        Location: "St. Mary's Cathedral Parish Hall",
         Agenda: '1. Opening prayer\n2. Minutes and treasurer report\n3. Committee updates\n4. New business',
         MeetingType: typeIds.Monthly,
       },
@@ -69,7 +69,7 @@ export function buildDevMeetings(
         Date: daysFrom(today, 14),
         'Time Start': '19:00:00',
         'Time End': '20:00:00',
-        Location: 'St. Jude Parish Hall, Room B',
+        Location: "St. Mary's Cathedral Parish Hall, Room B",
         Agenda: '1. Food drive planning\n2. Volunteer sign-ups',
         MeetingType: typeIds.Community,
       },
@@ -83,7 +83,7 @@ export function buildDevMeetings(
         Date: daysFrom(today, 35),
         'Time Start': '19:00:00',
         'Time End': '21:00:00',
-        Location: 'St. Jude Parish Hall',
+        Location: "St. Mary's Cathedral Parish Hall",
         Agenda: '1. Opening prayer\n2. Minutes and treasurer report\n3. New business',
         MeetingType: typeIds.Monthly,
       },
@@ -136,7 +136,7 @@ export function buildDevEvents(today: Date = new Date()): DevEvent[] {
         EventDescription: 'Collect, sort and deliver food for the parish pantry',
         StartDate: daysFrom(today, 2),
         EndDate: daysFrom(today, 6),
-        Location: 'St. Jude Parish Hall',
+        Location: "St. Mary's Cathedral Parish Hall",
       },
       shifts: [
         {
@@ -180,7 +180,7 @@ export function buildDevEvents(today: Date = new Date()): DevEvent[] {
         EventDescription: 'Rake and bag leaves around the parish',
         StartDate: daysFrom(today, -10),
         EndDate: daysFrom(today, -10),
-        Location: 'St. Jude Parish Grounds',
+        Location: "St. Mary's Cathedral Parish Grounds",
       },
       shifts: [
         {
@@ -202,7 +202,7 @@ export function buildDevEvents(today: Date = new Date()): DevEvent[] {
         EventDescription: 'Set up the hall for the spring retreat',
         StartDate: daysFrom(today, -120),
         EndDate: daysFrom(today, -120),
-        Location: 'St. Jude Parish Hall',
+        Location: "St. Mary's Cathedral Parish Hall",
       },
       shifts: [
         {

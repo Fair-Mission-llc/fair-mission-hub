@@ -6,7 +6,7 @@
 // The books are read by the executive dashboard's audience, so the route admits a portal session that may read the
 // council's general ledger (mayReadGeneralLedger): 401 without one, 403 otherwise. 400 for a body that is not an audit
 // desk; 503 when Python or ReportLab is missing on the server (pip install -r scripts/requirements.txt). The interpreter
-// is FORM_1295_PYTHON, else `python` on Windows and `python3` elsewhere. The script is run without a shell and the desk
+// is FORM_1295_PYTHON, else `py` on Windows and `python3` elsewhere (reportlab.ts). The script is run without a shell and the desk
 // is handed over in a temporary file, never on the command line.
 import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

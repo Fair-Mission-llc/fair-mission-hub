@@ -126,7 +126,7 @@ describe('new member badge and onboarding rules (pure)', () => {
   it('writes the welcome email with the Expo Go steps and the setup code, as a SendGrid request without the key', () => {
     const packet = buildWelcomeEmail({
       member: { id: 9, Email: 'luke.newman@example.org', MemberFirstName: 'Luke' },
-      council: { CouncilNumber: 15295, CouncilName: 'St. Jude' },
+      council: { CouncilNumber: 15295, CouncilName: "St. Mary's Cathedral" },
       admin: null,
       enrollment: { code: 'ABCDE-FGHJK-MNPQR-STVWX', expiresAt: '2026-10-20 12:00:00' },
     });

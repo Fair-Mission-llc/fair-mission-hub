@@ -1,6 +1,7 @@
 // Running the repository's ReportLab scripts from app/api routes (Sprint 6N's Form 1295 report; Sprint 7H's custom user
-// guides). The interpreter is FORM_1295_PYTHON, else `python` on Windows and `python3` elsewhere. Scripts run without a
-// shell, asynchronously, with a time limit; inputs go in files, never on the command line.
+// guides). The interpreter is FORM_1295_PYTHON, else the `py` launcher on Windows (Phase 7I: `python` there is often the
+// Microsoft Store stub) and `python3` elsewhere. Scripts run without a shell, asynchronously, with a time limit; inputs
+// go in files, never on the command line. Nothing is ever sent to a printer: the routes answer with the PDF's bytes.
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -19,7 +20,7 @@ export function repoRoot(): string {
   return process.cwd();
 }
 
-export const pythonCommand = (): string => process.env.FORM_1295_PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
+export const pythonCommand = (): string => process.env.FORM_1295_PYTHON || (process.platform === 'win32' ? 'py' : 'python3');
 
 /** Runs `script` with `args`; rejects with the script's stderr attached. */
 export function runPythonScript(python: string, script: string, args: readonly string[], timeoutMs: number): Promise<void> {

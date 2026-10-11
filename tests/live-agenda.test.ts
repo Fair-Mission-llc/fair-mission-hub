@@ -261,8 +261,10 @@ describe.each(drivers)("St. Mary's presentation agenda ($name driver)", (d) => {
     expect(view.meeting.LiveQuorumRosterCount).toBe((await db.members.listByCouncil(OWN, { activeOnly: true })).length);
 
     const speakers = (key: string) => section(view, key).lines.map((l) => l.speaker?.name ?? null);
-    expect(speakers('opening')).toEqual(['Tom McDougal', 'George Gurney', 'David Norman', 'Brian Wolf']);
-    expect(speakers('officer_reports')).toEqual(['Monsignor', 'Tom McDougal', 'Council Admin', 'Bill Kehrli', 'State Deputy John Snyder']);
+    // Phase 7I: the pilot personas are the newest holders of the Grand Knight, Deputy Grand Knight, Financial Secretary and
+    // Treasurer seats, so those lines read their names.
+    expect(speakers('opening')).toEqual(['GK User', 'George Gurney', 'DGK User', 'Brian Wolf']);
+    expect(speakers('officer_reports')).toEqual(['Monsignor', 'GK User', 'FS User', 'Treasurer User', 'State Deputy John Snyder']);
     expect(speakers('director_reports')).toEqual(['Hector Nunez', 'Alan Sanchez', 'Tim Ferkel', 'Matt Fife']);
     const prayer = section(view, 'good_of_order').lines[0]!;
     expect(parseAgendaMarkdown(prayer.markdown).filter((b) => b.kind === 'bullet').map((b) => b.spans[0]!.text)).toEqual([

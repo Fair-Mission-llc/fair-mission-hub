@@ -3204,3 +3204,14 @@ GO
 --   UPDATE [Council] SET [CouncilName] = 'St. Mary''s Cathedral Council' WHERE [CouncilNumber] = 15295;
 -- is run against it once.
 -- =========================================================================
+
+-- =========================================================================
+-- Phase 7I: UNIVERSAL ST. MARY'S REALIGNMENT AND THE PILOT PERSONAS (schema version 70)
+--
+-- No table changes. Seed.sql renames every remaining St. Jude place and organisation (the parish hall, grotto, church,
+-- food pantry and youth ministry) to St. Mary's Cathedral, and adds the Conference Room Pilot data: seven anonymous
+-- persona logins (Credentials and Member 28-34, @stmarys.org), the Parish Parking Event (Event 9, Shifts 9-14), six
+-- expense sheets waiting at the FS, Treasurer and GK desks (ExpenseReport 14-19) and two volunteer time entries held for
+-- review (VolunteerQuarantine 1-2). Meeting 1's quorum base moves from 28 to 35 Active members. The phone database
+-- version moves to 70, so phones rebuild with the new seed.
+-- =========================================================================

@@ -148,13 +148,13 @@ describe('dates and urgency (today is Sunday 2026-09-20)', () => {
 
   it('labels and sorts councils by ascending CouncilNumber', () => {
     const councils = [
-      { CouncilNumber: 15295, CouncilName: 'St. Jude Council' },
+      { CouncilNumber: 15295, CouncilName: "St. Mary's Cathedral Council" },
       { CouncilNumber: 1024, CouncilName: 'Our Lady of Peace Council' },
       { CouncilNumber: 3311, CouncilName: 'B' },
       { CouncilNumber: 3311, CouncilName: 'A' },
     ];
-    expect(sortCouncils(councils).map((c) => `${c.CouncilNumber}${c.CouncilName}`)).toEqual(['1024Our Lady of Peace Council', '3311A', '3311B', '15295St. Jude Council']);
-    expect(councilLabel(councils[0])).toBe('15295 – St. Jude Council');
+    expect(sortCouncils(councils).map((c) => `${c.CouncilNumber}${c.CouncilName}`)).toEqual(['1024Our Lady of Peace Council', '3311A', '3311B', "15295St. Mary's Cathedral Council"]);
+    expect(councilLabel(councils[0])).toBe("15295 – St. Mary's Cathedral Council");
   });
 });
 
@@ -292,7 +292,7 @@ describe('attachments, timestamps and the member dropdown', () => {
   });
 
   it('orders member dropdown rows by council name, then last name', () => {
-    const councils = [{ id: 1, CouncilName: 'St. Jude Council' }, { id: 2, CouncilName: 'Our Lady of Peace Council' }];
+    const councils = [{ id: 1, CouncilName: "St. Mary's Cathedral Council" }, { id: 2, CouncilName: 'Our Lady of Peace Council' }];
     const members = [
       { id: 10, MemberFirstName: 'Zed', MemberLastName: 'Adams', CouncilID: 1 },
       { id: 11, MemberFirstName: 'Amy', MemberLastName: 'Young', CouncilID: 2 },
@@ -300,8 +300,8 @@ describe('attachments, timestamps and the member dropdown', () => {
     ];
     expect(memberDropdownOptions(members, councils)).toEqual([
       { value: 11, label: 'Young, Amy – Our Lady of Peace Council' },
-      { value: 12, label: 'Adams, Bo – St. Jude Council' },
-      { value: 10, label: 'Adams, Zed – St. Jude Council' },
+      { value: 12, label: "Adams, Bo – St. Mary's Cathedral Council" },
+      { value: 10, label: "Adams, Zed – St. Mary's Cathedral Council" },
     ]);
   });
 });

@@ -8693,13 +8693,13 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
     "table": "GlobalCharityRegistry",
     "rows": [
       {
-        "Name": "St. Jude Parish Food Pantry",
+        "Name": "St. Mary's Cathedral Parish Food Pantry",
         "Description": "Weekly groceries for families in the parish boundaries",
         "EIN": null,
         "State": "OR",
         "Phone": "503-555-0210",
         "ContactName": "Maria Santos",
-        "ContactEmail": "pantry@stjudeparish.org",
+        "ContactEmail": "pantry@stmaryscathedral.org",
         "Address": "5200 NE Alameda St, Portland",
         "ZipCode": "97213",
         "IsCatholic": 1,
@@ -8876,10 +8876,10 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
     "rows": [
       {
         "CouncilID": 1,
-        "OrganizationName": "St. Jude Youth Ministry",
+        "OrganizationName": "St. Mary's Cathedral Youth Ministry",
         "ContactName": "Kevin Brandt",
         "ContactPhone": "503-555-0301",
-        "ContactEmail": "youth@stjudeparish.org",
+        "ContactEmail": "youth@stmaryscathedral.org",
         "AmountRequested": 800,
         "RequestStatus": "Submitted",
         "SubmittedAt": "2026-09-14 19:22:00",
@@ -8888,7 +8888,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "RelationshipTypeID": 1,
         "Is501c3": 0,
         "EIN": null,
-        "Website": "https://stjudeparish.org/youth",
+        "Website": "https://stmaryscathedral.org/youth",
         "OrgMission": "Forming high-school students in faith and service",
         "IsRecurring": 0,
         "FundsNeededBy": "2026-10-31 00:00:00",
@@ -9030,7 +9030,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "OwnerID": 4,
         "StartDate": "2026-07-12",
         "EndDate": "2026-07-12",
-        "Location": "St. Jude Parish Grotto",
+        "Location": "St. Mary's Cathedral Parish Grotto",
         "CategoryID": 3,
         "FundsRaised-Cash": 180,
         "FundsRaised-Electronic": 0,
@@ -9047,7 +9047,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "OwnerID": 5,
         "StartDate": "2026-09-10",
         "EndDate": "2026-09-10",
-        "Location": "St. Jude Church",
+        "Location": "St. Mary's Cathedral Church",
         "CategoryID": 3,
         "FundsRaised-Cash": 95,
         "FundsRaised-Electronic": 0,
@@ -9081,7 +9081,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "OwnerID": 15,
         "StartDate": "2026-08-16",
         "EndDate": "2026-08-16",
-        "Location": "St. Jude Parish Hall",
+        "Location": "St. Mary's Cathedral Parish Hall",
         "CategoryID": 5,
         "FundsRaised-Cash": 525,
         "FundsRaised-Electronic": 310,
@@ -9115,7 +9115,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "OwnerID": 17,
         "StartDate": "2026-09-12",
         "EndDate": "2026-09-12",
-        "Location": "St. Jude Parish Food Pantry",
+        "Location": "St. Mary's Cathedral Parish Food Pantry",
         "CategoryID": 2,
         "FundsRaised-Cash": 150,
         "FundsRaised-Electronic": 0,
@@ -9132,7 +9132,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "OwnerID": 14,
         "StartDate": "2026-07-19",
         "EndDate": "2026-07-19",
-        "Location": "St. Jude Church narthex",
+        "Location": "St. Mary's Cathedral Church narthex",
         "CategoryID": 5,
         "FundsRaised-Cash": 865.25,
         "FundsRaised-Electronic": 400,
@@ -10712,7 +10712,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "CouncilID": 1,
         "GLAccountID": 11,
         "DateLogged": "2026-09-03 00:00:00",
-        "Description": "Gift to St. Jude Parish Food Pantry",
+        "Description": "Gift to St. Mary's Cathedral Parish Food Pantry",
         "DebitAmount": 500,
         "CreditAmount": 0,
         "LinkedEventID": null,
@@ -10725,7 +10725,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "CouncilID": 1,
         "GLAccountID": 5,
         "DateLogged": "2026-09-03 00:00:00",
-        "Description": "Gift to St. Jude Parish Food Pantry",
+        "Description": "Gift to St. Mary's Cathedral Parish Food Pantry",
         "DebitAmount": 0,
         "CreditAmount": 500,
         "LinkedEventID": null,
@@ -11079,7 +11079,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "IsMultiDay": 0,
         "MeetingTypeID": 1,
         "IsLiveInProgress": 1,
-        "LiveQuorumRosterCount": 28
+        "LiveQuorumRosterCount": 35
       }
     ]
   },
@@ -11316,6 +11316,519 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "author_member_id": 19,
         "intention_text": "For vocations to the priesthood and religious life in our parish.",
         "created_at": "2026-10-02 15:00:00"
+      }
+    ]
+  },
+  {
+    "table": "Credentials",
+    "rows": [
+      {
+        "Username": "gk_user@stmarys.org",
+        "Password": "dev-pass-secure-9912"
+      },
+      {
+        "Username": "fs_user@stmarys.org",
+        "Password": "dev-pass-secure-9912"
+      },
+      {
+        "Username": "treasurer_user@stmarys.org",
+        "Password": "dev-pass-secure-9912"
+      },
+      {
+        "Username": "dgk_user@stmarys.org",
+        "Password": "dev-pass-secure-9912"
+      },
+      {
+        "Username": "historian_user@stmarys.org",
+        "Password": "dev-pass-secure-9912"
+      },
+      {
+        "Username": "member_alpha@stmarys.org",
+        "Password": "dev-pass-secure-9912"
+      },
+      {
+        "Username": "member_beta@stmarys.org",
+        "Password": "dev-pass-secure-9912"
+      }
+    ]
+  },
+  {
+    "table": "Member",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9900028,
+        "MemberFirstName": "GK",
+        "MemberLastName": "User",
+        "Phone": "503-555-0128",
+        "StreetAddress1": "100 Parish Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "gk_user@stmarys.org",
+        "DateOfBirth": "1970-01-01",
+        "StatusID": 1,
+        "DegreeID": 4,
+        "MemberTypeID": 3,
+        "CredentialID": 28
+      },
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9900029,
+        "MemberFirstName": "FS",
+        "MemberLastName": "User",
+        "Phone": "503-555-0129",
+        "StreetAddress1": "100 Parish Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "fs_user@stmarys.org",
+        "DateOfBirth": "1970-01-01",
+        "StatusID": 1,
+        "DegreeID": 3,
+        "MemberTypeID": 3,
+        "CredentialID": 29
+      },
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9900030,
+        "MemberFirstName": "Treasurer",
+        "MemberLastName": "User",
+        "Phone": "503-555-0130",
+        "StreetAddress1": "100 Parish Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "treasurer_user@stmarys.org",
+        "DateOfBirth": "1970-01-01",
+        "StatusID": 1,
+        "DegreeID": 3,
+        "MemberTypeID": 3,
+        "CredentialID": 30
+      },
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9900031,
+        "MemberFirstName": "DGK",
+        "MemberLastName": "User",
+        "Phone": "503-555-0131",
+        "StreetAddress1": "100 Parish Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "dgk_user@stmarys.org",
+        "DateOfBirth": "1970-01-01",
+        "StatusID": 1,
+        "DegreeID": 3,
+        "MemberTypeID": 3,
+        "CredentialID": 31
+      },
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9900032,
+        "MemberFirstName": "Historian",
+        "MemberLastName": "User",
+        "Phone": "503-555-0132",
+        "StreetAddress1": "100 Parish Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "historian_user@stmarys.org",
+        "DateOfBirth": "1970-01-01",
+        "StatusID": 1,
+        "DegreeID": 3,
+        "MemberTypeID": 3,
+        "CredentialID": 32
+      },
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9900033,
+        "MemberFirstName": "Member",
+        "MemberLastName": "Alpha",
+        "Phone": "503-555-0133",
+        "StreetAddress1": "100 Parish Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "member_alpha@stmarys.org",
+        "DateOfBirth": "1980-01-01",
+        "StatusID": 1,
+        "DegreeID": 1,
+        "MemberTypeID": 3,
+        "CredentialID": 33
+      },
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9900034,
+        "MemberFirstName": "Member",
+        "MemberLastName": "Beta",
+        "Phone": "503-555-0134",
+        "StreetAddress1": "100 Parish Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "member_beta@stmarys.org",
+        "DateOfBirth": "1980-01-01",
+        "StatusID": 1,
+        "DegreeID": 1,
+        "MemberTypeID": 3,
+        "CredentialID": 34
+      }
+    ]
+  },
+  {
+    "table": "MemberRoles",
+    "rows": [
+      {
+        "RoleID": 1,
+        "MemberID": 28
+      },
+      {
+        "RoleID": 5,
+        "MemberID": 29
+      },
+      {
+        "RoleID": 6,
+        "MemberID": 30
+      },
+      {
+        "RoleID": 2,
+        "MemberID": 31
+      },
+      {
+        "RoleID": 21,
+        "MemberID": 32
+      },
+      {
+        "RoleID": 20,
+        "MemberID": 33
+      },
+      {
+        "RoleID": 20,
+        "MemberID": 34
+      }
+    ]
+  },
+  {
+    "table": "Event",
+    "rows": [
+      {
+        "EventName": "Parish Parking Event",
+        "EventDescription": "Cathedral parking lot fundraiser during the weekend Masses",
+        "OwnerID": 28,
+        "StartDate": "2026-10-10",
+        "EndDate": "2026-10-31",
+        "Location": "St. Mary's Cathedral Parking Lot",
+        "CategoryID": 5,
+        "FundsRaised-Cash": 0,
+        "FundsRaised-Electronic": 0,
+        "Highlights": null,
+        "PlannedNumberAttendees": 150,
+        "ActualNumberAttendees": 0,
+        "IsAnnual": 0,
+        "IsMultiDay": 1,
+        "MissionAreaID": 3
+      }
+    ]
+  },
+  {
+    "table": "EventCouncils",
+    "rows": [
+      {
+        "EventID": 9,
+        "CouncilID": 1
+      }
+    ]
+  },
+  {
+    "table": "Shift",
+    "rows": [
+      {
+        "ShiftName": "Lot attendants - Saturday",
+        "ShiftDescription": "Direct cars, collect parking donations, take checks",
+        "ShiftDate": "2026-10-10",
+        "StartTime": "08:00:00",
+        "EndTime": "12:00:00",
+        "EventID": 9,
+        "MinNumberVolunteers": 2,
+        "NumberVolunteersSignedUp": 2
+      },
+      {
+        "ShiftName": "Lot attendants - Sunday",
+        "ShiftDescription": "Direct cars, collect parking donations, take checks",
+        "ShiftDate": "2026-10-11",
+        "StartTime": "07:30:00",
+        "EndTime": "11:30:00",
+        "EventID": 9,
+        "MinNumberVolunteers": 2,
+        "NumberVolunteersSignedUp": 2
+      },
+      {
+        "ShiftName": "Lot attendants - Saturday",
+        "ShiftDescription": "Direct cars, collect parking donations, take checks",
+        "ShiftDate": "2026-10-17",
+        "StartTime": "08:00:00",
+        "EndTime": "12:00:00",
+        "EventID": 9,
+        "MinNumberVolunteers": 2,
+        "NumberVolunteersSignedUp": 2
+      },
+      {
+        "ShiftName": "Lot attendants - Sunday",
+        "ShiftDescription": "Direct cars, collect parking donations, take checks",
+        "ShiftDate": "2026-10-18",
+        "StartTime": "07:30:00",
+        "EndTime": "11:30:00",
+        "EventID": 9,
+        "MinNumberVolunteers": 2,
+        "NumberVolunteersSignedUp": 2
+      },
+      {
+        "ShiftName": "Lot attendants - Saturday",
+        "ShiftDescription": "Direct cars, collect parking donations, take checks",
+        "ShiftDate": "2026-10-24",
+        "StartTime": "08:00:00",
+        "EndTime": "12:00:00",
+        "EventID": 9,
+        "MinNumberVolunteers": 2,
+        "NumberVolunteersSignedUp": 2
+      },
+      {
+        "ShiftName": "Lot attendants - Sunday",
+        "ShiftDescription": "Direct cars, collect parking donations, take checks",
+        "ShiftDate": "2026-10-25",
+        "StartTime": "07:30:00",
+        "EndTime": "11:30:00",
+        "EventID": 9,
+        "MinNumberVolunteers": 2,
+        "NumberVolunteersSignedUp": 2
+      }
+    ]
+  },
+  {
+    "table": "EventSignup",
+    "rows": [
+      {
+        "ShiftID": 9,
+        "MemberID": 33,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 9,
+        "MemberID": 34,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 10,
+        "MemberID": 33,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 10,
+        "MemberID": 34,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 11,
+        "MemberID": 33,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 11,
+        "MemberID": 34,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 12,
+        "MemberID": 33,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 12,
+        "MemberID": 34,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 13,
+        "MemberID": 33,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 13,
+        "MemberID": 34,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 14,
+        "MemberID": 33,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 14,
+        "MemberID": 34,
+        "NoShow": 0
+      }
+    ]
+  },
+  {
+    "table": "ExpenseReport",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 33,
+        "Status": "Submitted",
+        "LinkedEventID": 9,
+        "FinancialSecretaryMemberID": null,
+        "FinancialSecretaryApprovedAt": null,
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 34,
+        "Status": "Submitted",
+        "LinkedEventID": 9,
+        "FinancialSecretaryMemberID": null,
+        "FinancialSecretaryApprovedAt": null,
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 32,
+        "Status": "Submitted",
+        "LinkedEventID": null,
+        "FinancialSecretaryMemberID": null,
+        "FinancialSecretaryApprovedAt": null,
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 33,
+        "Status": "Submitted",
+        "LinkedEventID": 9,
+        "FinancialSecretaryMemberID": 29,
+        "FinancialSecretaryApprovedAt": "2026-10-09 18:00:00",
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 34,
+        "Status": "Submitted",
+        "LinkedEventID": null,
+        "FinancialSecretaryMemberID": 29,
+        "FinancialSecretaryApprovedAt": "2026-10-09 18:10:00",
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 32,
+        "Status": "Submitted",
+        "LinkedEventID": null,
+        "FinancialSecretaryMemberID": 29,
+        "FinancialSecretaryApprovedAt": "2026-10-07 17:30:00",
+        "TreasurerMemberID": 30,
+        "TreasurerReviewedAt": "2026-10-08 19:00:00",
+        "budget_line_id": 25,
+        "general_ledger_account_id": 13
+      }
+    ]
+  },
+  {
+    "table": "ExpenseLineItem",
+    "rows": [
+      {
+        "ExpenseReportID": 14,
+        "DateOfExpense": "2026-10-09",
+        "Amount": 84.97,
+        "VendorName": "Home Depot",
+        "ExpenseDescription": "Traffic cones and reflective vests for the lot attendants"
+      },
+      {
+        "ExpenseReportID": 15,
+        "DateOfExpense": "2026-10-09",
+        "Amount": 32.48,
+        "VendorName": "Office Depot",
+        "ExpenseDescription": "Cash box and donation receipt books"
+      },
+      {
+        "ExpenseReportID": 16,
+        "DateOfExpense": "2026-10-06",
+        "Amount": 46.2,
+        "VendorName": "Michaels",
+        "ExpenseDescription": "Archival photo sleeves and binders for the council history"
+      },
+      {
+        "ExpenseReportID": 17,
+        "DateOfExpense": "2026-10-08",
+        "Amount": 118.5,
+        "VendorName": "FedEx Office",
+        "ExpenseDescription": "Parking event yard signs"
+      },
+      {
+        "ExpenseReportID": 18,
+        "DateOfExpense": "2026-10-06",
+        "Amount": 38.75,
+        "VendorName": "Safeway",
+        "ExpenseDescription": "Coffee and donuts for the October council meeting"
+      },
+      {
+        "ExpenseReportID": 18,
+        "DateOfExpense": "2026-10-06",
+        "Amount": 16,
+        "VendorName": "Safeway",
+        "ExpenseDescription": "Paper cups and napkins"
+      },
+      {
+        "ExpenseReportID": 19,
+        "DateOfExpense": "2026-10-05",
+        "Amount": 89.99,
+        "VendorName": "Aaron Brothers",
+        "ExpenseDescription": "Frames for the Past Grand Knights wall"
+      }
+    ]
+  },
+  {
+    "table": "VolunteerQuarantine",
+    "rows": [
+      {
+        "council_id": 1,
+        "user_id": 33,
+        "activity_type": "SHIFT",
+        "activity_id": 9,
+        "activity_date": "2026-10-10",
+        "hours_reported": 6.5,
+        "scheduled_hours": 4,
+        "notes": "Stayed to restripe the overflow lot",
+        "date_logged": "2026-10-10 13:15:00",
+        "quarantine_reason": "More than 5.0 hours against one activity: 6.5 hours reported for the day. More than 1.0 hour over the scheduled shift: 6.5 hours reported against a 4-hour shift (limit 5).",
+        "clearance_status": "PENDING"
+      },
+      {
+        "council_id": 1,
+        "user_id": 34,
+        "activity_type": "MANUAL",
+        "activity_id": 11,
+        "activity_date": "2026-10-11",
+        "hours_reported": 6,
+        "scheduled_hours": null,
+        "notes": "Ushered all three Sunday Masses",
+        "date_logged": "2026-10-11 13:40:00",
+        "quarantine_reason": "More than 5.0 hours against one activity: 6 hours reported for the day.",
+        "clearance_status": "PENDING"
       }
     ]
   }

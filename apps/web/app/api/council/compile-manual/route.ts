@@ -3,15 +3,16 @@
 // read through the data service; cleanCustomManualPayload range-checks every value). The route reads the guide's
 // Markdown from docs/, writes the council's copy (customizeManualMarkdown: the council's numbers in place of the
 // defaults, and a settings table up front) to a temporary folder, lays it out with the guides' own ReportLab script
-// (scripts/compile_all_manuals.py, images still read from docs/) and answers with the PDF (application/pdf). Nothing is
-// saved under docs/; the standard editions stay as compiled.
+// (scripts/compile_all_manuals.py, images still read from docs/) and answers with the PDF (application/pdf) for the
+// browser to download. Phase 7I: a copy is also kept as generated/custom_manuals/<file name> (not tracked by git); nothing
+// is saved under docs/, and nothing is sent to a printer.
 //
 // The audience of the Council Wide Settings page may print (mayCompileCustomManual): the council's Active Admins and
 // officers, and Super Admins. 401 without a portal session, 403 otherwise; 400 for a body the cleaner refuses; 503
 // when Python or ReportLab is missing on the server (pip install -r scripts/requirements.txt). The interpreter is
 // FORM_1295_PYTHON, as for the Form 1295 report. The script runs without a shell, asynchronously, and the copy is handed
 // over in a file, never on the command line.
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { NextResponse } from 'next/server';
@@ -58,12 +59,17 @@ export async function POST(req: Request) {
       return scriptFailureAnswer('custom-manual', 'guide', err);
     }
     const pdf = await readFile(output);
+    const fileName = customManualFileName(payload.guide, payload.council.number);
+    const keep = join(root, 'generated', 'custom_manuals');
+    await mkdir(keep, { recursive: true })
+      .then(() => copyFile(output, join(keep, fileName)))
+      .catch((err) => console.error(`[custom-manual] could not save generated/custom_manuals/${fileName}:`, describeError(err)));
     console.log(`[custom-manual] member ${session.claims.memberId} compiled the ${payload.guide} guide for council ${payload.council.id}`);
     return new NextResponse(new Uint8Array(pdf), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${customManualFileName(payload.guide, payload.council.number)}"`,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
         'Cache-Control': 'no-store',
       },
     });

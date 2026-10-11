@@ -145,7 +145,7 @@ describe('agenda and expense window rules (pure)', () => {
 });
 
 const form = (over: Partial<NewCharitableRequest> = {}): NewCharitableRequest => ({
-  OrganizationName: 'St. Jude Youth Ministry',
+  OrganizationName: "St. Mary's Cathedral Youth Ministry",
   AmountRequested: 800,
   RelationshipTypeID: 1,
   Is501c3: true,
@@ -227,7 +227,7 @@ describe.each(drivers)('$name driver: routing a request to the next eligible age
       TargetMeetingID: meeting.id,
       SourceType: 'CharitableRequest',
       SourceRecordID: requestId,
-      MotionText: `That the council donate $800.00 to St. Jude Youth Ministry (charitable request #${requestId}).`,
+      MotionText: `That the council donate $800.00 to St. Mary's Cathedral Youth Ministry (charitable request #${requestId}).`,
       PresenterMemberID: MEMBER.member,
       AllocatedMinutes: 5,
       VoteResult: 'Pending',

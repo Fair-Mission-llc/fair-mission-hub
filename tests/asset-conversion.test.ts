@@ -180,7 +180,7 @@ describe('expense-to-asset conversion hook (pure)', () => {
 describe('Miscellaneous Others catch-all (pure)', () => {
   const misc = line({ id: 9 });
   const pancake = line({ id: 2, CategoryType: 'Event', LineItemName: 'Pancake Breakfast', ApprovedBudgetAmount: 500 });
-  const pantry = line({ id: 3, CategoryType: 'Donation', ReferenceSourceID: 1, LineItemName: 'St. Jude Pantry', ApprovedBudgetAmount: 1000 });
+  const pantry = line({ id: 3, CategoryType: 'Donation', ReferenceSourceID: 1, LineItemName: "St. Mary's Cathedral Pantry", ApprovedBudgetAmount: 1000 });
   const spend = {
     expenses: [
       { BudgetLineID: 2, Amount: 100 }, // the signers charged it to the Pancake Breakfast line (Sprint 6G Extension)

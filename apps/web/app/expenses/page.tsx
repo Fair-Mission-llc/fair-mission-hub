@@ -78,7 +78,7 @@ function linesFromOcr(result: ReceiptOcrResult, index: number, today: string): E
 const NO_REFS: ExpenseReferenceOptions = { events: [], meetings: [], activities: [] };
 const NO_CHARITIES: LinkableCharitableRequest[] = [];
 
-/** 'St. Jude Youth Ministry · $800.00 (#7)' for the charity link dropdown and the read-only sheet. */
+/** "St. Mary's Cathedral Youth Ministry · $800.00 (#7)" for the charity link dropdown and the read-only sheet. */
 const charityLabel = (r: Pick<LinkableCharitableRequest, 'id' | 'OrganizationName' | 'AmountRequested'>) =>
   `${r.OrganizationName} · ${formatMoney(r.AmountRequested)} (#${r.id})`;
 

@@ -442,7 +442,7 @@ GO
 -- Five local charities the council gives to, with the eight checks it paid them (1111-1118).
 INSERT INTO [GlobalCharityRegistry] ([Name], [Description], [EIN], [State], [Phone], [ContactName], [ContactEmail], [Address], [ZipCode], [IsCatholic], [CharityType], [IsAnnual])
 VALUES
-('St. Jude Parish Food Pantry', 'Weekly groceries for families in the parish boundaries', NULL, 'OR', '503-555-0210', 'Maria Santos', 'pantry@stjudeparish.org', '5200 NE Alameda St, Portland', '97213', 1, 'Food Security', 1),
+('St. Mary''s Cathedral Parish Food Pantry', 'Weekly groceries for families in the parish boundaries', NULL, 'OR', '503-555-0210', 'Maria Santos', 'pantry@stmaryscathedral.org', '5200 NE Alameda St, Portland', '97213', 1, 'Food Security', 1),
 ('Holy Family Pregnancy Resource Center', 'Free ultrasounds, diapers and parenting classes for expectant mothers', NULL, 'OR', '503-555-0233', 'Ann Kelly', 'director@holyfamilyprc.org', '1820 SE 39th Ave, Portland', '97214', 1, 'Protecting Life', 1),
 ('Rose City Warming Shelter', 'Overnight winter shelter and hot meals', NULL, 'OR', '503-555-0247', 'David Lee', 'info@rosecitywarming.org', '640 NW Glisan St, Portland', '97209', 0, 'Homelessness', 0),
 ('Cathedral School Tuition Assistance Fund', 'Need-based tuition aid for Catholic school families', NULL, 'OR', '503-555-0259', 'Sr. Theresa Nolan', 'aid@cathedralschoolpdx.org', '110 NW 17th Ave, Portland', '97209', 1, 'Faith', 1),
@@ -476,8 +476,8 @@ INSERT INTO [CharitableRequest] (
     [VetterMemberID], [VettingNotes], [VettedDate], [VoteStatus], [AmountApproved], [MissionAreaID]
 )
 VALUES
-(1, 'St. Jude Youth Ministry', 'Kevin Brandt', '503-555-0301', 'youth@stjudeparish.org', 800.00, 'Submitted', '2026-09-14 19:22:00',
- 15, '5200 NE Alameda St, Portland, OR 97213', 1, 0, NULL, 'https://stjudeparish.org/youth', 'Forming high-school students in faith and service', 0,
+(1, 'St. Mary''s Cathedral Youth Ministry', 'Kevin Brandt', '503-555-0301', 'youth@stmaryscathedral.org', 800.00, 'Submitted', '2026-09-14 19:22:00',
+ 15, '5200 NE Alameda St, Portland, OR 97213', 1, 0, NULL, 'https://stmaryscathedral.org/youth', 'Forming high-school students in faith and service', 0,
  '2026-10-31 00:00:00', 'Bus rental and registration for the diocesan youth rally', 'Thirty parish teens', 'Receipts and a photo report to the council', 1,
  NULL, NULL, NULL, 'Pending', 0.00, 1),
 (1, 'Portland Refugee Welcome Network', 'Amina Yusuf', '503-555-0318', 'amina@prwn.org', 1500.00, 'Submitted', '2026-09-21 20:05:00',
@@ -506,13 +506,13 @@ GO
 -- ==============================================================================
 INSERT INTO [Event] ([EventName], [EventDescription], [OwnerID], [StartDate], [EndDate], [Location], [CategoryID], [FundsRaised-Cash], [FundsRaised-Electronic], [Highlights], [PlannedNumberAttendees], [ActualNumberAttendees], [IsAnnual], [IsMultiDay], [MissionAreaID])
 VALUES
-('Rosary Rally at the Parish Grotto', 'Public rosary for peace with the Knights leading the decades', 4, '2026-07-12', '2026-07-12', 'St. Jude Parish Grotto', 3, 180.00, 0.00, 'Over ninety parishioners prayed all five decades despite the heat.', 80, 94, 0, 0, 1),
-('Holy Hour for Vocations', 'Eucharistic adoration praying for priestly and religious vocations', 5, '2026-09-10', '2026-09-10', 'St. Jude Church', 3, 95.00, 0.00, 'Two seminarians joined us and spoke after Benediction.', 40, 37, 0, 0, 1),
+('Rosary Rally at the Parish Grotto', 'Public rosary for peace with the Knights leading the decades', 4, '2026-07-12', '2026-07-12', 'St. Mary''s Cathedral Parish Grotto', 3, 180.00, 0.00, 'Over ninety parishioners prayed all five decades despite the heat.', 80, 94, 0, 0, 1),
+('Holy Hour for Vocations', 'Eucharistic adoration praying for priestly and religious vocations', 5, '2026-09-10', '2026-09-10', 'St. Mary''s Cathedral Church', 3, 95.00, 0.00, 'Two seminarians joined us and spoke after Benediction.', 40, 37, 0, 0, 1),
 ('Parish Family Picnic', 'Summer picnic with games, a bounce house and a Knights grill line', 16, '2026-07-26', '2026-07-26', 'Laurelhurst Park, Picnic Area B', 1, 640.00, 215.00, 'Record turnout; the grill line served 310 plates.', 250, 312, 1, 0, 2),
-('Back-to-School Pancake Breakfast', 'Pancake breakfast raising school-supply money for parish families', 15, '2026-08-16', '2026-08-16', 'St. Jude Parish Hall', 5, 525.00, 310.00, 'Funded forty backpacks for the school drive.', 180, 205, 1, 0, 2),
+('Back-to-School Pancake Breakfast', 'Pancake breakfast raising school-supply money for parish families', 15, '2026-08-16', '2026-08-16', 'St. Mary''s Cathedral Parish Hall', 5, 525.00, 310.00, 'Funded forty backpacks for the school drive.', 180, 205, 1, 0, 2),
 ('Tootsie Roll Drive for Special Olympics', 'Annual candy drive at grocery stores for people with intellectual disabilities', 18, '2026-08-22', '2026-08-22', 'Fred Meyer and Safeway entrances, NE Portland', 5, 1120.50, 260.00, 'Our best drive in five years.', 0, 0, 1, 0, 3),
-('Food Pantry Restock Day', 'Sorting and shelving donated groceries at the parish pantry', 17, '2026-09-12', '2026-09-12', 'St. Jude Parish Food Pantry', 2, 150.00, 0.00, 'Restocked every shelf before the fall rush.', 0, 0, 0, 0, 3),
-('Baby Bottle Campaign Kickoff', 'Baby bottles handed out after every Mass to collect change for the pregnancy center', 14, '2026-07-19', '2026-07-19', 'St. Jude Church narthex', 5, 865.25, 400.00, 'Six hundred bottles went home with families.', 500, 600, 1, 0, 4),
+('Food Pantry Restock Day', 'Sorting and shelving donated groceries at the parish pantry', 17, '2026-09-12', '2026-09-12', 'St. Mary''s Cathedral Parish Food Pantry', 2, 150.00, 0.00, 'Restocked every shelf before the fall rush.', 0, 0, 0, 0, 3),
+('Baby Bottle Campaign Kickoff', 'Baby bottles handed out after every Mass to collect change for the pregnancy center', 14, '2026-07-19', '2026-07-19', 'St. Mary''s Cathedral Church narthex', 5, 865.25, 400.00, 'Six hundred bottles went home with families.', 500, 600, 1, 0, 4),
 ('Pregnancy Center Nursery Painting', 'Painting and furnishing the nursery at Holy Family Pregnancy Resource Center', 13, '2026-09-19', '2026-09-19', 'Holy Family Pregnancy Resource Center', 2, 0.00, 0.00, 'The nursery reopened the following Monday.', 0, 0, 0, 0, 4);
 GO
 INSERT INTO [EventCouncils] ([EventID], [CouncilID])
@@ -656,8 +656,8 @@ VALUES
 (1, 1, '2026-08-20 00:00:00', 'Pancake breakfast griddle rental and supplies', 0.00, 312.40, 4, NULL, 0, '1120', 'seed-txn-0009'),
 (1, 1, '2026-08-29 00:00:00', 'Fair parking lot proceeds deposit', 1480.00, 0.00, NULL, NULL, 0, NULL, 'seed-txn-0010'),
 (1, 8, '2026-08-29 00:00:00', 'Fair parking lot proceeds deposit', 0.00, 1480.00, NULL, NULL, 0, NULL, 'seed-txn-0010'),
-(1, 11, '2026-09-03 00:00:00', 'Gift to St. Jude Parish Food Pantry', 500.00, 0.00, NULL, NULL, 0, '1121', 'seed-txn-0011'),
-(1, 5, '2026-09-03 00:00:00', 'Gift to St. Jude Parish Food Pantry', 0.00, 500.00, NULL, NULL, 0, '1121', 'seed-txn-0011'),
+(1, 11, '2026-09-03 00:00:00', 'Gift to St. Mary''s Cathedral Parish Food Pantry', 500.00, 0.00, NULL, NULL, 0, '1121', 'seed-txn-0011'),
+(1, 5, '2026-09-03 00:00:00', 'Gift to St. Mary''s Cathedral Parish Food Pantry', 0.00, 500.00, NULL, NULL, 0, '1121', 'seed-txn-0011'),
 (1, 13, '2026-09-08 00:00:00', 'Parish hall rental, September meeting', 150.00, 0.00, NULL, NULL, 0, '1122', 'seed-txn-0012'),
 (1, 1, '2026-09-08 00:00:00', 'Parish hall rental, September meeting', 0.00, 150.00, NULL, NULL, 0, '1122', 'seed-txn-0012'),
 (1, 6, '2026-09-10 00:00:00', 'Purchased a second outdoor grill', 425.00, 0.00, NULL, NULL, 0, '1123', 'seed-txn-0013'),
@@ -743,7 +743,8 @@ GO
 -- Sprint 5Z-Meeting-Audit: the live demo meeting (Meeting 1, CouncilID 1); Sprint 6B moved it to the St. Mary's
 -- Cathedral meeting of October 6, 2026.
 -- Already live (IsLiveInProgress 1) so the console opens straight onto it and members can check in. The quorum
--- roster is locked at 28, the council's Active members once the apps finish seeding (the dev seed's pre-provisioned
+-- roster is locked at 35 (Phase 7I: was 28 before the seven pilot personas), the council's Active members once the
+-- apps finish seeding (the dev seed's pre-provisioned
 -- member included), the count startLiveAssemblyConsole would take.
 -- No agenda item is active yet: the presenter takes the first one live, so its countdown starts on stage.
 -- Tom (owner), David and Hector are invited and Accepted; Attended stays 0 until they check in.
@@ -762,7 +763,7 @@ New Business
 Old Business
 Upcoming Events
 Good of the Order',
- '', 1, 19, 0, 1, 1, 28);
+ '', 1, 19, 0, 1, 1, 35);
 GO
 
 INSERT INTO [MeetingInvites] ([MeetingID], [MemberID], [Attended], [ResponseStatus])
@@ -814,4 +815,110 @@ GO
 INSERT INTO [CouncilPrayerIntention] ([council_id], [author_member_id], [intention_text], [created_at]) VALUES
 (1, 19, 'For the brothers and friends on our prayer list: Dolores Redden, Mark Boshears, Paul Wolf and Paul Della.', '2026-10-01 15:00:00'),
 (1, 19, 'For vocations to the priesthood and religious life in our parish.', '2026-10-02 15:00:00');
+GO
+
+-- ==============================================================================
+-- Phase 7I: the Conference Room Pilot personas for Council 15295 (CouncilID 1) - seven anonymous logins, one per pilot
+-- desk, password dev-pass-secure-9912 like every seed login. Credentials 28-34 / Member 28-34, plain members
+-- (MemberTypeID 3); their access comes from their seats. Each seat is shared with the holder above, and the pilot
+-- holder is the newest (the highest MemberRoles id), so the seat lists, the agenda and the live console welcome read
+-- the pilot names. docs/INDIVIDUAL_PILOT_SCRIPTS.pdf and docs/GROUP_CROSS_DESK_SCRIPT.pdf walk through this data.
+-- ==============================================================================
+INSERT INTO [Credentials] ([Username], [Password])
+VALUES
+('gk_user@stmarys.org', 'dev-pass-secure-9912'),          -- ID 28
+('fs_user@stmarys.org', 'dev-pass-secure-9912'),          -- ID 29
+('treasurer_user@stmarys.org', 'dev-pass-secure-9912'),   -- ID 30
+('dgk_user@stmarys.org', 'dev-pass-secure-9912'),         -- ID 31
+('historian_user@stmarys.org', 'dev-pass-secure-9912'),   -- ID 32
+('member_alpha@stmarys.org', 'dev-pass-secure-9912'),     -- ID 33
+('member_beta@stmarys.org', 'dev-pass-secure-9912');      -- ID 34
+GO
+
+INSERT INTO [Member] (
+    [CouncilID], [MemberNumber], [MemberFirstName], [MemberLastName],
+    [Phone], [StreetAddress1], [City], [State], [ZipCode], [Email],
+    [DateOfBirth], [StatusID], [DegreeID], [MemberTypeID], [CredentialID]
+)
+VALUES
+(1, 9900028, 'GK', 'User', '503-555-0128', '100 Parish Way', 'Portland', 'OR', '97201', 'gk_user@stmarys.org', '1970-01-01', 1, 4, 3, 28),
+(1, 9900029, 'FS', 'User', '503-555-0129', '100 Parish Way', 'Portland', 'OR', '97201', 'fs_user@stmarys.org', '1970-01-01', 1, 3, 3, 29),
+(1, 9900030, 'Treasurer', 'User', '503-555-0130', '100 Parish Way', 'Portland', 'OR', '97201', 'treasurer_user@stmarys.org', '1970-01-01', 1, 3, 3, 30),
+(1, 9900031, 'DGK', 'User', '503-555-0131', '100 Parish Way', 'Portland', 'OR', '97201', 'dgk_user@stmarys.org', '1970-01-01', 1, 3, 3, 31),
+(1, 9900032, 'Historian', 'User', '503-555-0132', '100 Parish Way', 'Portland', 'OR', '97201', 'historian_user@stmarys.org', '1970-01-01', 1, 3, 3, 32),
+(1, 9900033, 'Member', 'Alpha', '503-555-0133', '100 Parish Way', 'Portland', 'OR', '97201', 'member_alpha@stmarys.org', '1980-01-01', 1, 1, 3, 33),
+(1, 9900034, 'Member', 'Beta', '503-555-0134', '100 Parish Way', 'Portland', 'OR', '97201', 'member_beta@stmarys.org', '1980-01-01', 1, 1, 3, 34);
+GO
+
+INSERT INTO [MemberRoles] ([RoleID], [MemberID])
+VALUES
+(1, 28),  -- Grand Knight
+(5, 29),  -- Financial Secretary
+(6, 30),  -- Treasurer
+(2, 31),  -- Deputy Grand Knight
+(21, 32), -- Council Historian
+(20, 33), -- Member
+(20, 34); -- Member
+GO
+
+-- The pilot fundraiser (Event 9): the cathedral parking lot on six weekend mornings in October 2026, owned by the GK
+-- persona, open at the gate through October 31. Shifts 9-14; both member personas are signed up for every shift, so
+-- each can log time after a shift and take check donations at the gate while the event is under way.
+INSERT INTO [Event] ([EventName], [EventDescription], [OwnerID], [StartDate], [EndDate], [Location], [CategoryID], [FundsRaised-Cash], [FundsRaised-Electronic], [Highlights], [PlannedNumberAttendees], [ActualNumberAttendees], [IsAnnual], [IsMultiDay], [MissionAreaID])
+VALUES
+('Parish Parking Event', 'Cathedral parking lot fundraiser during the weekend Masses', 28, '2026-10-10', '2026-10-31', 'St. Mary''s Cathedral Parking Lot', 5, 0.00, 0.00, NULL, 150, 0, 0, 1, 3);
+GO
+INSERT INTO [EventCouncils] ([EventID], [CouncilID])
+VALUES
+(9, 1);
+GO
+INSERT INTO [Shift] ([ShiftName], [ShiftDescription], [ShiftDate], [StartTime], [EndTime], [EventID], [MinNumberVolunteers], [NumberVolunteersSignedUp])
+VALUES
+('Lot attendants - Saturday', 'Direct cars, collect parking donations, take checks', '2026-10-10', '08:00:00', '12:00:00', 9, 2, 2),
+('Lot attendants - Sunday', 'Direct cars, collect parking donations, take checks', '2026-10-11', '07:30:00', '11:30:00', 9, 2, 2),
+('Lot attendants - Saturday', 'Direct cars, collect parking donations, take checks', '2026-10-17', '08:00:00', '12:00:00', 9, 2, 2),
+('Lot attendants - Sunday', 'Direct cars, collect parking donations, take checks', '2026-10-18', '07:30:00', '11:30:00', 9, 2, 2),
+('Lot attendants - Saturday', 'Direct cars, collect parking donations, take checks', '2026-10-24', '08:00:00', '12:00:00', 9, 2, 2),
+('Lot attendants - Sunday', 'Direct cars, collect parking donations, take checks', '2026-10-25', '07:30:00', '11:30:00', 9, 2, 2);
+GO
+INSERT INTO [EventSignup] ([ShiftID], [MemberID], [NoShow])
+VALUES
+(9, 33, 0), (9, 34, 0),
+(10, 33, 0), (10, 34, 0),
+(11, 33, 0), (11, 34, 0),
+(12, 33, 0), (12, 34, 0),
+(13, 33, 0), (13, 34, 0),
+(14, 33, 0), (14, 34, 0);
+GO
+
+-- Six expense sheets in the approval pipeline (ExpenseReport 14-19): 14-16 wait for the FS persona's written order,
+-- 17-18 carry it and wait for the Treasurer persona's ledger coding, and 19 is coded (budget line 25 Miscellaneous
+-- Others, GLAccount 13 Council Operational Costs) and waits for the GK persona's counter-signature.
+INSERT INTO [ExpenseReport] ([CouncilID], [SubmitterMemberID], [Status], [LinkedEventID], [FinancialSecretaryMemberID], [FinancialSecretaryApprovedAt], [TreasurerMemberID], [TreasurerReviewedAt], [budget_line_id], [general_ledger_account_id])
+VALUES
+(1, 33, 'Submitted', 9, NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 34, 'Submitted', 9, NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 32, 'Submitted', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 33, 'Submitted', 9, 29, '2026-10-09 18:00:00', NULL, NULL, NULL, NULL),
+(1, 34, 'Submitted', NULL, 29, '2026-10-09 18:10:00', NULL, NULL, NULL, NULL),
+(1, 32, 'Submitted', NULL, 29, '2026-10-07 17:30:00', 30, '2026-10-08 19:00:00', 25, 13);
+GO
+INSERT INTO [ExpenseLineItem] ([ExpenseReportID], [DateOfExpense], [Amount], [VendorName], [ExpenseDescription])
+VALUES
+(14, '2026-10-09', 84.97, 'Home Depot', 'Traffic cones and reflective vests for the lot attendants'),
+(15, '2026-10-09', 32.48, 'Office Depot', 'Cash box and donation receipt books'),
+(16, '2026-10-06', 46.20, 'Michaels', 'Archival photo sleeves and binders for the council history'),
+(17, '2026-10-08', 118.50, 'FedEx Office', 'Parking event yard signs'),
+(18, '2026-10-06', 38.75, 'Safeway', 'Coffee and donuts for the October council meeting'),
+(18, '2026-10-06', 16.00, 'Safeway', 'Paper cups and napkins'),
+(19, '2026-10-05', 89.99, 'Aaron Brothers', 'Frames for the Past Grand Knights wall');
+GO
+
+-- Two volunteer time entries held for leadership review (VolunteerQuarantine 1-2), waiting for the DGK persona: a
+-- shift report 2.5 hours over its scheduled length, and a single-activity day over the 5.0-hour limit. The reason
+-- text is what quarantineReasons writes at the default limits.
+INSERT INTO [VolunteerQuarantine] ([council_id], [user_id], [activity_type], [activity_id], [activity_date], [hours_reported], [scheduled_hours], [notes], [date_logged], [quarantine_reason], [clearance_status])
+VALUES
+(1, 33, 'SHIFT', 9, '2026-10-10', 6.50, 4.00, 'Stayed to restripe the overflow lot', '2026-10-10 13:15:00', 'More than 5.0 hours against one activity: 6.5 hours reported for the day. More than 1.0 hour over the scheduled shift: 6.5 hours reported against a 4-hour shift (limit 5).', 'PENDING'),
+(1, 34, 'MANUAL', 11, '2026-10-11', 6.00, NULL, 'Ushered all three Sunday Masses', '2026-10-11 13:40:00', 'More than 5.0 hours against one activity: 6 hours reported for the day.', 'PENDING');
 GO

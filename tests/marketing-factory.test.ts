@@ -98,14 +98,14 @@ describe('flyer copy and facts', () => {
   it('writes warm copy from the event itself and never trips the jargon scan', () => {
     for (const kind of Object.keys(FLYER_ICONS) as (keyof typeof FLYER_ICONS)[]) {
       for (const recurring of [true, false]) {
-        const copy = composeFlyerCopy({ event: ev({ EventDescription: '' }), icon: kind, recurring, councilName: 'St. Jude Council' });
+        const copy = composeFlyerCopy({ event: ev({ EventDescription: '' }), icon: kind, recurring, councilName: "St. Mary's Cathedral Council" });
         expect(marketingJargonHits(Object.values(copy).join(' '))).toEqual([]);
         expect(copy.callToAction).toMatch(/all are welcome/);
-        expect(copy.hostLine).toBe('Hosted by the Knights of Columbus, St. Jude Council');
+        expect(copy.hostLine).toBe("Hosted by the Knights of Columbus, St. Mary's Cathedral Council");
         expect(Object.values(copy).join(' ')).not.toMatch(/\d/);
       }
     }
-    const copy = composeFlyerCopy({ event: ev({}), icon: 'fish', recurring: true, councilName: 'St. Jude Council' });
+    const copy = composeFlyerCopy({ event: ev({}), icon: 'fish', recurring: true, councilName: "St. Mary's Cathedral Council" });
     expect(copy.headline).toBe('Lenten Fish Fry');
     expect(copy.body).toBe('Fried fish, fries and coleslaw in the parish hall.');
     expect(copy.subhead).toMatch(/tradition returns/);
@@ -125,7 +125,7 @@ describe('flyer copy and facts', () => {
 });
 
 describe('printable flyer layout', () => {
-  const copy = composeFlyerCopy({ event: ev({ EventName: 'Fish <Fry> & "Fun"' }), icon: 'fish', recurring: true, councilName: 'St. Jude Council' });
+  const copy = composeFlyerCopy({ event: ev({ EventName: 'Fish <Fry> & "Fun"' }), icon: 'fish', recurring: true, councilName: "St. Mary's Cathedral Council" });
   const facts = flyerFacts(ev({}), []);
 
   it('embeds up to four past photos, escaping every value and dropping unsafe sources', () => {

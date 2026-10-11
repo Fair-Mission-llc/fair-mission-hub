@@ -133,7 +133,7 @@ describe('push and Alchemer helpers', () => {
   it('compiles hours, donations and checks, and encodes them as an Alchemer v5 survey response', () => {
     const period = supremeReportingPeriod('CouncilAudit', NOW);
     const snapshot = compileSupremeSnapshot('CouncilAudit', period, {
-      council: { id: 1, CouncilNumber: 15295, CouncilName: 'St. Jude' },
+      council: { id: 1, CouncilNumber: 15295, CouncilName: "St. Mary's Cathedral" },
       eventTime: [
         { MemberID: 1, Hours: 2.25, category: 'Service' },
         { MemberID: 2, Hours: 1.5, category: 'Service' },
@@ -219,7 +219,7 @@ describe.each(drivers)('$name driver: device tokens and member alerts', (d) => {
     await expectRule(db.notifications.listMemberAlerts(999), 'MEMBER_NOT_FOUND');
   });
 
-  it('lists only the member\'s own alerts of the trailing six months, newest first', async () => {
+  it("lists only the member's own alerts of the trailing six months, newest first", async () => {
     const db = await d.make();
     insertAlert(d, db, MEMBER.member, '2026-03-19 12:00:00'); // just over six months before NOW
     insertAlert(d, db, MEMBER.member, '2026-03-21 12:00:00');

@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Compiles both user manuals into their print-ready PDF editions (Sprint 7G).
+"""Compiles both user manuals into their print-ready PDF editions (Sprint 7G), then the pilot kit (Phase 7I).
 
     py scripts/compile_all_manuals.py            docs/ADMIN_USER_GUIDE.md  -> docs/ADMIN_USER_GUIDE.pdf
                                                  docs/MEMBER_USER_GUIDE.md -> docs/MEMBER_USER_GUIDE.pdf
     py scripts/compile_all_manuals.py --check    run each guide's wording check only; write nothing
     py scripts/compile_all_manuals.py --only member
-    py scripts/compile_all_manuals.py --only admin --input custom.md --output custom.pdf --base docs         --prepared-for "St. Mary's Cathedral Council 15295"
+    py scripts/compile_all_manuals.py --only admin --input custom.md --output custom.pdf --base docs
+                                      --prepared-for "St. Mary's Cathedral Council 15295"
                                                  one council's custom copy (Sprint 7H; /api/council/compile-manual)
+    py scripts/compile_all_manuals.py --only pilot-kit
+                                                 the Conference Room Pilot scripts and 11x17 posters only
+                                                 (scripts/pilot_kit_pdf.py; a full run compiles them after the guides)
 
 Both guides go through the same ReportLab layout as the Administrator guide (scripts/admin_guide_pdf.py): a title
 page, the guide's own sections with clickable contents links and PDF bookmarks, its tables and screen captures, a
@@ -26,6 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import admin_guide_pdf as layout  # noqa: E402  (the shared ReportLab layout)
+import pilot_kit_pdf  # noqa: E402  (Phase 7I: the pilot scripts and posters)
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -79,15 +84,19 @@ def use(manual: Manual) -> None:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--check', action='store_true', help="run each guide's wording check only; write nothing")
-    parser.add_argument('--only', choices=[m.key for m in MANUALS], help='compile one guide only')
+    parser.add_argument('--only', choices=[m.key for m in MANUALS] + ['pilot-kit'], help='compile one guide, or the pilot kit, only')
     # Sprint 7H: one council's custom copy - the customized Markdown, where to write it, and the image folder.
     parser.add_argument('--input', type=Path, help="the guide's Markdown to compile instead of its source (needs --only)")
     parser.add_argument('--output', type=Path, help='where to write the PDF instead of docs/ (needs --only)')
     parser.add_argument('--base', type=Path, help="the folder the guide's image links are relative to (default: the input's folder)")
     parser.add_argument('--prepared-for', default='', help='the council named on the title page')
     args = parser.parse_args(argv)
-    if (args.input or args.output) and not args.only:
-        parser.error('--input and --output need --only')
+    if (args.input or args.output) and args.only in (None, 'pilot-kit'):
+        parser.error('--input and --output need --only admin or --only member')
+    if args.only == 'pilot-kit':
+        if not args.check:
+            pilot_kit_pdf.compile_pilot_kit()
+        return
     chosen = [m for m in MANUALS if args.only in (None, m.key)]
     source_of = lambda m: args.input or (ROOT / m.source)  # noqa: E731
     layout.PREPARED_FOR = args.prepared_for.strip()
@@ -110,6 +119,9 @@ def main(argv: list[str] | None = None) -> None:
     for manual in chosen:
         use(manual)
         layout.compile_guide(source_of(manual), args.output or (ROOT / manual.output), args.base)
+    # Phase 7I: a full run also compiles the pilot kit into docs/ (a custom copy, --only, does not).
+    if args.only is None:
+        pilot_kit_pdf.compile_pilot_kit()
 
 
 if __name__ == '__main__':

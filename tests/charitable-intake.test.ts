@@ -33,7 +33,7 @@ import { openDatabases } from './shims/expo-sqlite';
 const OWN = 1;
 
 const form = (over: Partial<NewCharitableRequest> = {}): NewCharitableRequest => ({
-  OrganizationName: 'St. Jude Youth Ministry',
+  OrganizationName: "St. Mary's Cathedral Youth Ministry",
   AmountRequested: 800,
   ContactEmail: 'youth@example.org',
   RelationshipTypeID: 1,
@@ -65,9 +65,9 @@ function grantRole(d: DriverUnderTest, db: DataService, memberId: number, role: 
 
 describe('charitable intake rules (pure)', () => {
   it('cleans the intake form and refuses bad fields', () => {
-    const clean = cleanCharitableRequest(form({ OrganizationName: '  St. Jude Youth Ministry ', Website: '  ', RequestTier: null }));
+    const clean = cleanCharitableRequest(form({ OrganizationName: "  St. Mary's Cathedral Youth Ministry ", Website: '  ', RequestTier: null }));
     expect(clean).toMatchObject({
-      OrganizationName: 'St. Jude Youth Ministry',
+      OrganizationName: "St. Mary's Cathedral Youth Ministry",
       EIN: '93-1234567',
       Is501c3: 1,
       IsRecurring: 0,
@@ -140,7 +140,7 @@ describe.each(drivers)('$name driver: charitable intake and the vetting desk', (
     const detail = await db.charities.submitCharitableRequest(MEMBER.member, form());
     expect(detail.request).toMatchObject({
       CouncilID: OWN,
-      OrganizationName: 'St. Jude Youth Ministry',
+      OrganizationName: "St. Mary's Cathedral Youth Ministry",
       AmountRequested: 800,
       RequestStatus: 'Submitted',
       SubmittedAt: toTimestamp(NOW),
@@ -261,13 +261,18 @@ describe.each(drivers)('$name driver: presentation data', (d) => {
   it('loads the officers, expense sheets, charity checks and intake requests of Council 15295', async () => {
     const db = await makePresentation();
     expect(d.count(db, 'Member')).toBeGreaterThanOrEqual(19); // 3 test profiles, 15 officers and directors, the unregistered member
-    expect(d.count(db, 'ExpenseReport')).toBe(13);
+    expect(d.count(db, 'ExpenseReport')).toBe(19);
     // Sprint 5Z-4: one sheet awaiting the written order and one in the Treasurer's vault. Sprint 6Q: the ordered sheet
-    // now waits on the Treasurer Ledger Audit Desk, so the Grand Knight's desk is empty until it is coded.
+    // now waits on the Treasurer Ledger Audit Desk. Phase 7I: the pilot sheets add three for the written order (14-16), two
+    // for the Treasurer (17-18) and one coded sheet for the Grand Knight (19).
     const expenseQueue = await db.expenses.listCouncilQueue(MEMBER.admin, OWN);
-    expect(expenseQueue.filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id)).toEqual([11]);
-    expect((await db.expenses.listTreasurerQueue(MEMBER.superAdmin, OWN)).map((q) => [q.report.id, q.financialSecretaryName])).toEqual([[12, 'Council Admin']]);
-    expect(await db.expenses.listAuthorizationQueue(MEMBER.superAdmin, OWN)).toEqual([]);
+    expect(expenseQueue.filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id)).toEqual([11, 14, 15, 16]);
+    expect((await db.expenses.listTreasurerQueue(MEMBER.superAdmin, OWN)).map((q) => [q.report.id, q.financialSecretaryName])).toEqual([
+      [12, 'Council Admin'],
+      [17, 'FS User'],
+      [18, 'FS User'],
+    ]);
+    expect((await db.expenses.listAuthorizationQueue(MEMBER.superAdmin, OWN)).map((q) => q.report.id)).toEqual([19]);
     expect(expenseQueue.filter((q) => isPayableExpenseReport(q.report)).map((q) => q.report.id)).toEqual([13]);
     expect(d.count(db, 'CharitableDisbursementLedger')).toBe(8);
 
@@ -278,7 +283,7 @@ describe.each(drivers)('$name driver: presentation data', (d) => {
 
     const ledger = await db.charities.listCouncilLedger(MEMBER.admin, OWN);
     expect(ledger.reduce((n, e) => n + e.disbursements.length, 0)).toBe(8);
-    expect(ledger.find((e) => e.charity.Name === 'St. Jude Parish Food Pantry')?.totalGiven).toBe(1450);
+    expect(ledger.find((e) => e.charity.Name === "St. Mary's Cathedral Parish Food Pantry")?.totalGiven).toBe(1450);
 
     // Trustee 1 claimed the robotics club request; Trustee 2 may not take it over.
     const robotics = queue.find((q) => q.request.OrganizationName === 'Cathedral School Robotics Club')!;
@@ -417,7 +422,7 @@ describe.each(drivers)('$name driver: Faith-in-Action presentation data (Sprint 
     await db.init();
     const footprint = await db.reports.missionAreaFootprint(MEMBER.admin, OWN, '2026-2027');
     expect(footprint.areas.map((a) => [a.missionAreaName, a.donations, a.serviceHours, a.events])).toEqual([
-      ['Community', 1530.5, 39.25, 2],
+      ['Community', 1530.5, 39.25, 3], // Phase 7I: plus the Parish Parking Event, no donations or hours yet
       ['Faith', 275, 12.5, 2],
       ['Family', 1690, 39, 2],
       ['Life', 1265.25, 34.25, 2],
@@ -493,7 +498,7 @@ describe("the Shepherd's 3-step track and Trustee follow-up (pure, Sprint 5Z-Mem
   it("builds the Shepherd's tracking notice and logs it on save", () => {
     const detail = {
       shepherdFirstName: 'Pat',
-      request: { id: 12, ShepherdMemberID: 3, OrganizationName: 'St. Jude Youth Ministry', AmountRequested: 800, SubmittedAt: '2026-10-02 15:00:00' },
+      request: { id: 12, ShepherdMemberID: 3, OrganizationName: "St. Mary's Cathedral Youth Ministry", AmountRequested: 800, SubmittedAt: '2026-10-02 15:00:00' },
     } as never;
     const notice = buildCharitableTrackingNotice(detail);
     expect(notice).toMatchObject({
@@ -504,7 +509,7 @@ describe("the Shepherd's 3-step track and Trustee follow-up (pure, Sprint 5Z-Mem
       steps: ['Vetting', 'Presentation', 'Disbursement'],
       trusteeFollowUpDate: '2027-04-02',
     });
-    expect(notice.text).toMatch(/^KofC: Thank you, Pat\. Request #12 for St\. Jude Youth Ministry \(\$800\.00\) is filed\./);
+    expect(notice.text).toMatch(/^KofC: Thank you, Pat\. Request #12 for St\. Mary's Cathedral Youth Ministry \(\$800\.00\) is filed\./);
     expect(notice.text.indexOf('Vetting')).toBeLessThan(notice.text.indexOf('Presentation'));
     expect(notice.text.indexOf('Presentation')).toBeLessThan(notice.text.indexOf('Disbursement'));
     expect(notice.text).toMatch(/status report on 2027-04-02\.$/);

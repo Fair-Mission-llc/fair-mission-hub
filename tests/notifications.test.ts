@@ -19,7 +19,7 @@ describe('iCalendar output', () => {
     uid: 'shift-1@kofc-tracking-platform',
     summary: 'Packing, Sorting; and more',
     description: 'Line one\nLine two',
-    location: 'St. Jude Parish Hall',
+    location: "St. Mary's Cathedral Parish Hall",
     start: at(9, 24, 13),
     end: at(9, 24, 16),
   };
@@ -82,7 +82,7 @@ describe.each(drivers)('$name driver: 24-hour notification sweep', (d) => {
     expect(packet.email.attachments[0]).toMatchObject({ filename: 'shift.ics' });
     expect(icsOf(packet)).toContain('SUMMARY:Packing Shift - Parish Food Drive\r\n');
     expect(icsOf(packet)).toContain('DTSTART:20260924T130000\r\n');
-    expect(icsOf(packet)).toContain('LOCATION:St. Jude Parish Hall\r\n');
+    expect(icsOf(packet)).toContain('LOCATION:St. Mary\'s Cathedral Parish Hall\r\n');
 
     expect(log).toHaveBeenCalledTimes(1);
     expect(log.mock.calls[0][0]).toBe('[notification]');

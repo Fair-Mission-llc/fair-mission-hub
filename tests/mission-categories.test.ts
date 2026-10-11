@@ -13,7 +13,7 @@ const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8')
 const OWN = 1;
 
 const form = (over: Partial<NewCharitableRequest> = {}): NewCharitableRequest => ({
-  OrganizationName: 'St. Jude Youth Ministry',
+  OrganizationName: "St. Mary's Cathedral Youth Ministry",
   AmountRequested: 800,
   RelationshipTypeID: 1,
   ...over,

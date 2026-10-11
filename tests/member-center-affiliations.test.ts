@@ -102,17 +102,17 @@ describe('affiliation log plan (pure)', () => {
 
   it('adds the current membership to the history card when the log has no row for it', () => {
     const councils = [
-      { id: 1, CouncilNumber: 15295, CouncilName: 'St. Jude Council' },
+      { id: 1, CouncilNumber: 15295, CouncilName: "St. Mary's Cathedral Council" },
       { id: 2, CouncilNumber: 99001, CouncilName: 'New Council' },
     ];
     const history = buildAffiliationHistory({ member: { CouncilID: 1, StatusID: 1, DateJoinedCouncil: '2019-02-03' }, rows: [], councils, statuses: STATUSES });
-    expect(history).toEqual([{ id: null, councilId: 1, councilNumber: 15295, councilName: 'St. Jude Council', status: 'Active', dateJoined: '2019-02-03 00:00:00', dateExited: null }]);
+    expect(history).toEqual([{ id: null, councilId: 1, councilNumber: 15295, councilName: "St. Mary's Cathedral Council", status: 'Active', dateJoined: '2019-02-03 00:00:00', dateExited: null }]);
     const rows = [
       { id: 2, user_id: 5, council_id: 2, membership_status: 'Active', date_joined: NOW, date_exited: null },
       { id: 1, user_id: 5, council_id: 1, membership_status: 'Former', date_joined: '2019-02-03 00:00:00', date_exited: NOW },
     ];
     expect(buildAffiliationHistory({ member: { CouncilID: 2, StatusID: 1 }, rows, councils, statuses: STATUSES }).map((h) => [h.councilName, h.status])).toEqual([
-      ['St. Jude Council', 'Former'],
+      ["St. Mary's Cathedral Council", 'Former'],
       ['New Council', 'Active'],
     ]);
   });

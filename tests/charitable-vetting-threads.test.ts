@@ -28,7 +28,7 @@ const SHEPHERD = MEMBER.member;
 const request = (over: Partial<CharitableRequest> = {}): CharitableRequest => ({
   id: 7,
   CouncilID: OWN,
-  OrganizationName: 'St. Jude Youth Ministry',
+  OrganizationName: "St. Mary's Cathedral Youth Ministry",
   AmountRequested: 800,
   RequestStatus: 'Claimed by Trustee',
   SubmittedAt: '2026-09-01 12:00:00',
@@ -180,7 +180,7 @@ describe.each(drivers)('charitable vetting threads ($name driver)', (d) => {
     PLAIN = await addMember(db, 'plain.threads@example.org');
     TRUSTEE = await addMember(db, 'trustee.threads@example.org');
     grantRole(d, db, TRUSTEE, 'Trustee 1');
-    const { request: filed } = await db.charities.submitCharitableRequest(SHEPHERD, { OrganizationName: 'St. Jude Youth Ministry', AmountRequested: 800, RelationshipTypeID: 1, Is501c3: true });
+    const { request: filed } = await db.charities.submitCharitableRequest(SHEPHERD, { OrganizationName: "St. Mary's Cathedral Youth Ministry", AmountRequested: 800, RelationshipTypeID: 1, Is501c3: true });
     await db.charities.triageRequestStatus(TRUSTEE, filed.id, { action: 'claim' });
     return { db, requestId: filed.id };
   }
@@ -257,7 +257,7 @@ describe.each(drivers)('charitable vetting threads ($name driver)', (d) => {
     expect(await db.charities.listLinkableCharitableRequests(PLAIN, OWN)).toEqual([]);
     await db.charities.triageRequestStatus(TRUSTEE, requestId, { action: 'advance' });
     const linkable = await db.charities.listLinkableCharitableRequests(PLAIN, OWN);
-    expect(linkable).toEqual([{ id: requestId, OrganizationName: 'St. Jude Youth Ministry', AmountRequested: 800, RequestStatus: 'Advanced', VoteStatus: 'Pending' }]);
+    expect(linkable).toEqual([{ id: requestId, OrganizationName: "St. Mary's Cathedral Youth Ministry", AmountRequested: 800, RequestStatus: 'Advanced', VoteStatus: 'Pending' }]);
     await expectRule(db.charities.listLinkableCharitableRequests(PLAIN, 2), 'COUNCIL_ACCESS_DENIED');
 
     const { report } = await db.expenses.submitReport(PLAIN, { Status: 'Draft', charity_request_id: linkable[0].id }, []);

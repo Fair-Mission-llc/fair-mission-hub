@@ -143,7 +143,7 @@ describe('audit periods and cash accounts', () => {
 
   it('checks the Form 1295 report body', () => {
     const workspace = { councilId: OWN, fiscalYear: '2025-2026', period: 'JAN-JUN', lines: [], signatures: [] };
-    expect(cleanForm1295Payload({ council: { id: OWN, number: 15295, name: 'St. Jude' }, workspace }).council.number).toBe(15295);
+    expect(cleanForm1295Payload({ council: { id: OWN, number: 15295, name: "St. Mary's Cathedral" }, workspace }).council.number).toBe(15295);
     expect(() => cleanForm1295Payload({ workspace })).toThrow();
     expect(() => cleanForm1295Payload({ council: { id: OTHER, number: 1, name: 'x' }, workspace })).toThrow(/belongs to council/);
     expect(() => cleanForm1295Payload({ council: { id: OWN, number: 1, name: 'x' }, workspace: { ...workspace, period: 'Q3' } })).toThrow();

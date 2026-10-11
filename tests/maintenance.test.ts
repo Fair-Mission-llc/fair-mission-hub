@@ -26,7 +26,7 @@ const EMAIL_AT_LIMIT = `${'a'.repeat(90)}@gmail.com`;
 const EMAIL_OVER_LIMIT = `${'a'.repeat(91)}@gmail.com`;
 const MALFORMED_EMAILS = ['kofc15295gmail.com', 'kofc15295@', 'kofc15295@gmail', '@gmail.com', 'kofc 15295@gmail.com'];
 
-const parishFor =(councilId: number, name = 'St. Jude Parish'): NewParish => ({
+const parishFor =(councilId: number, name = "St. Mary's Cathedral Parish"): NewParish => ({
   Name: name,
   StreetAddress1: '100 Church St',
   City: 'Portland',
@@ -277,7 +277,7 @@ describe.each(drivers)('$name driver: parishes and pastors', (d) => {
   it('lets a council Admin maintain their parishes and pastors', async () => {
     const db = await d.make();
     const parish = await db.parishes.create(MEMBER.admin, { ...parishFor(OWN), StreetAddress2: '  ' });
-    expect(parish).toMatchObject({ Name: 'St. Jude Parish', CouncilID: OWN });
+    expect(parish).toMatchObject({ Name: "St. Mary's Cathedral Parish", CouncilID: OWN });
     expect(parish.StreetAddress2 ?? null).toBeNull();
 
     const pastor = await db.pastors.create(MEMBER.admin, { FirstName: 'Thomas', LastName: 'Aquino', Email: 'fr.thomas@example.org', ParishID: parish.id });
@@ -286,7 +286,7 @@ describe.each(drivers)('$name driver: parishes and pastors', (d) => {
     expect((await db.pastors.listByCouncil(OWN)).map((p) => p.LastName)).toEqual(['Aquino', 'Burke']);
 
     expect(await db.pastors.update(MEMBER.admin, pastor.id, { Phone: '503-555-0101' })).toMatchObject({ Phone: '503-555-0101', LastName: 'Aquino' });
-    expect(await db.parishes.update(MEMBER.admin, parish.id, { City: 'Beaverton' })).toMatchObject({ City: 'Beaverton', Name: 'St. Jude Parish' });
+    expect(await db.parishes.update(MEMBER.admin, parish.id, { City: 'Beaverton' })).toMatchObject({ City: 'Beaverton', Name: "St. Mary's Cathedral Parish" });
     expect((await db.parishes.listByCouncil(OWN)).map((p) => p.id)).toEqual([parish.id]);
     expect(await db.parishes.get(parish.id)).toMatchObject({ City: 'Beaverton' });
   });
@@ -336,7 +336,7 @@ describe.each(drivers)('$name driver: parishes and pastors', (d) => {
   it('rejects a duplicate parish name within a council but allows it in another', async () => {
     const db = await d.make();
     await db.parishes.create(MEMBER.admin, parishFor(OWN));
-    await expectRule(db.parishes.create(MEMBER.admin, parishFor(OWN, 'st. jude parish')), 'INVALID_INPUT');
+    await expectRule(db.parishes.create(MEMBER.admin, parishFor(OWN, "st. mary's cathedral parish")), 'INVALID_INPUT');
     await db.parishes.create(MEMBER.superAdmin, parishFor(OTHER));
     expect(d.count(db, 'Parish')).toBe(2);
   });

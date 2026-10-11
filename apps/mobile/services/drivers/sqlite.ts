@@ -793,8 +793,10 @@ const DB_NAME = 'kofc.db';
  *     meeting check-in - and LiveAttendance.photo_url and Meeting.photo_url (Sprint 7G).
  * 69: no table change - Council 15295 is renamed St. Mary's Cathedral Council in Seed.sql, and phones rebuild to pick
  *     the name up; Council.shift_signup_lock_hours now sets the Donate screen's gate window (Sprint 7H).
+ * 70: no table change - every St. Jude place renamed St. Mary's Cathedral, and the seven Conference Room Pilot personas
+ *     with their pending expense sheets, held time entries and the Parish Parking Event (Phase 7I).
  */
-const SCHEMA_VERSION = 69;
+const SCHEMA_VERSION = 70;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

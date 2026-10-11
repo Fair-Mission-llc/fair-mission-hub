@@ -34,7 +34,7 @@ const code = (fn: () => unknown): string | undefined => {
 };
 
 const form = (over: Partial<NewCharitableRequest> = {}): NewCharitableRequest => ({
-  OrganizationName: 'St. Jude Youth Ministry',
+  OrganizationName: "St. Mary's Cathedral Youth Ministry",
   AmountRequested: 800,
   RelationshipTypeID: 1,
   Is501c3: true,
