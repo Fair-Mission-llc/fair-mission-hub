@@ -229,7 +229,10 @@ import {
   buildCharitableRequestDetails,
   CHARITABLE_REQUEST_FORM_COLUMNS,
   CHARITABLE_TRIAGE_COLUMNS,
+  assertRequestPayable,
   charitableRequestNotFound,
+  charityFromRequest,
+  cleanRequestCheck,
   assertCharitableThreadAccess,
   assertCharitableThreadType,
   buildCharitableRequestThreads,
@@ -6066,6 +6069,51 @@ export class SqliteDataService implements DataService {
       );
     },
 
+    payApprovedRequest: async (actorId, requestId, checkDetails) => {
+      const check = cleanRequestCheck(checkDetails);
+      const db = await this.ready();
+      let charityId = 0;
+      let disbursementId = 0;
+      let charityRegistered = false;
+      await db.withTransactionAsync(async () => {
+        const request = await db.getFirstAsync<CharitableRequest>('SELECT * FROM [CharitableRequest] WHERE [id] = ?', [requestId]);
+        if (!request) throw charitableRequestNotFound(requestId);
+        const councilId = request.CouncilID;
+        assertMayDisburseCharity(await this.memberWriteActor(db, actorId), councilId, `pay charitable request ${requestId}`);
+        assertRequestPayable(request, actorId);
+        assertCheckNumberUnused(check.CheckNumber, councilId, await this.councilCheckNumbers(db, councilId));
+
+        if (check.CharityID !== null) {
+          charityId = (await this.requireCharity(db, check.CharityID)).id;
+        } else {
+          const council = await db.getFirstAsync<Pick<Council, 'State'>>('SELECT [State] FROM [Council] WHERE [id] = ?', [councilId]);
+          const lookup = { Name: request.OrganizationName, State: council?.State ?? '', EIN: request.EIN ?? null };
+          const found = findRegisteredCharity(await this.charityCandidates(db, lookup), lookup);
+          if (found) {
+            charityId = found.id;
+          } else {
+            charityId = await this.insertCharity(db, cleanGlobalCharity(charityFromRequest(request, council?.State ?? '', check.CharityType)));
+            charityRegistered = true;
+          }
+        }
+
+        await this.linkCharity(db, councilId, charityId);
+        const res = await db.runAsync(
+          `INSERT INTO [CharitableDisbursementLedger] ([CouncilID], [CharityID], [Amount], [CheckNumber], [DisbursedByID], [PayoutDate], [Notes], [ProposalID])
+           VALUES (?, ?, ?, ?, ?, ?, ?, NULL)`,
+          [councilId, charityId, request.AmountApproved, check.CheckNumber, actorId, check.PayoutDate, check.Notes],
+        );
+        disbursementId = res.lastInsertRowId;
+        await db.runAsync('UPDATE [CharitableRequest] SET [PaymentOrderId] = ? WHERE [id] = ?', [disbursementId, requestId]);
+      });
+      return {
+        request: (await db.getFirstAsync<CharitableRequest>('SELECT * FROM [CharitableRequest] WHERE [id] = ?', [requestId]))!,
+        disbursement: (await db.getFirstAsync<CharitableDisbursementLedger>('SELECT * FROM [CharitableDisbursementLedger] WHERE [id] = ?', [disbursementId]))!,
+        charity: await this.requireCharity(db, charityId),
+        charityRegistered,
+      };
+    },
+
     listCharitableRequestsQueue: async (actorId, councilId) => {
       const db = await this.ready();
       assertMayVetCharitableRequests(await this.memberWriteActor(db, actorId), councilId, `read the charitable request queue of council ${councilId}`);
@@ -6772,7 +6820,7 @@ export class SqliteDataService implements DataService {
   }
 
   /** The registry rows `charity` could duplicate (findRegisteredCharity): the same EIN, or anything in its State. */
-  private async charityCandidates(db: SQLite.SQLiteDatabase, charity: CleanGlobalCharity): Promise<GlobalCharityRegistry[]> {
+  private async charityCandidates(db: SQLite.SQLiteDatabase, charity: Pick<CleanGlobalCharity, 'EIN' | 'State'>): Promise<GlobalCharityRegistry[]> {
     return db.getAllAsync<GlobalCharityRegistry>('SELECT * FROM [GlobalCharityRegistry] WHERE [EIN] = ? OR [State] = ?', [
       charity.EIN ?? null,
       charity.State,

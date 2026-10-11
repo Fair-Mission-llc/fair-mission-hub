@@ -1130,6 +1130,29 @@ export interface CouncilCharityLedgerEntry {
   totalGiven: number;
 }
 
+/**
+ * The check that pays a charitable request the council voted to fund (Sprint 7I Extension, charities.payApprovedRequest).
+ * The amount is always the request's AmountApproved. Name the registry charity to pay with CharityID; without one, the
+ * request's organization is matched in the registry by EIN or name and state, and registered when it is not there yet,
+ * which needs its CharityType (one of CHARITY_TYPES).
+ */
+export interface CharitableRequestCheckDetails extends DisbursementCheckDetails {
+  CharityID?: number | null;
+  CharityType?: string | null;
+}
+
+/** What charities.payApprovedRequest wrote. */
+export interface CharitableRequestPayment {
+  /** The request, now carrying PaymentOrderId. */
+  request: CharitableRequest;
+  /** The check, in the council's charitable disbursement ledger (ProposalID null). */
+  disbursement: CharitableDisbursementLedger;
+  /** The registry entry that was paid. */
+  charity: GlobalCharityRegistry;
+  /** True when this call added the charity to the registry. */
+  charityRegistered: boolean;
+}
+
 export interface CharityDisbursementResult {
   /** The registry entry that was paid, as stored after any blanks were filled in. */
   charity: GlobalCharityRegistry;
@@ -3625,6 +3648,19 @@ export interface DataService {
      * (assertMayAuditCouncilExpenses: its Admins, Financial Secretary and Treasurer, any Active Super Admin).
      */
     listApprovedFundingQueue(actorId: number, councilId: number): Promise<CharitableRequest[]>;
+    /**
+     * Sprint 7I Extension: pays a request from the funding queue by check, in one transaction. Writes the
+     * CharitableDisbursementLedger row (Amount = AmountApproved, DisbursedByID = actorId, ProposalID null), connects the
+     * council to the charity, and sets the request's PaymentOrderId, which moves its tracking notice past Disbursement and
+     * charges its TargetBudgetLineID in the budget analysis. The charity is CharitableRequestCheckDetails.CharityID, else
+     * the request's organization found in the registry, else registered from the request (charityFromRequest). The
+     * council's Active Financial Secretary or Treasurer, or an Active Super Admin (FINANCE_OFFICER_REQUIRED,
+     * COUNCIL_ACCESS_DENIED). Rejects RECORD_NOT_FOUND for an unknown request or CharityID, REQUEST_STATUS_CONFLICT
+     * unless the vote approved it and no check has paid it, SELF_PAYOUT_BLOCKED for the request's own Knight Shepherd,
+     * INVALID_INPUT for a check number the council already used or a missing CharityType when the charity must be
+     * registered, and INVALID_DATE for a malformed payout date.
+     */
+    payApprovedRequest(actorId: number, requestId: number, checkDetails: CharitableRequestCheckDetails): Promise<CharitableRequestPayment>;
     // ---- request threads and the expense link (Sprint 6H) ----
     /**
      * The council's vetted requests a member may link an expense sheet to (ExpenseReport.charity_request_id): RequestStatus

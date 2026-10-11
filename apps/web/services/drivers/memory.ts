@@ -226,7 +226,10 @@ import {
   buildMissionAreaFootprint,
   buildCharitableRequestDetails,
   CHARITABLE_REQUEST_FORM_COLUMNS,
+  assertRequestPayable,
   charitableRequestNotFound,
+  charityFromRequest,
+  cleanRequestCheck,
   assertCharitableThreadAccess,
   assertCharitableThreadType,
   buildCharitableRequestThreads,
@@ -5149,6 +5152,58 @@ export class MemoryDataService implements DataService {
         .filter((r) => r.CouncilID === councilId && r.VoteStatus === 'Approved' && r.PaymentOrderId == null)
         .sort((a, b) => (a.id as number) - (b.id as number))
         .map((r) => ({ ...r }) as unknown as CharitableRequest);
+    },
+
+    payApprovedRequest: async (actorId, requestId, checkDetails) => {
+      const check = cleanRequestCheck(checkDetails);
+      const s = await this.ready();
+      return s.transaction(() => {
+        // Inside a transaction the store works on copied rows, so the request found here is the one to change.
+        const request = s.rows('CharitableRequest').find((r) => r.id === requestId);
+        if (!request) throw charitableRequestNotFound(requestId);
+        const councilId = request.CouncilID as number;
+        assertMayDisburseCharity(this.memberWriteActor(s, actorId), councilId, `pay charitable request ${requestId}`);
+        assertRequestPayable(request as unknown as CharitableRequest, actorId);
+        assertCheckNumberUnused(check.CheckNumber, councilId, this.councilCheckNumbers(s, councilId));
+
+        let charity: Row;
+        let charityRegistered = false;
+        if (check.CharityID !== null) {
+          charity = this.requireCharity(s, check.CharityID);
+        } else {
+          const council = this.requireRecord(s, 'Council', councilId) as unknown as Council;
+          const found = findRegisteredCharity(this.charityRows(s), {
+            Name: request.OrganizationName as string,
+            State: council.State,
+            EIN: (request.EIN as string | null | undefined) ?? null,
+          }) as unknown as Row | undefined;
+          if (found) {
+            charity = found;
+          } else {
+            charity = s.insert('GlobalCharityRegistry', { ...cleanGlobalCharity(charityFromRequest(request as unknown as CharitableRequest, council.State, check.CharityType)) });
+            charityRegistered = true;
+          }
+        }
+
+        this.linkCharity(s, councilId, charity.id as number);
+        const disbursement = s.insert('CharitableDisbursementLedger', {
+          CouncilID: councilId,
+          CharityID: charity.id,
+          Amount: request.AmountApproved,
+          CheckNumber: check.CheckNumber,
+          DisbursedByID: actorId,
+          PayoutDate: check.PayoutDate,
+          Notes: check.Notes,
+          ProposalID: null,
+        });
+        request.PaymentOrderId = disbursement.id;
+        return {
+          request: { ...request } as unknown as CharitableRequest,
+          disbursement: { ...disbursement } as unknown as CharitableDisbursementLedger,
+          charity: { ...charity } as unknown as GlobalCharityRegistry,
+          charityRegistered,
+        };
+      });
     },
 
     listCharitableRequestsQueue: async (actorId, councilId) => {

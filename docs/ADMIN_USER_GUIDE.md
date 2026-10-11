@@ -785,20 +785,27 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 **Start point:** Sidebar → Finances → **Charitable Disbursements Ledger**.
 
 **Steps:**
-1. Find the approved request.
-2. Enter the check number and the date.
-3. Save.
+1. Find the request in **Approved requests awaiting payment**.
+2. Click **Pay approved request**.
+3. Type the **Check number**. Check the **Payout date**.
+4. Choose the **Charity type (if not registered yet)**. The portal uses it only when the organization is not in the Global Charities Registry.
+5. Optional: type **Notes (optional)**.
+6. Click **Issue check for** the approved amount.
+
+The check is always for the amount the council approved. The Knight Shepherd of the request cannot pay it.
 
 <!-- KEEP_IMAGE: charity funding queue capture -->
 ![Charity funding queue (/charities/queue)](../generated/dashboard_visual_catalog/charities_queue.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The Shepherd's **My requests** shows the request as paid.
+**Expected result:** The request leaves **Approved requests awaiting payment**. The check is listed against the charity, the charity is added to the registry if it was not there, the request's target budget line is charged, and the Shepherd's **My requests** shows the request as paid.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The request is missing. | The council has not passed the motion. | Check the motion in the meeting. |
+| The check is refused with "already recorded check". | The council used that check number before. | Type the next unused check number. |
+| The check is refused with "choose its charity type". | The organization is not in the registry yet. | Choose the **Charity type (if not registered yet)**. |
 
 ### 6.10 Record or correct a donation
 

@@ -87,6 +87,9 @@ class Flow:
     title: str
     context: str
     steps: tuple[Step, ...]
+    minutes: int = 10
+    # what happens next, outside the session (printed under the flow's last step)
+    after: str = ''
 
 
 SIGN_IN_WEB = 'Web portal sign-in page'
@@ -266,80 +269,134 @@ PERSONAS: tuple[Persona, ...] = (
 GROUP_FLOWS: tuple[Flow, ...] = (
     Flow(
         key='expense',
-        title='Flow 1 - An expense report from receipt to check',
+        title='Flow 1 - Two new expense reports, live on the FS desk',
+        minutes=25,
         context=(
-            'Member Alpha bought cones and vests for the lot attendants (report 14). The council pays nothing until three '
-            'different officers have signed: the Financial Secretary\'s written order, the Treasurer\'s ledger coding and '
-            'the Grand Knight\'s final release. Then the Treasurer writes the check. Everyone watches the report move.'
+            'Both member personas bought supplies for the Parish Parking Event this morning. Each files a brand-new report '
+            'with its receipt while the room watches the Financial Secretary\'s laptop on the wireless display: the rows '
+            'appear on his desk as soon as they are submitted. Nothing in this flow uses a report from the seed data. The '
+            'council pays nothing until three different officers have signed, and then the Treasurer writes the check.'
         ),
         steps=(
-            Step('Finances > My Expense Reports', 'Show report 14 and its status line.', 'Report 14 is Submitted and waits for the written order.', who='Member Alpha'),
-            Step('Finances > FS Expense Audit', 'Click Verify & Sign Expense on report 14.', 'Report 14 leaves the FS desk.', who='FS User'),
-            Step('Finances > Treasurer Ledger Audit Desk', 'Choose Miscellaneous Others and Event Operational Costs on report 14, then Categorize & Lock Expense.', 'Report 14 leaves the Treasurer desk.', who='Treasurer User'),
-            Step('Finances > GK Expense Authorize', 'Click Final Release for Payment on report 14.', 'Report 14 is Approved and released to the Treasurer.', who='GK User'),
-            Step('Finances > Bulk Check Disbursements', 'Pay report 14 with check number 1202 (Issue Disbursement Check).', 'Report 14 is Reimbursed.', who='Treasurer User'),
-            Step('Finances > My Expense Reports', 'Refresh report 14.', 'Report 14 shows Reimbursed with check 1202.', who='Member Alpha'),
+            Step('Finances > My Expense Reports', 'Click New expense report. Under Spent for choose Events and the Parish Parking Event. Add a line dated today: Ace Hardware, $18.40, "Zip ties and sign stakes". Click + Add receipt and attach a photo of any receipt. Click Submit for approval.',
+                 'The report is Submitted. Write its report number in the Notes field; the room uses it for the rest of the flow.', who='Member Alpha'),
+            Step('Finances > My Expense Reports', 'File a second new report the same way: Dollar Tree, $9.99, "Donation receipt books", but do not attach a receipt. Give a reason when the form asks why there is no receipt, then Submit for approval.',
+                 'The report is Submitted. Write its report number in the Notes field.', who='Member Beta'),
+            Step('Finances > FS Expense Audit (on the wireless display)', 'Reload the Financial Secretary Audit Desk.',
+                 'Both new reports are on the desk with Member Alpha\'s and Member Beta\'s names, amounts and vendors, beside any older ones.', who='FS User'),
+            Step('Finances > FS Expense Audit', 'Click Verify & Sign Expense on Member Alpha\'s new report.', 'The row reads "Written order issued" and leaves the desk.', who='FS User'),
+            Step('Finances > Leadership Auditing Queue', 'Find Member Beta\'s new report. Type "Please add the receipt photo" in Reason for returning (required) and click Return to member.',
+                 'The report goes back to Member Beta as a Draft.', who='FS User'),
+            Step('Finances > My Expense Reports', 'Open the returned report, read the reason, click + Add receipt, attach a photo and Submit for approval again.',
+                 'The report is Submitted again and reappears on the FS desk on the display.', who='Member Beta'),
+            Step('Finances > FS Expense Audit', 'Click Verify & Sign Expense on Member Beta\'s report.', 'Both new reports have left the FS desk.', who='FS User'),
+            Step('Finances > Treasurer Ledger Audit Desk', 'On each new report choose Miscellaneous Others in Assign Ledger Budget Line Item and Event Operational Costs in Assign General Ledger Account, then click Categorize & Lock Expense.',
+                 'Both rows read "Coded to the ledger" and move to GK Expense Authorize.', who='Treasurer User'),
+            Step('Finances > GK Expense Authorize', 'Click Final Release for Payment on both new reports.', 'Both reports are Approved and released to the Treasurer.', who='GK User'),
+            Step('Finances > Bulk Check Disbursements', 'Pay Member Alpha\'s report with check number 1401, then Member Beta\'s with check 1402 (Issue Disbursement Check).',
+                 'Both reports are Reimbursed.', who='Treasurer User'),
+            Step('Finances > My Expense Reports', 'Reload the list.', 'Each member sees his report Reimbursed with its check number.', who='Member Alpha and Member Beta'),
         ),
     ),
     Flow(
         key='guards',
         title='Flow 2 - The approval guards',
+        minutes=10,
         context=(
             'The platform enforces the council\'s accounting controls. Nobody signs his own report, and the Grand Knight '
-            'cannot give the final release on a report he already signed as Financial Secretary or Treasurer (the '
-            'Collusion Guard). The group tries each shortcut and sees it refused.'
+            'cannot give the final release on a report he already signed as Financial Secretary or Treasurer (the Collusion '
+            'Guard). The Financial Secretary tries the most common shortcut on a report he files himself.'
         ),
         steps=(
-            Step('Finances > My Expense Reports', 'File a small report of your own (any vendor, $5.00) and submit it.', 'The report waits on the Financial Secretary Audit Desk.', who='FS User'),
+            Step('Finances > My Expense Reports', 'File a new report of your own (any vendor, $5.00, with a receipt) and Submit for approval.', 'The report is Submitted.', who='FS User'),
             Step('Finances > FS Expense Audit', 'Find your own report.', 'The row reads "Your own report"; Verify & Sign Expense is not offered. Another officer must sign it.', who='FS User'),
-            Step('Finances > Leadership Auditing Queue', 'Return the report with the reason "Pilot test".', 'The report goes back to Draft.', who='FS User'),
-            Step('Finances > Treasurer Ledger Audit Desk', 'Read report 16 (Historian User).', 'It waits for coding; the Treasurer may code it because he did not issue its written order.', who='Treasurer User'),
+            Step('Finances > Leadership Auditing Queue', 'Return your report with the reason "Pilot test".', 'The report goes back to Draft and no signature was recorded.', who='FS User'),
         ),
     ),
     Flow(
         key='hours',
         title='Flow 3 - Volunteer time held for review',
+        minutes=15,
         context=(
             'Service hours feed the council\'s Supreme reports, so the platform holds an entry that crosses the council\'s '
-            'limits (more than 5.0 hours on one activity in a day, or more than 1.0 hour past a scheduled shift) until '
-            'the Grand Knight, the Deputy Grand Knight or an Admin decides it.'
+            'limits (more than 5.0 hours on one activity in a day, or more than 1.0 hour past a scheduled shift) until the '
+            'Grand Knight, the Deputy Grand Knight or an Admin decides it. Both entries in this flow are reported live.'
         ),
         steps=(
-            Step('Performance > Executive Dashboard', 'Open the Volunteer Time Quarantine Desk.', 'Member Alpha (6.5 hours, parking shift) and Member Beta (6 hours, Ushering) wait.', who='DGK User'),
-            Step('Performance > Executive Dashboard', 'Approve & Add to Time Log on Member Beta\'s entry.', 'Beta\'s hours count from now on.', who='DGK User'),
-            Step('Performance > Executive Dashboard', 'Reject & Remove on Member Alpha\'s entry.', 'Alpha\'s 6.5 hours never count.', who='DGK User'),
-            Step('Phone > Report tab', 'Report the Saturday shift again with 4 hours and tap Save time.', 'The hours save directly; 4 hours is inside the shift and its 1.0-hour allowance.', who='Member Alpha'),
-            Step('Phone > Report tab', 'Report 9 hours on the Sunday shift (October 11) and tap Save time.', 'The phone says the hours were sent to leadership review, and the entry appears on the desk.', who='Member Beta'),
+            Step('Phone > Report tab', 'Under Which shift? choose Lot attendants - Sunday (October 11). Under How long? enter 4 hours. Tap Save time.',
+                 'The hours save directly: 4 hours is inside the shift and its 1.0-hour allowance.', who='Member Beta'),
+            Step('Phone > Report tab', 'Under Which shift? choose Lot attendants - Sunday (October 11). Under How long? enter 7 hours. Tap Save time.',
+                 'The phone says the hours were sent to leadership review before they count.', who='Member Alpha'),
+            Step('Performance > Executive Dashboard (on the wireless display)', 'Open the Volunteer Time Quarantine Desk.',
+                 'Member Alpha\'s new 7-hour entry is on the desk with its reason: more than 1.0 hour over the 4-hour shift.', who='DGK User'),
+            Step('Performance > Executive Dashboard', 'Click Reject & Remove on Member Alpha\'s new entry.', 'The entry leaves the desk; its 7 hours never count.', who='DGK User'),
+            Step('Phone > Report tab', 'Report the Sunday shift again with 4 hours and tap Save time.', 'The hours save directly.', who='Member Alpha'),
         ),
     ),
     Flow(
         key='gate',
         title='Flow 4 - Check donations at the parking gate',
+        minutes=10,
         context=(
             f'The {PILOT_EVENT} raises money at the cathedral lot during the weekend Masses. Both members take checks at the '
             'gate on their phones; the officers see each one at once in Donations History.'
         ),
         steps=(
-            Step('Phone > Donate tab', f'Start accepting for the {PILOT_EVENT} and record a $20.00 check, number 1045.', 'The check appears under Recorded for this event.', who='Member Alpha'),
-            Step('Phone > Donate tab', 'Record a $25.00 check, number 2210, on the same event.', 'Both phones show both checks under Recorded for this event.', who='Member Beta'),
-            Step('Finances > Donations History', f'Read the {PILOT_EVENT} donations.', 'Both checks are listed with their check numbers and the member who recorded each.', who='FS User'),
+            Step('Phone > Donate tab', f'Tap Start accepting for an event, choose the {PILOT_EVENT} and tap Start. Choose Check, type 1045 in CHECK NUMBER (REQUIRED), enter $20.00 and tap Record donation.',
+                 'The check appears under Recorded for this event.', who='Member Alpha'),
+            Step('Phone > Donate tab', 'Record a $25.00 check, number 2210, on the same event. Then try one more check without a check number.',
+                 'The first check is recorded; the phone refuses the one without a check number.', who='Member Beta'),
+            Step('Finances > Donations History (on the wireless display)', f'Read the {PILOT_EVENT} donations.', 'Both checks are listed with their check numbers and the member who recorded each.', who='FS User'),
             Step('Phone > Donate tab', 'Tap Stop accepting - the event is over.', 'The phone leaves the intake session.', who='Member Alpha'),
         ),
     ),
     Flow(
-        key='meeting',
-        title='Flow 5 - The October business meeting',
+        key='charity',
+        title='Flow 5 - A charity grant request, from the member to the council floor',
+        minutes=15,
         context=(
-            'The officers meet at the cathedral. The Grand Knight runs the Live Meeting Console from the laptop on the '
-            'projector; members check in from their phones and follow the agenda.'
+            'A food bank near the cathedral asked Member Alpha for help. He becomes its Knight Shepherd: he files the '
+            'request, answers the vetting officer\'s question and follows it on his 3-step tracking notice (Vetting, '
+            'Presentation, Disbursement). The Financial Secretary vets it on the wireless display; he may, because he is not '
+            'its Shepherd. The 10-day rule then puts it on the agenda of the soonest Monthly meeting at least 10 days away.'
         ),
         steps=(
-            Step('Governance > Live Meeting Console', 'Choose the October Business Meeting.', 'The welcome line names the elected chairs from their seats: Worthy Grand Knight GK User, Worthy Deputy Grand Knight DGK User and the other elected officers.', who='GK User'),
-            Step('Governance > Live Meeting Console', 'Push the first agenda line to the floor.', 'The top bar shows the item and its countdown; every phone following the meeting shows the same clock.', who='GK User'),
-            Step('Phone > Mtgs tab', 'Open the meeting and check in (GPS, or the meeting PIN the Grand Knight reads out).', 'The roster on the console shows you checked in.', who='Member Alpha'),
-            Step('Performance > Council History', 'Write the day\'s diary entry about the meeting and click Save written entry.', 'The entry is saved for today.', who='Historian User'),
+            Step('Finances > Propose Charity Grant', 'Fill in the form: Organization or ministry name "Cathedral Neighbors Food Bank", a one-line Mission, a Mailing address, Relationship to the council "Local Nonprofit", Mission area "Community", Amount requested $350, Specific use "Groceries for 30 families". Click Save and submit for vetting.',
+                 'The request appears in your requests at the Vetting step.', who='Member Alpha'),
+            Step('Finances > Charity Vetting Queue (on the wireless display)', 'Find the new request on the Pooled Vetting Desk and click Claim & Audit.',
+                 'The request is Claimed by Trustee with FS User as its vetter.', who='FS User'),
+            Step('Finances > Charity Vetting Queue', 'Open the vetting drawer, choose Request More Info and ask: "How many of the 30 families are in our parish?"',
+                 'A private thread opens between you and the Knight Shepherd.', who='FS User'),
+            Step('Finances > Propose Charity Grant', 'Open the request\'s thread, type an answer and click Send reply.', 'The FS sees the answer in the vetting drawer.', who='Member Alpha'),
+            Step('Finances > Charity Vetting Queue', 'In the vetting drawer choose Food for Families (e.g., Lift Up) as the Target budget line and click Advance to vote.',
+                 'The request shows Advanced to vote. Member Alpha\'s request moves to the Presentation step.', who='FS User'),
+            Step('Finances > Charity Vetting Queue', 'Click Place on next agenda on the request.',
+                 'A notice reads "Request #... is a Proposed Motion for" the soonest Monthly meeting at least 10 days away, with its date.', who='FS User'),
+        ),
+        after=(
+            'After this session: the council votes the motion at that meeting. When it passes, the request appears on '
+            'Finances > Charitable Disbursements Ledger under Approved requests awaiting payment. The Financial Secretary or '
+            'the Treasurer clicks Pay approved request, types the check number and issues the check for the approved amount. '
+            'The request\'s tracker then shows the Disbursement done, the check is listed against the charity, and the '
+            'target budget line is charged. The Shepherd cannot write that check himself.'
         ),
     ),
+)
+
+# The 90-minute timetable printed on the group script's first page: (minutes, part).
+GROUP_TIMETABLE: tuple[tuple[int, str], ...] = (
+    (5, 'Welcome; every persona signs in on his own device'),
+    *((f.minutes, f.title) for f in GROUP_FLOWS),
+    (5, 'Attendee Feedback Questionnaire'),
+)
+
+# Done by the facilitator before the attendees arrive; not part of the timed flows.
+FACILITATOR_PREP: tuple[str, ...] = (
+    'Reload the web portal on every laptop so the pilot data is fresh, and clear the phone app\'s data on each phone.',
+    'Mirror the FS User laptop to the wireless display; switch the mirror to the DGK laptop for Flow 3.',
+    'As GK User, open Governance > Annual Cadence Manager and click Populate the year for 2026-2027 once. Flow 5 needs a '
+    'Monthly meeting at least 10 days away to place the request on.',
+    f'Hold the session while the {PILOT_EVENT} is at the gate (October 10-31, 2026) so Flow 4 can take donations.',
 )
 
 FEEDBACK_RATINGS: tuple[str, ...] = (
@@ -442,9 +499,9 @@ class RatingRow(Flowable):
 CONTENT_W = LETTER[0] - 1.5 * inch
 
 
-def day_in_life_panel(text: str, who: str, device: str, st) -> Table:
+def day_in_life_panel(text: str, who: str, device: str, st, heading: str | None = None) -> Table:
     body = [
-        Paragraph('Day in the Life of the ' + escape(who), st['panel_head']),
+        Paragraph(escape(heading or 'Day in the Life of the ' + who), st['panel_head']),
         Spacer(1, 3),
         Paragraph(escape(text), st['body']),
         Spacer(1, 4),
@@ -583,20 +640,38 @@ def build_individual(output: Path, generated: str) -> None:
     print(f'wrote {output} ({output.stat().st_size // 1024} KB, {doc.page} pages)')
 
 
+def timetable(st) -> Table:
+    rows = [[Paragraph('<b>Minutes</b>', st['body']), Paragraph('<b>Part</b>', st['body'])]]
+    rows += [[Paragraph(str(m), st['body']), Paragraph(escape(part), st['body'])] for m, part in GROUP_TIMETABLE]
+    rows.append([Paragraph(f'<b>{sum(m for m, _ in GROUP_TIMETABLE)}</b>', st['body']), Paragraph('<b>Total</b>', st['body'])])
+    t = Table(rows, colWidths=[70, CONTENT_W - 70])
+    t.setStyle(TableStyle([
+        ('LINEBELOW', (0, 0), (-1, 0), 1, NAVY), ('LINEABOVE', (0, -1), (-1, -1), 1, NAVY),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -2), [WHITE, PANEL]), ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    return t
+
+
 def build_group(output: Path, generated: str) -> None:
     st = styles()
-    story = cover('Group Cross-Desk Script', 'The flows that pass work from desk to desk, played together', st, generated)
+    story = cover('Group Cross-Desk Script', 'Live records passed from desk to desk, played together', st, generated)
     story += [Paragraph('Before you start', st['h1']),
-              Paragraph('Seat the seven personas around the table, each signed in on his own device. The facilitator reads each '
-                        'flow\'s context aloud; the persona named in bold at each step takes the keyboard while the room watches '
-                        'the projector. Play the flows in order: Flow 1 pays report 14, which Flow 2 and the individual scripts do '
-                        'not touch.', st['body']),
-              Spacer(1, 10)]
-    for i, flow in enumerate(GROUP_FLOWS):
-        if i:
-            story.append(PageBreak())
-        story += [Paragraph(escape(flow.title), st['h1']), day_in_life_panel(flow.context, 'council at the table', 'Every persona\'s own device, the GK laptop on the projector', st), Spacer(1, 12)]
+              Paragraph('Seat the seven personas around the table, each signed in on his own device. Every record in these flows '
+                        'is created during the session: the members file new expense reports, report new hours, take new '
+                        "checks and file a new charity request, and the room watches each one arrive on the officer's desk on "
+                        "the wireless display. The facilitator reads each flow's context aloud; the persona named in bold at "
+                        'each step takes the keyboard.', st['body']),
+              Spacer(1, 8),
+              Paragraph('Facilitator preparation (before the attendees arrive)', st['h2'])]
+    story += [Paragraph(f'{i}. {escape(item)}', st['body']) for i, item in enumerate(FACILITATOR_PREP, start=1)]
+    story += [Spacer(1, 8), Paragraph('Timetable', st['h2']), timetable(st)]
+    for flow in GROUP_FLOWS:
+        story.append(PageBreak())
+        story += [Paragraph(f'{escape(flow.title)} <font size="11" color="#4A5568">&middot; {flow.minutes} minutes</font>', st['h1']),
+                  day_in_life_panel(flow.context, 'council at the table', "Every persona's own device; the officer's laptop on the wireless display", st), Spacer(1, 12)]
         story += [step_block(f'group_{flow.key}', n, s, st) for n, s in enumerate(flow.steps, start=1)]
+        if flow.after:
+            story.append(day_in_life_panel(flow.after, '', 'Not played in this session', st, heading='After the session: paying the approved grant'))
     story += feedback_appendix('group', st)
     doc = ScriptDocument(str(output), 'Group Cross-Desk Script', generated)
     doc.build(story)
@@ -768,12 +843,12 @@ def poster_charity(output: Path, generated: str) -> None:
          'Claim the request and check it. Request More Info opens a private thread with the Shepherd; Request Officer Input asks the officers.'),
         ('3', 'Advance or decline', 'The vetting officer', 'Finances > Charity Vetting Queue',
          'Advance it to the council vote, or decline it with a reason. A declined request stops here.'),
-        ('4', 'On the agenda', 'Automatic: the 10-day rule', 'Governance > Meeting Center',
-         'An advanced request goes to the soonest Monthly meeting at least 10 days away, as a proposed motion.'),
+        ('4', 'On the agenda', 'The vetting officer - the 10-day rule', 'Finances > Charity Vetting Queue',
+         'Place on next agenda puts it on the soonest Monthly meeting at least 10 days away, as a proposed motion.'),
         ('5', 'Council vote', 'The members at the meeting', 'Governance > Live Meeting Console',
          'Secret smartphone ballot, or the Recorder\'s hand tally. Decided Passed, Failed or Tabled.'),
-        ('6', 'Pay the grant', 'Financial Secretary or Treasurer', 'Finances > Charitable Disbursements Ledger',
-         'An approved grant is paid by check and recorded against the charity.'),
+        ('6', 'Pay the grant', 'Financial Secretary or Treasurer - never the Shepherd', 'Finances > Charitable Disbursements Ledger',
+         'Pay approved request: one check for the approved amount, listed against the charity and charged to the budget line.'),
         ('7', 'Follow up', 'The Trustees', 'Six months after filing',
          'The Trustees are prompted for a status report on what the grant did.'),
     ]

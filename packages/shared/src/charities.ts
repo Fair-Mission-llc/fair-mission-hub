@@ -8,6 +8,7 @@
 // assertMayProposeCharityGift, assertMayDisburseCharity).
 // =========================================================================
 import type {
+  CharitableRequestCheckDetails,
   CharitableRequestDetail,
   CharitableRequestThreadDetail,
   CharitableRequestThreads,
@@ -15,6 +16,7 @@ import type {
   CharitableTriageAction,
   CharitableTriageInput,
   CharityCheckDetails,
+  DisbursementCheckDetails,
   CharityProposalDetail,
   CharityProposalInput,
   CharitySearchFilters,
@@ -610,6 +612,64 @@ export function assertCouncilBudgetLine(
 
 export const charitableRequestNotFound = (requestId: number): BusinessRuleError =>
   new BusinessRuleError('RECORD_NOT_FOUND', `Charitable request ${requestId} does not exist.`, { table: 'CharitableRequest', id: requestId });
+
+// ---- paying an approved request (Sprint 7I Extension) --------------------------------------------------------
+
+/** The check details of charities.payApprovedRequest, trimmed: CheckNumber, PayoutDate, Notes, CharityID, CharityType. */
+export function cleanRequestCheck(details: CharitableRequestCheckDetails): Required<DisbursementCheckDetails> & { CharityID: number | null; CharityType: string | null } {
+  const base = cleanDisbursementCheck(details);
+  const type = details.CharityType == null || String(details.CharityType).trim() === '' ? null : assertCharityType(details.CharityType);
+  return { ...base, CharityID: optionalId(details.CharityID, 'Charity'), CharityType: type };
+}
+
+/**
+ * Rejects what payApprovedRequest may not pay: REQUEST_STATUS_CONFLICT unless the council's vote approved the request
+ * and no check has paid it yet; SELF_PAYOUT_BLOCKED when the payer is the request's Knight Shepherd.
+ */
+export function assertRequestPayable(request: Pick<CharitableRequest, 'id' | 'RequestStatus' | 'VoteStatus' | 'PaymentOrderId' | 'ShepherdMemberID'>, actorId: number): void {
+  if (request.VoteStatus !== 'Approved') {
+    throw statusConflict(request, `Charitable request ${request.id} has not been approved by the council's vote, so no check can pay it.`, { voteStatus: request.VoteStatus });
+  }
+  if (request.PaymentOrderId != null) {
+    throw statusConflict(request, `Charitable request ${request.id} is already paid by check (ledger entry ${request.PaymentOrderId}).`, { paymentOrderId: request.PaymentOrderId });
+  }
+  if (request.ShepherdMemberID === actorId) {
+    throw new BusinessRuleError('SELF_PAYOUT_BLOCKED', 'For accounting controls, the Knight Shepherd of a request cannot issue the check that pays it.', {
+      requestId: request.id,
+      actorId,
+    });
+  }
+}
+
+/**
+ * The registry entry payApprovedRequest registers for a request whose organization is not in the registry yet: its
+ * name, EIN, contacts and mailing address, the council's state, and the mission (or specific use) as the description.
+ */
+export function charityFromRequest(
+  request: Pick<CharitableRequest, 'id' | 'OrganizationName' | 'EIN' | 'ContactName' | 'ContactPhone' | 'ContactEmail' | 'MailingAddress' | 'OrgMission' | 'SpecificUse'>,
+  councilState: string,
+  charityType: string | null,
+): NewGlobalCharity {
+  if (charityType === null) {
+    throw invalid(`${request.OrganizationName} is not in the charities registry yet; choose its charity type so the check can register it.`, {
+      requestId: request.id,
+      field: 'CharityType',
+    });
+  }
+  const description = (request.OrgMission?.trim() || request.SpecificUse?.trim() || `Charitable request ${request.id}`).slice(0, CHARITY_DESCRIPTION_MAX_LENGTH);
+  return {
+    Name: request.OrganizationName,
+    Description: description,
+    EIN: request.EIN ?? null,
+    State: councilState,
+    Phone: request.ContactPhone ?? null,
+    ContactName: request.ContactName ?? null,
+    ContactEmail: request.ContactEmail ?? null,
+    Address: request.MailingAddress ?? null,
+    ZipCode: null,
+    CharityType: charityType,
+  };
+}
 
 /** The columns triageRequestStatus changes; the only ones a driver may interpolate into its UPDATE. */
 export const CHARITABLE_TRIAGE_COLUMNS = ['RequestStatus', 'VetterMemberID', 'VettingNotes', 'RequestTier', 'VettedDate', 'TargetBudgetLineID'] as const satisfies readonly (keyof CharitableRequest)[];

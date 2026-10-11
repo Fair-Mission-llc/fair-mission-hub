@@ -7,9 +7,15 @@
 // writes the ledger row and marks the proposal 'Approved' in one transaction. A check needs a mailing address
 // (charityNeedsHydration), so an entry without one must be completed first. "Reject & Return" requires a reason the
 // member sees on their request desk (charities.rejectProposal). Paid and rejected proposals are listed underneath.
+//
+// Sprint 7I Extension: above them, the charitable requests the council voted to fund that no check has paid yet
+// (charities.listApprovedFundingQueue). "Pay approved request" takes the check number, payout date and notes, and the
+// charity type for an organization not in the registry yet; charities.payApprovedRequest writes the check for the
+// approved amount, links the charity and sets the request's PaymentOrderId, which charges its budget line.
 import { useEffect, useState } from 'react';
 import {
   canDisburseCharity,
+  CHARITY_TYPES,
   charityDraftFrom,
   charityFromDraft,
   charityNeedsHydration,
@@ -19,6 +25,7 @@ import {
   DISBURSEMENT_NOTES_MAX_LENGTH,
   REJECTION_REASON_MAX_LENGTH,
   toIsoDate,
+  type CharitableRequest,
   type CharityDisbursementResult,
   type CharityDraft,
   type CharityProposalDetail,
@@ -329,6 +336,99 @@ function ProposalCard({
   );
 }
 
+/** One voted-approved request and its check fields (Sprint 7I Extension). */
+function ApprovedRequestRow({ request, onPaid }: { request: CharitableRequest; onPaid: (text: string) => Promise<void> }) {
+  const user = useUser();
+  const [open, setOpen] = useState(false);
+  const [checkNumber, setCheckNumber] = useState('');
+  const [payoutDate, setPayoutDate] = useState(() => toIsoDate(new Date()));
+  const [notes, setNotes] = useState('');
+  const [charityType, setCharityType] = useState<string>(CHARITY_TYPES[0]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const pay = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await db.charities.payApprovedRequest(user.memberId, request.id, {
+        CheckNumber: checkNumber,
+        PayoutDate: payoutDate,
+        Notes: notes.trim() || null,
+        CharityType: charityType,
+      });
+      await onPaid(
+        `Check ${result.disbursement.CheckNumber} for ${formatMoney(result.disbursement.Amount)} pays request #${request.id} to ${result.charity.Name}` +
+          (result.charityRegistered ? ', now added to the Global Charities Registry.' : '.'),
+      );
+    } catch (err) {
+      setError(describeError(err));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <li className="rounded border-2 border-line p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="font-bold">
+            #{request.id} · {request.OrganizationName}
+          </p>
+          <p className="text-sm text-muted">Approved by the council&apos;s vote · {formatMoney(request.AmountApproved)}</p>
+        </div>
+        {!open ? (
+          <Button variant="gold" onClick={() => setOpen(true)}>
+            Pay approved request
+          </Button>
+        ) : null}
+      </div>
+      {open ? (
+        <form
+          className="mt-3 flex flex-col gap-3 border-t border-line pt-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void pay();
+          }}
+        >
+          {error ? (
+            <Notice tone="error" onDismiss={() => setError(null)}>
+              {error}
+            </Notice>
+          ) : null}
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field label="Check number">
+              {(id) => <Input id={id} value={checkNumber} maxLength={CHECK_NUMBER_MAX_LENGTH} onChange={(e) => setCheckNumber(e.target.value)} required />}
+            </Field>
+            <Field label="Payout date">{(id) => <Input id={id} type="date" value={payoutDate} onChange={(e) => setPayoutDate(e.target.value)} required />}</Field>
+            <Field label="Charity type (if not registered yet)">
+              {(id) => (
+                <Select id={id} value={charityType} onChange={(e) => setCharityType(e.target.value)}>
+                  {CHARITY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+          </div>
+          <Field label="Notes (optional)">
+            {(id) => <Input id={id} value={notes} maxLength={DISBURSEMENT_NOTES_MAX_LENGTH} onChange={(e) => setNotes(e.target.value)} />}
+          </Field>
+          <div className="flex gap-2">
+            <Button type="submit" variant="gold" disabled={busy || checkNumber.trim() === ''}>
+              {busy ? 'Recording the check…' : `Issue check for ${formatMoney(request.AmountApproved)}`}
+            </Button>
+            <Button type="button" variant="secondary" disabled={busy} onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : null}
+    </li>
+  );
+}
+
 function CharityQueue() {
   const user = useUser();
   const scope = useCouncilScope();
@@ -336,6 +436,10 @@ function CharityQueue() {
   const canDisburse = canDisburseCharity(user, councilId);
   const proposals = useLoad(
     () => (canDisburse ? db.charities.listCouncilProposals(user.memberId, councilId) : Promise.resolve([])),
+    [user.memberId, councilId, canDisburse],
+  );
+  const approved = useLoad(
+    () => (canDisburse ? db.charities.listApprovedFundingQueue(user.memberId, councilId) : Promise.resolve([])),
     [user.memberId, councilId, canDisburse],
   );
   const [issued, setIssued] = useState<CharityDisbursementResult | null>(null);
@@ -374,6 +478,27 @@ function CharityQueue() {
               {message.text}
             </Notice>
           ) : null}
+
+          <Panel title={`Approved requests awaiting payment (${approved.data?.length ?? 0})`}>
+            {approved.error ? <Notice tone="error">{approved.error}</Notice> : null}
+            {(approved.data ?? []).length === 0 ? (
+              <Empty>No charitable request approved by the council&apos;s vote is waiting for a check.</Empty>
+            ) : (
+              <ul className="flex flex-col gap-3" aria-label="Approved charitable requests awaiting payment, oldest first">
+                {(approved.data ?? []).map((r) => (
+                  <ApprovedRequestRow
+                    key={r.id}
+                    request={r}
+                    onPaid={async (text) => {
+                      setIssued(null);
+                      setMessage({ tone: 'info', text });
+                      await approved.reload();
+                    }}
+                  />
+                ))}
+              </ul>
+            )}
+          </Panel>
 
           <Panel title={`Pending gift requests (${pending.length})`}>
             {proposals.loading && !proposals.data ? (

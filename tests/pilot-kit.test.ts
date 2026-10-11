@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { awaitsWrittenOrder, isQuarantinedHours, type DataService } from '@kofc/shared';
 import { MemoryDataService } from '../apps/web/services/drivers/memory';
 import { SqliteDataService } from '../apps/mobile/services/drivers/sqlite';
-import { drivers, NOW } from './helpers';
+import { drivers, expectRule, NOW } from './helpers';
 import { openDatabases } from './shims/expo-sqlite';
 
 const ROOT = join(__dirname, '..');
@@ -168,6 +168,92 @@ describe.each(drivers)('$name driver: the pilot scripts hold true', (d) => {
   });
 });
 
+// Sprint 7I Extension: the group script's flows create every record live; these replay them on the pilot day.
+describe.each(drivers)('$name driver: the live group flows hold true', (d) => {
+  async function makePilot(): Promise<DataService> {
+    const now = () => new Date(PILOT_DAY);
+    if (d.name === 'memory') {
+      const db = new MemoryDataService({ now, presentationData: true });
+      await db.init();
+      return db;
+    }
+    openDatabases.length = 0;
+    const db = new SqliteDataService({ now, presentationData: true });
+    await db.init();
+    return db;
+  }
+  const signIn = async (db: DataService, user: string) => (await db.auth.signIn(`${user}@stmarys.org`, PASSWORD))!.memberId;
+  const line = (VendorName: string, Amount: number, ExpenseDescription: string) => ({ DateOfExpense: '2026-10-12', Amount, VendorName, ExpenseDescription });
+
+  it('Flow 1: two new reports reach the FS desk, one is returned, and both are paid', async () => {
+    const db = await makePilot();
+    const [alpha, beta, fs, treasurer, gk] = await Promise.all(['member_alpha', 'member_beta', 'fs_user', 'treasurer_user', 'gk_user'].map((u) => signIn(db, u)));
+    const a = await db.expenses.submitReport(alpha, { Status: 'Submitted', LinkedEventID: 9 }, [line('Ace Hardware', 18.4, 'Zip ties and sign stakes')]);
+    const b = await db.expenses.submitReport(
+      beta,
+      { Status: 'Submitted', LinkedEventID: 9, flag_missing_receipt: true, missing_receipt_reason: 'The register tape was lost' },
+      [line('Dollar Tree', 9.99, 'Donation receipt books')],
+    );
+    const fsDesk = (await db.expenses.listCouncilQueue(fs, OWN)).filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id);
+    expect(fsDesk).toEqual(expect.arrayContaining([a.report.id, b.report.id]));
+
+    await db.expenses.financialSecretaryAuditOrder(fs, a.report.id);
+    expect((await db.expenses.rejectReport(fs, b.report.id, 'Please add the receipt photo')).report.Status).toBe('Draft');
+    await db.expenses.submitReport(beta, { id: b.report.id, Status: 'Submitted', LinkedEventID: 9 }, [line('Dollar Tree', 9.99, 'Donation receipt books')]);
+    await db.expenses.financialSecretaryAuditOrder(fs, b.report.id);
+    for (const id of [a.report.id, b.report.id]) {
+      await db.expenses.treasurerLedgerAudit(treasurer, id, { budgetLineId: 25, generalLedgerAccountId: 12 });
+      await db.expenses.grandKnightAuthorizeOrder(gk, id);
+    }
+    await db.expenses.recordDisbursement(treasurer, OWN, [a.report.id], { CheckNumber: '1401', PayoutDate: '2026-10-12' });
+    await db.expenses.recordDisbursement(treasurer, OWN, [b.report.id], { CheckNumber: '1402', PayoutDate: '2026-10-12' });
+    expect((await db.expenses.listUserReports(alpha)).find((r) => r.report.id === a.report.id)?.report.Status).toBe('Reimbursed');
+    expect((await db.expenses.listUserReports(beta)).find((r) => r.report.id === b.report.id)?.report.Status).toBe('Reimbursed');
+  });
+
+  it('Flow 3: a live 7-hour report is held, rejected and logged again', async () => {
+    const db = await makePilot();
+    const [alpha, beta, dgk] = await Promise.all(['member_alpha', 'member_beta', 'dgk_user'].map((u) => signIn(db, u)));
+    expect(isQuarantinedHours(await db.eventTime.logHours(beta, 10, 4))).toBe(false);
+    const held = await db.eventTime.logHours(alpha, 10, 7);
+    expect(isQuarantinedHours(held)).toBe(true);
+    const id = (held as { quarantined: { id: number } }).quarantined.id;
+    expect((await db.volunteerQuarantine.listPending(dgk, OWN)).map((h) => h.row.id)).toContain(id);
+    await db.volunteerQuarantine.reject(dgk, id);
+    expect(isQuarantinedHours(await db.eventTime.logHours(alpha, 10, 4))).toBe(false);
+  });
+
+  it('Flow 5: a live charity request is vetted and placed on the soonest eligible Monthly meeting, then paid after the vote', async () => {
+    const db = await makePilot();
+    const [alpha, fs, gk, treasurer] = await Promise.all(['member_alpha', 'fs_user', 'gk_user', 'treasurer_user'].map((u) => signIn(db, u)));
+    // Facilitator preparation: the year's Monthly meetings.
+    await db.meetings.populateAnnualCadence(gk, OWN, 1, '2026-2027');
+
+    const { request } = await db.charities.submitCharitableRequest(alpha, {
+      OrganizationName: 'Cathedral Neighbors Food Bank',
+      OrgMission: 'Weekly groceries for families near the cathedral',
+      MailingAddress: '200 Cathedral Way, Portland, OR 97201',
+      RelationshipTypeID: 3, // Local Nonprofit
+      MissionAreaID: 3, // Community
+      AmountRequested: 350,
+      SpecificUse: 'Groceries for 30 families',
+      Is501c3: true,
+    });
+    await db.charities.triageRequestStatus(fs, request.id, { action: 'claim' });
+    await db.charities.openRequestThread(fs, request.id, 'MORE_INFO', 'How many of the 30 families are in our parish?');
+    await db.charities.triageRequestStatus(fs, request.id, { action: 'advance', TargetBudgetLineID: 23 });
+    const { meeting, motion } = await db.charities.routeRequestToNextEligibleAgenda(fs, request.id);
+    expect(meeting).toMatchObject({ Date: '2026-11-03', MeetingTypeID: 1 }); // the first Tuesday at least 10 days after October 12
+
+    // After the session: the council votes, and the Treasurer pays the approved request.
+    await db.meetings.finalizeProposedMotionVote(gk, motion.id, 'Passed');
+    await expectRule(db.charities.payApprovedRequest(alpha, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' }), 'FINANCE_OFFICER_REQUIRED');
+    const paid = await db.charities.payApprovedRequest(treasurer, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' });
+    expect(paid.disbursement.Amount).toBe(350);
+    expect(paid.request.PaymentOrderId).toBe(paid.disbursement.id);
+  });
+});
+
 describe('pilot kit PDFs', () => {
   const docs = (name: string) => join(ROOT, 'docs', name);
 
@@ -192,6 +278,11 @@ describe('pilot kit PDFs', () => {
     expect(kit).toContain('Day in the Life');
     expect(kit).toContain('Attendee Feedback Questionnaire');
     expect(kit).not.toMatch(/\.print\(|lpr|os\.startfile/);
+    // Sprint 7I Extension: the group flows create their records live and leave the meeting console out.
+    const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('FEEDBACK_RATINGS: tuple'));
+    expect(group).not.toMatch(/Live Meeting Console|Mtgs tab|check in|report 1[4-9]/i);
+    expect(group).toContain('Propose Charity Grant');
+    expect(group).toContain('Place on next agenda');
   });
 
   it('keeps custom guides out of git', () => {
