@@ -5,6 +5,8 @@
                                                  docs/MEMBER_USER_GUIDE.md -> docs/MEMBER_USER_GUIDE.pdf
     py scripts/compile_all_manuals.py --check    run each guide's wording check only; write nothing
     py scripts/compile_all_manuals.py --only member
+    py scripts/compile_all_manuals.py --only admin --input custom.md --output custom.pdf --base docs         --prepared-for "St. Mary's Cathedral Council 15295"
+                                                 one council's custom copy (Sprint 7H; /api/council/compile-manual)
 
 Both guides go through the same ReportLab layout as the Administrator guide (scripts/admin_guide_pdf.py): a title
 page, the guide's own sections with clickable contents links and PDF bookmarks, its tables and screen captures, a
@@ -78,13 +80,22 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--check', action='store_true', help="run each guide's wording check only; write nothing")
     parser.add_argument('--only', choices=[m.key for m in MANUALS], help='compile one guide only')
+    # Sprint 7H: one council's custom copy - the customized Markdown, where to write it, and the image folder.
+    parser.add_argument('--input', type=Path, help="the guide's Markdown to compile instead of its source (needs --only)")
+    parser.add_argument('--output', type=Path, help='where to write the PDF instead of docs/ (needs --only)')
+    parser.add_argument('--base', type=Path, help="the folder the guide's image links are relative to (default: the input's folder)")
+    parser.add_argument('--prepared-for', default='', help='the council named on the title page')
     args = parser.parse_args(argv)
+    if (args.input or args.output) and not args.only:
+        parser.error('--input and --output need --only')
     chosen = [m for m in MANUALS if args.only in (None, m.key)]
+    source_of = lambda m: args.input or (ROOT / m.source)  # noqa: E731
+    layout.PREPARED_FOR = args.prepared_for.strip()
 
     failed = False
     for manual in chosen:
         use(manual)
-        problems = layout.check_nomenclature((ROOT / manual.source).read_text(encoding='utf-8'))
+        problems = layout.check_nomenclature(source_of(manual).read_text(encoding='utf-8'))
         if problems:
             failed = True
             print(f'{manual.source}: the wording check failed:', file=sys.stderr)
@@ -98,7 +109,7 @@ def main(argv: list[str] | None = None) -> None:
 
     for manual in chosen:
         use(manual)
-        layout.compile_guide(ROOT / manual.source, ROOT / manual.output)
+        layout.compile_guide(source_of(manual), args.output or (ROOT / manual.output), args.base)
 
 
 if __name__ == '__main__':

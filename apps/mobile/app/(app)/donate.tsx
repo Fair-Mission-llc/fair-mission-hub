@@ -17,12 +17,12 @@
 // (events.setIntakeSessionStatus). While the event's intake is Active, a full-screen overlay offers two one-tap targets,
 // cash and card, that log a donation at a preset amount with nothing typed (components/GateIntake.tsx).
 // Sprint 5Z-Final-Polish: the start card is a single bold heading, and the event dropdown offers only events at the
-// gate, under way or starting within GATE_LEAD_HOURS (isEventAtGate).
+// gate, under way or starting within the council's shift_signup_lock_hours (isEventAtGate; Sprint 7H, was a fixed 2 hours).
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import {
+  councilWideSettings,
   formatDate,
-  GATE_LEAD_HOURS,
   isEventAtGate,
   SPACING,
   toIsoDate,
@@ -74,11 +74,13 @@ const multiline = { minHeight: 72, textAlignVertical: 'top' as const, paddingTop
 
 function StartSessionForm({
   events,
+  leadHours,
   types,
   onStart,
   onCancel,
 }: {
   events: Event[];
+  leadHours: number;
   types: DonationType[];
   onStart: (eventId: number, defaults: DonationDefaults) => Promise<void>;
   onCancel: () => void;
@@ -94,7 +96,7 @@ function StartSessionForm({
   if (events.length === 0) {
     return (
       <EmptyState
-        message={`No event of your council is under way or starting within ${GATE_LEAD_HOURS} hours. Record a standalone donation instead.`}
+        message={`No event of your council is under way or starting within ${leadHours} hours. Record a standalone donation instead.`}
       />
     );
   }
@@ -295,16 +297,20 @@ function DonateScreenBody() {
 
   const setup = useLoad(async () => {
     const now = new Date();
-    const [methods, types, events] = await Promise.all([
+    const [methods, types, events, council] = await Promise.all([
       db.donations.listMethods(user.councilId),
       db.donations.listTypes(user.councilId),
       db.events.listByCouncil(user.councilId),
+      db.councils.get(user.councilId),
     ]);
-    // Only events at the gate are offered: in progress, or starting within GATE_LEAD_HOURS (isEventAtGate). The
-    // date check keeps far-off and long-finished events from loading their shifts at all.
-    const nearby = events.filter((e) => e.StartDate <= toIsoDate(new Date(now.getTime() + 86_400_000)) && e.EndDate >= toIsoDate(new Date(now.getTime() - 86_400_000)));
+    // Only events at the gate are offered: in progress, or starting within the council's shift_signup_lock_hours
+    // (isEventAtGate). The date check, widened by that lead, keeps far-off and long-finished events from loading
+    // their shifts at all.
+    const leadHours = councilWideSettings(council).shift_signup_lock_hours;
+    const ahead = 86_400_000 + leadHours * 3_600_000;
+    const nearby = events.filter((e) => e.StartDate <= toIsoDate(new Date(now.getTime() + ahead)) && e.EndDate >= toIsoDate(new Date(now.getTime() - 86_400_000)));
     const shifts = await Promise.all(nearby.map((e) => db.events.listShifts(e.id)));
-    return { methods, types, events: nearby.filter((e, i) => isEventAtGate(e, shifts[i], now)) };
+    return { methods, types, leadHours, events: nearby.filter((e, i) => isEventAtGate(e, shifts[i], now, leadHours)) };
   }, [user.councilId]);
 
   const stream = useLoad(
@@ -403,6 +409,7 @@ function DonateScreenBody() {
           ) : starting ? (
             <StartSessionForm
               events={data.events}
+              leadHours={data.leadHours}
               types={data.types}
               onCancel={() => setStarting(false)}
               onStart={async (eventId, defaults) => {

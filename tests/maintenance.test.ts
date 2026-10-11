@@ -173,7 +173,7 @@ describe.each(drivers)('$name driver: council maintenance', (d) => {
     await expectPrivilege(db.councils.remove(MEMBER.admin, OTHER), 'SUPER_ADMIN_REQUIRED');
     await expectRule(db.councils.create(9999, council), 'MEMBER_NOT_FOUND');
     expect(d.count(db, 'Council')).toBe(before);
-    expect((await db.councils.get(OWN))?.CouncilName).toBe('St. Jude Council');
+    expect((await db.councils.get(OWN))?.CouncilName).toBe("St. Mary's Cathedral Council");
 
     // A Super Admin whose status lapses loses the tier.
     const statuses = await db.lookups.list('MemberStatus');
@@ -228,7 +228,7 @@ describe.each(drivers)('$name driver: council maintenance', (d) => {
 });
 
 describe.each(drivers)('$name driver: council email', (d) => {
-  it('seeds the shared address on St. Jude Council #15295', async () => {
+  it("seeds the shared address on St. Mary's Cathedral Council #15295", async () => {
     const db = await d.make();
     expect(await db.councils.get(OWN)).toMatchObject({ CouncilNumber: 15295, Email: 'kofc15295@gmail.com' });
   });

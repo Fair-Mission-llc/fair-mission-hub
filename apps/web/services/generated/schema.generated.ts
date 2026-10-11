@@ -7361,7 +7361,7 @@ export const SEED_DATA: readonly SeedTable[] = [
     "rows": [
       {
         "CouncilNumber": 15295,
-        "CouncilName": "St. Jude Council",
+        "CouncilName": "St. Mary's Cathedral Council",
         "State": "OR",
         "Phone": "503-555-0199",
         "Email": "kofc15295@gmail.com"

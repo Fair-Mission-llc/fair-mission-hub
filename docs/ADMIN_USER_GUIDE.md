@@ -1903,7 +1903,7 @@ The screenshot above shows the page before the cards were added. The fields and 
 | **Extra hours allowed past a scheduled shift** | 1.0 hour | 0 to 8, in quarter hours | The shift padding rule (section 15.3) |
 | **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **🔍 Check for Inactive Members** (section 14.9) |
 | **Days back a member may log volunteer time** | 90 days | 7 to 730 | The logging window. A member may log shift time and activity time this many days back. |
-| **Hours before a shift that sign-ups close** | 2 hours | 0 to 72, in quarter hours | **Not used yet.** Members may sign up until a shift ends. |
+| **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Donate** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
 | **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | **Not used yet.** The portal does not track a due date for minutes. |
 | **Days of notice before a special election** | 60 days | 1 to 365 | **Not used yet.** A mid-year nomination stays open for 14 days. |
 

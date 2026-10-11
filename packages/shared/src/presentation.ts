@@ -70,7 +70,7 @@ export const formatTimeRange = (start: string, end: string): string => `${format
 export const formatShiftWhen = (s: Pick<Shift, 'ShiftDate' | 'StartTime' | 'EndTime'>): string =>
   `${formatDate(s.ShiftDate)} · ${formatTimeRange(s.StartTime, s.EndTime)}`;
 
-/** '15295 – St. Jude Council' */
+/** '15295 – St. Mary's Cathedral Council' */
 export const councilLabel = (c: Pick<Council, 'CouncilNumber' | 'CouncilName'>): string =>
   `${c.CouncilNumber} – ${c.CouncilName}`;
 

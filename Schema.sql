@@ -3191,3 +3191,16 @@ ALTER TABLE [LiveAttendance] ADD [photo_url] VARCHAR(2000) NULL;
 GO
 ALTER TABLE [Meeting] ADD [photo_url] VARCHAR(2000) NULL;
 GO
+
+-- =========================================================================
+-- Sprint 7H: COUNCIL 15295 RENAMED AND THE GATE WINDOW SETTING (schema version 69)
+--
+-- No table changes. Seed.sql renames Council 15295 from 'St. Jude Council' to 'St. Mary''s Cathedral Council', and
+-- the live meeting console's welcome line now names the holders of the council's elected chairs
+-- (assemblyWelcomeLine) instead of fixed demo names. Council.shift_signup_lock_hours, saved since Sprint 7E, is now
+-- read: it is how many hours before an event the phone's Donate screen offers it for gate donations (isEventAtGate),
+-- replacing the fixed 2 hours. The phone database version moves to 69, so phones rebuild with the new name.
+-- A server database seeded before this release keeps the old name until an Admin renames the council, or until
+--   UPDATE [Council] SET [CouncilName] = 'St. Mary''s Cathedral Council' WHERE [CouncilNumber] = 15295;
+-- is run against it once.
+-- =========================================================================

@@ -1,9 +1,10 @@
 // Sprint 5Z-Final-Polish: the flat chronological chat log, the phone's 30-day Signup Desk window with its
-// Shifts Opening / Full Up split, and the 2-hour gate window that decides which events donations can pin.
+// Shifts Opening / Full Up split, and the gate window that decides which events donations can pin (2 hours by default;
+// since Sprint 7H the council's shift_signup_lock_hours).
 import { describe, expect, it } from 'vitest';
 import {
   chronologicalThread,
-  GATE_LEAD_HOURS,
+  DEFAULT_SHIFT_SIGNUP_LOCK_HOURS,
   isEventAtGate,
   isShiftFull,
   SIGNUP_HORIZON_DAYS,
@@ -62,12 +63,20 @@ describe('gate window', () => {
   const shift = (date: string, start: string, end: string) => ({ ShiftDate: date, StartTime: start, EndTime: end });
   const at = (d: number, h: number, m = 0) => new Date(2026, 9, d, h, m);
 
-  it('opens two hours before the first shift', () => {
-    expect(GATE_LEAD_HOURS).toBe(2);
+  it('opens two hours before the first shift by default', () => {
+    expect(DEFAULT_SHIFT_SIGNUP_LOCK_HOURS).toBe(2);
     const shifts = [shift('2026-10-03', '10:00:00', '12:00:00'), shift('2026-10-03', '08:00:00', '10:00:00')];
     expect(isEventAtGate(event, shifts, at(3, 5, 59))).toBe(false);
     expect(isEventAtGate(event, shifts, at(3, 6, 0))).toBe(true);
     expect(isEventAtGate(event, shifts, at(3, 11))).toBe(true);
+  });
+
+  it("follows the council's shift_signup_lock_hours", () => {
+    const shifts = [shift('2026-10-03', '08:00:00', '10:00:00')];
+    expect(isEventAtGate(event, shifts, at(3, 4, 29), 3.5)).toBe(false);
+    expect(isEventAtGate(event, shifts, at(3, 4, 30), 3.5)).toBe(true);
+    expect(isEventAtGate(event, shifts, at(3, 7, 59), 0)).toBe(false);
+    expect(isEventAtGate(event, shifts, at(3, 8, 0), 0)).toBe(true);
   });
 
   it('stays open through the end date, or later when a shift runs past midnight', () => {

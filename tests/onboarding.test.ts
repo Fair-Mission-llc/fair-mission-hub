@@ -41,7 +41,7 @@ describe.each(drivers)('$name driver: mobile onboarding', (d) => {
     expect(state.message).toContain('stranger@example.com');
     expect(state.contact).toEqual({
       councilNumber: 15295,
-      councilName: 'St. Jude Council',
+      councilName: "St. Mary's Cathedral Council",
       councilPhone: '503-555-0199',
       admin: { name: 'Council Admin', email: 'testadmin@kofc.org', phone: '555-333-4444' },
     });

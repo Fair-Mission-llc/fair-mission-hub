@@ -975,7 +975,7 @@ Schema version 64. Rules: council-settings.ts (COUNCIL_WIDE_SETTING_RULES and PL
 •	reminder_cadence_days (INT, NOT NULL, DEFAULT 7) — Then one every this many days until logged or closed. 1 to 60.
 •	expense_draft_expiry_days (INT, NOT NULL, DEFAULT 90) — Saved for a future feature; nothing reads it. 7 to 730.
 •	charity_proposal_voting_days (INT, NOT NULL, DEFAULT 14) — Saved for a future feature; nothing reads it. 1 to 90.
-•	shift_signup_lock_hours (DECIMAL(5,2), NOT NULL, DEFAULT 2.0) — Saved for a future feature; nothing reads it. 0 to 72, in 0.25 steps.
+•	shift_signup_lock_hours (DECIMAL(5,2), NOT NULL, DEFAULT 2.0) — Since Sprint 7H (schema 69): how many hours before an event begins the phone's Donate screen offers it for gate donations (isEventAtGate; replaced the fixed GATE_LEAD_HOURS). Sign-ups are not closed by it. 0 to 72, in 0.25 steps.
 •	officer_signature_reminder_days (INT, NOT NULL, DEFAULT 3) — Saved for a future feature; nothing reads it. 1 to 60.
 •	meeting_minutes_due_days (INT, NOT NULL, DEFAULT 7) — Saved for a future feature; nothing reads it. 1 to 60.
 •	special_election_notice_days (INT, NOT NULL, DEFAULT 60) — Saved for a future feature; nothing reads it. 1 to 365.

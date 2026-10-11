@@ -8,7 +8,7 @@
 #
 #   python scripts/form_1295_report.py --input audit.json [--output generated/Form_1295_Audit_Report.pdf]
 #
-# Input JSON: { "council": { "number": 15295, "name": "St. Jude Council" }, "workspace": { ...TrusteeAuditWorkspace },
+# Input JSON: { "council": { "number": 15295, "name": "St. Mary's Cathedral Council" }, "workspace": { ...TrusteeAuditWorkspace },
 #               "generatedAt": "2026-10-08 19:30:00" }
 #
 # The report is the council's own working copy. It carries no emblem and states plainly that it is not the official

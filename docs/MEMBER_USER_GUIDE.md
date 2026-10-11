@@ -1065,7 +1065,7 @@ A donation without a session is a standalone donation.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The event is not in the list. | The list shows an event from 2 hours before the first shift until midnight after the event ends. | Wait for the event start. Record a later gift as standalone. |
+| The event is not in the list. | The list shows an event from 2 hours before the first shift (by default; your council sets the time) until midnight after the event ends. | Wait for the event start. Record a later gift as standalone. |
 
 ### 7.2 Record a donation
 
@@ -1428,7 +1428,7 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | The gold agenda highlight does not move | The phone lost its connection. | Check your data or Wi-Fi connection. |
 | *"Locked. Submission closed …"* on an expense | The 30-day expense window is closed. | Contact the Financial Secretary. |
 | QR code missing | The council has no image for the method. | Take cash or card. Tell your council Admin. |
-| Event missing from **Donate** | The event is not at the gate yet. | Wait until 2 hours before the first shift. |
+| Event missing from **Donate** | The event is not at the gate yet. | Wait until 2 hours before the first shift, by default. |
 | *"You are … m from the meeting hall, outside the … m check-in area. …"* | Your phone is outside the meeting circle. | Type the meeting PIN (5.5). |
 | *"That meeting PIN is not correct. …"* | The PIN is wrong. | Ask the Grand Knight for the PIN (5.5). |
 | *"Enter the check number printed on the check."* | A check donation has no check number. | Enter the number printed on the check (7.2.1). |

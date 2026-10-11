@@ -256,7 +256,8 @@ describe('schemas 50 and 51', () => {
     expect(read('scripts/requirements.txt')).toContain('reportlab');
     const route = read('apps/web/app/api/finance/form-1295/route.ts');
     expect(route).toContain('mayReadGeneralLedger');
-    expect(route).toContain('execFile(');
+    expect(route).toContain('runPythonScript(');
+    expect(read('apps/web/services/server/reportlab.ts')).toContain('execFile(');
     expect(read('apps/web/app/finance/audit/page.tsx')).toContain('🔎 Semiannual Trustee Audit Desk (Form 1295)');
     expect(read('apps/web/components/NetWorthParts.tsx')).toContain('🏛️ Council Balance Sheet & Equity Ledger');
     expect(read('apps/web/components/BudgetAnalyzerParts.tsx')).not.toContain('localStorage');

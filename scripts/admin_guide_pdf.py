@@ -58,6 +58,8 @@ DOCUMENT_TITLE = 'Administrator User Guide'
 DOCUMENT_SUBTITLE = 'Knights of Columbus Tracking Platform'
 # The Markdown file the title page names (Sprint 7G: scripts/compile_all_manuals.py sets it for each guide).
 SOURCE_LABEL = 'docs/ADMIN_USER_GUIDE.md'
+# Sprint 7H: a council's custom copy names the council on the title page ('' for the standard edition).
+PREPARED_FOR = ''
 
 # The closing footnote of the print edition. Kept here, in one place, so it can be replaced word for word.
 DISCLAIMER = (
@@ -560,6 +562,7 @@ def title_page(st: dict[str, ParagraphStyle], generated: str) -> list:
         Spacer(1, 10),
         Paragraph(DOCUMENT_SUBTITLE, st['subtitle']),
         HRFlowable(width='60%', thickness=2, color=GOLD, spaceBefore=18, spaceAfter=24),
+        *([Paragraph(f'Prepared for {escape(PREPARED_FOR)}', st['subtitle']), Spacer(1, 10)] if PREPARED_FOR else []),
         Paragraph('Offline print edition', st['meta']),
         Paragraph(f'Compiled {generated} from {SOURCE_LABEL}', st['meta']),
         PageBreak(),
@@ -587,7 +590,8 @@ def disclaimer_footnote(st: dict[str, ParagraphStyle]) -> list:
     return [Spacer(1, 18), HRFlowable(width='100%', thickness=1, color=GOLD, spaceAfter=8), KeepTogether([box])]
 
 
-def compile_guide(source: Path, output: Path) -> None:
+def compile_guide(source: Path, output: Path, base: Path | None = None) -> None:
+    """`base` is the folder the guide's image links are relative to: the source's own folder unless given."""
     global FONTS
     markdown = source.read_text(encoding='utf-8')
     problems = check_nomenclature(markdown)
@@ -599,7 +603,7 @@ def compile_guide(source: Path, output: Path) -> None:
     FONTS = Fonts()
     st = styles()
     generated = dt.date.today().isoformat()
-    story = title_page(st, generated) + build_story(markdown, source.parent, st) + disclaimer_footnote(st)
+    story = title_page(st, generated) + build_story(markdown, base or source.parent, st) + disclaimer_footnote(st)
     output.parent.mkdir(parents=True, exist_ok=True)
     doc = GuideDocument(str(output), generated)
     doc.multiBuild(story)

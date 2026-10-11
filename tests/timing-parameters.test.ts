@@ -49,7 +49,6 @@ const NEW_PLATFORM_COLUMNS: [string, string][] = [
 const NOT_IN_USE = [
   'expense_draft_expiry_days',
   'charity_proposal_voting_days',
-  'shift_signup_lock_hours',
   'officer_signature_reminder_days',
   'meeting_minutes_due_days',
   'special_election_notice_days',

@@ -791,8 +791,10 @@ const DB_NAME = 'kofc.db';
  *     (cadence_invitation_horizon_days, user_session_expiry_hours, audit_log_retention_days) (Sprint 7E).
  * 68: Council.meeting_latitude, meeting_longitude, meeting_geofence_radius_meters and meeting_pin_token - the geofenced
  *     meeting check-in - and LiveAttendance.photo_url and Meeting.photo_url (Sprint 7G).
+ * 69: no table change - Council 15295 is renamed St. Mary's Cathedral Council in Seed.sql, and phones rebuild to pick
+ *     the name up; Council.shift_signup_lock_hours now sets the Donate screen's gate window (Sprint 7H).
  */
-const SCHEMA_VERSION = 68;
+const SCHEMA_VERSION = 69;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

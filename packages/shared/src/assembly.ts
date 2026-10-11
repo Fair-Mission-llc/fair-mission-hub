@@ -6,9 +6,10 @@
 // outcome of a decided motion, and the LiveAssemblyState the console and the
 // phones read. Drivers load rows, call these, then only store.
 // =========================================================================
-import type { BallotTally, LiveAssemblyState, LiveMotionState } from './contract';
+import type { BallotTally, LiveAssemblyState, LiveMotionState, OfficerSeat } from './contract';
+import { ELECTED_ROLE_NAMES } from './elections';
 import { assertText, BusinessRuleError, describeActor, hasAdminRights, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
-import type { BallotSelection, BallotVote, CharitableRequest, Meeting, MotionHandTally, ProposedMotion } from './types';
+import type { BallotSelection, BallotVote, CharitableRequest, Council, Meeting, MotionHandTally, ProposedMotion } from './types';
 
 /** BallotVote.VoteSelection values. */
 export const BALLOT_SELECTIONS: readonly BallotSelection[] = ['Approve', 'Deny', 'Abstain'];
@@ -289,4 +290,22 @@ export function agendaTopics(agenda: string | null | undefined): string[] {
 export function formatCountdown(seconds: number): string {
   const s = Math.max(0, Math.floor(seconds));
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+
+/**
+ * The console's welcome line (Sprint 7H; replaces the fixed Sprint 5Z-Clean-Shell demo greeting): the holder of each
+ * held elected chair, in ELECTED_ROLE_NAMES order, then the council. Seats nobody holds are left out; with none held
+ * the line welcomes the council alone. `seats` comes from elections.listOfficerSeats.
+ */
+export function assemblyWelcomeLine(
+  council: Pick<Council, 'CouncilNumber' | 'CouncilName'>,
+  seats: readonly Pick<OfficerSeat, 'roleName' | 'holder'>[],
+): string {
+  const greetings = ELECTED_ROLE_NAMES.flatMap((role) => {
+    const holder = seats.find((s) => s.roleName === role)?.holder;
+    return holder ? [`Worthy ${role} ${holder.firstName} ${holder.lastName}`.trim()] : [];
+  });
+  const who =
+    greetings.length === 0 ? 'Welcome, Brother Knights' : greetings.length === 1 ? `Welcome ${greetings[0]}` : `Welcome ${greetings.slice(0, -1).join(', ')}, and ${greetings[greetings.length - 1]}`;
+  return `${who}! ${council.CouncilName} ${council.CouncilNumber} Assembly Console is Fully Operational.`;
 }

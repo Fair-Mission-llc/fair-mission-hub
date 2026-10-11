@@ -102,7 +102,7 @@ GO
 
 -- 1. Create a Default Baseline Council for Testing
 INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email])
-VALUES (15295, 'St. Jude Council', 'OR', '503-555-0199', 'kofc15295@gmail.com');
+VALUES (15295, 'St. Mary''s Cathedral Council', 'OR', '503-555-0199', 'kofc15295@gmail.com');
 GO
 
 -- 2. Create the Login Credentials (Passwords should be encrypted in production, plain for dev stub)

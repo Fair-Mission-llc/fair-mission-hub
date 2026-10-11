@@ -22,6 +22,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   agendaTopics,
+  assemblyWelcomeLine,
   assertResultMatchesTally,
   canEditLiveAgenda,
   canRunLiveAssembly,
@@ -169,12 +170,11 @@ function CountdownRing({ remaining, total }: { remaining: number; total: number 
   );
 }
 
-/** The Sprint 5Z-Clean-Shell welcome for the executive demo logins seeded in Seed.sql (Credentials 19-21). */
-const DEMO_ROSTER_WELCOME =
-  'Welcome Worthy Grand Knight Tom, Worthy Deputy Grand Knight David, and Worthy Trustee Hector! St. Jude Council 15295 Assembly Console is Fully Operational.';
-
-/** The giant navy top bar: the officer greeting, what the floor is on now, and its countdown. */
-function TopicBar({ state, remaining }: { state: LiveAssemblyState; remaining: number | null }) {
+/**
+ * The giant navy top bar: the officer greeting, what the floor is on now, and its countdown. Sprint 7H: the greeting is
+ * read from the council's held elected chairs (assemblyWelcomeLine), never fixed names.
+ */
+function TopicBar({ state, remaining, welcome }: { state: LiveAssemblyState; remaining: number | null; welcome: string | null }) {
   const item = state.activeItem;
   return (
     <section
@@ -182,7 +182,7 @@ function TopicBar({ state, remaining }: { state: LiveAssemblyState; remaining: n
       aria-label="Active agenda item"
       className="flex flex-wrap items-center justify-between gap-6 rounded border-b-8 border-gold bg-navy px-8 py-6 text-white"
     >
-      <p className="w-full border-b border-white/20 pb-3 text-center text-sm font-bold text-gold">{DEMO_ROSTER_WELCOME}</p>
+      {welcome ? <p className="w-full border-b border-white/20 pb-3 text-center text-sm font-bold text-gold">{welcome}</p> : null}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           {state.isLive ? (
@@ -353,6 +353,11 @@ function LiveConsole() {
   const remaining = useCountdown(state, readAt);
 
   const roster = useLoad(() => db.members.listByCouncil(councilId, { activeOnly: true }), [councilId]);
+  // Sprint 7H: the welcome names whoever holds the council's elected chairs now.
+  const welcome = useLoad(async () => {
+    const [council, seats] = await Promise.all([db.councils.get(councilId), db.elections.listOfficerSeats(councilId)]);
+    return council ? assemblyWelcomeLine(council, seats) : null;
+  }, [councilId]);
   const motions = useLoad(() => (meetingId === null ? Promise.resolve([]) : db.meetings.listProposedMotions(meetingId)), [meetingId]);
   const presenters = new Map((motions.data ?? []).map((d) => [d.motion.id, formatPersonName(d.presenterFirstName, d.presenterLastName)]));
 
@@ -445,7 +450,7 @@ function LiveConsole() {
 
       {state ? (
         <>
-          <TopicBar state={state} remaining={remaining} />
+          <TopicBar state={state} remaining={remaining} welcome={welcome.data ?? null} />
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-72 flex-1">

@@ -13,24 +13,82 @@
 //
 // Sprint 7G: under the cards, the Grand Knight, the council's Admins and Super Admins get the Meeting Check-In card
 // (MeetingCheckInCard): the meeting point, the GPS check-in radius and the 4-digit meeting PIN.
+//
+// Sprint 7H: the Custom User Guides card prints either user guide for this council, with its numbers in place of the
+// defaults (/api/council/compile-manual, customizeManualMarkdown). The page's own audience may print.
 import { useState } from 'react';
 import {
   councilLabel,
   councilWideSettings,
+  customManualFileName,
   COUNCIL_SETTING_GROUP_ORDER,
   COUNCIL_WIDE_SETTING_NAMES,
   COUNCIL_WIDE_SETTING_RULES,
   isSuperAdmin,
+  describeError,
   sortCouncils,
   type Council,
+  type CustomManualKind,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
-import { Notice, PageTitle, Select } from '@/components/ui';
+import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
+import { compileCustomManual } from '@/services/custom-manual-transport';
 import { db } from '@/services/db';
+
+/** The two print buttons (Sprint 7H): the guide downloads with this council's saved numbers. */
+function CustomGuidesCard({ council }: { council: Council }) {
+  const [busy, setBusy] = useState<CustomManualKind | null>(null);
+  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+  const generate = async (guide: CustomManualKind) => {
+    setBusy(guide);
+    setMessage(null);
+    try {
+      const pdf = await compileCustomManual({
+        guide,
+        council: { id: council.id, number: council.CouncilNumber, name: council.CouncilName },
+        settings: councilWideSettings(council),
+      });
+      const url = URL.createObjectURL(pdf);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = customManualFileName(guide, council.CouncilNumber);
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      setMessage({ tone: 'info', text: `The ${guide === 'admin' ? 'Administrator' : 'Member'} guide for council ${council.CouncilNumber} is downloading.` });
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setBusy(null);
+    }
+  };
+  return (
+    <Panel title="Custom User Guides" className="mt-6">
+      <p className="mb-3 text-base">
+        Print a user guide for {council.CouncilName} with the council&apos;s saved numbers in place of the defaults. Save any changed card first. The server
+        compiles the PDF; the Administrator guide takes a few seconds.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <Button variant="gold" disabled={busy !== null} onClick={() => void generate('admin')}>
+          {busy === 'admin' ? 'Compiling…' : '📥 Generate Custom Admin Guide PDF'}
+        </Button>
+        <Button variant="gold" disabled={busy !== null} onClick={() => void generate('member')}>
+          {busy === 'member' ? 'Compiling…' : '📥 Generate Custom Member Guide PDF'}
+        </Button>
+      </div>
+      {message ? (
+        <div className="mt-3">
+          <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+            {message.text}
+          </Notice>
+        </div>
+      ) : null}
+    </Panel>
+  );
+}
 
 function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () => Promise<void> }) {
   const user = useUser();
@@ -55,6 +113,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
         onSave={save}
       />
       <MeetingCheckInCard user={user} councilId={council.id} />
+      <CustomGuidesCard council={council} />
     </>
   );
 }

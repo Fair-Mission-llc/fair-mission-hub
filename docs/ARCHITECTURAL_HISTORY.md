@@ -167,6 +167,7 @@ Taken from the changelog comment above `SCHEMA_VERSION` in `apps/mobile/services
 | 66 | 7F Ext | `JournalEntry.payment_method` and its CHECK dropped for `payment_method_id` (FK `DonationMethod`: Cash, Credit Card, Venmo, Zelle, Zeffy, Parishsoft, Check); asset photos saved on the portal server's disk, uploadable by the Deputy Grand Knight and Trustees |
 | 67 | 7F Ext 2 | `Donation.CheckNumber` (required for Check donations, phone and web); asset photos back in Google Drive under Assets / <asset name> (disk folder removed); Deputy Grand Knight made a full asset manager; phone Council Assets screen |
 | 68 | 7G | `Council.meeting_latitude`, `meeting_longitude`, `meeting_geofence_radius_meters`, `meeting_pin_token` (geofenced phone check-in with a 4-digit PIN bypass, PIN dropped from council reads); `LiveAttendance.photo_url`, `Meeting.photo_url` (Drive Media / Meeting_Photos); Annual Fraternal Roadmap with overdue push alerts and the Three-Signature Expense Flow tree (no tables); `scripts/compile_all_manuals.py` builds both guide PDFs |
+| 69 | 7H | No table change. Council 15295 renamed St. Mary's Cathedral Council in `Seed.sql`; the live console welcome reads the council's held elected chairs (`assemblyWelcomeLine`) instead of fixed demo names; `Council.shift_signup_lock_hours` now sets the phone's gate-donation window (replaced `GATE_LEAD_HOURS`); on-demand custom user guides (`customizeManualMarkdown`, `/api/council/compile-manual`, Council Wide Settings buttons); stray root `tsconfig.json` removed. |
 
 ---
 

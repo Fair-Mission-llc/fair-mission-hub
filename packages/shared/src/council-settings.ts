@@ -19,8 +19,10 @@
 //   - in use: er_submission_window_days (the expense filing window, expenses.ts), volunteer_logging_window_days (how far
 //     back shift and activity time may be logged, rules.ts; it replaces the 3-month and 6-month walls), reminder_delay_days
 //     and reminder_cadence_days (the unlogged-hours text reminders, notifications.ts);
+//   and shift_signup_lock_hours (since Sprint 7H, how long before an event the phone opens it for gate donations,
+//     calendar.ts isEventAtGate);
 //   - saved for features that do not exist yet: expense_draft_expiry_days, charity_proposal_voting_days,
-//     shift_signup_lock_hours, officer_signature_reminder_days, meeting_minutes_due_days, special_election_notice_days.
+//     officer_signature_reminder_days, meeting_minutes_due_days, special_election_notice_days.
 // And three more PlatformSettings columns: cadence_invitation_horizon_days (the drip release, meetings.ts) and
 // user_session_expiry_hours (the portal's server session, apps/web/services/server) in use; audit_log_retention_days is
 // saved for a future purge job. A setting that nothing reads yet is marked `inUse: false`, and the pages say so.
@@ -270,17 +272,18 @@ export const COUNCIL_WIDE_SETTING_RULES: Record<CouncilWideSettingName, SettingR
       'away, and the council votes on it there. This number changes nothing yet.',
   },
   shift_signup_lock_hours: {
-    label: 'Hours before a shift that sign-ups close',
-    hint: 'Meant to stop new sign-ups this close to the start of a shift.',
+    label: 'Hours before an event that gate donations open',
+    hint: 'How long before an event begins the phone offers it for gate donations.',
     min: 0,
     max: 72,
     quarterHours: true,
     unit: 'hours',
     group: 'operations',
-    inUse: false,
+    inUse: true,
     help:
-      'Meant for a future sign-up cut-off. Today members may sign up for a shift until it ends, so this number changes nothing yet. ' +
-      'It is not the 2-hour window in which the phone offers an event for gate donations.',
+      "The phone's Donate screen offers an event from this many hours before it begins (its first shift, or midnight on its " +
+      'start day) until it ends. With 0, an event is offered only once it is under way. Members may still sign up for a shift ' +
+      'until it ends.',
   },
   officer_signature_reminder_days: {
     label: 'Days before an officer is reminded to sign an expense report',
