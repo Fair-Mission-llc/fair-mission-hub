@@ -283,6 +283,8 @@ describe('pilot kit PDFs', () => {
     expect(group).not.toMatch(/Live Meeting Console|Mtgs tab|check in|report 1[4-9]/i);
     expect(group).toContain('Propose Charity Grant');
     expect(group).toContain('Place on next agenda');
+    // Sprint 7I Extension 2: the individual scripts leave the meeting console out too.
+    expect(kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'))).not.toMatch(/Live Meeting Console|welcome line/i);
   });
 
   it('keeps custom guides out of git', () => {

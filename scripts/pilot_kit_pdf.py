@@ -115,8 +115,6 @@ PERSONAS: tuple[Persona, ...] = (
                  'Report 19 shows the Financial Secretary\'s written order and the Treasurer\'s coding (Miscellaneous Others, Council Operational Costs).'),
             Step('Finances > GK Expense Authorize', 'Click Final Release for Payment on report 19.',
                  'The row reads "Released to the Treasurer". The report is Approved and now waits in Bulk Check Disbursements.'),
-            Step('Governance > Live Meeting Console', 'Choose the October Business Meeting in the Meeting list.',
-                 'The navy top bar welcomes the council\'s elected chairs by name, starting with "Worthy Grand Knight GK User", then the council, St. Mary\'s Cathedral Council 15295.'),
             Step('Faith In Action > Event Planner', f'Open the {PILOT_EVENT}.',
                  'Six Lot attendants shifts from October 10 to October 25; each shift has its 2 volunteers signed up (Member Alpha and Member Beta).'),
             Step('Performance > Executive Dashboard', 'Scroll to the Volunteer Time Quarantine Desk. Do not decide the entries; the Deputy Grand Knight does that in his script.',
@@ -192,7 +190,6 @@ PERSONAS: tuple[Persona, ...] = (
                  'The entry leaves the desk. Beta\'s 6 hours now count in the Member Center and on the dashboard.'),
             Step('Performance > Executive Dashboard', 'On Member Alpha\'s entry click Reject & Remove. Tell Alpha to report the 4 scheduled hours again.',
                  'The entry leaves the desk and its hours never count. Alpha can log the Saturday shift again from the phone Report tab.'),
-            Step('Governance > Live Meeting Console', 'Choose the October Business Meeting.', 'The welcome line names "Worthy Deputy Grand Knight DGK User" after the Grand Knight.'),
             Step('Finances > Charity Vetting Queue', 'Read the pooled requests. Do not claim one in this script.', 'The Deputy Grand Knight may claim requests and override another officer\'s claim.'),
         ),
     ),
@@ -817,12 +814,17 @@ def poster_financial(output: Path, generated: str) -> None:
         'Leadership Auditing Queue: Return to member with a reason (required).',
         'The report goes back to Draft and its signatures are cleared; the member fixes it and submits again.',
     ], NAVY)
-    note_panel(c, side_x, side_y, side_w, None, 'Money coming in', [
+    side_y -= 24 + note_panel(c, side_x, side_y, side_w, None, 'Money coming in', [
         'Phone Donate tab: Start accepting for an event, then Record donation (cash, card or check).',
         'A check needs its CHECK NUMBER.',
         'Officers see every gift in Finances > Donations History.',
         'FS and Treasurer post deposits and transfers in the General Ledger.',
     ], GOLD)
+    note_panel(c, side_x, side_y, side_w, None, 'Charity grants going out', [
+        'After the council votes a grant, it waits in Finances > Charitable Disbursements Ledger.',
+        'FS or Treasurer: Pay approved request, one check for the approved amount.',
+        "The grant's budget line is charged; the Shepherd cannot pay it.",
+    ], NAVY)
     c.showPage()
     c.save()
     print(f'wrote {output}')
@@ -870,7 +872,8 @@ MATRIX_ROWS: tuple[tuple[str, str], ...] = (
     ('Issue the written order (FS Expense Audit)', '--Y---V'),
     ('Code to budget line and ledger (Treasurer desk)', '---Y--V'),
     ('Final release for payment (GK Expense Authorize)', '-----YV'),
-    ('Pay expense and charity checks', '--YY---'),
+    ('Pay expense checks', '--YY---'),
+    ('Pay approved charity grants', '--YY---'),
     ('Post to the general ledger', '--YY---'),
     ('Read the general ledger and dashboards', '--YYYYY'),
     ('Review held volunteer time', '----YYY'),
