@@ -6,7 +6,9 @@
 // Blank last-minute lines (still being written at the console) are left out.
 // Sprint 6C: in the large text layout nothing is filled gold (white type on gold is unreadable); the line on the floor,
 // the floor banner and the marked section heading are black inside a thick white frame instead.
-import { useEffect, useState } from 'react';
+// Sprint 7G: while the meeting is live the sheet opens with the check-in drawer (GeofenceCheckIn): '📍 Check In to
+// Meeting' by GPS, or the meeting PIN outside the council's circle, then an optional photo from the meeting.
+import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import {
   formatCountdown,
@@ -17,6 +19,7 @@ import {
   type LiveAssemblyState,
   type MeetingAgendaView,
 } from '@kofc/shared';
+import { GeofenceCheckIn } from '@/components/GeofenceCheckIn';
 import { AppText, EmptyState, Loading, Notice, Pill } from '@/components/ui';
 import { useUser } from '@/lib/app-context';
 import { describeError } from '@/lib/use-async';
@@ -121,6 +124,8 @@ export function AgendaSheet({ meetingId }: { meetingId: number }) {
   const [live, setLive] = useState<LiveAssemblyState | null>(null);
   const [readAt, setReadAt] = useState(() => Date.now());
   const [error, setError] = useState<string | null>(null);
+  // Re-reads at once (after a check-in) instead of waiting for the next poll.
+  const readNow = useRef<() => void>(() => {});
   const remaining = useCountdown(live, readAt);
   const isLive = agenda?.meeting.IsLiveInProgress === 1;
 
@@ -141,6 +146,7 @@ export function AgendaSheet({ meetingId }: { meetingId: number }) {
         if (alive) setError(describeError(err));
       }
     };
+    readNow.current = () => void read();
     void read();
     const timer = setInterval(() => void read(), LIVE_POLL_MS);
     return () => {
@@ -171,6 +177,8 @@ export function AgendaSheet({ meetingId }: { meetingId: number }) {
         </AppText>
         {isLive ? <Pill label="● LIVE" tone="red" style={{ alignSelf: 'flex-start' }} /> : null}
       </View>
+
+      {isLive && live ? <GeofenceCheckIn meetingId={meetingId} checkedIn={live.viewerCheckedIn} onChanged={() => readNow.current()} /> : null}
 
       {isLive && live?.activeItem ? (
         <View

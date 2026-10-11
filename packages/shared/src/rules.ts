@@ -134,7 +134,12 @@ export type BusinessRuleCode =
   | 'IN_MEMORIAM_NOT_DECEASED'
   | 'QUARANTINE_STATUS_CONFLICT'
   | 'IMPERSONATION_REFUSED'
-  | 'VIEW_AS_READ_ONLY';
+  | 'VIEW_AS_READ_ONLY'
+  | 'GEOFENCE_NOT_CONFIGURED'
+  | 'OUTSIDE_GEOFENCE'
+  | 'GPS_PRECISION_TOO_LOW'
+  | 'MEETING_PIN_INVALID'
+  | 'MEETING_PIN_LOCKED';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {

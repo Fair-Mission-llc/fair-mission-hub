@@ -24,7 +24,8 @@
         }
       ],
       ["expo-notifications", { "color": "#002855" }],
-      ["expo-local-authentication", { "faceIDPermission": "KofC Tracker uses Face ID to confirm it is you before logging service hours." }]
+      ["expo-local-authentication", { "faceIDPermission": "KofC Tracker uses Face ID to confirm it is you before logging service hours." }],
+      ["expo-location", { "locationWhenInUsePermission": "KofC Tracker checks your location once, when you tap Check In to Meeting, to confirm you are at the council meeting." }]
     ]
   }
 }

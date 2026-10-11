@@ -686,6 +686,40 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 60
         }
+      },
+      {
+        "name": "meeting_latitude",
+        "kind": "real",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "meeting_longitude",
+        "kind": "real",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "meeting_geofence_radius_meters",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 100
+        }
+      },
+      {
+        "name": "meeting_pin_token",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "0000"
+        }
       }
     ],
     "foreignKeys": [],
@@ -1024,6 +1058,13 @@ export const TABLES: Record<string, TableMeta> = {
       },
       {
         "name": "ActiveAgendaLineKey",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "photo_url",
         "kind": "text",
         "notNull": false,
         "identity": false,
@@ -4997,6 +5038,13 @@ export const TABLES: Record<string, TableMeta> = {
         "name": "CheckedInAt",
         "kind": "datetime",
         "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "photo_url",
+        "kind": "text",
+        "notNull": false,
         "identity": false,
         "default": null
       }

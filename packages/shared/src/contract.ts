@@ -115,6 +115,8 @@ import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
+import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeofenceChanges } from './geofence';
+import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 
 // 1. LOOKUPS
 /** The global lookup tables a Super Admin maintains (Blueprint: "System Lookup Manager"). */
@@ -2463,6 +2465,17 @@ export interface DataService {
      */
     setDuesRate(actorId: number, councilId: number, rate: number): Promise<Council>;
     /**
+     * Sprint 7G: the council's meeting check-in circle and PIN (geofence.ts), PIN included. Only the council's Active
+     * Grand Knight or Admins, or an Active Super Admin (assertMayManageMeetingGeofence; GRAND_KNIGHT_REQUIRED,
+     * COUNCIL_ACCESS_DENIED); RECORD_NOT_FOUND for an unknown council. Every other council read drops the PIN.
+     */
+    getMeetingGeofence(actorId: number, councilId: number): Promise<MeetingGeofence>;
+    /**
+     * Sprint 7G: saves the meeting point, radius and/or PIN (cleanMeetingGeofence; INVALID_INPUT) and resolves to the
+     * stored geofence. Same readers as getMeetingGeofence; a field left out keeps its stored value.
+     */
+    setMeetingGeofence(actorId: number, councilId: number, changes: MeetingGeofenceChanges): Promise<MeetingGeofence>;
+    /**
      * Sprint 6I: the Global Council Parameters Dashboard (on /system-settings/global-settings since the Sprint 7C
      * Extension). Saves the council's tenant_type (KOFC or GENERIC, cleanTenantType) and/or base_dues_rate (cleanDuesRate) and resolves to the updated council; a field left out keeps
      * its stored value. Only an Active Super Admin may (SUPER_ADMIN_REQUIRED, nothing written). RECORD_NOT_FOUND for an
@@ -3260,6 +3273,26 @@ export interface DataService {
      */
     closeLiveAssemblyConsole(actorId: number, meetingId: number): Promise<LiveAssemblyState>;
     /**
+     * Sprint 7G: the phone's '📍 Check In to Meeting' button. Checks `actorId` in to the live meeting as
+     * logLiveAttendanceOverride does for oneself, after checking the proof (geofence.ts verifyCheckInProof): a GPS fix
+     * inside the council's meeting circle and at least as precise as its radius, or the council's 4-digit meeting PIN.
+     * Rejects INVALID_INPUT for a malformed proof, GEOFENCE_NOT_CONFIGURED, GPS_PRECISION_TOO_LOW, OUTSIDE_GEOFENCE,
+     * MEETING_PIN_INVALID (each wrong PIN counts) and MEETING_PIN_LOCKED after MEETING_PIN_MAX_ATTEMPTS wrong PINs for
+     * the meeting, plus logLiveAttendanceOverride's LIVE_ASSEMBLY_CONFLICT and NOT_ACTIVE_COUNCIL_MEMBER. A member
+     * already checked in gets their first check-in back (alreadyCheckedIn) whatever the proof.
+     */
+    geofencedCheckIn(actorId: number, meetingId: number, proof: CheckInProof): Promise<GeofencedCheckInResult>;
+    /**
+     * Sprint 7G: saves (or clears, with null or '') the photo on the actor's own check-in to the meeting
+     * (LiveAttendance.photo_url, cleanMeetingPhotoUrl). Rejects NOT_CHECKED_IN when the actor has not checked in.
+     */
+    setCheckInPhoto(actorId: number, meetingId: number, photoUrl: string | null): Promise<LiveAttendance>;
+    /**
+     * Sprint 7G: saves (or clears) the meeting's photo kept with its minutes (Meeting.photo_url). Run by the meeting's
+     * chair, as the live console (assertMayRunLiveAssembly); MEETING_NOT_FOUND for an unknown meeting.
+     */
+    setMeetingPhoto(actorId: number, meetingId: number, photoUrl: string | null): Promise<Meeting>;
+    /**
      * Sprint 6B: the meeting's St. Mary's agenda (MeetingAgendaView), readable like the live state by any Active member
      * of its council or an Active Super Admin (COUNCIL_ACCESS_DENIED). Speakers are resolved now: a named member, else
      * the most recently seated Active holder of the item's seat in the meeting's council, else the item's label. New
@@ -3453,6 +3486,22 @@ export interface DataService {
      * incoming Grand Knight is not an Active member of the council.
      */
     concludeFraternalYear(actorId: number, councilId: number, newGrandKnightId: number): Promise<FraternalYearConclusion>;
+    /**
+     * Sprint 7G: the Annual Fraternal Roadmap (roadmap.ts) of `cycleYear` - nominations (May), elections (June) and the
+     * budget lock (July 10) for the fraternal year the cycle fills - each with its status from the database, plus the
+     * three-signature flow's live counts. `cycleYear` defaults to roadmapCycleYear(today). Read by any Active member of
+     * the council or an Active Super Admin (COUNCIL_ACCESS_DENIED); RECORD_NOT_FOUND for an unknown council,
+     * INVALID_INPUT for a bad year.
+     */
+    getFraternalRoadmap(actorId: number, councilId: number, cycleYear?: number): Promise<FraternalRoadmap>;
+    /**
+     * Sprint 7G: pushes an alert for every overdue milestone of the current cycle (roadmapCycleYear(today)) to the
+     * council's Active leadership - its Admins and the holders of ROADMAP_ALERT_ROLE_NAMES - through the push stub, one
+     * NotificationLog row per leader. A leader who already has the milestone's alert (same Title) is skipped, so calling
+     * it again sends nothing new. Run by the council's Active Admins and officers or an Active Super Admin
+     * (assertMayDispatchRoadmapAlerts; ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED); RECORD_NOT_FOUND for an unknown council.
+     */
+    dispatchRoadmapAlerts(actorId: number, councilId: number): Promise<RoadmapAlertSweep>;
   };
 
   /**

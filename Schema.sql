@@ -3164,3 +3164,30 @@ GO
 -- =========================================================================
 ALTER TABLE [Donation] ADD [CheckNumber] VARCHAR(50) NULL;
 GO
+
+-- =========================================================================
+-- Sprint 7G: GEOFENCED MEETING CHECK-IN AND MEETING PHOTOS (schema version 68)
+--
+-- - Council.meeting_latitude / meeting_longitude: the meeting hall's point (decimal degrees). NULL until the Grand Knight
+--   sets it on /setup/council-settings; while NULL the phone's GPS check-in is off and members check in with the PIN.
+-- - Council.meeting_geofence_radius_meters: how close to the point a phone must be to check in by GPS (25 to 5,000 m).
+--   The phone's reported precision must also be within it.
+-- - Council.meeting_pin_token: the 4-digit meeting PIN the Grand Knight reads out, for members outside the circle.
+--   Council reads drop it; only the Grand Knight, the council's Admins and Super Admins read and set it
+--   (councils.getMeetingGeofence / setMeetingGeofence).
+-- - LiveAttendance.photo_url: a member's own photo from the meeting, saved from the phone's check-in drawer.
+-- - Meeting.photo_url: a photo kept with the meeting's minutes - a Google Drive file id filed under
+--   Fraternal Enterprise Suite / Media / Meeting_Photos, or a local link while the vault is off.
+-- =========================================================================
+ALTER TABLE [Council] ADD [meeting_latitude] DECIMAL(9,6) NULL;
+GO
+ALTER TABLE [Council] ADD [meeting_longitude] DECIMAL(9,6) NULL;
+GO
+ALTER TABLE [Council] ADD [meeting_geofence_radius_meters] INT NOT NULL DEFAULT 100;
+GO
+ALTER TABLE [Council] ADD [meeting_pin_token] VARCHAR(4) NOT NULL DEFAULT '0000';
+GO
+ALTER TABLE [LiveAttendance] ADD [photo_url] VARCHAR(2000) NULL;
+GO
+ALTER TABLE [Meeting] ADD [photo_url] VARCHAR(2000) NULL;
+GO

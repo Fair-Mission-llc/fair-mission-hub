@@ -127,6 +127,15 @@ export interface Council {
   officer_signature_reminder_days?: number | null;
   meeting_minutes_due_days?: number | null;
   special_election_notice_days?: number | null;
+  /**
+   * Sprint 7G (Schema 68): the geofenced meeting check-in (geofence.ts). The meeting point (DECIMAL(9,6), null until the
+   * Grand Knight sets it, which leaves only the PIN path), the check-in radius in meters (DEFAULT 100) and the 4-digit
+   * meeting PIN (DEFAULT '0000'). Council reads drop the PIN (withoutMeetingPin); councils.getMeetingGeofence returns it.
+   */
+  meeting_latitude?: number | null;
+  meeting_longitude?: number | null;
+  meeting_geofence_radius_meters?: number | null;
+  meeting_pin_token?: string | null;
 }
 
 /**
@@ -418,6 +427,11 @@ export interface Meeting {
   ActiveAgendaItemStartedAt?: string | null;
   /** Sprint 5Z-9: the council's Active roster count, locked when the live console started (the quorum base). */
   LiveQuorumRosterCount?: number | null;
+  /**
+   * VARCHAR(2000) (Sprint 7G): a photo of the meeting kept with its minutes - a Google Drive file id filed under
+   * Media / Meeting_Photos, or a local link while the vault is off; null when none (meetings.setMeetingPhoto).
+   */
+  photo_url?: string | null;
   /** Sprint 6B Patch: the agenda line on the floor ('item:12', 'motion:3', 'event:5'); null for a typed-in topic. */
   ActiveAgendaLineKey?: string | null;
 }
@@ -494,6 +508,8 @@ export interface LiveAttendance {
   MeetingID: number;
   MemberID: number;
   CheckedInAt: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS' UTC
+  /** VARCHAR(2000) (Sprint 7G): the member's own photo from the meeting, saved from the phone's check-in drawer; null when none. */
+  photo_url?: string | null;
 }
 
 /** A secret ballot's choice (Sprint 5Z-9); see BALLOT_SELECTIONS. */

@@ -1015,3 +1015,15 @@ Schema version 67.
 •	photo_url — A Google Drive file id again (cleanAssetPhotoUrl accepts nothing else). /api/assets/photo files the image under Fraternal Enterprise Suite / Assets / <asset name> (DriveVaultKind 'asset', assetDriveFolderName) and answers 503 when the council's Drive is off; the schema 66 .media/assets disk folder and /api/media route are removed. Shown on the web through photoSrc and on the phone's read-only Council Assets screen through driveThumbnailUrl.
 •	Access — The council's Deputy Grand Knight is now a full asset manager (assertMayManageCouncilAssets, canManageCouncilAssets) beside the Grand Knight and the expense leadership; Trustees keep inventory reading and photos only (mayAttachAssetPhoto). No create or delete method exists for asset rows: they come from approved long-term-asset expense sheets.
 ________________________________________
+# 36. Geofenced meeting check-in and meeting photos (Sprint 7G)
+Schema version 68. Rules: geofence.ts (check-in) and roadmap.ts (Annual Fraternal Roadmap; no table change).
+[Council] (new columns)
+•	meeting_latitude (DECIMAL(9,6), NULL), meeting_longitude (DECIMAL(9,6), NULL) — The meeting hall's point, set or cleared together. NULL until set; while NULL the phone's GPS check-in answers GEOFENCE_NOT_CONFIGURED and members use the PIN. Latitude -90 to 90, longitude -180 to 180.
+•	meeting_geofence_radius_meters (INT, NOT NULL, DEFAULT 100) — A GPS check-in counts when the phone is no farther than this from the point (OUTSIDE_GEOFENCE) and its reported precision is no wider than this (GPS_PRECISION_TOO_LOW). 25 to 5,000.
+•	meeting_pin_token (VARCHAR(4), NOT NULL, DEFAULT '0000') — The 4-digit meeting PIN for members outside the circle (MEETING_PIN_INVALID; MEETING_PIN_LOCKED after 5 wrong PINs for one meeting, counted in the driver's memory). councils.list, get and listAffiliated drop it (withoutMeetingPin). Read and set only through councils.getMeetingGeofence / setMeetingGeofence by the council's Active Grand Knight or Admins, or an Active Super Admin (assertMayManageMeetingGeofence).
+[LiveAttendance] (new column)
+•	photo_url (VARCHAR(2000), NULL) — The member's own photo from the meeting (meetings.setCheckInPhoto, the member's own check-in only; NOT_CHECKED_IN otherwise). The phone saves the picture in its media folder and stores that path; the phone has no channel to Google Drive.
+[Meeting] (new column)
+•	photo_url (VARCHAR(2000), NULL) — A photo kept with the meeting's minutes (meetings.setMeetingPhoto, the meeting's chair). The Live Meeting Console uploads it to the Drive vault under Fraternal Enterprise Suite / Media / Meeting_Photos (MEETING_PHOTO_DRIVE_FOLDER) and stores the file id; a local link while the vault is off.
+New methods. meetings.geofencedCheckIn (GPS fix or PIN, then the logLiveAttendanceOverride check-in), elections.getFraternalRoadmap and elections.dispatchRoadmapAlerts (overdue milestones pushed to the Grand Knight, Deputy Grand Knight, Financial Secretary, Treasurer and Admins, once per leader per milestone and cycle; NotificationLog.Title is the key).
+________________________________________

@@ -56,6 +56,8 @@ DEFAULT_OUTPUT = ROOT / 'docs' / 'ADMIN_USER_GUIDE.pdf'
 
 DOCUMENT_TITLE = 'Administrator User Guide'
 DOCUMENT_SUBTITLE = 'Knights of Columbus Tracking Platform'
+# The Markdown file the title page names (Sprint 7G: scripts/compile_all_manuals.py sets it for each guide).
+SOURCE_LABEL = 'docs/ADMIN_USER_GUIDE.md'
 
 # The closing footnote of the print edition. Kept here, in one place, so it can be replaced word for word.
 DISCLAIMER = (
@@ -526,7 +528,7 @@ class GuideDocument(BaseDocTemplate):
             bottomMargin=MARGIN,
             title=f'{DOCUMENT_TITLE} - {DOCUMENT_SUBTITLE}',
             author='Knights of Columbus Tracking Platform',
-            subject='Offline print edition of the Administrator User Guide',
+            subject=f'Offline print edition of the {DOCUMENT_TITLE}',
             creator='scripts/admin_guide_pdf.py (ReportLab)',
         )
         self.generated = generated
@@ -559,7 +561,7 @@ def title_page(st: dict[str, ParagraphStyle], generated: str) -> list:
         Paragraph(DOCUMENT_SUBTITLE, st['subtitle']),
         HRFlowable(width='60%', thickness=2, color=GOLD, spaceBefore=18, spaceAfter=24),
         Paragraph('Offline print edition', st['meta']),
-        Paragraph(f'Compiled {generated} from docs/ADMIN_USER_GUIDE.md', st['meta']),
+        Paragraph(f'Compiled {generated} from {SOURCE_LABEL}', st['meta']),
         PageBreak(),
     ]
 

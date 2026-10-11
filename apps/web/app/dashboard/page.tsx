@@ -24,6 +24,10 @@
 //
 // Above it (Sprint 7F) Super Admins get the Inbound Council Mail Center: the access requests councils file from the
 // sign-in page (/api/access-requests), each with an Approve button.
+//
+// Under the desks (Sprint 7G) every reader gets the Annual Fraternal Roadmap (RoadmapParts): Nominations, Elections and
+// the July 10 Budget Lock for the council's current cycle, with overdue steps pushed to council leadership, and the
+// Three-Signature Expense Flow tree with the live count waiting at each signature.
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
@@ -44,6 +48,7 @@ import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
 import { InboundMailCenter } from '@/components/PlatformAccessParts';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
+import { FraternalRoadmap } from '@/components/RoadmapParts';
 import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { useFeatureFlags, useUser } from '@/lib/session';
@@ -304,6 +309,9 @@ function Dashboard() {
           <QuarantineDesk actorId={user.memberId} councilId={scope.councilId} />
         </div>
       ) : null}
+      <div className="mb-4">
+        <FraternalRoadmap user={user} councilId={scope.councilId} />
+      </div>
       {summary.error ? <Notice tone="error">{summary.error}</Notice> : null}
       {!s ? (
         <p className="text-sm text-muted">Loading the month…</p>

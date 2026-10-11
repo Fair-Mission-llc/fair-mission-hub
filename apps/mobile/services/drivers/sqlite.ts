@@ -5,6 +5,26 @@ import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import * as SQLite from 'expo-sqlite';
 import {
+  assertMayDispatchRoadmapAlerts,
+  assertMayManageMeetingGeofence,
+  assertMayReadRoadmap,
+  assertPinAttemptsLeft,
+  assertRoadmapCycleYear,
+  buildRoadmapMilestones,
+  cleanCheckInProof,
+  cleanMeetingGeofence,
+  cleanMeetingPhotoUrl,
+  countSignatureFlow,
+  MeetingPinAttempts,
+  meetingGeofenceOf,
+  ROADMAP_ALERT_ROLE_NAMES,
+  roadmapAlertPayload,
+  roadmapCycleYear,
+  roadmapTermYear,
+  verifyCheckInProof,
+  withoutMeetingPin,
+  type FraternalRoadmap,
+  type GeofencedCheckInResult,
   ACTIVITY_COLUMNS,
   aggregateMeetingHours,
   assertActivityDateAllowed,
@@ -769,8 +789,10 @@ const DB_NAME = 'kofc.db';
  * 64: the timing settings - ten Council columns (er_submission_window_days, volunteer_logging_window_days,
  *     reminder_delay_days, reminder_cadence_days and six saved for future features) and three PlatformSettings columns
  *     (cadence_invitation_horizon_days, user_session_expiry_hours, audit_log_retention_days) (Sprint 7E).
+ * 68: Council.meeting_latitude, meeting_longitude, meeting_geofence_radius_meters and meeting_pin_token - the geofenced
+ *     meeting check-in - and LiveAttendance.photo_url and Meeting.photo_url (Sprint 7G).
  */
-const SCHEMA_VERSION = 67;
+const SCHEMA_VERSION = 68;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -881,6 +903,8 @@ export class SqliteDataService implements DataService {
   private readonly sendEmail: (request: SendGridMailRequest) => Promise<void>;
   private readonly presentationData: boolean;
   private ballotSecretValue: Promise<string> | null;
+  /** Sprint 7G: wrong meeting PINs per member and meeting (geofence.ts), kept for this driver's life only. */
+  private readonly pinAttempts = new MeetingPinAttempts();
 
   constructor(options: SqliteDataServiceOptions = {}) {
     this.presentationData = options.presentationData ?? false;
@@ -1443,15 +1467,16 @@ export class SqliteDataService implements DataService {
   councils: DataService['councils'] = {
     list: async () => {
       const db = await this.ready();
-      return db.getAllAsync<Council>('SELECT * FROM [Council] ORDER BY [CouncilNumber], [CouncilName]');
+      return (await db.getAllAsync<Council>('SELECT * FROM [Council] ORDER BY [CouncilNumber], [CouncilName]')).map(withoutMeetingPin);
     },
     get: async (id) => {
       const db = await this.ready();
-      return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [id])) ?? null;
+      const row = await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [id]);
+      return row ? withoutMeetingPin(row) : null;
     },
     listAffiliated: async (councilId) => {
       const db = await this.ready();
-      return db.getAllAsync<Council>(
+      const rows = await db.getAllAsync<Council>(
         `SELECT * FROM [Council]
           WHERE [id] <> ?
             AND [id] IN (SELECT [AffiliatedCouncilID] FROM [AffiliatedCouncils] WHERE [PrimaryCouncilID] = ?
@@ -1460,6 +1485,7 @@ export class SqliteDataService implements DataService {
           ORDER BY [CouncilNumber], [CouncilName]`,
         [councilId, councilId, councilId],
       );
+      return rows.map(withoutMeetingPin);
     },
 
     create: async (actorId, council) => {
@@ -1563,6 +1589,25 @@ export class SqliteDataService implements DataService {
         await db.runAsync('UPDATE [Council] SET [rank_threshold_hours] = ?, [rank_threshold_events] = ? WHERE [id] = ?', [clean.hours, clean.events, councilId]);
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
+    },
+
+    getMeetingGeofence: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayManageMeetingGeofence(await this.memberWriteActor(db, actorId), councilId);
+      return meetingGeofenceOf((await this.requireRecord(db, 'Council', councilId)) as unknown as Council);
+    },
+
+    setMeetingGeofence: async (actorId, councilId, changes) => {
+      const clean = cleanMeetingGeofence(changes);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayManageMeetingGeofence(await this.memberWriteActor(db, actorId), councilId);
+        await this.requireRecord(db, 'Council', councilId);
+        // Only cleanMeetingGeofence's four known columns, so the names are safe to interpolate.
+        const columns = Object.keys(clean) as (keyof typeof clean)[];
+        await db.runAsync(`UPDATE [Council] SET ${columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...columns.map((c) => clean[c] ?? null), councilId]);
+      });
+      return meetingGeofenceOf((await this.requireRecord(db, 'Council', councilId)) as unknown as Council);
     },
 
     setCouncilWideSettings: async (actorId, councilId, settings) => {
@@ -4655,6 +4700,57 @@ export class SqliteDataService implements DataService {
       return (await db.getFirstAsync<LiveAttendance>('SELECT * FROM [LiveAttendance] WHERE [id] = ?', [rowId]))!;
     },
 
+    geofencedCheckIn: async (actorId, meetingId, proof) => {
+      const clean = cleanCheckInProof(proof);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const meeting = await this.requireMeetingRow(db, meetingId);
+      assertMeetingLive(meeting, 'take check-ins');
+      assertLiveParticipant(actor, meeting);
+      const result = (row: LiveAttendance, distance: number | null, already: boolean): GeofencedCheckInResult => ({
+        attendanceId: row.id,
+        meetingId,
+        memberId: actorId,
+        checkedInAt: row.CheckedInAt,
+        method: clean.kind,
+        distanceMeters: distance,
+        alreadyCheckedIn: already,
+      });
+      const existing = await db.getFirstAsync<LiveAttendance>('SELECT * FROM [LiveAttendance] WHERE [MeetingID] = ? AND [MemberID] = ?', [meetingId, actorId]);
+      if (existing) return result(existing, null, true);
+      if (clean.kind === 'pin') assertPinAttemptsLeft(this.pinAttempts.count(meetingId, actorId));
+      const council = (await this.requireRecord(db, 'Council', meeting.CouncilID)) as unknown as Council;
+      let distance: number | null;
+      try {
+        distance = verifyCheckInProof(meetingGeofenceOf(council), clean).distanceMeters;
+      } catch (err) {
+        if (err instanceof BusinessRuleError && err.code === 'MEETING_PIN_INVALID') this.pinAttempts.recordWrong(meetingId, actorId);
+        throw err;
+      }
+      this.pinAttempts.clear(meetingId, actorId);
+      return result(await this.meetings.logLiveAttendanceOverride(actorId, meetingId, actorId), distance, false);
+    },
+
+    setCheckInPhoto: async (actorId, meetingId, photoUrl) => {
+      const photo = cleanMeetingPhotoUrl(photoUrl);
+      const db = await this.ready();
+      await this.memberWriteActor(db, actorId);
+      await this.requireMeetingRow(db, meetingId);
+      const row = await db.getFirstAsync<LiveAttendance>('SELECT * FROM [LiveAttendance] WHERE [MeetingID] = ? AND [MemberID] = ?', [meetingId, actorId]);
+      assertCheckedIn(row !== null, actorId, meetingId);
+      await db.runAsync('UPDATE [LiveAttendance] SET [photo_url] = ? WHERE [id] = ?', [photo, row!.id]);
+      return { ...row!, photo_url: photo };
+    },
+
+    setMeetingPhoto: async (actorId, meetingId, photoUrl) => {
+      const photo = cleanMeetingPhotoUrl(photoUrl);
+      const db = await this.ready();
+      const meeting = await this.requireMeetingRow(db, meetingId);
+      assertMayRunLiveAssembly(await this.memberWriteActor(db, actorId), meeting, `file a photo for meeting ${meetingId}`);
+      await db.runAsync('UPDATE [Meeting] SET [photo_url] = ? WHERE [id] = ?', [photo, meetingId]);
+      return { ...meeting, photo_url: photo };
+    },
+
     launchSecretSmartphoneBallot: async (actorId, proposedMotionId) => {
       const db = await this.ready();
       let meetingId = 0;
@@ -5512,7 +5608,84 @@ export class SqliteDataService implements DataService {
       });
       return result;
     },
+
+    getFraternalRoadmap: async (actorId, councilId, cycleYear) => {
+      const db = await this.ready();
+      const year = cycleYear === undefined ? roadmapCycleYear(this.now()) : assertRoadmapCycleYear(cycleYear);
+      assertMayReadRoadmap(await this.memberWriteActor(db, actorId), councilId);
+      await this.requireRecord(db, 'Council', councilId);
+      return this.fraternalRoadmap(db, councilId, year);
+    },
+
+    dispatchRoadmapAlerts: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayDispatchRoadmapAlerts(await this.memberWriteActor(db, actorId), councilId);
+      await this.requireRecord(db, 'Council', councilId);
+      const year = roadmapCycleYear(this.now());
+      const overdue = (await this.fraternalRoadmap(db, councilId, year)).milestones.filter((m) => m.status === 'overdue');
+      const roleList = ROADMAP_ALERT_ROLE_NAMES.map(() => '?').join(', ');
+      const leaders = (
+        await db.getAllAsync<{ id: number }>(
+          `SELECT m.[id] FROM [Member] m
+            WHERE m.[CouncilID] = ? AND m.[StatusID] = (SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active')
+              AND (m.[MemberTypeID] = (SELECT [id] FROM [MemberType] WHERE [Type] = 'Admin')
+                   OR EXISTS (SELECT 1 FROM [MemberRoles] mr JOIN [Role] r ON r.[id] = mr.[RoleID]
+                               WHERE mr.[MemberID] = m.[id] AND r.[Role] IN (${roleList})))
+            ORDER BY m.[id]`,
+          [councilId, ...ROADMAP_ALERT_ROLE_NAMES],
+        )
+      ).map((r) => r.id);
+      const sentAt = toTimestamp(this.now());
+      const logs: NotificationLog[] = [];
+      await db.withTransactionAsync(async () => {
+        for (const milestone of overdue) {
+          const alert = roadmapAlertPayload(milestone, year);
+          for (const memberId of leaders) {
+            const sent = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [NotificationLog] WHERE [CouncilID] = ? AND [TargetMemberID] = ? AND [Title] = ?', [
+              councilId,
+              memberId,
+              alert.title,
+            ]);
+            if (sent) continue;
+            const res = await db.runAsync(
+              `INSERT INTO [NotificationLog] ([CouncilID], [TargetMemberID], [Title], [MessageBody], [Priority], [SentAt], [IsRead])
+               VALUES (?, ?, ?, ?, 'High', ?, 0)`,
+              [councilId, memberId, alert.title, alert.body, sentAt],
+            );
+            logs.push((await db.getFirstAsync<NotificationLog>('SELECT * FROM [NotificationLog] WHERE [id] = ?', [res.lastInsertRowId]))!);
+          }
+        }
+      });
+      const tokens = await selectIn<{ id: number; ExpoPushToken: string | null }>(
+        db,
+        (m) => `SELECT [id], [ExpoPushToken] FROM [Member] WHERE [id] IN (${m})`,
+        logs.map((l) => l.TargetMemberID),
+      );
+      const delivered = deliverAlertsByStub(logs, new Map(tokens.map((r) => [r.id, r.ExpoPushToken])), this.log);
+      return { cycleYear: year, overdue: overdue.map((m) => m.id), alertsSent: logs.length, recipientIds: [...new Set(delivered.recipientIds)] };
+    },
   };
+
+  /** The roadmap of one council's cycle (roadmap.ts). */
+  private async fraternalRoadmap(db: SQLite.SQLiteDatabase, councilId: number, cycleYear: number): Promise<FraternalRoadmap> {
+    const term = roadmapTermYear(cycleYear);
+    const [lines, nominations, terms, reports] = await Promise.all([
+      db.getAllAsync<CouncilBudgetForecast>('SELECT * FROM [CouncilBudgetForecast] WHERE [CouncilID] = ? AND [FraternalYear] = ?', [councilId, term]),
+      db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM [OfficerNominations] WHERE [CouncilID] = ? AND [FraternalYear] = ?', [councilId, term]),
+      db.getFirstAsync<{ n: number }>('SELECT COUNT(*) AS n FROM [CouncilLeadershipHistory] WHERE [CouncilID] = ? AND [FraternalYear] = ?', [councilId, term]),
+      db.getAllAsync<ExpenseReport>(
+        "SELECT [Status], [FinancialSecretaryApprovedAt], [TreasurerReviewedAt] FROM [ExpenseReport] WHERE [CouncilID] = ? AND [Status] IN ('Submitted', 'Approved')",
+        [councilId],
+      ),
+    ]);
+    const current = currentBudgetLines(lines);
+    const milestones = buildRoadmapMilestones(cycleYear, this.now(), {
+      nominationCount: nominations?.n ?? 0,
+      leadershipTermCount: terms?.n ?? 0,
+      budgetStatus: current.length === 0 ? null : budgetStatusOf(current),
+    });
+    return { councilId, cycleYear, termYear: term, milestones, signatureFlow: countSignatureFlow(reports) };
+  }
 
   /** Everything buildYearClosingMetrics reads for one council (Sprint 6L). */
   private async yearClosingRows(db: SQLite.SQLiteDatabase, councilId: number): Promise<YearClosingRows> {

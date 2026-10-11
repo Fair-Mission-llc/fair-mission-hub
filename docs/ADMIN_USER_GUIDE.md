@@ -28,7 +28,8 @@
 15. [Volunteer time quarantine](#15-volunteer-time-quarantine)
 16. [Council Wide Settings and platform settings](#16-council-wide-settings-and-platform-settings)
 17. [Access requests, check payments, asset photos, impersonation and remote help](#17-access-requests-check-payments-asset-photos-impersonation-and-remote-help)
-18. [Appendix: QR code files](#appendix-qr-code-files)
+18. [Annual roadmap, meeting check-in and meeting photos](#18-annual-roadmap-meeting-check-in-and-meeting-photos)
+19. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -2276,6 +2277,153 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 | --- | --- | --- |
 | The panel says "That request is closed." | The officer stopped sharing. | Ask the officer to send a new request. |
 | The form fields in the copy are empty. | The platform never sends what the officer types. | Ask the officer to read the values to you. |
+
+---
+
+## 18. Annual roadmap, meeting check-in and meeting photos
+
+### 18.1 Concept: the Annual Fraternal Roadmap
+
+The **Annual Fraternal Roadmap** is a card on the **Executive Dashboard**. The card shows the three steps that hand the council over to its next fraternal year. A cycle carries the calendar year of its steps. The 2027 cycle elects and budgets the 2027-2028 fraternal year.
+
+| Step | Window | The portal marks the step done when |
+| --- | --- | --- |
+| **Nominations** | May 1 - May 31 | A nomination is recorded for the coming fraternal year, or the officers are seated. |
+| **Elections** | June 1 - June 30 | An officer is seated for the coming fraternal year. Concluding the fraternal year seats the officers. |
+| **Budget Lock** | July 1 - July 10 | The coming year's budget is approved. |
+
+Each step has one of four looks:
+
+| Look | Label | Meaning |
+| --- | --- | --- |
+| Navy circle with ✓ | **Done** | The database shows the step done. |
+| Heavy gold border | **Up next** | The first step that is not done and not past its due date. |
+| Red circle with ! | **Overdue** | The due date passed and the step is not done. |
+| Plain outline | **Later** | A step after the next one. |
+
+The card opens on the current cycle. The current cycle changes to the next year 30 days after the July 10 Budget Lock. Use the year arrows to see an earlier or later cycle.
+
+**Overdue alerts.** When a step is overdue, the card sends a push alert to the council's leaders. The leaders are the Grand Knight, the Deputy Grand Knight, the Financial Secretary, the Treasurer and the council's Admins. Each leader gets one alert for each overdue step in each cycle. The alert title is **Overdue: Nominations 2027**, **Overdue: Elections 2027** or **Overdue: Budget Lock 2027**. The alert also shows in each leader's alert list on the phone.
+
+### 18.2 Read the roadmap and send the overdue alerts
+
+> **Who can do this:** the council's Admins and officers, and Super Admins. Other members do not see the **Executive Dashboard**.
+> **Warning:** opening the card with an overdue step sends a push alert to the council's leaders. You cannot recall an alert.
+
+**Goal:** See where the council stands on its yearly hand-over, and alert the leaders to a missed step.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard**.
+
+**Steps:**
+1. Scroll to the **Annual Fraternal Roadmap** card.
+2. Find the step with the gold border. That step is next.
+3. Read the line under each step. The line says what the database shows.
+4. Check for a red step. When a red step shows, the card sends the overdue alert at once.
+5. Read the note under the steps. The note says how many leaders got the alert.
+6. Optional: select **← 2026** or **2028 →** to see another cycle. Select **Back to the current cycle** to return.
+
+<!-- KEEP_IMAGE: roadmap card, current cycle -->
+![Annual Fraternal Roadmap with Nominations up next (/dashboard)](../generated/dashboard_visual_catalog/dashboard_roadmap.png)
+<!-- /KEEP_IMAGE -->
+
+<!-- KEEP_IMAGE: roadmap card, completed cycle -->
+![Annual Fraternal Roadmap with all three steps done (/dashboard)](../generated/dashboard_visual_catalog/dashboard_roadmap_2026.png)
+<!-- /KEEP_IMAGE -->
+
+**Expected result:** The card shows the three steps of the cycle. After an alert, the note says *"Push alert sent to 4 council leaders for 1 overdue step."*
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"Council leadership already has the alert for each overdue step."* | The leaders got the alert on an earlier visit. | No action. The portal sends each alert one time. |
+| **Elections** stays **Overdue** after the vote. | The fraternal year is not concluded, so no officer is seated for the new year. | Conclude the fraternal year on the elections page. |
+| **Budget Lock** stays **Overdue**. | The coming year's budget is still Draft or Proposed. | Approve the budget on the budget page. |
+| A leader got no push on the phone. | The leader's phone has no registered device. | The alert still shows in the leader's alert list. |
+
+### 18.3 Concept: the Three-Signature Expense Flow
+
+Under the roadmap, the **Three-Signature Expense Flow** draws the path of an expense report. Each box shows how many of the council's reports wait at that step.
+
+| Box | Who acts | What the step does |
+| --- | --- | --- |
+| **Member submits** | Any member | The member submits the expense report. |
+| **1. Written order** | Financial Secretary | The Financial Secretary audits the report and issues the written order. |
+| **2. Ledger coding** | Treasurer | The Treasurer picks the budget line and the ledger account. |
+| **3. Counter-signature** | Grand Knight | The Grand Knight signs. The report becomes Approved. |
+| **Check paid** | Financial Secretary or Treasurer | The check is recorded. The report becomes Reimbursed. |
+
+- Council leadership may return a submitted report to the member as a draft, with a reason. The return clears the report's signatures.
+- Nobody signs a report that they submitted. One officer never signs two lines of the same report.
+
+### 18.4 Concept: meeting check-in by GPS or PIN
+
+Members check in to a live meeting from the phone with **📍 Check In to Meeting**. The phone sends its location one time. The portal accepts the check-in when two things are true:
+
+- The phone is inside the council's circle: no farther from the meeting point than the check-in radius (100 m by default).
+- The phone's location is at least as precise as the check-in radius.
+
+When the location check fails, the phone asks for the 4-digit **meeting PIN**. The Grand Knight reads out the PIN at the meeting. After 5 wrong PINs, the PIN box locks for that member and that meeting. An officer then checks the member in on the **Live Meeting Console**.
+
+- The default meeting PIN is `0000`. Change the PIN before the first meeting.
+- Only the Grand Knight, the council's Admins and Super Admins see or change the PIN. The PIN is not sent to members' phones.
+- Without a meeting point, GPS check-in is off and every member uses the PIN.
+
+### 18.5 Set the meeting location and the meeting PIN
+
+> **Who can do this:** the council's Grand Knight and Admins, and Super Admins. Other officers do not see the **📍 Meeting Check-In** card.
+> **Warning:** a new PIN takes effect at once. Members who know only the old PIN cannot check in with the PIN.
+
+**Goal:** Set where the council meets, how close a phone must be, and the meeting PIN.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **📍 Meeting Check-In**.
+
+**Steps:**
+1. Find the meeting hall on a map. Copy its latitude and longitude in decimal degrees.
+2. Enter the latitude in **Meeting point latitude**, for example `47.606200`.
+3. Enter the longitude in **Meeting point longitude**, for example `-122.332100`.
+4. Enter the circle size in **Check-in radius (meters)**, from 25 to 5,000.
+5. Enter 4 digits in **Meeting PIN**.
+6. Select **Save meeting check-in**.
+
+<!-- KEEP_IMAGE: meeting check-in card on council settings -->
+![Meeting Check-In card with the default PIN warning (/setup/council-settings)](../generated/dashboard_visual_catalog/council_settings_meeting_check_in.png)
+<!-- /KEEP_IMAGE -->
+
+**Expected result:** The card says *"Saved. Phones within 100 m of the meeting point can check in by GPS; others use the PIN."*
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"The PIN is still the default 0000, which any member can guess. …"* | The PIN is `0000`. | Enter a new 4-digit PIN. Select **Save meeting check-in**. |
+| *"The meeting PIN must be exactly 4 digits."* | The PIN has letters, or too few or too many digits. | Enter 4 digits. |
+| *"Enter the latitude and the longitude together."* | One coordinate is empty. | Fill in both coordinates, or clear both. |
+| *"The check-in radius must be a whole number of meters from 25 to 5,000; …"* | The radius is out of range. | Enter a whole number from 25 to 5,000. |
+| Members inside the hall get *"Your phone's location is only accurate to … m, …"* | Phones are less precise indoors. | Enter a larger radius, for example 150. |
+| *"Saved. No meeting point is set, so members check in with the PIN only."* | Both coordinates are blank. | Enter both coordinates to turn GPS check-in on. |
+
+### 18.6 File a meeting photo with the minutes
+
+> **Who can do this:** the meeting's chair: the meeting owner, the council's Admins and officers, and Super Admins.
+
+**Goal:** Keep one photo of the meeting with its minutes, in the council's Google Drive.
+
+**Start point:** Sidebar → Governance → **Live Meeting Console** → **Meeting photo**.
+
+**Steps:**
+1. Pick the meeting and start the console.
+2. Scroll to the **Meeting photo** panel, under **Live attendance**.
+3. Select **Upload photo**.
+4. Choose the photo file.
+5. To change the photo, select **Replace photo**. To remove the photo, select **Remove photo**.
+
+**Expected result:** The photo shows in the panel. An Admin's upload is filed in Google Drive under **Fraternal Enterprise Suite / Media / Meeting_Photos**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The photo is gone after you reload the page. | The upload was not filed in Drive: the uploader is not an Admin, or the council's Drive is off. | Ask an Admin to upload the photo. Turn on Drive in the **Credentials Vault**. |
+| *"Google Drive did not accept the file."* | Drive refused the upload. | Try again later. |
+| Members' own photos are not in the panel. | A member's check-in photo stays on the member's phone. | Ask the member to send the photo to an Admin. |
 
 ---
 

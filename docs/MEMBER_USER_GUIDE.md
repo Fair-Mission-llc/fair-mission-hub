@@ -90,8 +90,8 @@ The web portal sidebar has seven groups, called pillars. Every member sees these
 | **Governance** | Meeting Center, Council Officer Nominations, Constitutional Bylaws |
 | **Faith In Action** | Member Actions Hub, Visual Master Calendar |
 | **Finances** | My Expense Reports, Propose Charity Grant, Annual Budget Projections |
-| **Performance** | Post-event Ledger (event owners record results here) |
-| **Resources** | Fraternal Photo Gallery, Bulletins |
+| **Performance** | Shared Member Center, Post-event Ledger (event owners record results here) |
+| **Resources** | Fraternal Photo Gallery, Council Artifacts |
 | **Answers** | Online Help Center, SOP Center |
 
 <!-- KEEP_IMAGE: member actions hub placeholder -->
@@ -812,6 +812,95 @@ The **Agenda** sub-tab opens on the live meeting by default. With no live meetin
 | --- | --- | --- |
 | No **Edit** controls show. | Only officers, Admins and the meeting owner change a meeting. | Ask an officer. |
 
+### Concept: check in by location or by PIN
+
+You check in to a live council meeting from the phone. Checking in marks you present. Only members who checked in may vote on a secret ballot.
+
+The phone checks in one of two ways:
+
+| Way | When the phone uses the way | What you do |
+| --- | --- | --- |
+| **Location (GPS)** | Your phone is inside the council's check-in area. The area is a circle round the meeting hall, with a radius of 100 m by default. | Tap **📍 Check In to Meeting**. |
+| **Meeting PIN** | Your phone is outside the circle, its location is not precise enough, or location is off. | Type the 4-digit meeting PIN that the Grand Knight reads out. |
+
+- The phone reads your location one time, when you tap the button. The phone does not track you.
+- The phone must also know your location to within the circle size. Indoors, the phone can be less precise.
+- After 5 wrong PINs, the PIN box locks for that meeting. An officer can then check you in from the console.
+- The Grand Knight sets the circle and the PIN. The PIN is not shown to members in the app.
+
+### Concept: the annual roadmap
+
+Each spring, the council prepares its next fraternal year in three steps:
+
+| Step | Window | Who records the step |
+| --- | --- | --- |
+| **Nominations** | May 1 to May 31 | Any active member nominates; the council records each nomination. |
+| **Elections** | June 1 to June 30 | The council records the elected officers. |
+| **Budget Lock** | July 1 to July 10 | The council approves the next year's budget. |
+
+The officers follow these steps on the **Annual Fraternal Roadmap** of the **Executive Dashboard**. When a step passes its due date with nothing recorded, the council's leaders get a push alert. Members do not see the roadmap.
+
+### 5.5 Check in to a live meeting
+
+> **Who can do this:** any active member of the meeting's council.
+
+**Goal:** Mark yourself present at the council meeting, so you may vote.
+
+**Start point:** Phone app → **Mtgs** tab → **● Follow the live agenda**.
+
+**Steps:**
+1. Check for the red **● LIVE** tag in the navy header. The **CHECK IN** box shows only while the meeting is live.
+2. Tap **📍 Check In to Meeting**.
+3. If the phone asks for your location, tap **Allow**. The phone reads your location one time.
+4. Read the message in the **CHECK IN** box.
+5. If the box shows **MEETING PIN**, ask the Grand Knight for the PIN.
+6. Type the 4 digits in **MEETING PIN**.
+7. Tap **Check in with PIN**.
+
+<!-- KEEP_IMAGE: check-in drawer GPS placeholder -->
+![Phone: the CHECK IN box with the check-in button (placeholder)](../generated/mobile_app_catalog/meeting_check_in_gps.png)
+<!-- /KEEP_IMAGE -->
+
+<!-- KEEP_IMAGE: check-in drawer PIN placeholder -->
+![Phone: the MEETING PIN box after the location check failed (placeholder)](../generated/mobile_app_catalog/meeting_check_in_pin.png)
+<!-- /KEEP_IMAGE -->
+
+**Expected result:** The box turns navy and shows **✓ You are checked in**. A message says *"Checked in. You are 40 m from the meeting point."* or *"Checked in with the meeting PIN."*
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"You are 1,112 m from the meeting hall, outside the 100 m check-in area. Enter the 4-digit meeting PIN from the Grand Knight instead."* | Your phone is outside the circle. | Type the meeting PIN (steps 5 to 7). |
+| *"Your phone's location is only accurate to 180 m, and check-in needs 100 m or better. …"* | The phone cannot fix its location precisely indoors. | Use the meeting PIN, or step near a window and open the app again. |
+| *"Your council has not set its meeting location, so GPS check-in is off. …"* | The Grand Knight has not set the meeting point. | Use the meeting PIN. |
+| *"Location access is off for KofC Tracker, so GPS check-in cannot be used. …"* | You did not allow location for the app. | Use the meeting PIN, or allow location in your phone settings. |
+| *"Your phone's location services are off. …"* | Location is off for the whole phone. | Use the meeting PIN, or turn on location services. |
+| *"That meeting PIN is not correct. Ask the Grand Knight for the PIN and try again."* | The PIN is wrong. | Ask the Grand Knight for the PIN. Type the PIN again. |
+| *"You entered a wrong meeting PIN 5 times, so PIN check-in is locked for this meeting. …"* | You typed a wrong PIN 5 times. | Ask an officer to check you in from the **Live Meeting Console**. |
+| No **CHECK IN** box. | The meeting is not live yet. | Wait for the Grand Knight to start the meeting. |
+
+### 5.6 Add your photo from the meeting
+
+> **Who can do this:** any member who checked in to the live meeting.
+
+**Goal:** Keep one photo from the meeting with your check-in.
+
+**Start point:** Phone app → **Mtgs** tab → **● Follow the live agenda** → the **✓ You are checked in** box.
+
+**Steps:**
+1. Tap **Add a meeting photo**.
+2. If the phone asks for the camera, tap **Allow**.
+3. Take the photo.
+4. Confirm the photo in the camera screen.
+
+**Expected result:** The photo shows in the **✓ You are checked in** box. To change the photo, tap **Replace my meeting photo**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"Camera access is turned off for KofC Tracker. Allow it in your phone settings, then try again."* | You did not allow the camera. | Allow the camera in your phone settings. |
+| The photo is not in the web portal. | The phone keeps your photo on the phone. | Send the photo to an Admin. An Admin files meeting photos in the council's Google Drive. |
+
 ---
 
 ## 6. File expenses and check status tags
@@ -1019,6 +1108,31 @@ A donation without a session is a standalone donation.
 | *"Your council has not uploaded this QR code yet."* | A custom QR method has no image. | Take the gift as cash or card. Tell your council Admin. |
 | *"The QR code could not be loaded."* | The phone is offline, or the image link is broken. | Take the gift as cash or card. |
 | *"Your council has not enabled any donation methods yet."* | The council has no methods. | Ask an Admin, the Treasurer or the Financial Secretary. |
+
+### 7.2.1 Record a donation by check
+
+> **Who can do this:** any active member, when the council turned on the **Check** method.
+> **Warning:** **Record donation** adds the gift to the council's records at once.
+
+**Goal:** Record a gift by paper check, with the number printed on the check.
+
+**Start point:** Phone app → **Donate** → **How is the donor giving?**
+
+**Steps:**
+1. Tap the **Check** tile.
+2. Enter the amount of the check.
+3. Enter the number printed on the check in **CHECK NUMBER (REQUIRED)**.
+4. Choose the **DONATION TYPE**.
+5. Optional: fill in **DONOR NAME (OPTIONAL)**.
+6. Tap **Record donation**. The gift saves at once.
+
+**Expected result:** A message says *"Recorded $50.00 by Check for … Thank the donor!"* with the amount and the event.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"Enter the check number printed on the check."* | **CHECK NUMBER (REQUIRED)** is empty. | Enter the check number. Tap **Record donation** again. |
+| There is no **Check** tile. | The council did not turn on the Check method. | Take the gift as cash. Tell your council Admin. |
 
 ### 7.3 Record a physical item donation
 
@@ -1270,6 +1384,29 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | --- | --- | --- |
 | The contact fields are locked. | The form copies your profile. | Change the details in **My Profile**. |
 
+### 9.7 Open your Shared Member Center
+
+> **Who can do this:** any active member.
+
+**Goal:** See how the council is doing this month and your own service record.
+
+**Start point:** Phone app → **Home** → **Open the Member Center**. Web portal: Sidebar → Performance → **Shared Member Center**.
+
+**Steps:**
+1. Open the start point.
+2. Read **This month**: the number of volunteers, their hours and their names.
+3. Read **Our combined devotions**: the council's totals. No member's own count shows.
+4. Read **Leaderboard**: the Top 5 volunteers with the most hours.
+5. Read **My impact**: your events, your hours, your canonization shield and your council history.
+
+**Expected result:** The **Shared Member Center** shows the council's service and your own impact. The page shows no money.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| Your hours are lower than you expect. | Some hours wait for leadership review. | Wait for a leader to approve the hours. Then open the page again. |
+| **My impact** shows no council history. | The council did not record your earlier councils. | Tell your council Admin. |
+
 ---
 
 ## 10. Troubleshooting reference
@@ -1292,6 +1429,9 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | *"Locked. Submission closed …"* on an expense | The 30-day expense window is closed. | Contact the Financial Secretary. |
 | QR code missing | The council has no image for the method. | Take cash or card. Tell your council Admin. |
 | Event missing from **Donate** | The event is not at the gate yet. | Wait until 2 hours before the first shift. |
+| *"You are … m from the meeting hall, outside the … m check-in area. …"* | Your phone is outside the meeting circle. | Type the meeting PIN (5.5). |
+| *"That meeting PIN is not correct. …"* | The PIN is wrong. | Ask the Grand Knight for the PIN (5.5). |
+| *"Enter the check number printed on the check."* | A check donation has no check number. | Enter the number printed on the check (7.2.1). |
 
 Still stuck? Open **Answers → Online Help Center**. You can also message your council Admin.
 

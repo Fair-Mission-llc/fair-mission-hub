@@ -15,6 +15,10 @@
 // Sprint 6B: the St. Mary's order of business (LiveAgendaBoard, components/AgendaParts.tsx) sits under the top bar - every
 // speaker read from the council's seats, Upcoming Events from its calendar, any line corrected in place by the Grand
 // Knight or the Recorder, and the Recorder's hand-vote tally drawer on each motion of New and Old Business.
+// Sprint 7G: members check themselves in from the phone's '📍 Check In to Meeting' drawer (GPS inside the council's
+// circle, or the meeting PIN). Under the roster, the Meeting photo panel files one photo of the meeting with its minutes
+// (meetings.setMeetingPhoto): an Admin's upload goes to the Drive vault under Media / Meeting_Photos
+// (MEETING_PHOTO_DRIVE_FOLDER); anyone else's, or any upload while the vault is off, is kept as a link for this browser.
 import { useEffect, useMemo, useState } from 'react';
 import {
   agendaTopics,
@@ -25,6 +29,7 @@ import {
   formatCountdown,
   LIVE_AGENDA_ITEM_MAX_MINUTES,
   LIVE_AGENDA_ITEM_NAME_MAX_LENGTH,
+  MEETING_PHOTO_DRIVE_FOLDER,
   toIsoDate,
   type BallotTally,
   type FinalMotionResult,
@@ -36,6 +41,8 @@ import { LiveAgendaBoard } from '@/components/AgendaParts';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, PageTitle, Panel, Pill, Select } from '@/components/ui';
 import { formatFullDate, formatPersonName } from '@/lib/format';
+import { photoName, photoSrc } from '@/lib/media';
+import { archiveToDriveVault, localFileLink } from '@/services/drive-vault-transport';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -57,6 +64,74 @@ function useCountdown(state: LiveAssemblyState | undefined, readAt: number): num
   const item = state?.activeItem;
   if (!item) return null;
   return Math.max(0, item.secondsRemaining - Math.floor((now - readAt) / 1000));
+}
+
+/** Sprint 7G: the meeting's photo kept with its minutes, filed in the Drive vault under Media / Meeting_Photos. */
+function MeetingPhotoPanel({ meeting, onSaved }: { meeting: Meeting; onSaved: () => void }) {
+  const user = useUser();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const src = meeting.photo_url ? photoSrc(meeting.photo_url) : null;
+
+  const upload = async (file: File | undefined) => {
+    if (!file) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const ref = (await archiveToDriveVault(user, 'media', file, MEETING_PHOTO_DRIVE_FOLDER)) ?? localFileLink(file);
+      await db.meetings.setMeetingPhoto(user.memberId, meeting.id, ref);
+      onSaved();
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clear = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await db.meetings.setMeetingPhoto(user.memberId, meeting.id, null);
+      onSaved();
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Panel title="Meeting photo">
+      <div className="flex flex-col gap-3">
+        <p className="text-sm">
+          One photo of the meeting, kept with its minutes. An Admin&apos;s upload is filed in the council&apos;s Google Drive under Media / {MEETING_PHOTO_DRIVE_FOLDER}.
+        </p>
+        {error ? <Notice tone="error">{error}</Notice> : null}
+        {meeting.photo_url ? (
+          src ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={src} alt={`Photo of ${meeting['Meeting Name']}`} className="max-h-64 w-auto self-start rounded border-2 border-navy" />
+          ) : (
+            <p className="text-sm">Photo saved on a phone: {photoName(meeting.photo_url)}</p>
+          )
+        ) : (
+          <p className="text-sm text-muted">No photo yet.</p>
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <label className={cx('inline-flex cursor-pointer items-center rounded border-2 border-navy px-3 py-1.5 text-sm font-bold', busy && 'opacity-60')}>
+            {busy ? 'Uploading…' : meeting.photo_url ? 'Replace photo' : 'Upload photo'}
+            <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(e) => void upload(e.target.files?.[0])} />
+          </label>
+          {meeting.photo_url ? (
+            <Button size="sm" variant="secondary" disabled={busy} onClick={() => void clear()}>
+              Remove photo
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </Panel>
+  );
 }
 
 /** The countdown progress ring: a gold arc on navy that empties as the allotment runs out, brand-red in the last minute. */
@@ -510,6 +585,10 @@ function LiveConsole() {
               </ul>
             </div>
           </Panel>
+          <MeetingPhotoPanel
+            meeting={state.meeting}
+            onSaved={() => void db.meetings.getLiveAssemblyState(user.memberId, meetingId!).then(accept, (err: unknown) => setError(describeError(err)))}
+          />
         </>
       ) : meetingId !== null && !error ? (
         <p className="text-sm">Loading…</p>

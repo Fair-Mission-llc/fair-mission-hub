@@ -10,6 +10,9 @@
 // reminder delay and cadence, and six saved for future features). The fields sit in three high-contrast cards -
 // Financial Submissions, Volunteer & Meeting Operations and Reminder Cadences - and each has an (i) button that explains
 // it in a popup (GroupedSettingsCards).
+//
+// Sprint 7G: under the cards, the Grand Knight, the council's Admins and Super Admins get the Meeting Check-In card
+// (MeetingCheckInCard): the meeting point, the GPS check-in radius and the 4-digit meeting PIN.
 import { useState } from 'react';
 import {
   councilLabel,
@@ -22,6 +25,7 @@ import {
   type Council,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
+import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Notice, PageTitle, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
@@ -50,6 +54,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
         groups={COUNCIL_SETTING_GROUP_ORDER}
         onSave={save}
       />
+      <MeetingCheckInCard user={user} councilId={council.id} />
     </>
   );
 }

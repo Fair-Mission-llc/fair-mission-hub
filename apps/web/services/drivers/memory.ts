@@ -5,6 +5,26 @@
 // of against Azure SQL. State is per browser tab and resets on reload.
 // Nothing outside /services may import this file.
 import {
+  assertMayDispatchRoadmapAlerts,
+  assertMayManageMeetingGeofence,
+  assertMayReadRoadmap,
+  assertPinAttemptsLeft,
+  assertRoadmapCycleYear,
+  buildRoadmapMilestones,
+  cleanCheckInProof,
+  cleanMeetingGeofence,
+  cleanMeetingPhotoUrl,
+  countSignatureFlow,
+  MeetingPinAttempts,
+  meetingGeofenceOf,
+  ROADMAP_ALERT_ROLE_NAMES,
+  roadmapAlertPayload,
+  roadmapCycleYear,
+  roadmapTermYear,
+  verifyCheckInProof,
+  withoutMeetingPin,
+  type FraternalRoadmap,
+  type GeofencedCheckInResult,
   ACTIVITY_COLUMNS,
   aggregateMeetingHours,
   assertActivityDateAllowed,
@@ -844,6 +864,8 @@ export class MemoryDataService implements DataService {
   private readonly sendEmail: (request: SendGridMailRequest) => Promise<void>;
   private readonly presentationData: boolean;
   private readonly ballotSecret: string;
+  /** Sprint 7G: wrong meeting PINs per member and meeting (geofence.ts), kept for this driver's life only. */
+  private readonly pinAttempts = new MeetingPinAttempts();
 
   constructor(options: MemoryDataServiceOptions = {}) {
     this.presentationData = options.presentationData ?? false;
@@ -1319,11 +1341,11 @@ export class MemoryDataService implements DataService {
   }
 
   councils: DataService['councils'] = {
-    list: async () => this.sortedCouncils(await this.ready()),
+    list: async () => this.sortedCouncils(await this.ready()).map(withoutMeetingPin),
     get: async (id) => {
       const s = await this.ready();
       const row = s.rows('Council').find((c) => c.id === id);
-      return row ? ({ ...row } as unknown as Council) : null;
+      return row ? withoutMeetingPin({ ...row } as unknown as Council) : null;
     },
     listAffiliated: async (councilId) => {
       const s = await this.ready();
@@ -1333,7 +1355,9 @@ export class MemoryDataService implements DataService {
         if (a.AffiliatedCouncilID === councilId) linked.add(a.PrimaryCouncilID as number);
       }
       linked.delete(councilId);
-      return this.sortedCouncils(s).filter((c) => linked.has(c.id));
+      return this.sortedCouncils(s)
+        .filter((c) => linked.has(c.id))
+        .map(withoutMeetingPin);
     },
 
     create: async (actorId, council) => {
@@ -1414,6 +1438,21 @@ export class MemoryDataService implements DataService {
       const row = this.requireRecord(s, 'Council', councilId);
       Object.assign(row, { rank_threshold_hours: clean.hours, rank_threshold_events: clean.events });
       return { ...row } as unknown as Council;
+    },
+
+    getMeetingGeofence: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayManageMeetingGeofence(this.memberWriteActor(s, actorId), councilId);
+      return meetingGeofenceOf(this.requireRecord(s, 'Council', councilId) as unknown as Council);
+    },
+
+    setMeetingGeofence: async (actorId, councilId, changes) => {
+      const clean = cleanMeetingGeofence(changes);
+      const s = await this.ready();
+      assertMayManageMeetingGeofence(this.memberWriteActor(s, actorId), councilId);
+      const row = this.requireRecord(s, 'Council', councilId);
+      Object.assign(row, clean);
+      return meetingGeofenceOf(row as unknown as Council);
     },
 
     setCouncilWideSettings: async (actorId, councilId, settings) => {
@@ -4026,6 +4065,57 @@ export class MemoryDataService implements DataService {
       return this.liveAssemblyState(s, actorId, meetingId);
     },
 
+    geofencedCheckIn: async (actorId, meetingId, proof) => {
+      const clean = cleanCheckInProof(proof);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const meeting = this.requireMeetingRow(s, meetingId) as unknown as Meeting;
+      assertMeetingLive(meeting, 'take check-ins');
+      assertLiveParticipant(actor, meeting);
+      const result = (row: Row, distance: number | null, already: boolean): GeofencedCheckInResult => ({
+        attendanceId: row.id as number,
+        meetingId,
+        memberId: actorId,
+        checkedInAt: row.CheckedInAt as string,
+        method: clean.kind,
+        distanceMeters: distance,
+        alreadyCheckedIn: already,
+      });
+      const existing = s.rows('LiveAttendance').find((a) => a.MeetingID === meetingId && a.MemberID === actorId);
+      if (existing) return result(existing, null, true);
+      if (clean.kind === 'pin') assertPinAttemptsLeft(this.pinAttempts.count(meetingId, actorId));
+      let distance: number | null;
+      try {
+        distance = verifyCheckInProof(meetingGeofenceOf(this.requireRecord(s, 'Council', meeting.CouncilID) as unknown as Council), clean).distanceMeters;
+      } catch (err) {
+        if (err instanceof BusinessRuleError && err.code === 'MEETING_PIN_INVALID') this.pinAttempts.recordWrong(meetingId, actorId);
+        throw err;
+      }
+      this.pinAttempts.clear(meetingId, actorId);
+      const row = await this.meetings.logLiveAttendanceOverride(actorId, meetingId, actorId);
+      return result(row as unknown as Row, distance, false);
+    },
+
+    setCheckInPhoto: async (actorId, meetingId, photoUrl) => {
+      const photo = cleanMeetingPhotoUrl(photoUrl);
+      const s = await this.ready();
+      this.memberWriteActor(s, actorId);
+      this.requireMeetingRow(s, meetingId);
+      const row = s.rows('LiveAttendance').find((a) => a.MeetingID === meetingId && a.MemberID === actorId);
+      assertCheckedIn(row !== undefined, actorId, meetingId);
+      row!.photo_url = photo;
+      return { ...row! } as unknown as LiveAttendance;
+    },
+
+    setMeetingPhoto: async (actorId, meetingId, photoUrl) => {
+      const photo = cleanMeetingPhotoUrl(photoUrl);
+      const s = await this.ready();
+      const meeting = this.requireMeetingRow(s, meetingId);
+      assertMayRunLiveAssembly(this.memberWriteActor(s, actorId), meeting as unknown as Meeting, `file a photo for meeting ${meetingId}`);
+      meeting.photo_url = photo;
+      return { ...meeting } as unknown as Meeting;
+    },
+
     getMeetingAgenda: async (actorId, meetingId) => {
       const s = await this.ready();
       assertMayFollowLiveAssembly(this.memberWriteActor(s, actorId), this.requireMeetingRow(s, meetingId) as unknown as Meeting);
@@ -4687,7 +4777,74 @@ export class MemoryDataService implements DataService {
         return { ...conclusionResult(plan, rows.roles, fraternalYear, ballotsReset), closingMetrics };
       });
     },
+
+    getFraternalRoadmap: async (actorId, councilId, cycleYear) => {
+      const s = await this.ready();
+      const year = cycleYear === undefined ? roadmapCycleYear(this.now()) : assertRoadmapCycleYear(cycleYear);
+      assertMayReadRoadmap(this.memberWriteActor(s, actorId), councilId);
+      this.requireRecord(s, 'Council', councilId);
+      return this.fraternalRoadmap(s, councilId, year);
+    },
+
+    dispatchRoadmapAlerts: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayDispatchRoadmapAlerts(this.memberWriteActor(s, actorId), councilId);
+      this.requireRecord(s, 'Council', councilId);
+      const year = roadmapCycleYear(this.now());
+      const overdue = this.fraternalRoadmap(s, councilId, year).milestones.filter((m) => m.status === 'overdue');
+      const activeId = this.activeStatusId(s);
+      const leaders = s
+        .rows('Member')
+        .filter((m) => m.CouncilID === councilId && m.StatusID === activeId)
+        .filter(
+          (m) =>
+            this.memberTypeName(s, m.MemberTypeID as number) === 'Admin' ||
+            this.rolesFor(s, m.id as number).some((r) => (ROADMAP_ALERT_ROLE_NAMES as readonly string[]).includes(r.Role)),
+        )
+        .map((m) => m.id as number)
+        .sort((a, b) => a - b);
+      const sentAt = toTimestamp(this.now());
+      const logs = s.transaction(() =>
+        overdue.flatMap((milestone) => {
+          const alert = roadmapAlertPayload(milestone, year);
+          return leaders
+            .filter((id) => !s.rows('NotificationLog').some((n) => n.CouncilID === councilId && n.TargetMemberID === id && n.Title === alert.title))
+            .map(
+              (id) =>
+                ({
+                  ...s.insert('NotificationLog', {
+                    CouncilID: councilId,
+                    TargetMemberID: id,
+                    Title: alert.title,
+                    MessageBody: alert.body,
+                    Priority: 'High',
+                    SentAt: sentAt,
+                    IsRead: 0,
+                  }),
+                }) as unknown as NotificationLog,
+            );
+        }),
+      );
+      const tokens = new Map(logs.map((l) => [l.TargetMemberID, (this.requireMember(s, l.TargetMemberID).ExpoPushToken as string | null) ?? null]));
+      const delivered = deliverAlertsByStub(logs, tokens, this.log);
+      return { cycleYear: year, overdue: overdue.map((m) => m.id), alertsSent: logs.length, recipientIds: [...new Set(delivered.recipientIds)] };
+    },
   };
+
+  /** The roadmap of one council's cycle (roadmap.ts), read from the store. */
+  private fraternalRoadmap(s: MemoryStore, councilId: number, cycleYear: number): FraternalRoadmap {
+    const term = roadmapTermYear(cycleYear);
+    const lines = currentBudgetLines(
+      s.rows('CouncilBudgetForecast').filter((l) => l.CouncilID === councilId && l.FraternalYear === term) as unknown as CouncilBudgetForecast[],
+    );
+    const milestones = buildRoadmapMilestones(cycleYear, this.now(), {
+      nominationCount: s.rows('OfficerNominations').filter((n) => n.CouncilID === councilId && n.FraternalYear === term).length,
+      leadershipTermCount: s.rows('CouncilLeadershipHistory').filter((h) => h.CouncilID === councilId && h.FraternalYear === term).length,
+      budgetStatus: lines.length === 0 ? null : budgetStatusOf(lines),
+    });
+    const signatureFlow = countSignatureFlow(s.rows('ExpenseReport').filter((r) => r.CouncilID === councilId) as unknown as ExpenseReport[]);
+    return { councilId, cycleYear, termYear: term, milestones, signatureFlow };
+  }
 
   /** Everything buildYearClosingMetrics reads for one council (Sprint 6L), copied out of the store. */
   private yearClosingRows(s: MemoryStore, councilId: number): YearClosingRows {
