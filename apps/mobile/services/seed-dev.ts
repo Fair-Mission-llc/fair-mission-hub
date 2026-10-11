@@ -400,4 +400,5 @@ export const DEV_COUNCIL_DONATION_METHODS: readonly { method: string; qrUrl: str
   { method: 'Zeffy', qrUrl: 'placeholder://qr/zeffy.png' },
   { method: 'Parishsoft', qrUrl: 'placeholder://qr/parishsoft.png' },
   { method: 'Physical Items', qrUrl: null },
+  { method: 'Check', qrUrl: null },
 ];

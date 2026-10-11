@@ -132,7 +132,9 @@ export type BusinessRuleCode =
   | 'PRAYER_INTENTION_CLOSED'
   | 'ORAL_HISTORY_LIMIT_REACHED'
   | 'IN_MEMORIAM_NOT_DECEASED'
-  | 'QUARANTINE_STATUS_CONFLICT';
+  | 'QUARANTINE_STATUS_CONFLICT'
+  | 'IMPERSONATION_REFUSED'
+  | 'VIEW_AS_READ_ONLY';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {
@@ -405,6 +407,7 @@ const DONATION_METHOD_KINDS: Record<string, DonationMethodKind> = {
   zeffy: 'qr',
   parishsoft: 'qr',
   'physical items': 'item',
+  check: 'check',
 };
 
 export const donationMethodKind = (methodName: string): DonationMethodKind =>
@@ -494,7 +497,8 @@ export function mergeDonationChanges(existing: Donation, changes: DonationChange
 
 /** Which event funds column a donation method feeds; physical items feed neither. */
 export const donationFundsBucket = (kind: DonationMethodKind): 'cash' | 'electronic' | null =>
-  kind === 'item' ? null : kind === 'cash' ? 'cash' : 'electronic';
+  // Sprint 7F: a paper check is deposited with the cash, so it feeds the cash column.
+  kind === 'item' ? null : kind === 'cash' || kind === 'check' ? 'cash' : 'electronic';
 
 /** Totals of `donations` to the cent, summed in whole cents so no floating-point drift builds up. */
 export function summarizeDonations(donations: readonly { DonationAmount: number; kind: DonationMethodKind }[]): DonationTotals {

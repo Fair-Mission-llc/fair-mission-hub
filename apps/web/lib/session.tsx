@@ -13,8 +13,8 @@ import {
   type SessionUser,
   type TenantType,
 } from '@kofc/shared';
-import { db } from '@/services/db';
-import { closeServerSession, openServerSession } from '@/services/session-transport';
+import { db, setViewAsMode } from '@/services/db';
+import { closeServerSession, endServerImpersonation, openServerSession, startServerImpersonation } from '@/services/session-transport';
 
 interface SessionValue {
   user: SessionUser | null;
@@ -24,6 +24,15 @@ interface SessionValue {
   /** Resolves true when the credentials were accepted. */
   signIn(username: string, password: string): Promise<boolean>;
   signOut(): void;
+  /**
+   * Sprint 7F: the Super Admin behind a read-only view of the portal as `user`, or null on an ordinary session. While it
+   * is set, every data-service write is refused (VIEW_AS_READ_ONLY).
+   */
+  impersonator: SessionUser | null;
+  /** A Super Admin starts viewing as the member; rejects with the reason when the browser or the server refuses. */
+  impersonate(memberId: number): Promise<void>;
+  /** Returns to the Super Admin's own account. */
+  stopImpersonating(): Promise<void>;
   /** Bumped by profileChanged(), so views of the member's own record (the header avatar) reload. */
   profileVersion: number;
   /** Call after saving the signed-in member's own profile photo or details. */
@@ -77,10 +86,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setUser(found);
     return found !== null;
   }, []);
+  const [impersonator, setImpersonator] = useState<SessionUser | null>(null);
   const signOut = useCallback(() => {
+    setViewAsMode(false);
+    setImpersonator(null);
     setUser(null);
-    void closeServerSession();
+    void endServerImpersonation().then(closeServerSession);
   }, []);
+  const impersonate = useCallback(
+    async (memberId: number) => {
+      if (!user || impersonator) throw new Error('Return to your own account before viewing as someone else.');
+      // The browser's copy checks the rules first (it knows members added in this tab); then the server swaps its cookie.
+      const target = await db.auth.impersonate(user.memberId, memberId);
+      await startServerImpersonation(memberId);
+      setViewAsMode(true);
+      setImpersonator(user);
+      setUser(target);
+    },
+    [user, impersonator],
+  );
+  const stopImpersonating = useCallback(async () => {
+    if (!impersonator) return;
+    await endServerImpersonation();
+    setViewAsMode(false);
+    setUser(impersonator);
+    setImpersonator(null);
+  }, [impersonator]);
   const [profileVersion, setProfileVersion] = useState(0);
   const profileChanged = useCallback(() => setProfileVersion((v) => v + 1), []);
   const [alertsVersion, setAlertsVersion] = useState(0);
@@ -118,6 +149,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       startupError,
       signIn,
       signOut,
+      impersonator,
+      impersonate,
+      stopImpersonating,
       profileVersion,
       profileChanged,
       alertsVersion,
@@ -129,7 +163,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       tenantType,
       featuresChanged,
     }),
-    [user, ready, startupError, signIn, signOut, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged],
+    [user, ready, startupError, signIn, signOut, impersonator, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

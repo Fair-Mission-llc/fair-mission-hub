@@ -520,6 +520,13 @@ import {
   platformSettings,
   PLATFORM_SETTING_NAMES,
   PLATFORM_SETTINGS_ID,
+  accessRequestEmail,
+  assertAccessRequestTransition,
+  assertMayImpersonate,
+  assertMayReviewAccessRequests,
+  cleanAccessRequest,
+  sortAccessRequests,
+  type CouncilAccessRequest,
 } from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
@@ -761,7 +768,7 @@ const DB_NAME = 'kofc.db';
  *     reminder_delay_days, reminder_cadence_days and six saved for future features) and three PlatformSettings columns
  *     (cadence_invitation_horizon_days, user_session_expiry_hours, audit_log_retention_days) (Sprint 7E).
  */
-const SCHEMA_VERSION = 64;
+const SCHEMA_VERSION = 65;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1174,6 +1181,48 @@ export class SqliteDataService implements DataService {
       if (!spent) throw resetCodeInvalid();
       const row = await db.getFirstAsync<SignInRow>(`${SIGN_IN_SELECT} WHERE c.[id] = ?`, [member.CredentialID]);
       return this.buildSession(db, row!);
+    },
+
+    impersonate: async (actorId, targetMemberId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const row = await db.getFirstAsync<SignInRow>(`${SIGN_IN_SELECT} WHERE m.[id] = ?`, [targetMemberId]);
+      if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No member with id ${targetMemberId} can sign in.`, { memberId: targetMemberId });
+      const target = await this.buildSession(db, row);
+      assertMayImpersonate(actor, target);
+      return target;
+    },
+  };
+
+  accessRequests: DataService['accessRequests'] = {
+    submit: async (input) => {
+      const clean = cleanAccessRequest(input);
+      const db = await this.ready();
+      const res = await db.runAsync(
+        `INSERT INTO [CouncilAccessRequests] ([council_name], [contact_email], [city], [state], [status], [submitted_at]) VALUES (?, ?, ?, ?, 'PENDING', ?)`,
+        [clean.council_name, clean.contact_email, clean.city, clean.state, toTimestamp(this.now())],
+      );
+      const saved = (await db.getFirstAsync<CouncilAccessRequest>('SELECT * FROM [CouncilAccessRequests] WHERE [id] = ?', [res.lastInsertRowId]))!;
+      await this.sendEmail(buildSendGridMailRequest(accessRequestEmail(saved)));
+      return saved;
+    },
+
+    list: async (actorId) => {
+      const db = await this.ready();
+      assertMayReviewAccessRequests(await this.memberWriteActor(db, actorId), 'read council access requests');
+      return sortAccessRequests(await db.getAllAsync<CouncilAccessRequest>('SELECT * FROM [CouncilAccessRequests]'));
+    },
+
+    setStatus: async (actorId, requestId, status) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayReviewAccessRequests(await this.memberWriteActor(db, actorId), 'approve council access requests');
+        const row = await db.getFirstAsync<CouncilAccessRequest>('SELECT * FROM [CouncilAccessRequests] WHERE [id] = ?', [requestId]);
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No council access request with id ${requestId}.`, { requestId });
+        const next = assertAccessRequestTransition(row.status, status);
+        await db.runAsync('UPDATE [CouncilAccessRequests] SET [status] = ?, [reviewed_by_id] = ?, [reviewed_at] = ? WHERE [id] = ?', [next, actorId, toTimestamp(this.now()), requestId]);
+      });
+      return (await db.getFirstAsync<CouncilAccessRequest>('SELECT * FROM [CouncilAccessRequests] WHERE [id] = ?', [requestId]))!;
     },
   };
 
@@ -6850,8 +6899,8 @@ export class SqliteDataService implements DataService {
     const ids: number[] = [];
     for (const l of lines) {
       const res = await db.runAsync(
-        `INSERT INTO [JournalEntry] ([CouncilID], [GLAccountID], [DateLogged], [Description], [DebitAmount], [CreditAmount], [LinkedEventID], [LinkedMeetingID], [LinkedActivityID], [IsBankReconciled], [CheckNumber], [TransactionID])
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+        `INSERT INTO [JournalEntry] ([CouncilID], [GLAccountID], [DateLogged], [Description], [DebitAmount], [CreditAmount], [LinkedEventID], [LinkedMeetingID], [LinkedActivityID], [IsBankReconciled], [CheckNumber], [TransactionID], [payment_method])
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
         [
           councilId,
           l.GLAccountID,
@@ -6864,6 +6913,7 @@ export class SqliteDataService implements DataService {
           l.LinkedActivityID ?? null,
           l.CheckNumber,
           transactionId,
+          l.payment_method ?? null,
         ],
       );
       ids.push(res.lastInsertRowId);

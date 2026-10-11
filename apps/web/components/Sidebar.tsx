@@ -119,6 +119,12 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: "Each council's base dues rate and tenant type, and the recording and character limits every council shares",
     restrictedTo: 'Super Admins',
   },
+  'system-settings/remote-assistance': {
+    href: '/system-settings/remote-assistance',
+    label: 'Remote Assistance Desk',
+    hint: 'Watch the screens officers share when they ask for help',
+    restrictedTo: 'Super Admins',
+  },
   'navigation-guide': {
     href: '/navigation-guide',
     label: 'Navigation Guide',

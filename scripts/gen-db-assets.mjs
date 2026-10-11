@@ -119,6 +119,15 @@ function parseColumn(item, table) {
     else if (/^-?\d+(\.\d+)?$/.test(raw)) def = { kind: 'literal', value: Number(raw) };
     else fail(`Unsupported DEFAULT ${defMatch[1]} on [${table}].[${name}]`, item);
   }
+  // Sprint 7F: the one CHECK form the generator carries, a column's value list - CHECK ([col] IN ('A', 'B')). SQLite
+  // gets the same constraint and the web mock enforces the list (ColumnMeta.allowed); any other CHECK aborts the run.
+  let allowed = null;
+  const checkMatch = rest.match(/\bCHECK\s*\(([\s\S]*)\)\s*$/i);
+  if (checkMatch) {
+    const inList = checkMatch[1].trim().match(/^\[([^\]]+)\]\s+IN\s*\(([^)]*)\)$/i);
+    if (!inList || inList[1] !== name) fail(`Unsupported CHECK on [${table}].[${name}] (only CHECK ([${name}] IN ('...')) is understood)`, item);
+    allowed = splitTopLevel(inList[2]).map((v) => (/^'[^']*'$/.test(v) ? v.slice(1, -1) : fail(`CHECK values on [${table}].[${name}] must be 'text'`, item)));
+  }
   return {
     name,
     sqlType: mapped[0],
@@ -126,6 +135,7 @@ function parseColumn(item, table) {
     notNull: /\bNOT\s+NULL\b/i.test(rest),
     identity: /\bIDENTITY\b/i.test(rest),
     default: def,
+    ...(allowed ? { allowed } : {}),
   };
 }
 
@@ -228,6 +238,7 @@ function sqliteCreateTable(name, t) {
     let l = `  [${c.name}] ${c.sqlType}`;
     if (c.notNull) l += ' NOT NULL';
     if (c.default) l += c.default.kind === 'now' ? ' DEFAULT CURRENT_TIMESTAMP' : ` DEFAULT ${typeof c.default.value === 'string' ? `'${c.default.value}'` : c.default.value}`;
+    if (c.allowed) l += ` CHECK ([${c.name}] IN (${c.allowed.map((v) => `'${v}'`).join(', ')}))`;
     return l;
   });
   const identityPk = t.columns.some((c) => c.identity);
@@ -334,6 +345,7 @@ function renderWeb(tables, seed, presentation) {
       primaryKey: t.pk,
       columns: t.columns.map((c) => ({
         name: c.name, kind: c.kind, notNull: c.notNull, identity: c.identity, default: c.default,
+        ...(c.allowed ? { allowed: c.allowed } : {}),
       })),
       foreignKeys: t.fks,
       uniqueKeys: t.uniqueKeys,
@@ -349,6 +361,8 @@ export interface ColumnMeta {
   notNull: boolean;
   identity: boolean;
   default: { kind: 'literal'; value: number | string } | { kind: 'now' } | null;
+  /** The column's CHECK ([column] IN (...)) value list (Sprint 7F); absent when it has none. NULL always passes. */
+  allowed?: string[];
 }
 
 export interface ForeignKeyMeta {

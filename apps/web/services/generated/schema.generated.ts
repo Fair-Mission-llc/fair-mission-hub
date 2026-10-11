@@ -12,6 +12,8 @@ export interface ColumnMeta {
   notNull: boolean;
   identity: boolean;
   default: { kind: 'literal'; value: number | string } | { kind: 'now' } | null;
+  /** The column's CHECK ([column] IN (...)) value list (Sprint 7F); absent when it has none. NULL always passes. */
+  allowed?: string[];
 }
 
 export interface ForeignKeyMeta {
@@ -4908,6 +4910,18 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "payment_method",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null,
+        "allowed": [
+          "CASH",
+          "CARD",
+          "CHECK"
+        ]
       }
     ],
     "foreignKeys": [
@@ -5553,6 +5567,13 @@ export const TABLES: Record<string, TableMeta> = {
       },
       {
         "name": "storage_location",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "photo_url",
         "kind": "text",
         "notNull": false,
         "identity": false,
@@ -6955,6 +6976,87 @@ export const TABLES: Record<string, TableMeta> = {
     ],
     "foreignKeys": [],
     "uniqueKeys": []
+  },
+  "CouncilAccessRequests": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_name",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "contact_email",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "city",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "state",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "PENDING"
+        }
+      },
+      {
+        "name": "submitted_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "reviewed_by_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "reviewed_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "reviewed_by_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
   }
 };
 
@@ -7344,6 +7446,9 @@ export const SEED_DATA: readonly SeedTable[] = [
       },
       {
         "DonationMethod": "Physical Items"
+      },
+      {
+        "DonationMethod": "Check"
       }
     ]
   },

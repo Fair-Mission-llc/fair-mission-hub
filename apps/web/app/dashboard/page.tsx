@@ -21,6 +21,9 @@
 //
 // At the top (Sprint 7B) the council's Grand Knight, Deputy Grand Knight and Admins, and any Super Admin
 // (canReviewVolunteerQuarantine), get the Volunteer Time Quarantine Desk while feature_volunteer_quarantine is on.
+//
+// Above it (Sprint 7F) Super Admins get the Inbound Council Mail Center: the access requests councils file from the
+// sign-in page (/api/access-requests), each with an Approve button.
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
@@ -39,6 +42,7 @@ import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetP
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
+import { InboundMailCenter } from '@/components/PlatformAccessParts';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
 import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
@@ -290,6 +294,11 @@ function Dashboard() {
       >
         Executive Summary: {MONTHS[month - 1]} {year}
       </PageTitle>
+      {user.memberType === 'Super Admin' ? (
+        <div className="mb-4">
+          <InboundMailCenter />
+        </div>
+      ) : null}
       {flags.feature_volunteer_quarantine && canReviewVolunteerQuarantine(user, scope.councilId) ? (
         <div className="mb-4">
           <QuarantineDesk actorId={user.memberId} councilId={scope.councilId} />

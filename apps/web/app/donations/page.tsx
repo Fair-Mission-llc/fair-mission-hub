@@ -42,6 +42,7 @@ interface FormDraft {
 const KIND_LABEL: Record<CouncilDonationOption['kind'], string> = {
   cash: 'Cash',
   card: 'Card',
+  check: 'Check',
   qr: 'Electronic (QR)',
   item: 'Physical items',
   other: 'Other',

@@ -14,6 +14,7 @@
 import { NextResponse } from 'next/server';
 import type { MemberWriteActor, SessionUser } from '@kofc/shared';
 import { MemoryDataService } from '../drivers/memory';
+import { deliverServerEmail } from './notify';
 import { portalSessionSecret } from './secrets';
 import {
   PORTAL_SESSION_COOKIE,
@@ -35,7 +36,8 @@ const throttle = new SignInThrottle();
  * holds each council's email gateway, saved through /api/councils/email-gateway and read by the notification route.
  */
 export async function memberDirectory(): Promise<MemoryDataService> {
-  directory ??= new MemoryDataService({ presentationData: true, log: () => {} });
+  // Sprint 7F: the server copy's own email (the council access request notice) goes through deliverServerEmail.
+  directory ??= new MemoryDataService({ presentationData: true, log: () => {}, sendEmail: deliverServerEmail });
   await directory.init();
   return directory;
 }
@@ -81,6 +83,10 @@ export async function requirePortalSession(
 ): Promise<{ claims: PortalSessionClaims; actor: MemberWriteActor } | { denied: NextResponse }> {
   const claims = await readPortalSession(req);
   if (!claims) return { denied: NextResponse.json({ ...body, message: 'Sign in again: there is no portal session on the server.' }, { status: 401 }) };
+  // Sprint 7F: a Super Admin viewing the portal as another member may read, never change, through these routes.
+  if (claims.impersonatorId !== undefined && req.method !== 'GET' && req.method !== 'HEAD') {
+    return { denied: NextResponse.json({ ...body, message: 'You are viewing the portal as another member, so nothing can be saved.' }, { status: 403 }) };
+  }
   const actor = sessionActor(claims);
   if (!allow(actor, claims)) return { denied: NextResponse.json({ ...body, message: 'Your account may not do this.' }, { status: 403 }) };
   return { claims, actor };

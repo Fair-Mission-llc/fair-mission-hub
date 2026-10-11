@@ -98,6 +98,9 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member:
       "Sets each council's base dues rate and organization type, and the settings every council shares: the meeting invitation lead time, the sign-in length, and the recording and character limits.",
   },
+  'system-settings/remote-assistance': {
+    member: 'Shows the screens officers and Admins share when they click Request Remote Officer Assistance, so you can guide them.',
+  },
   'setup/council-settings': {
     member:
       "Sets the council's own numbers in three cards: the expense filing window, the volunteer time limits and logging window, and the hours reminder timing. Click (i) beside a field for what it does.",

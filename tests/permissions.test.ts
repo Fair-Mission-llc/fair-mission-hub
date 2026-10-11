@@ -106,6 +106,7 @@ describe('portal permissions', () => {
       'councils',
       'feature-flags',
       'system-settings/global-settings',
+      'system-settings/remote-assistance',
       'council-lookups',
       'elections/appointments',
       'parishes',

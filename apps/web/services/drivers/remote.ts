@@ -22,6 +22,12 @@ export function createRemoteDataService(): DataService {
       requestPasswordReset: notImplemented('auth.requestPasswordReset'),
       verifyPasswordResetCode: notImplemented('auth.verifyPasswordResetCode'),
       resetPassword: notImplemented('auth.resetPassword'),
+      impersonate: notImplemented('auth.impersonate'),
+    },
+    accessRequests: {
+      submit: notImplemented('accessRequests.submit'),
+      list: notImplemented('accessRequests.list'),
+      setStatus: notImplemented('accessRequests.setStatus'),
     },
     lookups: {
       list: notImplemented('lookups.list'),

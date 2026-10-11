@@ -52,6 +52,9 @@ import type {
   GLAccountType,
   EventIntakeSessionStatus,
   JournalEntry,
+  JournalPaymentMethod,
+  AccessRequestStatus,
+  CouncilAccessRequest,
   ExpenseDisbursement,
   ExpenseLineItem,
   ExpenseReceipts,
@@ -407,7 +410,7 @@ export interface DonationHistory {
 }
 
 /** How the phone UI presents a method: a big button, a QR code to show the donor, or a camera for items. */
-export type DonationMethodKind = 'cash' | 'card' | 'qr' | 'item' | 'other';
+export type DonationMethodKind = 'cash' | 'card' | 'check' | 'qr' | 'item' | 'other';
 
 /** A method the council has enabled, ready for a one-tap picker. */
 export interface CouncilDonationOption {
@@ -738,6 +741,10 @@ export interface ConcludedRevenueInput {
   DateLogged?: string;
   /** Default 'Revenue collected: <event or activity name>'. */
   Description?: string;
+  /** Sprint 7F: how it was collected - 'CASH', 'CARD' or 'CHECK' (JOURNAL_PAYMENT_METHODS); default none. */
+  payment_method?: JournalPaymentMethod | null;
+  /** Sprint 7F: the check number; required with 'CHECK' and refused with any other method. */
+  CheckNumber?: string | null;
 }
 
 /** One receipt for expenses.submitReport; its sheet comes from the call. */
@@ -2036,6 +2043,16 @@ export interface AssetRecordChanges {
   serial_number?: string | null;
   storage_location?: string | null;
   notes?: string | null;
+  /** Sprint 7F: the asset's photo (a Drive file id or a link), or null to remove it. */
+  photo_url?: string | null;
+}
+
+/** accessRequests.submit's input (Sprint 7F): the sign-in page's Register Your Council form. */
+export interface AccessRequestInput {
+  council_name: string;
+  contact_email: string;
+  city: string;
+  state: string;
 }
 
 /** One Planning Hours entry to log: the logger's own time on a day before the event. */
@@ -2319,6 +2336,26 @@ export interface DataService {
      * member's session. Rejects PASSWORD_TOO_SHORT before anything else is checked, and RESET_CODE_INVALID as above.
      */
     resetPassword(email: string, code: string, newPassword: string): Promise<SessionUser>;
+    /**
+     * Sprint 7F: the session `targetMemberId` would get at sign-in, for a Super Admin's read-only view of the portal as
+     * that member (assertMayImpersonate: SUPER_ADMIN_REQUIRED for anyone else; IMPERSONATION_REFUSED for themself or
+     * another Super Admin). RECORD_NOT_FOUND for an unknown member or one with no Credentials row. Writes nothing.
+     */
+    impersonate(actorId: number, targetMemberId: number): Promise<SessionUser>;
+  };
+
+  /**
+   * Sprint 7F: councils that are not on the platform asking for access (CouncilAccessRequests). Anyone may submit one,
+   * signed in or not; it is stored PENDING and emailed to ACCESS_REQUEST_NOTIFY_EMAIL. Only an Active Super Admin may
+   * list or approve them (SUPER_ADMIN_REQUIRED). Approving does not create the council.
+   */
+  accessRequests: {
+    /** Stores the request and sends the notice. INVALID_INPUT for a missing or over-long field or a bad email. */
+    submit(input: AccessRequestInput): Promise<CouncilAccessRequest>;
+    /** Every request, pending first, newest first (sortAccessRequests). */
+    list(actorId: number): Promise<CouncilAccessRequest[]>;
+    /** PENDING -> APPROVED, stamping the reviewer. RECORD_NOT_FOUND for an unknown id; INVALID_INPUT otherwise. */
+    setStatus(actorId: number, requestId: number, status: AccessRequestStatus): Promise<CouncilAccessRequest>;
   };
 
   /**

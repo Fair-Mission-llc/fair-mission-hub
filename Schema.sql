@@ -3083,3 +3083,44 @@ ALTER TABLE [PlatformSettings] ADD [user_session_expiry_hours] INT NOT NULL DEFA
 GO
 ALTER TABLE [PlatformSettings] ADD [audit_log_retention_days] INT NOT NULL DEFAULT 180;
 GO
+
+-- =========================================================================
+-- Sprint 7F: ONBOARDING GATES, CHECK PAYMENTS AND ASSET PHOTOS (schema version 65)
+--
+-- - CouncilAssetsInventory.photo_url: a picture of the asset (a Google Drive file id from the archival vault, or a
+--   local link while the vault is off), saved from the asset form on /expenses/assets (expenses.updateAssetRecord).
+-- - JournalEntry.payment_method: how the money moved - 'CASH', 'CARD' or 'CHECK' (JOURNAL_PAYMENT_METHODS). NULL on
+--   older lines and on lines that are not a payment (transfers, allocations). It is the platform's first CHECK
+--   constraint; the shared rules layer enforces the same list, and a CHECK line must carry its CheckNumber.
+--   DonationMethod gains a 'Check' row (kind 'check'), so a council can take donations by check.
+-- - CouncilAccessRequests: a council that is not on the platform yet asks for access from the sign-in page. Anyone
+--   may file one; Super Admins read them in the Inbound Council Mail Center on the Executive Dashboard and mark them
+--   APPROVED (ACCESS_REQUEST_STATUSES; rules layer, no CHECK). Each request is emailed to ACCESS_REQUEST_NOTIFY_EMAIL.
+--   Approving does not create the council; a Super Admin still adds it on /councils.
+-- =========================================================================
+ALTER TABLE [CouncilAssetsInventory] ADD [photo_url] VARCHAR(2000) NULL;
+GO
+ALTER TABLE [JournalEntry] ADD [payment_method] VARCHAR(10) NULL CHECK ([payment_method] IN ('CASH', 'CARD', 'CHECK'));
+GO
+
+CREATE TABLE [CouncilAccessRequests] (
+	[id] INT NOT NULL IDENTITY,
+	[council_name] VARCHAR(150) NOT NULL,
+	[contact_email] VARCHAR(255) NOT NULL,
+	[city] VARCHAR(100) NOT NULL,
+	[state] VARCHAR(50) NOT NULL,
+	[status] VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+	[submitted_at] DATETIME NOT NULL,
+	[reviewed_by_id] INT NULL,
+	[reviewed_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [CouncilAccessRequests]
+ADD FOREIGN KEY([reviewed_by_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+CREATE INDEX [CouncilAccessRequests_Status_Idx] ON [CouncilAccessRequests] ([status], [submitted_at]);
+GO

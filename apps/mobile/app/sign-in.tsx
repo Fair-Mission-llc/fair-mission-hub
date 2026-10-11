@@ -4,13 +4,73 @@
 // (PasswordInput); "Forgot Password?" runs forgotPassword -> resetCode -> newPassword -> signedIn.
 // Sprint 6D: once this phone holds a biometric key (minted with the setup code), the email and password prompts lead
 // with "Sign In with FaceID / Biometrics", which skips the password.
+// Sprint 7F: "Register Your Council / Request Access" under the first prompt opens a short form for a council that is not
+// on the platform yet (accessRequests.submit; the notice goes to ACCESS_REQUEST_NOTIFY_EMAIL).
 import { useState } from 'react';
+import { ACCESS_REQUEST_NOTIFY_EMAIL } from '@kofc/shared';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { BrandMark } from '@/components/BrandHeader';
 import { AppInput, AppText, Button, Card, Field, Notice, PasswordInput } from '@/components/ui';
 import { useApp } from '@/lib/app-context';
 import { describeError } from '@/lib/use-async';
 import { useTheme } from '@/lib/layout-mode';
+import { db } from '@/services/db';
+
+/** Sprint 7F: the Register Your Council form, in place of the sign-in prompts while it is open. */
+function AccessRequestCard({ onDone }: { onDone: () => void }) {
+  const { space } = useTheme();
+  const [draft, setDraft] = useState({ council_name: '', contact_email: '', city: '', state: '' });
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const set = (key: keyof typeof draft) => (text: string) => setDraft((d) => ({ ...d, [key]: text }));
+  const submit = async () => {
+    setBusy(true);
+    setFailure(null);
+    try {
+      await db.accessRequests.submit(draft);
+      setSent(true);
+    } catch (err) {
+      setFailure(describeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (sent) {
+    return (
+      <View style={{ gap: space.lg }}>
+        <AppText variant="title">Request received</AppText>
+        <AppText>
+          Thank you. Your request was sent to {ACCESS_REQUEST_NOTIFY_EMAIL}. A platform administrator will contact {draft.contact_email.trim()}.
+        </AppText>
+        <Button title="Back to sign in" variant="secondary" onPress={onDone} />
+      </View>
+    );
+  }
+  return (
+    <View style={{ gap: space.lg }}>
+      <AppText variant="title">Register your council</AppText>
+      <AppText variant="small" tone="muted">
+        Is your council not on the platform yet? Send this form and a platform administrator will contact you.
+      </AppText>
+      {failure ? <Notice tone="error" message={failure} onDismiss={() => setFailure(null)} /> : null}
+      <Field label="COUNCIL NAME">
+        <AppInput value={draft.council_name} onChangeText={set('council_name')} maxLength={150} />
+      </Field>
+      <Field label="CONTACT EMAIL">
+        <AppInput value={draft.contact_email} onChangeText={set('contact_email')} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="emailAddress" maxLength={255} />
+      </Field>
+      <Field label="CITY">
+        <AppInput value={draft.city} onChangeText={set('city')} maxLength={100} />
+      </Field>
+      <Field label="STATE">
+        <AppInput value={draft.state} onChangeText={set('state')} maxLength={50} />
+      </Field>
+      <Button title="Send request" busy={busy} onPress={() => void submit()} />
+      <Button title="Back to sign in" variant="secondary" onPress={onDone} />
+    </View>
+  );
+}
 
 /** The 'Forgot Password?' text button under the email and password prompts. */
 function ForgotLink({ onPress }: { onPress: () => void }) {
@@ -49,6 +109,7 @@ export default function SignInScreen() {
   const [resetCode, setResetCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  const [registering, setRegistering] = useState(false);
 
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
@@ -77,10 +138,11 @@ export default function SignInScreen() {
         </View>
 
         <Card accent={color.gold} style={{ gap: space.lg }}>
-          {failure ? <Notice tone="error" message={failure} onDismiss={() => setFailure(null)} /> : null}
-          {error ? <Notice tone="error" message={error} /> : null}
+          {registering ? <AccessRequestCard onDone={() => setRegistering(false)} /> : null}
+          {!registering && failure ? <Notice tone="error" message={failure} onDismiss={() => setFailure(null)} /> : null}
+          {!registering && error ? <Notice tone="error" message={error} /> : null}
 
-          {state.screen === 'enterEmail' ? (
+          {!registering && state.screen === 'enterEmail' ? (
             <>
               <BiometricSignIn email={biometricEmail} busy={busy} onPress={() => void run(submitBiometric)} />
               <AppText variant="title">Welcome. What is your email address?</AppText>
@@ -92,6 +154,7 @@ export default function SignInScreen() {
               </Field>
               <Button title="Continue" busy={busy} disabled={!email.trim()} onPress={() => void run(() => submitEmail(email))} />
               <ForgotLink onPress={startPasswordReset} />
+              <Button title="🏢 Register Your Council / Request Access" variant="secondary" onPress={() => setRegistering(true)} />
             </>
           ) : null}
 

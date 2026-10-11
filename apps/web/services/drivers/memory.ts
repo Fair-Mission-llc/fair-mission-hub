@@ -516,6 +516,13 @@ import {
   type CouncilWideSettings,
   platformSettings,
   PLATFORM_SETTINGS_ID,
+  accessRequestEmail,
+  assertAccessRequestTransition,
+  assertMayImpersonate,
+  assertMayReviewAccessRequests,
+  cleanAccessRequest,
+  sortAccessRequests,
+  type CouncilAccessRequest,
 } from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
@@ -770,6 +777,8 @@ class MemoryStore {
         if (typeof v !== 'number') throw new Error(`datatype mismatch: ${table}.${col.name} expects a number`);
       } else if (typeof v !== 'string') {
         throw new Error(`datatype mismatch: ${table}.${col.name} expects text`);
+      } else if (col.allowed && !col.allowed.includes(v)) {
+        throw new Error(`CHECK constraint failed: ${table}.${col.name}`);
       }
       row[col.name] = v;
     }
@@ -1107,6 +1116,45 @@ export class MemoryDataService implements DataService {
       (token as Row).ConsumedAt = toTimestamp(this.now());
       (cred as Row).Password = hash;
       return this.sessionFor(s, member, cred);
+    },
+
+    impersonate: async (actorId, targetMemberId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const member = s.rows('Member').find((m) => m.id === targetMemberId);
+      const cred = member ? s.rows('Credentials').find((c) => c.id === member.CredentialID) : undefined;
+      if (!member || !cred) throw new BusinessRuleError('RECORD_NOT_FOUND', `No member with id ${targetMemberId} can sign in.`, { memberId: targetMemberId });
+      const target = this.sessionFor(s, member as Row, cred as Row);
+      assertMayImpersonate(actor, target);
+      return target;
+    },
+  };
+
+  accessRequests: DataService['accessRequests'] = {
+    submit: async (input) => {
+      const clean = cleanAccessRequest(input);
+      const s = await this.ready();
+      const row = s.insert('CouncilAccessRequests', { ...clean, status: 'PENDING', submitted_at: toTimestamp(this.now()) });
+      const saved = { ...row } as unknown as CouncilAccessRequest;
+      await this.sendEmail(buildSendGridMailRequest(accessRequestEmail(saved)));
+      return saved;
+    },
+
+    list: async (actorId) => {
+      const s = await this.ready();
+      assertMayReviewAccessRequests(this.memberWriteActor(s, actorId), 'read council access requests');
+      return sortAccessRequests(s.rows('CouncilAccessRequests').map((r) => ({ ...r }) as unknown as CouncilAccessRequest));
+    },
+
+    setStatus: async (actorId, requestId, status) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayReviewAccessRequests(this.memberWriteActor(s, actorId), 'approve council access requests');
+        const row = s.rows('CouncilAccessRequests').find((r) => r.id === requestId) as Row | undefined;
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No council access request with id ${requestId}.`, { requestId });
+        Object.assign(row, { status: assertAccessRequestTransition(row.status as CouncilAccessRequest['status'], status), reviewed_by_id: actorId, reviewed_at: toTimestamp(this.now()) });
+        return { ...row } as unknown as CouncilAccessRequest;
+      });
     },
   };
 
@@ -5779,7 +5827,16 @@ export class MemoryDataService implements DataService {
     const TransactionID = formatTransactionId(globalThis.crypto.getRandomValues(new Uint8Array(16)));
     return lines.map(
       (line) =>
-        ({ ...s.insert('JournalEntry', { CouncilID: councilId, ...line, LinkedActivityID: line.LinkedActivityID ?? null, IsBankReconciled: 0, TransactionID }) }) as unknown as JournalEntry,
+        ({
+          ...s.insert('JournalEntry', {
+            CouncilID: councilId,
+            ...line,
+            LinkedActivityID: line.LinkedActivityID ?? null,
+            payment_method: line.payment_method ?? null,
+            IsBankReconciled: 0,
+            TransactionID,
+          }),
+        }) as unknown as JournalEntry,
     );
   }
 

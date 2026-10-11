@@ -18,7 +18,10 @@ export const ASSET_LOCATION_MAX_LENGTH = 255;
 /** Longest notes (TEXT, capped by the rules layer). */
 export const ASSET_NOTES_MAX_LENGTH = 4000;
 
-const ASSET_CHANGE_FIELDS: readonly (keyof AssetRecordChanges)[] = ['asset_name', 'current_status', 'serial_number', 'storage_location', 'notes'];
+/** Longest photo_url (VARCHAR(2000), Sprint 7F). */
+export const ASSET_PHOTO_URL_MAX_LENGTH = 2000;
+
+const ASSET_CHANGE_FIELDS: readonly (keyof AssetRecordChanges)[] = ['asset_name', 'current_status', 'serial_number', 'storage_location', 'notes', 'photo_url'];
 
 /** A trimmed optional text, null when blank. */
 function optionalText(value: unknown, label: string, maxLength: number): string | null {
@@ -47,6 +50,14 @@ export function cleanAssetRecordChanges(input: AssetRecordChanges): AssetRecordC
   if (input.serial_number !== undefined) out.serial_number = optionalText(input.serial_number, 'Serial number', ASSET_SERIAL_MAX_LENGTH);
   if (input.storage_location !== undefined) out.storage_location = optionalText(input.storage_location, 'Storage location', ASSET_LOCATION_MAX_LENGTH);
   if (input.notes !== undefined) out.notes = optionalText(input.notes, 'Notes', ASSET_NOTES_MAX_LENGTH);
+  if (input.photo_url !== undefined) {
+    // Sprint 7F: a Drive file id, an http(s) or blob: link, or a path under the portal's media folder; never script.
+    const photo = optionalText(input.photo_url, 'Asset photo', ASSET_PHOTO_URL_MAX_LENGTH);
+    if (photo !== null && /^\s*(javascript|vbscript|data):/i.test(photo)) {
+      throw new BusinessRuleError('INVALID_INPUT', 'An asset photo must be an uploaded file or a web link.', { field: 'photo_url' });
+    }
+    out.photo_url = photo;
+  }
   return out;
 }
 

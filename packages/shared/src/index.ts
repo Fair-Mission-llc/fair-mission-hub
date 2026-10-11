@@ -54,3 +54,4 @@ export * from './member-lifecycle';
 export * from './volunteer-quarantine';
 export * from './council-settings';
 export * from './navigation-guide';
+export * from './platform-access';

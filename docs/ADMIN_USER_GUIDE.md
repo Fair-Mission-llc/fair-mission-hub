@@ -27,7 +27,8 @@
 14. [Member engagement and the roster lifecycle](#14-member-engagement-and-the-roster-lifecycle)
 15. [Volunteer time quarantine](#15-volunteer-time-quarantine)
 16. [Council Wide Settings and platform settings](#16-council-wide-settings-and-platform-settings)
-17. [Appendix: QR code files](#appendix-qr-code-files)
+17. [Access requests, check payments, asset photos, impersonation and remote help](#17-access-requests-check-payments-asset-photos-impersonation-and-remote-help)
+18. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -2017,6 +2018,205 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 | --- | --- | --- |
 | The message says "Enter a base dues rate." | The rate box is empty. | Enter the rate, then save. |
 | The Faith Center and the Supreme Council Sync left the sidebar. | The tenant type is a white-labelled organization. | Choose the Knights of Columbus tenant type again. |
+
+---
+
+## 17. Access requests, check payments, asset photos, impersonation and remote help
+
+### 17.1 Concept: council access requests
+
+A council that is not on the platform can ask for access from the sign-in page. The sign-in page has a **🏢 Register Your Council / Request Access** button on the web and on the phone.
+
+The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
+
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests in the **Inbound Council Mail Center** card on the Executive Dashboard.
+
+Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
+
+| Rule | Value |
+| --- | --- |
+| Requests from one contact email | 3 in one hour |
+| Requests from one network address | 10 in one hour |
+| Status values | Pending, Approved |
+
+> The web portal keeps requests on the portal server. A server restart clears them until the production database is connected. A request sent from the phone stays on that phone.
+
+### 17.2 Approve a council access request
+
+> **Who can do this:** Super Admins. Other members do not see the Inbound Council Mail Center.
+
+**Goal:** Mark a council's access request as reviewed.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Inbound Council Mail Center**.
+
+**Steps:**
+1. Read the council name, the city, the state and the contact email of the request.
+2. Select the contact email to write to the council, if you need more information.
+3. Select **Approve**.
+4. Open Sidebar → System Settings → **Councils** to add the council.
+
+**Expected result:** The request shows a gold **Approved** label. The pending count in the card title goes down by 1.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The card says "No council has asked for access yet." | No request reached the portal server. | Ask the council to send the form again from the web sign-in page. |
+| The card shows an error about the session. | Your server session ended. | Sign out, then sign in again. |
+
+### 17.3 Concept: payments by check
+
+The ledger records how money came in. The **Payment method** has three values: **Cash**, **Card** and **Check**.
+
+- A payment by **Check** must have a check number.
+- A payment by **Cash** or **Card** has no check number.
+- An older ledger line has no payment method.
+
+The database refuses any other payment method. The donation methods also include **Check**. A donation by check counts in the cash column of the event, because the council deposits checks with the cash.
+
+### 17.4 Log revenue that a council received by check
+
+> **Who can do this:** The council's Treasurer or a Super Admin.
+> **Warning:** The revenue posts to the general ledger at once.
+
+**Goal:** Record event or activity revenue and the check that paid it.
+
+**Start point:** Sidebar → Finances → **Financial Dashboard** → **💰 Log Concluded Event Revenues**.
+
+**Steps:**
+1. Select the event or activity in **Event or activity**.
+2. Enter the amount in **Funds collected**.
+3. Select the **Revenue account** and the **Deposited to** account.
+4. Select **Check** in **Payment method**.
+5. Enter the number in **Check number**.
+6. Select **Save to the ledger**. The revenue posts to the ledger at once.
+
+**Expected result:** A message shows the amount and the revenue account. Both ledger lines show the payment method **CHECK** and the check number.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The message says "Enter the check number of a payment by check." | The **Check number** box is empty. | Enter the check number, then save. |
+| The message says "Only a payment by check has a check number." | The payment method is not **Check**. | Select **Check**, or clear the check number. |
+
+### 17.5 Concept: the asset photo vault
+
+Each council asset can have one photo. The photo shows on the asset form and as a small picture in the assets inventory.
+
+An Admin's photo goes to the council's Google Drive vault, in the folder **Media / Council Assets**. When the vault is off, or the person is not an Admin, the photo stays a link in this browser only.
+
+### 17.6 Add a photo to a council asset
+
+> **Who can do this:** The council's Grand Knight, Admins, Financial Secretary and Treasurer, or a Super Admin.
+
+**Goal:** Attach a photo of the item to its asset record.
+
+**Start point:** Sidebar → Finances → **GK Expense Authorize** → **Council assets** → **Edit** on the asset row.
+
+**Steps:**
+1. Select **Upload photo** in the **Asset photo** box.
+2. Choose an image file. The platform saves the photo at once.
+3. To change the photo, select **Replace photo** and choose another image.
+4. To remove the photo, select **Remove photo**.
+
+**Expected result:** The photo shows on the asset form. The message says "Saved the photo of" and the asset name. The inventory shows the photo in the **Photo** column.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The message says the file "is not an image." | The file is a document or a video. | Choose a JPEG, PNG, WebP or HEIC image. |
+| The photo is missing after you reload the page. | The photo was a browser link because the Drive vault is off. | Ask an Admin to upload the photo with the vault on. |
+
+### 17.7 Concept: user impersonation (view as a member)
+
+A Super Admin can see the portal exactly as one member sees the portal. Use this to check a member's sidebar, pages and permissions.
+
+| Rule | Value |
+| --- | --- |
+| Who can start the view | Active Super Admins only |
+| Who can be viewed | Any member except yourself and other Super Admins |
+| Saving in the view | Not possible. Every save is refused. |
+| Longest view | 60 minutes, or until your own sign-in ends |
+| Record | The portal server logs each start and stop |
+
+The portal server holds both sign-ins in signed cookies. The browser cannot read or change them. A gold bar across the top of the portal shows whose view is open.
+
+### 17.8 View the portal as another member
+
+> **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate User** button.
+
+**Goal:** See the portal with one member's sidebar, pages and permissions.
+
+**Start point:** Sidebar → System Settings → **Affiliated Roster**.
+
+**Steps:**
+1. Find the member in the roster table.
+2. Select **👥 Impersonate User** in the **Actions** column.
+3. Look at the pages. The portal opens on the member's hub.
+4. Select **Return to my account** in the gold bar to end the view.
+
+**Expected result:** The gold bar says "You are viewing the portal as" and the member's name. After **Return to my account**, your own sidebar comes back.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A save fails with "You are viewing the portal as another member, so nothing can be saved." | The view is read-only. | Select **Return to my account**, then make the change as yourself. |
+| The row has no **👥 Impersonate User** button. | The member is you or another Super Admin. | You cannot view as a Super Admin. |
+| An error says "The server did not answer, so the view could not start." | The portal server cannot see the member or your session ended. | Sign out, sign in again, then try again. |
+
+### 17.9 Concept: co-watching remote assistance
+
+An officer or Admin who needs help can share a copy of the screen with the Super Admins. The officer starts and stops the sharing. Nothing is shared until the officer selects **Share my screen**.
+
+- The copy refreshes every 5 seconds while the officer shares.
+- The copy never contains what the officer types in form fields. Passwords are never sent.
+- The copy cannot run on the Super Admin's computer. The desk shows the copy as a still picture of the page.
+- Sharing stops when the officer selects **Stop sharing**, when a Super Admin closes the request, or after 30 minutes without an update.
+
+### 17.10 Ask for remote help
+
+> **Who can do this:** Officers and Admins. Members and Super Admins do not see the button.
+
+**Goal:** Let a Super Admin see your screen while you get help.
+
+**Start point:** The portal header → **❓ Request Remote Officer Assistance**.
+
+**Steps:**
+1. Select **❓ Request Remote Officer Assistance**.
+2. Enter what you need in **What do you need help with? (optional)**.
+3. Select **Share my screen**.
+4. Go to the page you need help with. The Super Admin sees each page you open.
+5. Select **Stop sharing** when you finish.
+
+**Expected result:** The header button turns red and says **● Sharing screen · Stop sharing**. After **Stop sharing**, the button goes back to **❓ Request Remote Officer Assistance**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The request fails with a session message. | Your server session ended. | Sign out, then sign in again. |
+| The red button changed back by itself. | A Super Admin closed the request, or 30 minutes passed. | Send a new request if you still need help. |
+
+### 17.11 Watch an officer's screen
+
+> **Who can do this:** Super Admins. Other members do not see the Remote Assistance Desk.
+
+**Goal:** See the screen an officer shares and guide the officer.
+
+**Start point:** Sidebar → System Settings → **Remote Assistance Desk**.
+
+**Steps:**
+1. Select a request in **Open requests**.
+2. Read the officer's note and the page name.
+3. Look at the screen copy in the right panel. The copy refreshes every 5 seconds.
+4. Guide the officer by phone or by message.
+5. Select **Close request** when the officer has the answer.
+
+**Expected result:** The right panel shows the officer's page at the officer's window size. After **Close request**, the request leaves the list.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The panel says "That request is closed." | The officer stopped sharing. | Ask the officer to send a new request. |
+| The form fields in the copy are empty. | The platform never sends what the officer types. | Ask the officer to read the values to you. |
 
 ---
 

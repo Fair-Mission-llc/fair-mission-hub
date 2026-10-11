@@ -9,6 +9,7 @@
 // =========================================================================
 import type { ConcludedRevenueInput, ExpenseLedgerCoding } from './contract';
 import { isPhysicalPropertyAccount } from './audits';
+import { cleanJournalPayment } from './platform-access';
 import { cleanJournalDate, compareGLAccounts, isBankAccount, JOURNAL_DESCRIPTION_MAX_LENGTH, type CleanJournalLine } from './finance';
 import {
   assertMoney,
@@ -202,13 +203,16 @@ export function planConcludedRevenue(
     input.Description === undefined || input.Description === null || String(input.Description).trim() === ''
       ? `Revenue collected: ${name}`
       : assertText(input.Description, 'Description', JOURNAL_DESCRIPTION_MAX_LENGTH);
+  // Sprint 7F: how the money came in, on both lines of the posting; a check carries its number.
+  const payment = cleanJournalPayment(input.payment_method, input.CheckNumber);
   const base = {
     Description: description,
     DateLogged: dateLogged,
     LinkedEventID: link.kind === 'event' ? link.id : null,
     LinkedMeetingID: null,
     LinkedActivityID: link.kind === 'activity' ? link.id : null,
-    CheckNumber: null,
+    CheckNumber: payment.CheckNumber,
+    payment_method: payment.payment_method,
   };
   return [
     { ...base, GLAccountID: depositAccount.id, DebitAmount: amount, CreditAmount: 0 },

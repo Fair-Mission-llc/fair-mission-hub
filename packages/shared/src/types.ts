@@ -736,6 +736,7 @@ export interface CouncilAssetsInventory {
   notes?: string | null;
   serial_number?: string | null; // VARCHAR(100), Sprint 6P
   storage_location?: string | null; // VARCHAR(255), Sprint 6P: where the item is kept
+  photo_url?: string | null; // VARCHAR(2000), Sprint 7F: a Drive file id from the vault, or a local link while it is off
 }
 
 /** One receipt on an expense sheet. */
@@ -1079,6 +1080,27 @@ export interface JournalEntry {
   TransactionID: string;
   /** Sprint 6Q: an activity of the council the posting belongs to (post-event revenue logged against an activity). */
   LinkedActivityID?: number | null;
+  /** VARCHAR(10) CHECK (Sprint 7F): how the money moved; NULL on older lines and on lines that are not a payment. */
+  payment_method?: JournalPaymentMethod | null;
+}
+
+/** JournalEntry.payment_method values (Sprint 7F, the column's CHECK list). */
+export type JournalPaymentMethod = 'CASH' | 'CARD' | 'CHECK';
+
+/** CouncilAccessRequests.status (Sprint 7F; rules layer). */
+export type AccessRequestStatus = 'PENDING' | 'APPROVED';
+
+/** A council that is not on the platform asking for access from the sign-in page (Sprint 7F, CouncilAccessRequests). */
+export interface CouncilAccessRequest {
+  id: number;
+  council_name: string; // VARCHAR(150)
+  contact_email: string; // VARCHAR(255)
+  city: string; // VARCHAR(100)
+  state: string; // VARCHAR(50)
+  status: AccessRequestStatus;
+  submitted_at: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
+  reviewed_by_id?: number | null; // the Super Admin who approved it
+  reviewed_at?: string | null;
 }
 
 // 14. COUNCIL HISTORY ANNALS AND THE SPIRITUAL DIARY (Sprint 6K)

@@ -5,6 +5,9 @@
 // serial number, where the item is kept and notes (expenses.updateAssetRecord). Without ?asset the page lists the
 // inventory. Open to the council's expense leadership and its Grand Knight (canManageCouncilAssets); the drivers check
 // assertMayManageCouncilAssets.
+// Sprint 7F: the Asset Photo Vault. The form takes one image per asset and saves it at once as photo_url: an Admin's
+// upload goes to the Google Drive vault under Media / Council Assets (a Drive file id), anyone else's stays a local link
+// until the vault is used. The inventory shows each photo as a thumbnail.
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -24,9 +27,29 @@ import {
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { formatMoney } from '@/lib/format';
+import { photoSrc } from '@/lib/media';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
+import { archiveToDriveVault, localFileLink } from '@/services/drive-vault-transport';
+
+/** The Drive vault folder (under Media) that asset photos are filed in. */
+const ASSET_PHOTO_FOLDER = 'Council Assets';
+
+/** An asset's photo, or a dashed placeholder; `size` is the square edge in pixels. */
+function AssetPhoto({ asset, size }: { asset: Pick<CouncilAssetsInventory, 'asset_name' | 'photo_url'>; size: number }) {
+  const src = asset.photo_url ? photoSrc(asset.photo_url) : null;
+  return src ? (
+    <img src={src} alt={`Photo of ${asset.asset_name}`} width={size} height={size} className="rounded border-2 border-navy object-cover" style={{ width: size, height: size }} />
+  ) : (
+    <span
+      className="flex items-center justify-center rounded border-2 border-dashed border-line text-center text-xs text-muted"
+      style={{ width: size, height: size }}
+    >
+      No photo
+    </span>
+  );
+}
 
 const STATUS_LABELS: Record<CouncilAssetStatus, string> = { ACTIVE: 'Active', DISPOSED: 'Disposed', LOST: 'Lost' };
 
@@ -39,6 +62,7 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
   const [serial, setSerial] = useState(asset.serial_number ?? '');
   const [location, setLocation] = useState(asset.storage_location ?? '');
   const [notes, setNotes] = useState(asset.notes ?? '');
+  const [photo, setPhoto] = useState<string | null>(asset.photo_url ?? null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
 
@@ -54,6 +78,25 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
         notes,
       });
       setMessage({ tone: 'info', text: `Saved the details of ${saved.asset_name}.` });
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const savePhoto = async (file: File | null) => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      let link: string | null = null;
+      if (file) {
+        if (!file.type.startsWith('image/')) throw new Error(`${file.name} is not an image.`);
+        link = (await archiveToDriveVault(user, 'media', file, ASSET_PHOTO_FOLDER)) ?? localFileLink(file);
+      }
+      const saved = await db.expenses.updateAssetRecord(user.memberId, asset.id, { photo_url: link });
+      setPhoto(saved.photo_url ?? null);
+      setMessage({ tone: 'info', text: link ? `Saved the photo of ${saved.asset_name}.` : `Removed the photo of ${saved.asset_name}.` });
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     } finally {
@@ -89,6 +132,32 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
             <dd>{asset.original_expense_id ? `#${asset.original_expense_id}` : 'None'}</dd>
           </div>
         </dl>
+        <section aria-label="Asset photo" className="flex flex-wrap items-center gap-4 rounded border-2 border-navy p-3">
+          <AssetPhoto asset={{ asset_name: asset.asset_name, photo_url: photo }} size={128} />
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-bold">Asset photo</p>
+            <p className="text-xs text-muted">One picture of the item, saved as soon as you choose it. JPEG, PNG, WebP or HEIC.</p>
+            <label className="inline-flex cursor-pointer items-center rounded border-2 border-navy bg-white px-3 py-1 text-sm font-bold hover:bg-gold">
+              {photo ? 'Replace photo' : 'Upload photo'}
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={busy}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  e.target.value = '';
+                  if (file) void savePhoto(file);
+                }}
+              />
+            </label>
+            {photo ? (
+              <button type="button" disabled={busy} onClick={() => void savePhoto(null)} className="self-start text-sm font-bold underline">
+                Remove photo
+              </button>
+            ) : null}
+          </div>
+        </section>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Asset name">{(id) => <Input id={id} value={name} maxLength={ASSET_NAME_MAX_LENGTH} onChange={(e) => setName(e.target.value)} />}</Field>
           <Field label="Status">
@@ -134,9 +203,12 @@ function Inventory({ councilId }: { councilId: number }) {
       {list.error ? <Notice tone="error">{list.error}</Notice> : null}
       {list.data && list.data.length === 0 ? <Empty>No council assets yet. An approved expense report marked as a long-term asset adds one.</Empty> : null}
       {list.data && list.data.length > 0 ? (
-        <Table caption="Council assets" head={['Asset', 'Purchased', 'Cost basis', 'Serial number', 'Kept at', 'Status', '']}>
+        <Table caption="Council assets" head={['Photo', 'Asset', 'Purchased', 'Cost basis', 'Serial number', 'Kept at', 'Status', '']}>
           {list.data.map((a) => (
             <tr key={a.id}>
+              <Td>
+                <AssetPhoto asset={a} size={48} />
+              </Td>
               <Td>{a.asset_name}</Td>
               <Td>{purchaseDay(a)}</Td>
               <Td>{formatMoney(a.cost_basis)}</Td>

@@ -6,7 +6,10 @@
 // The member type choices come from grantableMemberTypes, and the drivers enforce the same tiers
 // (ADMIN_REQUIRED, SUPER_ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED), so a refusal is reported, never hidden.
 // Sprint 7A: Admins mark charter members on the form and run the inactivity sweep from the page header.
+// Sprint 7F: Super Admins get an "Impersonate User" button on each row (mayImpersonateMember: never themselves or another
+// Super Admin). It opens a read-only view of the portal as that member, which the gold banner ends.
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   canCreateMembers,
   canDesignateBudgetDirector,
@@ -14,6 +17,7 @@ import {
   describeError,
   grantableMemberTypes,
   councilWideSettings,
+  mayImpersonateMember,
   type Degree,
   type Member,
   type MemberStatus,
@@ -26,7 +30,7 @@ import { AffiliationHistoryCard } from '@/components/EngagementParts';
 import { ProfileExtensionsEditor } from '@/components/ProfileExtensionsEditor';
 import { SkillFilterDrawer } from '@/components/SkillFilterDrawer';
 import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
-import { useUser } from '@/lib/session';
+import { useSession, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -345,6 +349,19 @@ function Roster() {
   const [extensionsOpen, setExtensionsOpen] = useState(false);
   const [sweepMessage, setSweepMessage] = useState<Message | null>(null);
   const [sweeping, setSweeping] = useState(false);
+  const { impersonate } = useSession();
+  const router = useRouter();
+  const canImpersonate = user.memberType === 'Super Admin';
+  const viewAs = async (memberId: number) => {
+    setSweepMessage(null);
+    try {
+      await impersonate(memberId);
+      // The member may not have this page, so the view opens on everyone's hub.
+      router.push('/member-actions');
+    } catch (err) {
+      setSweepMessage({ tone: 'error', text: describeError(err) });
+    }
+  };
 
   const lookups = useLoad(async (): Promise<Lookups> => {
     const [statuses, degrees, types] = await Promise.all([db.lookups.list('MemberStatus'), db.lookups.list('Degree'), db.lookups.list('MemberType')]);
@@ -442,7 +459,7 @@ function Roster() {
           </div>
           {members.data && rows.length === 0 ? <Empty>No members match. Clear the search or status filter.</Empty> : null}
           {rows.length > 0 ? (
-            <Table caption="Council members" head={['Member', 'No.', 'Degree', 'Type', 'Status', 'Roles']}>
+            <Table caption="Council members" head={['Member', 'No.', 'Degree', 'Type', 'Status', 'Roles', ...(canImpersonate ? ['Actions'] : [])]}>
               {rows.map(({ member: m, roles }) => {
                 const active = selected === m.id;
                 return (
@@ -460,6 +477,15 @@ function Roster() {
                     <Td className="text-xs">
                       {roles.map((r) => (r.Officer === 1 ? <Pill key={r.id} tone="gold">{r.Role}</Pill> : <span key={r.id}>{r.Role} </span>))}
                     </Td>
+                    {canImpersonate ? (
+                      <Td>
+                        {mayImpersonateMember(user, { memberId: m.id, memberType: typeName.get(m.MemberTypeID) }) ? (
+                          <Button size="sm" variant="secondary" onClick={() => void viewAs(m.id)} aria-label={`Impersonate ${m.MemberFirstName} ${m.MemberLastName}`}>
+                            👥 Impersonate User
+                          </Button>
+                        ) : null}
+                      </Td>
+                    ) : null}
                   </tr>
                 );
               })}

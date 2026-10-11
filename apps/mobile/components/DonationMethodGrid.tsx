@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/layout-mode';
 const HINT: Record<DonationMethodKind, string> = {
   cash: 'Record the amount',
   card: 'Record the charge',
+  check: 'Record the check',
   qr: 'Show the QR code',
   item: 'Describe and value',
   other: 'Record the amount',

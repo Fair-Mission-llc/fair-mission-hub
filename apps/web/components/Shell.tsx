@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import { councilLabel, countUnreadMessages, describeError, isFraternalTenant, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
 import { AlertBell } from '@/components/AlertBell';
 import { MemberAvatar } from '@/components/MemberAvatar';
+import { AccessRequestForm, RemoteAssistButton, ViewAsBanner } from '@/components/PlatformAccessParts';
 import { NAV, Sidebar } from '@/components/Sidebar';
 import { Button, cx, Field, Input, Notice, PasswordInput } from '@/components/ui';
 import { useSession } from '@/lib/session';
@@ -351,6 +352,8 @@ function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resetting, setResetting] = useState(false);
+  // Sprint 7F: the Register Your Council form replaces the sign-in card while it is open.
+  const [registering, setRegistering] = useState(false);
   const devHint = (process.env.NEXT_PUBLIC_DATA_DRIVER ?? 'memory') === 'memory';
 
   const submit = async (event: FormEvent) => {
@@ -375,6 +378,17 @@ function SignIn() {
       </div>
     </div>
   );
+
+  if (registering) {
+    return (
+      <div data-surface="navy" className="flex min-h-screen items-center justify-center bg-navy p-6">
+        <div className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
+          {brand}
+          <AccessRequestForm onCancel={() => setRegistering(false)} />
+        </div>
+      </div>
+    );
+  }
 
   if (resetting) {
     return (
@@ -415,6 +429,16 @@ function SignIn() {
         >
           Forgot Password?
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            setRegistering(true);
+          }}
+          className="rounded border-2 border-navy bg-white px-4 py-3 text-base font-bold text-navy hover:bg-gold"
+        >
+          🏢 Register Your Council / Request Access
+        </button>
         {devHint ? <p className="text-xs text-muted">Development data: testadmin@kofc.org or testsuperadmin@kofc.org, password dev-pass-secure-9912.</p> : null}
       </form>
     </div>
@@ -422,7 +446,7 @@ function SignIn() {
 }
 
 function Frame({ children }: { children: ReactNode }) {
-  const { user, features, featuresLoaded, tenantType } = useSession();
+  const { user, impersonator, features, featuresLoaded, tenantType } = useSession();
   const pathname = usePathname();
   const council = useLoad(() => (user ? db.councils.get(user.councilId) : Promise.resolve(null)), [user?.councilId]);
   if (!user) return null;
@@ -436,11 +460,14 @@ function Frame({ children }: { children: ReactNode }) {
           <p className="font-serif text-xl font-bold leading-tight">{TENANT_VOCABULARY[tenantType].organizationName}</p>
           <p className="text-sm">{council.data ? councilLabel(council.data) : ' '}</p>
         </div>
+        {/* Sprint 7F: officers and Admins may share their screen with the Super Admins; not inside a view-as session. */}
+        {!impersonator && user.memberType !== 'Super Admin' && (user.isOfficer || user.memberType === 'Admin') ? <RemoteAssistButton /> : null}
         <MessagingMenu pathname={pathname} />
         <HelpLink current={pathname === '/help'} />
         <AlertBell />
         <MemberMenu />
       </header>
+      <ViewAsBanner />
       <div className="flex flex-1">
         <Sidebar user={user} pathname={pathname} features={features} tenant={tenantType} />
         {/* Sprint 6A: pages wait for the council's feature flags, so a switched-off module never flashes into view. */}

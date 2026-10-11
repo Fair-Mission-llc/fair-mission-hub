@@ -10,6 +10,11 @@ import { DEFAULT_USER_SESSION_EXPIRY_HOURS, type MemberWriteActor, type SessionU
 /** The cookie the token rides in: HttpOnly, SameSite=Strict, scoped to /api. */
 export const PORTAL_SESSION_COOKIE = 'kofc_portal_session';
 /**
+ * Sprint 7F: while a Super Admin views the portal as another member, their own signed session token waits in this
+ * cookie (same attributes), and PORTAL_SESSION_COOKIE holds the member's token with `impersonatorId` set.
+ */
+export const IMPERSONATOR_COOKIE = 'kofc_portal_impersonator';
+/**
  * How long a session lasts after sign-in, by default. Since Sprint 7E a Super Admin sets it for every council at once
  * (PlatformSettings.user_session_expiry_hours, DEFAULT_USER_SESSION_EXPIRY_HOURS = 8); sign-in passes that value in.
  */
@@ -31,6 +36,8 @@ export interface PortalSessionClaims {
   /** Issued and expiry times, in seconds since the epoch. */
   iat: number;
   exp: number;
+  /** Sprint 7F: the Super Admin viewing the portal as this member; absent on an ordinary session. Such a session is read-only. */
+  impersonatorId?: number;
 }
 
 const encoder = new TextEncoder();
@@ -131,9 +138,18 @@ export function readCookie(header: string | null, name: string): string | null {
  * The Set-Cookie header for a session token. No Max-Age, so the browser drops it when it closes; the token's own `exp`
  * ends it after the platform's session length regardless. `token` null clears the cookie.
  */
-export function sessionCookieHeader(token: string | null, secure: boolean): string {
+export function sessionCookieHeader(token: string | null, secure: boolean, name: string = PORTAL_SESSION_COOKIE): string {
   const attrs = ['Path=/api', 'HttpOnly', 'SameSite=Strict', ...(secure ? ['Secure'] : [])];
-  return token === null ? [`${PORTAL_SESSION_COOKIE}=`, 'Max-Age=0', ...attrs].join('; ') : [`${PORTAL_SESSION_COOKIE}=${token}`, ...attrs].join('; ');
+  return token === null ? [`${name}=`, 'Max-Age=0', ...attrs].join('; ') : [`${name}=${token}`, ...attrs].join('; ');
+}
+
+/**
+ * Sprint 7F: the claims of a view-as session - `target`'s identity, stamped with the Super Admin's id, lasting
+ * IMPERSONATION_MAX_MINUTES or until the Super Admin's own session ends, whichever is sooner.
+ */
+export function impersonationClaimsFor(target: SessionUser, active: boolean, impersonator: PortalSessionClaims, now: Date, maxMinutes: number): PortalSessionClaims {
+  const claims = sessionClaimsFor(target, active, now, maxMinutes * 60);
+  return { ...claims, exp: Math.min(claims.exp, impersonator.exp), impersonatorId: impersonator.memberId };
 }
 
 /**

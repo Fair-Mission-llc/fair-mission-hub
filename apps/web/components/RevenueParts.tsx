@@ -4,12 +4,18 @@
 // to (and the cash account it went into), and finance.logConcludedRevenue posts it straight into the ledger's actuals:
 // a debit to the cash account and a credit to the Revenue account, both linked to the event or activity. Only the
 // council's Treasurer or a Super Admin sees the form (canLogConcludedRevenue); the drivers enforce it too.
+// Sprint 7F: the Treasurer also records how the money came in - cash, card or check (JournalEntry.payment_method) - and a
+// check's number, which both journal lines carry.
 import { useMemo, useState } from 'react';
 import {
   concludedRevenueAccounts,
   describeError,
   eventHasConcluded,
+  CHECK_NUMBER_MAX_LENGTH,
   JOURNAL_DESCRIPTION_MAX_LENGTH,
+  JOURNAL_PAYMENT_METHOD_LABELS,
+  JOURNAL_PAYMENT_METHODS,
+  type JournalPaymentMethod,
   LOG_CONCLUDED_REVENUE_TITLE,
   toIsoDate,
   type ChartOfAccounts,
@@ -45,6 +51,8 @@ export function ConcludedRevenueCard({ councilId, chart, onDone }: { councilId: 
   const [depositId, setDepositId] = useState('');
   const [date, setDate] = useState(today);
   const [description, setDescription] = useState('');
+  const [method, setMethod] = useState<JournalPaymentMethod | ''>('');
+  const [checkNumber, setCheckNumber] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -64,12 +72,16 @@ export function ConcludedRevenueCard({ councilId, chart, onDone }: { councilId: 
         DepositAccountID: depositValue ? Number(depositValue) : null,
         DateLogged: date,
         ...(description.trim() ? { Description: description } : {}),
+        payment_method: method || null,
+        CheckNumber: method === 'CHECK' ? checkNumber : null,
       });
       const account = revenue.find((a) => String(a.id) === revenueId);
       setDone(`Logged ${formatMoney(value)} to ${account?.AccountName ?? 'revenue'} on ${formatFullDate(date)}: "${lines[0]?.Description ?? ''}".`);
       setAmount('');
       setDescription('');
       setSource('');
+      setMethod('');
+      setCheckNumber('');
       await onDone();
     } catch (err) {
       setError(describeError(err));
@@ -160,6 +172,23 @@ export function ConcludedRevenueCard({ councilId, chart, onDone }: { councilId: 
             )}
           </Field>
           <Field label="Date collected">{(id) => <Input id={id} type="date" max={today} value={date} onChange={(e) => setDate(e.target.value)} />}</Field>
+          <Field label="Payment method" hint="Optional: how the money came in.">
+            {(id) => (
+              <Select id={id} value={method} onChange={(e) => setMethod(e.target.value as JournalPaymentMethod | '')}>
+                <option value="">Not recorded</option>
+                {JOURNAL_PAYMENT_METHODS.map((m) => (
+                  <option key={m} value={m}>
+                    {JOURNAL_PAYMENT_METHOD_LABELS[m]}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          {method === 'CHECK' ? (
+            <Field label="Check number">
+              {(id) => <Input id={id} value={checkNumber} required maxLength={CHECK_NUMBER_MAX_LENGTH} onChange={(e) => setCheckNumber(e.target.value)} />}
+            </Field>
+          ) : null}
           <Field label="Description" hint="Optional; defaults to “Revenue collected: …”">
             {(id) => <Input id={id} value={description} maxLength={JOURNAL_DESCRIPTION_MAX_LENGTH} onChange={(e) => setDescription(e.target.value)} />}
           </Field>

@@ -984,3 +984,18 @@ Schema version 64. Rules: council-settings.ts (COUNCIL_WIDE_SETTING_RULES and PL
 •	user_session_expiry_hours (INT, NOT NULL, DEFAULT 8) — The portal server session (HMAC cookie) lasts this many hours from sign-in. The server reads its own data copy; Global System Parameters also posts a change to /api/platform-settings (Super Admin session). 1 to 168.
 •	audit_log_retention_days (INT, NOT NULL, DEFAULT 180) — Saved for a future purge job; nothing reads it. 30 to 3,650.
 ________________________________________
+# 33. Access requests, check payments and asset photos (Sprint 7F)
+Schema version 65. Rules: platform-access.ts.
+[CouncilAccessRequests] (new table)
+•	id (INT, IDENTITY, PK)
+•	council_name (VARCHAR(150), NOT NULL), contact_email (VARCHAR(255), NOT NULL), city (VARCHAR(100), NOT NULL), state (VARCHAR(50), NOT NULL) — The sign-in page's Register Your Council form (cleanAccessRequest).
+•	status (VARCHAR(20), NOT NULL, DEFAULT 'PENDING') — PENDING or APPROVED (ACCESS_REQUEST_STATUSES; rules layer, no CHECK). Only PENDING -> APPROVED.
+•	submitted_at (DATETIME, NOT NULL); reviewed_by_id (INT, NULL, FK Member), reviewed_at (DATETIME, NULL) — Stamped by the approving Super Admin.
+Access. accessRequests.submit is open to anyone and emails ACCESS_REQUEST_NOTIFY_EMAIL (council15295@stmarys.org); list and setStatus need an Active Super Admin (SUPER_ADMIN_REQUIRED). The web form posts to /api/access-requests (the server's data copy; 3 per email and 10 per caller per hour). Approving does not create the council.
+[JournalEntry] (new column)
+•	payment_method (VARCHAR(10), NULL, CHECK IN ('CASH', 'CARD', 'CHECK')) — How the money moved. The platform's first CHECK constraint; the phone's SQLite table and the web mock enforce it too. Set only by finance.logConcludedRevenue (cleanJournalPayment): CHECK needs CheckNumber, CASH and CARD refuse one.
+[CouncilAssetsInventory] (new column)
+•	photo_url (VARCHAR(2000), NULL) — The asset's photo: a Drive vault file id (Media / Council Assets) or a local link. Saved through expenses.updateAssetRecord; script and data links are refused.
+[DonationMethod] (new row)
+•	id 8 'Check' — kind 'check'; feeds the event's cash column.
+________________________________________

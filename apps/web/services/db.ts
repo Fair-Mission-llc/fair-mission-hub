@@ -9,7 +9,7 @@
 // The memory driver is client-side state: import `db` only from client
 // components ("use client"); each browser tab gets its own copy.
 // =========================================================================
-import type { DataService } from '@kofc/shared';
+import { guardViewAsWrites, type DataService } from '@kofc/shared';
 import { postAlchemerViaServer } from './alchemer-transport';
 import { sendEmailViaServer } from './email-transport';
 import { MemoryDataService } from './drivers/memory';
@@ -32,6 +32,16 @@ function createDataService(): DataService {
   }
 }
 
-export const db: DataService = createDataService();
+let viewAsActive = false;
+
+/**
+ * Sprint 7F: while a Super Admin views the portal as another member (lib/session.tsx impersonate), every data-service
+ * method that is not a read rejects VIEW_AS_READ_ONLY, so nothing is saved in that member's name.
+ */
+export function setViewAsMode(on: boolean): void {
+  viewAsActive = on;
+}
+
+export const db: DataService = guardViewAsWrites(createDataService(), () => viewAsActive);
 
 export type { DataService } from '@kofc/shared';

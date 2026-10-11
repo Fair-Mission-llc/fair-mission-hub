@@ -155,7 +155,8 @@ Values
 ('Zelle'),
 ('Zeffy'),
 ('Parishsoft'),
-('Physical Items');
+('Physical Items'),
+('Check'); -- Sprint 7F: id 8, a donation by paper check (kind 'check')
 GO
 -- 3. Donation type
 Insert Into [DonationType] ([DonationType],[CouncilID])

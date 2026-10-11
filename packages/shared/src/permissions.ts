@@ -75,6 +75,7 @@ export type PortalArea =
   | 'credentials-vault'
   | 'setup/council-settings'
   | 'system-settings/global-settings'
+  | 'system-settings/remote-assistance'
   | 'navigation-guide'
   | 'performance/charts'
   | 'history'
@@ -178,6 +179,12 @@ export const canOpenFeatureFlagsControlCenter = (u: Actor): boolean => isSuperAd
  * tenant type and base dues rate and the universal Platform Limits, which used to sit on System Lookups.
  */
 export const canOpenGlobalSystemParameters = (u: Actor): boolean => isSuperAdmin(u);
+
+/**
+ * The Co-Watching Remote Assistance Desk (Sprint 7F, /system-settings/remote-assistance): Super Admins only, the tier
+ * /api/assist checks (mayWatchRemoteAssistance). It shows the screens officers and Admins chose to share.
+ */
+export const canOpenRemoteAssistanceDesk = (u: Actor): boolean => isSuperAdmin(u);
 
 /** Super Admins act on any council; Admins only on their own. */
 export const canAdministerCouncil = (u: Actor, councilId: number): boolean =>
@@ -599,6 +606,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canMaintainCouncils(u)) areas.push('councils');
   if (canOpenFeatureFlagsControlCenter(u)) areas.push('feature-flags');
   if (canOpenGlobalSystemParameters(u)) areas.push('system-settings/global-settings');
+  if (canOpenRemoteAssistanceDesk(u)) areas.push('system-settings/remote-assistance');
   if (canOpenCouncilLookups(u)) areas.push('council-lookups');
   if (canAppointOfficers(u)) areas.push('elections/appointments');
   if (isAdmin(u)) areas.push('parishes', 'members', 'activities');
@@ -716,6 +724,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'councils',
       'feature-flags',
       'system-settings/global-settings',
+      'system-settings/remote-assistance',
       'setup/council-settings',
       'members',
       'supreme-sync',
