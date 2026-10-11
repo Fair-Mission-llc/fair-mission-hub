@@ -1,7 +1,11 @@
 // Sprint 7F (Schema 65): council access requests from the sign-in page, CHECK payments in the ledger, asset photos,
 // the Super Admin's read-only impersonation and the Co-Watching Remote Assistance desk.
+// Sprint 7F Extension (Schema 66): payment methods bound to the DonationMethod lookup by foreign key, and asset photos
+// saved on the portal server, uploadable by the Deputy Grand Knight and Trustees too.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   ACCESS_REQUEST_NOTIFY_EMAIL,
@@ -11,13 +15,16 @@ import {
   BusinessRuleError,
   canOpenRemoteAssistanceDesk,
   cleanAccessRequest,
+  canAttachAssetPhoto,
+  cleanAssetPhotoUrl,
   cleanAssetRecordChanges,
   cleanJournalPayment,
   donationFundsBucket,
   donationMethodKind,
   guardViewAsWrites,
   isViewAsReadMethod,
-  JOURNAL_PAYMENT_METHODS,
+  journalPaymentOptions,
+  mayAttachAssetPhoto,
   mayImpersonateMember,
   mayRequestRemoteAssistance,
   mayWatchRemoteAssistance,
@@ -28,6 +35,8 @@ import {
   type SendGridMailRequest,
 } from '@kofc/shared';
 import { MemoryDataService } from '../apps/web/services/drivers/memory';
+import { readAssetPhoto, saveAssetPhoto, sniffAssetImage } from '../apps/web/services/server/asset-media';
+import { photoSrc } from '../apps/web/lib/media';
 import { TABLES } from '../apps/web/services/generated/schema.generated';
 import { SCHEMA_STATEMENTS } from '../apps/mobile/services/generated/schema.sqlite';
 import {
@@ -57,10 +66,11 @@ describe('Schema 65', () => {
   it('adds the asset photo, the payment method CHECK list and the access requests table, and bumps the phone version', () => {
     const schema = read('Schema.sql');
     expect(schema).toContain('Sprint 7F: ONBOARDING GATES, CHECK PAYMENTS AND ASSET PHOTOS (schema version 65)');
-    expect(schema).toContain("ALTER TABLE [JournalEntry] ADD [payment_method] VARCHAR(10) NULL CHECK ([payment_method] IN ('CASH', 'CARD', 'CHECK'));");
+    expect(schema).toContain(
+      "ALTER TABLE [JournalEntry] ADD [payment_method] VARCHAR(10) NULL CONSTRAINT [CK_JournalEntry_payment_method] CHECK ([payment_method] IN ('CASH', 'CARD', 'CHECK'));",
+    );
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[5-9]|[7-9]\d);/);
     expect(TABLES.CouncilAssetsInventory.columns.find((c) => c.name === 'photo_url')).toMatchObject({ kind: 'text', notNull: false });
-    expect(TABLES.JournalEntry.columns.find((c) => c.name === 'payment_method')).toMatchObject({ notNull: false, allowed: ['CASH', 'CARD', 'CHECK'] });
     expect(TABLES.CouncilAccessRequests.columns.map((c) => c.name)).toEqual([
       'id',
       'council_name',
@@ -73,18 +83,47 @@ describe('Schema 65', () => {
       'reviewed_at',
     ]);
     expect(TABLES.CouncilAccessRequests.columns.find((c) => c.name === 'status')).toMatchObject({ default: { kind: 'literal', value: 'PENDING' } });
-    // The phone's SQLite table carries the same CHECK.
-    expect(SCHEMA_STATEMENTS.find((s) => s.startsWith('CREATE TABLE [JournalEntry]'))).toContain("[payment_method] TEXT CHECK ([payment_method] IN ('CASH', 'CARD', 'CHECK'))");
-    expect(JOURNAL_PAYMENT_METHODS).toEqual(['CASH', 'CARD', 'CHECK']);
+  });
+});
+
+describe('Schema 66', () => {
+  it('drops the CHECK text column and binds payments to the DonationMethod lookup by foreign key', () => {
+    const schema = read('Schema.sql');
+    expect(schema).toContain('Sprint 7F Extension: RELATIONAL PAYMENT METHODS AND SHARED ASSET PHOTOS (schema version 66)');
+    expect(schema).toContain('ALTER TABLE [JournalEntry] DROP CONSTRAINT [CK_JournalEntry_payment_method];');
+    expect(schema).toContain('ALTER TABLE [JournalEntry] DROP COLUMN [payment_method];');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[6-9]|[7-9]\d);/);
+    expect(TABLES.JournalEntry.columns.map((c) => c.name)).not.toContain('payment_method');
+    expect(TABLES.JournalEntry.columns.find((c) => c.name === 'payment_method_id')).toMatchObject({ kind: 'int', notNull: false });
+    expect(TABLES.JournalEntry.foreignKeys).toContainEqual({ column: 'payment_method_id', refTable: 'DonationMethod', refColumn: 'id' });
+    const phone = SCHEMA_STATEMENTS.find((s) => s.startsWith('CREATE TABLE [JournalEntry]'))!;
+    expect(phone).toContain('[payment_method_id] INTEGER');
+    expect(phone).toContain('FOREIGN KEY ([payment_method_id]) REFERENCES [DonationMethod]([id])');
+    expect(phone).not.toContain('CHECK');
+    // The generator refuses to drop a column a CHECK still holds, as SQL Server does.
+    expect(read('scripts/gen-db-assets.mjs')).toContain('still has a CHECK constraint; DROP CONSTRAINT it first');
   });
 
-  it('enforces the CHECK list in the web mock store', async () => {
+  it('refuses an unknown payment method id in the web mock store', async () => {
     const db = new MemoryDataService({ now: () => new Date(NOW) });
     await db.init();
     const line = { CouncilID: OWN, GLAccountID: 1, DateLogged: '2026-09-01 00:00:00', Description: 'x', TransactionID: 't' };
-    expect(() => db.debugStore.insert('JournalEntry', { ...line, payment_method: 'WIRE' })).toThrow(/CHECK constraint failed: JournalEntry.payment_method/);
-    expect(db.debugStore.insert('JournalEntry', { ...line, payment_method: 'CHECK' }).payment_method).toBe('CHECK');
-    expect(db.debugStore.insert('JournalEntry', line).payment_method).toBeNull();
+    expect(() => db.debugStore.insert('JournalEntry', { ...line, payment_method_id: 999 })).toThrow(/FOREIGN KEY constraint failed: JournalEntry.payment_method_id/);
+    expect(db.debugStore.insert('JournalEntry', { ...line, payment_method_id: 3 }).payment_method_id).toBe(3);
+  });
+
+  it('offers every enabled money method, never Physical Items, and ties a check number to Check only', () => {
+    const opt = (id: number, DonationMethod: string, kind: 'cash' | 'card' | 'check' | 'qr' | 'item') => ({ method: { id, DonationMethod }, kind });
+    const options = [opt(8, 'Check', 'check'), opt(1, 'Cash', 'cash'), opt(2, 'Credit Card', 'card'), opt(3, 'Venmo', 'qr'), opt(4, 'Zelle', 'qr'), opt(5, 'Zeffy', 'qr'), opt(6, 'Parishsoft', 'qr'), opt(7, 'Physical Items', 'item')];
+    expect(journalPaymentOptions(options).map((o) => o.method.DonationMethod)).toEqual(['Cash', 'Credit Card', 'Venmo', 'Zelle', 'Zeffy', 'Parishsoft', 'Check']);
+    expect(cleanJournalPayment(4, null, options)).toEqual({ payment_method_id: 4, CheckNumber: null });
+    expect(cleanJournalPayment(8, ' 77 ', options)).toEqual({ payment_method_id: 8, CheckNumber: '77' });
+    expect(cleanJournalPayment(null, '', options)).toEqual({ payment_method_id: null, CheckNumber: null });
+    expect(() => cleanJournalPayment(7, null, options)).toThrow(/not one this council has enabled/);
+    expect(() => cleanJournalPayment(9, null, options)).toThrow(/not one this council has enabled/);
+    expect(() => cleanJournalPayment(8, null, options)).toThrow(/check number/);
+    expect(() => cleanJournalPayment(3, '77', options)).toThrow(/Only a payment by check/);
+    expect(() => cleanJournalPayment(null, '77', options)).toThrow(/Choose Check/);
   });
 
   it('adds Check as a donation method that feeds the cash column', () => {
@@ -148,47 +187,92 @@ describe.each(drivers)('Sprint 7F ($name driver)', (d) => {
     await expectRule(db.auth.impersonate(MEMBER.superAdmin, 99999), 'RECORD_NOT_FOUND');
   });
 
-  it('records a revenue posting paid by check, with its number on both lines', async () => {
+  it('records revenue paid by check or by Venmo against the DonationMethod lookup', async () => {
     const db = await d.make();
     const past = await db.events.create(
       { EventName: 'Pancake breakfast', EventDescription: 'Hall', OwnerID: MEMBER.admin, StartDate: '2026-09-12', EndDate: '2026-09-12', Location: 'Hall', CategoryID: 1 },
       [OWN],
     );
     const input = { LinkedEventID: past.id, Amount: 300, RevenueAccountID: PARKING_FUNDRAISING, DateLogged: '2026-09-13' };
-    await expectRule(db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method: 'CHECK' }), 'INVALID_INPUT');
-    await expectRule(db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method: 'CASH', CheckNumber: '1001' }), 'INVALID_INPUT');
-    const lines = await db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method: 'CHECK', CheckNumber: ' 1001 ' });
-    expect(lines.map((l) => [l.payment_method, l.CheckNumber])).toEqual([
-      ['CHECK', '1001'],
-      ['CHECK', '1001'],
+    const methods = journalPaymentOptions(await db.donations.listMethods(OWN));
+    const id = (name: string) => methods.find((o) => o.method.DonationMethod === name)!.method.id;
+    expect(methods.map((o) => o.method.DonationMethod)).toEqual(['Cash', 'Credit Card', 'Venmo', 'Zelle', 'Zeffy', 'Parishsoft', 'Check']);
+    await expectRule(db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method_id: id('Check') }), 'INVALID_INPUT');
+    await expectRule(db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method_id: id('Cash'), CheckNumber: '1001' }), 'INVALID_INPUT');
+    await expectRule(db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method_id: 7 }), 'INVALID_INPUT'); // Physical Items
+    const lines = await db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method_id: id('Check'), CheckNumber: ' 1001 ' });
+    expect(lines.map((l) => [l.payment_method_id, l.CheckNumber])).toEqual([
+      [id('Check'), '1001'],
+      [id('Check'), '1001'],
     ]);
-    const cash = await db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method: 'CASH' });
-    expect(cash[0]).toMatchObject({ payment_method: 'CASH', CheckNumber: null });
+    const venmo = await db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, { ...input, payment_method_id: id('Venmo') });
+    expect(venmo[0]).toMatchObject({ payment_method_id: id('Venmo'), CheckNumber: null });
+    const none = await db.finance.logConcludedRevenue(MEMBER.superAdmin, OWN, input);
+    expect(none[0]).toMatchObject({ payment_method_id: null });
   });
 });
 
 describe('asset photos', () => {
-  it('accepts a vault id or a link, clears with null, and refuses script links', () => {
-    expect(cleanAssetRecordChanges({ photo_url: '1AbCdEfGhIjKlMnOpQrStUvWxYz012345' })).toEqual({ photo_url: '1AbCdEfGhIjKlMnOpQrStUvWxYz012345' });
-    expect(cleanAssetRecordChanges({ photo_url: null })).toEqual({ photo_url: null });
-    expect(() => cleanAssetRecordChanges({ photo_url: 'javascript:alert(1)' })).toThrow(/uploaded file or a web link/);
-    expect(() => cleanAssetRecordChanges({ photo_url: 'x'.repeat(2001) })).toThrow();
+  it('accepts a server path or a link, clears with null, and refuses script, data and browser-only links', () => {
+    expect(cleanAssetPhotoUrl('/api/media/assets/1/0b5e6a0e-1f2a-4c3d-9e8f-0123456789ab.jpg')).toBe('/api/media/assets/1/0b5e6a0e-1f2a-4c3d-9e8f-0123456789ab.jpg');
+    expect(cleanAssetPhotoUrl(null)).toBeNull();
+    expect(() => cleanAssetPhotoUrl('javascript:alert(1)')).toThrow(/uploaded file or a web link/);
+    expect(() => cleanAssetPhotoUrl('blob:http://localhost/abc')).toThrow(/uploaded file or a web link/);
+    expect(() => cleanAssetPhotoUrl('x'.repeat(2001))).toThrow();
+    // The photo is its own method now, not one of the form's details.
+    expect(() => cleanAssetRecordChanges({ photo_url: 'x' } as never)).toThrow(/no editable field "photo_url"/);
+    expect(photoSrc('/api/media/assets/1/a.jpg')).toBe('/api/media/assets/1/a.jpg');
   });
 
-  it('saves the photo on the asset row through updateAssetRecord', async () => {
+  it('lets the Deputy Grand Knight and Trustees add photos, but only the managers change the details', () => {
+    const dgk = actor({ roles: ['Deputy Grand Knight'], officer: true });
+    const trustee = actor({ roles: ['Trustee 2'], officer: true });
+    for (const a of [dgk, trustee, superAdmin, admin]) expect(mayAttachAssetPhoto(a, OWN)).toBe(true);
+    for (const a of [member, officer, { ...dgk, councilId: 2 }, { ...trustee, active: false }]) expect(mayAttachAssetPhoto(a, OWN)).toBe(false);
+    const web = (roles: string[]) => ({ memberId: 9, councilId: OWN, memberType: 'Member' as const, isOfficer: true, roles });
+    expect(canAttachAssetPhoto(web(['Deputy Grand Knight']), OWN)).toBe(true);
+    expect(canAttachAssetPhoto(web(['Trustee 1']), OWN)).toBe(true);
+    expect(canAttachAssetPhoto(web(['Recorder']), OWN)).toBe(false);
+  });
+
+  it('saves the photo on the asset row through setAssetPhoto', async () => {
     const db = new MemoryDataService({ now: () => new Date(NOW) });
     await db.init();
     const asset = db.debugStore.insert('CouncilAssetsInventory', { council_id: OWN, asset_name: 'Grill', purchase_date: '2026-09-01 00:00:00', cost_basis: 400 });
-    const saved = await db.expenses.updateAssetRecord(MEMBER.superAdmin, asset.id as number, { photo_url: 'blob:http://localhost/abc#grill.jpg' });
-    expect(saved.photo_url).toBe('blob:http://localhost/abc#grill.jpg');
-    await expectRule(db.expenses.updateAssetRecord(MEMBER.member, asset.id as number, { photo_url: null }), 'ADMIN_REQUIRED');
+    const path = '/api/media/assets/1/0b5e6a0e-1f2a-4c3d-9e8f-0123456789ab.jpg';
+    expect((await db.expenses.setAssetPhoto(MEMBER.superAdmin, asset.id as number, path)).photo_url).toBe(path);
+    await expectRule(db.expenses.setAssetPhoto(MEMBER.member, asset.id as number, null), 'ADMIN_REQUIRED');
+    await expectRule(db.expenses.setAssetPhoto(MEMBER.superAdmin, 999, null), 'RECORD_NOT_FOUND');
+    expect((await db.expenses.setAssetPhoto(MEMBER.superAdmin, asset.id as number, null)).photo_url).toBeNull();
   });
 
-  it('puts the upload control on the asset form and a thumbnail column on the inventory', () => {
+  it('keeps uploads on the server disk, checked by their bytes, under stored names only', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kofc-assets-'));
+    try {
+      const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 1, 2, 3]);
+      expect(sniffAssetImage(png)).toEqual({ ext: 'png', type: 'image/png' });
+      expect(sniffAssetImage(new TextEncoder().encode('<script>alert(1)</script>'))).toBeNull();
+      const path = await saveAssetPhoto(4, png, 'png', dir);
+      expect(path).toMatch(/^\/api\/media\/assets\/4\/[0-9a-f-]{36}\.png$/);
+      const [, , , , council, file] = path.split('/');
+      expect(await readAssetPhoto(council, file, dir)).toMatchObject({ type: 'image/png' });
+      expect(await readAssetPhoto(council, '../../secrets.png', dir)).toBeNull();
+      expect(await readAssetPhoto('..', file, dir)).toBeNull();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('uploads from the asset form to the server for everyone, with no Drive vault or browser-only link', () => {
     const page = read('apps/web/app/expenses/assets/page.tsx');
     expect(page).toContain('accept="image/*"');
-    expect(page).toContain("archiveToDriveVault(user, 'media', file, ASSET_PHOTO_FOLDER)");
+    expect(page).toContain("const ASSET_PHOTO_ROUTE = '/api/assets/photo'");
+    expect(page).toContain('db.expenses.setAssetPhoto(user.memberId, asset.id, link)');
+    expect(page).not.toContain('archiveToDriveVault');
+    expect(page).not.toContain('localFileLink');
     expect(page).toContain("head={['Photo', 'Asset'");
+    expect(read('apps/web/app/api/assets/photo/route.ts')).toContain('mayAttachAssetPhoto(actor, councilId)');
+    expect(read('.gitignore')).toContain('.media/');
   });
 });
 

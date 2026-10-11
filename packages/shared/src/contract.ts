@@ -52,7 +52,6 @@ import type {
   GLAccountType,
   EventIntakeSessionStatus,
   JournalEntry,
-  JournalPaymentMethod,
   AccessRequestStatus,
   CouncilAccessRequest,
   ExpenseDisbursement,
@@ -741,9 +740,12 @@ export interface ConcludedRevenueInput {
   DateLogged?: string;
   /** Default 'Revenue collected: <event or activity name>'. */
   Description?: string;
-  /** Sprint 7F: how it was collected - 'CASH', 'CARD' or 'CHECK' (JOURNAL_PAYMENT_METHODS); default none. */
-  payment_method?: JournalPaymentMethod | null;
-  /** Sprint 7F: the check number; required with 'CHECK' and refused with any other method. */
+  /**
+   * Sprint 7F Extension: how it was collected - the DonationMethod id of a method the council has enabled
+   * (journalPaymentOptions: Cash, Credit Card, Venmo, Zelle, Zeffy, Parishsoft, Check); default none.
+   */
+  payment_method_id?: number | null;
+  /** Sprint 7F: the check number; required with a Check and refused with any other method. */
   CheckNumber?: string | null;
 }
 
@@ -2043,8 +2045,6 @@ export interface AssetRecordChanges {
   serial_number?: string | null;
   storage_location?: string | null;
   notes?: string | null;
-  /** Sprint 7F: the asset's photo (a Drive file id or a link), or null to remove it. */
-  photo_url?: string | null;
 }
 
 /** accessRequests.submit's input (Sprint 7F): the sign-in page's Register Your Council form. */
@@ -2835,6 +2835,12 @@ export interface DataService {
      * over-long text (cleanAssetRecordChanges).
      */
     updateAssetRecord(actorId: number, assetId: number, changes: AssetRecordChanges): Promise<CouncilAssetsInventory>;
+    /**
+     * Sprint 7F Extension: sets (or with null clears) the asset's photo_url. Open to the asset managers above and also to
+     * the council's Active Deputy Grand Knight and Trustees (assertMayAttachAssetPhoto: ADMIN_REQUIRED,
+     * COUNCIL_ACCESS_DENIED otherwise). INVALID_INPUT for an over-long or script link; RECORD_NOT_FOUND for an unknown id.
+     */
+    setAssetPhoto(actorId: number, assetId: number, photoUrl: string | null): Promise<CouncilAssetsInventory>;
   };
 
   events: {

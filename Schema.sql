@@ -3100,7 +3100,9 @@ GO
 -- =========================================================================
 ALTER TABLE [CouncilAssetsInventory] ADD [photo_url] VARCHAR(2000) NULL;
 GO
-ALTER TABLE [JournalEntry] ADD [payment_method] VARCHAR(10) NULL CHECK ([payment_method] IN ('CASH', 'CARD', 'CHECK'));
+-- Sprint 7F Extension: the CHECK is named so that schema 66 can drop it (SQL Server cannot drop a column that an unnamed
+-- constraint still holds without looking the system name up first).
+ALTER TABLE [JournalEntry] ADD [payment_method] VARCHAR(10) NULL CONSTRAINT [CK_JournalEntry_payment_method] CHECK ([payment_method] IN ('CASH', 'CARD', 'CHECK'));
 GO
 
 CREATE TABLE [CouncilAccessRequests] (
@@ -3123,4 +3125,28 @@ REFERENCES [Member]([id])
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO
 CREATE INDEX [CouncilAccessRequests_Status_Idx] ON [CouncilAccessRequests] ([status], [submitted_at]);
+GO
+
+-- =========================================================================
+-- Sprint 7F Extension: RELATIONAL PAYMENT METHODS AND SHARED ASSET PHOTOS (schema version 66)
+--
+-- - JournalEntry.payment_method (the schema 65 CASH/CARD/CHECK text column and its CHECK) is dropped. In its place,
+--   JournalEntry.payment_method_id is a foreign key to the DonationMethod lookup - Cash, Credit Card, Venmo, Zelle, Zeffy,
+--   Parishsoft and Check - so the ledger and the donation screens share one list of payment methods. A posting may name
+--   only a method the council has enabled (CouncilDonationMethod), never Physical Items, and a Check needs its
+--   CheckNumber (cleanJournalPayment). The column stays NULL on older lines and on lines that are not a payment.
+-- - No table change for asset photos: CouncilAssetsInventory.photo_url now holds a portal path
+--   (/api/media/assets/<council>/<file>) to an image saved on the portal server's disk, so the photo lasts across
+--   sessions. The council's Deputy Grand Knight and Trustees may add photos too (expenses.setAssetPhoto).
+-- =========================================================================
+ALTER TABLE [JournalEntry] DROP CONSTRAINT [CK_JournalEntry_payment_method];
+GO
+ALTER TABLE [JournalEntry] DROP COLUMN [payment_method];
+GO
+ALTER TABLE [JournalEntry] ADD [payment_method_id] INT NULL;
+GO
+ALTER TABLE [JournalEntry]
+ADD FOREIGN KEY([payment_method_id])
+REFERENCES [DonationMethod]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO

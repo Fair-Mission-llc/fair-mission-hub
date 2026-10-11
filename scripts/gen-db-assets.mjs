@@ -121,7 +121,9 @@ function parseColumn(item, table) {
   }
   // Sprint 7F: the one CHECK form the generator carries, a column's value list - CHECK ([col] IN ('A', 'B')). SQLite
   // gets the same constraint and the web mock enforces the list (ColumnMeta.allowed); any other CHECK aborts the run.
+  // Sprint 7F Extension: the CHECK may be named (CONSTRAINT [name] CHECK ...), so ALTER TABLE DROP CONSTRAINT can remove it.
   let allowed = null;
+  const checkName = rest.match(/\bCONSTRAINT\s+\[([^\]]+)\]\s+CHECK\b/i)?.[1] ?? null;
   const checkMatch = rest.match(/\bCHECK\s*\(([\s\S]*)\)\s*$/i);
   if (checkMatch) {
     const inList = checkMatch[1].trim().match(/^\[([^\]]+)\]\s+IN\s*\(([^)]*)\)$/i);
@@ -135,7 +137,7 @@ function parseColumn(item, table) {
     notNull: /\bNOT\s+NULL\b/i.test(rest),
     identity: /\bIDENTITY\b/i.test(rest),
     default: def,
-    ...(allowed ? { allowed } : {}),
+    ...(allowed ? { allowed, checkName } : {}),
   };
 }
 
@@ -171,6 +173,13 @@ function parseSchema(sql) {
       if (column.identity) fail(`ALTER TABLE ADD may not add an IDENTITY column to [${name}]`, stmt);
       if (t.columns.some((c) => c.name === column.name)) fail(`Column [${name}].[${column.name}] already exists`, stmt);
       t.columns.push(column);
+    } else if ((m = stmt.match(/^ALTER TABLE \[([^\]]+)\]\s+DROP CONSTRAINT\s+\[([^\]]+)\]$/i))) {
+      // Sprint 7F Extension: only a named column CHECK can be dropped; the column keeps its type and nullability.
+      const [, name, constraint] = m;
+      const t = tables.get(name) ?? fail(`ALTER TABLE DROP CONSTRAINT on unknown table [${name}]`, stmt);
+      const col = t.columns.find((c) => c.checkName === constraint) ?? fail(`ALTER TABLE DROP CONSTRAINT of unknown constraint [${name}].[${constraint}]`, stmt);
+      delete col.allowed;
+      delete col.checkName;
     } else if ((m = stmt.match(/^ALTER TABLE \[([^\]]+)\]\s+DROP COLUMN\s+\[([^\]]+)\]$/i))) {
       // A column a later sprint retires (Sprint 6I): both targets simply create the table without it. Keys, indexes and
       // views are checked against the final columns below, so one still naming the column aborts the run.
@@ -179,6 +188,8 @@ function parseSchema(sql) {
       const at = t.columns.findIndex((c) => c.name === column);
       if (at < 0) fail(`ALTER TABLE DROP COLUMN of unknown column [${name}].[${column}]`, stmt);
       if (t.pk.includes(column)) fail(`ALTER TABLE DROP COLUMN may not drop primary key column [${name}].[${column}]`, stmt);
+      // As in SQL Server, a column still held by a CHECK constraint cannot be dropped; DROP CONSTRAINT it first.
+      if (t.columns[at].allowed) fail(`[${name}].[${column}] still has a CHECK constraint; DROP CONSTRAINT it first`, stmt);
       t.columns.splice(at, 1);
       dropped.push({ table: name, column, stmt });
     } else if ((m = stmt.match(/^CREATE (UNIQUE )?INDEX \[([^\]]+)\]\s+ON\s+\[([^\]]+)\]\s*\(([^)]*)\)(?:\s*INCLUDE\s*\([^)]*\))?(?:\s+WHERE\s+\[([^\]]+)\]\s+IS\s+NOT\s+NULL)?$/i))) {

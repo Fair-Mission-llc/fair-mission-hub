@@ -14,7 +14,9 @@
 // Honor Voucher box covers a sheet with no receipt and asks why. With receipt reading connected on the Credentials
 // Vault page, 'Read receipt' sends an attached file to Azure Document Intelligence and pre-fills the receipt and lines.
 import { useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
+  canAttachAssetPhoto,
   blankExpenseLine,
   blankExpenseReceipt,
   describeError,
@@ -562,7 +564,21 @@ function MyExpenses() {
 
   return (
     <>
-      <PageTitle actions={<Button onClick={() => open('new')}>New expense report</Button>}>My Expense Reports</PageTitle>
+      <PageTitle
+        actions={
+          <div className="flex items-center gap-4">
+            {/* Sprint 7F Extension: the Deputy Grand Knight and Trustees reach the assets inventory from here to add photos. */}
+            {canAttachAssetPhoto(user, user.councilId) ? (
+              <Link href="/expenses/assets" className="text-sm font-bold underline">
+                Council assets
+              </Link>
+            ) : null}
+            <Button onClick={() => open('new')}>New expense report</Button>
+          </div>
+        }
+      >
+        My Expense Reports
+      </PageTitle>
       {reports.error ?? refsLoad.error ?? charitiesLoad.error ? <Notice tone="error">{reports.error ?? refsLoad.error ?? charitiesLoad.error}</Notice> : null}
 
       {returned.map(({ report, total }) => (

@@ -6,7 +6,7 @@
 // cost basis are already filled in and the approver adds the serial number, storage location and notes.
 // =========================================================================
 import type { AssetRecordChanges } from './contract';
-import { GRAND_KNIGHT_ROLE } from './elections';
+import { DEPUTY_GRAND_KNIGHT_ROLE, GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
 import { assertMayAuditCouncilExpenses, assertText, BusinessRuleError, mayAuditCouncilExpenses, type MemberWriteActor } from './rules';
 import type { CouncilAssetsInventory, CouncilAssetStatus, ExpenseReport } from './types';
 import { ASSET_NAME_MAX_LENGTH, COUNCIL_ASSET_STATUSES } from './workflow';
@@ -21,7 +21,7 @@ export const ASSET_NOTES_MAX_LENGTH = 4000;
 /** Longest photo_url (VARCHAR(2000), Sprint 7F). */
 export const ASSET_PHOTO_URL_MAX_LENGTH = 2000;
 
-const ASSET_CHANGE_FIELDS: readonly (keyof AssetRecordChanges)[] = ['asset_name', 'current_status', 'serial_number', 'storage_location', 'notes', 'photo_url'];
+const ASSET_CHANGE_FIELDS: readonly (keyof AssetRecordChanges)[] = ['asset_name', 'current_status', 'serial_number', 'storage_location', 'notes'];
 
 /** A trimmed optional text, null when blank. */
 function optionalText(value: unknown, label: string, maxLength: number): string | null {
@@ -50,15 +50,20 @@ export function cleanAssetRecordChanges(input: AssetRecordChanges): AssetRecordC
   if (input.serial_number !== undefined) out.serial_number = optionalText(input.serial_number, 'Serial number', ASSET_SERIAL_MAX_LENGTH);
   if (input.storage_location !== undefined) out.storage_location = optionalText(input.storage_location, 'Storage location', ASSET_LOCATION_MAX_LENGTH);
   if (input.notes !== undefined) out.notes = optionalText(input.notes, 'Notes', ASSET_NOTES_MAX_LENGTH);
-  if (input.photo_url !== undefined) {
-    // Sprint 7F: a Drive file id, an http(s) or blob: link, or a path under the portal's media folder; never script.
-    const photo = optionalText(input.photo_url, 'Asset photo', ASSET_PHOTO_URL_MAX_LENGTH);
-    if (photo !== null && /^\s*(javascript|vbscript|data):/i.test(photo)) {
-      throw new BusinessRuleError('INVALID_INPUT', 'An asset photo must be an uploaded file or a web link.', { field: 'photo_url' });
-    }
-    out.photo_url = photo;
-  }
   return out;
+}
+
+/**
+ * Sprint 7F Extension: an asset's photo_url - normally the portal path of an image saved on the server
+ * (/api/media/assets/<council>/<file>), or an http(s) link, a Drive file id or null. Never script or data links:
+ * INVALID_INPUT, as for an over-long value.
+ */
+export function cleanAssetPhotoUrl(value: unknown): string | null {
+  const photo = optionalText(value, 'Asset photo', ASSET_PHOTO_URL_MAX_LENGTH);
+  if (photo !== null && /^\s*(javascript|vbscript|data|blob):/i.test(photo)) {
+    throw new BusinessRuleError('INVALID_INPUT', 'An asset photo must be an uploaded file or a web link.', { field: 'photo_url' });
+  }
+  return photo;
 }
 
 /** The council's Active Grand Knight: the officer whose approval creates the asset row. */
@@ -78,6 +83,25 @@ export function assertMayManageCouncilAssets(actor: MemberWriteActor, councilId:
 /** assertMayManageCouncilAssets as a yes/no. */
 export const mayManageCouncilAssets = (actor: MemberWriteActor, councilId: number): boolean =>
   isCouncilGrandKnight(actor, councilId) || mayAuditCouncilExpenses(actor, councilId);
+
+/**
+ * Sprint 7F Extension: the officers who look after the council's property besides the asset managers - its Deputy Grand
+ * Knight and its three Trustees. They may read the inventory and add photos, not change the other details.
+ */
+export const ASSET_PHOTO_OFFICER_ROLES: readonly string[] = [DEPUTY_GRAND_KNIGHT_ROLE, ...TRUSTEE_ROLE_NAMES];
+
+const isCouncilPropertyOfficer = (actor: MemberWriteActor, councilId: number): boolean =>
+  actor.active && actor.councilId === councilId && (actor.roles ?? []).some((r) => ASSET_PHOTO_OFFICER_ROLES.includes(r));
+
+/** Reading the inventory and adding photos: the asset managers, plus the council's Active Deputy Grand Knight and Trustees. */
+export const mayAttachAssetPhoto = (actor: MemberWriteActor, councilId: number): boolean =>
+  mayManageCouncilAssets(actor, councilId) || isCouncilPropertyOfficer(actor, councilId);
+
+/** mayAttachAssetPhoto as an assertion: ADMIN_REQUIRED or COUNCIL_ACCESS_DENIED, as assertMayManageCouncilAssets. */
+export function assertMayAttachAssetPhoto(actor: MemberWriteActor, councilId: number, action: string): void {
+  if (isCouncilPropertyOfficer(actor, councilId)) return;
+  assertMayManageCouncilAssets(actor, councilId, action);
+}
 
 /** RECORD_NOT_FOUND unless the asset row exists. */
 export function requireAssetRecord<T extends CouncilAssetsInventory>(row: T | null | undefined, assetId: number): T {

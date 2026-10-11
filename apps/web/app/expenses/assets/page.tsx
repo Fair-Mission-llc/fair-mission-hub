@@ -5,9 +5,11 @@
 // serial number, where the item is kept and notes (expenses.updateAssetRecord). Without ?asset the page lists the
 // inventory. Open to the council's expense leadership and its Grand Knight (canManageCouncilAssets); the drivers check
 // assertMayManageCouncilAssets.
-// Sprint 7F: the Asset Photo Vault. The form takes one image per asset and saves it at once as photo_url: an Admin's
-// upload goes to the Google Drive vault under Media / Council Assets (a Drive file id), anyone else's stays a local link
-// until the vault is used. The inventory shows each photo as a thumbnail.
+// Sprint 7F: the Asset Photo Vault. The form takes one image per asset and saves it at once as photo_url; the inventory
+// shows each photo as a thumbnail. Sprint 7F Extension: every upload goes to the portal server's shared asset folder
+// (/api/assets/photo), whoever sends it, so the photo lasts across sessions; the Drive vault is no longer used here. The
+// council's Deputy Grand Knight and Trustees may open the inventory and add photos too (canAttachAssetPhoto); only the
+// asset managers (canManageCouncilAssets) change the other details.
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -17,6 +19,7 @@ import {
   ASSET_NOTES_MAX_LENGTH,
   ASSET_SERIAL_MAX_LENGTH,
   assetFormPath,
+  canAttachAssetPhoto,
   canManageCouncilAssets,
   COUNCIL_ASSET_STATUSES,
   describeError,
@@ -31,10 +34,20 @@ import { photoSrc } from '@/lib/media';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
-import { archiveToDriveVault, localFileLink } from '@/services/drive-vault-transport';
 
-/** The Drive vault folder (under Media) that asset photos are filed in. */
-const ASSET_PHOTO_FOLDER = 'Council Assets';
+/** Where asset photos are uploaded (Sprint 7F Extension). */
+const ASSET_PHOTO_ROUTE = '/api/assets/photo';
+
+/** Saves the image on the portal server and answers its portal path; throws the server's reason when it refuses. */
+async function uploadAssetPhoto(councilId: number, file: File): Promise<string> {
+  const form = new FormData();
+  form.set('councilId', String(councilId));
+  form.set('file', file);
+  const res = await fetch(ASSET_PHOTO_ROUTE, { method: 'POST', body: form }).catch(() => null);
+  const body = (await res?.json().catch(() => null)) as { saved?: boolean; path?: string; message?: string } | null;
+  if (!res?.ok || !body?.saved || !body.path) throw new Error(body?.message ?? 'The portal server did not save the photo. Try again.');
+  return body.path;
+}
 
 /** An asset's photo, or a dashed placeholder; `size` is the square edge in pixels. */
 function AssetPhoto({ asset, size }: { asset: Pick<CouncilAssetsInventory, 'asset_name' | 'photo_url'>; size: number }) {
@@ -57,6 +70,8 @@ const purchaseDay = (asset: CouncilAssetsInventory) => formatDate(asset.purchase
 
 function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fromApproval: boolean }) {
   const user = useUser();
+  // The Deputy Grand Knight and Trustees add photos; only the asset managers edit the other details.
+  const mayEdit = canManageCouncilAssets(user, asset.council_id);
   const [name, setName] = useState(asset.asset_name);
   const [status, setStatus] = useState<CouncilAssetStatus>(asset.current_status);
   const [serial, setSerial] = useState(asset.serial_number ?? '');
@@ -92,9 +107,9 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
       let link: string | null = null;
       if (file) {
         if (!file.type.startsWith('image/')) throw new Error(`${file.name} is not an image.`);
-        link = (await archiveToDriveVault(user, 'media', file, ASSET_PHOTO_FOLDER)) ?? localFileLink(file);
+        link = await uploadAssetPhoto(asset.council_id, file);
       }
-      const saved = await db.expenses.updateAssetRecord(user.memberId, asset.id, { photo_url: link });
+      const saved = await db.expenses.setAssetPhoto(user.memberId, asset.id, link);
       setPhoto(saved.photo_url ?? null);
       setMessage({ tone: 'info', text: link ? `Saved the photo of ${saved.asset_name}.` : `Removed the photo of ${saved.asset_name}.` });
     } catch (err) {
@@ -158,6 +173,27 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
             ) : null}
           </div>
         </section>
+        {!mayEdit ? (
+          <dl className="grid gap-3 rounded border border-line p-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="font-bold">Asset name</dt>
+              <dd>{asset.asset_name}</dd>
+            </div>
+            <div>
+              <dt className="font-bold">Status</dt>
+              <dd>{STATUS_LABELS[asset.current_status]}</dd>
+            </div>
+            <div>
+              <dt className="font-bold">Serial number</dt>
+              <dd>{asset.serial_number ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="font-bold">Storage location</dt>
+              <dd>{asset.storage_location ?? '—'}</dd>
+            </div>
+          </dl>
+        ) : null}
+        {mayEdit ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Asset name">{(id) => <Input id={id} value={name} maxLength={ASSET_NAME_MAX_LENGTH} onChange={(e) => setName(e.target.value)} />}</Field>
           <Field label="Status">
@@ -180,11 +216,16 @@ function AssetForm({ asset, fromApproval }: { asset: CouncilAssetsInventory; fro
             )}
           </Field>
         </div>
-        <Field label="Notes">{(id) => <Textarea id={id} rows={4} value={notes} maxLength={ASSET_NOTES_MAX_LENGTH} onChange={(e) => setNotes(e.target.value)} />}</Field>
+        ) : null}
+        {mayEdit ? (
+          <Field label="Notes">{(id) => <Textarea id={id} rows={4} value={notes} maxLength={ASSET_NOTES_MAX_LENGTH} onChange={(e) => setNotes(e.target.value)} />}</Field>
+        ) : null}
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => void save()} disabled={busy}>
-            {busy ? 'Saving…' : 'Save asset details'}
-          </Button>
+          {mayEdit ? (
+            <Button onClick={() => void save()} disabled={busy}>
+              {busy ? 'Saving…' : 'Save asset details'}
+            </Button>
+          ) : null}
           <Link href="/expenses/assets" className="self-center text-sm font-bold underline">
             Back to the assets inventory
           </Link>
@@ -219,7 +260,7 @@ function Inventory({ councilId }: { councilId: number }) {
               </Td>
               <Td>
                 <Button size="sm" variant="secondary" onClick={() => router.push(assetFormPath(a.id))}>
-                  Edit
+                  {canManageCouncilAssets(user, a.council_id) ? 'Edit' : 'Add photo'}
                 </Button>
               </Td>
             </tr>
@@ -237,13 +278,15 @@ function CouncilAssets() {
   const assetId = Number(params.get('asset')) || null;
   const fromApproval = params.get('from') === 'approval';
   const asset = useLoad(() => (assetId === null ? Promise.resolve(null) : db.expenses.getAssetRecord(user.memberId, assetId)), [assetId, user.memberId]);
-  const allowed = canManageCouncilAssets(user, asset.data?.council_id ?? scope.councilId);
+  const allowed = canAttachAssetPhoto(user, asset.data?.council_id ?? scope.councilId);
 
   return (
     <>
       <PageTitle actions={assetId === null ? <CouncilSelect scope={scope} /> : undefined}>Council Assets</PageTitle>
       {!allowed ? (
-        <Notice tone="error">Only this council&apos;s Grand Knight, Admins, Financial Secretary and Treasurer, or a Super Admin, manage its assets.</Notice>
+        <Notice tone="error">
+          Only this council&apos;s Grand Knight, Deputy Grand Knight, Trustees, Admins, Financial Secretary and Treasurer, or a Super Admin, open its assets.
+        </Notice>
       ) : assetId === null ? (
         <Inventory councilId={scope.councilId} />
       ) : (

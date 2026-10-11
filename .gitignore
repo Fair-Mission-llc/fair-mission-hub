@@ -9,3 +9,6 @@ build/
 !.env.example
 .DS_Store
 next-env.d.ts
+
+# Sprint 7F Extension: asset photos the portal server saves (ASSET_MEDIA_DIR default)
+.media/

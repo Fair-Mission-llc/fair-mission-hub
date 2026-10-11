@@ -999,3 +999,11 @@ Access. accessRequests.submit is open to anyone and emails ACCESS_REQUEST_NOTIFY
 [DonationMethod] (new row)
 •	id 8 'Check' — kind 'check'; feeds the event's cash column.
 ________________________________________
+# 34. Relational payment methods and shared asset photos (Sprint 7F Extension)
+Schema version 66.
+[JournalEntry] (changed)
+•	payment_method — Dropped, with its named constraint CK_JournalEntry_payment_method (schema 65 now names the CHECK so it can be dropped).
+•	payment_method_id (INT, NULL, FK DonationMethod) — How the money moved: Cash, Credit Card, Venmo, Zelle, Zeffy, Parishsoft or Check. Set only by finance.logConcludedRevenue (cleanJournalPayment): the method must be enabled for the council (CouncilDonationMethod), never Physical Items, and a Check needs CheckNumber (refused on any other method).
+[CouncilAssetsInventory] (no column change)
+•	photo_url — Now a portal path /api/media/assets/<council>/<file>: POST /api/assets/photo saves the image on the server's disk (ASSET_MEDIA_DIR, default .media/assets, git-ignored) after checking its bytes (JPEG, PNG, GIF, WebP, HEIC; 10 MB). Written by expenses.setAssetPhoto (cleanAssetPhotoUrl refuses script, data and blob: links); no longer part of updateAssetRecord. Readers and photo writers: the asset managers plus the council's Deputy Grand Knight and Trustees (mayAttachAssetPhoto).
+________________________________________

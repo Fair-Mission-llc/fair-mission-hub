@@ -527,6 +527,8 @@ import {
   cleanAccessRequest,
   sortAccessRequests,
   type CouncilAccessRequest,
+  assertMayAttachAssetPhoto,
+  cleanAssetPhotoUrl,
 } from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
@@ -768,7 +770,7 @@ const DB_NAME = 'kofc.db';
  *     reminder_delay_days, reminder_cadence_days and six saved for future features) and three PlatformSettings columns
  *     (cadence_invitation_horizon_days, user_session_expiry_hours, audit_log_retention_days) (Sprint 7E).
  */
-const SCHEMA_VERSION = 65;
+const SCHEMA_VERSION = 66;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -2793,7 +2795,8 @@ export class SqliteDataService implements DataService {
 
     listAssetsInventory: async (actorId, councilId) => {
       const db = await this.ready();
-      assertMayManageCouncilAssets(await this.memberWriteActor(db, actorId), councilId, `read the assets inventory of council ${councilId}`);
+      // Sprint 7F Extension: the Deputy Grand Knight and Trustees read the inventory too, to add photos.
+      assertMayAttachAssetPhoto(await this.memberWriteActor(db, actorId), councilId, `read the assets inventory of council ${councilId}`);
       await this.assertCouncilsExist(db, [councilId]);
       return db.getAllAsync<CouncilAssetsInventory>(
         'SELECT * FROM [CouncilAssetsInventory] WHERE [council_id] = ? ORDER BY [purchase_date] DESC, [id] DESC',
@@ -2804,8 +2807,19 @@ export class SqliteDataService implements DataService {
     getAssetRecord: async (actorId, assetId) => {
       const db = await this.ready();
       const asset = requireAssetRecord(await db.getFirstAsync<CouncilAssetsInventory>('SELECT * FROM [CouncilAssetsInventory] WHERE [id] = ?', [assetId]), assetId);
-      assertMayManageCouncilAssets(await this.memberWriteActor(db, actorId), asset.council_id, `read asset record ${assetId}`);
+      assertMayAttachAssetPhoto(await this.memberWriteActor(db, actorId), asset.council_id, `read asset record ${assetId}`);
       return asset;
+    },
+
+    setAssetPhoto: async (actorId, assetId, photoUrl) => {
+      const photo = cleanAssetPhotoUrl(photoUrl);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const asset = requireAssetRecord(await db.getFirstAsync<CouncilAssetsInventory>('SELECT * FROM [CouncilAssetsInventory] WHERE [id] = ?', [assetId]), assetId);
+        assertMayAttachAssetPhoto(await this.memberWriteActor(db, actorId), asset.council_id, `add a photo to asset record ${assetId}`);
+        await db.runAsync('UPDATE [CouncilAssetsInventory] SET [photo_url] = ? WHERE [id] = ?', [photo, assetId]);
+      });
+      return (await db.getFirstAsync<CouncilAssetsInventory>('SELECT * FROM [CouncilAssetsInventory] WHERE [id] = ?', [assetId]))!;
     },
 
     getAssetRecordForExpense: async (actorId, reportId) => {
@@ -6655,6 +6669,8 @@ export class SqliteDataService implements DataService {
 
     logConcludedRevenue: async (actorId, councilId, input) => {
       const link = concludedRevenueLink(input);
+      // Sprint 7F Extension: the council's enabled payment methods, for payment_method_id.
+      const paymentOptions = await this.donations.listMethods(councilId);
       const db = await this.ready();
       let ids: number[] = [];
       await db.withTransactionAsync(async () => {
@@ -6669,7 +6685,7 @@ export class SqliteDataService implements DataService {
           const activity = await db.getFirstAsync<Activities>('SELECT * FROM [Activities] WHERE [id] = ?', [link.id]);
           source = { kind: 'activity' as const, activity };
         }
-        const lines = planConcludedRevenue(councilId, input, source, await this.glAccounts(db, councilId), this.now());
+        const lines = planConcludedRevenue(councilId, input, source, await this.glAccounts(db, councilId), this.now(), paymentOptions);
         assertLedgerPeriodsOpen(lines, await this.councilAudits(db, councilId));
         ids = await this.insertJournalLines(db, councilId, lines);
       });
@@ -6899,7 +6915,7 @@ export class SqliteDataService implements DataService {
     const ids: number[] = [];
     for (const l of lines) {
       const res = await db.runAsync(
-        `INSERT INTO [JournalEntry] ([CouncilID], [GLAccountID], [DateLogged], [Description], [DebitAmount], [CreditAmount], [LinkedEventID], [LinkedMeetingID], [LinkedActivityID], [IsBankReconciled], [CheckNumber], [TransactionID], [payment_method])
+        `INSERT INTO [JournalEntry] ([CouncilID], [GLAccountID], [DateLogged], [Description], [DebitAmount], [CreditAmount], [LinkedEventID], [LinkedMeetingID], [LinkedActivityID], [IsBankReconciled], [CheckNumber], [TransactionID], [payment_method_id])
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
         [
           councilId,
@@ -6913,7 +6929,7 @@ export class SqliteDataService implements DataService {
           l.LinkedActivityID ?? null,
           l.CheckNumber,
           transactionId,
-          l.payment_method ?? null,
+          l.payment_method_id ?? null,
         ],
       );
       ids.push(res.lastInsertRowId);

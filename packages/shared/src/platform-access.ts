@@ -4,16 +4,16 @@
 //   - accessRequests.*: a council that is not on the platform asks for access from the sign-in page
 //     (CouncilAccessRequests). Anyone may file one; each is emailed to ACCESS_REQUEST_NOTIFY_EMAIL, and Super Admins
 //     read and approve them in the Inbound Council Mail Center on the Executive Dashboard.
-//   - JournalEntry.payment_method: 'CASH', 'CARD' or 'CHECK'; a CHECK line carries its check number.
+//   - JournalEntry.payment_method_id (Sprint 7F Extension): a DonationMethod the council enabled; a Check carries its number.
 //   - auth.impersonate and /api/admin/impersonate: an Active Super Admin views the portal as another member. The view is
 //     read-only (guardViewAsWrites) and never reaches another Super Admin.
 //   - /api/assist: an officer or Admin asks for help and shares a sanitized copy of their screen with Super Admins.
 // =========================================================================
-import type { AccessRequestInput } from './contract';
+import type { AccessRequestInput, CouncilDonationOption } from './contract';
 import { NOTIFICATION_SENDER, type EmailPayload } from './notifications';
 import { CHECK_NUMBER_MAX_LENGTH } from './expenses';
 import { assertText, BusinessRuleError, describeActor, hasAdminRights, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
-import type { AccessRequestStatus, CouncilAccessRequest, JournalPaymentMethod } from './types';
+import type { AccessRequestStatus, CouncilAccessRequest } from './types';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 
@@ -97,27 +97,37 @@ export const sortAccessRequests = <T extends Pick<CouncilAccessRequest, 'id' | '
 
 // ---- journal payment methods -----------------------------------------------------
 
-/** JournalEntry.payment_method values, the column's CHECK list. */
-export const JOURNAL_PAYMENT_METHODS: readonly JournalPaymentMethod[] = ['CASH', 'CARD', 'CHECK'];
-/** How the revenue card labels each method. */
-export const JOURNAL_PAYMENT_METHOD_LABELS: Readonly<Record<JournalPaymentMethod, string>> = { CASH: 'Cash', CARD: 'Card', CHECK: 'Check' };
+/**
+ * The payment methods a council's ledger postings may name (Sprint 7F Extension): the council's enabled donation
+ * methods (CouncilDonationMethod -> DonationMethod: Cash, Credit Card, Venmo, Zelle, Zeffy, Parishsoft, Check), less
+ * Physical Items, which is not money. In DonationMethod id order.
+ */
+export const journalPaymentOptions = <T extends Pick<CouncilDonationOption, 'method' | 'kind'>>(options: readonly T[]): T[] =>
+  options.filter((o) => o.kind !== 'item').sort((a, b) => a.method.id - b.method.id);
 
 /**
- * The payment fields of a posting: no method (NULL, and no check number), CASH or CARD (no check number), or CHECK with
- * its check number. An unknown method, a CHECK without a number, or a number on CASH or CARD: INVALID_INPUT.
+ * The payment fields of a posting: no method (NULL, and no check number), or JournalEntry.payment_method_id - a
+ * DonationMethod the council has enabled (journalPaymentOptions) - with a check number exactly when the method is a
+ * Check. An unknown, disabled or Physical Items method, a Check without a number, or a number on any other method:
+ * INVALID_INPUT.
  */
-export function cleanJournalPayment(method: unknown, checkNumber: unknown): { payment_method: JournalPaymentMethod | null; CheckNumber: string | null } {
+export function cleanJournalPayment(
+  methodId: unknown,
+  checkNumber: unknown,
+  councilOptions: readonly Pick<CouncilDonationOption, 'method' | 'kind'>[],
+): { payment_method_id: number | null; CheckNumber: string | null } {
   const number = checkNumber === undefined || checkNumber === null || String(checkNumber).trim() === '' ? null : assertText(checkNumber, 'Check number', CHECK_NUMBER_MAX_LENGTH);
-  if (method === undefined || method === null || method === '') {
-    if (number !== null) throw invalid('Choose Check as the payment method to record a check number.', { field: 'payment_method' });
-    return { payment_method: null, CheckNumber: null };
+  if (methodId === undefined || methodId === null || methodId === '') {
+    if (number !== null) throw invalid('Choose Check as the payment method to record a check number.', { field: 'payment_method_id' });
+    return { payment_method_id: null, CheckNumber: null };
   }
-  if (!(JOURNAL_PAYMENT_METHODS as readonly unknown[]).includes(method)) {
-    throw invalid(`Payment method must be one of ${JOURNAL_PAYMENT_METHODS.join(', ')}; received ${JSON.stringify(method)}.`, { field: 'payment_method' });
+  const option = journalPaymentOptions(councilOptions).find((o) => o.method.id === methodId);
+  if (!option) {
+    throw invalid(`Payment method ${JSON.stringify(methodId)} is not one this council has enabled for payments.`, { field: 'payment_method_id' });
   }
-  if (method === 'CHECK' && number === null) throw invalid('Enter the check number of a payment by check.', { field: 'CheckNumber' });
-  if (method !== 'CHECK' && number !== null) throw invalid('Only a payment by check has a check number.', { field: 'CheckNumber' });
-  return { payment_method: method as JournalPaymentMethod, CheckNumber: number };
+  if (option.kind === 'check' && number === null) throw invalid('Enter the check number of a payment by check.', { field: 'CheckNumber' });
+  if (option.kind !== 'check' && number !== null) throw invalid('Only a payment by check has a check number.', { field: 'CheckNumber' });
+  return { payment_method_id: option.method.id, CheckNumber: number };
 }
 
 // ---- impersonation (view-as) -------------------------------------------------------

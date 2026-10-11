@@ -7,7 +7,7 @@
 // account, so members and the other signers never meet an account code. The Treasurer also records what a concluded
 // event or a running activity raised, straight into the ledger. Drivers load rows, call these, then only store.
 // =========================================================================
-import type { ConcludedRevenueInput, ExpenseLedgerCoding } from './contract';
+import type { ConcludedRevenueInput, CouncilDonationOption, ExpenseLedgerCoding } from './contract';
 import { isPhysicalPropertyAccount } from './audits';
 import { cleanJournalPayment } from './platform-access';
 import { cleanJournalDate, compareGLAccounts, isBankAccount, JOURNAL_DESCRIPTION_MAX_LENGTH, type CleanJournalLine } from './finance';
@@ -160,6 +160,8 @@ export function planConcludedRevenue(
   source: ConcludedRevenueSource,
   accounts: readonly GLAccount[],
   now: Date,
+  /** Sprint 7F Extension: the council's enabled donation methods (donations.listMethods), for payment_method_id. */
+  paymentOptions: readonly Pick<CouncilDonationOption, 'method' | 'kind'>[] = [],
 ): CleanJournalLine[] {
   const link = concludedRevenueLink(input);
   const today = toIsoDate(now);
@@ -204,7 +206,7 @@ export function planConcludedRevenue(
       ? `Revenue collected: ${name}`
       : assertText(input.Description, 'Description', JOURNAL_DESCRIPTION_MAX_LENGTH);
   // Sprint 7F: how the money came in, on both lines of the posting; a check carries its number.
-  const payment = cleanJournalPayment(input.payment_method, input.CheckNumber);
+  const payment = cleanJournalPayment(input.payment_method_id, input.CheckNumber, paymentOptions);
   const base = {
     Description: description,
     DateLogged: dateLogged,
@@ -212,7 +214,7 @@ export function planConcludedRevenue(
     LinkedMeetingID: null,
     LinkedActivityID: link.kind === 'activity' ? link.id : null,
     CheckNumber: payment.CheckNumber,
-    payment_method: payment.payment_method,
+    payment_method_id: payment.payment_method_id,
   };
   return [
     { ...base, GLAccountID: depositAccount.id, DebitAmount: amount, CreditAmount: 0 },

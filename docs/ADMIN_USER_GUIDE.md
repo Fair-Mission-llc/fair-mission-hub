@@ -2063,22 +2063,32 @@ Approving a request marks the request as reviewed. Approving does not create the
 | The card says "No council has asked for access yet." | No request reached the portal server. | Ask the council to send the form again from the web sign-in page. |
 | The card shows an error about the session. | Your server session ended. | Sign out, then sign in again. |
 
-### 17.3 Concept: payments by check
+### 17.3 Concept: payment methods in the ledger
 
-The ledger records how money came in. The **Payment method** has three values: **Cash**, **Card** and **Check**.
+The ledger records how money came in. The **Payment method** list on the revenue card uses the same payment methods as the donation screens.
 
-- A payment by **Check** must have a check number.
-- A payment by **Cash** or **Card** has no check number.
-- An older ledger line has no payment method.
+| Payment method | Kind | Check number |
+| --- | --- | --- |
+| Cash | Paper money | No |
+| Credit Card | Card payment | No |
+| Venmo | Electronic payment by QR code | No |
+| Zelle | Electronic payment by QR code | No |
+| Zeffy | Electronic payment by QR code | No |
+| Parishsoft | Electronic payment by QR code | No |
+| Check | Paper check | Yes, required |
 
-The database refuses any other payment method. The donation methods also include **Check**. A donation by check counts in the cash column of the event, because the council deposits checks with the cash.
+- The list shows only the methods that the council turned on. An Admin turns methods on in Sidebar → System Settings → **Council Lookup Tables**.
+- **Physical Items** is never a payment method, because items are not money.
+- An older ledger line, or a line that is not a payment, has no payment method.
 
-### 17.4 Log revenue that a council received by check
+A donation by check counts in the cash column of the event, because the council deposits checks with the cash.
+
+### 17.4 Log revenue and its payment method
 
 > **Who can do this:** The council's Treasurer or a Super Admin.
 > **Warning:** The revenue posts to the general ledger at once.
 
-**Goal:** Record event or activity revenue and the check that paid it.
+**Goal:** Record event or activity revenue and how the council received the money.
 
 **Start point:** Sidebar → Finances → **Financial Dashboard** → **💰 Log Concluded Event Revenues**.
 
@@ -2086,45 +2096,56 @@ The database refuses any other payment method. The donation methods also include
 1. Select the event or activity in **Event or activity**.
 2. Enter the amount in **Funds collected**.
 3. Select the **Revenue account** and the **Deposited to** account.
-4. Select **Check** in **Payment method**.
-5. Enter the number in **Check number**.
+4. Select the method in **Payment method**: Cash, Credit Card, Venmo, Zelle, Zeffy, Parishsoft or Check.
+5. If you selected **Check**, enter the number in **Check number**.
 6. Select **Save to the ledger**. The revenue posts to the ledger at once.
 
-**Expected result:** A message shows the amount and the revenue account. Both ledger lines show the payment method **CHECK** and the check number.
+**Expected result:** A message shows the amount and the revenue account. Both ledger lines show the payment method. A check payment also shows the check number.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The message says "Enter the check number of a payment by check." | The **Check number** box is empty. | Enter the check number, then save. |
-| The message says "Only a payment by check has a check number." | The payment method is not **Check**. | Select **Check**, or clear the check number. |
+| A method, such as Zeffy, is not in the **Payment method** list. | The council did not turn that method on. | Ask an Admin to turn the method on in **Council Lookup Tables**. |
+| The message says the method "is not one this council has enabled for payments." | An Admin turned the method off after the page opened. | Reload the page, then choose an enabled method. |
 
-### 17.5 Concept: the asset photo vault
+### 17.5 Concept: shared asset photos
 
 Each council asset can have one photo. The photo shows on the asset form and as a small picture in the assets inventory.
 
-An Admin's photo goes to the council's Google Drive vault, in the folder **Media / Council Assets**. When the vault is off, or the person is not an Admin, the photo stays a link in this browser only.
+The portal server keeps every asset photo in one shared folder. The photo stays with the asset for every member who opens the asset, on any computer. An Admin does not need to approve or upload the photo.
+
+| Who | Sees the inventory | Adds or removes a photo | Changes the name, status, serial number, location and notes |
+| --- | --- | --- | --- |
+| Grand Knight, Admins, Financial Secretary, Treasurer, Super Admins | Yes | Yes | Yes |
+| Deputy Grand Knight, Trustees | Yes | Yes | No |
+| Other members | No | No | No |
+
+The portal accepts JPEG, PNG, GIF, WebP and HEIC images up to 10 MB. The portal checks the file contents, not only the file name.
 
 ### 17.6 Add a photo to a council asset
 
-> **Who can do this:** The council's Grand Knight, Admins, Financial Secretary and Treasurer, or a Super Admin.
+> **Who can do this:** The council's Grand Knight, Deputy Grand Knight, Trustees, Admins, Financial Secretary and Treasurer, or a Super Admin.
 
-**Goal:** Attach a photo of the item to its asset record.
+**Goal:** Attach a photo of the item to its asset record, for every member who opens the record.
 
-**Start point:** Sidebar → Finances → **GK Expense Authorize** → **Council assets** → **Edit** on the asset row.
+**Start point:** Sidebar → Finances → **My Expense Reports** → **Council assets** → **Add photo** (or **Edit**) on the asset row.
 
 **Steps:**
 1. Select **Upload photo** in the **Asset photo** box.
-2. Choose an image file. The platform saves the photo at once.
+2. Choose an image file. The portal server saves the photo at once.
 3. To change the photo, select **Replace photo** and choose another image.
 4. To remove the photo, select **Remove photo**.
 
-**Expected result:** The photo shows on the asset form. The message says "Saved the photo of" and the asset name. The inventory shows the photo in the **Photo** column.
+**Expected result:** The photo shows on the asset form. The message says "Saved the photo of" and the asset name. The inventory shows the photo in the **Photo** column. The photo is still there after you sign out and sign in again.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The message says the file "is not an image." | The file is a document or a video. | Choose a JPEG, PNG, WebP or HEIC image. |
-| The photo is missing after you reload the page. | The photo was a browser link because the Drive vault is off. | Ask an Admin to upload the photo with the vault on. |
+| The message says "The file is not a JPEG, PNG, GIF, WebP or HEIC image." | The file is a document, a video or a damaged image. | Choose a JPEG, PNG, GIF, WebP or HEIC image. |
+| The message says "The photo is larger than 10 MB." | The image file is too large. | Make the image smaller, then upload it again. |
+| The message says to sign in again. | Your server session ended. | Sign out, sign in again, then upload the photo. |
+| The form shows the details but no **Save asset details** button. | You are the Deputy Grand Knight or a Trustee. | Ask an asset manager to change the details. You can still add the photo. |
 
 ### 17.7 Concept: user impersonation (view as a member)
 

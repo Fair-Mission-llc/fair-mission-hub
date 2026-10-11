@@ -26,7 +26,7 @@ import type {
 import { CHECK_NUMBER_MAX_LENGTH } from './expenses';
 import { toTimestamp } from './messaging';
 import { assertIsoDate, assertMoney, assertText, BusinessRuleError, optionalText } from './rules';
-import type { EventIntakeSessionStatus, GLAccount, GLAccountType, JournalEntry, JournalPaymentMethod, Meeting } from './types';
+import type { EventIntakeSessionStatus, GLAccount, GLAccountType, JournalEntry, Meeting } from './types';
 
 /** GLAccount.AccountType values, in the order a chart of accounts lists them. */
 export const GL_ACCOUNT_TYPES: readonly GLAccountType[] = ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense'];
@@ -73,8 +73,8 @@ export interface CleanJournalLine {
   CheckNumber: string | null;
   /** Sprint 6Q: set only by finance.logConcludedRevenue (planConcludedRevenue); every other posting stores NULL. */
   LinkedActivityID?: number | null;
-  /** Sprint 7F: set only by finance.logConcludedRevenue (cleanJournalPayment); every other posting stores NULL. */
-  payment_method?: JournalPaymentMethod | null;
+  /** Sprint 7F Extension: set only by finance.logConcludedRevenue (cleanJournalPayment); every other posting stores NULL. */
+  payment_method_id?: number | null;
 }
 
 /**

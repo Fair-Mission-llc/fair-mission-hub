@@ -14,7 +14,7 @@ import { budgetWindowOf } from './budget';
 import { ALL_FEATURES_ON, withFeatureFlags, type FeatureFlags } from './features';
 import { DEFAULT_TENANT_TYPE, withTenantGate, type TenantType } from './tenant';
 import { AGENDA_EDITOR_ROLE_NAMES } from './agenda';
-import { GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
+import { DEPUTY_GRAND_KNIGHT_ROLE, GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
 import { FINANCE_LOOKUP_TABLES, FINANCIAL_SECRETARY_ROLE_NAME, holdsExecutiveRole, holdsFinanceRole } from './rules';
 import { TREASURER_ROLE_NAME } from './treasurer-desk';
 import type { BudgetLineStatus, CharitableRequest, CharitableThreadType, Donation, Event, ExpenseReport, Meeting, Member, MemberType } from './types';
@@ -429,6 +429,14 @@ export const canLinkMeetingDrive = (u: Actor, meeting: Pick<Meeting, 'CouncilID'
  */
 export const canManageCouncilAssets = (u: Actor, councilId: number): boolean =>
   canAuditCouncilExpenses(u, councilId) || (isGrandKnight(u) && u.councilId === councilId);
+
+/**
+ * Sprint 7F Extension: the assets inventory and its photo upload, mirroring assertMayAttachAssetPhoto - the asset
+ * managers above, plus the council's Deputy Grand Knight and Trustees (who see the inventory and add photos only).
+ */
+export const canAttachAssetPhoto = (u: Actor, councilId: number): boolean =>
+  canManageCouncilAssets(u, councilId) ||
+  (u.councilId === councilId && (u.roles ?? []).some((r) => r === DEPUTY_GRAND_KNIGHT_ROLE || (TRUSTEE_ROLE_NAMES as readonly string[]).includes(r)));
 
 /**
  * The Planning Hours form on an event (Sprint 6P), mirroring assertMayLogPlanningTime: the event's owner, an officer or

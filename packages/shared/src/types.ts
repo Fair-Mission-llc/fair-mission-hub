@@ -736,7 +736,7 @@ export interface CouncilAssetsInventory {
   notes?: string | null;
   serial_number?: string | null; // VARCHAR(100), Sprint 6P
   storage_location?: string | null; // VARCHAR(255), Sprint 6P: where the item is kept
-  photo_url?: string | null; // VARCHAR(2000), Sprint 7F: a Drive file id from the vault, or a local link while it is off
+  photo_url?: string | null; // VARCHAR(2000), Sprint 7F: since the Extension a /api/media/assets/<council>/<file> path on the portal server
 }
 
 /** One receipt on an expense sheet. */
@@ -1080,12 +1080,12 @@ export interface JournalEntry {
   TransactionID: string;
   /** Sprint 6Q: an activity of the council the posting belongs to (post-event revenue logged against an activity). */
   LinkedActivityID?: number | null;
-  /** VARCHAR(10) CHECK (Sprint 7F): how the money moved; NULL on older lines and on lines that are not a payment. */
-  payment_method?: JournalPaymentMethod | null;
+  /**
+   * INT FK DonationMethod (Sprint 7F Extension; replaced the schema 65 CASH/CARD/CHECK text column): how the money moved.
+   * NULL on older lines and on lines that are not a payment.
+   */
+  payment_method_id?: number | null;
 }
-
-/** JournalEntry.payment_method values (Sprint 7F, the column's CHECK list). */
-export type JournalPaymentMethod = 'CASH' | 'CARD' | 'CHECK';
 
 /** CouncilAccessRequests.status (Sprint 7F; rules layer). */
 export type AccessRequestStatus = 'PENDING' | 'APPROVED';

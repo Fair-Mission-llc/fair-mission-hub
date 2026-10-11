@@ -4912,16 +4912,11 @@ export const TABLES: Record<string, TableMeta> = {
         "default": null
       },
       {
-        "name": "payment_method",
-        "kind": "text",
+        "name": "payment_method_id",
+        "kind": "int",
         "notNull": false,
         "identity": false,
-        "default": null,
-        "allowed": [
-          "CASH",
-          "CARD",
-          "CHECK"
-        ]
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -4948,6 +4943,11 @@ export const TABLES: Record<string, TableMeta> = {
       {
         "column": "LinkedActivityID",
         "refTable": "Activities",
+        "refColumn": "id"
+      },
+      {
+        "column": "payment_method_id",
+        "refTable": "DonationMethod",
         "refColumn": "id"
       }
     ],

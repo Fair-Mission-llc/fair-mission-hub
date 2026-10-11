@@ -523,6 +523,8 @@ import {
   cleanAccessRequest,
   sortAccessRequests,
   type CouncilAccessRequest,
+  assertMayAttachAssetPhoto,
+  cleanAssetPhotoUrl,
 } from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
@@ -2411,7 +2413,8 @@ export class MemoryDataService implements DataService {
 
     listAssetsInventory: async (actorId, councilId) => {
       const s = await this.ready();
-      assertMayManageCouncilAssets(this.memberWriteActor(s, actorId), councilId, `read the assets inventory of council ${councilId}`);
+      // Sprint 7F Extension: the Deputy Grand Knight and Trustees read the inventory too, to add photos.
+      assertMayAttachAssetPhoto(this.memberWriteActor(s, actorId), councilId, `read the assets inventory of council ${councilId}`);
       this.assertCouncilsExist(s, [councilId]);
       return (s.rows('CouncilAssetsInventory').filter((a) => a.council_id === councilId).map((a) => ({ ...a })) as unknown as CouncilAssetsInventory[]).sort(
         (a, b) => b.purchase_date.localeCompare(a.purchase_date) || b.id - a.id,
@@ -2421,8 +2424,20 @@ export class MemoryDataService implements DataService {
     getAssetRecord: async (actorId, assetId) => {
       const s = await this.ready();
       const asset = requireAssetRecord(s.rows('CouncilAssetsInventory').find((a) => a.id === assetId) as unknown as CouncilAssetsInventory | undefined, assetId);
-      assertMayManageCouncilAssets(this.memberWriteActor(s, actorId), asset.council_id, `read asset record ${assetId}`);
+      assertMayAttachAssetPhoto(this.memberWriteActor(s, actorId), asset.council_id, `read asset record ${assetId}`);
       return { ...asset };
+    },
+
+    setAssetPhoto: async (actorId, assetId, photoUrl) => {
+      const photo = cleanAssetPhotoUrl(photoUrl);
+      const s = await this.ready();
+      return s.transaction(() => {
+        const row = s.rows('CouncilAssetsInventory').find((a) => a.id === assetId) as Row | undefined;
+        const asset = requireAssetRecord(row as unknown as CouncilAssetsInventory | undefined, assetId);
+        assertMayAttachAssetPhoto(this.memberWriteActor(s, actorId), asset.council_id, `add a photo to asset record ${assetId}`);
+        row!.photo_url = photo;
+        return { ...row } as unknown as CouncilAssetsInventory;
+      });
     },
 
     getAssetRecordForExpense: async (actorId, reportId) => {
@@ -5607,6 +5622,8 @@ export class MemoryDataService implements DataService {
 
     logConcludedRevenue: async (actorId, councilId, input) => {
       const link = concludedRevenueLink(input);
+      // Sprint 7F Extension: the council's enabled payment methods, for payment_method_id.
+      const paymentOptions = await this.donations.listMethods(councilId);
       const s = await this.ready();
       return s.transaction(() => {
         const actor = this.memberWriteActor(s, actorId);
@@ -5620,7 +5637,7 @@ export class MemoryDataService implements DataService {
                 eventCouncilIds: s.rows('Event').some((e) => e.id === link.id) ? this.councilIdsOf(s, link.id) : [],
               }
             : { kind: 'activity' as const, activity: (s.rows('Activities').find((a) => a.id === link.id) as unknown as Activities | undefined) ?? null };
-        const lines = planConcludedRevenue(councilId, input, source, this.glAccounts(s, councilId), this.now());
+        const lines = planConcludedRevenue(councilId, input, source, this.glAccounts(s, councilId), this.now(), paymentOptions);
         assertLedgerPeriodsOpen(lines, this.councilAudits(s, councilId));
         return this.insertJournalLines(s, councilId, lines);
       });
@@ -5832,7 +5849,7 @@ export class MemoryDataService implements DataService {
             CouncilID: councilId,
             ...line,
             LinkedActivityID: line.LinkedActivityID ?? null,
-            payment_method: line.payment_method ?? null,
+            payment_method_id: line.payment_method_id ?? null,
             IsBankReconciled: 0,
             TransactionID,
           }),

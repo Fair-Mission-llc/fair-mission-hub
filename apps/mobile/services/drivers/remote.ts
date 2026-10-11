@@ -122,6 +122,7 @@ export function createRemoteDataService(): DataService {
       getAssetRecord: notImplemented('expenses.getAssetRecord'),
       getAssetRecordForExpense: notImplemented('expenses.getAssetRecordForExpense'),
       updateAssetRecord: notImplemented('expenses.updateAssetRecord'),
+      setAssetPhoto: notImplemented('expenses.setAssetPhoto'),
       listAuthorizationQueue: notImplemented('expenses.listAuthorizationQueue'),
       submitReport: notImplemented('expenses.submitReport'),
       rejectReport: notImplemented('expenses.rejectReport'),
