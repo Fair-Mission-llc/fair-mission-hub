@@ -1069,6 +1069,20 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "minutes_text",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "minutes_published_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -7112,6 +7126,78 @@ export const TABLES: Record<string, TableMeta> = {
       }
     ],
     "uniqueKeys": []
+  },
+  "CouncilHistorianBulletin": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "bulletin_month",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "body",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": ""
+        }
+      },
+      {
+        "name": "author_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "updated_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "now"
+        }
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "author_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "council_id",
+        "bulletin_month"
+      ]
+    ]
   }
 };
 

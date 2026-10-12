@@ -139,7 +139,9 @@ export type BusinessRuleCode =
   | 'OUTSIDE_GEOFENCE'
   | 'GPS_PRECISION_TOO_LOW'
   | 'MEETING_PIN_INVALID'
-  | 'MEETING_PIN_LOCKED';
+  | 'MEETING_PIN_LOCKED'
+  | 'RECORDER_REQUIRED'
+  | 'HISTORIAN_REQUIRED';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {
@@ -172,7 +174,9 @@ export class SecurityPrivilegeError extends BusinessRuleError {
       | 'HISTORY_KEEPER_REQUIRED'
       | 'TRUSTEE_REQUIRED'
       | 'TREASURER_REQUIRED'
-      | 'PRAYER_INTENTION_CLOSER_REQUIRED',
+      | 'PRAYER_INTENTION_CLOSER_REQUIRED'
+      | 'RECORDER_REQUIRED'
+      | 'HISTORIAN_REQUIRED',
     message: string,
     details: Record<string, unknown> = {},
   ) {

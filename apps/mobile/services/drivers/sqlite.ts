@@ -17,6 +17,12 @@ import {
   countSignatureFlow,
   MeetingPinAttempts,
   meetingGeofenceOf,
+  DEFAULT_MEETING_PIN_TOKEN,
+  cleanMeetingMinutes,
+  cleanHistorianBulletin,
+  assertMayKeepMinutes,
+  assertMayKeepScrapbook,
+  mayKeepScrapbook,
   ROADMAP_ALERT_ROLE_NAMES,
   roadmapAlertPayload,
   roadmapCycleYear,
@@ -664,6 +670,7 @@ import type {
   FraternalYearClosingMetrics,
   YearClosingRows,
   CouncilSpiritualDiary,
+  CouncilHistorianBulletin,
   CouncilInMemoriam,
   InMemoriamRoll,
   MemberStatus as MemberStatusRow,
@@ -803,8 +810,10 @@ const DB_NAME = 'kofc.db';
  *     root opens /dashboard (Sprint 7J Extension 2); phones rebuild in step.
  * 73: no table change - the portal dashboard becomes the no-scroll Active Desks hub with Oversight and Reports desks,
  *     and Council Wide Settings moves under /system-settings (Sprint 8A); phones rebuild in step.
+ * 74: Meeting.minutes_text and minutes_published_at (the Recorder Desk's minutes) and CouncilHistorianBulletin (the
+ *     Historian Desk's monthly bulletins) (Sprint 8B).
  */
-const SCHEMA_VERSION = 73;
+const SCHEMA_VERSION = 74;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -4758,9 +4767,33 @@ export class SqliteDataService implements DataService {
       const photo = cleanMeetingPhotoUrl(photoUrl);
       const db = await this.ready();
       const meeting = await this.requireMeetingRow(db, meetingId);
-      assertMayRunLiveAssembly(await this.memberWriteActor(db, actorId), meeting, `file a photo for meeting ${meetingId}`);
+      const actor = await this.memberWriteActor(db, actorId);
+      // Sprint 8B: the council's Historian also files meeting photos, from the Historian Desk.
+      if (!mayKeepScrapbook(actor, meeting.CouncilID)) assertMayRunLiveAssembly(actor, meeting, `file a photo for meeting ${meetingId}`);
       await db.runAsync('UPDATE [Meeting] SET [photo_url] = ? WHERE [id] = ?', [photo, meetingId]);
       return { ...meeting, photo_url: photo };
+    },
+
+    saveMeetingMinutes: async (actorId, meetingId, input) => {
+      const clean = cleanMeetingMinutes(input);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const meeting = await this.requireMeetingRow(db, meetingId);
+        assertMayKeepMinutes(await this.memberWriteActor(db, actorId), meeting.CouncilID, `keep the minutes of meeting ${meetingId}`);
+        // A re-publish keeps the first stamp; saving as a draft withdraws the publication.
+        const published = clean.publish ? (meeting.minutes_published_at ?? toTimestamp(this.now())) : null;
+        await db.runAsync('UPDATE [Meeting] SET [minutes_text] = ?, [minutes_published_at] = ? WHERE [id] = ?', [clean.minutes_text, published, meetingId]);
+      });
+      return this.requireMeetingRow(db, meetingId);
+    },
+
+    launchLiveMeeting: async (actorId, meetingId) => {
+      const db = await this.ready();
+      const meeting = await this.requireMeetingRow(db, meetingId);
+      assertMayKeepMinutes(await this.memberWriteActor(db, actorId), meeting.CouncilID, `start the live sequence of meeting ${meetingId}`);
+      const state = await this.meetings.startLiveAssemblyConsole(actorId, meetingId);
+      const { pinToken } = meetingGeofenceOf((await this.requireRecord(db, 'Council', meeting.CouncilID)) as unknown as Council);
+      return { state, pinToken, pinIsDefault: pinToken === DEFAULT_MEETING_PIN_TOKEN };
     },
 
     launchSecretSmartphoneBallot: async (actorId, proposedMotionId) => {
@@ -7262,6 +7295,42 @@ export class SqliteDataService implements DataService {
         ).lastInsertRowId;
       });
       return (await db.getFirstAsync<CouncilSpiritualDiary>('SELECT * FROM [CouncilSpiritualDiary] WHERE [id] = ?', [entryId]))!;
+    },
+
+    listHistorianBulletins: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayKeepScrapbook(await this.memberWriteActor(db, actorId), councilId, `read the bulletins of council ${councilId}`);
+      return db.getAllAsync<CouncilHistorianBulletin>('SELECT * FROM [CouncilHistorianBulletin] WHERE [council_id] = ? ORDER BY [bulletin_month] DESC', [councilId]);
+    },
+
+    saveHistorianBulletin: async (actorId, councilId, month, body) => {
+      const clean = cleanHistorianBulletin(month, body);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayKeepScrapbook(await this.memberWriteActor(db, actorId), councilId, `write the bulletins of council ${councilId}`);
+        await this.assertCouncilsExist(db, [councilId]);
+        const existing = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [CouncilHistorianBulletin] WHERE [council_id] = ? AND [bulletin_month] = ?', [
+          councilId,
+          clean.bulletin_month,
+        ]);
+        if (existing) {
+          await db.runAsync('UPDATE [CouncilHistorianBulletin] SET [body] = ?, [author_member_id] = ?, [updated_at] = ? WHERE [id] = ?', [
+            clean.body,
+            actorId,
+            toTimestamp(this.now()),
+            existing.id,
+          ]);
+        } else {
+          await db.runAsync(
+            'INSERT INTO [CouncilHistorianBulletin] ([council_id], [bulletin_month], [body], [author_member_id], [updated_at]) VALUES (?, ?, ?, ?, ?)',
+            [councilId, clean.bulletin_month, clean.body, actorId, toTimestamp(this.now())],
+          );
+        }
+      });
+      return (await db.getFirstAsync<CouncilHistorianBulletin>('SELECT * FROM [CouncilHistorianBulletin] WHERE [council_id] = ? AND [bulletin_month] = ?', [
+        councilId,
+        clean.bulletin_month,
+      ]))!;
     },
 
     getInMemoriamRoll: async (actorId, councilId) => {

@@ -17,6 +17,7 @@ import { AGENDA_EDITOR_ROLE_NAMES } from './agenda';
 import { DEPUTY_GRAND_KNIGHT_ROLE, GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
 import { FINANCE_LOOKUP_TABLES, FINANCIAL_SECRETARY_ROLE_NAME, holdsExecutiveRole, holdsFinanceRole } from './rules';
 import { TREASURER_ROLE_NAME } from './treasurer-desk';
+import { canOpenHistorianDesk } from './recorder-historian';
 import type { BudgetLineStatus, CharitableRequest, CharitableThreadType, Donation, Event, ExpenseReport, Meeting, Member, MemberType } from './types';
 
 /** `roles` (Role names) matters only to the finance areas; omitted, the member holds none. `isBudgetDirector` only to the budget. */
@@ -76,6 +77,7 @@ export type PortalArea =
   | 'system-settings/council-settings'
   | 'system-settings/global-settings'
   | 'system-settings/remote-assistance'
+  | 'system-settings/impersonate'
   | 'navigation-guide'
   | 'performance/charts'
   | 'history'
@@ -185,6 +187,12 @@ export const canOpenGlobalSystemParameters = (u: Actor): boolean => isSuperAdmin
  * /api/assist checks (mayWatchRemoteAssistance). It shows the screens officers and Admins chose to share.
  */
 export const canOpenRemoteAssistanceDesk = (u: Actor): boolean => isSuperAdmin(u);
+
+/**
+ * The cascading view-as lookup (Sprint 8B, /system-settings/impersonate): Super Admins only, the tier
+ * /api/admin/impersonate and auth.impersonate enforce. Council -> clearance group -> person, across every council.
+ */
+export const canOpenImpersonationLookup = (u: Actor): boolean => isSuperAdmin(u);
 
 /** Super Admins act on any council; Admins only on their own. */
 export const canAdministerCouncil = (u: Actor, councilId: number): boolean =>
@@ -616,6 +624,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canOpenFeatureFlagsControlCenter(u)) areas.push('feature-flags');
   if (canOpenGlobalSystemParameters(u)) areas.push('system-settings/global-settings');
   if (canOpenRemoteAssistanceDesk(u)) areas.push('system-settings/remote-assistance');
+  if (canOpenImpersonationLookup(u)) areas.push('system-settings/impersonate');
   if (canOpenCouncilLookups(u)) areas.push('council-lookups');
   if (canAppointOfficers(u)) areas.push('elections/appointments');
   if (isAdmin(u)) areas.push('parishes', 'members', 'activities');
@@ -644,7 +653,8 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canBrowseLessonsRegistry(u)) areas.push('lessons-registry');
   if (canManageCharityRegistry(u)) areas.push('charities/registry');
   // Sprint 5Z-2.5: every officer of the council reads the executive summaries, as on the Pooled Vetting Desk.
-  if (isAdmin(u) || canViewExecutiveDashboard(u, u.councilId)) areas.push('dashboard');
+  // Sprint 8B: a Council Historian opens it for the Historian Desk (officer-desks.ts isHistorianDeskOnly).
+  if (isAdmin(u) || canViewExecutiveDashboard(u, u.councilId) || canOpenHistorianDesk(u, u.councilId)) areas.push('dashboard');
   // Sprint 5Z-8: the general ledger screens have the dashboard's audience (canReadGeneralLedger); posting is gated inside.
   if (isAdmin(u) || canReadGeneralLedger(u, u.councilId)) areas.push('finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit');
   if (isAdmin(u) || isFinanceOfficer(u)) areas.push('supreme-sync');
@@ -734,6 +744,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'feature-flags',
       'system-settings/global-settings',
       'system-settings/remote-assistance',
+      'system-settings/impersonate',
       'system-settings/council-settings',
       'members',
       'supreme-sync',

@@ -48,7 +48,8 @@ export function useDashboardTab(tabs: readonly DashboardTab[]): DashboardTabId {
     window.addEventListener('hashchange', pick);
     return () => window.removeEventListener('hashchange', pick);
   }, [pathname, ids]);
-  return tabs.some((t) => t.id === tab) ? tab : 'home';
+  // Sprint 8B: a Historian-only reader has no Home tab, so the fallback is the reader's first tab.
+  return tabs.some((t) => t.id === tab) ? tab : (tabs[0]?.id ?? 'home');
 }
 
 /**

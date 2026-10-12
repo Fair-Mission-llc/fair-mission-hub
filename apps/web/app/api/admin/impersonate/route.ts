@@ -8,8 +8,13 @@
 // IMPERSONATION_MAX_MINUTES at most, never reaches another Super Admin (assertMayImpersonate, checked against the
 // server's own copy of the data) and is read-only: requirePortalSession refuses every non-GET route call made with it,
 // and the browser's data service refuses writes while it is on (guardViewAsWrites). Each start and stop is logged.
+//
+// Sprint 8B: the view crosses council boundaries in full. The view-as token carries the member's own councilId, so every
+// council-scoped server route (Drive vault, Supreme, email) answers for the member's council, and POST also answers the
+// member's council context (impersonationCouncilContext: feature flags, tenant type, timing settings) read from the
+// server's copy, which the browser switches to before it shows the first page of the view.
 import { NextResponse } from 'next/server';
-import { BusinessRuleError, describeError, IMPERSONATION_MAX_MINUTES } from '@kofc/shared';
+import { BusinessRuleError, describeError, impersonationCouncilContext, IMPERSONATION_MAX_MINUTES } from '@kofc/shared';
 import { portalSessionSecret } from '@/services/server/secrets';
 import { memberDirectory, readPortalSession } from '@/services/server/session';
 import {
@@ -49,16 +54,20 @@ export async function POST(req: Request) {
     const status = err instanceof BusinessRuleError && err.code === 'RECORD_NOT_FOUND' ? 404 : 403;
     return NextResponse.json({ impersonating: false, message: describeError(err) }, { status });
   }
-  const [member, statuses] = await Promise.all([db.members.get(memberId), db.lookups.list('MemberStatus')]);
+  const [member, statuses, council] = await Promise.all([db.members.get(memberId), db.lookups.list('MemberStatus'), db.councils.get(target.councilId)]);
   const active = member !== null && member.StatusID === statuses.find((s) => s.Status === 'Active')?.id;
+  const context = council ? impersonationCouncilContext(council, claims.councilId) : null;
 
   const now = new Date();
   const viewAs = impersonationClaimsFor(target, active, claims, now, IMPERSONATION_MAX_MINUTES);
   const secret = portalSessionSecret();
   const ownToken = readCookie(req.headers.get('cookie'), PORTAL_SESSION_COOKIE);
-  console.info(`[impersonation] Super Admin ${claims.memberId} (${claims.username}) began viewing the portal as member ${memberId} (${target.username}).`);
+  console.info(
+    `[impersonation] Super Admin ${claims.memberId} (${claims.username}) began viewing the portal as member ${memberId} (${target.username})` +
+      ` of council ${target.councilId}${context?.crossCouncil ? `, crossing over from council ${claims.councilId}` : ''}.`,
+  );
 
-  const res = NextResponse.json({ impersonating: true, user: target, expiresAt: new Date(viewAs.exp * 1000).toISOString() });
+  const res = NextResponse.json({ impersonating: true, user: target, council: context, expiresAt: new Date(viewAs.exp * 1000).toISOString() });
   res.headers.append('Set-Cookie', sessionCookieHeader(await signSessionToken(viewAs, secret), secure()));
   res.headers.append('Set-Cookie', sessionCookieHeader(ownToken, secure(), IMPERSONATOR_COOKIE));
   return res;
@@ -67,7 +76,12 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const claims = await readPortalSession(req);
   if (!claims) return NextResponse.json({ impersonating: false }, { status: 401 });
-  return NextResponse.json({ impersonating: claims.impersonatorId !== undefined, memberId: claims.memberId, impersonatorId: claims.impersonatorId ?? null });
+  return NextResponse.json({
+    impersonating: claims.impersonatorId !== undefined,
+    memberId: claims.memberId,
+    councilId: claims.councilId,
+    impersonatorId: claims.impersonatorId ?? null,
+  });
 }
 
 export async function DELETE(req: Request) {

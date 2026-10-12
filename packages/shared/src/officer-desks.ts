@@ -17,18 +17,25 @@
 //                                                           the Inbound Council Mail Center)
 //   - Reports Desk             every dashboard reader      (the full Executive Summary, roadmap and personnel audits)
 // landingRouteFor names where the portal root sends a signed-in reader.
+//
+// Sprint 8B (schema version 74): two seat desks (recorder-historian.ts):
+//   - Recorder Desk            canOpenRecorderDesk         (the Meeting Minutes Entry Desk and the live meeting launch)
+//   - Historian Desk           canOpenHistorianDesk        (the Digital Fraternal Annals Scrapbook)
+// A Council Historian without an officer seat or Admin keys opens /dashboard for the Historian Desk alone: Home and
+// the Reports Desk stay with the executive readers (isHistorianDeskOnly).
 // =========================================================================
 import type { CalendarEntry, SessionUser } from './contract';
 import { observancesBetween, liturgicalBanner, type Observance } from './liturgical';
 import type { FeatureFlags } from './features';
 import { canOpenExpenseAuditDesk, canOpenExpenseAuthorizeDesk, canOpenTreasurerDesk, canReviewVolunteerQuarantine, isAdmin, portalAreas } from './permissions';
 import { addDays } from './planning';
+import { canOpenHistorianDesk, canOpenRecorderDesk } from './recorder-historian';
 import type { TenantType } from './tenant';
 import type { NotificationLog } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
 
-export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'oversight' | 'reports' | 'member';
+export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'oversight' | 'reports' | 'member';
 
 export interface DashboardTab {
   id: DashboardTabId;
@@ -43,29 +50,43 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'grand-knight', label: 'Grand Knight Desk', anchor: 'grand-knight' },
   { id: 'financial-secretary', label: 'Financial Secretary Desk', anchor: 'financial-secretary' },
   { id: 'treasurer', label: 'Treasurer Desk', anchor: 'treasurer' },
+  { id: 'recorder', label: 'Recorder Desk', anchor: 'recorder' },
+  { id: 'historian', label: 'Historian Desk', anchor: 'historian' },
   { id: 'oversight', label: 'Oversight Desk', anchor: 'oversight' },
   { id: 'reports', label: 'Reports Desk', anchor: 'reports' },
   { id: 'member', label: 'Member Desk', anchor: 'member' },
 ];
 
-/** The tabs this reader gets on the council's dashboard: Home, Reports and Member always, each other desk by its gate. */
+/**
+ * Sprint 8B: a Council Historian who holds no officer seat and no Admin keys. Their seat opens /dashboard for the
+ * Historian Desk only (and their own Member Desk), never Home's council figures or the Reports Desk.
+ */
+export const isHistorianDeskOnly = (u: Actor): boolean => !isAdmin(u) && !u.isOfficer && canOpenHistorianDesk(u, u.councilId);
+
+/**
+ * The tabs this reader gets on the council's dashboard: Home, Reports and Member always (Home and Reports not for a
+ * Historian-only reader), each other desk by its gate.
+ */
 export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
+  const executive = !isHistorianDeskOnly(u);
   const cleared: Record<DashboardTabId, boolean> = {
-    home: true,
+    home: executive,
     'grand-knight': canOpenExpenseAuthorizeDesk(u, councilId),
     'financial-secretary': canOpenExpenseAuditDesk(u, councilId),
     treasurer: canOpenTreasurerDesk(u, councilId),
+    recorder: canOpenRecorderDesk(u, councilId),
+    historian: canOpenHistorianDesk(u, councilId),
     oversight: canReviewVolunteerQuarantine(u, councilId),
-    reports: true,
+    reports: executive,
     member: true,
   };
   return DASHBOARD_TABS.filter((t) => cleared[t.id]);
 }
 
-/** The tab a URL fragment ('#treasurer' or 'treasurer') names, when the reader has it; otherwise Home. */
+/** The tab a URL fragment ('#treasurer' or 'treasurer') names, when the reader has it; otherwise their first tab (Home). */
 export function dashboardTabFromAnchor(hash: string | null | undefined, tabs: readonly DashboardTab[]): DashboardTabId {
   const anchor = String(hash ?? '').replace(/^#/, '').trim().toLowerCase();
-  return tabs.find((t) => t.anchor === anchor)?.id ?? 'home';
+  return tabs.find((t) => t.anchor === anchor)?.id ?? tabs[0]?.id ?? 'home';
 }
 
 /** The title of the frame's tab row (Sprint 8A). */

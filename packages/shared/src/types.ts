@@ -434,6 +434,10 @@ export interface Meeting {
   photo_url?: string | null;
   /** Sprint 6B Patch: the agenda line on the floor ('item:12', 'motion:3', 'event:5'); null for a typed-in topic. */
   ActiveAgendaLineKey?: string | null;
+  /** VARCHAR(MAX) (Sprint 8B): the official minutes typed on the Recorder Desk; null before any draft. */
+  minutes_text?: string | null;
+  /** DATETIME (Sprint 8B): when the minutes were published, 'YYYY-MM-DD HH:MM:SS' UTC; null while a draft. */
+  minutes_published_at?: string | null;
 }
 
 /** An invitee's RSVP (Sprint 5Y-5); see MEETING_RESPONSE_STATUSES. */
@@ -1148,6 +1152,16 @@ export interface CouncilSpiritualDiary {
   diary_text: string; // TEXT, at most DIARY_TEXT_MAX_LENGTH characters
   audio_asset_url?: string | null; // VARCHAR(2000): the Oral History Testimonial (Drive file id or blob link)
   created_at: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS' UTC
+}
+
+/** One monthly text bulletin of the Historian Desk's scrapbook (Sprint 8B): one row per council and month. */
+export interface CouncilHistorianBulletin {
+  id: number;
+  council_id: number;
+  bulletin_month: string; // CHAR(7), 'YYYY-MM'
+  body: string; // VARCHAR(MAX), at most HISTORIAN_BULLETIN_MAX_LENGTH characters
+  author_member_id?: number | null; // Member: who last saved it
+  updated_at: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS' UTC
 }
 
 /**

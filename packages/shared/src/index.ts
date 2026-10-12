@@ -59,3 +59,4 @@ export * from './geofence';
 export * from './roadmap';
 export * from './custom-manuals';
 export * from './officer-desks';
+export * from './recorder-historian';

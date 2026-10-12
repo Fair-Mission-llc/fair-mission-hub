@@ -1918,7 +1918,7 @@ The screenshot above shows the page before the cards were added. The fields and 
 | **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **🔍 Check for Inactive Members** (section 14.9) |
 | **Days back a member may log volunteer time** | 90 days | 7 to 730 | The logging window. A member may log shift time and activity time this many days back. |
 | **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Donate** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
-| **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | **Not used yet.** The portal does not track a due date for minutes. |
+| **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | The **Recorder Desk** counts down to the due date: the meeting's last day plus this number. Minutes not published by then show as overdue. |
 | **Days of notice before a special election** | 60 days | 1 to 365 | **Not used yet.** A mid-year nomination stays open for 14 days. |
 
 **Reminder Cadences** card:
@@ -2214,6 +2214,17 @@ A Super Admin can see the portal exactly as one member sees the portal. Use this
 
 The portal server holds both sign-ins in signed cookies. The browser cannot read or change them. A gold bar across the top of the portal shows whose view is open.
 
+The view uses the member's own council. The member can belong to a council other than your council. The portal then switches to that council's settings before the first page opens:
+
+- the council's modules (the feature flags)
+- the council's organization type and its labels
+- the council's timing settings, for example the expense filing window
+- the council's ledgers, desks and rosters
+
+The gold bar names the member's council. When you select **Return to my account**, the portal switches back to your own council.
+
+Super Admins find members in two places. The **Affiliated Roster** shows one council at a time. The **View-As Member Lookup** page shows every council in one tree.
+
 ### 17.8 View the portal as another member
 
 > **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate User** button.
@@ -2236,6 +2247,33 @@ The portal server holds both sign-ins in signed cookies. The browser cannot read
 | A save fails with "You are viewing the portal as another member, so nothing can be saved." | The view is read-only. | Select **Return to my account**, then make the change as yourself. |
 | The row has no **👥 Impersonate User** button. | The member is you or another Super Admin. | You cannot view as a Super Admin. |
 | An error says "The server did not answer, so the view could not start." | The portal server cannot see the member or your session ended. | Sign out, sign in again, then try again. |
+
+### 17.8.1 Find a member in any council and view as that member
+
+> **Who can do this:** Super Admins. Other members do not see this page.
+
+**Goal:** Find one member among all councils without a long scroll, then view the portal as that member.
+
+**Start point:** Sidebar → System Settings → **View-As Member Lookup**.
+
+**Steps:**
+1. Type part of a name, member number, email, role or council number in the search box.
+2. Read the suggested names under the box. Names that start with your text come first.
+3. Select **👥 View as** beside the member. Go to step 7.
+4. To browse without a search, select a council in the **Council directory**. The council opens.
+5. Select a group in the council: **Executive Officers**, **Finance Officers**, **Recorder & Historian**, **Other Officers**, **Council Admins**, **Appointed Seats** or **Members**.
+6. Select **👥 View as** beside the member.
+7. Look at the pages. The portal opens on the member's hub, with the member's council settings.
+8. Select **Return to my account** in the gold bar to end the view.
+
+**Expected result:** The gold bar names the member and the member's council. The sidebar, desks and settings are the member's own.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A member is not in the tree. | The member is you or another Super Admin. | You cannot view as a Super Admin. |
+| *"Nobody you may view as matches"* | No member matches every word you typed. | Type fewer words. |
+| A member shows in one group only. | Each member shows in the group of the highest seat. A Grand Knight who is also an Admin shows under **Executive Officers**. | Look in the group of the member's highest seat. |
 
 ### 17.9 Concept: co-watching remote assistance
 
@@ -2452,7 +2490,9 @@ The **Executive Dashboard** is a set of desks. A row of folder tabs sits under t
 - **Home** is the first tab. **Member Desk** is the last tab.
 - Select a tab on any page. The dashboard opens on that desk.
 
-Only readers who may open the dashboard see the row. These readers are the council's Admins and officers, and Super Admins.
+Only readers who may open the dashboard see the row. These readers are the council's Admins and officers, the Council Historian, and Super Admins.
+
+A Council Historian without an officer seat and without Admin rights gets two tabs only: **Historian Desk** and **Member Desk**. This Historian does not get **Home** or the **Reports Desk**.
 
 After you sign in, the portal opens on the dashboard **Home** desk when you hold an officer seat or Admin rights. A member without an officer seat or Admin rights opens on **Member Actions**.
 
@@ -2476,6 +2516,7 @@ The status badges:
 | **[ 📋 3 Vouchers Pending ]** | **Grand Knight Desk** | The Grand Knight (GK), the council's Admins and Super Admins |
 | **[ ✍️ 2 Written Orders Waiting ]** | **Financial Secretary Desk** | The Financial Secretary (FS), the council's Admins and Super Admins |
 | **[ 🏷️ 1 Sheet to Code ]** | **Treasurer Desk** | The Treasurer, the council's Admins and Super Admins |
+| **[ 📝 2 Minutes Due ]** | **Recorder Desk** | The Recorder, the council's Admins and Super Admins |
 | **[ ⚠️ 2 Items Quarantined ]** | **Oversight Desk** | The GK, the Deputy Grand Knight (DGK), the council's Admins and Super Admins, while **Volunteer time quarantine** is on |
 | **[ 📨 1 Access Request ]** | **Oversight Desk** | Super Admins |
 | **[ ⏳ 4 Shifts Awaiting Hours ]** | **Reports Desk** | Every reader of the dashboard |
@@ -2496,6 +2537,8 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 | **Grand Knight Desk** | The council's GK, the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. | Sidebar → Finances → **GK Expense Authorize** |
 | **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The **Written-order queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | Sidebar → Finances → **FS Expense Audit** |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
+| **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
+| **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | Sidebar → Performance → **Council History** |
 | **Oversight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **🚨 Volunteer Time Quarantine Desk** (section 15). Super Admins also get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
 | **Reports Desk** | Every reader of the dashboard | The full **Executive Summary**: the month and year pickers, the **Annual Fraternal Roadmap** card, the stat tiles, the budget gauges, the ledger, the highlights and the **Executive audits**. | None. The desk is the full page. |
 | **Member Desk** | Every reader of the dashboard | **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Shared Member Center** |
@@ -2512,11 +2555,13 @@ Each tab has its own web address. The address is the dashboard address with the 
 | **Grand Knight Desk** | `/dashboard#grand-knight` |
 | **Financial Secretary Desk** | `/dashboard#financial-secretary` |
 | **Treasurer Desk** | `/dashboard#treasurer` |
+| **Recorder Desk** | `/dashboard#recorder` |
+| **Historian Desk** | `/dashboard#historian` |
 | **Oversight Desk** | `/dashboard#oversight` |
 | **Reports Desk** | `/dashboard#reports` |
 | **Member Desk** | `/dashboard#member` |
 
-Save a desk address as a browser bookmark to open the desk directly. The browser also remembers the last tab you opened. The dashboard opens on that tab the next time. A tab you cannot open falls back to **Home**.
+Save a desk address as a browser bookmark to open the desk directly. The browser also remembers the last tab you opened. The dashboard opens on that tab the next time. A tab you cannot open falls back to your first tab. For most readers, the first tab is **Home**.
 
 ### 19.4 Read the Home desk
 
@@ -2643,6 +2688,98 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | --- | --- | --- |
 | A paid sheet does not show. | The desk lists only sheets that are not **Reimbursed**. | Open **My Expense Reports** to see paid sheets. |
 | A shift after 30 days does not show. | The desk lists the next 30 days only. | Open the council calendar. |
+
+### 19.9 Concept: the minutes countdown
+
+The **Recorder Desk** lists the council's meetings from 90 days ago to 30 days ahead. This list is the **Business calendar**. Each meeting has one countdown pill.
+
+| Pill | Meaning |
+| --- | --- |
+| **Not held yet** | The meeting is in the future. |
+| **Due in 3 days** | The meeting is over. The minutes are due in 3 days. |
+| **Due today** | The minutes are due today. |
+| **2 days overdue** | The due date has passed. Nobody published the minutes. |
+| **Published** | The Recorder published the minutes. The countdown stops. |
+
+The due date is the meeting's last day plus the **Days after a meeting that the minutes are due** setting (section 16.3). The default is 7 days. Overdue meetings come first in the list.
+
+### 19.10 Write and publish the meeting minutes
+
+> **Who can do this:** the council's Recorder, the council's Admins and Super Admins. Other members do not see the **Recorder Desk**.
+> **Warning:** **Publish minutes** shows the minutes as the council's official record.
+
+**Goal:** Write the official minutes of a meeting and publish them before the due date.
+
+**Start point:** **Active Desks** row → **Recorder Desk**.
+
+**Steps:**
+1. Select the **Recorder Desk** tab.
+2. Select a meeting in the **Business calendar**. Overdue meetings are at the top.
+3. In **Meeting Minutes Entry Desk**, type the minutes. Start a heading with `#`. Start a bullet with `-`.
+4. Select **Preview** to read the minutes as members see them. Select **Write** to go back.
+5. Select **Save draft** to keep the minutes without publishing them.
+6. Select **Publish minutes**. The pill changes to **Published**.
+
+**Expected result:** The message *"The minutes are published."* shows. The meeting moves to the end of the list.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Publish minutes** is not available. | The minutes are blank. | Type the minutes first. |
+| You must correct published minutes. | Published minutes stay open for changes. | Change the text, then select **Publish changes**. The first publication date stays. |
+| You published the wrong meeting. | You selected another meeting in the list. | Select **Withdraw to draft**. The minutes go back to a draft. |
+| The **Recorder Desk** tab does not show. | You do not hold the Recorder seat on this council, and you are not an Admin. | Ask the Grand Knight to check your seat. |
+
+### 19.11 Start the live meeting from the Recorder Desk
+
+> **Who can do this:** the council's Recorder, the council's Admins and Super Admins.
+> **Warning:** the start locks the quorum count to the council's Active members at that moment. You cannot change the locked count.
+
+**Goal:** Open the live meeting and read the meeting PIN to the members in the hall.
+
+**Start point:** **Active Desks** row → **Recorder Desk**.
+
+**Steps:**
+1. Select the meeting in the **Business calendar**.
+2. Select **[ 🚀 Start Live Meeting Sequence ]**. The quorum count locks. You cannot change the locked count.
+3. Read the 4-digit **Meeting PIN bypass** in the navy box.
+4. Read the PIN aloud. Members whose phones cannot check in by location type the PIN.
+5. Select **Open the Live Meeting Console →** to run the agenda.
+
+**Expected result:** The navy box shows the PIN and the locked quorum base. The meeting shows **● Live now**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The box says the PIN is still the factory PIN 0000. | Nobody changed the council's PIN. | Ask the Grand Knight to set a new PIN (section 18.5). |
+| The meeting was already live. | Someone started the meeting before you. | No action. The first quorum count stays. |
+
+### 19.12 Keep the Digital Fraternal Annals Scrapbook
+
+> **Who can do this:** the council's Council Historian, the council's Admins and Super Admins. Other members do not see the **Historian Desk**.
+
+**Goal:** Write the monthly newsletter, file meeting photos and check the oral history recordings.
+
+**Start point:** **Active Desks** row → **Historian Desk**.
+
+**Steps:**
+1. Select the **Historian Desk** tab.
+2. In **📰 Monthly newsletters**, select the **Month**.
+3. Type the newsletter text. Select **Save newsletter**.
+4. To open an earlier newsletter, select its month button under the text box.
+5. In **📷 Parish event and meeting photos**, select the **Meeting**.
+6. Select **Upload photo**, then pick the image file.
+7. In **🎙️ Oral history recordings**, select **Listen** beside a recording to play it.
+8. To record your own testimonial, use the recorder under the list.
+
+**Expected result:** The newsletter shows *"Newsletter saved."* The photo shows under the meeting name. The portal files the photo in the council's Google Drive under **Media / Meeting_Photos**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"The Drive vault is off, so the photo is kept in this browser only."* | The council's Google Drive is not connected. | Ask a Super Admin to connect Google Drive (section 10.8). |
+| The recorder does not show. | You recorded your one testimonial before. | No action. Each member records one testimonial. |
+| One month shows only one newsletter. | The council keeps one newsletter for each month. | Change the text and select **Save newsletter**. The new text replaces the old text. |
 
 ---
 

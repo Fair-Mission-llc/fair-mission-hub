@@ -156,13 +156,15 @@ export function InboundMailCenter() {
 // ---- view-as banner -----------------------------------------------------------------------
 
 export function ViewAsBanner() {
-  const { user, impersonator, stopImpersonating } = useSession();
+  const { user, impersonator, viewAsCouncil, stopImpersonating } = useSession();
   const [busy, setBusy] = useState(false);
   if (!user || !impersonator) return null;
   return (
     <div role="status" className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-navy bg-gold px-6 py-2 text-navy">
       <p className="text-sm font-bold">
-        👥 You are viewing the portal as {user.firstName} {user.lastName} ({user.memberType}). Nothing can be saved in this view.
+        👥 You are viewing the portal as {user.firstName} {user.lastName} ({user.memberType})
+        {viewAsCouncil ? ` of ${viewAsCouncil.label}${viewAsCouncil.crossCouncil ? ", under that council's own settings, flags and branding" : ''}` : ''}. Nothing can
+        be saved in this view.
       </p>
       <Button
         size="sm"

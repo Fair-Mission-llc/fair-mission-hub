@@ -46,6 +46,10 @@
 // Volunteer Time Quarantine Desk and the Inbound Council Mail Center live on the Oversight Desk, and the full Executive
 // Summary - month picker, roadmap card, budget and mission tracking, ledger, highlights and personnel audits - on the
 // Reports Desk. The inactivity sweep lives on System Settings > Council Wide Settings.
+//
+// Sprint 8B: the Recorder Desk (Meeting Minutes Entry Desk and the Start Live Meeting Sequence launch) and the Historian
+// Desk (Digital Fraternal Annals Scrapbook), each for its seat, the council's Admins and Super Admins. A Council
+// Historian without an officer seat opens this page for the Historian Desk alone (no Home or Reports Desk).
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
@@ -63,7 +67,17 @@ import {
 } from '@kofc/shared';
 import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetParts';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { DeskStatusBadges, FinancialSecretaryDesk, GrandKnightDesk, HomeWidgets, MemberDesk, OversightDesk, TreasurerDesk } from '@/components/DashboardDesks';
+import {
+  DeskStatusBadges,
+  FinancialSecretaryDesk,
+  GrandKnightDesk,
+  HistorianDesk,
+  HomeWidgets,
+  MemberDesk,
+  OversightDesk,
+  RecorderDesk,
+  TreasurerDesk,
+} from '@/components/DashboardDesks';
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
 import { FraternalRoadmap, RoadmapRibbon } from '@/components/RoadmapParts';
@@ -337,6 +351,10 @@ function Dashboard() {
           <FinancialSecretaryDesk user={user} councilId={scope.councilId} />
         ) : shown === 'treasurer' ? (
           <TreasurerDesk user={user} councilId={scope.councilId} />
+        ) : shown === 'recorder' ? (
+          <RecorderDesk user={user} councilId={scope.councilId} />
+        ) : shown === 'historian' ? (
+          <HistorianDesk user={user} councilId={scope.councilId} />
         ) : shown === 'oversight' ? (
           <OversightDesk user={user} councilId={scope.councilId} />
         ) : shown === 'reports' ? (

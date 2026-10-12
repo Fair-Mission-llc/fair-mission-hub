@@ -14,9 +14,15 @@ import {
   cleanCheckInProof,
   cleanMeetingGeofence,
   cleanMeetingPhotoUrl,
+  cleanMeetingMinutes,
+  cleanHistorianBulletin,
+  assertMayKeepMinutes,
+  assertMayKeepScrapbook,
+  mayKeepScrapbook,
   countSignatureFlow,
   MeetingPinAttempts,
   meetingGeofenceOf,
+  DEFAULT_MEETING_PIN_TOKEN,
   ROADMAP_ALERT_ROLE_NAMES,
   roadmapAlertPayload,
   roadmapCycleYear,
@@ -573,6 +579,7 @@ import type {
   FraternalYearClosingMetrics,
   YearClosingRows,
   CouncilSpiritualDiary,
+  CouncilHistorianBulletin,
   CouncilInMemoriam,
   InMemoriamRoll,
   MemberStatus as MemberStatusRow,
@@ -4114,9 +4121,35 @@ export class MemoryDataService implements DataService {
       const photo = cleanMeetingPhotoUrl(photoUrl);
       const s = await this.ready();
       const meeting = this.requireMeetingRow(s, meetingId);
-      assertMayRunLiveAssembly(this.memberWriteActor(s, actorId), meeting as unknown as Meeting, `file a photo for meeting ${meetingId}`);
+      const actor = this.memberWriteActor(s, actorId);
+      // Sprint 8B: the council's Historian also files meeting photos, from the Historian Desk.
+      if (!mayKeepScrapbook(actor, (meeting as unknown as Meeting).CouncilID)) {
+        assertMayRunLiveAssembly(actor, meeting as unknown as Meeting, `file a photo for meeting ${meetingId}`);
+      }
       meeting.photo_url = photo;
       return { ...meeting } as unknown as Meeting;
+    },
+
+    saveMeetingMinutes: async (actorId, meetingId, input) => {
+      const clean = cleanMeetingMinutes(input);
+      const s = await this.ready();
+      return s.transaction(() => {
+        const meeting = this.requireMeetingRow(s, meetingId);
+        assertMayKeepMinutes(this.memberWriteActor(s, actorId), (meeting as unknown as Meeting).CouncilID, `keep the minutes of meeting ${meetingId}`);
+        meeting.minutes_text = clean.minutes_text;
+        // A re-publish keeps the first stamp; saving as a draft withdraws the publication.
+        meeting.minutes_published_at = clean.publish ? (meeting.minutes_published_at ?? toTimestamp(this.now())) : null;
+        return { ...meeting } as unknown as Meeting;
+      });
+    },
+
+    launchLiveMeeting: async (actorId, meetingId) => {
+      const s = await this.ready();
+      const councilId = (this.requireMeetingRow(s, meetingId) as unknown as Meeting).CouncilID;
+      assertMayKeepMinutes(this.memberWriteActor(s, actorId), councilId, `start the live sequence of meeting ${meetingId}`);
+      const state = await this.meetings.startLiveAssemblyConsole(actorId, meetingId);
+      const { pinToken } = meetingGeofenceOf(this.requireRecord(s, 'Council', councilId) as unknown as Council);
+      return { state, pinToken, pinIsDefault: pinToken === DEFAULT_MEETING_PIN_TOKEN };
     },
 
     getMeetingAgenda: async (actorId, meetingId) => {
@@ -6106,6 +6139,32 @@ export class MemoryDataService implements DataService {
           return { ...existing } as unknown as CouncilHistoryAnnals;
         }
         return { ...s.insert('CouncilHistoryAnnals', { council_id: councilId, fraternal_year: year, ...values }) } as unknown as CouncilHistoryAnnals;
+      });
+    },
+
+    listHistorianBulletins: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayKeepScrapbook(this.memberWriteActor(s, actorId), councilId, `read the bulletins of council ${councilId}`);
+      return s
+        .rows('CouncilHistorianBulletin')
+        .filter((r) => r.council_id === councilId)
+        .map((r) => ({ ...r }) as unknown as CouncilHistorianBulletin)
+        .sort((a, b) => b.bulletin_month.localeCompare(a.bulletin_month));
+    },
+
+    saveHistorianBulletin: async (actorId, councilId, month, body) => {
+      const clean = cleanHistorianBulletin(month, body);
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayKeepScrapbook(this.memberWriteActor(s, actorId), councilId, `write the bulletins of council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const values = { body: clean.body, author_member_id: actorId, updated_at: toTimestamp(this.now()) };
+        const existing = s.rows('CouncilHistorianBulletin').find((r) => r.council_id === councilId && r.bulletin_month === clean.bulletin_month);
+        if (existing) {
+          Object.assign(existing, values);
+          return { ...existing } as unknown as CouncilHistorianBulletin;
+        }
+        return { ...s.insert('CouncilHistorianBulletin', { council_id: councilId, bulletin_month: clean.bulletin_month, ...values }) } as unknown as CouncilHistorianBulletin;
       });
     },
 

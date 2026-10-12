@@ -125,6 +125,12 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Watch the screens officers share when they ask for help',
     restrictedTo: 'Super Admins',
   },
+  'system-settings/impersonate': {
+    href: '/system-settings/impersonate',
+    label: 'View-As Member Lookup',
+    hint: 'Find any member of any council and view the portal as them',
+    restrictedTo: 'Super Admins',
+  },
   'navigation-guide': {
     href: '/navigation-guide',
     label: 'Navigation Guide',

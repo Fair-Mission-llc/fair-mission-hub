@@ -38,7 +38,7 @@ describe('schema version 71', () => {
 
 describe('dashboard tabs by seat (pure)', () => {
   it('lists Home first and the Member Desk last', () => {
-    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'oversight', 'reports', 'member']);
+    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'oversight', 'reports', 'member']);
   });
 
   it('gives each officer only their own desk', () => {
@@ -46,7 +46,7 @@ describe('dashboard tabs by seat (pure)', () => {
     expect(ids(member({ roles: ['Deputy Grand Knight'] }))).toEqual(['home', 'oversight', 'reports', 'member']);
     expect(ids(member({ roles: ['Financial Secretary'] }))).toEqual(['home', 'financial-secretary', 'reports', 'member']);
     expect(ids(member({ roles: ['Treasurer'] }))).toEqual(['home', 'treasurer', 'reports', 'member']);
-    expect(ids(member({ roles: ['Recorder'] }))).toEqual(['home', 'reports', 'member']);
+    expect(ids(member({ roles: ['Recorder'] }))).toEqual(['home', 'recorder', 'reports', 'member']);
   });
 
   it("clears a seat only on the officer's own council", () => {

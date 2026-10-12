@@ -20,9 +20,10 @@
 //     back shift and activity time may be logged, rules.ts; it replaces the 3-month and 6-month walls), reminder_delay_days
 //     and reminder_cadence_days (the unlogged-hours text reminders, notifications.ts);
 //   and shift_signup_lock_hours (since Sprint 7H, how long before an event the phone opens it for gate donations,
-//     calendar.ts isEventAtGate);
+//     calendar.ts isEventAtGate), and meeting_minutes_due_days (since Sprint 8B, the Recorder Desk's minutes countdown,
+//     recorder-historian.ts minutesCountdown);
 //   - saved for features that do not exist yet: expense_draft_expiry_days, charity_proposal_voting_days,
-//     officer_signature_reminder_days, meeting_minutes_due_days, special_election_notice_days.
+//     officer_signature_reminder_days, special_election_notice_days.
 // And three more PlatformSettings columns: cadence_invitation_horizon_days (the drip release, meetings.ts) and
 // user_session_expiry_hours (the portal's server session, apps/web/services/server) in use; audit_log_retention_days is
 // saved for a future purge job. A setting that nothing reads yet is marked `inUse: false`, and the pages say so.
@@ -299,13 +300,15 @@ export const COUNCIL_WIDE_SETTING_RULES: Record<CouncilWideSettingName, SettingR
   },
   meeting_minutes_due_days: {
     label: 'Days after a meeting that the minutes are due',
-    hint: 'Meant to set when the Recorder must file the minutes.',
+    hint: 'When the Recorder must publish the minutes, counted from the last day of the meeting.',
     min: 1,
     max: 60,
     unit: 'days',
     group: 'operations',
-    inUse: false,
-    help: 'Meant for a future due date on meeting minutes. The portal does not track a due date for minutes today, so this number changes nothing yet.',
+    inUse: true,
+    help:
+      "The Recorder Desk counts down to this due date for every meeting: the meeting's last day plus this many days. Minutes not " +
+      'published by then show as overdue. Publishing them stops the countdown.',
   },
   special_election_notice_days: {
     label: 'Days of notice before a special election',

@@ -3245,3 +3245,48 @@ GO
 -- /system-settings/council-settings and becomes the only home of the inactivity sweep. The portal root sends officers
 -- and Admins to /dashboard first. The phone database version moves to 73.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8B: RECORDER AND HISTORIAN ACTIVE DESKS AND THE CROSS-COUNCIL VIEW-AS LOOKUP (schema version 74)
+--
+-- - Meeting.minutes_text: the official minutes typed on the Recorder Desk's Meeting Minutes Entry Desk
+--   (meetings.saveMeetingMinutes). Plain text with light markdown, at most MINUTES_TEXT_MAX_LENGTH characters.
+-- - Meeting.minutes_published_at: when the Recorder published them; NULL while a draft. The desk counts down to the
+--   meeting's last day plus Council.meeting_minutes_due_days (saved since Sprint 7E, read for the first time here).
+-- - CouncilHistorianBulletin: the Historian Desk's monthly text bulletins, one row per council and month (a unique index
+--   on council_id, bulletin_month 'YYYY-MM'). Read and written by the council's Council Historian, its Admins and any
+--   Super Admin (assertMayKeepScrapbook in recorder-historian.ts).
+-- The Recorder Desk's Start Live Meeting Sequence button (meetings.launchLiveMeeting) starts the live console and shows
+-- the council's meeting PIN. The Super Admin's view-as session now switches the portal to the viewed member's own
+-- council at once (flags, tenant type and timing settings), and /system-settings/impersonate is a Council -> clearance
+-- group -> person lookup. The phone database version moves to 74.
+-- =========================================================================
+ALTER TABLE [Meeting] ADD [minutes_text] VARCHAR(MAX) NULL;
+GO
+ALTER TABLE [Meeting] ADD [minutes_published_at] DATETIME NULL;
+GO
+
+CREATE TABLE [CouncilHistorianBulletin] (
+	[id] INT NOT NULL IDENTITY,
+	[council_id] INT NOT NULL,
+	[bulletin_month] CHAR(7) NOT NULL,
+	[body] VARCHAR(MAX) NOT NULL DEFAULT '',
+	[author_member_id] INT NULL,
+	[updated_at] DATETIME NOT NULL DEFAULT getdate(),
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [CouncilHistorianBulletin]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [CouncilHistorianBulletin]
+ADD FOREIGN KEY([author_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE UNIQUE INDEX [CouncilHistorianBulletin_Month_Idx] ON [CouncilHistorianBulletin] ([council_id], [bulletin_month]);
+GO

@@ -50,7 +50,6 @@ const NOT_IN_USE = [
   'expense_draft_expiry_days',
   'charity_proposal_voting_days',
   'officer_signature_reminder_days',
-  'meeting_minutes_due_days',
   'special_election_notice_days',
   'audit_log_retention_days',
 ];

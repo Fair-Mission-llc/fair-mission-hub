@@ -107,6 +107,7 @@ describe('portal permissions', () => {
       'feature-flags',
       'system-settings/global-settings',
       'system-settings/remote-assistance',
+      'system-settings/impersonate',
       'council-lookups',
       'elections/appointments',
       'parishes',

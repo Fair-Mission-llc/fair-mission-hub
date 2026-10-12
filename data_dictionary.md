@@ -1027,3 +1027,18 @@ Schema version 68. Rules: geofence.ts (check-in) and roadmap.ts (Annual Fraterna
 •	photo_url (VARCHAR(2000), NULL) — A photo kept with the meeting's minutes (meetings.setMeetingPhoto, the meeting's chair). The Live Meeting Console uploads it to the Drive vault under Fraternal Enterprise Suite / Media / Meeting_Photos (MEETING_PHOTO_DRIVE_FOLDER) and stores the file id; a local link while the vault is off.
 New methods. meetings.geofencedCheckIn (GPS fix or PIN, then the logLiveAttendanceOverride check-in), elections.getFraternalRoadmap and elections.dispatchRoadmapAlerts (overdue milestones pushed to the Grand Knight, Deputy Grand Knight, Financial Secretary, Treasurer and Admins, once per leader per milestone and cycle; NotificationLog.Title is the key).
 ________________________________________
+# 37. Recorder and Historian desks and the cross-council view-as lookup (Sprint 8B)
+Schema version 74. The /dashboard Active Desks gain a Recorder Desk (canOpenRecorderDesk: the council's Recorder, its Admins, any Super Admin) and a Historian Desk (canOpenHistorianDesk: the council's Council Historian, its Admins, any Super Admin). A Council Historian without an officer seat or Admin rights now opens /dashboard for the Historian and Member desks only (isHistorianDeskOnly).
+[Meeting] (additional columns)
+•	minutes_text (VARCHAR(MAX), NULL) — The official minutes typed on the Recorder Desk's Meeting Minutes Entry Desk, plain text with light markdown; at most 20,000 characters (MINUTES_TEXT_MAX_LENGTH). Written by meetings.saveMeetingMinutes (the Active Recorder, Admins, Super Admins; RECORDER_REQUIRED, COUNCIL_ACCESS_DENIED). Blank is stored as NULL.
+•	minutes_published_at (DATETIME, NULL) — When the minutes were published (UTC). Set by saveMeetingMinutes with publish: true; a re-publish keeps the first stamp; a draft save clears it. NULL while a draft. The desk's countdown runs to the meeting's last day plus Council.meeting_minutes_due_days, which is now in use.
+[CouncilHistorianBulletin]
+The Historian Desk's monthly text bulletins: one row per council and month (a unique index on council_id, bulletin_month). Read with history.listHistorianBulletins (newest month first) and written with history.saveHistorianBulletin (create or replace) by the council's Active Council Historian, its Admins and any Active Super Admin (assertMayKeepScrapbook; others HISTORIAN_REQUIRED or COUNCIL_ACCESS_DENIED). Blocks deleting its council (RECORD_IN_USE).
+•	id (INT, NOT NULL) — Primary Key. Auto-incrementing identifier.
+•	council_id (INT, NOT NULL) — Foreign Key references Council(id).
+•	bulletin_month (CHAR(7), NOT NULL) — 'YYYY-MM' (cleanHistorianBulletin, else INVALID_INPUT).
+•	body (VARCHAR(MAX), NOT NULL, DEFAULT '') — The bulletin text, trimmed; at most 8,000 characters (HISTORIAN_BULLETIN_MAX_LENGTH).
+•	author_member_id (INT, NULL) — Foreign Key references Member(id). Who last saved it.
+•	updated_at (DATETIME, NOT NULL, DEFAULT getdate()) — When it was last saved (UTC).
+New methods. meetings.launchLiveMeeting (startLiveAssemblyConsole, then the council's meeting_pin_token for the chair; same keepers as saveMeetingMinutes). meetings.setMeetingPhoto now also admits the council's Council Historian; the Historian Desk uploads through /api/drive-vault/meeting-photos (Media / Meeting_Photos). /api/admin/impersonate answers the viewed member's council context (impersonationCouncilContext) and the browser adopts that council's flags, tenant type and timing gates before the view opens. /system-settings/impersonate (Super Admins) is a Council -> clearance group -> person lookup (buildImpersonationTree, impersonationSuggestions).
+________________________________________

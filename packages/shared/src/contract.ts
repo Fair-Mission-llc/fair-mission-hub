@@ -95,6 +95,7 @@ import type {
   WorkingStatus,
   CouncilHistoryAnnals,
   CouncilSpiritualDiary,
+  CouncilHistorianBulletin,
   AuditExecutionStatus,
   AuditPeriod,
   AuditTrusteeSignature,
@@ -115,6 +116,7 @@ import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
+import type { LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeofenceChanges } from './geofence';
 import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 
@@ -3312,9 +3314,26 @@ export interface DataService {
     setCheckInPhoto(actorId: number, meetingId: number, photoUrl: string | null): Promise<LiveAttendance>;
     /**
      * Sprint 7G: saves (or clears) the meeting's photo kept with its minutes (Meeting.photo_url). Run by the meeting's
-     * chair, as the live console (assertMayRunLiveAssembly); MEETING_NOT_FOUND for an unknown meeting.
+     * chair, as the live console (assertMayRunLiveAssembly); MEETING_NOT_FOUND for an unknown meeting. Sprint 8B: the
+     * council's Council Historian may file it too, from the Historian Desk (mayKeepScrapbook).
      */
     setMeetingPhoto(actorId: number, meetingId: number, photoUrl: string | null): Promise<Meeting>;
+    /**
+     * Sprint 8B, the Recorder Desk's Meeting Minutes Entry Desk: saves the meeting's official minutes
+     * (Meeting.minutes_text, cleanMeetingMinutes) and resolves to the meeting. `publish: true` stamps
+     * minutes_published_at now (a re-publish keeps the first stamp); false keeps a draft and withdraws a publication.
+     * The council's Active Recorder, its Admins and any Active Super Admin (assertMayKeepMinutes: RECORDER_REQUIRED,
+     * COUNCIL_ACCESS_DENIED). MEETING_NOT_FOUND for an unknown meeting, INVALID_INPUT for text over
+     * MINUTES_TEXT_MAX_LENGTH or publishing blank minutes. Nothing is written when it rejects.
+     */
+    saveMeetingMinutes(actorId: number, meetingId: number, input: MeetingMinutesInput): Promise<Meeting>;
+    /**
+     * Sprint 8B, the Recorder Desk's Start Live Meeting Sequence: startLiveAssemblyConsole for the meeting, then the
+     * council's 4-digit check-in PIN (Council.meeting_pin_token) for the chair to read out. Same keepers as
+     * saveMeetingMinutes (RECORDER_REQUIRED, COUNCIL_ACCESS_DENIED); MEETING_NOT_FOUND for an unknown meeting. A meeting
+     * already live keeps its locked quorum count.
+     */
+    launchLiveMeeting(actorId: number, meetingId: number): Promise<LiveMeetingLaunch>;
     /**
      * Sprint 6B: the meeting's St. Mary's agenda (MeetingAgendaView), readable like the live state by any Active member
      * of its council or an Active Super Admin (COUNCIL_ACCESS_DENIED). Speakers are resolved now: a named member, else
@@ -4043,6 +4062,18 @@ export interface DataService {
      * ORAL_HISTORY_LIMIT_REACHED when the caller already recorded one; a member records at most one, ever.
      */
     addDiaryEntry(actorId: number, councilId: number, input: NewDiaryEntryInput): Promise<CouncilSpiritualDiary>;
+    /**
+     * Sprint 8B, the Historian Desk's monthly bulletins (CouncilHistorianBulletin), newest month first. The council's
+     * Active Council Historian, its Admins and any Active Super Admin (assertMayKeepScrapbook: HISTORIAN_REQUIRED,
+     * COUNCIL_ACCESS_DENIED).
+     */
+    listHistorianBulletins(actorId: number, councilId: number): Promise<CouncilHistorianBulletin[]>;
+    /**
+     * Sprint 8B: creates or replaces the council's bulletin for one month ('YYYY-MM', cleanHistorianBulletin) and
+     * resolves to it. Same keepers as listHistorianBulletins. INVALID_INPUT for a bad month, a body over
+     * HISTORIAN_BULLETIN_MAX_LENGTH or an unknown council.
+     */
+    saveHistorianBulletin(actorId: number, councilId: number, month: string, body: string): Promise<CouncilHistorianBulletin>;
     /**
      * The council's In Memoriam roll (Sprint 6L Extension 5): a card for every member of the council whose MemberStatus is
      * 'Deceased', compiled fresh on each read from their CouncilLeadershipHistory seats and the council's annals and

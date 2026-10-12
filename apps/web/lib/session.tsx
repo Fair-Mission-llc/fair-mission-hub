@@ -8,7 +8,9 @@ import {
   councilFeatureFlags,
   councilTenantType,
   DEFAULT_TENANT_TYPE,
+  impersonationCouncilContext,
   registerCouncilGates,
+  type Council,
   type FeatureFlags,
   type SessionUser,
   type TenantType,
@@ -29,6 +31,11 @@ interface SessionValue {
    * is set, every data-service write is refused (VIEW_AS_READ_ONLY).
    */
   impersonator: SessionUser | null;
+  /**
+   * Sprint 8B: the viewed member's council while `impersonator` is set ('Council 15295 - St. Mary's ...'), and whether it
+   * is another council than the Super Admin's own; null on an ordinary session.
+   */
+  viewAsCouncil: { label: string; crossCouncil: boolean } | null;
   /** A Super Admin starts viewing as the member; rejects with the reason when the browser or the server refuses. */
   impersonate(memberId: number): Promise<void>;
   /** Returns to the Super Admin's own account. */
@@ -87,9 +94,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return found !== null;
   }, []);
   const [impersonator, setImpersonator] = useState<SessionUser | null>(null);
+  const [viewAsCouncil, setViewAsCouncil] = useState<{ label: string; crossCouncil: boolean } | null>(null);
+  const [loadedFeatures, setLoadedFeatures] = useState<{ councilId: number; flags: FeatureFlags; tenantType: TenantType } | null>(null);
+  /**
+   * Sprint 8B: switches the portal to `council` at once - its timing gates, feature flags and tenant type - so a view-as
+   * session (or the return from one) never shows a page under the other council's settings while the effect below loads.
+   */
+  const adoptCouncil = useCallback((council: Council | null, councilId: number) => {
+    if (!council) return;
+    registerCouncilGates(council);
+    setLoadedFeatures({ councilId, flags: councilFeatureFlags(council), tenantType: councilTenantType(council) });
+  }, []);
   const signOut = useCallback(() => {
     setViewAsMode(false);
     setImpersonator(null);
+    setViewAsCouncil(null);
     setUser(null);
     void endServerImpersonation().then(closeServerSession);
   }, []);
@@ -98,20 +117,27 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (!user || impersonator) throw new Error('Return to your own account before viewing as someone else.');
       // The browser's copy checks the rules first (it knows members added in this tab); then the server swaps its cookie.
       const target = await db.auth.impersonate(user.memberId, memberId);
+      const council = await db.councils.get(target.councilId).catch(() => null);
       await startServerImpersonation(memberId);
       setViewAsMode(true);
+      // Sprint 8B: the member's own council - possibly not the Super Admin's - takes over before the first page renders.
+      adoptCouncil(council, target.councilId);
+      const context = council ? impersonationCouncilContext(council, user.councilId) : null;
+      setViewAsCouncil(context ? { label: context.councilLabel, crossCouncil: context.crossCouncil } : null);
       setImpersonator(user);
       setUser(target);
     },
-    [user, impersonator],
+    [user, impersonator, adoptCouncil],
   );
   const stopImpersonating = useCallback(async () => {
     if (!impersonator) return;
     await endServerImpersonation();
     setViewAsMode(false);
+    adoptCouncil(await db.councils.get(impersonator.councilId).catch(() => null), impersonator.councilId);
+    setViewAsCouncil(null);
     setUser(impersonator);
     setImpersonator(null);
-  }, [impersonator]);
+  }, [impersonator, adoptCouncil]);
   const [profileVersion, setProfileVersion] = useState(0);
   const profileChanged = useCallback(() => setProfileVersion((v) => v + 1), []);
   const [alertsVersion, setAlertsVersion] = useState(0);
@@ -120,7 +146,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const messagesChanged = useCallback(() => setMessagesVersion((v) => v + 1), []);
   const [featuresVersion, setFeaturesVersion] = useState(0);
   const featuresChanged = useCallback(() => setFeaturesVersion((v) => v + 1), []);
-  const [loadedFeatures, setLoadedFeatures] = useState<{ councilId: number; flags: FeatureFlags; tenantType: TenantType } | null>(null);
   const councilId = user?.councilId;
   useEffect(() => {
     if (councilId === undefined) return;
@@ -150,6 +175,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
       impersonator,
+      viewAsCouncil,
       impersonate,
       stopImpersonating,
       profileVersion,
@@ -163,7 +189,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       tenantType,
       featuresChanged,
     }),
-    [user, ready, startupError, signIn, signOut, impersonator, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged],
+    [user, ready, startupError, signIn, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
