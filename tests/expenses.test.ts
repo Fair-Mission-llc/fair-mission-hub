@@ -773,7 +773,7 @@ describe.each(drivers)('finance-officer disbursements ($name driver, Sprint 5S)'
 describe('dual approval (pure, Sprint 5Z-3)', () => {
   const actor = (over: Partial<MemberWriteActor> = {}): MemberWriteActor => ({ memberId: 10, councilId: OWN, memberType: 'Member', active: true, ...over });
 
-  it('gives the written order to the Financial Secretary and the counter-signature to the Grand Knight', () => {
+  it('gives the written order to the Financial Secretary and the counter-signature to the Grand Knight and (Sprint 8C) the Deputy Grand Knight', () => {
     expect(mayIssueExpenseOrder(actor({ roles: ['Financial Secretary'] }), OWN)).toBe(true);
     expect(mayIssueExpenseOrder(actor({ roles: ['Financial Secretary'] }), OTHER)).toBe(false);
     expect(mayIssueExpenseOrder(actor({ roles: ['Financial Secretary'], active: false }), OWN)).toBe(false);
@@ -782,7 +782,9 @@ describe('dual approval (pure, Sprint 5Z-3)', () => {
     expect(mayIssueExpenseOrder(actor({ memberType: 'Admin' }), OWN)).toBe(false);
     expect(mayAuthorizeExpenseOrder(actor({ roles: ['Grand Knight'] }), OWN)).toBe(true);
     expect(mayAuthorizeExpenseOrder(actor({ roles: ['Grand Knight'] }), OTHER)).toBe(false);
-    expect(mayAuthorizeExpenseOrder(actor({ roles: ['Deputy Grand Knight'] }), OWN)).toBe(false);
+    expect(mayAuthorizeExpenseOrder(actor({ roles: ['Deputy Grand Knight'] }), OWN)).toBe(true);
+    expect(mayAuthorizeExpenseOrder(actor({ roles: ['Deputy Grand Knight'] }), OTHER)).toBe(false);
+    expect(mayAuthorizeExpenseOrder(actor({ roles: ['Deputy Grand Knight'], active: false }), OWN)).toBe(false);
     expect(mayAuthorizeExpenseOrder(actor({ roles: ['Financial Secretary'] }), OWN)).toBe(false);
     for (const may of [mayIssueExpenseOrder, mayAuthorizeExpenseOrder]) {
       expect(may(actor({ memberType: 'Super Admin', councilId: 77 }), OTHER)).toBe(true);
@@ -848,10 +850,12 @@ describe.each(drivers)('dual approval ($name driver, Sprint 5Z-3)', (d) => {
     await expectRule(db.expenses.financialSecretaryAuditOrder(inactiveFs, id), 'FINANCIAL_SECRETARY_REQUIRED');
 
     await db.expenses.financialSecretaryAuditOrder(FS, id);
-    for (const actorId of [MEMBER.member, plainAdmin, treasurer, dgk]) {
+    for (const actorId of [MEMBER.member, plainAdmin, treasurer]) {
       const err = await expectRule(db.expenses.grandKnightAuthorizeOrder(actorId, id), 'GRAND_KNIGHT_REQUIRED');
       expect(err).toBeInstanceOf(SecurityPrivilegeError);
     }
+    // Sprint 8C: the Deputy Grand Knight holds the seat; the sheet still waits for the Treasurer's coding.
+    await expectRule(db.expenses.grandKnightAuthorizeOrder(dgk, id), 'EXPENSE_STATUS_CONFLICT');
     const foreignGk = await addMember(db, OTHER, 'Member', 'foreign.gk@example.org');
     grantRole(d, db, foreignGk, 'Grand Knight');
     await expectRule(db.expenses.grandKnightAuthorizeOrder(foreignGk, id), 'COUNCIL_ACCESS_DENIED');
@@ -932,12 +936,13 @@ describe('dual-approval desks and vault (pure, Sprint 5Z-4)', () => {
     expect(canOpenExpenseAuditDesk(user({ roles: ['Grand Knight'] }), OWN)).toBe(false);
   });
 
-  it('opens the authorization desk to the Grand Knight, Admins and Super Admins', () => {
+  it('opens the authorization desk to the Grand Knight, the Deputy Grand Knight (Sprint 8C), Admins and Super Admins', () => {
     expect(canOpenExpenseAuthorizeDesk(user({ roles: ['Grand Knight'] }), OWN)).toBe(true);
     expect(canOpenExpenseAuthorizeDesk(user({ roles: ['Grand Knight'] }), OTHER)).toBe(false);
     expect(canOpenExpenseAuthorizeDesk(user({ memberType: 'Admin' }), OWN)).toBe(true);
     expect(canOpenExpenseAuthorizeDesk(user({ memberType: 'Super Admin' }), OTHER)).toBe(true);
-    expect(canOpenExpenseAuthorizeDesk(user({ roles: ['Deputy Grand Knight'] }), OWN)).toBe(false);
+    expect(canOpenExpenseAuthorizeDesk(user({ roles: ['Deputy Grand Knight'] }), OWN)).toBe(true);
+    expect(canOpenExpenseAuthorizeDesk(user({ roles: ['Deputy Grand Knight'] }), OTHER)).toBe(false);
     expect(canOpenExpenseAuthorizeDesk(user({ roles: ['Financial Secretary'] }), OWN)).toBe(false);
   });
 
@@ -991,7 +996,7 @@ describe.each(drivers)('dual-approval desks and vault ($name driver, Sprint 5Z-4
     expect(paid.grandKnightName).not.toBe('');
   });
 
-  it('opens the authorization desk to the Grand Knight and Admins of the council only', async () => {
+  it('opens the authorization desk to the Grand Knight, Deputy Grand Knight and Admins of the council only', async () => {
     const db = await d.make();
     const gk = await addMember(db, OWN, 'Member', 'desk.gk@example.org');
     grantRole(d, db, gk, 'Grand Knight');
@@ -1000,7 +1005,9 @@ describe.each(drivers)('dual-approval desks and vault ($name driver, Sprint 5Z-4
     await expectPrivilege(db.expenses.listAuthorizationQueue(MEMBER.member, OWN), 'ADMIN_REQUIRED');
     const dgk = await addMember(db, OWN, 'Member', 'desk.dgk@example.org');
     grantRole(d, db, dgk, 'Deputy Grand Knight');
-    await expectPrivilege(db.expenses.listAuthorizationQueue(dgk, OWN), 'ADMIN_REQUIRED');
+    // Sprint 8C: the Deputy Grand Knight reads it with full parity.
+    expect(await db.expenses.listAuthorizationQueue(dgk, OWN)).toEqual([]);
+    await expectPrivilege(db.expenses.listAuthorizationQueue(dgk, OTHER), 'COUNCIL_ACCESS_DENIED');
     await expectPrivilege(db.expenses.listAuthorizationQueue(gk, OTHER), 'COUNCIL_ACCESS_DENIED');
     await expectRule(db.expenses.listAuthorizationQueue(MEMBER.superAdmin, 9999), 'INVALID_INPUT');
   });

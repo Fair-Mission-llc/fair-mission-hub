@@ -3290,3 +3290,20 @@ GO
 
 CREATE UNIQUE INDEX [CouncilHistorianBulletin_Month_Idx] ON [CouncilHistorianBulletin] ([council_id], [bulletin_month]);
 GO
+
+-- =========================================================================
+-- Sprint 8C: PILOT PREFLIGHT LAYOUT OPTIMIZATION AND LEFT-NAV RATIONALIZATION (schema version 75)
+--
+-- No table changes. The Shared Member Center (/member-center, reports.memberCenter) is renamed the Council Dashboard
+-- on the web and the phone. The Reports Desk tab is dismantled: its Executive Summary - stat tiles, engagement and
+-- leaderboard, budget and mission tracking, the financial ledger table, highlights and the no-show audit - merges into the
+-- Executive Dashboard's Home desk, in a frame that scrolls inside itself so Home still fits one screen. The sidebar's
+-- Executive Dashboard link always resets the Active Desks to Home. The Deputy Grand Knight holds every grant of the
+-- Grand Knight's seat with full parity (GRAND_KNIGHT_AUTHORITY_ROLE_NAMES): the Grand Knight Authorization Desk and its
+-- counter-signature, the appointments desk, fraternal-year conclusion, agenda templates, the cadence engine, bylaws,
+-- the live agenda, the meeting check-in and PIN, the council lookups and the base dues rate. The Leadership Auditing
+-- Queue leaves the sidebar. Every Home status badge is a click-through anchor to its Active Desk row; the Shifts Awaiting
+-- Hours audit consolidates onto the Oversight Desk, and the Inbound Council Mail Center stays with global Super Admins.
+-- The Member Desk gains the Open Shifts Needing Volunteers and My Charity Requests cards, and the Canonization Rank
+-- benchmarks are edited only in System Settings > Council Wide Settings. The phone database version moves to 75.
+-- =========================================================================

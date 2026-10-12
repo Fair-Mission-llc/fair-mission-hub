@@ -685,6 +685,15 @@ export const EXECUTIVE_ROLE_NAMES = ['Grand Knight', 'Deputy Grand Knight'] as c
 export const holdsExecutiveRole = (roles: readonly string[] | undefined): boolean =>
   (roles ?? []).some((r) => (EXECUTIVE_ROLE_NAMES as readonly string[]).includes(r));
 
+/**
+ * Sprint 8C: the Deputy Grand Knight holds every grant of the Grand Knight's seat with full parity - the administrative
+ * tools, the voucher and ledger desks, the council configurations and the approval workflows the Grand Knight opens.
+ * Every gate written for the Grand Knight's seat checks these names, never the Grand Knight's name alone.
+ */
+export const GRAND_KNIGHT_AUTHORITY_ROLE_NAMES: readonly string[] = EXECUTIVE_ROLE_NAMES;
+
+export const holdsGrandKnightAuthority = (roles: readonly string[] | undefined): boolean => holdsExecutiveRole(roles);
+
 /** An Active Grand Knight or Deputy Grand Knight of the council. */
 const isCouncilExecutive = (actor: MemberWriteActor, councilId: number): boolean =>
   actor.active && holdsExecutiveRole(actor.roles) && actor.councilId === councilId;
@@ -1251,8 +1260,8 @@ export const mayIssueExpenseOrder = (actor: MemberWriteActor, councilId: number)
 
 /**
  * expenses.grandKnightAuthorizeOrder (Sprint 5Z-3): the counter-signature comes only from an Active Grand Knight of the
- * council, or an Active Super Admin for any council (GRAND_KNIGHT_REQUIRED, COUNCIL_ACCESS_DENIED). The Deputy Grand
- * Knight does not sign. `action` completes "cannot ...".
+ * council, or an Active Super Admin for any council (GRAND_KNIGHT_REQUIRED, COUNCIL_ACCESS_DENIED). Sprint 8C: the Deputy
+ * Grand Knight signs with full parity (holdsGrandKnightAuthority). `action` completes "cannot ...".
  */
 export function assertMayAuthorizeExpenseOrder(actor: MemberWriteActor, councilId: number, action: string): void {
   const denial = expenseSignatureDenial(actor, councilId, action, GRAND_KNIGHT_ROLE_NAME, 'GRAND_KNIGHT_REQUIRED');
@@ -1271,7 +1280,11 @@ function expenseSignatureDenial(
   code: 'FINANCIAL_SECRETARY_REQUIRED' | 'GRAND_KNIGHT_REQUIRED',
 ): SecurityPrivilegeError | null {
   if (hasSuperAdminRights(actor)) return null;
-  if (!(actor.active && (actor.roles ?? []).includes(seat))) {
+  // Sprint 8C: the Grand Knight's seat is held by the Deputy Grand Knight too.
+  const grandKnightSeat = seat === GRAND_KNIGHT_ROLE_NAME;
+  const holdsSeat = grandKnightSeat ? holdsGrandKnightAuthority(actor.roles) : (actor.roles ?? []).includes(seat);
+  if (grandKnightSeat) seat = 'Grand Knight or Deputy Grand Knight';
+  if (!(actor.active && holdsSeat)) {
     return new SecurityPrivilegeError(
       code,
       `Only an active ${seat} or Super Admin can ${action}; member ${actor.memberId} is ${describeActor(actor)} without that seat.`,
@@ -1288,15 +1301,15 @@ function expenseSignatureDenial(
 
 /**
  * expenses.listAuthorizationQueue (Sprint 5Z-4): the Grand Knight Authorization Desk is read by an Active Grand Knight
- * or Admin of the council, or an Active Super Admin for any council (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED). Reading it
+ * (Sprint 8C: or Deputy Grand Knight) or Admin of the council, or an Active Super Admin for any council (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED). Reading it
  * grants no signature; grandKnightAuthorizeOrder still checks the seat. `action` completes "cannot ...".
  */
 export function assertMayReadAuthorizationDesk(actor: MemberWriteActor, councilId: number, action: string): void {
   if (hasSuperAdminRights(actor)) return;
-  if (!hasAdminRights(actor) && !(actor.active && (actor.roles ?? []).includes(GRAND_KNIGHT_ROLE_NAME))) {
+  if (!hasAdminRights(actor) && !(actor.active && holdsGrandKnightAuthority(actor.roles))) {
     throw new SecurityPrivilegeError(
       'ADMIN_REQUIRED',
-      `Only an active Grand Knight, Admin or Super Admin can ${action}; member ${actor.memberId} is ${describeActor(actor)}.`,
+      `Only an active Grand Knight, Deputy Grand Knight, Admin or Super Admin can ${action}; member ${actor.memberId} is ${describeActor(actor)}.`,
       { actorId: actor.memberId, actorType: actor.memberType ?? null, councilId },
     );
   }

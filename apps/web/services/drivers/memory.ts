@@ -3389,7 +3389,7 @@ export class MemoryDataService implements DataService {
       const { fromDate, toDate } = monthBounds(year, month);
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      assertMayReadCouncilHistory(actor, councilId, `open the Member Center of council ${councilId}`);
+      assertMayReadCouncilHistory(actor, councilId, `open the Council Dashboard of council ${councilId}`);
       this.assertCouncilsExist(s, [councilId]);
       const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;
       const viewer = this.requireMember(s, actorId) as unknown as Member;

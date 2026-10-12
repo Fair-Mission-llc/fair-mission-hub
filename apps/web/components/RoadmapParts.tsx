@@ -257,7 +257,7 @@ export function SignatureFlowTree({ counts }: { counts: SignatureFlowCounts }) {
         <Arrow />
         <FlowStep title="2. Ledger coding" who="Treasurer" count={counts.awaitingTreasurer} />
         <Arrow />
-        <FlowStep title="3. Counter-signature" who="Grand Knight" count={counts.awaitingGrandKnight} />
+        <FlowStep title="3. Counter-signature" who="Grand Knight or Deputy Grand Knight" count={counts.awaitingGrandKnight} />
         <Arrow />
         <FlowStep title="Check paid" who="Financial Secretary or Treasurer" count={counts.awaitingCheck} tone="gold" />
       </div>

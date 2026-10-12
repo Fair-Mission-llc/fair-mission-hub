@@ -7,9 +7,14 @@
 // Sprint 6A: a module the council's feature flags switch off is left out entirely too.
 // Sprint 6Z-Dual-Gate-Model: a white-label tenant loses the fraternal areas the same way, and every label, tooltip and
 // pillar name is drawn through whiteLabel in the tenant's vocabulary.
+// Sprint 8C: the Leadership Auditing Queue link is gone (the page stays reachable from the Financial Secretary Desk), the
+// member-center link is labelled Council Dashboard, and a click on Executive Dashboard always resets the Active Desks
+// to the Home landing deck (EXECUTIVE_DASHBOARD_HOME_HREF), even on /dashboard itself.
 import Link from 'next/link';
+import { DeskLink } from '@/components/WorkspaceTabs';
 import {
   canOpenArchiveVault,
+  EXECUTIVE_DASHBOARD_HOME_HREF,
   portalSidebar,
   whiteLabel,
   type FeatureFlags,
@@ -30,9 +35,10 @@ export interface NavEntry {
 
 /**
  * Every sidebar link's route, label and tooltip. 'profile' is reached from the header's member menu, and 'messages' and
- * 'distribution-lists' from the header's Messaging menu, not the sidebar.
+ * 'distribution-lists' from the header's Messaging menu, not the sidebar. 'expenses/queue' left the sidebar in Sprint 8C
+ * and keeps its entry for the pages that link to it.
  */
-export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide', NavEntry> = {
+export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue', NavEntry> = {
   'member-actions': { href: '/member-actions', label: 'Member Actions Hub', hint: 'My shifts, sign-ups, roster, hours' },
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
@@ -45,7 +51,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     href: '/meetings/cadence',
     label: 'Annual Cadence Manager',
     hint: 'Standing meeting patterns and the annual calendar',
-    restrictedTo: 'the Grand Knight and Admins',
+    restrictedTo: 'the Grand Knight, the Deputy Grand Knight and Admins',
   },
   'meetings/live': {
     href: '/meetings/live',
@@ -58,7 +64,11 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   ledger: { href: '/ledger', label: 'Post-event Ledger', hint: 'Spend, funds raised, hours, lessons' },
   'lessons-registry': { href: '/lessons-registry', label: 'Lessons Registry', hint: 'Lessons learned across councils' },
   'distribution-lists': { href: '/distribution-lists', label: 'My Distribution Lists', hint: 'Your private member segments and the council-wide lists' },
-  dashboard: { href: '/dashboard', label: 'Executive Dashboard', hint: 'Faith-in-Action, monthly hours, members and funds' },
+  dashboard: {
+    href: EXECUTIVE_DASHBOARD_HOME_HREF,
+    label: 'Executive Dashboard',
+    hint: 'The Home desk: status badges and the Executive Summary of Faith-in-Action, monthly hours, members and funds',
+  },
   'finance/dashboard': { href: '/finance/dashboard', label: 'Financial Dashboard', hint: 'Liquidity tanks, balance scale, transfers, bank audits' },
   'finance/ledger': { href: '/finance/ledger', label: 'General Ledger Spreadsheet', hint: 'Chart of accounts with every posting' },
   'finance/balance-sheet': { href: '/finance/balance-sheet', label: 'Balance Sheet', hint: 'Assets against liabilities and equity' },
@@ -82,7 +92,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     href: '/expenses/authorize',
     label: 'GK Expense Authorize',
     hint: 'Counter-sign ordered reports',
-    restrictedTo: 'the Grand Knight and Admins',
+    restrictedTo: 'the Grand Knight, the Deputy Grand Knight and Admins',
   },
   'expenses/disbursements': { href: '/expenses/disbursements', label: 'Bulk Check Disbursements', hint: 'Pay dual-signed reports by check' },
   'charities/propose': { href: '/charities/propose', label: 'Propose Charity Grant', hint: "Shepherd an organization's request to the council and follow it" },
@@ -160,7 +170,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'member-center': {
     href: '/member-center',
-    label: 'Shared Member Center',
+    label: 'Council Dashboard',
     hint: "The council's volunteers, hours, devotions and Top 5 leaderboard, and your own impact card",
   },
   'performance/charts': { href: '/performance/charts', label: 'Growth & Hours Charts', hint: 'Membership growth velocity and council hours by month' },
@@ -210,19 +220,27 @@ function ExternalNavLink({ href, label, hint }: Omit<ExternalNavEntry, 'visible'
   );
 }
 
-const isCurrent = (pathname: string, item: PortalNavItem | 'navigation-guide'): boolean => pathname === NAV[item].href;
+const isCurrent = (pathname: string, item: PortalNavItem | 'navigation-guide'): boolean => pathname === NAV[item].href.split('#')[0];
+
+const navLinkClass = (current: boolean) =>
+  cx('flex items-center gap-2 border-l-8 py-1.5 pl-6 pr-3 text-sm', current ? 'border-gold bg-white font-bold text-navy' : 'border-transparent hover:underline');
 
 /** One dense sidebar link: the label only, with its description as the tooltip; gold marker when current. */
 function NavLink({ item, current, tenant }: { item: PortalNavItem | 'navigation-guide'; current: boolean; tenant: TenantType }) {
   const { href, label, hint } = NAV[item];
+  // Sprint 8C: Executive Dashboard is a desk jump to Home - on /dashboard it switches the open desk back to Home.
+  if (item === 'dashboard') {
+    return (
+      <li title={whiteLabel(hint, tenant)}>
+        <DeskLink anchor="home" current={current} className={navLinkClass(current)}>
+          {whiteLabel(label, tenant)}
+        </DeskLink>
+      </li>
+    );
+  }
   return (
     <li>
-      <Link
-        href={href}
-        title={whiteLabel(hint, tenant)}
-        aria-current={current ? 'page' : undefined}
-        className={cx('flex items-center gap-2 border-l-8 py-1.5 pl-6 pr-3 text-sm', current ? 'border-gold bg-white font-bold text-navy' : 'border-transparent hover:underline')}
-      >
+      <Link href={href} title={whiteLabel(hint, tenant)} aria-current={current ? 'page' : undefined} className={navLinkClass(current)}>
         {whiteLabel(label, tenant)}
       </Link>
     </li>

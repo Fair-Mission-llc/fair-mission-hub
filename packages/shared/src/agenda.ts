@@ -98,8 +98,11 @@ export const agendaAlreadyStructured = (meetingId: number): BusinessRuleError =>
 
 // ---- who edits ----------------------------------------------------------------------------
 
-/** The seats that keep the live agenda and record hand votes, besides Admins and Super Admins. */
-export const AGENDA_EDITOR_ROLE_NAMES = ['Grand Knight', 'Recorder'] as const;
+/**
+ * The seats that keep the live agenda and record hand votes, besides Admins and Super Admins. Sprint 8C: the Deputy Grand
+ * Knight keeps it beside the Grand Knight.
+ */
+export const AGENDA_EDITOR_ROLE_NAMES = ['Grand Knight', 'Deputy Grand Knight', 'Recorder'] as const;
 
 function agendaEditorDenial(actor: MemberWriteActor, meeting: Pick<Meeting, 'id' | 'CouncilID'>, action: string): SecurityPrivilegeError | null {
   if (hasSuperAdminRights(actor)) return null;
@@ -107,7 +110,7 @@ function agendaEditorDenial(actor: MemberWriteActor, meeting: Pick<Meeting, 'id'
   if (!hasAdminRights(actor) && !seated) {
     return new SecurityPrivilegeError(
       'AGENDA_EDITOR_REQUIRED',
-      `Only the council's Grand Knight or Recorder, an Admin, or a Super Admin can ${action}; member ${actor.memberId} is ${describeActor(actor)}.`,
+      `Only the council's Grand Knight, Deputy Grand Knight or Recorder, an Admin, or a Super Admin can ${action}; member ${actor.memberId} is ${describeActor(actor)}.`,
       { actorId: actor.memberId, meetingId: meeting.id },
     );
   }
@@ -120,7 +123,7 @@ function agendaEditorDenial(actor: MemberWriteActor, meeting: Pick<Meeting, 'id'
 }
 
 /**
- * The live agenda's editors (Sprint 6B): an Active Grand Knight or Recorder of the meeting's council, an Active Admin of
+ * The live agenda's editors (Sprint 6B): an Active Grand Knight, Deputy Grand Knight or Recorder of the meeting's council, an Active Admin of
  * it, or an Active Super Admin. They lay out the agenda, correct its lines and record hand votes. `action` completes
  * "cannot ...".
  */

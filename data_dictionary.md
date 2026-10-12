@@ -897,7 +897,7 @@ ________________________________________
 # 28. Member Lifecycle, Devotional Tracker and Canonization Shield (Sprint 7A)
 Schema version 59. Rules: member-lifecycle.ts (planMemberLifecycle, planInactivitySweep, cleanDevotionalEntry, canonizationRank, buildCouncilEngagement).
 [MemberDevotionals]
-A member's running devotional tally, logged on the phone's Home (My devotions). One row per member, created by the first devotionals.record. Only the member reads their own row. From Sprint 7A Extension the Shared Member Center shows the council's sums (never one member's tally).
+A member's running devotional tally, logged on the phone's Home (My devotions). One row per member, created by the first devotionals.record. Only the member reads their own row. From Sprint 7A Extension the Council Dashboard shows the council's sums (never one member's tally).
 •	user_id (INT, NOT NULL) — Primary Key. Foreign Key references Member(id).
 •	rosaries_said (INT, NOT NULL, DEFAULT 0) — Rosaries said.
 •	adorations_count (INT, NOT NULL, DEFAULT 0) — Hours of Eucharistic adoration.
@@ -913,7 +913,7 @@ Inactivity sweep. members.sweepInactive (🔍 Check for Inactive Members on the 
 Engagement card. reports.councilEngagement lists the month's volunteers at the council's events and activities and the Top 5 Volunteers Leaderboard (the council's Active members by all hours logged there; ties share a rank). The dashboard shows it with the month's cash raised.
 Roster import template. py scripts/roster_import_template.py writes apps/web/public/templates/roster_import_template.xlsx (openpyxl): the roster import's headers, a sample row, and drop-downs for Role (OFFICE_ROLE_NAMES plus Member), Degree and Charter Member. The import does not read Role.
 ________________________________________
-# 29. Multi-Council Membership History and the Shared Member Center (Sprint 7A Extension)
+# 29. Multi-Council Membership History and the Council Dashboard (Sprint 7A Extension; named the Shared Member Center until Sprint 8C)
 Schema version 60. Rules: member-lifecycle.ts (planAffiliationLog, buildAffiliationHistory, buildMemberCenter, councilDevotionTotals).
 [MemberCouncilAffiliationLog]
 One stretch of a member's membership in a council. Member.CouncilID says only where the member is now; the log keeps where they have been. Rows are never deleted. Written by members.create, members.update, members.sweepInactive and supreme.syncSupremeRoster in the same transaction as the member.
@@ -924,8 +924,8 @@ One stretch of a member's membership in a council. Member.CouncilID says only wh
 •	date_joined (DATETIME, NOT NULL) — The join date (midnight) when known, otherwise when the row was written.
 •	date_exited (DATETIME, NULL) — When the membership closed: a transfer out, or a status of Deceased or Former. NULL while open.
 Rules. A new member opens an Active row. A transfer closes the open row in the council left as 'Former' (for a member with no row there, it writes a closed row from their join date) and opens an Active row in the new council. A status change in the same council restates the open row; Deceased or Former also closes it; rejoining opens a new row. A member added before schema 60 shows their current membership on the history card from the Member row until the log has a row for it.
-History card. members.listAffiliations: the member, an Admin of their council or a Super Admin. Shown on the Affiliated Roster (Council membership history) and on the Shared Member Center (My council history), web and phone.
-Shared Member Center. reports.memberCenter, for every Active member of the council (portal area member-center, Performance pillar; phone: Home -> Open the Member Center). It carries the month's volunteers, volunteer count and hours, the council's combined devotional sums, the Top 5 Volunteers Leaderboard and the viewer's own events attended, hours and canonization shield. It carries no cash, budget or ledger figure; the finance pages and the executive dashboard keep their own audiences. For a white-label council the devotional sums and the shield are null.
+History card. members.listAffiliations: the member, an Admin of their council or a Super Admin. Shown on the Affiliated Roster (Council membership history) and on the Council Dashboard (My council history), web and phone.
+Council Dashboard (the Shared Member Center until Sprint 8C). reports.memberCenter, for every Active member of the council (portal area member-center, Performance pillar; phone: Home -> Open the Council Dashboard). It carries the month's volunteers, volunteer count and hours, the council's combined devotional sums, the Top 5 Volunteers Leaderboard and the viewer's own events attended, hours and canonization shield. It carries no cash, budget or ledger figure; the finance pages and the executive dashboard keep their own audiences. For a white-label council the devotional sums and the shield are null.
 ________________________________________
 # 30. Volunteer Time Quarantine (Sprint 7B)
 Schema version 61. Rules: volunteer-quarantine.ts (isQuarantineExempt, quarantineReasons, assertMayReviewQuarantine, buildQuarantineDesk).
@@ -1041,4 +1041,8 @@ The Historian Desk's monthly text bulletins: one row per council and month (a un
 •	author_member_id (INT, NULL) — Foreign Key references Member(id). Who last saved it.
 •	updated_at (DATETIME, NOT NULL, DEFAULT getdate()) — When it was last saved (UTC).
 New methods. meetings.launchLiveMeeting (startLiveAssemblyConsole, then the council's meeting_pin_token for the chair; same keepers as saveMeetingMinutes). meetings.setMeetingPhoto now also admits the council's Council Historian; the Historian Desk uploads through /api/drive-vault/meeting-photos (Media / Meeting_Photos). /api/admin/impersonate answers the viewed member's council context (impersonationCouncilContext) and the browser adopts that council's flags, tenant type and timing gates before the view opens. /system-settings/impersonate (Super Admins) is a Council -> clearance group -> person lookup (buildImpersonationTree, impersonationSuggestions).
+________________________________________
+# 38. Council Dashboard rename, Reports Desk merge and Deputy Grand Knight parity (Sprint 8C)
+Schema version 75. No table or column change; the phone database version moves to 75 so phones rebuild in step.
+The Shared Member Center (reports.memberCenter, portal area member-center) is labelled the Council Dashboard on the web and the phone. The Reports Desk tab is removed; its Executive Summary renders inside the dashboard Home desk. The Deputy Grand Knight's Role now passes every rule that admitted the Grand Knight's Role (GRAND_KNIGHT_AUTHORITY_ROLE_NAMES), including expenses.grandKnightAuthorizeOrder and listAuthorizationQueue, elections.assignAppointedRole and concludeFraternalYear, councils.setMeetingGeofence and setDuesRate, the agenda template, cadence, bylaws and live agenda keepers. The separation-of-duties guards (SELF_APPROVAL_BLOCKED, the Collusion Guard) still apply. Council.rank_threshold_hours and rank_threshold_events are edited only from System Settings > Council Wide Settings (councils.setRankThresholds, unchanged rule).
 ________________________________________

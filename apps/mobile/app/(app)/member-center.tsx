@@ -1,4 +1,4 @@
-// The Shared Member Center on the phone (Sprint 7A Extension), opened from the card on Home; not a tab of its own.
+// The Council Dashboard on the phone (Sprint 7A Extension; the Shared Member Center until Sprint 8C), opened from the card on Home; not a tab of its own.
 // The same collective, non-financial view as the web portal's /member-center (reports.memberCenter): this month's
 // volunteer count, hours and names, the council's combined devotions (sums only), the gold-bordered Top 5 Volunteers
 // Leaderboard, and the member's own impact card - events attended, personal hours, the canonization shield and their
@@ -111,7 +111,7 @@ export default function MemberCenterScreen() {
   return (
     <Screen refreshing={state.refreshing} onRefresh={() => void state.reload()}>
       <AppText variant="heading" accessibilityRole="header">
-        Shared Member Center
+        Council Dashboard
       </AppText>
       {state.error ? <Notice tone="error" message={state.error} /> : null}
       {!c && state.loading ? <Loading /> : null}

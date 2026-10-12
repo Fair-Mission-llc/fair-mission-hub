@@ -439,9 +439,10 @@ describe('sign-in gates and the mail center', () => {
     expect(read('apps/mobile/app/sign-in.tsx')).toContain('db.accessRequests.submit(draft)');
   });
 
-  it('shows the Inbound Council Mail Center to Super Admins on the dashboard Oversight Desk (Sprint 8A)', () => {
+  it('shows the Inbound Council Mail Center to global Super Admins only, on the dashboard Oversight Desk (Sprints 8A, 8C)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toContain("{user.memberType === 'Super Admin' ? <InboundMailCenter /> : null}");
+    expect(desks).toMatch(/\{isSuperAdmin\(user\) \? \(\s*<DeskRow id=\{DESK_FOCUS_TARGETS\.access\.rowId\} label="Inbound Council Mail Center">\s*<InboundMailCenter \/>/);
+    expect(desks).toContain("if (isSuperAdmin(user))\n      add('access'");
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<InboundMailCenter />');
     expect(read('apps/web/components/PlatformAccessParts.tsx')).not.toMatch(/bg-black/);
   });

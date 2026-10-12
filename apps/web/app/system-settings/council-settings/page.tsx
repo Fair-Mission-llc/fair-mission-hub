@@ -21,6 +21,10 @@
 // home of the Roster Inactivity Sweep (members.sweepInactive), which left the roster page and the Financial Secretary
 // Desk. The card shows its button to the council's Admins and Super Admins (canAdministerCouncil), the sweep's own rule
 // (assertMaySweepInactiveMembers); the page's other readers see who may run it.
+//
+// Sprint 8C: the Canonization Rank Benchmarks card (RankThresholdsCard) moved here from the Executive Summary's
+// leaderboard. It is the only place they are edited (the council's Admins and Super Admins); everywhere else they are a
+// read-only information block.
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -37,6 +41,7 @@ import {
   type CustomManualKind,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
+import { RankThresholdsCard } from '@/components/EngagementParts';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
@@ -168,6 +173,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
       />
       <MeetingCheckInCard user={user} councilId={council.id} />
       <InactivitySweepCard council={council} />
+      <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
       <CustomGuidesCard council={council} />
     </>
   );

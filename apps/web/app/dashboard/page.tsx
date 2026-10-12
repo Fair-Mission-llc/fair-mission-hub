@@ -50,17 +50,19 @@
 // Sprint 8B: the Recorder Desk (Meeting Minutes Entry Desk and the Start Live Meeting Sequence launch) and the Historian
 // Desk (Digital Fraternal Annals Scrapbook), each for its seat, the council's Admins and Super Admins. A Council
 // Historian without an officer seat opens this page for the Historian Desk alone (no Home or Reports Desk).
+//
+// Sprint 8C: the Reports Desk is dismantled and the Executive Summary merges into Home, the Executive Dashboard's own
+// canvas: under the ribbon, the click-through badges and the four widgets, the month's charts, ledger table, budget and
+// mission tracking and the no-show audit sit in a frame that scrolls inside itself, so Home still fits one screen. The
+// month's stat tiles open that frame. The Shifts Awaiting Hours audit moved to the Oversight Desk. The sidebar's Executive
+// Dashboard link always lands here on Home.
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
   canReviewBudgetPerformance,
   canViewExecutiveAudits,
   currentFraternalYear,
-  councilWideSettings,
   dashboardTabsFor,
-  formatShiftWhen,
-  hoursReminderCadence,
-  hoursRemindersDue,
   isFraternalTenant,
   NO_SHOW_AUDIT_MONTHS,
   type MonthlySummary,
@@ -81,9 +83,9 @@ import {
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
 import { FraternalRoadmap, RoadmapRibbon } from '@/components/RoadmapParts';
-import { DeskLink, useDashboardTab } from '@/components/WorkspaceTabs';
+import { useDashboardTab } from '@/components/WorkspaceTabs';
 import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
-import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
+import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName } from '@/lib/format';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -240,90 +242,36 @@ function NoShowAudit({ councilId }: { councilId: number }) {
   );
 }
 
-function AwaitingHours({ councilId }: { councilId: number }) {
-  const awaiting = useLoad(() => db.reports.listShiftsAwaitingHours(councilId), [councilId]);
-  // Sprint 7E: the council's own reminder delay, cadence and logging window.
-  const council = useLoad(() => db.councils.get(councilId), [councilId]).data;
-  const cadence = hoursReminderCadence(council);
-  const windowDays = councilWideSettings(council).volunteer_logging_window_days;
-  const rows = awaiting.data ?? [];
-  const overdue = rows.filter((r) => !r.closed && r.daysSinceShift >= cadence.delayDays).length;
-  return (
-    <Panel title={`Shifts awaiting hours (${rows.length})`} actions={overdue > 0 ? <Pill tone="red">{overdue} past {cadence.delayDays} days</Pill> : null}>
-      {awaiting.error ? <Notice tone="error">{awaiting.error}</Notice> : null}
-      {awaiting.data && rows.length === 0 ? <Empty>Every volunteer on a past shift has logged their hours.</Empty> : null}
-      {rows.length > 0 ? (
-        <div className="max-h-[28rem] overflow-y-auto">
-          <Table caption="Past shifts whose volunteers have not logged hours" head={['Member', 'Phone', 'Shift', 'Event', 'Days since', 'Reminders']}>
-            {rows.map((r) => {
-              const late = !r.closed && r.daysSinceShift >= cadence.delayDays;
-              const due = hoursRemindersDue(r, cadence);
-              return (
-                <tr key={r.signup.id} className={cx(late && 'border-l-8 border-brand-red')}>
-                  <Td className="font-bold">{formatPersonName(r.firstName, r.lastName)}</Td>
-                  <Td className="whitespace-nowrap">{formatPhone(r.phone)}</Td>
-                  <Td className="whitespace-nowrap">
-                    {formatShiftWhen(r.shift)}
-                    <span className="block text-xs text-muted">{r.shift.ShiftName}</span>
-                  </Td>
-                  <Td>{r.event.EventName}</Td>
-                  <Td className={cx('font-bold', late && 'text-brand-red')}>{r.daysSinceShift}</Td>
-                  <Td>
-                    {r.closed ? (
-                      <Pill tone="outline">Closed: past {windowDays} days</Pill>
-                    ) : late ? (
-                      <>
-                        <Pill tone="red">⚠ Overdue</Pill>
-                        <span className="block text-xs text-brand-red">
-                          {due} text reminder{due === 1 ? '' : 's'} due so far · log by {formatFullDate(r.loggableThrough)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-xs text-muted">First reminder on day {cadence.delayDays}</span>
-                    )}
-                  </Td>
-                </tr>
-              );
-            })}
-          </Table>
-        </div>
-      ) : null}
-      <p className="mt-2 text-xs text-muted">
-        Members who checked in but have not reported time. A text reminder goes out on day {cadence.delayDays} and every {cadence.cadenceDays} days
-        after that, until the {windowDays}-day logging window closes. Council Wide Settings sets these numbers.
-      </p>
-    </Panel>
-  );
-}
-
-/** This month's four stat tiles in compact form, for Home. */
-function HomeScorecards({ councilId }: { councilId: number }) {
-  const now = new Date();
-  const summary = useLoad(() => db.reports.monthlySummary(councilId, now.getFullYear(), now.getMonth() + 1), [councilId]);
-  if (summary.error) return <Notice tone="error">{summary.error}</Notice>;
-  return summary.data ? <Scorecards s={summary.data} compact /> : <p className="text-sm text-muted">Loading the month…</p>;
-}
+/** The id of the full roadmap card inside Home's Executive Summary frame (the ribbon's "Full roadmap" scrolls to it). */
+const SUMMARY_ROADMAP_ID = 'executive-summary-roadmap';
 
 /**
- * The Home desk (Sprint 8A): one screen, no page scroll. The roadmap ribbon, the desk status badges, this month's stat
- * tiles and the four fixed-height widgets; all the work sits one click away on its Active Desk.
+ * The Home desk (Sprint 8A): one screen, no page scroll. The roadmap ribbon, the desk status badges and the four
+ * fixed-height widgets; all the work sits one click away on its Active Desk. Sprint 8C: the Executive Summary (the
+ * Reports Desk until then) fills the rest of the screen in a frame that scrolls inside itself.
  */
 function HomeDesk({ councilId, faithOn }: { councilId: number; faithOn: boolean }) {
   const user = useUser();
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 lg:h-[calc(100dvh-14rem)]">
       <RoadmapRibbon
         user={user}
         councilId={councilId}
         fullLink={
-          <DeskLink anchor="reports" className="font-bold underline">
-            Full roadmap →
-          </DeskLink>
+          <button
+            type="button"
+            className="font-bold underline"
+            onClick={() => document.getElementById(SUMMARY_ROADMAP_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          >
+            Full roadmap ↓
+          </button>
         }
       />
       <DeskStatusBadges user={user} councilId={councilId} />
-      <HomeScorecards councilId={councilId} />
       <HomeWidgets user={user} councilId={councilId} faithOn={faithOn} />
+      <div className="min-h-[18rem] flex-1 overflow-y-auto rounded border-2 border-navy bg-white p-4">
+        <ExecutiveSummary councilId={councilId} />
+      </div>
     </div>
   );
 }
@@ -357,8 +305,6 @@ function Dashboard() {
           <HistorianDesk user={user} councilId={scope.councilId} />
         ) : shown === 'oversight' ? (
           <OversightDesk user={user} councilId={scope.councilId} />
-        ) : shown === 'reports' ? (
-          <ExecutiveSummary councilId={scope.councilId} />
         ) : (
           <MemberDesk user={user} />
         )}
@@ -367,7 +313,10 @@ function Dashboard() {
   );
 }
 
-/** The Executive Summary (Sprints 5Z-2.5 to 7G): the lower half of Home in Sprint 7J, the Reports Desk since Sprint 8A. */
+/**
+ * The Executive Summary (Sprints 5Z-2.5 to 7G): the lower half of Home in Sprint 7J, the Reports Desk in Sprint 8A, and
+ * since Sprint 8C Home's self-scrolling frame on the Executive Dashboard canvas.
+ */
 function ExecutiveSummary({ councilId }: { councilId: number }) {
   const user = useUser();
   const now = new Date();
@@ -408,7 +357,7 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
           </Field>
         </div>
       </div>
-      <div className="mb-4">
+      <div id={SUMMARY_ROADMAP_ID} className="mb-4 scroll-mt-2">
         <FraternalRoadmap user={user} councilId={councilId} />
       </div>
       {summary.error ? <Notice tone="error">{summary.error}</Notice> : null}
@@ -416,7 +365,7 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
         <p className="text-sm text-muted">Loading the month…</p>
       ) : (
         <div className="flex flex-col gap-4">
-          <Scorecards s={s} />
+          <Scorecards s={s} compact />
           <EngagementCards councilId={councilId} year={year} month={month} monthLabel={`${MONTHS[month - 1]} ${year}`} summary={s} />
           {canReviewBudgetPerformance(user, councilId) ? (
             <>
@@ -474,10 +423,8 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
       {canViewExecutiveAudits(user, councilId) ? (
         <div className="mt-6 flex flex-col gap-4">
           <h2 className="font-serif text-xl font-bold">Executive audits</h2>
-          <div className="grid grid-cols-1 items-start gap-4 2xl:grid-cols-2">
-            <NoShowAudit councilId={councilId} />
-            <AwaitingHours councilId={councilId} />
-          </div>
+          <NoShowAudit councilId={councilId} />
+          <p className="text-xs text-muted">The Shifts Awaiting Hours audit is on the Oversight Desk.</p>
         </div>
       ) : null}
     </section>

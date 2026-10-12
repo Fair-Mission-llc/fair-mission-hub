@@ -65,7 +65,6 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   'finance/audit': { member: 'The semiannual Trustee audit: Trustees check the ledger lines, then sign and lock the audit.' },
   'finance/treasurer-desk': { member: 'The Treasurer assigns each ordered expense report to a budget line and a ledger account.' },
   expenses: { member: 'Files your own expense reports with receipts and shows where each report is in the approval steps.' },
-  'expenses/queue': { member: 'Tracks every expense report through its signatures and returns a report that needs changes.' },
   'expenses/disbursements': { member: 'Pays fully signed expense reports by check.' },
   'expenses/audit': { member: 'The Financial Secretary checks each submitted expense report and issues the written order.' },
   'expenses/authorize': { member: 'The Grand Knight counter-signs each ordered expense report.' },
@@ -78,7 +77,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     leader: "Reads the council's annual budget. Budget keepers draft it from May 1 to June 30 and approve it.",
   },
   'member-center': { member: "Shows the council's volunteers, hours, devotions and Top 5 leaderboard, and your own impact card." },
-  dashboard: { member: "Leadership's summary of Faith in Action work, monthly hours, members and funds." },
+  dashboard: { member: "Opens the Home desk: leadership's status badges and the Executive Summary of Faith in Action work, monthly hours, members and funds." },
   'performance/charts': { member: 'Charts membership growth and council service hours by month.' },
   history: { member: "Shows each year's officers, the council's achievements and the recorded oral histories. Record your own story here." },
   ledger: {

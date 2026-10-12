@@ -1,5 +1,5 @@
 'use client';
-// The Shared Member Center (Sprint 7A Extension): every member's view of how the council is doing, from
+// The Council Dashboard (Sprint 7A Extension; named the Shared Member Center until Sprint 8C): every member's view of how the council is doing, from
 // reports.memberCenter. Collective and non-financial on purpose - no cash, budget or ledger figure is on this page; those
 // stay on the Executive Summary and the finance screens, which ordinary members cannot open.
 //   - The month at a glance: volunteer count, hours served and the names of everyone who served.
@@ -139,11 +139,11 @@ function Center() {
           </div>
         }
       >
-        Shared Member Center
+        Council Dashboard
       </PageTitle>
       {center.error ? <Notice tone="error">{center.error}</Notice> : null}
       {!c ? (
-        center.error ? null : <p className="text-sm text-muted">Loading the Member Center…</p>
+        center.error ? null : <p className="text-sm text-muted">Loading the Council Dashboard…</p>
       ) : (
         <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
           <div className="flex flex-col gap-4">

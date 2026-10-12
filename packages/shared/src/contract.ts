@@ -3102,7 +3102,7 @@ export interface DataService {
      */
     councilEngagement(actorId: number, councilId: number, year: number, month: number): Promise<CouncilEngagement>;
     /**
-     * Sprint 7A Extension: the Shared Member Center (member-lifecycle.ts buildMemberCenter), open to every member. The
+     * Sprint 7A Extension: the Council Dashboard (member-lifecycle.ts buildMemberCenter), open to every member. The
      * month's volunteers, volunteer count and hours and the Top 5 Volunteers Leaderboard as in councilEngagement; the
      * council's combined devotional sums (its members' MemberDevotionals added up - never one member's tally); and the
      * caller's own impact card: events attended, hours and canonization shield. It carries no cash, budget or ledger
@@ -4160,7 +4160,7 @@ export interface DataService {
 
   /**
    * The phone's devotional tracker and canonization shield (Sprint 7A, member-lifecycle.ts). Each member reads and adds to
-   * only their own tally (MemberDevotionals); nobody else, Admins included, can read it. The Shared Member Center
+   * only their own tally (MemberDevotionals); nobody else, Admins included, can read it. The Council Dashboard
    * (reports.memberCenter) shows only the council's sums. A Knights of Columbus extension:
    * a white-label council rejects FRATERNAL_EXTENSION_REQUIRED. MEMBER_NOT_FOUND for an unknown member.
    */

@@ -236,7 +236,11 @@ describe('portal permissions', () => {
       expect(new Set(filed).size).toBe(filed.length);
       expect(filed as string[]).not.toContain('messages');
       expect(filed as string[]).not.toContain('distribution-lists');
-      const everyArea = portalAreas(superAdmin).filter((a) => a !== 'profile' && a !== 'messages' && a !== 'distribution-lists' && a !== 'navigation-guide');
+      // Sprint 8C: the Leadership Auditing Queue left the sidebar; its page stays an area.
+      expect(filed as string[]).not.toContain('expenses/queue');
+      const everyArea = portalAreas(superAdmin).filter(
+        (a) => a !== 'profile' && a !== 'messages' && a !== 'distribution-lists' && a !== 'navigation-guide' && a !== 'expenses/queue',
+      );
       expect([...everyArea].sort()).toEqual([...filed].sort());
       expect(PORTAL_NAV_GROUPS.map((g) => g.label)).toEqual(['Governance', 'Faith In Action', 'Finances', 'Performance', 'Resources', 'Answers', 'System Settings']);
       for (const desk of SIGN_OFF_DESKS) expect(filed).toContain(desk);
@@ -294,7 +298,7 @@ describe('portal permissions', () => {
         ['Faith In Action', ['activities', 'member-actions', 'events', 'calendar', 'faith-center']],
         [
           'Finances',
-          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/queue', 'expenses/audit', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'donations', 'financials/budget'],
+          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/audit', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing']],
@@ -309,7 +313,7 @@ describe('portal permissions', () => {
         ['Faith In Action', ['member-actions', 'calendar', 'faith-center']],
         [
           'Finances',
-          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/queue', 'expenses/disbursements', 'charities/vetting', 'charities/propose', 'charities/queue', 'donations', 'financials/budget'],
+          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/disbursements', 'charities/vetting', 'charities/propose', 'charities/queue', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing']],
@@ -379,7 +383,7 @@ describe('portal permissions', () => {
     });
   });
 
-  it('opens nominations to every member, appointments to the Grand Knight and Super Admins, and the ballot switches to council Admins (Sprint 5U)', () => {
+  it('opens nominations to every member, appointments to the Grand Knight, Deputy Grand Knight (Sprint 8C) and Super Admins, and the ballot switches to council Admins (Sprint 5U)', () => {
     const grandKnight = actor({ isOfficer: true, roles: ['Grand Knight'] });
     for (const u of [superAdmin, admin, officer, member, grandKnight]) expect(portalAreas(u)).toContain('elections');
     expect([superAdmin, grandKnight, admin, officer, member, actor({ isOfficer: true, roles: ['Deputy Grand Knight'] })].map(canAppointOfficers)).toEqual([
@@ -388,7 +392,7 @@ describe('portal permissions', () => {
       false,
       false,
       false,
-      false,
+      true,
     ]);
     expect(portalAreas(grandKnight)).toContain('elections/appointments');
     expect(portalAreas(admin)).not.toContain('elections/appointments');

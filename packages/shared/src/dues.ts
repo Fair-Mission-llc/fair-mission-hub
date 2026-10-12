@@ -86,7 +86,7 @@ export function buildDuesForecast(input: {
 // ---- the base dues rate editor (Sprint 6B) -------------------------------------
 
 /** The seats that set Council.base_dues_rate, matched by Role name like FINANCE_ROLE_NAMES. Nobody else may. */
-export const DUES_RATE_EDITOR_ROLE_NAMES = ['Grand Knight', 'Financial Secretary'] as const;
+export const DUES_RATE_EDITOR_ROLE_NAMES = ['Grand Knight', 'Deputy Grand Knight', 'Financial Secretary'] as const;
 
 /** The largest rate Council.base_dues_rate's DECIMAL(10,2) holds. */
 export const DUES_RATE_MAX = 99_999_999.99;
@@ -95,14 +95,14 @@ const holdsDuesRateSeat = (roles: readonly string[] | undefined) =>
   (roles ?? []).some((r) => (DUES_RATE_EDITOR_ROLE_NAMES as readonly string[]).includes(r));
 
 /**
- * councils.setDuesRate: an Active Grand Knight or Financial Secretary of the council. Admins and Super Admins without
+ * councils.setDuesRate: an Active Grand Knight, Deputy Grand Knight (Sprint 8C) or Financial Secretary of the council. Admins and Super Admins without
  * one of those seats are refused (DUES_RATE_EDITOR_REQUIRED); a seat-holder of another council gets COUNCIL_ACCESS_DENIED.
  */
 export function assertMayEditDuesRate(actor: MemberWriteActor, councilId: number): void {
   if (!actor.active || !holdsDuesRateSeat(actor.roles)) {
     throw new SecurityPrivilegeError(
       'DUES_RATE_EDITOR_REQUIRED',
-      `Only the council's Grand Knight or Financial Secretary can set its base dues rate; member ${actor.memberId} is ${describeActor(actor)}.`,
+      `Only the council's Grand Knight, Deputy Grand Knight or Financial Secretary can set its base dues rate; member ${actor.memberId} is ${describeActor(actor)}.`,
       { actorId: actor.memberId, councilId },
     );
   }

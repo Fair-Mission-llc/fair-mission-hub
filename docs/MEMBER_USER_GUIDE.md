@@ -90,7 +90,7 @@ The web portal sidebar has seven groups, called pillars. Every member sees these
 | **Governance** | Meeting Center, Council Officer Nominations, Constitutional Bylaws |
 | **Faith In Action** | Member Actions Hub, Visual Master Calendar |
 | **Finances** | My Expense Reports, Propose Charity Grant, Annual Budget Projections |
-| **Performance** | Shared Member Center, Post-event Ledger (event owners record results here) |
+| **Performance** | Council Dashboard, Post-event Ledger (event owners record results here) |
 | **Resources** | Fraternal Photo Gallery, Council Artifacts |
 | **Answers** | Online Help Center, SOP Center |
 
@@ -1384,13 +1384,13 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | --- | --- | --- |
 | The contact fields are locked. | The form copies your profile. | Change the details in **My Profile**. |
 
-### 9.7 Open your Shared Member Center
+### 9.7 Open the Council Dashboard
 
 > **Who can do this:** any active member.
 
 **Goal:** See how the council is doing this month and your own service record.
 
-**Start point:** Phone app → **Home** → **Open the Member Center**. Web portal: Sidebar → Performance → **Shared Member Center**.
+**Start point:** Phone app → **Home** → **Open the Council Dashboard**. Web portal: Sidebar → Performance → **Council Dashboard**.
 
 **Steps:**
 1. Open the start point.
@@ -1399,7 +1399,7 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 4. Read **Leaderboard**: the Top 5 volunteers with the most hours.
 5. Read **My impact**: your events, your hours, your canonization shield and your council history.
 
-**Expected result:** The **Shared Member Center** shows the council's service and your own impact. The page shows no money.
+**Expected result:** The **Council Dashboard** shows the council's service and your own impact. The page shows no money.
 
 **Common problems:**
 | Problem | Cause | Fix |

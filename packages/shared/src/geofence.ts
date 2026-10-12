@@ -15,7 +15,7 @@
 // a photo of the meeting (Meeting.photo_url). The web portal files meeting photos in the council's shared drive under
 // Fraternal Enterprise Suite / Media / Meeting_Photos (MEETING_PHOTO_DRIVE_FOLDER).
 // =========================================================================
-import { describeActor, BusinessRuleError, hasAdminRights, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
+import { describeActor, BusinessRuleError, hasAdminRights, hasSuperAdminRights, holdsGrandKnightAuthority, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 import type { Council } from './types';
 
 /** The Media subfolder that holds meeting photos in the Drive vault: Fraternal Enterprise Suite / Media / Meeting_Photos. */
@@ -155,19 +155,19 @@ export function cleanMeetingGeofence(input: unknown): Partial<Pick<Council, 'mee
 }
 
 /**
- * Who sets the meeting circle and PIN and may read the PIN: the council's Active Grand Knight or Admins, or any Active
- * Super Admin.
+ * Who sets the meeting circle and PIN and may read the PIN: the council's Active Grand Knight, Deputy Grand Knight (Sprint
+ * 8C) or Admins, or any Active Super Admin.
  */
 export function mayManageMeetingGeofence(actor: MemberWriteActor, councilId: number): boolean {
   if (hasSuperAdminRights(actor)) return true;
   if (actor.councilId !== councilId) return false;
-  return hasAdminRights(actor) || (actor.active && (actor.roles ?? []).includes('Grand Knight'));
+  return hasAdminRights(actor) || (actor.active && holdsGrandKnightAuthority(actor.roles));
 }
 
 /** Rejects GRAND_KNIGHT_REQUIRED for anyone else, COUNCIL_ACCESS_DENIED for a Grand Knight or Admin of another council. */
 export function assertMayManageMeetingGeofence(actor: MemberWriteActor, councilId: number): void {
   if (mayManageMeetingGeofence(actor, councilId)) return;
-  if (hasAdminRights(actor) || (actor.active && (actor.roles ?? []).includes('Grand Knight'))) {
+  if (hasAdminRights(actor) || (actor.active && holdsGrandKnightAuthority(actor.roles))) {
     throw new SecurityPrivilegeError(
       'COUNCIL_ACCESS_DENIED',
       `Member ${actor.memberId} sets the meeting check-in of their own council (${actor.councilId}) only, not council ${councilId}.`,
@@ -176,7 +176,7 @@ export function assertMayManageMeetingGeofence(actor: MemberWriteActor, councilI
   }
   throw new SecurityPrivilegeError(
     'GRAND_KNIGHT_REQUIRED',
-    `Only the council's Grand Knight, an Admin of the council or a Super Admin can set the meeting location and PIN; member ${actor.memberId} is ${describeActor(actor)}.`,
+    `Only the council's Grand Knight or Deputy Grand Knight, an Admin of the council or a Super Admin can set the meeting location and PIN; member ${actor.memberId} is ${describeActor(actor)}.`,
     { actorId: actor.memberId, councilId },
   );
 }

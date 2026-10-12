@@ -55,7 +55,7 @@ A member has one member type. A member may also hold one or more officer roles.
 
 | Officer role | Extra access |
 | --- | --- |
-| **Grand Knight** and **Deputy Grand Knight** | The executive dashboard and the charity vetting desk. The GK also counter-signs expenses and keeps the cadence and agenda templates. |
+| **Grand Knight** and **Deputy Grand Knight** | The executive dashboard and the charity vetting desk. Both counter-sign expenses, appoint officers and keep the cadence, the agenda templates, the bylaws, the meeting check-in and the base dues rate. The Deputy Grand Knight (DGK) has the same access as the Grand Knight (GK). |
 | **Financial Secretary** | Issues written orders on expenses. Posts to the general ledger. Pays checks. |
 | **Treasurer** | Posts to the general ledger. Pays checks. |
 | **Trustee** | Vets charity requests. Follows up on grants after 6 months. |
@@ -101,8 +101,8 @@ The rule includes the five officer desks: **Live Meeting Console**, **Annual Cad
 | --- | --- | --- |
 | **Governance** | Live Meeting Console, Annual Cadence Manager, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor | Officers, the GK, Admins. The Constitutional Advisor shows to officers, Admins and Super Admins only. |
 | **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar | Admins plan. Members volunteer. |
-| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, My Expense Reports, Leadership Auditing Queue, Bulk Check Disbursements, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charitable Disbursements Ledger, Donations History, Annual Budget Projections | Finance officers, the GK, Admins |
-| **Performance** | Executive Dashboard, Growth & Hours Charts, Post-event Ledger, Lessons Registry | Seated officers, Admins |
+| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, My Expense Reports, Bulk Check Disbursements, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charitable Disbursements Ledger, Donations History, Annual Budget Projections | Finance officers, the GK, Admins |
+| **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Post-event Ledger, Lessons Registry | Seated officers, Admins |
 | **Resources** | Fraternal Photo Gallery, Council Artifacts, Marketing Factory, 📂 Council Archive Vault | Every member. The Marketing Factory and the vault link show to officers and Admins only. |
 | **Answers** | Online Help Center, SOP Center | Every member |
 | **System Settings** | Councils, Feature Flags Control Center, Global System Parameters, Council Wide Settings, Affiliated Roster, Supreme Council Sync, Council Lookup Tables, Credentials Vault, Global Charities Registry, Global Governance Matrices, Parish & Pastors Linkage | Admins, finance officers, Super Admins. The Council Wide Settings and the Credentials Vault show to officers, Admins and Super Admins only. Global System Parameters shows to Super Admins only. |
@@ -251,7 +251,7 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 
 ### 4.2 Record a hand tally
 
-> **Prerequisite (who can do this):** You must be the council's Grand Knight or Recorder, a council Admin or a Super Admin.
+> **Prerequisite (who can do this):** You must be the council's Grand Knight, Deputy Grand Knight or Recorder, a council Admin or a Super Admin.
 > **Warning:** **Save tally & decide the motion** decides the motion. A tie fails the motion.
 
 **Goal:** Record a vote by raised hands.
@@ -274,7 +274,7 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 
 ### 4.3 Correct a live agenda line
 
-> **Prerequisite (who can do this):** You must be the council's Grand Knight or Recorder, a council Admin or a Super Admin.
+> **Prerequisite (who can do this):** You must be the council's Grand Knight, Deputy Grand Knight or Recorder, a council Admin or a Super Admin.
 
 **Goal:** Fix or add an agenda line during the meeting.
 
@@ -294,7 +294,7 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 
 ### 4.4 Lay down the year's meetings with a cadence
 
-> **Prerequisite (who can do this):** You must be a council Admin, the Grand Knight or a Super Admin. Other members do not see this desk.
+> **Prerequisite (who can do this):** You must be a council Admin, the Grand Knight, the Deputy Grand Knight or a Super Admin. Other members do not see this desk.
 > **Warning:** **Populate the year** creates up to 12 meetings and their invitations.
 
 **Goal:** Create the fraternal year's regular meetings in one step.
@@ -353,7 +353,7 @@ Invitations are released 5 days before each meeting by default. A Super Admin se
 
 ### 4.6 Keep the meeting agenda templates
 
-> **Prerequisite (who can do this):** You must be a council Admin, the Grand Knight or a Super Admin.
+> **Prerequisite (who can do this):** You must be a council Admin, the Grand Knight, the Deputy Grand Knight or a Super Admin.
 
 **Goal:** Set the default agenda for one meeting type.
 
@@ -374,7 +374,7 @@ Invitations are released 5 days before each meeting by default. A Super Admin se
 
 ### 4.7 Manage nominations and appointments
 
-> **Prerequisite (who can do this):** You must be an active member to nominate. You must be the Grand Knight, a council Admin or a Super Admin to appoint officers.
+> **Prerequisite (who can do this):** You must be an active member to nominate. You must be the Grand Knight, the Deputy Grand Knight or a Super Admin to appoint officers.
 
 **Goal:** Fill the council's elected and appointed seats.
 
@@ -413,7 +413,7 @@ The vault holds one bylaws document per council. Every member of the council rea
 
 ### 4.9 Edit the council bylaws
 
-> **Prerequisite (who can do this):** You must be the council's Grand Knight, a council Admin or a Super Admin. Other members see no **Edit bylaws** button.
+> **Prerequisite (who can do this):** You must be the council's Grand Knight or Deputy Grand Knight, a council Admin or a Super Admin. Other members see no **Edit bylaws** button.
 > **Warning:** **Save bylaws** replaces the stored text for every member. The vault keeps no earlier version.
 
 **Goal:** Change the council bylaws.
@@ -621,7 +621,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 ### 6.3 Give the final release for payment
 
-> **Prerequisite (who can do this):** You must be the council's Grand Knight or a Super Admin. Council Admins read the desk only.
+> **Prerequisite (who can do this):** You must be the council's Grand Knight or Deputy Grand Knight, or a Super Admin. Council Admins read the desk only.
 > **Warning:** the final release approves the report for payment.
 
 **Goal:** Give the second signature, which releases the report for payment.
@@ -652,7 +652,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Send a report back for correction.
 
-**Start point:** Sidebar → Finances → **Leadership Auditing Queue**.
+**Start point:** **Active Desks** row → **Financial Secretary Desk** → **Open the auditing queue**. The queue is not in the sidebar.
 
 **Steps:**
 1. Find the report.
@@ -694,7 +694,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| A report is missing. | The report lacks a signature. | Follow the report in the **Leadership Auditing Queue**. |
+| A report is missing. | The report lacks a signature. | Follow the report in the auditing queue (section 6.4). |
 
 ### 6.6 Concept: the general ledger
 
@@ -936,7 +936,7 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 
 **Goal:** Review one month of council activity.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Reports Desk** tab. **Home** shows only this month's four tiles.
+**Start point:** Sidebar → Performance → **Executive Dashboard**. The **Executive Summary** is the scrolling frame at the bottom of **Home**.
 
 **Steps:**
 1. Choose the **Month** and the **Year**.
@@ -1549,7 +1549,7 @@ The platform sends no message when an expense report changes status. The member 
 | --- | --- | --- | --- |
 | A shift starts in 24 hours | A reminder email with a calendar file | Every volunteer on the shift | The event's shift roster |
 | A meeting starts in 24 hours | A reminder email with a calendar file and the agenda | Every invitee | **Meeting Center** |
-| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Executive Dashboard** → **Reports Desk** → **Shifts awaiting hours** |
+| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Executive Dashboard** → **Oversight Desk** → **Shifts awaiting hours** |
 | Every 7 days after that (the council can change the days, section 16.3) | A follow-up text, until the shift is older than the logging window (90 days by default) | The volunteer | Same panel. The row shows **Closed** when the window ends. |
 | An officer sends an urgent alert | A phone push alert and a bell entry, kept 6 months | Members with the chosen skills or shifts | **Council Messages & Alerts** → **Dispatch High-Priority Push Notification Alert** |
 | A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on **Affiliated Roster** or **Supreme Council Sync** |
@@ -1569,9 +1569,9 @@ Only the Financial Secretary, the Treasurer, council Admins and Super Admins see
 
 ## 14. Member engagement and the roster lifecycle
 
-### 14.1 Concept: the Shared Member Center
+### 14.1 Concept: the Council Dashboard
 
-The **Shared Member Center** shows every member how the council is doing. The page has no money on it.
+The **Council Dashboard** shows every member how the council is doing. The page has no money on it.
 Cash, budgets and the general ledger stay on the **Executive Dashboard** and the Finances pages. Plain members cannot open those pages.
 
 | Card | What the card shows |
@@ -1585,13 +1585,13 @@ Cash, budgets and the general ledger stay on the **Executive Dashboard** and the
 - Members with equal hours share a place on the leaderboard.
 - A white-label organization does not see the devotions card or the shield.
 
-### 14.2 Open the Shared Member Center
+### 14.2 Open the Council Dashboard
 
 > **Prerequisite (who can do this):** Every active member of the council. A Super Admin opens the page for the Super Admin's own council.
 
 **Goal:** See the council's month and your own impact.
 
-**Start point:** Sidebar → Performance → **Shared Member Center**. On the phone: Home → **Open the Member Center**.
+**Start point:** Sidebar → Performance → **Council Dashboard**. On the phone: Home → **Open the Council Dashboard**.
 
 **Steps:**
 1. Choose the **Month** and the **Year**. The phone always shows the current month.
@@ -1636,10 +1636,12 @@ The shield has four levels. A member reaches a level when both the hours and the
 
 **Goal:** Set the hours and events that make a Saint in your council.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Reports Desk** → **Top 5 Volunteers Leaderboard**.
+The thresholds are the Canonization Rank benchmarks. You change the benchmarks on **Council Wide Settings** only. Every other page shows the benchmarks as read-only text.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Canonization Rank Benchmarks** card.
 
 **Steps:**
-1. Find **Canonization shield thresholds** under the leaderboard.
+1. Find the **Canonization Rank Benchmarks** card under the **Roster Inactivity Sweep** card.
 2. Enter the **Hours**. Use a whole number from 1 to 10,000.
 3. Enter the **Events**. Use a whole number from 1 to 1,000.
 4. Select **Save**.
@@ -1650,7 +1652,7 @@ The shield has four levels. A member reaches a level when both the hours and the
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The thresholds are refused. | A value is 0, a decimal or too large. | Enter a whole number in the allowed range. |
-| You do not see the thresholds. | Only Admins and Super Admins set the thresholds. | Ask a council Admin. |
+| The card shows the benchmarks as text only. | Only Admins and Super Admins set the thresholds. | Ask a council Admin. |
 
 ### 14.5 Read the monthly activity overview
 
@@ -1658,7 +1660,7 @@ The shield has four levels. A member reaches a level when both the hours and the
 
 **Goal:** See the month's volunteers next to the cash collected.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Reports Desk** tab.
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Home**. Scroll the **Executive Summary** frame.
 
 **Steps:**
 1. Choose the **Month** and the **Year**.
@@ -1691,7 +1693,7 @@ The platform keeps a history of every council that a member belongs to. The hist
 
 ### 14.7 Read a member's council membership history
 
-> **Prerequisite (who can do this):** You must have council Admin privileges for the member's council, or Super Admin privileges. A member reads the member's own history on the **Shared Member Center**.
+> **Prerequisite (who can do this):** You must have council Admin privileges for the member's council, or Super Admin privileges. A member reads the member's own history on the **Council Dashboard**.
 
 **Goal:** See every council a member belonged to.
 
@@ -1781,7 +1783,7 @@ A held entry does not count anywhere until a leader clears it. The rule covers t
 
 - The council's monthly summary and the **Executive Dashboard** hours.
 - The member's canonization shield and personal hours.
-- The **Top 5 Volunteers Leaderboard** and the **Shared Member Center**.
+- The **Top 5 Volunteers Leaderboard** and the **Council Dashboard**.
 
 The member sees this message when the platform holds an entry: "... hours sent to leadership review before they count toward your totals."
 The message also gives the reason.
@@ -2336,7 +2338,7 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 
 ### 18.1 Concept: the Annual Fraternal Roadmap
 
-The **Annual Fraternal Roadmap** is a card on the **Reports Desk** of the dashboard. **Home** shows the same steps as one line, the roadmap ribbon. The card shows the three steps that hand the council over to its next fraternal year. A cycle carries the calendar year of its steps. The 2027 cycle elects and budgets the 2027-2028 fraternal year.
+The **Annual Fraternal Roadmap** is a card in the **Executive Summary** frame on the dashboard **Home** desk. **Home** shows the same steps as one line, the roadmap ribbon. The card shows the three steps that hand the council over to its next fraternal year. A cycle carries the calendar year of its steps. The 2027 cycle elects and budgets the 2027-2028 fraternal year.
 
 | Step | Window | The portal marks the step done when |
 | --- | --- | --- |
@@ -2364,7 +2366,7 @@ The card opens on the current cycle. The current cycle changes to the next year 
 
 **Goal:** See where the council stands on its yearly hand-over, and alert the leaders to a missed step.
 
-**Start point:** **Active Desks** row → **Reports Desk**. On **Home**, select **Full roadmap →** in the roadmap ribbon.
+**Start point:** **Active Desks** row → **Home**. Select **Full roadmap ↓** in the roadmap ribbon. The **Executive Summary** frame scrolls to the card.
 
 **Steps:**
 1. Scroll to the **Annual Fraternal Roadmap** card.
@@ -2422,7 +2424,7 @@ When the location check fails, the phone asks for the 4-digit **meeting PIN**. T
 
 ### 18.5 Set the meeting location and the meeting PIN
 
-> **Who can do this:** the council's Grand Knight and Admins, and Super Admins. Other officers do not see the **📍 Meeting Check-In** card.
+> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Admins, and Super Admins. Other officers do not see the **📍 Meeting Check-In** card.
 > **Warning:** a new PIN takes effect at once. Members who know only the old PIN cannot check in with the PIN.
 
 **Goal:** Set where the council meets, how close a phone must be, and the meeting PIN.
@@ -2489,40 +2491,43 @@ The **Executive Dashboard** is a set of desks. A row of folder tabs sits under t
 - The open desk is white and raised. A deep gold edge runs along its top.
 - **Home** is the first tab. **Member Desk** is the last tab.
 - Select a tab on any page. The dashboard opens on that desk.
+- Select **Executive Dashboard** in the sidebar on any page. The dashboard always opens on **Home**, also when another desk is open.
 
 Only readers who may open the dashboard see the row. These readers are the council's Admins and officers, the Council Historian, and Super Admins.
 
-A Council Historian without an officer seat and without Admin rights gets two tabs only: **Historian Desk** and **Member Desk**. This Historian does not get **Home** or the **Reports Desk**.
+A Council Historian without an officer seat and without Admin rights gets two tabs only: **Historian Desk** and **Member Desk**. This Historian does not get **Home**.
 
 After you sign in, the portal opens on the dashboard **Home** desk when you hold an officer seat or Admin rights. A member without an officer seat or Admin rights opens on **Member Actions**.
 
-The left sidebar does not change. Every desk page stays in the sidebar.
+Every full desk page stays in the sidebar. The **Leadership Auditing Queue** page left the sidebar. Open the page from the **Financial Secretary Desk**.
 
 ### 19.2 Concept: the Home desk
 
-The **Home** desk fits on one screen. You do not scroll the page. **Home** holds four rows and no work lists.
+The **Home** desk fits on one laptop or desktop screen. You do not scroll the page. **Home** holds four rows. The last row scrolls inside its own frame.
 
 | Row on Home | What the row shows |
 | --- | --- |
-| Roadmap ribbon | The **Annual Fraternal Roadmap** steps on one line. Each step shows its status and due date. **Full roadmap →** opens the **Reports Desk**. |
-| Status badges | One badge for each queue you may work, with its count. Select a badge to open its desk. |
-| Stat tiles | This month's labor hours, unique Knights, net balance and community outreach. |
+| Roadmap ribbon | The **Annual Fraternal Roadmap** steps on one line. Each step shows its status and due date. **Full roadmap ↓** scrolls the **Executive Summary** frame to the full card. |
+| Status badges | One badge for each queue you may work, with its count. Select a badge to open its desk at the matching list. |
 | Widgets | **Bible Verse of the Day**, **Live Actionable Reminders**, **Liturgical Feast Day Tracker** and **Today's Event Agenda**. A long list scrolls inside its own card. |
+| **Executive Summary** frame | The month and year pickers, the **Annual Fraternal Roadmap** card, the four stat tiles, the monthly activity overview, the leaderboard, the budget gauges, the **Financial ledger** table, the highlights and the no-show audit. The frame scrolls. The page does not. |
 
 The status badges:
 
 | Badge | Desk it opens | Who sees the badge |
 | --- | --- | --- |
-| **[ 📋 3 Vouchers Pending ]** | **Grand Knight Desk** | The Grand Knight (GK), the council's Admins and Super Admins |
-| **[ ✍️ 2 Written Orders Waiting ]** | **Financial Secretary Desk** | The Financial Secretary (FS), the council's Admins and Super Admins |
-| **[ 🏷️ 1 Sheet to Code ]** | **Treasurer Desk** | The Treasurer, the council's Admins and Super Admins |
-| **[ 📝 2 Minutes Due ]** | **Recorder Desk** | The Recorder, the council's Admins and Super Admins |
-| **[ ⚠️ 2 Items Quarantined ]** | **Oversight Desk** | The GK, the Deputy Grand Knight (DGK), the council's Admins and Super Admins, while **Volunteer time quarantine** is on |
-| **[ 📨 1 Access Request ]** | **Oversight Desk** | Super Admins |
-| **[ ⏳ 4 Shifts Awaiting Hours ]** | **Reports Desk** | Every reader of the dashboard |
-| **[ 💼 2 Open Sheets of Mine ]** | **Member Desk** | Every reader of the dashboard |
+| **[ 📋 3 Vouchers Pending ]** | **Grand Knight Desk** → **Voucher Release queue** | The Grand Knight (GK), the Deputy Grand Knight (DGK), the council's Admins and Super Admins |
+| **[ ✍️ 2 Written Orders Waiting ]** | **Financial Secretary Desk** → **Written-order queue** | The Financial Secretary (FS), the council's Admins and Super Admins |
+| **[ 🏷️ 1 Sheet to Code ]** | **Treasurer Desk** → **Ledger Line Coder queue** | The Treasurer, the council's Admins and Super Admins |
+| **[ 📝 2 Minutes Due ]** | **Recorder Desk** → **Business calendar** | The Recorder, the council's Admins and Super Admins |
+| **[ ⚠️ 2 Items Quarantined ]** | **Oversight Desk** → **Volunteer Time Quarantine Desk** | The GK, the DGK, the council's Admins and Super Admins, while **Volunteer time quarantine** is on |
+| **[ 📨 1 Access Request ]** | **Oversight Desk** → **Inbound Council Mail Center** | Super Admins only. A council Admin never sees the badge. |
+| **[ ⏳ 4 Shifts Awaiting Hours ]** | **Oversight Desk** → **Shifts awaiting hours** | The council's officers and Admins, and Super Admins |
+| **[ 💼 2 Open Sheets of Mine ]** | **Member Desk** → **My open expense sheets** | Every reader of the dashboard |
 
 A badge with work waiting is filled with gold. The quarantine badge is red. A badge with a count of 0 is white.
+
+Each badge is a link. Select a badge. The desk of the badge opens, and the matching list scrolls into view. A gold ring shows around the list for 2 seconds.
 
 The **Bible Verse of the Day** and the **Liturgical Feast Day Tracker** show only while the council's **Faith Center** module is on. A white-label organization does not see the two faith widgets.
 
@@ -2534,18 +2539,17 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK, the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. | Sidebar → Finances → **GK Expense Authorize** |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. | Sidebar → Finances → **GK Expense Authorize** |
 | **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The **Written-order queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | Sidebar → Finances → **FS Expense Audit** |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | Sidebar → Performance → **Council History** |
-| **Oversight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **🚨 Volunteer Time Quarantine Desk** (section 15). Super Admins also get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
-| **Reports Desk** | Every reader of the dashboard | The full **Executive Summary**: the month and year pickers, the **Annual Fraternal Roadmap** card, the stat tiles, the budget gauges, the ledger, the highlights and the **Executive audits**. | None. The desk is the full page. |
-| **Member Desk** | Every reader of the dashboard | **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Shared Member Center** |
+| **Oversight Desk** | The council's officers and Admins, and Super Admins | The **Shifts awaiting hours** audit. The GK, the DGK, the council's Admins and Super Admins also get the **🚨 Volunteer Time Quarantine Desk** (section 15). Only Super Admins get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
+| **Member Desk** | Every reader of the dashboard | **[ 🚗 Open Shifts Needing Volunteers ]**, **[ 📥 My Charity Requests ]**, **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
-Earlier sections of this guide name the **Executive Dashboard** as a start point. For those tasks, open the **Reports Desk**.
+Earlier sections of this guide name the **Executive Dashboard** as a start point. For those tasks, open **Home** and scroll the **Executive Summary** frame.
 
 Each tab has its own web address. The address is the dashboard address with the tab name after a `#` sign:
 
@@ -2558,7 +2562,6 @@ Each tab has its own web address. The address is the dashboard address with the 
 | **Recorder Desk** | `/dashboard#recorder` |
 | **Historian Desk** | `/dashboard#historian` |
 | **Oversight Desk** | `/dashboard#oversight` |
-| **Reports Desk** | `/dashboard#reports` |
 | **Member Desk** | `/dashboard#member` |
 
 Save a desk address as a browser bookmark to open the desk directly. The browser also remembers the last tab you opened. The dashboard opens on that tab the next time. A tab you cannot open falls back to your first tab. For most readers, the first tab is **Home**.
@@ -2577,11 +2580,11 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 2. Read the roadmap ribbon. The gold step is next. A red step is overdue.
 3. Read the status badges. A gold or red badge has work waiting.
 4. Select a badge. The badge's desk opens.
-5. Read the four stat tiles for this month.
-6. Read the four widgets. Select a reminder link to open its full desk page.
-7. Select **Reports Desk** for other months, the budget gauges and the audits.
+5. Read the four widgets. Select a reminder link to open its full desk page.
+6. Scroll the **Executive Summary** frame for the stat tiles, the budget gauges, the ledger and the no-show audit.
+7. Choose another **Month** or **Year** in the frame to read an earlier month.
 
-**Expected result:** **Home** shows the ribbon, the badges, the tiles and the widgets without a page scroll.
+**Expected result:** **Home** shows the ribbon, the badges, the widgets and the **Executive Summary** frame without a page scroll.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -2594,7 +2597,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 ### 19.5 Release vouchers from the Grand Knight Desk
 
-> **Who can do this:** the council's Grand Knight and Super Admins sign. The council's Admins read the desk.
+> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Super Admins sign. The council's Admins read the desk.
 > **Warning:** the final release sets the sheet to **Approved** and sends the sheet to payment. You cannot undo the release.
 
 **Goal:** Find the sheets that wait for the final release, and release them.
@@ -2613,7 +2616,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The **Grand Knight Desk** tab does not show. | You do not hold the Grand Knight seat on this council, and you are not an Admin. | Use the **Home** tab. Ask the Grand Knight to release the sheets. |
+| The **Grand Knight Desk** tab does not show. | You do not hold the Grand Knight or Deputy Grand Knight seat on this council, and you are not an Admin. | Use the **Home** tab. Ask the Grand Knight to release the sheets. |
 | A sheet shows no release button on the full desk. | You submitted, ordered or coded that sheet (the collusion guard). | Ask a Super Admin to release the sheet. |
 
 ### 19.6 Work the Financial Secretary Desk and the roster imports
@@ -2670,24 +2673,29 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 > **Who can do this:** every reader of the dashboard.
 
-**Goal:** See your own unpaid expense sheets and your shifts for the next 30 days.
+**Goal:** See your own unpaid expense sheets, your shifts, the open shifts and your charity requests.
 
 **Start point:** **Active Desks** row → **Member Desk**.
 
 **Steps:**
 1. Select the **Member Desk** tab.
-2. Read **My open expense sheets**. The status pill shows where each sheet stands.
-3. Select **Open my expenses** to edit a draft or submit a sheet.
-4. Read **My shifts: next 30 days**.
-5. Select **Open the Member Center** for the council's service record and your own impact card.
+2. Read **[ 🚗 Open Shifts Needing Volunteers ]**. The card lists the shifts in the next 30 days that still need volunteers, such as the parish parking lot shifts.
+3. Select **Sign up** on a shift to take a place. The shift leaves the card.
+4. Read **[ 📥 My Charity Requests ]**. The tracking steps show the stage of each request that you carry.
+5. Read **My open expense sheets**. The status pill shows the stage of each sheet.
+6. Select **Open my expenses** to edit a draft or submit a sheet.
+7. Read **My shifts: next 30 days**.
+8. Select **Open the Council Dashboard** for the council's service record and your own impact card.
 
-**Expected result:** The desk lists each unpaid sheet and each coming shift.
+**Expected result:** The desk lists the open shifts, your charity requests, each unpaid sheet and each coming shift.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A paid sheet does not show. | The desk lists only sheets that are not **Reimbursed**. | Open **My Expense Reports** to see paid sheets. |
 | A shift after 30 days does not show. | The desk lists the next 30 days only. | Open the council calendar. |
+| **[ 📥 My Charity Requests ]** does not show. | The council's charity proposals module is off. | Ask a Super Admin to turn on the module on the **Feature Flags** page. |
+| **Sign up** shows an error. | The shift is full, or the shift overlaps another of your shifts. | Pick another shift. |
 
 ### 19.9 Concept: the minutes countdown
 

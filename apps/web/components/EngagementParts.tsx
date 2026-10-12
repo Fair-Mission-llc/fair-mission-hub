@@ -7,7 +7,11 @@
 //     (councils.setRankThresholds), the bar a member's phone shield is measured against.
 //
 // Sprint 7A Extension: the leaderboard, the web canonization shield and the council history card are shared with the
-// Shared Member Center (/member-center) and the roster.
+// Council Dashboard (/member-center, named the Shared Member Center until Sprint 8C) and the roster.
+//
+// Sprint 8C: outside System Settings the Canonization Rank benchmarks are a read-only information block
+// (RankThresholdsInfo). The editor (RankThresholdsCard) lives only on System Settings > Council Wide Settings, for the
+// council's Admins and Super Admins (councils.setRankThresholds checks the same rule).
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   canAdministerCouncil,
@@ -21,13 +25,45 @@ import {
   type LeaderboardEntry,
   type MonthlySummary,
 } from '@kofc/shared';
-import { Button, Field, Input, Notice } from '@/components/ui';
+import { Button, Field, Input, Notice, Panel } from '@/components/ui';
 import { formatDecimalHours, formatMoney, formatPersonName } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
+
+/**
+ * The Canonization Rank benchmarks as a read-only information block (Sprint 8C): what a member needs for each shield
+ * level. Shown everywhere outside System Settings.
+ */
+export function RankThresholdsInfo({ council }: { council: Council }) {
+  const t = councilRankThresholds(council);
+  return (
+    <section aria-label="Canonization Rank benchmarks" className="mt-3 border-t border-line pt-3 text-xs">
+      <p>
+        <span className="font-bold">Canonization Rank benchmarks.</span> Saint: {t.hours.toLocaleString('en-US')} hours and{' '}
+        {t.events.toLocaleString('en-US')} events. Blessed at two thirds and Venerable at one third of each.
+      </p>
+      <p className="mt-1 text-muted">Read only. The council&apos;s Admins change them in System Settings: Council Wide Settings.</p>
+    </section>
+  );
+}
+
+/** The Canonization Rank benchmarks editor (System Settings > Council Wide Settings only, Sprint 8C). */
+export function RankThresholdsCard({ council, onSaved }: { council: Council; onSaved: () => void }) {
+  const user = useUser();
+  return (
+    <Panel title="Canonization Rank Benchmarks" className="mt-6">
+      <p className="text-sm">The bar each member&apos;s canonization shield is measured against: {CANONIZATION_LEVELS.join(' → ')}.</p>
+      {canAdministerCouncil(user, council.id) ? (
+        <ThresholdEditor council={council} onSaved={onSaved} />
+      ) : (
+        <RankThresholdsInfo council={council} />
+      )}
+    </Panel>
+  );
+}
 
 function ThresholdEditor({ council, onSaved }: { council: Council; onSaved: () => void }) {
   const user = useUser();
@@ -142,14 +178,14 @@ export function EngagementCards({
 
       <Leaderboard entries={e?.leaderboard ?? null}>
         <p className="mt-3 text-xs text-muted">Shield levels: {CANONIZATION_LEVELS.join(' → ')}.</p>
-        {council.data && canAdministerCouncil(user, councilId) ? <ThresholdEditor council={council.data} onSaved={() => void council.reload()} /> : null}
+        {council.data ? <RankThresholdsInfo council={council.data} /> : null}
       </Leaderboard>
     </div>
   );
 }
 
 /**
- * The gold-bordered Top 5 Volunteers Leaderboard, shared by the Executive Summary and the Shared Member Center (Sprint 7A
+ * The gold-bordered Top 5 Volunteers Leaderboard, shared by the Executive Summary and the Council Dashboard (Sprint 7A
  * Extension). `entries` null while loading; `children` follow the list.
  */
 export function Leaderboard({ entries, children }: { entries: readonly LeaderboardEntry[] | null; children?: ReactNode }) {
@@ -213,7 +249,7 @@ const shortDate = (stamp: string | null) =>
 
 /**
  * The council history card (Sprint 7A Extension): every council the member has belonged to, oldest first, from
- * members.listAffiliations. Shown on the roster to Admins and on the Member Center to the member.
+ * members.listAffiliations. Shown on the roster to Admins and on the Council Dashboard to the member.
  */
 export function AffiliationHistoryCard({ memberId, title = 'Council membership history' }: { memberId: number; title?: string }) {
   const user = useUser();

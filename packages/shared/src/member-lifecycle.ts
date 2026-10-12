@@ -532,7 +532,7 @@ export function assertMayReadAffiliations(actor: MemberWriteActor, member: Pick<
   );
 }
 
-// ---- Shared Member Center (Sprint 7A Extension) ------------------------------------------------------------------
+// ---- Council Dashboard (Sprint 7A Extension) ------------------------------------------------------------------
 
 /** The council's combined devotional tally: sums only, never who prayed what. */
 export interface CouncilDevotionTotals {
@@ -557,7 +557,7 @@ export interface PersonalImpact {
 }
 
 /**
- * reports.memberCenter: the Shared Member Center, open to every member. Collective, non-financial council figures - no
+ * reports.memberCenter: the Council Dashboard, open to every member. Collective, non-financial council figures - no
  * cash, budget or ledger figure is in it - and the viewer's own impact card.
  */
 export interface MemberCenter extends CouncilEngagement {
@@ -581,7 +581,7 @@ export function councilDevotionTotals(rows: readonly MemberDevotionals[], member
   return totals;
 }
 
-/** Builds the Member Center from the engagement card, the council's devotional totals and the viewer's own logs. */
+/** Builds the Council Dashboard from the engagement card, the council's devotional totals and the viewer's own logs. */
 export function buildMemberCenter(input: {
   engagement: CouncilEngagement;
   viewer: Pick<Member, 'id' | 'MemberFirstName' | 'MemberLastName'>;

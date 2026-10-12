@@ -812,8 +812,11 @@ const DB_NAME = 'kofc.db';
  *     and Council Wide Settings moves under /system-settings (Sprint 8A); phones rebuild in step.
  * 74: Meeting.minutes_text and minutes_published_at (the Recorder Desk's minutes) and CouncilHistorianBulletin (the
  *     Historian Desk's monthly bulletins) (Sprint 8B).
+ * 75: no table change - the Shared Member Center is renamed the Council Dashboard, the Reports Desk merges into the
+ *     Executive Dashboard's Home and the Deputy Grand Knight takes every Grand Knight grant (Sprint 8C); phones rebuild
+ *     in step.
  */
-const SCHEMA_VERSION = 74;
+const SCHEMA_VERSION = 75;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -4013,7 +4016,7 @@ export class SqliteDataService implements DataService {
     memberCenter: async (actorId, councilId, year, month) => {
       const { fromDate, toDate } = monthBounds(year, month);
       const db = await this.ready();
-      assertMayReadCouncilHistory(await this.memberWriteActor(db, actorId), councilId, `open the Member Center of council ${councilId}`);
+      assertMayReadCouncilHistory(await this.memberWriteActor(db, actorId), councilId, `open the Council Dashboard of council ${councilId}`);
       await this.assertCouncilsExist(db, [councilId]);
       const [councilLogs, allLogs, members, active, council, viewer, devotionRows] = await Promise.all([
         this.serviceLogs(db, councilId),

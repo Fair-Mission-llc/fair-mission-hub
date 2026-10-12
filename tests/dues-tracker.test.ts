@@ -347,12 +347,14 @@ describe('Financial Management Center wiring', () => {
 });
 
 describe('canEditDuesRate and cleanDuesRate (Sprint 6B)', () => {
-  it('admits only the Grand Knight and Financial Secretary seats of the council', () => {
-    expect(DUES_RATE_EDITOR_ROLE_NAMES).toEqual(['Grand Knight', 'Financial Secretary']);
+  it('admits only the Grand Knight, Deputy Grand Knight (Sprint 8C) and Financial Secretary seats of the council', () => {
+    expect(DUES_RATE_EDITOR_ROLE_NAMES).toEqual(['Grand Knight', 'Deputy Grand Knight', 'Financial Secretary']);
     expect(canEditDuesRate({ councilId: OWN, roles: ['Grand Knight'] }, OWN)).toBe(true);
+    expect(canEditDuesRate({ councilId: OWN, roles: ['Deputy Grand Knight'] }, OWN)).toBe(true);
+    expect(canEditDuesRate({ councilId: OWN, roles: ['Deputy Grand Knight'] }, OTHER)).toBe(false);
     expect(canEditDuesRate({ councilId: OWN, roles: ['Financial Secretary'] }, OWN)).toBe(true);
     expect(canEditDuesRate({ councilId: OWN, roles: ['Financial Secretary'] }, OTHER)).toBe(false);
-    for (const role of ['Treasurer', 'Deputy Grand Knight', 'Trustee 1', 'Member']) expect(canEditDuesRate({ councilId: OWN, roles: [role] }, OWN)).toBe(false);
+    for (const role of ['Treasurer', 'Trustee 1', 'Member']) expect(canEditDuesRate({ councilId: OWN, roles: [role] }, OWN)).toBe(false);
     expect(canEditDuesRate({ councilId: OWN }, OWN)).toBe(false);
   });
 
@@ -397,7 +399,7 @@ async function addMember(db: DataService, councilId: number, type: 'Admin' | 'Me
 }
 
 describe.each(drivers)('councils.setDuesRate ($name)', (d) => {
-  it('lets the council’s Grand Knight or Financial Secretary save base_dues_rate, and nobody else', async () => {
+  it('lets the council’s Grand Knight, Deputy Grand Knight or Financial Secretary save base_dues_rate, and nobody else', async () => {
     const db = await d.make();
     // Seed: the Super Admin (member 1) holds council 1's Grand Knight seat and the Admin (member 2) its Financial Secretary seat.
     expect(await db.councils.setDuesRate(MEMBER.superAdmin, OWN, 42.5)).toMatchObject({ id: OWN, base_dues_rate: 42.5 });
@@ -410,7 +412,9 @@ describe.each(drivers)('councils.setDuesRate ($name)', (d) => {
     const deputy = await addMember(db, OWN, 'Member', 'dues.deputy.gk@example.com');
     grantRole(d, db, deputy, 'Deputy Grand Knight');
     const seatlessAdmin = await addMember(db, OWN, 'Admin', 'dues.plain.admin@example.com');
-    for (const actor of [MEMBER.member, treasurer, deputy, seatlessAdmin]) await expectPrivilege(db.councils.setDuesRate(actor, OWN, 50), 'DUES_RATE_EDITOR_REQUIRED');
+    for (const actor of [MEMBER.member, treasurer, seatlessAdmin]) await expectPrivilege(db.councils.setDuesRate(actor, OWN, 50), 'DUES_RATE_EDITOR_REQUIRED');
+    // Sprint 8C: the Deputy Grand Knight sets it with the Grand Knight's parity.
+    expect(await db.councils.setDuesRate(deputy, OWN, 45)).toMatchObject({ id: OWN, base_dues_rate: 45 });
     // A Grand Knight of one council cannot set another's rate, Super Admin or not.
     await expectPrivilege(db.councils.setDuesRate(MEMBER.superAdmin, OTHER, 50), 'COUNCIL_ACCESS_DENIED');
     expect((await db.councils.get(OWN))?.base_dues_rate).toBe(45);

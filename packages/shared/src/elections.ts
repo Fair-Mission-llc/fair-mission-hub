@@ -143,20 +143,28 @@ const outsideCouncil = (actor: MemberWriteActor, councilId: number, action: stri
     { actorId: actor.memberId, actorCouncilId: actor.councilId, councilId },
   );
 
+/**
+ * Sprint 8C: the sitting Grand Knight, or an Active Deputy Grand Knight of the council, who holds the Grand Knight's
+ * authority with full parity.
+ */
+const holdsSittingGrandKnightAuthority = (actor: MemberWriteActor, councilId: number, sittingGrandKnightId: number | null): boolean =>
+  actor.active &&
+  (actor.memberId === sittingGrandKnightId || (actor.councilId === councilId && (actor.roles ?? []).includes(DEPUTY_GRAND_KNIGHT_ROLE)));
+
 function concludeDenial(actor: MemberWriteActor, councilId: number, sittingGrandKnightId: number | null): SecurityPrivilegeError | null {
   if (hasSuperAdminRights(actor)) return null;
-  const isGrandKnight = actor.active && actor.memberId === sittingGrandKnightId;
+  const isGrandKnight = holdsSittingGrandKnightAuthority(actor, councilId, sittingGrandKnightId);
   if (!hasAdminRights(actor) && !isGrandKnight) {
     return new SecurityPrivilegeError(
       'ADMIN_REQUIRED',
-      `Only an active Admin of the council, its sitting Grand Knight or a Super Admin can conclude the fraternal year; member ${actor.memberId} is ${describeActor(actor)}.`,
+      `Only an active Admin of the council, its sitting Grand Knight or Deputy Grand Knight, or a Super Admin can conclude the fraternal year; member ${actor.memberId} is ${describeActor(actor)}.`,
       { actorId: actor.memberId, actorType: actor.memberType ?? null, councilId },
     );
   }
   return actor.councilId === councilId ? null : outsideCouncil(actor, councilId, 'conclude the fraternal year');
 }
 
-/** elections.concludeFraternalYear: an Active Super Admin, an Active Admin of the council, or its sitting Grand Knight. */
+/** elections.concludeFraternalYear: an Active Super Admin, an Active Admin of the council, or its sitting Grand Knight or Deputy Grand Knight. */
 export function assertMayConcludeFraternalYear(actor: MemberWriteActor, councilId: number, sittingGrandKnightId: number | null): void {
   const denial = concludeDenial(actor, councilId, sittingGrandKnightId);
   if (denial) throw denial;
@@ -181,15 +189,18 @@ export function assertMayRecordAbdication(actor: MemberWriteActor, councilId: nu
 
 function appointDenial(actor: MemberWriteActor, councilId: number, sittingGrandKnightId: number | null): SecurityPrivilegeError | null {
   if (hasSuperAdminRights(actor)) return null;
-  if (actor.active && actor.memberId === sittingGrandKnightId) return null;
+  if (holdsSittingGrandKnightAuthority(actor, councilId, sittingGrandKnightId)) return null;
   return new SecurityPrivilegeError(
     'GRAND_KNIGHT_REQUIRED',
-    `Only the sitting Grand Knight of council ${councilId} or a Super Admin can appoint officers; member ${actor.memberId} is not.`,
+    `Only the sitting Grand Knight or Deputy Grand Knight of council ${councilId} or a Super Admin can appoint officers; member ${actor.memberId} is not.`,
     { actorId: actor.memberId, councilId, sittingGrandKnightId },
   );
 }
 
-/** elections.assignAppointedRole and the appointments desk: the council's sitting (Active) Grand Knight or an Active Super Admin. */
+/**
+ * elections.assignAppointedRole and the appointments desk: the council's sitting (Active) Grand Knight, its Active Deputy
+ * Grand Knight (Sprint 8C) or an Active Super Admin.
+ */
 export function assertMayAppointOfficers(actor: MemberWriteActor, councilId: number, sittingGrandKnightId: number | null): void {
   const denial = appointDenial(actor, councilId, sittingGrandKnightId);
   if (denial) throw denial;

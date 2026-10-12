@@ -23,19 +23,35 @@
 //   - Historian Desk           canOpenHistorianDesk        (the Digital Fraternal Annals Scrapbook)
 // A Council Historian without an officer seat or Admin keys opens /dashboard for the Historian Desk alone: Home and
 // the Reports Desk stay with the executive readers (isHistorianDeskOnly).
+//
+// Sprint 8C (schema version 75): the Reports Desk is dismantled. Its Executive Summary - the month's charts, the ledger
+// table, budget and mission tracking and the no-show audit - merges into Home, the Executive Dashboard's own canvas, in a
+// frame that scrolls inside itself so Home still fits one screen. The Shifts Awaiting Hours audit consolidates onto the
+// Oversight Desk, which every executive-audit reader now opens (canOpenOversightDesk); the Volunteer Time Quarantine
+// stays with its own reviewers inside it. The sidebar's Executive Dashboard link always opens Home
+// (EXECUTIVE_DASHBOARD_HOME_HREF), and each Home status badge names the desk row it opens (DESK_FOCUS_TARGETS).
 // =========================================================================
-import type { CalendarEntry, SessionUser } from './contract';
+import type { CalendarEntry, SessionUser, ShiftFeedItem } from './contract';
 import { observancesBetween, liturgicalBanner, type Observance } from './liturgical';
 import type { FeatureFlags } from './features';
-import { canOpenExpenseAuditDesk, canOpenExpenseAuthorizeDesk, canOpenTreasurerDesk, canReviewVolunteerQuarantine, isAdmin, portalAreas } from './permissions';
+import {
+  canOpenExpenseAuditDesk,
+  canOpenExpenseAuthorizeDesk,
+  canOpenTreasurerDesk,
+  canReviewVolunteerQuarantine,
+  canViewExecutiveAudits,
+  isAdmin,
+  portalAreas,
+} from './permissions';
 import { addDays } from './planning';
+import { isShiftFull, visibleFeed } from './presentation';
 import { canOpenHistorianDesk, canOpenRecorderDesk } from './recorder-historian';
 import type { TenantType } from './tenant';
 import type { NotificationLog } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
 
-export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'oversight' | 'reports' | 'member';
+export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'oversight' | 'member';
 
 export interface DashboardTab {
   id: DashboardTabId;
@@ -53,19 +69,26 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'recorder', label: 'Recorder Desk', anchor: 'recorder' },
   { id: 'historian', label: 'Historian Desk', anchor: 'historian' },
   { id: 'oversight', label: 'Oversight Desk', anchor: 'oversight' },
-  { id: 'reports', label: 'Reports Desk', anchor: 'reports' },
   { id: 'member', label: 'Member Desk', anchor: 'member' },
 ];
 
 /**
  * Sprint 8B: a Council Historian who holds no officer seat and no Admin keys. Their seat opens /dashboard for the
- * Historian Desk only (and their own Member Desk), never Home's council figures or the Reports Desk.
+ * Historian Desk only (and their own Member Desk), never Home's council figures.
  */
 export const isHistorianDeskOnly = (u: Actor): boolean => !isAdmin(u) && !u.isOfficer && canOpenHistorianDesk(u, u.councilId);
 
 /**
- * The tabs this reader gets on the council's dashboard: Home, Reports and Member always (Home and Reports not for a
- * Historian-only reader), each other desk by its gate.
+ * The Oversight Desk (Sprint 8C): the Volunteer Time Quarantine's reviewers (canReviewVolunteerQuarantine) and every
+ * executive-audit reader (canViewExecutiveAudits), who find the Shifts Awaiting Hours audit there. The quarantine queue
+ * and the Inbound Council Mail Center keep their own gates inside the desk.
+ */
+export const canOpenOversightDesk = (u: Actor, councilId: number): boolean =>
+  canReviewVolunteerQuarantine(u, councilId) || canViewExecutiveAudits(u, councilId);
+
+/**
+ * The tabs this reader gets on the council's dashboard: Home and Member always (Home not for a Historian-only reader),
+ * each other desk by its gate. Sprint 8C: the Reports Desk merged into Home.
  */
 export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
   const executive = !isHistorianDeskOnly(u);
@@ -76,8 +99,7 @@ export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
     treasurer: canOpenTreasurerDesk(u, councilId),
     recorder: canOpenRecorderDesk(u, councilId),
     historian: canOpenHistorianDesk(u, councilId),
-    oversight: canReviewVolunteerQuarantine(u, councilId),
-    reports: executive,
+    oversight: canOpenOversightDesk(u, councilId),
     member: true,
   };
   return DASHBOARD_TABS.filter((t) => cleared[t.id]);
@@ -93,12 +115,53 @@ export function dashboardTabFromAnchor(hash: string | null | undefined, tabs: re
 export const ACTIVE_DESKS_TITLE = 'Active Desks';
 
 /**
+ * Sprint 8C: where the sidebar's Executive Dashboard link goes. A click there always resets the view to the Home landing
+ * deck, whichever desk the reader opened last.
+ */
+export const EXECUTIVE_DASHBOARD_HOME_HREF = '/dashboard#home';
+
+/** A Home status badge's queue (Sprint 8A badges; Sprint 8C names the desk row each one opens). */
+export type DeskBadgeKey = 'vouchers' | 'orders' | 'coding' | 'minutes' | 'quarantine' | 'access' | 'hours' | 'mine';
+
+/**
+ * Sprint 8C click-through badges: the Active Desk each Home badge switches to and the id of the workspace row on that desk
+ * it scrolls to and highlights.
+ */
+export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; rowId: string }> = {
+  vouchers: { anchor: 'grand-knight', rowId: 'desk-row-voucher-release' },
+  orders: { anchor: 'financial-secretary', rowId: 'desk-row-written-orders' },
+  coding: { anchor: 'treasurer', rowId: 'desk-row-ledger-coding' },
+  minutes: { anchor: 'recorder', rowId: 'desk-row-minutes' },
+  quarantine: { anchor: 'oversight', rowId: 'desk-row-quarantine' },
+  access: { anchor: 'oversight', rowId: 'desk-row-mail-center' },
+  hours: { anchor: 'oversight', rowId: 'desk-row-awaiting-hours' },
+  mine: { anchor: 'member', rowId: 'desk-row-my-sheets' },
+};
+
+/**
  * Where the portal root (/) sends a signed-in reader (Sprint 8A): anyone holding an officer seat or Admin keys, and
  * anyone else whose seat opens the dashboard, lands on the /dashboard Active Desks hub; plain members keep the member hub.
  */
 export function landingRouteFor(u: Actor, flags?: FeatureFlags, tenant?: TenantType): '/dashboard' | '/member-actions' {
   if (isAdmin(u) || u.isOfficer) return '/dashboard';
   return portalAreas(u, flags, tenant).includes('dashboard') ? '/dashboard' : '/member-actions';
+}
+
+// ---- the Member Desk cards (Sprint 8C) ---------------------------------------------------------------
+
+/** How far ahead the Member Desk's Open Shifts Needing Volunteers card looks: the phone Signup Desk's 30 days. */
+export const MEMBER_DESK_OPEN_SHIFT_DAYS = 30;
+
+/**
+ * The '🚗 Open Shifts Needing Volunteers' card: shifts from today through `MEMBER_DESK_OPEN_SHIFT_DAYS` days on, at events
+ * linked to the member's councils, that are still short of their minimum volunteers and that the member does not hold
+ * yet - the pilot's parish parking fundraiser rows among them. Soonest first, as the shift feed orders them.
+ */
+export function memberDeskOpenShifts(feed: readonly ShiftFeedItem[], today: string, days: number = MEMBER_DESK_OPEN_SHIFT_DAYS): ShiftFeedItem[] {
+  const through = addDays(today, days);
+  return visibleFeed(feed, { councilId: 'all', showLocked: false, hideSignedUp: true }).filter(
+    (item) => !isShiftFull(item.shift) && item.shift.ShiftDate.slice(0, 10) >= today && item.shift.ShiftDate.slice(0, 10) <= through,
+  );
 }
 
 // ---- the live actionable reminders stream ----------------------------------------------------------

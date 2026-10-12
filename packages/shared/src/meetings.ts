@@ -10,7 +10,6 @@
 // (meetings.saveAgendaTemplate); every member's meeting form reads them (meetings.getAgendaTemplate).
 // =========================================================================
 import { assertFraternalYear } from './budget';
-import { GRAND_KNIGHT_ROLE } from './elections';
 import { addDays } from './planning';
 import { formatDate, formatTimeRange } from './presentation';
 import {
@@ -21,6 +20,7 @@ import {
   describeActor,
   hasAdminRights,
   hasSuperAdminRights,
+  holdsGrandKnightAuthority,
   SecurityPrivilegeError,
   type MemberWriteActor,
 } from './rules';
@@ -82,16 +82,17 @@ export function globalMeetingTypeFor(typeName: string, globals: readonly Pick<Me
 }
 
 /**
- * The council's meeting keepers - an Active Admin or Grand Knight of the council, or any Active Super Admin - who edit
+ * The council's meeting keepers - an Active Admin, Grand Knight or Deputy Grand Knight (Sprint 8C) of the council, or any
+ * Active Super Admin - who edit
  * its agenda templates and lay down its annual meeting cadence. `can` completes "can ...", `cannot` "cannot ...".
  */
 function meetingKeeperDenial(actor: MemberWriteActor, councilId: number, can: string, cannot: string): SecurityPrivilegeError | null {
   if (hasSuperAdminRights(actor)) return null;
-  const grandKnight = actor.active && (actor.roles ?? []).includes(GRAND_KNIGHT_ROLE);
+  const grandKnight = actor.active && holdsGrandKnightAuthority(actor.roles);
   if (!hasAdminRights(actor) && !grandKnight) {
     return new SecurityPrivilegeError(
       'ADMIN_REQUIRED',
-      `Only an active Admin or the Grand Knight of the council, or a Super Admin, can ${can}; member ${actor.memberId} is ${describeActor(actor)}.`,
+      `Only an active Admin, the Grand Knight or the Deputy Grand Knight of the council, or a Super Admin, can ${can}; member ${actor.memberId} is ${describeActor(actor)}.`,
       { actorId: actor.memberId, actorType: actor.memberType ?? null, councilId },
     );
   }

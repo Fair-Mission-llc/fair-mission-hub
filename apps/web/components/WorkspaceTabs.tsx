@@ -7,6 +7,10 @@
 // Sprint 8A: the row is titled Active Desks and each tab is drawn as a card-index folder tab - a navy outline jacket with
 // rounded top corners and roomy padding, the open folder raised in white with a deep gold top edge so it joins the page
 // under it. DeskLink is the same one-click jump for the Home tab's status badges.
+//
+// Sprint 8C: a badge's DeskLink also names the workspace row it stands for (rowId, officer-desks.ts DESK_FOCUS_TARGETS):
+// once the desk has drawn, the row scrolls into view, takes focus and flashes a gold ring (DeskRow). The sidebar's
+// Executive Dashboard link is a DeskLink to Home, so it resets the view to the landing deck.
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -52,11 +56,60 @@ export function useDashboardTab(tabs: readonly DashboardTab[]): DashboardTabId {
   return tabs.some((t) => t.id === tab) ? tab : (tabs[0]?.id ?? 'home');
 }
 
+/** How long focusDeskRow waits for the desk to draw the row (it may still be loading). */
+const ROW_SEEK_MS = 5000;
+const ROW_SEEK_STEP_MS = 50;
+
+/** Scrolls the workspace row `rowId` into view once it exists, focuses it and flashes its gold ring for two seconds. */
+function focusDeskRow(rowId: string) {
+  let waited = 0;
+  const seek = () => {
+    const row = document.getElementById(rowId);
+    if (!row) {
+      waited += ROW_SEEK_STEP_MS;
+      if (waited < ROW_SEEK_MS) window.setTimeout(seek, ROW_SEEK_STEP_MS);
+      return;
+    }
+    row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    row.focus({ preventScroll: true });
+    row.dataset.deskFocus = 'true';
+    window.setTimeout(() => delete row.dataset.deskFocus, 2000);
+  };
+  window.setTimeout(seek, 0);
+}
+
+/**
+ * One workspace row of an Active Desk (Sprint 8C): the target a Home badge's click-through scrolls to. It takes focus
+ * programmatically only (tabIndex -1) and draws a gold ring while it is the badge's fresh target.
+ */
+export function DeskRow({ id, label, children }: { id: string; label: string; children: ReactNode }) {
+  return (
+    <div id={id} tabIndex={-1} aria-label={label} className="scroll-mt-16 rounded outline-none transition-shadow data-[desk-focus=true]:ring-4 data-[desk-focus=true]:ring-gold">
+      {children}
+    </div>
+  );
+}
+
 /**
  * A link to one Active Desk (/dashboard#<anchor>). On the dashboard it changes only the anchor, which the page hears as a
- * hashchange; anywhere else it navigates. Either way this browser remembers the desk.
+ * hashchange; anywhere else it navigates. Either way this browser remembers the desk. With `rowId` (Sprint 8C) it then
+ * brings that workspace row of the desk into view.
  */
-export function DeskLink({ anchor, className, current, label, children }: { anchor: string; className?: string; current?: boolean; label?: string; children: ReactNode }) {
+export function DeskLink({
+  anchor,
+  className,
+  current,
+  label,
+  rowId,
+  children,
+}: {
+  anchor: string;
+  className?: string;
+  current?: boolean;
+  label?: string;
+  rowId?: string;
+  children: ReactNode;
+}) {
   const pathname = usePathname();
   const onDashboard = pathname === '/dashboard';
   return (
@@ -70,6 +123,7 @@ export function DeskLink({ anchor, className, current, label, children }: { anch
           e.preventDefault();
           window.location.hash = anchor;
         }
+        if (rowId) focusDeskRow(rowId);
       }}
       className={className}
     >

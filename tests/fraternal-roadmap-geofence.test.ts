@@ -149,11 +149,12 @@ describe('geofence rules', () => {
     expect(cleanCheckInProof({ kind: 'pin', pin: ' 4821 ' })).toEqual({ kind: 'pin', pin: '4821' });
   });
 
-  it('lets the Grand Knight, the council Admins and Super Admins manage the circle and PIN', () => {
+  it('lets the Grand Knight, the Deputy Grand Knight (Sprint 8C), the council Admins and Super Admins manage the circle and PIN', () => {
     expect(() => assertMayManageMeetingGeofence(actor({ roles: ['Grand Knight'] }), OWN)).not.toThrow();
     expect(() => assertMayManageMeetingGeofence(actor({ memberType: 'Admin' }), OWN)).not.toThrow();
     expect(() => assertMayManageMeetingGeofence(actor({ memberType: 'Super Admin', councilId: 2 }), OWN)).not.toThrow();
-    expect(() => assertMayManageMeetingGeofence(actor({ roles: ['Deputy Grand Knight'], officer: true }), OWN)).toThrow(/Grand Knight, an Admin/);
+    expect(() => assertMayManageMeetingGeofence(actor({ roles: ['Deputy Grand Knight'], officer: true }), OWN)).not.toThrow();
+    expect(() => assertMayManageMeetingGeofence(actor({ roles: ['Treasurer'], officer: true }), OWN)).toThrow(/Deputy Grand Knight, an Admin/);
     expect(() => assertMayManageMeetingGeofence(actor({ roles: ['Grand Knight'], councilId: 2 }), OWN)).toThrow(/own council/);
   });
 
@@ -365,7 +366,7 @@ describe('Sprint 7G screens and manuals', () => {
     const admin = read('docs/ADMIN_USER_GUIDE.md');
     const member = read('docs/MEMBER_USER_GUIDE.md');
     for (const text of ['Annual Fraternal Roadmap', 'Overdue: Nominations', 'meeting PIN']) expect(admin).toContain(text);
-    for (const text of [CHECK_IN_BUTTON_LABEL, 'Check in with PIN', 'You are 1,112 m from the meeting hall', 'Member Center', 'CHECK NUMBER (REQUIRED)']) {
+    for (const text of [CHECK_IN_BUTTON_LABEL, 'Check in with PIN', 'You are 1,112 m from the meeting hall', 'Council Dashboard', 'CHECK NUMBER (REQUIRED)']) {
       expect(member).toContain(text);
     }
     const script = read('scripts/compile_all_manuals.py');

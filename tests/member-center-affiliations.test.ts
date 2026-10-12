@@ -277,7 +277,8 @@ describe('Sprint 7A Extension screens and guide', () => {
 
   it('documents the new tools in the administrator user guide', () => {
     const guide = read('docs/ADMIN_USER_GUIDE.md');
-    for (const heading of ['Shared Member Center', 'Personal impact', 'council membership history', 'roster template', 'inactivity sweep']) {
+    // Sprint 8C: the Shared Member Center is the Council Dashboard.
+    for (const heading of ['Council Dashboard', 'Personal impact', 'council membership history', 'roster template', 'inactivity sweep']) {
       expect(guide.toLowerCase()).toContain(heading.toLowerCase());
     }
     // No code names leak into the print guide.

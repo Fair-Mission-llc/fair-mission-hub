@@ -14,8 +14,8 @@ import { budgetWindowOf } from './budget';
 import { ALL_FEATURES_ON, withFeatureFlags, type FeatureFlags } from './features';
 import { DEFAULT_TENANT_TYPE, withTenantGate, type TenantType } from './tenant';
 import { AGENDA_EDITOR_ROLE_NAMES } from './agenda';
-import { DEPUTY_GRAND_KNIGHT_ROLE, GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
-import { FINANCE_LOOKUP_TABLES, FINANCIAL_SECRETARY_ROLE_NAME, holdsExecutiveRole, holdsFinanceRole } from './rules';
+import { GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
+import { FINANCE_LOOKUP_TABLES, FINANCIAL_SECRETARY_ROLE_NAME, holdsExecutiveRole, holdsFinanceRole, holdsGrandKnightAuthority } from './rules';
 import { TREASURER_ROLE_NAME } from './treasurer-desk';
 import { canOpenHistorianDesk } from './recorder-historian';
 import type { BudgetLineStatus, CharitableRequest, CharitableThreadType, Donation, Event, ExpenseReport, Meeting, Member, MemberType } from './types';
@@ -106,10 +106,10 @@ export const canManageCouncilLookups = (u: Actor, councilId: number, table: Coun
 
 /**
  * The council's Meeting Agenda Templates tab, mirroring assertMayManageAgendaTemplates (Sprint 5Y-6; activity status is
- * checked there): the council's Admins and Grand Knight, and any Super Admin.
+ * checked there): the council's Admins and Grand Knight (Sprint 8C: and Deputy Grand Knight), and any Super Admin.
  */
 export const canManageAgendaTemplates = (u: Actor, councilId: number): boolean =>
-  canAdministerCouncil(u, councilId) || ((u.roles ?? []).includes(GRAND_KNIGHT_ROLE) && u.councilId === councilId);
+  canAdministerCouncil(u, councilId) || (holdsGrandKnightSeat(u) && u.councilId === councilId);
 
 /**
  * The council lookups screen: Admins and Super Admins, finance officers for the donation lookups, and the Grand Knight
@@ -127,7 +127,7 @@ export const canEditBylaws = (u: Actor, councilId: number): boolean => canManage
 
 export const canManageCouncilCadence = (u: Actor, councilId: number): boolean => canManageAgendaTemplates(u, councilId);
 
-export const canOpenCouncilLookups = (u: Actor): boolean => isAdmin(u) || isFinanceOfficer(u) || (u.roles ?? []).includes(GRAND_KNIGHT_ROLE);
+export const canOpenCouncilLookups = (u: Actor): boolean => isAdmin(u) || isFinanceOfficer(u) || holdsGrandKnightSeat(u);
 
 /** The council lookup tables `u` may open for `councilId`, in tab order; a finance officer gets only the donation lookups. */
 export function councilLookupTablesFor(u: Actor, councilId: number): CouncilLookupTableName[] {
@@ -333,6 +333,12 @@ export const isFinancialSecretary = (u: Actor): boolean => (u.roles ?? []).inclu
 export const isTreasurer = (u: Actor): boolean => (u.roles ?? []).includes(TREASURER_ROLE_NAME);
 /** Holds the council's Grand Knight seat (Sprint 5Z-4: the seat that counter-signs expense orders). */
 export const isGrandKnight = (u: Actor): boolean => (u.roles ?? []).includes(GRAND_KNIGHT_ROLE);
+/**
+ * Sprint 8C: holds the Grand Knight's authority - the Grand Knight's seat, or the Deputy Grand Knight's, who has full
+ * parity with it on every administrative tool, desk, configuration and approval workflow (holdsGrandKnightAuthority).
+ * Every gate written for the Grand Knight checks this.
+ */
+export const holdsGrandKnightSeat = (u: Actor): boolean => holdsGrandKnightAuthority(u.roles);
 
 /**
  * The Financial Secretary Audit Desk of a council (Sprint 5Z-4): its Financial Secretary, its Admins and any Super Admin
@@ -342,11 +348,12 @@ export const canOpenExpenseAuditDesk = (u: Actor, councilId: number): boolean =>
   canAdministerCouncil(u, councilId) || (isFinancialSecretary(u) && u.councilId === councilId);
 
 /**
- * The Grand Knight Authorization Desk of a council (Sprint 5Z-4): its Grand Knight, its Admins and any Super Admin may
- * open it. Only the Grand Knight or a Super Admin counter-signs there (canCounterSignExpenseOrder); an Admin reads it.
+ * The Grand Knight Authorization Desk of a council (Sprint 5Z-4): its Grand Knight and Deputy Grand Knight (Sprint 8C),
+ * its Admins and any Super Admin may open it. Only those two seats or a Super Admin counter-sign there
+ * (canCounterSignExpenseOrder); an Admin reads it.
  */
 export const canOpenExpenseAuthorizeDesk = (u: Actor, councilId: number): boolean =>
-  canAdministerCouncil(u, councilId) || (isGrandKnight(u) && u.councilId === councilId);
+  canAdministerCouncil(u, councilId) || (holdsGrandKnightSeat(u) && u.councilId === councilId);
 
 /**
  * The Treasurer Ledger Audit Desk of a council (Sprint 6Q), mirroring assertMayReadTreasurerDesk: its Treasurer, its
@@ -379,14 +386,15 @@ export const canIssueExpenseOrder = (u: Actor, report: Pick<ExpenseReport, 'Coun
 
 /**
  * The '✍️ Final Release for Payment' control on one sheet, mirroring assertMayAuthorizeExpenseOrder, assertNotSelfApproval and
- * assertDistinctExpenseSigners: the council's Grand Knight or any Super Admin, never on their own sheet, and never by
+ * assertDistinctExpenseSigners: the council's Grand Knight or Deputy Grand Knight (Sprint 8C) or any Super Admin, never
+ * on their own sheet, and never by
  * the officer who issued its written order ('collusion', the Collusion Guard).
  */
 export function expenseCounterSignBlock(
   u: Actor,
   report: Pick<ExpenseReport, 'CouncilID' | 'SubmitterMemberID' | 'FinancialSecretaryMemberID'> & Partial<Pick<ExpenseReport, 'TreasurerMemberID'>>,
 ): ExpenseSignatureBlock | null {
-  if (!(isSuperAdmin(u) || (isGrandKnight(u) && u.councilId === report.CouncilID))) return 'seat';
+  if (!(isSuperAdmin(u) || (holdsGrandKnightSeat(u) && u.councilId === report.CouncilID))) return 'seat';
   if (report.SubmitterMemberID === u.memberId) return 'own-report';
   if (report.FinancialSecretaryMemberID === u.memberId) return 'collusion';
   if (report.TreasurerMemberID != null && report.TreasurerMemberID === u.memberId) return 'collusion';
@@ -438,7 +446,7 @@ export const canLinkMeetingDrive = (u: Actor, meeting: Pick<Meeting, 'CouncilID'
 export const canManageCouncilAssets = (u: Actor, councilId: number): boolean =>
   canAuditCouncilExpenses(u, councilId) ||
   // Sprint 7F Extension 2: the Deputy Grand Knight manages the council's property beside the Grand Knight.
-  (u.councilId === councilId && (isGrandKnight(u) || (u.roles ?? []).includes(DEPUTY_GRAND_KNIGHT_ROLE)));
+  (u.councilId === councilId && holdsGrandKnightSeat(u));
 
 /**
  * Sprint 7F Extension: the assets inventory and its photo upload, mirroring assertMayAttachAssetPhoto - the asset
@@ -469,9 +477,9 @@ export const canSyncSupremeReports = (u: Actor, councilId: number): boolean => c
 
 /**
  * The Appointed Leadership Matrix, mirroring assertMayAppointOfficers (Sprint 5U; activity status and the seat's council
- * are checked there): the sitting Grand Knight and any Super Admin.
+ * are checked there): the sitting Grand Knight, the Deputy Grand Knight (Sprint 8C) and any Super Admin.
  */
-export const canAppointOfficers = (u: Actor): boolean => isSuperAdmin(u) || (u.roles ?? []).includes(GRAND_KNIGHT_ROLE);
+export const canAppointOfficers = (u: Actor): boolean => isSuperAdmin(u) || holdsGrandKnightSeat(u);
 
 /** The Officer Election Parameters tab, mirroring assertMayConfigureBallot: the council's Admins and any Super Admin. */
 export const canConfigureBallot = (u: Actor, councilId: number): boolean => canAdministerCouncil(u, councilId);
@@ -630,8 +638,9 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (isAdmin(u)) areas.push('parishes', 'members', 'activities');
   if (canPlanEvents(u)) areas.push('events');
   areas.push('meetings');
-  // Sprint 5Z-6: the Cadence Engine belongs to the agenda-template keepers - Admins, the Grand Knight, Super Admins.
-  if (isAdmin(u) || isGrandKnight(u)) areas.push('meetings/cadence');
+  // Sprint 5Z-6: the Cadence Engine belongs to the agenda-template keepers - Admins, the Grand Knight (and since Sprint 8C
+  // the Deputy Grand Knight), Super Admins.
+  if (isAdmin(u) || holdsGrandKnightSeat(u)) areas.push('meetings/cadence');
   // Sprint 5Z-10: the Live Meeting Console is the chair's desk - the council's Admins and officers (canRunLiveAssembly).
   if (isAdmin(u) || u.isOfficer) areas.push('meetings/live');
   // Every member may put a brother Knight up for office (the drivers check they are Active).
@@ -645,7 +654,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   areas.push('ledger', 'expenses', 'charities/propose');
   if (isAdmin(u) || isFinanceOfficer(u)) areas.push('expenses/queue');
   if (isAdmin(u) || isFinancialSecretary(u)) areas.push('expenses/audit');
-  if (isAdmin(u) || isGrandKnight(u)) areas.push('expenses/authorize');
+  if (isAdmin(u) || holdsGrandKnightSeat(u)) areas.push('expenses/authorize');
   // Sprint 6Q: the Treasurer codes each ordered sheet to a budget line and a ledger account before the Grand Knight signs.
   if (isAdmin(u) || isTreasurer(u)) areas.push('finance/treasurer-desk');
   if (isSuperAdmin(u) || isFinanceOfficer(u)) areas.push('expenses/disbursements', 'charities/queue');
@@ -682,7 +691,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   // Intentions List. A Knights of Columbus extension, so a white-label tenant loses it (FRATERNAL_AREAS).
   areas.push('faith-center');
   if (canOpenMarketingFactory(u)) areas.push('resources/marketing');
-  // Sprint 7A Extension: the Shared Member Center - collective, non-financial council figures and the member's own impact
+  // Sprint 7A Extension: the Council Dashboard (named the Shared Member Center until Sprint 8C) - collective, non-financial council figures and the member's own impact
   // card - is every member's. The executive dashboard and the finance screens stay with their own audiences above.
   areas.push('member-center');
   // Sprint 7C Extension: the Navigation Guide explains the viewer's own sidebar, so every member has it, pinned above the pillars.
@@ -694,9 +703,10 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
  * A sidebar link: a portal area, except the profile, which the header's member menu opens, and the Communications Hub and
  * the distribution lists, which the header's Messaging menu opens (Sprint 5X; the menu since Sprint 5Z-10.8). The help
  * center is the Answers pillar's link (Sprint 6Z) as well as the header's Help shortcut (Sprint 5W). The Navigation Guide
- * (Sprint 7C Extension) is pinned above the pillars rather than filed in one.
+ * (Sprint 7C Extension) is pinned above the pillars rather than filed in one. Sprint 8C: the Leadership Auditing Queue
+ * ('expenses/queue') left the sidebar; the page stays open to its readers from the Financial Secretary Desk.
  */
-export type PortalNavItem = Exclude<PortalArea, 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide'>;
+export type PortalNavItem = Exclude<PortalArea, 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue'>;
 
 export interface PortalNavGroup {
   id: 'governance' | 'faith' | 'finances' | 'performance' | 'resources' | 'answers' | 'setup';
@@ -706,8 +716,8 @@ export interface PortalNavGroup {
 
 /**
  * The seven sidebar pillars, every link in display order (Sprint 6Z replaced the Sprint 5Z-10 accordion directories).
- * Every pillar is always open. Each PortalArea but 'profile', 'messages', 'distribution-lists' and 'navigation-guide'
- * appears exactly once. Sprint 7C Extension: the 'setup' pillar is labelled System Settings.
+ * Every pillar is always open. Each PortalArea but 'profile', 'messages', 'distribution-lists', 'navigation-guide' and
+ * (Sprint 8C) 'expenses/queue' appears exactly once. Sprint 7C Extension: the 'setup' pillar is labelled System Settings.
  */
 export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
@@ -722,7 +732,6 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'finance/audit',
       'finance/treasurer-desk',
       'expenses',
-      'expenses/queue',
       'expenses/disbursements',
       'expenses/audit',
       'expenses/authorize',

@@ -8,6 +8,7 @@ import {
   DEFAULT_MEETING_PIN_TOKEN,
   describeError,
   hasMeetingPoint,
+  holdsGrandKnightSeat,
   MEETING_GEOFENCE_MAX_RADIUS_METERS,
   MEETING_GEOFENCE_MIN_RADIUS_METERS,
   type MeetingGeofence,
@@ -18,9 +19,9 @@ import { Button, Field, Input, Notice } from '@/components/ui';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-/** The council's Grand Knight or Admins, or a Super Admin (mayManageMeetingGeofence on the session). */
+/** The council's Grand Knight, Deputy Grand Knight (Sprint 8C) or Admins, or a Super Admin (mayManageMeetingGeofence on the session). */
 export const mayManageMeetingCheckIn = (user: SessionUser, councilId: number) =>
-  user.memberType === 'Super Admin' || (user.councilId === councilId && (user.memberType === 'Admin' || user.roles.includes('Grand Knight')));
+  user.memberType === 'Super Admin' || (user.councilId === councilId && (user.memberType === 'Admin' || holdsGrandKnightSeat(user)));
 
 function CheckInForm({ user, councilId, fence, onSaved }: { user: SessionUser; councilId: number; fence: MeetingGeofence; onSaved: () => Promise<void> }) {
   const [latitude, setLatitude] = useState(fence.latitude === null ? '' : String(fence.latitude));
