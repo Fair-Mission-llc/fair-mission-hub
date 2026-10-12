@@ -30,7 +30,9 @@
 17. [Access requests, check payments, asset photos, impersonation and remote help](#17-access-requests-check-payments-asset-photos-impersonation-and-remote-help)
 18. [Annual roadmap, meeting check-in and meeting photos](#18-annual-roadmap-meeting-check-in-and-meeting-photos)
 19. [The Active Desks dashboard](#19-the-active-desks-dashboard)
-20. [Appendix: QR code files](#appendix-qr-code-files)
+20. [The Cross-Council Loaner Library and the colour-coded calendar](#20-the-cross-council-loaner-library-and-the-colour-coded-calendar)
+21. [Planning workflows and bilateral council affiliations](#21-planning-workflows-and-bilateral-council-affiliations)
+22. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -2848,6 +2850,7 @@ The goals card and the **Year-over-Year Trends** card show money. Only the counc
 ### 19.15 Set the council's annual goals
 
 > **Who can do this:** the Grand Knight (GK), the Deputy Grand Knight (DGK), the council's Admins and Super Admins. Other readers see the wheels only.
+> **Warning:** the goals of a fraternal year lock for good on its July 1. Nobody can change the goals after that date. See section 21.
 
 **Goal:** Save the six targets of one fraternal year.
 
@@ -2865,6 +2868,7 @@ The goals card and the **Year-over-Year Trends** card show money. Only the counc
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The **Set targets** button does not show. | You do not hold the GK or DGK seat, and you are not an Admin. | Ask the Grand Knight. |
+| The card shows **Locked July 1** and no **Edit targets** button. | The fraternal year started. The goals are read-only. | Set the next year's goals before its July 1. See section 21.2. |
 | The portal refuses the hours target. | The hours target is not a multiple of 0.25. | Enter the hours in quarter hours, for example `2500.25`. |
 | The **Funds raised** wheel stays at 0%. | No event of the fraternal year has funds raised recorded. | Record the funds raised in the **Post-event Ledger**. |
 
@@ -2906,7 +2910,7 @@ The **Cross-Council Loaner Library** lets councils lend equipment to each other.
 | **Overdue** | The item is checked out, and the expected return date is past. |
 | **Paused** | The council holds the item out of the library for now, for example for a repair. |
 
-Every active member of every council reads the shared inventory directory. The directory never shows the cost, the serial number, the notes or the storage place of an item.
+Every active member reads the shared inventory directory. A member sees the items of the member's own council. A member also sees the items of each affiliated council when both councils have loaner library sharing on. See section 21.8. The directory never shows the cost, the serial number, the notes or the storage place of an item.
 
 Only the council's GK, the council's DGK and Super Admins lend the council's items. Admins, the Financial Secretary and the Trustees do not lend items.
 
@@ -2928,12 +2932,13 @@ Only the council's GK, the council's DGK and Super Admins lend the council's ite
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The directory is empty. | No council has listed an item yet. | Ask your Grand Knight to list the council's equipment. |
+| The directory is empty. | Your council and its affiliated councils have listed no item yet. | Ask your Grand Knight to list the council's equipment. |
+| A brother council's items do not show. | The councils are not affiliated, or one council has sharing off. | Ask your Grand Knight. See section 21.8. |
 
 ### 20.3 Lend, pause and check in the council's items
 
 > **Who can do this:** the council's GK, the council's DGK and Super Admins.
-> **Warning:** brother councils see an item as soon as you put the item in the library.
+> **Warning:** affiliated councils see an item as soon as you put the item in the library, while both councils have sharing on.
 
 **Goal:** Put an item in the library, check the item out to a borrower and log its return.
 
@@ -2976,6 +2981,187 @@ On a coloured block, the shift warnings change form:
 - A shift that still needs volunteers puts the **⚑** flag before the event name.
 
 The legend above the calendar lists every colour and mark.
+
+---
+
+## 21. Planning workflows and bilateral council affiliations
+
+### 21.1 Concept: the Fraternal Planning & Budgeting Workflow
+
+The council plans each fraternal year in the two months before the year starts. The fraternal year runs from July 1 to June 30.
+
+| Step | When | What happens |
+| --- | --- | --- |
+| **Draft** | May 1 - May 31 | Leadership drafts the Annual Council Goals and the budget lines. |
+| **Review** | June 1 - June 30 | Leadership checks the goals and the budget. Leadership marks each one reviewed. |
+| **Lock** | July 1 | The year starts. The goals become read-only for good. The budget figures lock. |
+| **Final vote** | By July 10 | The council votes the budget. The vote locks every budget line. |
+
+The goals and the budget each show one status:
+
+| Status | Meaning |
+| --- | --- |
+| **Draft** | Nobody marked the goals or the budget reviewed yet. |
+| **Reviewed** | Leadership marked the goals or the budget reviewed. Leadership can still change the goals until July 1. |
+| **Locked** | The year started (goals), or the council voted (budget). |
+
+The July 1 goals lock has no exception. Nobody can change the goals of a started year, not even a Super Admin. Set the goals before July 1.
+
+The budget vote must be recorded by July 10. After July 10, only a Super Admin can record the vote, with the override.
+
+The **Fraternal Planning & Budgeting Workflow** banner leads the **Council Wide Settings** page. The banner shows the four steps and marks the current step **(now)**. Under the steps, the banner shows the year's goals and the budget status.
+
+### 21.2 Draft and review the year's goals
+
+> **Who can do this:** the Grand Knight (GK), the Deputy Grand Knight (DGK), the council's Admins and Super Admins.
+
+**Goal:** Save the targets of the next fraternal year and mark them reviewed before July 1.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Fraternal Planning & Budgeting Workflow**.
+
+**Steps:**
+1. Choose the year in **Fraternal year**. The next year shows first.
+2. Select **Set targets**. When the year already has targets, the button reads **Edit targets**.
+3. Enter each target. Enter the hours in steps of 0.25.
+4. Select **Save targets**.
+5. In June, check the targets with leadership.
+6. Select **Mark goals reviewed**.
+
+**Expected result:** The goals show the **Reviewed** status. The targets show as information blocks.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **Set targets** button does not show. | The year started on July 1. The goals are locked. | No fix is possible. Set the next year's goals before its July 1. |
+| The portal says the goals are locked. | Today is July 1 or later in that fraternal year. | Choose the next fraternal year. |
+| **Mark goals reviewed** does not show. | The year has no saved goals, or the goals are already reviewed. | Save the targets first. |
+
+### 21.3 Mark the budget reviewed
+
+> **Who can do this:** the council's Admins, the Financial Secretary, the Treasurer, the Designated Budget Director and Super Admins.
+
+**Goal:** Record that leadership reviewed the drafted budget in June.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Fraternal Planning & Budgeting Workflow** → **Annual budget**.
+
+**Steps:**
+1. Choose the year in **Fraternal year**.
+2. Select **Open the budget** to read the budget lines.
+3. Go back to **Council Wide Settings**.
+4. Select **Mark budget reviewed**.
+
+**Expected result:** The budget shows the **Reviewed** status.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Mark budget reviewed** does not show. | The drafting window is closed, the budget has no lines, or the budget is already reviewed. | Mark the budget reviewed between May 1 and June 30. |
+
+### 21.4 Record the council's budget vote by July 10
+
+> **Who can do this:** the council's Admins, the Financial Secretary, the Treasurer and Super Admins.
+> **Warning:** the vote locks every budget line. You cannot undo the vote.
+
+**Goal:** Record the council's vote on the budget at the July meeting.
+
+**Start point:** Sidebar → Finances → **Annual Budget Projections**.
+
+**Steps:**
+1. Choose the fraternal year.
+2. Select **Approve & Finalize Entire Budget**.
+3. Confirm the approval. You cannot undo this.
+
+**Expected result:** The budget shows **Approved**. The planning banner shows the budget as **Locked**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The portal says the vote deadline passed. | Today is after July 10. | Ask a Super Admin to record the vote with the override. |
+
+### 21.5 Concept: bilateral council affiliations
+
+Two councils of the same state can affiliate. An affiliation is a handshake between the two councils:
+
+1. An Admin, the GK or the DGK of one council sends an invite. The invite shows **Invite sent**.
+2. The GK or the DGK of the other council selects **Accept** or **Decline**.
+3. After **Accept**, the two councils are **Affiliated**. The portal records the date.
+
+A council Admin can send an invite but cannot accept one. Only the GK or the DGK of the invited council accepts the invite.
+
+The **Bilateral Fraternal Affiliations** directory lists the other councils of your state. The nearest council shows first. The portal measures the distance between the meeting points of the councils. A council without a meeting point follows in district order. Councils of your own district show first.
+
+The GK sets the meeting point on **Council Wide Settings** → **Meeting Check-In**. A Super Admin enters the district number on the **Councils** page.
+
+### 21.6 Send an affiliation invite
+
+> **Who can do this:** the council's Admins, the GK, the DGK and Super Admins.
+> **Warning:** the other council sees the invite at once.
+
+**Goal:** Invite a nearby council of your state to affiliate.
+
+**Start point:** Sidebar → System Settings → **Bilateral Fraternal Affiliations**. The address is `/system-settings/affiliations`.
+
+**Steps:**
+1. Find the council in the list of councils in your state. Use **Find a council** or **My district only** to shorten the list.
+2. Select **Send invite**.
+
+**Expected result:** The council shows **Invite sent** with today's date.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A council is not in the list. | The council is in another state. | Affiliations stay inside your state. |
+| The portal says an invite is already pending. | One of the two councils already sent an invite. | Wait for the other council's answer. |
+| The list is not in distance order. | Your council has no meeting point. | Ask the GK to set the meeting point on **Meeting Check-In**. |
+
+### 21.7 Accept or decline an affiliation invite
+
+> **Who can do this:** the GK, the DGK and Super Admins.
+
+**Goal:** Answer an invite that another council sent to your council.
+
+**Start point:** Active Desks → **Grand Knight Desk** → **Affiliation Invites**. The same invites show at the top of **Bilateral Fraternal Affiliations**.
+
+**Steps:**
+1. Read the council name, the distance and the invite date.
+2. Select **Accept** to affiliate. Select **Decline** to refuse the invite.
+
+**Expected result:** After **Accept**, the council shows **Affiliated** with today's date. After **Decline**, the council shows **Declined**. Either council can send a new invite later.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **Accept** button does not show. | You are an Admin, not the GK or the DGK. | Ask the GK to accept the invite. |
+
+### 21.8 Concept: loaner library sharing
+
+Each council has a **Cross-Council Loaner Library Sharing** switch on **Council Wide Settings**. The switch is off for a new council.
+
+Your members always see your own council's items. A brother council's item shows in your library only when all three rules are true:
+
+| Rule | Where to set it |
+| --- | --- |
+| The two councils are **Affiliated**. | **Bilateral Fraternal Affiliations** |
+| Your council has sharing on. | **Council Wide Settings** → **Cross-Council Loaner Library Sharing** |
+| The brother council has sharing on. | The brother council's **Council Wide Settings** |
+
+### 21.9 Switch loaner library sharing on
+
+> **Who can do this:** the council's officers, the council's Admins and Super Admins.
+
+**Goal:** Share your council's items with affiliated councils, and see their items.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Cross-Council Loaner Library Sharing**.
+
+**Steps:**
+1. Select the switch. The switch shows **Sharing is on**.
+
+**Expected result:** The **Shared inventory directory** shows the items of each affiliated council that also has sharing on.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| An affiliated council's items do not show. | The other council has sharing off. | Ask the other council's GK to switch sharing on. |
 
 ---
 

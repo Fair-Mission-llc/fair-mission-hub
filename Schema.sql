@@ -3385,3 +3385,76 @@ ALTER TABLE [CouncilAssetsInventory] ADD [borrower_council] VARCHAR(255) NULL;
 GO
 ALTER TABLE [CouncilAssetsInventory] ADD [expected_return_date] DATE NULL;
 GO
+
+-- =========================================================================
+-- Sprints 8G/8H: PLANNING WORKFLOWS, IMMUTABLE GOALS AND BILATERAL COUNCIL AFFILIATIONS (schema version 78)
+--
+-- Council gains two columns:
+--   is_loaner_library_enabled  1 shares the council's listed assets in the Cross-Council Loaner Library (0 by default,
+--                              switched on Council Wide Settings). A brother council's item shows only when BOTH councils
+--                              have it on and the two hold an ACTIVE affiliation (loaner-library.ts).
+--   district_number            the council's state district (NULL until a Super Admin enters it on the Councils page);
+--                              the affiliations directory's tiebreak after distance.
+--
+-- CouncilAffiliations records the bilateral handshake (council-affiliations.ts): an Admin, the Grand Knight or the
+-- Deputy Grand Knight of the requesting council sends an invite (status PENDING); the target council's Grand Knight or
+-- Deputy Grand Knight accepts (ACTIVE, date_established = that day) or declines (DECLINED). One PENDING or ACTIVE row
+-- per pair, in either direction (rules layer, no CHECK). Invites stay inside the home State. The legacy
+-- AffiliatedCouncils table is untouched.
+--
+-- budget_status (DRAFT, REVIEWED, LOCKED; DEFAULT 'DRAFT'; rules layer, no CHECK) joins the planning tables, CouncilGoals
+-- and CouncilBudgetForecast (planning-workflow.ts): Draft in May, Review in June ("Mark reviewed"), and on July 1 the
+-- year's goals become immutable - every write rejects COUNCIL_GOALS_LOCKED, with no override, and a goals row reads as
+-- LOCKED whatever is stored. The council's final budget vote must be recorded by July 10 (BUDGET_VOTE_DEADLINE_PASSED
+-- afterwards unless a Super Admin overrides) and writes LOCKED on every line; amendments are written LOCKED too.
+-- The phone database version moves to 78.
+-- =========================================================================
+ALTER TABLE [Council] ADD [is_loaner_library_enabled] INT NOT NULL DEFAULT 0;
+GO
+ALTER TABLE [Council] ADD [district_number] INT NULL;
+GO
+
+CREATE TABLE [CouncilAffiliations] (
+	[id] INT NOT NULL IDENTITY,
+	[requesting_council_id] INT NOT NULL,
+	[target_council_id] INT NOT NULL,
+	[status] VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+	[date_established] DATE NULL,
+	[requested_by_member_id] INT NULL,
+	[requested_at] DATETIME NOT NULL,
+	[responded_by_member_id] INT NULL,
+	[responded_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [CouncilAffiliations]
+ADD FOREIGN KEY([requesting_council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [CouncilAffiliations]
+ADD FOREIGN KEY([target_council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [CouncilAffiliations]
+ADD FOREIGN KEY([requested_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [CouncilAffiliations]
+ADD FOREIGN KEY([responded_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE INDEX [CouncilAffiliations_Pair_Idx] ON [CouncilAffiliations] ([requesting_council_id], [target_council_id]);
+GO
+CREATE INDEX [CouncilAffiliations_Target_Idx] ON [CouncilAffiliations] ([target_council_id], [status]);
+GO
+
+ALTER TABLE [CouncilGoals] ADD [budget_status] VARCHAR(20) NOT NULL DEFAULT 'DRAFT';
+GO
+ALTER TABLE [CouncilBudgetForecast] ADD [budget_status] VARCHAR(20) NOT NULL DEFAULT 'DRAFT';
+GO

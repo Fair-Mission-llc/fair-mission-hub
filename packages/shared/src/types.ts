@@ -136,6 +136,13 @@ export interface Council {
   meeting_longitude?: number | null;
   meeting_geofence_radius_meters?: number | null;
   meeting_pin_token?: string | null;
+  /**
+   * Sprints 8G/8H (Schema 78): INT DEFAULT 0 - 1 shares the council's listed assets with its ACTIVE affiliates in the
+   * Cross-Council Loaner Library. A brother council's item shows only when both councils have it on (loaner-library.ts).
+   */
+  is_loaner_library_enabled?: number | null;
+  /** Sprints 8G/8H (Schema 78): the council's state district number (INT NULL), the affiliations directory's tiebreak. */
+  district_number?: number | null;
 }
 
 /**
@@ -784,6 +791,32 @@ export interface CouncilGoals {
   confessions_target: number; // INT
   updated_by_member_id?: number | null;
   updated_at?: string | null; // DATETIME
+  /** Sprints 8G/8H (Schema 78): DRAFT, REVIEWED or LOCKED (DEFAULT 'DRAFT'); reads as LOCKED from July 1 of the year. */
+  budget_status?: PlanningStatus | null;
+}
+
+/** CouncilGoals.budget_status and CouncilBudgetForecast.budget_status (Sprints 8G/8H; rules layer, no CHECK). */
+export type PlanningStatus = 'DRAFT' | 'REVIEWED' | 'LOCKED';
+
+/** CouncilAffiliations.status (Sprints 8G/8H; rules layer, no CHECK). */
+export type CouncilAffiliationStatus = 'PENDING' | 'ACTIVE' | 'DECLINED';
+
+/**
+ * A bilateral handshake between two councils (Sprints 8G/8H, schema 78): the requesting council invites, the target
+ * council's Grand Knight (or Deputy Grand Knight) accepts or declines. An ACTIVE row unlocks asset sharing between the
+ * two in the Cross-Council Loaner Library (council-affiliations.ts).
+ */
+export interface CouncilAffiliations {
+  id: number;
+  requesting_council_id: number;
+  target_council_id: number;
+  status: CouncilAffiliationStatus;
+  /** DATE: the day the target accepted; NULL while PENDING or DECLINED. */
+  date_established?: string | null;
+  requested_by_member_id?: number | null;
+  requested_at: string; // DATETIME
+  responded_by_member_id?: number | null;
+  responded_at?: string | null; // DATETIME
 }
 
 /** One receipt on an expense sheet. */
@@ -976,6 +1009,11 @@ export interface CouncilBudgetForecast {
    * belongs to the year: budget.setTargetSpendingCeiling writes it to every row of the year (storedTargetSpendingCeiling).
    */
   target_spending_ceiling?: number | null;
+  /**
+   * Sprints 8G/8H (Schema 78): the planning workflow's status - DRAFT (DEFAULT), REVIEWED (budget.markBudgetYearReviewed)
+   * or LOCKED (written by the council's vote and on every amendment) (planning-workflow.ts).
+   */
+  budget_status?: PlanningStatus | null;
 }
 
 /**

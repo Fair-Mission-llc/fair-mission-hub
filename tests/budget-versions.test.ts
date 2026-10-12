@@ -279,7 +279,8 @@ describe.each(drivers)('budget versions and unit costs ($name)', (d) => {
     await db.budget.setLineQuantityAndUnitCost(MEMBER.superAdmin, draft.id, 4, 250, override);
     await expectRule(db.budget.amendApprovedLine(MEMBER.admin, draft.id, { unitCost: 300 }), 'ILLEGAL_STATE_TRANSITION');
 
-    await db.budget.approveAndFinalizeEntireBudget(MEMBER.admin, OWN, YEAR);
+    // Sprints 8G/8H: the tests' today is past the year's July 10 vote deadline, so a Super Admin records it.
+    await db.budget.approveAndFinalizeEntireBudget(MEMBER.superAdmin, OWN, YEAR, { superAdminOverride: true });
     await expectRule(db.budget.setLineQuantityAndUnitCost(MEMBER.superAdmin, draft.id, 5, 250, override), 'BUDGET_YEAR_APPROVED');
     await expectRule(db.budget.amendApprovedLine(MEMBER.member, draft.id, { unitCost: 300 }), 'ADMIN_REQUIRED');
 

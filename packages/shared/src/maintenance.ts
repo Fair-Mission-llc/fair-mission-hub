@@ -9,6 +9,7 @@
 // donations and messages keep their history. A distribution list's member entries are the one exception;
 // they belong to the list and go with it.
 // =========================================================================
+import { cleanDistrictNumber } from './council-affiliations';
 import type {
   DistributionListChanges,
   NewActivity,
@@ -117,6 +118,8 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
     { table: 'MediaSmartAlbums', column: 'council_id', noun: ['Smart Album', 'Smart Albums'] },
     { table: 'VolunteerQuarantine', column: 'council_id', noun: ['held time entry', 'held time entries'] },
     { table: 'CouncilGoals', column: 'council_id', noun: ['annual goals year', 'annual goals years'] },
+    { table: 'CouncilAffiliations', column: 'requesting_council_id', noun: ['affiliation invite sent', 'affiliation invites sent'] },
+    { table: 'CouncilAffiliations', column: 'target_council_id', noun: ['affiliation invite received', 'affiliation invites received'] },
   ],
   Parish: [{ table: 'Pastor', column: 'ParishID', noun: ['pastor', 'pastors'] }],
   Pastor: [],
@@ -132,7 +135,7 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
 };
 
 /** Columns each maintained table's create/update writes, besides its id. */
-export const COUNCIL_COLUMNS = ['CouncilNumber', 'CouncilName', 'State', 'Phone', 'Email', 'ein_number'] as const satisfies readonly (keyof NewCouncil)[];
+export const COUNCIL_COLUMNS = ['CouncilNumber', 'CouncilName', 'State', 'Phone', 'Email', 'ein_number', 'district_number'] as const satisfies readonly (keyof NewCouncil)[];
 export const PARISH_COLUMNS = [
   'Name',
   'StreetAddress1',
@@ -186,6 +189,7 @@ export function cleanCouncil(input: NewCouncil): NewCouncil {
     Phone: optionalText(input.Phone, 'Phone', 50) ?? undefined,
     Email: email ?? undefined,
     ein_number: cleanEinNumber(input.ein_number),
+    district_number: cleanDistrictNumber(input.district_number),
   };
 }
 

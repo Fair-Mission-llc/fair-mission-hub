@@ -5,6 +5,9 @@
 // the Deputy Grand Knight shares) and on the library page for those leaders: an "In the loaner library" switch per
 // asset, Pause and Resume, a check-out form (borrower, council, expected return date) and a one-click "Log return".
 // The commands are expenses.updateAssetLoan, gated by assertMayLendCouncilAssets.
+//
+// Sprints 8G/8H: the directory shows the member's own council's items and, from each ACTIVE affiliate, its items only
+// while both councils have loaner library sharing on (visibleInLoanerLibrary). Own items carry a "Your council" badge.
 import { useState } from 'react';
 import {
   ASSET_LOAN_STATUS_LABELS,
@@ -36,7 +39,7 @@ export function LoanerLibraryDirectory({ user }: { user: SessionUser }) {
   return (
     <Panel title={`Shared inventory directory (${rows.length})`} actions={library.data ? <Pill tone="navy">{available} available</Pill> : null}>
       {library.error ? <Notice tone="error">{library.error}</Notice> : null}
-      {library.data && rows.length === 0 ? <Empty>No council has listed an item yet.</Empty> : null}
+      {library.data && rows.length === 0 ? <Empty>No item is listed yet by your council or a council it shares with.</Empty> : null}
       {rows.length > 0 ? (
         <Table caption="Items councils lend to each other" head={['Item', 'Owning council', 'Status', 'With', 'Due back']}>
           {rows.map((r) => (
@@ -45,6 +48,7 @@ export function LoanerLibraryDirectory({ user }: { user: SessionUser }) {
               <Td>
                 {r.councilName}
                 {r.councilNumber ? <span className="block text-xs text-muted">Council {r.councilNumber}</span> : null}
+                {r.homeCouncil ? <Pill tone="outline">Your council</Pill> : null}
               </Td>
               <Td>
                 <LoanStatusPill status={r.loanStatus} overdue={r.overdue} />
@@ -64,7 +68,10 @@ export function LoanerLibraryDirectory({ user }: { user: SessionUser }) {
           ))}
         </Table>
       ) : null}
-      <p className="mt-2 text-xs text-muted">To borrow an item, call the owning council&apos;s Grand Knight. Their Grand Knight or Deputy Grand Knight checks it out to you here.</p>
+      <p className="mt-2 text-xs text-muted">
+        To borrow an item, call the owning council&apos;s Grand Knight. Their Grand Knight or Deputy Grand Knight checks it out to you here. A brother
+        council&apos;s items show only when your councils are affiliated and both have loaner library sharing on in Council Wide Settings.
+      </p>
     </Panel>
   );
 }

@@ -223,10 +223,11 @@ describe('the loaner library (pure)', () => {
 describe.each(drivers)('goals, trends and loans in the $name driver', ({ make }) => {
   it('saves goals and measures them against the monthly summaries', async () => {
     const db = await make();
-    const empty = await db.reports.getCouncilGoals(MEMBER.superAdmin, 1, '2026-2027');
+    // Sprints 8G/8H: the tests' today (2026-09-20) is past the 2026-2027 goals' July 1 lock, so the next year is set.
+    const empty = await db.reports.getCouncilGoals(MEMBER.superAdmin, 1, '2027-2028');
     expect(empty.goals).toBeNull();
     expect(empty.metrics.every((m) => m.target === 0 && m.percent === null)).toBe(true);
-    const saved = await db.reports.setCouncilGoals(MEMBER.admin, 1, '2026-2027', {
+    const saved = await db.reports.setCouncilGoals(MEMBER.admin, 1, '2027-2028', {
       fundraising_target: 10000,
       new_members_target: 5,
       hours_target: 100,
@@ -234,8 +235,8 @@ describe.each(drivers)('goals, trends and loans in the $name driver', ({ make })
       adorations_target: 20,
       confessions_target: 10,
     });
-    expect(saved).toMatchObject({ council_id: 1, fraternal_year: '2026-2027', fundraising_target: 10000, updated_by_member_id: MEMBER.admin });
-    const again = await db.reports.setCouncilGoals(MEMBER.superAdmin, 1, '2026-2027', {
+    expect(saved).toMatchObject({ council_id: 1, fraternal_year: '2027-2028', fundraising_target: 10000, updated_by_member_id: MEMBER.admin });
+    const again = await db.reports.setCouncilGoals(MEMBER.superAdmin, 1, '2027-2028', {
       fundraising_target: 20000,
       new_members_target: 5,
       hours_target: 100,
@@ -244,8 +245,8 @@ describe.each(drivers)('goals, trends and loans in the $name driver', ({ make })
       confessions_target: 10,
     });
     expect(again.id).toBe(saved.id);
-    const progress = await db.reports.getCouncilGoals(MEMBER.superAdmin, 1, '2026-2027');
-    const raised = (await Promise.all(fiscalMonths('2026-2027').map(({ year, month: m }) => db.reports.monthlySummary(1, year, m)))).reduce(
+    const progress = await db.reports.getCouncilGoals(MEMBER.superAdmin, 1, '2027-2028');
+    const raised = (await Promise.all(fiscalMonths('2027-2028').map(({ year, month: m }) => db.reports.monthlySummary(1, year, m)))).reduce(
       (s, x) => s + x.finances.raised,
       0,
     );

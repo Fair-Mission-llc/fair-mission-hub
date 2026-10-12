@@ -149,6 +149,7 @@ describe('portal permissions', () => {
       'governance/advisor',
       'credentials-vault',
       'system-settings/council-settings',
+      'system-settings/affiliations',
       'performance/charts',
       'history',
       'faith-center',
@@ -199,6 +200,7 @@ describe('portal permissions', () => {
       'governance/advisor',
       'credentials-vault',
       'system-settings/council-settings',
+      'system-settings/affiliations',
       'performance/charts',
       'history',
       'faith-center',
@@ -305,7 +307,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
       ]);
     });
 
@@ -332,7 +334,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'council-lookups', 'credentials-vault']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'council-lookups', 'credentials-vault']],
       ]);
     });
 

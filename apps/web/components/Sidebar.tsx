@@ -152,6 +152,12 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Daily activity and hour limits, shift padding and the inactive-member window',
     restrictedTo: 'council officers, Admins and Super Admins',
   },
+  'system-settings/affiliations': {
+    href: '/system-settings/affiliations',
+    label: 'Bilateral Fraternal Affiliations',
+    hint: 'Invite nearby councils in your state to affiliate, and answer their invites',
+    restrictedTo: 'council Admins, the Grand Knight, the Deputy Grand Knight and Super Admins',
+  },
   help: { href: '/help', label: 'Online Help Center', hint: 'Searchable answers from the user manuals, and feedback' },
   'governance/bylaws': { href: '/governance/bylaws', label: 'Constitutional Bylaws', hint: "The council's own bylaws, article by article" },
   'governance/advisor': {

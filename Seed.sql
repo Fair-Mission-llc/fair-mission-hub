@@ -926,12 +926,38 @@ GO
 -- Sprint 8F (schema 77): St. Mary's 2026-2027 Annual Council Goals (CouncilGoals 1) and three items in the Cross-Council
 -- Loaner Library (CouncilAssetsInventory 1-3, entered by hand, so no expense sheet): a sound system ready to lend, a
 -- fryer set out with a brother council until October 20 and a canopy tent paused for repairs.
-INSERT INTO [CouncilGoals] ([council_id], [fraternal_year], [fundraising_target], [new_members_target], [hours_target], [rosaries_target], [adorations_target], [confessions_target], [updated_by_member_id], [updated_at])
-VALUES (1, '2026-2027', 25000.00, 12, 2500.00, 1500, 400, 300, NULL, '2026-07-02 19:00:00');
+INSERT INTO [CouncilGoals] ([council_id], [fraternal_year], [fundraising_target], [new_members_target], [hours_target], [rosaries_target], [adorations_target], [confessions_target], [updated_by_member_id], [updated_at], [budget_status])
+VALUES (1, '2026-2027', 25000.00, 12, 2500.00, 1500, 400, 300, NULL, '2026-07-02 19:00:00', 'LOCKED');
 GO
 INSERT INTO [CouncilAssetsInventory] ([council_id], [asset_name], [purchase_date], [cost_basis], [original_expense_id], [current_status], [notes], [storage_location], [is_loanable], [loan_status], [borrower_name], [borrower_council], [expected_return_date])
 VALUES
 (1, 'Portable PA sound system', '2024-03-15 00:00:00', 1249.00, NULL, 'ACTIVE', NULL, 'Parish hall storage closet', 1, 'AVAILABLE', NULL, NULL, NULL),
 (1, 'Fish fry fryer set (two propane fryers)', '2023-02-10 00:00:00', 1890.00, NULL, 'ACTIVE', NULL, 'Rectory garage', 1, 'CHECKED_OUT', 'Mark Delgado', 'St. Anthony Council 2042', '2026-10-20'),
 (1, '10x20 event canopy tent', '2022-05-01 00:00:00', 640.00, NULL, 'ACTIVE', 'Torn side panel; out for repair', 'Rectory garage', 1, 'UNAVAILABLE', NULL, NULL, NULL);
+GO
+
+-- Sprints 8G/8H (schema 78): five neighbouring councils for the Bilateral Fraternal Affiliations desk (Council 2-6). Four
+-- are in Oregon with meeting points and district numbers; St. Patrick (Vancouver) is in Washington, so the Oregon
+-- directory leaves it out. St. Anthony is an ACTIVE affiliate of St. Mary's since August 14 (it borrowed the fryer set),
+-- Holy Redeemer's invite waits for St. Mary's Grand Knight to accept, and St. Mary's own invite to Our Lady of the Lake is
+-- pending. St. Anthony shares two items (CouncilAssetsInventory 4-5); they show in St. Mary's library once St. Mary's
+-- switches its loaner library sharing on (Council Wide Settings), since both councils must have it on.
+INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email], [meeting_latitude], [meeting_longitude], [district_number], [is_loaner_library_enabled])
+VALUES
+(2042, 'St. Anthony Council', 'OR', '503-555-0142', NULL, 45.431200, -122.771500, 5, 1),
+(3112, 'Holy Redeemer Council', 'OR', '503-555-0112', NULL, 45.576200, -122.680000, 5, 1),
+(7280, 'Our Lady of the Lake Council', 'OR', '503-555-0180', NULL, 45.420700, -122.670600, 5, 1),
+(1849, 'St. Joseph Council', 'OR', '503-555-0149', NULL, 44.942900, -123.035100, 7, 0),
+(4419, 'St. Patrick Council', 'WA', '360-555-0119', NULL, 45.638700, -122.661500, 3, 1);
+GO
+INSERT INTO [CouncilAffiliations] ([requesting_council_id], [target_council_id], [status], [date_established], [requested_by_member_id], [requested_at], [responded_by_member_id], [responded_at])
+VALUES
+(2, 1, 'ACTIVE', '2026-08-14', NULL, '2026-08-10 18:30:00', NULL, '2026-08-14 20:05:00'),
+(3, 1, 'PENDING', NULL, NULL, '2026-10-08 19:15:00', NULL, NULL),
+(1, 4, 'PENDING', NULL, NULL, '2026-10-09 10:00:00', NULL, NULL);
+GO
+INSERT INTO [CouncilAssetsInventory] ([council_id], [asset_name], [purchase_date], [cost_basis], [original_expense_id], [current_status], [notes], [storage_location], [is_loanable], [loan_status], [borrower_name], [borrower_council], [expected_return_date])
+VALUES
+(2, 'Commercial flat-top griddle', '2023-09-12 00:00:00', 1380.00, NULL, 'ACTIVE', NULL, 'Parish kitchen', 1, 'AVAILABLE', NULL, NULL, NULL),
+(2, 'Folding banquet tables (set of 20)', '2021-04-03 00:00:00', 1150.00, NULL, 'ACTIVE', NULL, 'Hall storage room', 1, 'AVAILABLE', NULL, NULL, NULL);
 GO

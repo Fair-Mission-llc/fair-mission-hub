@@ -1068,3 +1068,24 @@ The Cross-Council Loaner Library (loaner-library.ts). expenses.updateAssetLoan a
 •	expected_return_date (DATE, NULL) — Today or later when checked out; an item past it reads Overdue.
 New methods. reports.getCouncilGoals, reports.setCouncilGoals, reports.yearOverYearTrends (each fraternal year's monthly cash, electronic and hours, July first; 1-5 years; also GET /api/analytics/trends), expenses.listLoanerLibrary, expenses.updateAssetLoan. No table change for the colour-coded calendar: Category.SupremeMissionArea names each event block's colour (Faith gold, Community blue, Family green, Life red).
 ________________________________________
+# 40. Planning workflows, immutable goals and bilateral council affiliations (Sprints 8G/8H)
+Schema version 78; the phone database version moves to 78.
+[Council] (added columns)
+•	is_loaner_library_enabled (INT, NOT NULL, DEFAULT 0) — 1 shares the council's listed assets in the Cross-Council Loaner Library. Set by councils.setLoanerLibraryEnabled on Council Wide Settings (assertMayEditCouncilWideSettings). A brother council's item shows to a member only when the two councils hold an ACTIVE affiliation and both have this on (loaner-library.ts visibleInLoanerLibrary); a member's own council's items always show.
+•	district_number (INT, NULL) — The council's state district, 1-9999 (cleanDistrictNumber). Kept on the Councils page (COUNCIL_COLUMNS). The affiliations directory's tiebreak after distance.
+[CouncilAffiliations]
+The bilateral handshake between two councils of the same State (council-affiliations.ts). councils.requestAffiliation inserts a PENDING row (the requesting council's Active Admins, Grand Knight or Deputy Grand Knight, or any Active Super Admin: assertMayManageAffiliations); councils.respondToAffiliation answers it (the target council's Grand Knight or Deputy Grand Knight, or any Super Admin: assertMayRespondToAffiliation). One PENDING or ACTIVE row per pair in either direction (AFFILIATION_CONFLICT); other states are refused (AFFILIATION_OUT_OF_STATE). councils.listAffiliationDirectory lists the same-State councils nearest first by meeting point (Council.meeting_latitude/longitude), then same district, district number and council number. The legacy AffiliatedCouncils table is not used.
+•	id (INT, NOT NULL) — Primary Key. Auto-incrementing identifier.
+•	requesting_council_id (INT, NOT NULL) — Foreign Key references Council(id). The council that sent the invite.
+•	target_council_id (INT, NOT NULL) — Foreign Key references Council(id). The invited council.
+•	status (VARCHAR(20), NOT NULL, DEFAULT 'PENDING') — PENDING, ACTIVE or DECLINED. Rules layer, no CHECK. Only a PENDING row may be answered (ILLEGAL_STATE_TRANSITION).
+•	date_established (DATE, NULL) — The day the target accepted; NULL while PENDING or DECLINED.
+•	requested_by_member_id (INT, NULL) — Foreign Key references Member(id).
+•	requested_at (DATETIME, NOT NULL) — When the invite was sent.
+•	responded_by_member_id (INT, NULL) — Foreign Key references Member(id).
+•	responded_at (DATETIME, NULL) — When the invite was answered.
+[CouncilGoals], [CouncilBudgetForecast] (added column)
+•	budget_status (VARCHAR(20), NOT NULL, DEFAULT 'DRAFT') — The planning workflow's status (planning-workflow.ts): DRAFT, REVIEWED or LOCKED. Rules layer, no CHECK. reports.markCouncilGoalsReviewed and budget.markBudgetYearReviewed write REVIEWED; budget.approveAndFinalizeEntireBudget and budget.amendApprovedLine write LOCKED on the budget lines. A goals row reads as LOCKED from July 1 of its year whatever is stored; a budget year reads as LOCKED once any line is Approved.
+Rules. Draft May 1-31, Review June 1-30, Lock July 1, final vote through July 10. From July 1 every CouncilGoals write for the year rejects COUNCIL_GOALS_LOCKED with no override. After July 10 the budget vote rejects BUDGET_VOTE_DEADLINE_PASSED unless an Active Super Admin passes superAdminOverride.
+New methods. councils.setLoanerLibraryEnabled, councils.listAffiliationDirectory, councils.requestAffiliation, councils.respondToAffiliation, reports.markCouncilGoalsReviewed, budget.markBudgetYearReviewed.
+________________________________________

@@ -11,9 +11,15 @@
 // The Grand Knight Desk (which the Deputy Grand Knight shares) and the /inventory/loaner-library page let the council's
 // Grand Knight or Deputy Grand Knight - or any Super Admin - list an item, pause and resume it, check it out and log its
 // return in one click (expenses.updateAssetLoan, planned here by planAssetLoanChange). Every Active member of any
-// council reads the shared directory (expenses.listLoanerLibrary): the listed ACTIVE items of every council, never
-// their cost, serial number, notes or storage place.
+// council reads the shared directory (expenses.listLoanerLibrary): the listed ACTIVE items, never their cost, serial
+// number, notes or storage place.
+//
+// Sprints 8G/8H (schema 78): the directory is no longer open across every council. A member always sees their own
+// council's listed items; a brother council's item shows if and only if (visibleInLoanerLibrary)
+//   - the two councils hold an ACTIVE affiliation (council-affiliations.ts, the bilateral handshake), and
+//   - BOTH councils have Council.is_loaner_library_enabled on (Council Wide Settings; off by default).
 // =========================================================================
+import { loanerLibraryEnabled } from './council-affiliations';
 import type { SessionUser } from './contract';
 import { holdsGrandKnightSeat, isSuperAdmin } from './permissions';
 import {
@@ -173,18 +179,42 @@ export interface LoanerLibraryEntry {
   borrowerCouncil: string | null;
   expectedReturnDate: string | null;
   overdue: boolean;
+  /** Sprints 8G/8H: true for the viewer's own council's item. */
+  homeCouncil: boolean;
 }
 
-/** The directory: listed ACTIVE items of every council, available first, then by council number and name. */
+/** Who reads the directory (Sprints 8G/8H): the viewer's council and the councils it holds an ACTIVE affiliation with. */
+export interface LoanerLibraryViewer {
+  councilId: number;
+  partners: ReadonlySet<number>;
+}
+
+type LibraryCouncil = Pick<Council, 'id' | 'CouncilNumber' | 'CouncilName'> & Partial<Pick<Council, 'is_loaner_library_enabled'>>;
+
+/**
+ * The dual feature-flag rule (Sprints 8G/8H): the viewer's own items always show; another council's item shows if and
+ * only if the two councils are ACTIVE affiliates and both have is_loaner_library_enabled on.
+ */
+export function visibleInLoanerLibrary(ownerCouncilId: number, viewer: LoanerLibraryViewer, councils: ReadonlyMap<number, LibraryCouncil>): boolean {
+  if (ownerCouncilId === viewer.councilId) return true;
+  return viewer.partners.has(ownerCouncilId) && loanerLibraryEnabled(councils.get(viewer.councilId)) && loanerLibraryEnabled(councils.get(ownerCouncilId));
+}
+
+/**
+ * The directory: listed ACTIVE items, available first, then by council number and name. With a `viewer` (the drivers
+ * always pass one since Sprints 8G/8H) only the items visibleInLoanerLibrary allows; without one, every council's.
+ */
 export function buildLoanerLibrary(
   assets: readonly CouncilAssetsInventory[],
-  councils: readonly Pick<Council, 'id' | 'CouncilNumber' | 'CouncilName'>[],
+  councils: readonly LibraryCouncil[],
   today: string,
+  viewer?: LoanerLibraryViewer,
 ): LoanerLibraryEntry[] {
   const byId = new Map(councils.map((c) => [c.id, c]));
   const rank: Record<CouncilAssetLoanStatus, number> = { AVAILABLE: 0, CHECKED_OUT: 1, UNAVAILABLE: 2 };
   return assets
     .filter((a) => isLoanable(a) && a.current_status === 'ACTIVE')
+    .filter((a) => !viewer || visibleInLoanerLibrary(a.council_id, viewer, byId))
     .map((a) => {
       const council = byId.get(a.council_id);
       return {
@@ -199,6 +229,7 @@ export function buildLoanerLibrary(
         borrowerCouncil: a.borrower_council ?? null,
         expectedReturnDate: a.expected_return_date ? a.expected_return_date.slice(0, 10) : null,
         overdue: isLoanOverdue(a, today),
+        homeCouncil: viewer ? a.council_id === viewer.councilId : false,
       };
     })
     .sort(

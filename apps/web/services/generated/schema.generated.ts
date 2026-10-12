@@ -720,6 +720,23 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": "0000"
         }
+      },
+      {
+        "name": "is_loaner_library_enabled",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "district_number",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [],
@@ -4107,6 +4124,16 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "budget_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "DRAFT"
+        }
       }
     ],
     "foreignKeys": [
@@ -7339,6 +7366,16 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "budget_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "DRAFT"
+        }
       }
     ],
     "foreignKeys": [
@@ -7359,6 +7396,102 @@ export const TABLES: Record<string, TableMeta> = {
         "fraternal_year"
       ]
     ]
+  },
+  "CouncilAffiliations": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "requesting_council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "target_council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "PENDING"
+        }
+      },
+      {
+        "name": "date_established",
+        "kind": "date",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "requested_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "requested_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "responded_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "responded_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "requesting_council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "target_council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "requested_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "responded_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
   }
 };
 
@@ -12092,7 +12225,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "adorations_target": 400,
         "confessions_target": 300,
         "updated_by_member_id": null,
-        "updated_at": "2026-07-02 19:00:00"
+        "updated_at": "2026-07-02 19:00:00",
+        "budget_status": "LOCKED"
       }
     ]
   },
@@ -12140,6 +12274,136 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "storage_location": "Rectory garage",
         "is_loanable": 1,
         "loan_status": "UNAVAILABLE",
+        "borrower_name": null,
+        "borrower_council": null,
+        "expected_return_date": null
+      }
+    ]
+  },
+  {
+    "table": "Council",
+    "rows": [
+      {
+        "CouncilNumber": 2042,
+        "CouncilName": "St. Anthony Council",
+        "State": "OR",
+        "Phone": "503-555-0142",
+        "Email": null,
+        "meeting_latitude": 45.4312,
+        "meeting_longitude": -122.7715,
+        "district_number": 5,
+        "is_loaner_library_enabled": 1
+      },
+      {
+        "CouncilNumber": 3112,
+        "CouncilName": "Holy Redeemer Council",
+        "State": "OR",
+        "Phone": "503-555-0112",
+        "Email": null,
+        "meeting_latitude": 45.5762,
+        "meeting_longitude": -122.68,
+        "district_number": 5,
+        "is_loaner_library_enabled": 1
+      },
+      {
+        "CouncilNumber": 7280,
+        "CouncilName": "Our Lady of the Lake Council",
+        "State": "OR",
+        "Phone": "503-555-0180",
+        "Email": null,
+        "meeting_latitude": 45.4207,
+        "meeting_longitude": -122.6706,
+        "district_number": 5,
+        "is_loaner_library_enabled": 1
+      },
+      {
+        "CouncilNumber": 1849,
+        "CouncilName": "St. Joseph Council",
+        "State": "OR",
+        "Phone": "503-555-0149",
+        "Email": null,
+        "meeting_latitude": 44.9429,
+        "meeting_longitude": -123.0351,
+        "district_number": 7,
+        "is_loaner_library_enabled": 0
+      },
+      {
+        "CouncilNumber": 4419,
+        "CouncilName": "St. Patrick Council",
+        "State": "WA",
+        "Phone": "360-555-0119",
+        "Email": null,
+        "meeting_latitude": 45.6387,
+        "meeting_longitude": -122.6615,
+        "district_number": 3,
+        "is_loaner_library_enabled": 1
+      }
+    ]
+  },
+  {
+    "table": "CouncilAffiliations",
+    "rows": [
+      {
+        "requesting_council_id": 2,
+        "target_council_id": 1,
+        "status": "ACTIVE",
+        "date_established": "2026-08-14",
+        "requested_by_member_id": null,
+        "requested_at": "2026-08-10 18:30:00",
+        "responded_by_member_id": null,
+        "responded_at": "2026-08-14 20:05:00"
+      },
+      {
+        "requesting_council_id": 3,
+        "target_council_id": 1,
+        "status": "PENDING",
+        "date_established": null,
+        "requested_by_member_id": null,
+        "requested_at": "2026-10-08 19:15:00",
+        "responded_by_member_id": null,
+        "responded_at": null
+      },
+      {
+        "requesting_council_id": 1,
+        "target_council_id": 4,
+        "status": "PENDING",
+        "date_established": null,
+        "requested_by_member_id": null,
+        "requested_at": "2026-10-09 10:00:00",
+        "responded_by_member_id": null,
+        "responded_at": null
+      }
+    ]
+  },
+  {
+    "table": "CouncilAssetsInventory",
+    "rows": [
+      {
+        "council_id": 2,
+        "asset_name": "Commercial flat-top griddle",
+        "purchase_date": "2023-09-12 00:00:00",
+        "cost_basis": 1380,
+        "original_expense_id": null,
+        "current_status": "ACTIVE",
+        "notes": null,
+        "storage_location": "Parish kitchen",
+        "is_loanable": 1,
+        "loan_status": "AVAILABLE",
+        "borrower_name": null,
+        "borrower_council": null,
+        "expected_return_date": null
+      },
+      {
+        "council_id": 2,
+        "asset_name": "Folding banquet tables (set of 20)",
+        "purchase_date": "2021-04-03 00:00:00",
+        "cost_basis": 1150,
+        "original_expense_id": null,
+        "current_status": "ACTIVE",
+        "notes": null,
+        "storage_location": "Hall storage room",
+        "is_loanable": 1,
+        "loan_status": "AVAILABLE",
         "borrower_name": null,
         "borrower_council": null,
         "expected_return_date": null

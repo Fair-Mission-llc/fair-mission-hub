@@ -25,6 +25,11 @@
 // Sprint 8C: the Canonization Rank Benchmarks card (RankThresholdsCard) moved here from the Executive Summary's
 // leaderboard. It is the only place they are edited (the council's Admins and Super Admins); everywhere else they are a
 // read-only information block.
+//
+// Sprints 8G/8H: the Fraternal Planning & Budgeting Workflow banner leads the page (FraternalPlanningWorkflow): Draft in
+// May, Review in June, the July 1 lock that freezes the year's Annual Council Goals as read-only information blocks, and
+// the council's final budget vote by July 10. The Cross-Council Loaner Library Sharing card switches
+// Council.is_loaner_library_enabled; a brother council's item shows only when both affiliated councils have it on.
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -43,6 +48,7 @@ import {
 import { RequireArea } from '@/components/CouncilScope';
 import { RankThresholdsCard } from '@/components/EngagementParts';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
+import { FraternalPlanningWorkflow, LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
@@ -159,6 +165,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
   };
   return (
     <>
+      <FraternalPlanningWorkflow key={council.id} user={user} council={council} />
       <p className="mb-4 text-base">
         Each card saves on its own. Click <strong>(i)</strong> beside a field to see where and how the number changes the portal. A field marked{' '}
         <strong>Not used yet</strong> is saved for a future feature and changes nothing today.
@@ -174,6 +181,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
       <MeetingCheckInCard user={user} councilId={council.id} />
       <InactivitySweepCard council={council} />
       <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
+      <LoanerLibrarySharingCard user={user} council={council} onSaved={onSaved} />
       <CustomGuidesCard council={council} />
     </>
   );

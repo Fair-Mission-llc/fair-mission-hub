@@ -700,6 +700,18 @@ import {
   planAssetLoanChange,
   type CouncilGoals,
 } from '@kofc/shared';
+import {
+  activeAffiliatePartners,
+  assertAffiliationRequestable,
+  assertBudgetYearReviewable,
+  assertCouncilGoalsWritable,
+  assertGoalsReviewable,
+  assertMayManageAffiliations,
+  assertMayRespondToAffiliation,
+  buildAffiliationDirectory,
+  planAffiliationResponse,
+  type CouncilAffiliations,
+} from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -1488,6 +1500,64 @@ export class MemoryDataService implements DataService {
       const row = this.requireRecord(s, 'Council', councilId);
       Object.assign(row, clean);
       return { ...row } as unknown as Council;
+    },
+
+    setLoanerLibraryEnabled: async (actorId, councilId, enabled) => {
+      if (typeof enabled !== 'boolean') throw new BusinessRuleError('INVALID_INPUT', 'Loaner library sharing must be on (true) or off (false).', { enabled });
+      const s = await this.ready();
+      assertMayEditCouncilWideSettings(this.memberWriteActor(s, actorId), councilId);
+      const row = this.requireRecord(s, 'Council', councilId);
+      row.is_loaner_library_enabled = enabled ? 1 : 0;
+      return { ...row } as unknown as Council;
+    },
+
+    listAffiliationDirectory: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayManageAffiliations(this.memberWriteActor(s, actorId), councilId, `read the affiliations of council ${councilId}`);
+      const home = this.requireRecord(s, 'Council', councilId) as unknown as Council;
+      return buildAffiliationDirectory(
+        { ...home },
+        s.rows('Council').map((c) => ({ ...c }) as unknown as Council),
+        s.rows('CouncilAffiliations').map((r) => ({ ...r }) as unknown as CouncilAffiliations),
+      );
+    },
+
+    requestAffiliation: async (actorId, requestingCouncilId, targetCouncilId) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayManageAffiliations(this.memberWriteActor(s, actorId), requestingCouncilId, `send affiliation invites for council ${requestingCouncilId}`);
+        const requesting = this.requireRecord(s, 'Council', requestingCouncilId) as unknown as Council;
+        const target = this.requireRecord(s, 'Council', targetCouncilId) as unknown as Council;
+        assertAffiliationRequestable(requesting, target, s.rows('CouncilAffiliations') as unknown as CouncilAffiliations[]);
+        return {
+          ...s.insert('CouncilAffiliations', {
+            requesting_council_id: requestingCouncilId,
+            target_council_id: targetCouncilId,
+            status: 'PENDING',
+            date_established: null,
+            requested_by_member_id: actorId,
+            requested_at: toTimestamp(this.now()),
+            responded_by_member_id: null,
+            responded_at: null,
+          }),
+        } as unknown as CouncilAffiliations;
+      });
+    },
+
+    respondToAffiliation: async (actorId, affiliationId, decision) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        const row = s.rows('CouncilAffiliations').find((r) => r.id === affiliationId) as Row | undefined;
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `Affiliation ${affiliationId} does not exist.`, { affiliationId });
+        const target = row.target_council_id as number;
+        assertMayRespondToAffiliation(this.memberWriteActor(s, actorId), target, `answer affiliation invite ${affiliationId}`);
+        const now = this.now();
+        Object.assign(row, planAffiliationResponse(row as unknown as CouncilAffiliations, decision, toIsoDate(now)), {
+          responded_by_member_id: actorId,
+          responded_at: toTimestamp(now),
+        });
+        return { ...row } as unknown as CouncilAffiliations;
+      });
     },
 
     getPlatformSettings: async () => this.platformSettingsOf(await this.ready()),
@@ -2528,11 +2598,19 @@ export class MemoryDataService implements DataService {
 
     listLoanerLibrary: async (actorId) => {
       const s = await this.ready();
-      assertMayBrowseLoanerLibrary(this.memberWriteActor(s, actorId));
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayBrowseLoanerLibrary(actor);
+      // Sprints 8G/8H: own items, plus ACTIVE affiliates' items while both councils share (visibleInLoanerLibrary).
       return buildLoanerLibrary(
         s.rows('CouncilAssetsInventory').map((a) => ({ ...a })) as unknown as CouncilAssetsInventory[],
-        s.rows('Council').map((c) => ({ id: c.id as number, CouncilNumber: c.CouncilNumber as number, CouncilName: c.CouncilName as string })),
+        s.rows('Council').map((c) => ({
+          id: c.id as number,
+          CouncilNumber: c.CouncilNumber as number,
+          CouncilName: c.CouncilName as string,
+          is_loaner_library_enabled: c.is_loaner_library_enabled as number | null,
+        })),
         toIsoDate(this.now()),
+        { councilId: actor.councilId, partners: activeAffiliatePartners(s.rows('CouncilAffiliations') as unknown as CouncilAffiliations[], actor.councilId) },
       );
     },
 
@@ -3469,6 +3547,7 @@ export class MemoryDataService implements DataService {
         devotions: isFraternalTenant(councilTenantType(council))
           ? councilDevotionTotals(s.rows('MemberDevotionals') as unknown as MemberDevotionals[], councilMembers)
           : null,
+        today: this.now(),
       });
     },
 
@@ -3479,6 +3558,7 @@ export class MemoryDataService implements DataService {
       return s.transaction(() => {
         assertMaySetCouncilGoals(this.memberWriteActor(s, actorId), councilId, `set the annual goals of council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
+        assertCouncilGoalsWritable(year, this.now());
         const stamp = { ...clean, updated_by_member_id: actorId, updated_at: toTimestamp(this.now()) };
         const row = s.rows('CouncilGoals').find((g) => g.council_id === councilId && g.fraternal_year === year) as Row | undefined;
         if (row) {
@@ -3486,6 +3566,19 @@ export class MemoryDataService implements DataService {
           return { ...row } as unknown as CouncilGoals;
         }
         return { ...s.insert('CouncilGoals', { council_id: councilId, fraternal_year: year, ...stamp }) } as unknown as CouncilGoals;
+      });
+    },
+
+    markCouncilGoalsReviewed: async (actorId, councilId, fraternalYear) => {
+      const year = assertFraternalYear(fraternalYear);
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMaySetCouncilGoals(this.memberWriteActor(s, actorId), councilId, `review the annual goals of council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const row = s.rows('CouncilGoals').find((g) => g.council_id === councilId && g.fraternal_year === year) as Row | undefined;
+        assertGoalsReviewable(row as unknown as CouncilGoals | undefined, year, this.now());
+        Object.assign(row!, { budget_status: 'REVIEWED', updated_by_member_id: actorId, updated_at: toTimestamp(this.now()) });
+        return { ...row } as unknown as CouncilGoals;
       });
     },
 
@@ -5647,6 +5740,22 @@ export class MemoryDataService implements DataService {
         const lines = this.budgetLines(s, councilId, year);
         assertBudgetYearApprovable(year, lines, this.now(), actor, options);
         for (const { id, ...approval } of planBudgetApproval(lines)) Object.assign(lines.find((l) => l.id === id)!, approval);
+      });
+      return this.annualForecast(s, councilId, year);
+    },
+
+    markBudgetYearReviewed: async (actorId, councilId, fraternalYear, options = {}) => {
+      const year = assertFraternalYear(fraternalYear);
+      const s = await this.ready();
+      s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        assertMayManageBudgetForecast(actor, councilId, `review the ${year} budget of council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const lines = this.budgetLines(s, councilId, year);
+        assertBudgetYearNotApproved(year, lines);
+        assertBudgetYearWritable(year, this.now(), actor, options);
+        assertBudgetYearReviewable(year, lines);
+        for (const line of lines) line.budget_status = 'REVIEWED';
       });
       return this.annualForecast(s, councilId, year);
     },

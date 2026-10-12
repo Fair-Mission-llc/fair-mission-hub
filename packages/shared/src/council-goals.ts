@@ -19,10 +19,15 @@
 // Access: the goals and trends carry money, so they have the general ledger's readers (assertMayReadGeneralLedger: the
 // council's officers, Admins and finance officers, and any Super Admin). The targets are set by the council's Grand Knight
 // or Deputy Grand Knight, its Admins, or any Super Admin (assertMaySetCouncilGoals).
+//
+// Sprints 8G/8H: the goals are drafted in May, reviewed in June and lock for good on July 1 of their year
+// (planning-workflow.ts assertCouncilGoalsWritable, COUNCIL_GOALS_LOCKED, no override); the Progress Center then shows
+// them as read-only information blocks. CouncilGoals.budget_status carries DRAFT, REVIEWED or LOCKED.
 // =========================================================================
 import { assertFraternalYear, currentFraternalYear, fraternalYearBounds, previousFraternalYear } from './budget';
 import type { MonthlySummary, SessionUser } from './contract';
 import type { CouncilDevotionTotals } from './member-lifecycle';
+import { councilGoalsLocked, goalsPlanningStatusOf } from './planning-workflow';
 import { holdsGrandKnightSeat, isAdmin, isSuperAdmin, canReadGeneralLedger } from './permissions';
 import {
   assertInteger,
@@ -38,7 +43,7 @@ import {
   SecurityPrivilegeError,
   type MemberWriteActor,
 } from './rules';
-import type { CouncilGoals, Member } from './types';
+import type { CouncilGoals, Member, PlanningStatus } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
 
@@ -190,6 +195,10 @@ export interface CouncilGoalsProgress {
   metrics: CouncilGoalMetric[];
   /** False for a white-label council: no devotional wheels. */
   spiritual: boolean;
+  /** Sprints 8G/8H: DRAFT, REVIEWED or LOCKED (goalsPlanningStatusOf). */
+  planningStatus: PlanningStatus;
+  /** Sprints 8G/8H: true from July 1 of the year - the targets are read-only. */
+  locked: boolean;
 }
 
 const roundHundredths = (n: number): number => Math.round(n * 100) / 100;
@@ -212,6 +221,8 @@ export function buildCouncilGoalsProgress(input: {
   newMembers: number;
   /** Null for a white-label council. */
   devotions: CouncilDevotionTotals | null;
+  /** Sprints 8G/8H: the data service's clock, for the July 1 lock; without it the stored status is reported. */
+  today?: Date;
 }): CouncilGoalsProgress {
   const fraternalYear = assertFraternalYear(input.fraternalYear);
   const targets: CouncilGoalTargets = input.goals ? { ...emptyCouncilGoalTargets(), ...pickTargets(input.goals) } : emptyCouncilGoalTargets();
@@ -233,7 +244,18 @@ export function buildCouncilGoalsProgress(input: {
     percent: goalPercent(actuals[key] ?? 0, targets[key]),
     group: SPIRITUAL_GOAL_KEYS.includes(key) ? ('spiritual' as const) : ('fraternal' as const),
   }));
-  return { councilId: input.councilId, fraternalYear, ...fraternalYearBounds(fraternalYear), goals: input.goals, metrics, spiritual: input.devotions !== null };
+  const locked = input.today ? councilGoalsLocked(fraternalYear, input.today) : input.goals?.budget_status === 'LOCKED';
+  const planningStatus: PlanningStatus = input.today ? goalsPlanningStatusOf(input.goals, fraternalYear, input.today) : (input.goals?.budget_status ?? 'DRAFT');
+  return {
+    councilId: input.councilId,
+    fraternalYear,
+    ...fraternalYearBounds(fraternalYear),
+    goals: input.goals,
+    metrics,
+    spiritual: input.devotions !== null,
+    planningStatus,
+    locked,
+  };
 }
 
 const pickTargets = (row: CouncilGoals): CouncilGoalTargets =>

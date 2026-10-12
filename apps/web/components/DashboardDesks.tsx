@@ -29,6 +29,9 @@
 //
 // Sprint 8F: the Grand Knight Desk (shared by the Deputy Grand Knight) gains the Cross-Council Loaner Library's lending
 // desk (LoanerLibraryManager): list an asset, pause it, check it out and log its return in one click.
+//
+// Sprints 8G/8H: the Grand Knight Desk also answers the council's incoming affiliation invites
+// (IncomingAffiliationInvites): Accept makes the pair ACTIVE and unlocks loaner library sharing between the councils.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -49,6 +52,8 @@ import {
   minutesCountdownLabel,
   minutesDeskRows,
   canLendCouncilAssets,
+  canRespondToAffiliation,
+  AFFILIATIONS_HREF,
   canLogConcludedRevenue,
   LOANER_LIBRARY_HREF,
   canOpenExpenseAuditDesk,
@@ -81,6 +86,7 @@ import {
 } from '@kofc/shared';
 import { ExpenseStatusPill, HonorVoucherBadge } from '@/components/ExpenseParts';
 import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
+import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -412,6 +418,18 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
           ) : null}
         </Panel>
       </DeskRow>
+      {/* Sprints 8G/8H: affiliation invites waiting for the Grand Knight's (or Deputy's) Accept. */}
+      {canRespondToAffiliation(user, councilId) ? (
+        <DeskRow id="grand-knight-affiliations" label="Affiliation Invites">
+          <IncomingAffiliationInvites user={user} councilId={councilId} />
+          <p className="mt-2 text-xs">
+            <Link href={AFFILIATIONS_HREF} className="font-bold underline">
+              Open Bilateral Fraternal Affiliations
+            </Link>{' '}
+            to invite nearby councils.
+          </p>
+        </DeskRow>
+      ) : null}
       {/* Sprint 8F: the Cross-Council Loaner Library's lending desk, for the Grand Knight and Deputy Grand Knight. */}
       {canLendCouncilAssets(user, councilId) ? (
         <DeskRow id="grand-knight-loaner-library" label="Cross-Council Loaner Library">

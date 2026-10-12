@@ -34,6 +34,7 @@ import type {
   UniversalBudgetCategory,
   CouncilAssetsInventory,
   CouncilGoals,
+  CouncilAffiliations,
   CouncilBudgetForecast,
   CouncilCharityLink,
   CouncilDonationMethod,
@@ -122,6 +123,7 @@ import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeof
 import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './council-goals';
 import type { AssetLoanChange, LoanerLibraryEntry } from './loaner-library';
+import type { AffiliationDecision, AffiliationDirectory } from './council-affiliations';
 
 // 1. LOOKUPS
 /** The global lookup tables a Super Admin maintains (Blueprint: "System Lookup Manager"). */
@@ -2528,6 +2530,33 @@ export interface DataService {
      */
     setCouncilWideSettings(actorId: number, councilId: number, settings: Partial<CouncilWideSettings>): Promise<Council>;
     /**
+     * Sprints 8G/8H: switches the council's Cross-Council Loaner Library sharing (Council.is_loaner_library_enabled) on or
+     * off from Council Wide Settings. Its editors (assertMayEditCouncilWideSettings: ADMIN_REQUIRED,
+     * COUNCIL_ACCESS_DENIED). RECORD_NOT_FOUND for an unknown council, INVALID_INPUT for a value that is not a boolean.
+     */
+    setLoanerLibraryEnabled(actorId: number, councilId: number, enabled: boolean): Promise<Council>;
+    /**
+     * Sprints 8G/8H: the Bilateral Fraternal Affiliations directory (council-affiliations.ts buildAffiliationDirectory) -
+     * the council's same-state neighbours, nearest first by meeting point, then in district order, each with its latest
+     * handshake, and the invites waiting for the council's answer. The council's Admins, Grand Knight and Deputy Grand
+     * Knight, or any Super Admin (assertMayManageAffiliations: GRAND_KNIGHT_REQUIRED, COUNCIL_ACCESS_DENIED).
+     * RECORD_NOT_FOUND for an unknown council.
+     */
+    listAffiliationDirectory(actorId: number, councilId: number): Promise<AffiliationDirectory>;
+    /**
+     * Sprints 8G/8H: sends an outbound affiliation invite (a PENDING CouncilAffiliations row) from one council to another
+     * of the same state. Senders as listAffiliationDirectory for the requesting council. RECORD_NOT_FOUND for an unknown
+     * council, INVALID_INPUT for the council itself, AFFILIATION_OUT_OF_STATE across states, AFFILIATION_CONFLICT while a
+     * PENDING or ACTIVE row joins the pair (assertAffiliationRequestable).
+     */
+    requestAffiliation(actorId: number, requestingCouncilId: number, targetCouncilId: number): Promise<CouncilAffiliations>;
+    /**
+     * Sprints 8G/8H: the target council's answer - ACCEPT makes the row ACTIVE with today's date_established and unlocks
+     * asset sharing; DECLINE makes it DECLINED. The target council's Grand Knight or Deputy Grand Knight, or any Super
+     * Admin (assertMayRespondToAffiliation). RECORD_NOT_FOUND, ILLEGAL_STATE_TRANSITION for a row that is not PENDING.
+     */
+    respondToAffiliation(actorId: number, affiliationId: number, decision: AffiliationDecision): Promise<CouncilAffiliations>;
+    /**
      * Sprint 7C: the universal limits every council shares (the one PlatformSettings row; council-settings.ts
      * platformSettings fills defaults when the row is missing). Open to every caller: the recorder and the text boxes
      * read them.
@@ -3137,8 +3166,15 @@ export interface DataService {
     /**
      * Sprint 8F: saves the year's six targets (cleanCouncilGoalTargets), creating the row or replacing its targets. The
      * council's Grand Knight or Deputy Grand Knight, its Admins or any Super Admin (assertMaySetCouncilGoals).
+     * Sprints 8G/8H: rejects COUNCIL_GOALS_LOCKED from July 1 of the year, with no override (assertCouncilGoalsWritable).
      */
     setCouncilGoals(actorId: number, councilId: number, fraternalYear: string, targets: CouncilGoalTargets): Promise<CouncilGoals>;
+    /**
+     * Sprints 8G/8H: marks the year's saved goals REVIEWED (CouncilGoals.budget_status) in the planning workflow. Setters
+     * as setCouncilGoals. COUNCIL_GOALS_LOCKED from July 1, INVALID_INPUT when no goals are saved, ILLEGAL_STATE_TRANSITION
+     * when already reviewed (assertGoalsReviewable).
+     */
+    markCouncilGoalsReviewed(actorId: number, councilId: number, fraternalYear: string): Promise<CouncilGoals>;
     /**
      * Sprint 8F: the comparative year-over-year trends (council-goals.ts buildCouncilTrends) - each fraternal year's
      * monthly revenue split (cash, electronic) and volunteer hours (events, activities), July first, newest year first.
@@ -3856,9 +3892,17 @@ export interface DataService {
      * Active Super Admin (assertMayApproveBudget: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED); the Budget Director prepares
      * but does not approve. Allowed from the year's May 1 opening on, including after the July 1 lock. Rejects
      * BUDGET_YEAR_APPROVED for an approved year, INVALID_INPUT for a year with no lines, and BUDGET_WINDOW_NOT_OPEN before
-     * May 1 unless an Active Super Admin passes superAdminOverride.
+     * May 1 unless an Active Super Admin passes superAdminOverride. Sprints 8G/8H: the vote must be recorded by July 10
+     * (BUDGET_VOTE_DEADLINE_PASSED afterwards, the same override lifting it) and writes budget_status LOCKED on each line.
      */
     approveAndFinalizeEntireBudget(actorId: number, councilId: number, fraternalYear: string, options?: BudgetWriteOptions): Promise<AnnualBudgetForecast>;
+    /**
+     * Sprints 8G/8H: marks every current line of the year REVIEWED (budget_status) in the planning workflow and resolves
+     * to the year as listAnnualForecast returns it. The budget's editors (assertMayManageBudgetForecast) inside the
+     * May-June drafting window (assertBudgetYearWritable, the same override). BUDGET_YEAR_APPROVED for a voted year,
+     * INVALID_INPUT for a year with no lines, ILLEGAL_STATE_TRANSITION when already reviewed (assertBudgetYearReviewable).
+     */
+    markBudgetYearReviewed(actorId: number, councilId: number, fraternalYear: string, options?: BudgetWriteOptions): Promise<AnnualBudgetForecast>;
     /**
      * The council's year against its actual spend so far (BudgetYearPerformance), through today or the year's June 30
      * once it has ended; before July 1 of the year nothing has been spent. Behind the dashboard's budget gauges.

@@ -431,8 +431,8 @@ describe('budget helpers (pure)', () => {
     expect(budgetStatusOf([line(1), line(2, { BudgetStatus: 'Proposed' })])).toBe('Proposed');
     expect(budgetStatusOf([line(1, { BudgetStatus: 'Approved' })])).toBe('Approved');
     expect(planBudgetApproval([line(1, { ProposedBudgetAmount: 12.34 }), line(2)])).toEqual([
-      { id: 1, ApprovedBudgetAmount: 12.34, BudgetStatus: 'Approved' },
-      { id: 2, ApprovedBudgetAmount: 0, BudgetStatus: 'Approved' },
+      { id: 1, ApprovedBudgetAmount: 12.34, BudgetStatus: 'Approved', budget_status: 'LOCKED' },
+      { id: 2, ApprovedBudgetAmount: 0, BudgetStatus: 'Approved', budget_status: 'LOCKED' },
     ]);
 
     const code = (fn: () => void) => {
@@ -451,11 +451,14 @@ describe('budget helpers (pure)', () => {
 
     const proposed = [line(1, { BudgetStatus: 'Proposed' })];
     const june = new Date(2027, 5, 15);
-    const july = new Date(2027, 6, 20);
+    const july = new Date(2027, 6, 9);
     const april = new Date(2027, 3, 20);
     expect(code(() => assertBudgetYearApprovable(TARGET, proposed, june, actor()))).toBe('ok');
-    // The July meeting's vote comes after the July 1 lock.
+    // The July meeting's vote comes after the July 1 lock - by July 10 (Sprints 8G/8H).
     expect(code(() => assertBudgetYearApprovable(TARGET, proposed, july, actor()))).toBe('ok');
+    const lateJuly = new Date(2027, 6, 20);
+    expect(code(() => assertBudgetYearApprovable(TARGET, proposed, lateJuly, actor()))).toBe('BUDGET_VOTE_DEADLINE_PASSED');
+    expect(code(() => assertBudgetYearApprovable(TARGET, proposed, lateJuly, superAdmin, { superAdminOverride: true }))).toBe('ok');
     expect(code(() => assertBudgetYearApprovable(TARGET, approved, july, superAdmin, { superAdminOverride: true }))).toBe('BUDGET_YEAR_APPROVED');
     expect(code(() => assertBudgetYearApprovable(TARGET, [], june, actor()))).toBe('INVALID_INPUT');
     expect(code(() => assertBudgetYearApprovable(TARGET, proposed, april, actor()))).toBe('BUDGET_WINDOW_NOT_OPEN');
@@ -954,12 +957,21 @@ for (const d of drivers) {
     });
 
     it('records the vote after the July 1 lock, but not before a year opens unless a Super Admin overrides it (Sprint 5Y-4)', async () => {
-      const july = await make(d, new Date(2027, 6, 12, 19, 0, 0));
+      // Sprints 8G/8H: the July meeting must record the vote by July 10.
+      const july = await make(d, new Date(2027, 6, 8, 19, 0, 0));
       const line = budgetLine(july, TARGET, { LineItemName: 'Bank Fees', ProposedBudgetAmount: 60 });
       await expectRule(july.budget.updateLineItemBudget(MEMBER.admin, line, 70), 'BUDGET_YEAR_FINALIZED');
       const treasurer = await addMember(july, OWN, 'Member', 'treasurer.vote@example.com');
       grantRole(d, july, treasurer, 'Treasurer');
-      expect((await july.budget.approveAndFinalizeEntireBudget(treasurer, OWN, TARGET)).lines).toMatchObject([{ ApprovedBudgetAmount: 60, BudgetStatus: 'Approved' }]);
+      expect((await july.budget.approveAndFinalizeEntireBudget(treasurer, OWN, TARGET)).lines).toMatchObject([
+        { ApprovedBudgetAmount: 60, BudgetStatus: 'Approved', budget_status: 'LOCKED' },
+      ]);
+
+      const late = await make(d, new Date(2027, 6, 11, 9, 0, 0));
+      budgetLine(late, TARGET, { LineItemName: 'Bank Fees', ProposedBudgetAmount: 60 });
+      await expectRule(late.budget.approveAndFinalizeEntireBudget(MEMBER.admin, OWN, TARGET), 'BUDGET_VOTE_DEADLINE_PASSED');
+      await expectRule(late.budget.approveAndFinalizeEntireBudget(MEMBER.admin, OWN, TARGET, { superAdminOverride: true }), 'BUDGET_VOTE_DEADLINE_PASSED');
+      expect((await late.budget.approveAndFinalizeEntireBudget(MEMBER.superAdmin, OWN, TARGET, { superAdminOverride: true })).status).toBe('Approved');
 
       const db = await make(d);
       budgetLine(db, LATER, { LineItemName: 'Bank Fees', ProposedBudgetAmount: 60 });
@@ -970,7 +982,7 @@ for (const d of drivers) {
 
     it("tracks the year's spend so far against each category's approved cap, counting what the monthly summaries count (Sprint 5Y-4)", async () => {
       const { db, fund, donations } = await historyBudget(DRAFTING);
-      await db.budget.approveAndFinalizeEntireBudget(MEMBER.admin, OWN, SOURCE);
+      await db.budget.approveAndFinalizeEntireBudget(MEMBER.superAdmin, OWN, SOURCE, { superAdminOverride: true }); // past its July 10 vote deadline
       // May 15, 2027: the June 30 charity check has not been paid yet.
       const progress = await db.budget.getBudgetProgress(MEMBER.admin, OWN, SOURCE);
       expect(progress).toMatchObject({
@@ -1019,7 +1031,7 @@ for (const d of drivers) {
 
     it('reviews every completed year against its full-year spend, with a trailing fiscal efficiency scorecard (Sprint 5Y-4)', async () => {
       const { db } = await historyBudget(new Date(2027, 6, 15));
-      await db.budget.approveAndFinalizeEntireBudget(MEMBER.admin, OWN, SOURCE);
+      await db.budget.approveAndFinalizeEntireBudget(MEMBER.superAdmin, OWN, SOURCE, { superAdminOverride: true }); // past its July 10 vote deadline
       budgetLine(db, '2025-2026', { LineItemName: 'Bank Fees', ProposedBudgetAmount: 40 }); // proposed, never approved
       budgetLine(db, TARGET, { LineItemName: 'Bank Fees', ProposedBudgetAmount: 40 }); // under way: not history yet
       budgetLine(db, '2024-2025', { LineItemName: 'Hall Rent', ProposedBudgetAmount: 10, CouncilID: OTHER }); // another council

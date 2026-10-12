@@ -111,6 +111,10 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member:
       "Sets the council's own numbers in three cards: the expense filing window, the volunteer time limits and logging window, and the hours reminder timing. Click (i) beside a field for what it does.",
   },
+  'system-settings/affiliations': {
+    member:
+      "Lists the other councils in your state, nearest first. Send an affiliation invite, or accept one sent to your council. Affiliated councils can share loaner library equipment.",
+  },
   members: { member: "Keeps the council's member roster: member types, roles and skills." },
   'supreme-sync': { member: 'Checks and files the Supreme Council reports (Forms 1728 and 1295) and syncs the roster.' },
   'council-lookups': { member: "Keeps the council's own lists: activities, donation types, payment methods and agenda templates." },

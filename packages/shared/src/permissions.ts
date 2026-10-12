@@ -78,6 +78,7 @@ export type PortalArea =
   | 'system-settings/global-settings'
   | 'system-settings/remote-assistance'
   | 'system-settings/impersonate'
+  | 'system-settings/affiliations'
   | 'navigation-guide'
   | 'performance/charts'
   | 'history'
@@ -271,6 +272,13 @@ export const canOpenCredentialsVault = (u: Actor): boolean => canOpenOfficerTool
  * council's Admins and officers, and any Super Admin.
  */
 export const canEditCouncilWideSettings = (u: Actor): boolean => canOpenOfficerTools(u);
+
+/**
+ * The Bilateral Fraternal Affiliations desk (Sprints 8G/8H, /system-settings/affiliations), mirroring
+ * assertMayManageAffiliations for the viewer's own council: its Admins, Grand Knight and Deputy Grand Knight, and any
+ * Super Admin (who picks the council). Accepting an invite stays with the Grand Knight seat (canRespondToAffiliation).
+ */
+export const canOpenAffiliationsDesk = (u: Actor): boolean => isAdmin(u) || holdsGrandKnightSeat(u);
 
 /**
  * Updating an event's results on the post-event ledger (Sprint 6R): strictly the event's owner, an elected officer
@@ -684,6 +692,8 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canOpenCredentialsVault(u)) areas.push('credentials-vault');
   // Sprint 7C: the Council Wide Settings page - the volunteer time limits and the inactivity window - is an officer tool too.
   if (canEditCouncilWideSettings(u)) areas.push('system-settings/council-settings');
+  // Sprints 8G/8H: the affiliations desk - council Admins, the Grand Knight and Deputy Grand Knight, Super Admins.
+  if (canOpenAffiliationsDesk(u)) areas.push('system-settings/affiliations');
   if (isAdmin(u) || canViewExecutiveDashboard(u, u.councilId)) areas.push('performance/charts');
   // Sprint 6K: every member reads the council's Team Legacy history and records oral history; the annals' keepers are
   // decided inside (assertMayKeepCouncilAnnals).
@@ -759,6 +769,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'system-settings/remote-assistance',
       'system-settings/impersonate',
       'system-settings/council-settings',
+      'system-settings/affiliations',
       'members',
       'supreme-sync',
       'council-lookups',

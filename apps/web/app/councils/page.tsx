@@ -4,6 +4,7 @@
 // (members, parishes, events, donations, ...) cannot be deleted, and the message lists what is in use.
 // Sprint 6R: the registration profile carries the council's EIN (ein_number). The feature flags panel moved to its own
 // Super Admin page, the Feature Flags Control Center (/feature-flags).
+// Sprints 8G/8H: the council's state district number (district_number), the affiliations directory's tiebreak.
 import { useState } from 'react';
 import { canMaintainCouncils, type Council } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
@@ -21,6 +22,7 @@ const FIELDS: FormField[] = [
   { key: 'Phone', label: 'Phone', type: 'tel', maxLength: 50, optional: true },
   { key: 'Email', label: 'Email', type: 'email', maxLength: 100, optional: true },
   { key: 'ein_number', label: 'EIN', maxLength: 20, optional: true },
+  { key: 'district_number', label: 'District number', type: 'number', optional: true },
 ];
 
 const toDraft = (c: Council): Draft => ({
@@ -30,6 +32,7 @@ const toDraft = (c: Council): Draft => ({
   Phone: c.Phone ?? '',
   Email: c.Email ?? '',
   ein_number: c.ein_number ?? '',
+  district_number: c.district_number == null ? '' : String(c.district_number),
 });
 
 function Councils() {
@@ -45,6 +48,7 @@ function Councils() {
       Phone: blankToNull(d.Phone),
       Email: blankToNull(d.Email),
       ein_number: blankToNull(d.ein_number),
+      district_number: parseNumberField(d.district_number, 'District number') ?? null,
     };
     const saved = row
       ? await db.councils.update(user.memberId, row.id, values)
@@ -68,9 +72,10 @@ function Councils() {
           { label: 'Phone', render: (c) => formatPhone(c.Phone), className: 'whitespace-nowrap' },
           { label: 'Email', render: (c) => c.Email || '–' },
           { label: 'EIN', render: (c) => c.ein_number || '–', className: 'whitespace-nowrap' },
+          { label: 'District', render: (c) => (c.district_number == null ? '–' : String(c.district_number)) },
         ]}
         fields={FIELDS}
-        blank={() => ({ CouncilNumber: '', CouncilName: '', State: '', Phone: '', Email: '', ein_number: '' })}
+        blank={() => ({ CouncilNumber: '', CouncilName: '', State: '', Phone: '', Email: '', ein_number: '', district_number: '' })}
         toDraft={toDraft}
         rowLabel={(c) => `Council ${c.CouncilNumber}`}
         matches={(c, q) => `${c.CouncilNumber} ${c.CouncilName} ${c.State}`.toLowerCase().includes(q)}

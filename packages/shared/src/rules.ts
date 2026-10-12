@@ -141,7 +141,11 @@ export type BusinessRuleCode =
   | 'MEETING_PIN_INVALID'
   | 'MEETING_PIN_LOCKED'
   | 'RECORDER_REQUIRED'
-  | 'HISTORIAN_REQUIRED';
+  | 'HISTORIAN_REQUIRED'
+  | 'COUNCIL_GOALS_LOCKED'
+  | 'BUDGET_VOTE_DEADLINE_PASSED'
+  | 'AFFILIATION_CONFLICT'
+  | 'AFFILIATION_OUT_OF_STATE';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {

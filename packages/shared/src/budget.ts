@@ -27,6 +27,7 @@ import type {
   NewCustomBudgetLine,
 } from './contract';
 import { assertMoney, assertText, BusinessRuleError, hasSuperAdminRights, toIsoDate, type MemberWriteActor } from './rules';
+import { assertBudgetVoteOpen } from './planning-workflow';
 import type { BudgetCategoryType, BudgetLineStatus, CouncilBudgetCategory, CouncilBudgetForecast, UniversalBudgetCategory } from './types';
 import { findMiscellaneousBudgetLine, nextBudgetLineStatus, nextBudgetVersionStatus } from './workflow';
 
@@ -457,7 +458,8 @@ export function assertBudgetYearNotApproved(fraternalYear: string, lines: readon
  * budget.approveAndFinalizeEntireBudget's checks on the year: it must not already be approved (BUDGET_YEAR_APPROVED),
  * must have lines to approve (INVALID_INPUT), and must have opened for drafting on May 1 (BUDGET_WINDOW_NOT_OPEN,
  * lifted by an Active Super Admin's override as elsewhere). The vote may be recorded during the drafting window or
- * after the July 1 lock - usually at the council's July meeting.
+ * after the July 1 lock - usually at the council's July meeting. Sprints 8G/8H: no later than July 10
+ * (planning-workflow.ts assertBudgetVoteOpen: BUDGET_VOTE_DEADLINE_PASSED, lifted only by a Super Admin's override).
  */
 export function assertBudgetYearApprovable(
   fraternalYear: string,
@@ -468,6 +470,7 @@ export function assertBudgetYearApprovable(
 ): void {
   assertBudgetYearNotApproved(fraternalYear, lines);
   if (lines.length === 0) throw invalid(`The ${fraternalYear} budget has no lines to approve.`, { fraternalYear });
+  assertBudgetVoteOpen(fraternalYear, today, actor, options);
   if (budgetWindowOf(fraternalYear, today) !== 'Not Yet Open') return;
   if (options.superAdminOverride === true && hasSuperAdminRights(actor)) return;
   throw new BusinessRuleError(
@@ -477,15 +480,19 @@ export function assertBudgetYearApprovable(
   );
 }
 
-/** What approval stores on each line: its proposed figure becomes the approved figure, and the line is 'Approved'. */
+/**
+ * What approval stores on each line: its proposed figure becomes the approved figure, and the line is 'Approved'.
+ * Sprints 8G/8H: the vote also writes the planning workflow's budget_status LOCKED.
+ */
 export function planBudgetApproval(
   lines: readonly (Pick<CouncilBudgetForecast, 'id' | 'ProposedBudgetAmount'> & Partial<Pick<CouncilBudgetForecast, 'BudgetStatus' | 'budget_version'>>)[],
-): Pick<CouncilBudgetForecast, 'id' | 'ApprovedBudgetAmount' | 'BudgetStatus'>[] {
+): (Pick<CouncilBudgetForecast, 'id' | 'ApprovedBudgetAmount' | 'BudgetStatus'> & { budget_status: 'LOCKED' })[] {
   // Sprint 6D: a stored row moves through BUDGET_LINE_WORKFLOW, so an approved snapshot can never be approved again.
   return lines.map((l) => ({
     id: l.id,
     ApprovedBudgetAmount: cents(l.ProposedBudgetAmount) / 100,
     BudgetStatus: l.BudgetStatus === undefined ? 'Approved' : nextBudgetLineStatus({ id: l.id, BudgetStatus: l.BudgetStatus, budget_version: l.budget_version }, 'approve'),
+    budget_status: 'LOCKED' as const,
   }));
 }
 
@@ -643,6 +650,8 @@ export function planBudgetAmendment(
     Notes: notes,
     BudgetStatus: nextBudgetVersionStatus(line),
     budget_version: budgetLineVersion(line) + 1,
+    // Sprints 8G/8H: an amendment is a voted resolution, so the new version is LOCKED like the vote's rows.
+    budget_status: 'LOCKED',
   };
 }
 

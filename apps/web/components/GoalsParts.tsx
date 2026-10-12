@@ -10,6 +10,10 @@
 // and volunteer hours month by month from July, one line per fraternal year (the newest solid navy, the year before
 // dashed gold, the one before that dotted grey, each labelled at its end), a hover readout of the month, the revenue
 // split and hours split per year, and the same figures as a table.
+//
+// Sprints 8G/8H: from July 1 of its year the goals are locked (planning-workflow.ts); the Progress Center then hides
+// Edit targets and shows a Locked badge. The Fraternal Planning & Budgeting Workflow on Council Wide Settings reuses
+// GoalsForm.
 import { useMemo, useState } from 'react';
 import {
   COUNCIL_GOAL_KEYS,
@@ -70,7 +74,7 @@ function ProgressWheel({ metric }: { metric: CouncilGoalMetric }) {
 }
 
 /** The targets form of the goal setters. */
-function GoalsForm({ initial, onSave, onCancel }: { initial: CouncilGoalTargets; onSave: (t: CouncilGoalTargets) => Promise<void>; onCancel: () => void }) {
+export function GoalsForm({ initial, onSave, onCancel }: { initial: CouncilGoalTargets; onSave: (t: CouncilGoalTargets) => Promise<void>; onCancel: () => void }) {
   const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(COUNCIL_GOAL_KEYS.map((k) => [k, String(initial[k] ?? 0)])));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -150,9 +154,10 @@ export function GoalsProgressCenter({ user, councilId, fraternalYear }: { user: 
               </Select>
             )}
           </Field>
-          {setter && !editing ? (
+          {p?.locked ? <Pill tone="outline">Locked July 1</Pill> : null}
+          {setter && !editing && p && !p.locked ? (
             <Button size="sm" variant="gold" onClick={() => setEditing(true)}>
-              {p?.goals ? 'Edit targets' : 'Set targets'}
+              {p.goals ? 'Edit targets' : 'Set targets'}
             </Button>
           ) : null}
         </div>
@@ -176,7 +181,8 @@ export function GoalsProgressCenter({ user, councilId, fraternalYear }: { user: 
           ) : null}
           {!p.goals && !editing ? (
             <Notice tone="info">
-              No targets are set for {p.fraternalYear}.{setter ? ' Choose Set targets to add them.' : ' The Grand Knight sets them.'}
+              No targets are set for {p.fraternalYear}.
+              {p.locked ? ' The year locked on July 1, so none can be added now.' : setter ? ' Choose Set targets to add them.' : ' The Grand Knight sets them.'}
             </Notice>
           ) : null}
           <section aria-labelledby="goals-fraternal">
