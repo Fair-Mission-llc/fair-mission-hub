@@ -3,7 +3,9 @@
 // (EXECUTIVE_DASHBOARD_HREF). One council's month at a glance from reports.monthlySummary - four stat tiles (labor hours,
 // unique Knights, net balance, outreach), the engagement row, the ledger figures behind the balance as a table and the
 // month's event highlights. Open to the council's Admins, every officer of the council (canViewExecutiveDashboard,
-// Sprint 5Z-2.5) and any Super Admin, who may pick the council.
+// Sprint 5Z-2.5), the Council Historian (canOpenHistorianDesk, Sprint 8E Extension) and any Super Admin, who may pick the
+// council. A Historian without an officer seat reads the month, the roadmap and the engagement row; the budget, mission
+// and audit panels keep their own gates, and only officers and Admins send the roadmap's overdue alerts.
 //
 // Readers cleared for it (canReviewBudgetPerformance) also get the Faith-in-Action Mission Tracking card
 // (reports.missionAreaFootprint) and the budget tracking gauges of the chosen month's fraternal year
@@ -19,6 +21,7 @@ import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
   canReviewBudgetPerformance,
   canViewExecutiveAudits,
+  canOpenHistorianDesk,
   canViewExecutiveDashboard,
   currentFraternalYear,
   isAdmin,
@@ -194,8 +197,8 @@ const SUMMARY_ROADMAP_ID = 'executive-summary-roadmap';
 function ExecutiveDashboard() {
   const user = useUser();
   const scope = useCouncilScope();
-  // A Council Historian opens the dashboard area for the Historian Desk alone; the summary stays with the executive readers.
-  const cleared = isAdmin(user) || canViewExecutiveDashboard(user, scope.councilId);
+  // Sprint 8E Extension: the Council Historian reads the summary too, as every reader of the dashboard area does.
+  const cleared = isAdmin(user) || canViewExecutiveDashboard(user, scope.councilId) || canOpenHistorianDesk(user, scope.councilId);
   return (
     <>
       <PageTitle actions={<CouncilSelect scope={scope} />}>Executive Dashboard</PageTitle>
@@ -217,7 +220,7 @@ function ExecutiveDashboard() {
           <ExecutiveSummary councilId={scope.councilId} />
         </div>
       ) : (
-        <Notice tone="info">The Executive Summary is for the council&apos;s officers and Admins. Your desk is on the Active Desks row.</Notice>
+        <Notice tone="info">The Executive Summary is for the council&apos;s officers, Council Historian and Admins. Your desk is on the Active Desks row.</Notice>
       )}
     </>
   );

@@ -163,22 +163,22 @@ describe('the Executive Dashboard page', () => {
     expect(EXECUTIVE_DASHBOARD_HREF).toBe('/executive-dashboard');
     const page = read('apps/web/app/executive-dashboard/page.tsx');
     expect(page).toContain('<RequireArea area="dashboard">');
-    expect(page).toContain('isAdmin(user) || canViewExecutiveDashboard(user, scope.councilId)');
+    expect(page).toContain('isAdmin(user) || canViewExecutiveDashboard(user, scope.councilId) || canOpenHistorianDesk(user, scope.councilId)');
     for (const part of ['<RoadmapRibbon', '<FraternalRoadmap', '<Scorecards s={s} compact />', '<EngagementCards', '<MissionTracking', '<BudgetTracking', 'title="Financial ledger"', '<NoShowAudit']) {
       expect(page).toContain(part);
     }
   });
 
-  it('links the sidebar Executive Dashboard to the page for executive readers only', () => {
+  it('links the sidebar Executive Dashboard to the page for executive readers and the Council Historian', () => {
     expect(read('apps/web/components/Sidebar.tsx')).toContain('href: EXECUTIVE_DASHBOARD_HREF');
     expect(sidebarItems(seat({ roles: ['Grand Knight'] }))).toContain('dashboard');
     expect(sidebarItems(seat({ memberType: 'Admin' }))).toContain('dashboard');
     expect(sidebarItems(seat({ memberType: 'Super Admin' }))).toContain('dashboard');
     expect(sidebarItems(seat())).not.toContain('dashboard');
-    // A Council Historian without a seat keeps the dashboard area (the Historian Desk) but not the summary's link.
+    // Sprint 8E Extension: the appointed Council Historian, even without an officer seat, gets the link.
     const historian = { ...seat({ roles: [COUNCIL_HISTORIAN_ROLE] }), isOfficer: false };
     expect(portalAreas(historian)).toContain('dashboard');
-    expect(sidebarItems(historian)).not.toContain('dashboard');
+    expect(sidebarItems(historian)).toContain('dashboard');
   });
 
   it('describes the page in the Navigation Guide', () => {

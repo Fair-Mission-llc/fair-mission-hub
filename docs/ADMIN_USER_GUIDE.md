@@ -2497,7 +2497,7 @@ The dashboard is a set of desks. A row of folder tabs sits under the navy header
 
 Only readers who may open the dashboard see the row. These readers are the council's Admins and officers, the Council Historian, and Super Admins.
 
-A Council Historian without an officer seat and without Admin rights gets two tabs only: **Historian Desk** and **Member Desk**. This Historian does not get **Home**.
+A Council Historian without an officer seat and without Admin rights gets two tabs only: **Historian Desk** and **Member Desk**. This Historian does not get **Home**. This Historian still gets the **Executive Dashboard** link in the sidebar (section 19.13).
 
 After you sign in, the portal opens on the dashboard **Home** desk when you hold an officer seat or Admin rights. A member without an officer seat or Admin rights opens on **Member Actions**.
 
@@ -2801,7 +2801,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 
 ### 19.13 Read the Executive Dashboard page
 
-> **Who can do this:** the council's Admins and officers, and Super Admins. A Council Historian without an officer seat does not see the **Executive Dashboard** link.
+> **Who can do this:** the council's Admins and officers, the Council Historian, and Super Admins. A Council Historian without an officer seat reads the month, the roadmap and the engagement row. The budget, mission tracking and audit panels stay with the officers.
 > **Warning:** when the roadmap ribbon shows an overdue step, the portal sends a push alert to the council's leaders. You cannot recall an alert.
 
 **Goal:** Read one month of council activity: the roadmap, the stat tiles, the budget and the audits.
@@ -2821,7 +2821,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The **Executive Dashboard** link does not show. | You do not hold an officer seat and you are not an Admin. | Ask a council Admin. |
+| The **Executive Dashboard** link does not show. | You do not hold an officer seat or the Council Historian role, and you are not an Admin. | Ask a council Admin. |
 | The **Shifts awaiting hours** audit is not on the page. | The audit is on the **Oversight Desk**. | Select the **Oversight Desk** tab. |
 | The budget gauges do not show. | Your seat does not review the budget. | Ask the Grand Knight or the Financial Secretary. |
 
