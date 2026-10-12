@@ -33,6 +33,7 @@ import type {
   BudgetLineStatus,
   UniversalBudgetCategory,
   CouncilAssetsInventory,
+  CouncilGoals,
   CouncilBudgetForecast,
   CouncilCharityLink,
   CouncilDonationMethod,
@@ -119,6 +120,8 @@ import type { CouncilWideSettings } from './council-settings';
 import type { LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeofenceChanges } from './geofence';
 import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
+import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './council-goals';
+import type { AssetLoanChange, LoanerLibraryEntry } from './loaner-library';
 
 // 1. LOOKUPS
 /** The global lookup tables a Super Admin maintains (Blueprint: "System Lookup Manager"). */
@@ -2879,6 +2882,19 @@ export interface DataService {
      * COUNCIL_ACCESS_DENIED otherwise). INVALID_INPUT for an over-long or script link; RECORD_NOT_FOUND for an unknown id.
      */
     setAssetPhoto(actorId: number, assetId: number, photoUrl: string | null): Promise<CouncilAssetsInventory>;
+    /**
+     * Sprint 8F: the Cross-Council Loaner Library - the listed ACTIVE assets of every council (loaner-library.ts
+     * buildLoanerLibrary), available first, with no cost, serial number, notes or storage place. Any Active member of any
+     * council (NOT_ACTIVE_COUNCIL_MEMBER otherwise).
+     */
+    listLoanerLibrary(actorId: number): Promise<LoanerLibraryEntry[]>;
+    /**
+     * Sprint 8F: one loan click on an asset - list, unlist, pause, resume, check out (borrower, council, expected return
+     * date) or return (planAssetLoanChange). The council's Active Grand Knight or Deputy Grand Knight, or any Active Super
+     * Admin (assertMayLendCouncilAssets: GRAND_KNIGHT_REQUIRED, COUNCIL_ACCESS_DENIED). RECORD_NOT_FOUND for an unknown
+     * id, ILLEGAL_STATE_TRANSITION for a click the item's state refuses, INVALID_INPUT for a bad borrower or date.
+     */
+    updateAssetLoan(actorId: number, assetId: number, change: AssetLoanChange): Promise<CouncilAssetsInventory>;
   };
 
   events: {
@@ -3110,6 +3126,25 @@ export interface DataService {
      * the devotional sums and the shield are null. Rejects INVALID_INPUT as councilEngagement does.
      */
     memberCenter(actorId: number, councilId: number, year: number, month: number): Promise<MemberCenter>;
+    /**
+     * Sprint 8F: the Annual Council Goals Progress Center (council-goals.ts buildCouncilGoalsProgress) - the fraternal
+     * year's CouncilGoals targets beside the funds raised and service hours of its twelve monthly summaries, the members
+     * who joined in the year (DateJoinedCouncil) and, for a Knights of Columbus council, the members' devotional sums.
+     * The general ledger's readers (assertMayReadCouncilGoals: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED). INVALID_INPUT for
+     * an unknown council or a malformed fraternal year.
+     */
+    getCouncilGoals(actorId: number, councilId: number, fraternalYear: string): Promise<CouncilGoalsProgress>;
+    /**
+     * Sprint 8F: saves the year's six targets (cleanCouncilGoalTargets), creating the row or replacing its targets. The
+     * council's Grand Knight or Deputy Grand Knight, its Admins or any Super Admin (assertMaySetCouncilGoals).
+     */
+    setCouncilGoals(actorId: number, councilId: number, fraternalYear: string, targets: CouncilGoalTargets): Promise<CouncilGoals>;
+    /**
+     * Sprint 8F: the comparative year-over-year trends (council-goals.ts buildCouncilTrends) - each fraternal year's
+     * monthly revenue split (cash, electronic) and volunteer hours (events, activities), July first, newest year first.
+     * 1 to TREND_MAX_YEAR_COUNT years (cleanTrendYears). Readers as getCouncilGoals. GET /api/analytics/trends serves it.
+     */
+    yearOverYearTrends(actorId: number, councilId: number, fraternalYears: readonly string[]): Promise<CouncilTrends>;
   };
 
   meetings: {

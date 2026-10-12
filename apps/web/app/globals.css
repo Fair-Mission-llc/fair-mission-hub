@@ -28,6 +28,11 @@
   --color-birthday: #AD1457;
   /* Sprint 6L Extension 5 (MEMORIAL_COLORS): the black of the In Memoriam card deck, under gold type. */
   --color-memorial: #000000;
+  /* Sprint 8F (MISSION_AREA_COLORS): the calendar's mission-area blocks - Faith gold, Community blue, Family green, Life red. */
+  --color-mission-faith: #D6A420;
+  --color-mission-community: #1F57A4;
+  --color-mission-family: #17692F;
+  --color-mission-life: #C8102E;
 
   --font-sans: Arial, sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
@@ -97,5 +102,32 @@
     accent-color: var(--color-navy);
     width: 1rem;
     height: 1rem;
+  }
+}
+
+/*
+ * Sprint 8F: the Unified Council Calendar colour-codes each event block by the Supreme mission area of its Local Category
+ * (MISSION_AREA_CALENDAR_CLASS in mission-categories.ts). Faith carries navy text on gold; the others white text.
+ */
+@layer components {
+  .calendar-mission-faith {
+    background-color: var(--color-mission-faith);
+    border-color: var(--color-mission-faith);
+    color: var(--color-navy);
+  }
+  .calendar-mission-community {
+    background-color: var(--color-mission-community);
+    border-color: var(--color-mission-community);
+    color: var(--color-white);
+  }
+  .calendar-mission-family {
+    background-color: var(--color-mission-family);
+    border-color: var(--color-mission-family);
+    color: var(--color-white);
+  }
+  .calendar-mission-life {
+    background-color: var(--color-mission-life);
+    border-color: var(--color-mission-life);
+    color: var(--color-white);
   }
 }

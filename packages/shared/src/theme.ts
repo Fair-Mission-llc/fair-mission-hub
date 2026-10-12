@@ -45,6 +45,19 @@ export const MEMORIAL_COLORS = {
   ink: '#000000',
 } as const;
 
+/**
+ * Sprint 8F: the Unified Council Calendar colours each event block by the Supreme mission area its Local Category
+ * counts toward (Category.SupremeMissionArea): Faith gold, Community blue, Family green and Life red. Faith takes navy
+ * text (gold under white text is ~2.3:1); the other three take white text, each 4.5:1 or better. They mark calendar
+ * categories only, never navigation or status.
+ */
+export const MISSION_AREA_COLORS = {
+  faith: BRAND.gold,
+  community: '#1F57A4',
+  family: BRAND.green,
+  life: BRAND.red,
+} as const;
+
 /** Body copy, forms, lists, timestamps. */
 export const FONT_BODY = 'Arial, sans-serif';
 /** Major titles only. */

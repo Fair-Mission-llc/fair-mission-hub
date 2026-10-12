@@ -758,6 +758,32 @@ export interface CouncilAssetsInventory {
   serial_number?: string | null; // VARCHAR(100), Sprint 6P
   storage_location?: string | null; // VARCHAR(255), Sprint 6P: where the item is kept
   photo_url?: string | null; // VARCHAR(2000), Sprint 7F: since the Extension a /api/media/assets/<council>/<file> path on the portal server
+  is_loanable?: number; // INT DEFAULT 0, Sprint 8F: 1 when the item is in the Cross-Council Loaner Library
+  loan_status?: CouncilAssetLoanStatus; // VARCHAR(20) DEFAULT 'AVAILABLE', Sprint 8F
+  borrower_name?: string | null; // VARCHAR(255), Sprint 8F: who has it while CHECKED_OUT
+  borrower_council?: string | null; // VARCHAR(255), Sprint 8F: the borrower's council while CHECKED_OUT
+  expected_return_date?: string | null; // DATE, Sprint 8F: YYYY-MM-DD while CHECKED_OUT
+}
+
+/** CouncilAssetsInventory.loan_status (Sprint 8F; rules layer, no CHECK). UNAVAILABLE = held out of the pool for now. */
+export type CouncilAssetLoanStatus = 'AVAILABLE' | 'CHECKED_OUT' | 'UNAVAILABLE';
+
+/**
+ * One council's annual targets for one fraternal year (Sprint 8F, schema 77), read by the Annual Council Goals Progress
+ * Center on the Executive Dashboard. Unique on (council_id, fraternal_year).
+ */
+export interface CouncilGoals {
+  id: number;
+  council_id: number;
+  fraternal_year: string; // VARCHAR(9), 'YYYY-YYYY'
+  fundraising_target: number; // DECIMAL(18,2)
+  new_members_target: number; // INT
+  hours_target: number; // DECIMAL(10,2)
+  rosaries_target: number; // INT
+  adorations_target: number; // INT
+  confessions_target: number; // INT
+  updated_by_member_id?: number | null;
+  updated_at?: string | null; // DATETIME
 }
 
 /** One receipt on an expense sheet. */

@@ -684,6 +684,22 @@ import type {
   VolunteerQuarantine,
   VolunteerQuarantineActivityType,
 } from '@kofc/shared';
+import {
+  assertMayBrowseLoanerLibrary,
+  assertMayLendCouncilAssets,
+  assertMayReadCouncilGoals,
+  assertMaySetCouncilGoals,
+  buildCouncilGoalsProgress,
+  buildCouncilTrends,
+  buildLoanerLibrary,
+  buildTrendYear,
+  cleanCouncilGoalTargets,
+  cleanTrendYears,
+  collectFiscalMonths,
+  countNewMembers,
+  planAssetLoanChange,
+  type CouncilGoals,
+} from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -2510,6 +2526,27 @@ export class MemoryDataService implements DataService {
       });
     },
 
+    listLoanerLibrary: async (actorId) => {
+      const s = await this.ready();
+      assertMayBrowseLoanerLibrary(this.memberWriteActor(s, actorId));
+      return buildLoanerLibrary(
+        s.rows('CouncilAssetsInventory').map((a) => ({ ...a })) as unknown as CouncilAssetsInventory[],
+        s.rows('Council').map((c) => ({ id: c.id as number, CouncilNumber: c.CouncilNumber as number, CouncilName: c.CouncilName as string })),
+        toIsoDate(this.now()),
+      );
+    },
+
+    updateAssetLoan: async (actorId, assetId, change) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        const row = s.rows('CouncilAssetsInventory').find((a) => a.id === assetId) as Row | undefined;
+        const asset = requireAssetRecord(row as unknown as CouncilAssetsInventory | undefined, assetId);
+        assertMayLendCouncilAssets(this.memberWriteActor(s, actorId), asset.council_id, `lend asset ${assetId}`);
+        Object.assign(row!, planAssetLoanChange({ ...asset }, change, toIsoDate(this.now())));
+        return { ...row } as unknown as CouncilAssetsInventory;
+      });
+    },
+
     listAuthorizationQueue: async (actorId, councilId) => {
       const s = await this.ready();
       assertMayReadAuthorizationDesk(this.memberWriteActor(s, actorId), councilId, `read the authorization desk of council ${councilId}`);
@@ -3413,6 +3450,54 @@ export class MemoryDataService implements DataService {
           ? councilDevotionTotals(s.rows('MemberDevotionals') as unknown as MemberDevotionals[], councilMembers)
           : null,
       });
+    },
+
+    getCouncilGoals: async (actorId, councilId, fraternalYear) => {
+      const year = assertFraternalYear(fraternalYear);
+      const s = await this.ready();
+      assertMayReadCouncilGoals(this.memberWriteActor(s, actorId), councilId, `read the annual goals of council ${councilId}`);
+      this.assertCouncilsExist(s, [councilId]);
+      const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;
+      const councilMembers = new Set(s.rows('Member').filter((m) => m.CouncilID === councilId).map((m) => m.id as number));
+      const goals = s.rows('CouncilGoals').find((g) => g.council_id === councilId && g.fraternal_year === year);
+      return buildCouncilGoalsProgress({
+        councilId,
+        fraternalYear: year,
+        goals: goals ? ({ ...goals } as unknown as CouncilGoals) : null,
+        months: await collectFiscalMonths(year, (y, m) => this.reports.monthlySummary(councilId, y, m)),
+        newMembers: countNewMembers(s.rows('Member') as unknown as Member[], councilId, year),
+        devotions: isFraternalTenant(councilTenantType(council))
+          ? councilDevotionTotals(s.rows('MemberDevotionals') as unknown as MemberDevotionals[], councilMembers)
+          : null,
+      });
+    },
+
+    setCouncilGoals: async (actorId, councilId, fraternalYear, targets) => {
+      const year = assertFraternalYear(fraternalYear);
+      const clean = cleanCouncilGoalTargets(targets);
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMaySetCouncilGoals(this.memberWriteActor(s, actorId), councilId, `set the annual goals of council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const stamp = { ...clean, updated_by_member_id: actorId, updated_at: toTimestamp(this.now()) };
+        const row = s.rows('CouncilGoals').find((g) => g.council_id === councilId && g.fraternal_year === year) as Row | undefined;
+        if (row) {
+          Object.assign(row, stamp);
+          return { ...row } as unknown as CouncilGoals;
+        }
+        return { ...s.insert('CouncilGoals', { council_id: councilId, fraternal_year: year, ...stamp }) } as unknown as CouncilGoals;
+      });
+    },
+
+    yearOverYearTrends: async (actorId, councilId, fraternalYears) => {
+      const years = cleanTrendYears(fraternalYears);
+      const s = await this.ready();
+      assertMayReadCouncilGoals(this.memberWriteActor(s, actorId), councilId, `read the year-over-year trends of council ${councilId}`);
+      this.assertCouncilsExist(s, [councilId]);
+      const rows = await Promise.all(
+        years.map(async (y) => buildTrendYear(y, await collectFiscalMonths(y, (yr, m) => this.reports.monthlySummary(councilId, yr, m)))),
+      );
+      return buildCouncilTrends(councilId, rows);
     },
 
     missionAreaFootprint: async (actorId, councilId, fraternalYear) => {

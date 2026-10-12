@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BRAND, contrastRatio, FONT_BODY, FONT_HEADING, HIGH_CONTRAST, LITURGICAL_COLORS, MEMORIAL_COLORS } from '@kofc/shared';
+import { BRAND, contrastRatio, FONT_BODY, FONT_HEADING, HIGH_CONTRAST, LITURGICAL_COLORS, MEMORIAL_COLORS, MISSION_AREA_COLORS } from '@kofc/shared';
 
 const webRoot = fileURLToPath(new URL('../apps/web/', import.meta.url));
 const css = readFileSync(join(webRoot, 'app/globals.css'), 'utf8');
@@ -38,6 +38,10 @@ describe('web theme matches the shared brand tokens', () => {
     ['color-crimson', LITURGICAL_COLORS.crimson],
     ['color-birthday', LITURGICAL_COLORS.birthdayFlare],
     ['color-memorial', MEMORIAL_COLORS.ink],
+    ['color-mission-faith', MISSION_AREA_COLORS.faith],
+    ['color-mission-community', MISSION_AREA_COLORS.community],
+    ['color-mission-family', MISSION_AREA_COLORS.family],
+    ['color-mission-life', MISSION_AREA_COLORS.life],
   ])('--%s is %s', (name, expected) => {
     expect(token(name)?.toUpperCase()).toBe(expected.toUpperCase());
   });
@@ -77,8 +81,8 @@ describe('portal sources stay on brand', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('hard-codes no hex colour outside the brand, high-contrast and liturgical tokens', () => {
-    const brand = new Set([...Object.values(BRAND), ...Object.values(HIGH_CONTRAST), ...Object.values(LITURGICAL_COLORS)].map((c) => c.toUpperCase()));
+  it('hard-codes no hex colour outside the brand, high-contrast, liturgical and mission-area tokens', () => {
+    const brand = new Set([...Object.values(BRAND), ...Object.values(HIGH_CONTRAST), ...Object.values(LITURGICAL_COLORS), ...Object.values(MISSION_AREA_COLORS)].map((c) => c.toUpperCase()));
     const stray = sources.flatMap((s) => (s.text.match(/#[0-9a-fA-F]{6}\b/g) ?? []).filter((c) => !brand.has(c.toUpperCase())).map((c) => `${s.file}: ${c}`));
     expect(stray).toEqual([]);
   });

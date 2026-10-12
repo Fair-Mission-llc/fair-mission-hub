@@ -119,6 +119,12 @@ describe('schema 43: ExpenseReport.is_long_term_asset and CouncilAssetsInventory
       'serial_number',
       'storage_location',
       'photo_url',
+      // Sprint 8F: the Cross-Council Loaner Library.
+      'is_loanable',
+      'loan_status',
+      'borrower_name',
+      'borrower_council',
+      'expected_return_date',
     ]);
     expect(TABLES.CouncilAssetsInventory.columns.find((c) => c.name === 'current_status')).toMatchObject({ default: { kind: 'literal', value: 'ACTIVE' } });
     expect(TABLES.ExpenseReport.columns.find((c) => c.name === 'is_long_term_asset')).toMatchObject({ notNull: true, default: { kind: 'literal', value: 0 } });

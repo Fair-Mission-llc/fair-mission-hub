@@ -692,6 +692,22 @@ import type {
   VolunteerQuarantine,
   VolunteerQuarantineActivityType,
 } from '@kofc/shared';
+import {
+  assertMayBrowseLoanerLibrary,
+  assertMayLendCouncilAssets,
+  assertMayReadCouncilGoals,
+  assertMaySetCouncilGoals,
+  buildCouncilGoalsProgress,
+  buildCouncilTrends,
+  buildLoanerLibrary,
+  buildTrendYear,
+  cleanCouncilGoalTargets,
+  cleanTrendYears,
+  collectFiscalMonths,
+  countNewMembers,
+  planAssetLoanChange,
+  type CouncilGoals,
+} from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -818,8 +834,10 @@ const DB_NAME = 'kofc.db';
  * 76: no table change - Home keeps only the universal cards with the month's Top 5 Fraternal Volunteers
  *     (councilEngagement monthlyLeaderboard), the desk badges move to the Oversight Desk and the Executive Summary to
  *     its own /executive-dashboard page (Sprint 8D/8E); phones rebuild in step.
+ * 77: CouncilGoals (the Annual Council Goals Progress Center) and CouncilAssetsInventory.is_loanable, loan_status,
+ *     borrower_name, borrower_council and expected_return_date (the Cross-Council Loaner Library) (Sprint 8F).
  */
-const SCHEMA_VERSION = 76;
+const SCHEMA_VERSION = 77;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -2920,6 +2938,31 @@ export class SqliteDataService implements DataService {
       return (await db.getFirstAsync<CouncilAssetsInventory>('SELECT * FROM [CouncilAssetsInventory] WHERE [id] = ?', [assetId]))!;
     },
 
+    listLoanerLibrary: async (actorId) => {
+      const db = await this.ready();
+      assertMayBrowseLoanerLibrary(await this.memberWriteActor(db, actorId));
+      const [assets, councils] = await Promise.all([
+        db.getAllAsync<CouncilAssetsInventory>("SELECT * FROM [CouncilAssetsInventory] WHERE [is_loanable] = 1 AND [current_status] = 'ACTIVE'"),
+        db.getAllAsync<Pick<Council, 'id' | 'CouncilNumber' | 'CouncilName'>>('SELECT [id], [CouncilNumber], [CouncilName] FROM [Council]'),
+      ]);
+      return buildLoanerLibrary(assets, councils, toIsoDate(this.now()));
+    },
+
+    updateAssetLoan: async (actorId, assetId, change) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const asset = requireAssetRecord(await db.getFirstAsync<CouncilAssetsInventory>('SELECT * FROM [CouncilAssetsInventory] WHERE [id] = ?', [assetId]), assetId);
+        assertMayLendCouncilAssets(await this.memberWriteActor(db, actorId), asset.council_id, `lend asset ${assetId}`);
+        const cols = planAssetLoanChange(asset, change, toIsoDate(this.now()));
+        const keys = Object.keys(cols) as (keyof typeof cols)[];
+        await db.runAsync(`UPDATE [CouncilAssetsInventory] SET ${keys.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
+          ...keys.map((c) => (cols[c] ?? null) as Bind),
+          assetId,
+        ]);
+      });
+      return (await db.getFirstAsync<CouncilAssetsInventory>('SELECT * FROM [CouncilAssetsInventory] WHERE [id] = ?', [assetId]))!;
+    },
+
     listAuthorizationQueue: async (actorId, councilId) => {
       const db = await this.ready();
       assertMayReadAuthorizationDesk(await this.memberWriteActor(db, actorId), councilId, `read the authorization desk of council ${councilId}`);
@@ -4038,6 +4081,73 @@ export class SqliteDataService implements DataService {
         thresholds: councilRankThresholds(viewerCouncil),
         devotions: isFraternalTenant(councilTenantType(council)) ? councilDevotionTotals(devotionRows, new Set(devotionRows.map((d) => d.user_id))) : null,
       });
+    },
+
+    getCouncilGoals: async (actorId, councilId, fraternalYear) => {
+      const year = assertFraternalYear(fraternalYear);
+      const db = await this.ready();
+      assertMayReadCouncilGoals(await this.memberWriteActor(db, actorId), councilId, `read the annual goals of council ${councilId}`);
+      await this.assertCouncilsExist(db, [councilId]);
+      const [council, goals, members, devotionRows] = await Promise.all([
+        db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]),
+        db.getFirstAsync<CouncilGoals>('SELECT * FROM [CouncilGoals] WHERE [council_id] = ? AND [fraternal_year] = ?', [councilId, year]),
+        db.getAllAsync<Member>('SELECT [CouncilID], [DateJoinedCouncil] FROM [Member] WHERE [CouncilID] = ?', [councilId]),
+        db.getAllAsync<MemberDevotionals>('SELECT d.* FROM [MemberDevotionals] d JOIN [Member] m ON m.[id] = d.[user_id] WHERE m.[CouncilID] = ?', [councilId]),
+      ]);
+      return buildCouncilGoalsProgress({
+        councilId,
+        fraternalYear: year,
+        goals: goals ?? null,
+        months: await collectFiscalMonths(year, (y, m) => this.reports.monthlySummary(councilId, y, m)),
+        newMembers: countNewMembers(members, councilId, year),
+        devotions: isFraternalTenant(councilTenantType(council)) ? councilDevotionTotals(devotionRows, new Set(devotionRows.map((d) => d.user_id))) : null,
+      });
+    },
+
+    setCouncilGoals: async (actorId, councilId, fraternalYear, targets) => {
+      const year = assertFraternalYear(fraternalYear);
+      const clean = cleanCouncilGoalTargets(targets);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMaySetCouncilGoals(await this.memberWriteActor(db, actorId), councilId, `set the annual goals of council ${councilId}`);
+        await this.assertCouncilsExist(db, [councilId]);
+        const values = [
+          clean.fundraising_target,
+          clean.new_members_target,
+          clean.hours_target,
+          clean.rosaries_target,
+          clean.adorations_target,
+          clean.confessions_target,
+          actorId,
+          toTimestamp(this.now()),
+        ];
+        const existing = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [CouncilGoals] WHERE [council_id] = ? AND [fraternal_year] = ?', [councilId, year]);
+        if (existing) {
+          await db.runAsync(
+            `UPDATE [CouncilGoals] SET [fundraising_target] = ?, [new_members_target] = ?, [hours_target] = ?, [rosaries_target] = ?, [adorations_target] = ?,
+                    [confessions_target] = ?, [updated_by_member_id] = ?, [updated_at] = ? WHERE [id] = ?`,
+            [...values, existing.id],
+          );
+        } else {
+          await db.runAsync(
+            `INSERT INTO [CouncilGoals] ([fundraising_target], [new_members_target], [hours_target], [rosaries_target], [adorations_target], [confessions_target],
+                    [updated_by_member_id], [updated_at], [council_id], [fraternal_year]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [...values, councilId, year],
+          );
+        }
+      });
+      return (await db.getFirstAsync<CouncilGoals>('SELECT * FROM [CouncilGoals] WHERE [council_id] = ? AND [fraternal_year] = ?', [councilId, year]))!;
+    },
+
+    yearOverYearTrends: async (actorId, councilId, fraternalYears) => {
+      const years = cleanTrendYears(fraternalYears);
+      const db = await this.ready();
+      assertMayReadCouncilGoals(await this.memberWriteActor(db, actorId), councilId, `read the year-over-year trends of council ${councilId}`);
+      await this.assertCouncilsExist(db, [councilId]);
+      const rows = await Promise.all(
+        years.map(async (y) => buildTrendYear(y, await collectFiscalMonths(y, (yr, m) => this.reports.monthlySummary(councilId, yr, m)))),
+      );
+      return buildCouncilTrends(councilId, rows);
     },
 
     missionAreaFootprint: async (actorId, councilId, fraternalYear) => {

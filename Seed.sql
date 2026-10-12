@@ -922,3 +922,16 @@ VALUES
 (1, 33, 'SHIFT', 9, '2026-10-10', 6.50, 4.00, 'Stayed to restripe the overflow lot', '2026-10-10 13:15:00', 'More than 5.0 hours against one activity: 6.5 hours reported for the day. More than 1.0 hour over the scheduled shift: 6.5 hours reported against a 4-hour shift (limit 5).', 'PENDING'),
 (1, 34, 'MANUAL', 11, '2026-10-11', 6.00, NULL, 'Ushered all three Sunday Masses', '2026-10-11 13:40:00', 'More than 5.0 hours against one activity: 6 hours reported for the day.', 'PENDING');
 GO
+
+-- Sprint 8F (schema 77): St. Mary's 2026-2027 Annual Council Goals (CouncilGoals 1) and three items in the Cross-Council
+-- Loaner Library (CouncilAssetsInventory 1-3, entered by hand, so no expense sheet): a sound system ready to lend, a
+-- fryer set out with a brother council until October 20 and a canopy tent paused for repairs.
+INSERT INTO [CouncilGoals] ([council_id], [fraternal_year], [fundraising_target], [new_members_target], [hours_target], [rosaries_target], [adorations_target], [confessions_target], [updated_by_member_id], [updated_at])
+VALUES (1, '2026-2027', 25000.00, 12, 2500.00, 1500, 400, 300, NULL, '2026-07-02 19:00:00');
+GO
+INSERT INTO [CouncilAssetsInventory] ([council_id], [asset_name], [purchase_date], [cost_basis], [original_expense_id], [current_status], [notes], [storage_location], [is_loanable], [loan_status], [borrower_name], [borrower_council], [expected_return_date])
+VALUES
+(1, 'Portable PA sound system', '2024-03-15 00:00:00', 1249.00, NULL, 'ACTIVE', NULL, 'Parish hall storage closet', 1, 'AVAILABLE', NULL, NULL, NULL),
+(1, 'Fish fry fryer set (two propane fryers)', '2023-02-10 00:00:00', 1890.00, NULL, 'ACTIVE', NULL, 'Rectory garage', 1, 'CHECKED_OUT', 'Mark Delgado', 'St. Anthony Council 2042', '2026-10-20'),
+(1, '10x20 event canopy tent', '2022-05-01 00:00:00', 640.00, NULL, 'ACTIVE', 'Torn side panel; out for repair', 'Rectory garage', 1, 'UNAVAILABLE', NULL, NULL, NULL);
+GO

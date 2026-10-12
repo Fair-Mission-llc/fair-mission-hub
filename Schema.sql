@@ -3320,3 +3320,68 @@ GO
 -- audit - leaves Home for its own page, /executive-dashboard, the sidebar's Executive Dashboard link. The phone database
 -- version moves to 76.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8F: ANNUAL COUNCIL GOALS, THE CROSS-COUNCIL LOANER LIBRARY AND YOY TRENDS (schema version 77)
+--
+-- CouncilGoals holds one council's targets for one fraternal year (July 1 - June 30; 'YYYY-YYYY', unique per council):
+-- funds raised, new members, service hours, and the Faith Center's rosaries, hours of adoration and confessions. The
+-- Executive Dashboard's Annual Council Goals Progress Center draws a progress wheel per target against the records:
+-- the events' funds raised and the logged EventTime + ActivityTime of the year's months (reports.monthlySummary), the
+-- members whose DateJoinedCouncil falls in the year and the members' MemberDevotionals sums (a running tally, so the
+-- devotional wheels read the whole tally). The council's Grand Knight or Deputy Grand Knight, its Admins or a Super
+-- Admin set the targets (council-goals.ts).
+--
+-- CouncilAssetsInventory gains the loan columns of the Cross-Council Loaner Library (loaner-library.ts):
+--   is_loanable           1 while the item is in the shared pool (0 by default);
+--   loan_status           AVAILABLE, CHECKED_OUT or UNAVAILABLE - held out of the pool for now (rules layer, no CHECK);
+--   borrower_name,        who has the item and for which council, while CHECKED_OUT;
+--   borrower_council
+--   expected_return_date  when it is due back, while CHECKED_OUT.
+-- The council's Grand Knight or Deputy Grand Knight lists, pauses, checks out and checks in its items from the Grand
+-- Knight Desk or /inventory/loaner-library; every Active member reads the shared directory.
+--
+-- No table change for the colour-coded calendar (Category.SupremeMissionArea already names each block's mission area)
+-- or the year-over-year trends (reports.yearOverYearTrends and GET /api/analytics/trends read the monthly summaries).
+-- The phone database version moves to 77.
+-- =========================================================================
+CREATE TABLE [CouncilGoals] (
+	[id] INT NOT NULL IDENTITY,
+	[council_id] INT NOT NULL,
+	[fraternal_year] VARCHAR(9) NOT NULL,
+	[fundraising_target] DECIMAL(18,2) NOT NULL DEFAULT 0,
+	[new_members_target] INT NOT NULL DEFAULT 0,
+	[hours_target] DECIMAL(10,2) NOT NULL DEFAULT 0,
+	[rosaries_target] INT NOT NULL DEFAULT 0,
+	[adorations_target] INT NOT NULL DEFAULT 0,
+	[confessions_target] INT NOT NULL DEFAULT 0,
+	[updated_by_member_id] INT NULL,
+	[updated_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [CouncilGoals]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [CouncilGoals]
+ADD FOREIGN KEY([updated_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE UNIQUE INDEX [CouncilGoals_Year_Idx] ON [CouncilGoals] ([council_id], [fraternal_year]);
+GO
+
+ALTER TABLE [CouncilAssetsInventory] ADD [is_loanable] INT NOT NULL DEFAULT 0;
+GO
+ALTER TABLE [CouncilAssetsInventory] ADD [loan_status] VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE';
+GO
+ALTER TABLE [CouncilAssetsInventory] ADD [borrower_name] VARCHAR(255) NULL;
+GO
+ALTER TABLE [CouncilAssetsInventory] ADD [borrower_council] VARCHAR(255) NULL;
+GO
+ALTER TABLE [CouncilAssetsInventory] ADD [expected_return_date] DATE NULL;
+GO

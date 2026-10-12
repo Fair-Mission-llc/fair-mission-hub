@@ -173,6 +173,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     label: 'Council Dashboard',
     hint: "The council's volunteers, hours, devotions and Top 5 leaderboard, and your own impact card",
   },
+  'inventory/loaner-library': { href: '/inventory/loaner-library', label: 'Cross-Council Loaner Library', hint: 'Equipment councils lend to each other' },
   'performance/charts': { href: '/performance/charts', label: 'Growth & Hours Charts', hint: 'Membership growth velocity and council hours by month' },
   history: { href: '/history', label: 'Council History', hint: "Each year's officer core, collective accomplishments and oral histories" },
   profile: { href: '/profile', label: 'My Profile', hint: 'Photo, biography, contact details, skills' },

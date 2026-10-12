@@ -2547,7 +2547,7 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. | Sidebar → Finances → **GK Expense Authorize** |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. For the GK, the DGK and Super Admins, the **Cross-Council Loaner Library** controls (section 20.3). | Sidebar → Finances → **GK Expense Authorize** |
 | **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The **Written-order queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | Sidebar → Finances → **FS Expense Audit** |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
@@ -2815,6 +2815,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 4. Read the **Faith-in-Action Mission Tracking** card and the **Budget tracking** gauges.
 5. Read the **Financial ledger** table and the **Monthly highlights**.
 6. Read the no-show audit under **Executive audits**.
+7. Read the **Annual Council Goals Progress Center** and the **Year-over-Year Trends** under the roadmap. See sections 19.14 to 19.16.
 
 **Expected result:** The page shows the whole **Executive Summary** for the month. The page scrolls like any other page. The **Active Desks** row stays under the header.
 
@@ -2824,6 +2825,157 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 | The **Executive Dashboard** link does not show. | You do not hold an officer seat or the Council Historian role, and you are not an Admin. | Ask a council Admin. |
 | The **Shifts awaiting hours** audit is not on the page. | The audit is on the **Oversight Desk**. | Select the **Oversight Desk** tab. |
 | The budget gauges do not show. | Your seat does not review the budget. | Ask the Grand Knight or the Financial Secretary. |
+
+### 19.14 Concept: the Annual Council Goals Progress Center
+
+The **Annual Council Goals Progress Center** is a card on the **Executive Dashboard** page. The card compares the council's targets for one fraternal year (July 1 to June 30) with the council's records.
+
+| Wheel | Target | What the portal counts |
+| --- | --- | --- |
+| **Funds raised** | Dollars | The funds raised at the council's events in the fraternal year. The count matches the **Total raised** line of the **Financial ledger**. |
+| **New members** | Members | The council's members whose join date falls in the fraternal year. |
+| **Service hours** | Hours | The hours members logged at council events and activities in the fraternal year. |
+| **Rosaries** | Rosaries | The rosaries that the council's members logged in the **Faith Center** tally. |
+| **Hours of adoration** | Hours | The hours of adoration that the council's members logged in the tally. |
+| **Confessions** | Confessions | The confessions that the council's members logged in the tally. |
+
+Each wheel fills with navy as the council moves toward the target. The percent shows in the middle. A wheel at 100% or more turns gold and shows **Goal reached**. A wheel with no target shows **No target set**.
+
+The devotional tally has no dates. The three spiritual wheels count every devotion that members logged, not only the devotions of the fraternal year. A white-label organization does not see the three spiritual wheels.
+
+The goals card and the **Year-over-Year Trends** card show money. Only the council's officers, the council's Admins and Super Admins see the two cards. A Council Historian without an officer seat does not see the two cards.
+
+### 19.15 Set the council's annual goals
+
+> **Who can do this:** the Grand Knight (GK), the Deputy Grand Knight (DGK), the council's Admins and Super Admins. Other readers see the wheels only.
+
+**Goal:** Save the six targets of one fraternal year.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Annual Council Goals Progress Center**.
+
+**Steps:**
+1. Choose the year in **Fraternal year**.
+2. Select **Set targets**. When the year already has targets, the button reads **Edit targets**.
+3. Enter each target. Enter the hours in steps of 0.25.
+4. Select **Save targets**.
+
+**Expected result:** The form closes. Each wheel shows the new target and the new percent.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **Set targets** button does not show. | You do not hold the GK or DGK seat, and you are not an Admin. | Ask the Grand Knight. |
+| The portal refuses the hours target. | The hours target is not a multiple of 0.25. | Enter the hours in quarter hours, for example `2500.25`. |
+| The **Funds raised** wheel stays at 0%. | No event of the fraternal year has funds raised recorded. | Record the funds raised in the **Post-event Ledger**. |
+
+### 19.16 Read the Year-over-Year Trends
+
+> **Who can do this:** the council's officers, the council's Admins and Super Admins.
+
+**Goal:** Compare the funds raised and the volunteer hours of the current fraternal year with the 2 years before it.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Year-over-Year Trends**.
+
+**Steps:**
+1. Read the **Funds raised by month** chart. Each line is one fraternal year, from July to June. The current year is a solid navy line. The year before is a dashed gold line. The year before that is a dotted grey line.
+2. Point to a month on a chart. A box shows the figure of each year for that month.
+3. Read the **Volunteer hours by month** chart.
+4. Read the table under the charts. The table splits the funds raised into **Cash** and **Electronic**. The table splits the hours into **Event hours** and **Activity hours**.
+5. Select **Show the monthly figures as a table** to read every month as numbers.
+
+**Expected result:** The card shows the two charts and the table. The line under the table gives the change of the current year against the year before, as a percent.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A line stays flat at 0. | The council recorded no funds or hours in that fraternal year. | Record the results in the **Post-event Ledger**. |
+| The note says the figures were computed in this browser. | The portal server did not answer for your sign-in. The card shows the same figures from your browser. | No action is necessary. To use the server, sign out and sign in again. |
+
+---
+
+## 20. The Cross-Council Loaner Library and the colour-coded calendar
+
+### 20.1 Concept: the Cross-Council Loaner Library
+
+The **Cross-Council Loaner Library** lets councils lend equipment to each other. Tents, sound systems and fryers are examples. Each item is an asset in the council's asset inventory.
+
+| Status | Meaning |
+| --- | --- |
+| **Available** | A brother council can borrow the item. |
+| **Checked out** | A brother council has the item. The library shows the borrower, the borrowing council and the expected return date. |
+| **Overdue** | The item is checked out, and the expected return date is past. |
+| **Paused** | The council holds the item out of the library for now, for example for a repair. |
+
+Every active member of every council reads the shared inventory directory. The directory never shows the cost, the serial number, the notes or the storage place of an item.
+
+Only the council's GK, the council's DGK and Super Admins lend the council's items. Admins, the Financial Secretary and the Trustees do not lend items.
+
+### 20.2 Find an item to borrow
+
+> **Who can do this:** every active member.
+
+**Goal:** Find an item that a brother council lends.
+
+**Start point:** Sidebar → Resources → **Cross-Council Loaner Library**. The address is `/inventory/loaner-library`.
+
+**Steps:**
+1. Read the **Shared inventory directory**. Available items show first.
+2. Read the **Owning council** of the item.
+3. Call the Grand Knight of the owning council to ask for the item.
+
+**Expected result:** You know which council has the item and when the item is free.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The directory is empty. | No council has listed an item yet. | Ask your Grand Knight to list the council's equipment. |
+
+### 20.3 Lend, pause and check in the council's items
+
+> **Who can do this:** the council's GK, the council's DGK and Super Admins.
+> **Warning:** brother councils see an item as soon as you put the item in the library.
+
+**Goal:** Put an item in the library, check the item out to a borrower and log its return.
+
+**Start point:** Active Desks → **Grand Knight Desk** → **Cross-Council Loaner Library**. The same controls are on Sidebar → Resources → **Cross-Council Loaner Library**, under the directory.
+
+**Steps:**
+1. Find the item in **Loaner library: our items**.
+2. Select the **In the loaner library** switch. The switch shows **On**. The item shows **Available**.
+3. To lend the item, select **Check out**.
+4. Enter the **Borrower**, the **Borrowing council** and the **Expected return** date. The date must be today or later.
+5. Select **Check out** in the form. The item shows **Checked out**.
+6. When the item comes back, select **Log return**. The item shows **Available** again.
+7. To hold an available item out of the library, select **Pause (hold out of the pool)**. Select **Resume lending** to put the item back.
+8. To take the item out of the library, select the **In the loaner library** switch again. The switch shows **Off**.
+
+**Expected result:** The **Shared inventory directory** shows the item with its new status.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **In the loaner library** switch is grey. | The item is checked out. | Select **Log return** first. |
+| The item is not in the list. | The item is disposed or lost, or the council has no asset record for the item. | Approve the purchase as a long-term council asset. See section 17. |
+| The check-out form refuses the date. | The expected return date is in the past. | Enter today or a later date. |
+
+### 20.4 Concept: the colour-coded calendar
+
+The **Visual Master Calendar** colours each event by the Supreme mission area of the event's local category.
+
+| Mission area | Colour | Local categories |
+| --- | --- | --- |
+| **Faith** | Gold | Faith Building, Evangelization |
+| **Community** | Blue | Service, Parish Community, Fundraising |
+| **Family** | Green | Fellowship |
+| **Life** | Red | Life |
+
+Meetings stay solid navy. An event with a category outside the four areas keeps the white block.
+
+On a coloured block, the shift warnings change form:
+- A shift that starts within 48 hours puts a red outline around the block. The outline pulses.
+- A shift that still needs volunteers puts the **⚑** flag before the event name.
+
+The legend above the calendar lists every colour and mark.
 
 ---
 

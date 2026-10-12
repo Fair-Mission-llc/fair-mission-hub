@@ -124,6 +124,8 @@ export function createRemoteDataService(): DataService {
       getAssetRecord: notImplemented('expenses.getAssetRecord'),
       getAssetRecordForExpense: notImplemented('expenses.getAssetRecordForExpense'),
       updateAssetRecord: notImplemented('expenses.updateAssetRecord'),
+      listLoanerLibrary: notImplemented('expenses.listLoanerLibrary'),
+      updateAssetLoan: notImplemented('expenses.updateAssetLoan'),
       setAssetPhoto: notImplemented('expenses.setAssetPhoto'),
       listAuthorizationQueue: notImplemented('expenses.listAuthorizationQueue'),
       submitReport: notImplemented('expenses.submitReport'),
@@ -177,6 +179,9 @@ export function createRemoteDataService(): DataService {
     },
     reports: {
       monthlySummary: notImplemented('reports.monthlySummary'),
+      getCouncilGoals: notImplemented('reports.getCouncilGoals'),
+      setCouncilGoals: notImplemented('reports.setCouncilGoals'),
+      yearOverYearTrends: notImplemented('reports.yearOverYearTrends'),
       missionAreaFootprint: notImplemented('reports.missionAreaFootprint'),
       listNoShowsAudit: notImplemented('reports.listNoShowsAudit'),
       listShiftsAwaitingHours: notImplemented('reports.listShiftsAwaitingHours'),

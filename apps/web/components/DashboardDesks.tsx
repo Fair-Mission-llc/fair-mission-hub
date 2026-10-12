@@ -26,6 +26,9 @@
 // today's agenda, the Open Volunteer Shifts signup grid (the Member Desk card's compact twin, useOpenShiftSignup) and the
 // high-contrast Top 5 Fraternal Volunteers card - the council's Active members with the most hours logged this month
 // (reports.councilEngagement monthlyLeaderboard). The desk status badges move to the top of the Oversight Desk.
+//
+// Sprint 8F: the Grand Knight Desk (shared by the Deputy Grand Knight) gains the Cross-Council Loaner Library's lending
+// desk (LoanerLibraryManager): list an asset, pause it, check it out and log its return in one click.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -45,7 +48,9 @@ import {
   MINUTES_TEXT_MAX_LENGTH,
   minutesCountdownLabel,
   minutesDeskRows,
+  canLendCouncilAssets,
   canLogConcludedRevenue,
+  LOANER_LIBRARY_HREF,
   canOpenExpenseAuditDesk,
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
@@ -75,6 +80,7 @@ import {
   type SessionUser,
 } from '@kofc/shared';
 import { ExpenseStatusPill, HonorVoucherBadge } from '@/components/ExpenseParts';
+import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -406,6 +412,18 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
           ) : null}
         </Panel>
       </DeskRow>
+      {/* Sprint 8F: the Cross-Council Loaner Library's lending desk, for the Grand Knight and Deputy Grand Knight. */}
+      {canLendCouncilAssets(user, councilId) ? (
+        <DeskRow id="grand-knight-loaner-library" label="Cross-Council Loaner Library">
+          <LoanerLibraryManager user={user} councilId={councilId} />
+          <p className="mt-2 text-xs">
+            <Link href={LOANER_LIBRARY_HREF} className="font-bold underline">
+              Open the shared inventory directory
+            </Link>{' '}
+            to see what brother councils lend.
+          </p>
+        </DeskRow>
+      ) : null}
     </div>
   );
 }

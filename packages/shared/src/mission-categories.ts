@@ -33,3 +33,28 @@ export function supremeMissionAreaOf(category: Pick<Category, 'SupremeMissionAre
   const area = category?.SupremeMissionArea;
   return area != null && (SUPREME_MISSION_AREAS as readonly string[]).includes(area) ? (area as SupremeMissionArea) : null;
 }
+
+/**
+ * Sprint 8F: the mission area an event's Local Category counts toward, for the calendar's colour coding. Null for an
+ * event whose category has no coupling, a meeting (no category) or an unknown category id.
+ */
+export function missionAreaOfCategoryId(categoryId: number | null | undefined, categories: readonly Pick<Category, 'id' | 'SupremeMissionArea'>[]): SupremeMissionArea | null {
+  if (categoryId == null) return null;
+  return supremeMissionAreaOf(categories.find((c) => c.id === categoryId));
+}
+
+/** The CSS class (apps/web/app/globals.css) of a calendar block in each mission area. */
+export const MISSION_AREA_CALENDAR_CLASS: Readonly<Record<SupremeMissionArea, string>> = {
+  Faith: 'calendar-mission-faith',
+  Community: 'calendar-mission-community',
+  Family: 'calendar-mission-family',
+  Life: 'calendar-mission-life',
+};
+
+/** The legend's colour names, in Supreme's order. */
+export const MISSION_AREA_COLOR_NAMES: Readonly<Record<SupremeMissionArea, string>> = {
+  Faith: 'Gold',
+  Family: 'Green',
+  Community: 'Blue',
+  Life: 'Red',
+};

@@ -88,6 +88,10 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   gallery: { member: 'Shows event photos and slideshows. Add your own photos here.' },
   'resources/bulletins': { member: "Opens the council's Google Drive files and the reports the portal prepares." },
   'resources/marketing': { member: 'Turns an event into a printable flyer with photos from past events.' },
+  'inventory/loaner-library': {
+    member: 'Lists the equipment councils lend to each other and who has each item.',
+    leader: 'Lists the equipment councils lend to each other. The Grand Knight and Deputy Grand Knight lend, pause and check in your council items.',
+  },
   help: { member: 'Searches answers from the user manuals and sends feedback.' },
   'answers/help': { member: 'Type what you want to do and see the steps from the member guide.' },
   'answers/sop': { member: "Reads the council's standard operating procedures." },

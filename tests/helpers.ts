@@ -97,7 +97,7 @@ function rawRows(db: DataService, table: string, where: string, ...params: (stri
 }
 
 /** Inserts a row straight into the service's backing store; resolves to its id. */
-function rawInsert(db: DataService, table: string, row: RawRow): number {
+export function rawInsert(db: DataService, table: string, row: RawRow): number {
   if (db instanceof MemoryDataService) return db.debugStore.insert(table, row).id as number;
   const cols = Object.keys(row);
   const res = openDatabases

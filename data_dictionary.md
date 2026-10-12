@@ -1046,3 +1046,25 @@ ________________________________________
 Schema version 75. No table or column change; the phone database version moves to 75 so phones rebuild in step.
 The Shared Member Center (reports.memberCenter, portal area member-center) is labelled the Council Dashboard on the web and the phone. The Reports Desk tab is removed; its Executive Summary renders inside the dashboard Home desk. The Deputy Grand Knight's Role now passes every rule that admitted the Grand Knight's Role (GRAND_KNIGHT_AUTHORITY_ROLE_NAMES), including expenses.grandKnightAuthorizeOrder and listAuthorizationQueue, elections.assignAppointedRole and concludeFraternalYear, councils.setMeetingGeofence and setDuesRate, the agenda template, cadence, bylaws and live agenda keepers. The separation-of-duties guards (SELF_APPROVAL_BLOCKED, the Collusion Guard) still apply. Council.rank_threshold_hours and rank_threshold_events are edited only from System Settings > Council Wide Settings (councils.setRankThresholds, unchanged rule).
 ________________________________________
+# 39. Annual Council Goals, the Cross-Council Loaner Library and YOY trends (Sprint 8F)
+Schema version 77; the phone database version moves to 77.
+[CouncilGoals]
+One council's targets for one fraternal year (July 1 - June 30), read by the Executive Dashboard's Annual Council Goals Progress Center (reports.getCouncilGoals, council-goals.ts buildCouncilGoalsProgress). A unique index on council_id, fraternal_year. Saved by reports.setCouncilGoals: the council's Active Grand Knight or Deputy Grand Knight, an Active Admin of the council, or any Active Super Admin (assertMaySetCouncilGoals; else GRAND_KNIGHT_REQUIRED or COUNCIL_ACCESS_DENIED). Read by the general ledger's readers (assertMayReadCouncilGoals).
+•	id (INT, NOT NULL) — Primary Key. Auto-incrementing identifier.
+•	council_id (INT, NOT NULL) — Foreign Key references Council(id).
+•	fraternal_year (VARCHAR(9), NOT NULL) — 'YYYY-YYYY' with consecutive years (assertFraternalYear).
+•	fundraising_target (DECIMAL(18,2), NOT NULL, DEFAULT 0) — Dollars, 0 or more with two decimals. Measured against the events' FundsRaised-Cash + FundsRaised-Electronic of the year's twelve months (reports.monthlySummary "raised").
+•	new_members_target (INT, NOT NULL, DEFAULT 0) — Measured against the council's members whose DateJoinedCouncil falls in the year.
+•	hours_target (DECIMAL(10,2), NOT NULL, DEFAULT 0) — A multiple of 0.25. Measured against EventTime + ActivityTime logged on the council's events and activities in the year.
+•	rosaries_target, adorations_target, confessions_target (INT, NOT NULL, DEFAULT 0) — Measured against the council members' MemberDevotionals sums. The tally has no dates, so these read the whole tally. Not drawn for a white-label council.
+•	updated_by_member_id (INT, NULL) — Foreign Key references Member(id). Who last saved the targets.
+•	updated_at (DATETIME, NULL) — When the targets were last saved.
+[CouncilAssetsInventory] (added columns)
+The Cross-Council Loaner Library (loaner-library.ts). expenses.updateAssetLoan applies one click (planAssetLoanChange: list, unlist, pause, resume, check-out, return; else ILLEGAL_STATE_TRANSITION) for the council's Active Grand Knight or Deputy Grand Knight or any Active Super Admin (assertMayLendCouncilAssets). expenses.listLoanerLibrary shows every council's listed ACTIVE items to any Active member, without cost_basis, serial_number, notes or storage_location.
+•	is_loanable (INT, NOT NULL, DEFAULT 0) — 1 while the item is in the shared pool. Only an ACTIVE item is listed; a CHECKED_OUT item cannot be unlisted.
+•	loan_status (VARCHAR(20), NOT NULL, DEFAULT 'AVAILABLE') — AVAILABLE, CHECKED_OUT or UNAVAILABLE (paused out of the pool). Rules layer, no CHECK.
+•	borrower_name (VARCHAR(255), NULL) — Who has the item, while CHECKED_OUT.
+•	borrower_council (VARCHAR(255), NULL) — The borrowing council, while CHECKED_OUT.
+•	expected_return_date (DATE, NULL) — Today or later when checked out; an item past it reads Overdue.
+New methods. reports.getCouncilGoals, reports.setCouncilGoals, reports.yearOverYearTrends (each fraternal year's monthly cash, electronic and hours, July first; 1-5 years; also GET /api/analytics/trends), expenses.listLoanerLibrary, expenses.updateAssetLoan. No table change for the colour-coded calendar: Category.SupremeMissionArea names each event block's colour (Faith gold, Community blue, Family green, Life red).
+________________________________________

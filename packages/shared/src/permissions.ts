@@ -83,6 +83,7 @@ export type PortalArea =
   | 'history'
   | 'faith-center'
   | 'member-center'
+  | 'inventory/loaner-library'
   | 'profile';
 
 /** Areas served from a route other than `/${area}`: the budget center lives at /budget (Sprint 5Y-2). */
@@ -694,6 +695,9 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   // Sprint 7A Extension: the Council Dashboard (named the Shared Member Center until Sprint 8C) - collective, non-financial council figures and the member's own impact
   // card - is every member's. The executive dashboard and the finance screens stay with their own audiences above.
   areas.push('member-center');
+  // Sprint 8F: every member browses the Cross-Council Loaner Library; only the Grand Knight and Deputy Grand Knight lend
+  // (canLendCouncilAssets, inside the page and on the Grand Knight Desk).
+  areas.push('inventory/loaner-library');
   // Sprint 7C Extension: the Navigation Guide explains the viewer's own sidebar, so every member has it, pinned above the pillars.
   areas.push('navigation-guide');
   return withTenantGate(withFeatureFlags(areas, flags), tenant);
@@ -743,7 +747,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
     ],
   },
   { id: 'performance', label: 'Performance', items: ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry'] },
-  { id: 'resources', label: 'Resources', items: ['gallery', 'resources/bulletins', 'resources/marketing'] },
+  { id: 'resources', label: 'Resources', items: ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library'] },
   { id: 'answers', label: 'Answers', items: ['help', 'answers/help', 'answers/sop'] },
   {
     id: 'setup',

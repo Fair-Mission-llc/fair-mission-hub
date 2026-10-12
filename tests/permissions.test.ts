@@ -154,6 +154,7 @@ describe('portal permissions', () => {
       'faith-center',
       'resources/marketing',
       'member-center',
+      'inventory/loaner-library',
       'navigation-guide',
     ]);
     expect(portalAreas(admin)).toEqual([
@@ -203,10 +204,11 @@ describe('portal permissions', () => {
       'faith-center',
       'resources/marketing',
       'member-center',
+      'inventory/loaner-library',
       'navigation-guide',
     ]);
-    expect(portalAreas(officer)).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'navigation-guide']);
-    expect(portalAreas(member)).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'elections', 'ledger', 'expenses', 'charities/propose', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'history', 'faith-center', 'member-center', 'navigation-guide']);
+    expect(portalAreas(officer)).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
+    expect(portalAreas(member)).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'elections', 'ledger', 'expenses', 'charities/propose', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'history', 'faith-center', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
   });
 
   it('gives every member their own expense reports, leadership the audit queue, and only finance officers and Super Admins the check ledger', () => {
@@ -301,7 +303,7 @@ describe('portal permissions', () => {
           [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/audit', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing']],
+        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/council-settings', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
       ]);
@@ -316,7 +318,7 @@ describe('portal permissions', () => {
           [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/disbursements', 'charities/vetting', 'charities/propose', 'charities/queue', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing']],
+        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/council-settings', 'supreme-sync', 'council-lookups', 'credentials-vault']],
       ]);
@@ -328,7 +330,7 @@ describe('portal permissions', () => {
         ['Faith In Action', ['member-actions', 'calendar', 'faith-center']],
         ['Finances', [...FIN_READ, 'expenses', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'financials/budget']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing']],
+        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/council-settings', 'council-lookups', 'credentials-vault']],
       ]);
@@ -343,7 +345,7 @@ describe('portal permissions', () => {
         ['Finances', [...FIN_READ, 'expenses', 'charities/vetting', 'charities/propose', 'financials/budget']],
         // Sprint 5Z-2.5: officers read the executive dashboard.
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing']],
+        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/council-settings', 'credentials-vault']],
       ]);
@@ -353,7 +355,7 @@ describe('portal permissions', () => {
         ['Faith In Action', ['member-actions', 'calendar', 'faith-center']],
         ['Finances', ['expenses', 'charities/propose', 'financials/budget']],
         ['Performance', ['member-center', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins']],
+        ['Resources', ['gallery', 'resources/bulletins', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
       ]);
     });
@@ -535,10 +537,11 @@ describe('portal permissions', () => {
         'faith-center',
         'resources/marketing',
         'member-center',
+        'inventory/loaner-library',
         'navigation-guide',
       ]);
     }
-    expect(portalAreas(actor({ isOfficer: true, roles: ['Recorder'] }))).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'navigation-guide']);
+    expect(portalAreas(actor({ isOfficer: true, roles: ['Recorder'] }))).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
   });
 
   it('gives council leadership the Supreme sync and the alert dispatch, each for their own council (Sprint 5T)', () => {

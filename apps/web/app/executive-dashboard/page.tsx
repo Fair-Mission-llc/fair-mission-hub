@@ -16,12 +16,18 @@
 // History: the Executive Summary was /dashboard's whole page until Sprint 7J, the lower half of Home in Sprint 7J, the
 // Reports Desk in Sprint 8A and Home's self-scrolling frame in Sprint 8C. Sprint 8D/8E gave Home back to the universal
 // cards and moved the summary here, where the page scrolls as any other.
+//
+// Sprint 8F: two analytics panels for the general ledger's readers (canReadCouncilGoals): the Annual Council Goals
+// Progress Center (GoalsProgressCenter, reports.getCouncilGoals) - progress wheels for the fraternal year's fundraising,
+// recruitment, service-hour and devotional targets, which the Grand Knight or Deputy Grand Knight sets in place - and the
+// Year-over-Year Trends (YearOverYearTrends), the trend lines GET /api/analytics/trends serves.
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
   canReviewBudgetPerformance,
   canViewExecutiveAudits,
   canOpenHistorianDesk,
+  canReadCouncilGoals,
   canViewExecutiveDashboard,
   currentFraternalYear,
   isAdmin,
@@ -33,6 +39,7 @@ import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/Counci
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
 import { FraternalRoadmap, RoadmapRibbon } from '@/components/RoadmapParts';
+import { GoalsProgressCenter, YearOverYearTrends } from '@/components/GoalsParts';
 import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -270,6 +277,12 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
       <div id={SUMMARY_ROADMAP_ID} className="mb-4 scroll-mt-2">
         <FraternalRoadmap user={user} councilId={councilId} />
       </div>
+      {canReadCouncilGoals(user, councilId) ? (
+        <div className="mb-4 flex flex-col gap-4">
+          <GoalsProgressCenter user={user} councilId={councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
+          <YearOverYearTrends user={user} councilId={councilId} />
+        </div>
+      ) : null}
       {summary.error ? <Notice tone="error">{summary.error}</Notice> : null}
       {!s ? (
         <p className="text-sm text-muted">Loading the month…</p>

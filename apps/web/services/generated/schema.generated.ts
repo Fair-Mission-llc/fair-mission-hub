@@ -5647,6 +5647,47 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "is_loanable",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "loan_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "AVAILABLE"
+        }
+      },
+      {
+        "name": "borrower_name",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "borrower_council",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "expected_return_date",
+        "kind": "date",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -7196,6 +7237,126 @@ export const TABLES: Record<string, TableMeta> = {
       [
         "council_id",
         "bulletin_month"
+      ]
+    ]
+  },
+  "CouncilGoals": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "fraternal_year",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "fundraising_target",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "new_members_target",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "hours_target",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "rosaries_target",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "adorations_target",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "confessions_target",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "updated_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "updated_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "updated_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "council_id",
+        "fraternal_year"
       ]
     ]
   }
@@ -11915,6 +12076,73 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "date_logged": "2026-10-11 13:40:00",
         "quarantine_reason": "More than 5.0 hours against one activity: 6 hours reported for the day.",
         "clearance_status": "PENDING"
+      }
+    ]
+  },
+  {
+    "table": "CouncilGoals",
+    "rows": [
+      {
+        "council_id": 1,
+        "fraternal_year": "2026-2027",
+        "fundraising_target": 25000,
+        "new_members_target": 12,
+        "hours_target": 2500,
+        "rosaries_target": 1500,
+        "adorations_target": 400,
+        "confessions_target": 300,
+        "updated_by_member_id": null,
+        "updated_at": "2026-07-02 19:00:00"
+      }
+    ]
+  },
+  {
+    "table": "CouncilAssetsInventory",
+    "rows": [
+      {
+        "council_id": 1,
+        "asset_name": "Portable PA sound system",
+        "purchase_date": "2024-03-15 00:00:00",
+        "cost_basis": 1249,
+        "original_expense_id": null,
+        "current_status": "ACTIVE",
+        "notes": null,
+        "storage_location": "Parish hall storage closet",
+        "is_loanable": 1,
+        "loan_status": "AVAILABLE",
+        "borrower_name": null,
+        "borrower_council": null,
+        "expected_return_date": null
+      },
+      {
+        "council_id": 1,
+        "asset_name": "Fish fry fryer set (two propane fryers)",
+        "purchase_date": "2023-02-10 00:00:00",
+        "cost_basis": 1890,
+        "original_expense_id": null,
+        "current_status": "ACTIVE",
+        "notes": null,
+        "storage_location": "Rectory garage",
+        "is_loanable": 1,
+        "loan_status": "CHECKED_OUT",
+        "borrower_name": "Mark Delgado",
+        "borrower_council": "St. Anthony Council 2042",
+        "expected_return_date": "2026-10-20"
+      },
+      {
+        "council_id": 1,
+        "asset_name": "10x20 event canopy tent",
+        "purchase_date": "2022-05-01 00:00:00",
+        "cost_basis": 640,
+        "original_expense_id": null,
+        "current_status": "ACTIVE",
+        "notes": "Torn side panel; out for repair",
+        "storage_location": "Rectory garage",
+        "is_loanable": 1,
+        "loan_status": "UNAVAILABLE",
+        "borrower_name": null,
+        "borrower_council": null,
+        "expected_return_date": null
       }
     ]
   }

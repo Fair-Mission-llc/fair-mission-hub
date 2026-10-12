@@ -116,6 +116,7 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
     { table: 'CouncilMediaVault', column: 'council_id', noun: ['vault photo', 'vault photos'] },
     { table: 'MediaSmartAlbums', column: 'council_id', noun: ['Smart Album', 'Smart Albums'] },
     { table: 'VolunteerQuarantine', column: 'council_id', noun: ['held time entry', 'held time entries'] },
+    { table: 'CouncilGoals', column: 'council_id', noun: ['annual goals year', 'annual goals years'] },
   ],
   Parish: [{ table: 'Pastor', column: 'ParishID', noun: ['pastor', 'pastors'] }],
   Pastor: [],

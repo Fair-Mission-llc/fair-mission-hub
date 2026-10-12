@@ -9,6 +9,11 @@
 // Phase 4.5: a Show filter (All, Events, Meetings, Birthdays), the council's Active members' birthdays as Birthday Flare
 // chips (month and day only, never the year), and under All the U.S. federal holidays and the Church's feasts
 // (observancesBetween), each Holy Day of Obligation with the crimson '[ 🟥 HOLY DAY OF OBLIGATION ]' sub-badge.
+// Sprint 8F: each event block is colour-coded by the Supreme mission area of its Local Category (missionAreaOfCategoryId,
+// MISSION_AREA_CALENDAR_CLASS in globals.css): Faith gold, Community blue, Family green, Life red. On a coloured block the
+// shift tones become markers - a red outline that pulses for an assignment within 48 hours, a ⚑ flag for a shift short of
+// volunteers - so the urgency cues survive the colour. Meetings stay solid navy; an event with no coupled category keeps
+// the plain tones.
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
@@ -25,6 +30,11 @@ import {
   isAllHandsShift,
   isFraternalTenant,
   isShiftUrgent,
+  MISSION_AREA_CALENDAR_CLASS,
+  MISSION_AREA_COLOR_NAMES,
+  missionAreaOfCategoryId,
+  SUPREME_MISSION_AREAS,
+  type SupremeMissionArea,
   observancesBetween,
   shiftNeedsVolunteers,
   shiftStart,
@@ -107,12 +117,27 @@ const meetingTimes = (m: Pick<CalendarEntry, 'startTime' | 'endTime'>): string =
 
 // ---- badges ------------------------------------------------------------------
 
-function EntryBadge({ entry, tone }: { entry: CalendarEntry; tone: CalendarTone }) {
+/**
+ * Sprint 8F: the block classes of an item - its mission-area colour when its category has one (the shift tones then ride
+ * along as a red pulsing outline or a ⚑ flag), the plain brand tone otherwise.
+ */
+function blockClass(tone: CalendarTone, area: SupremeMissionArea | null): string {
+  if (!area) return TONE_CLASS[tone];
+  return cx(MISSION_AREA_CALENDAR_CLASS[area], tone === 'urgent' && 'outline outline-2 outline-offset-1 outline-brand-red motion-safe:animate-pulse');
+}
+
+/** The ⚑ flag of a mission-coloured block whose shift is short of volunteers. */
+const needsFlag = (tone: CalendarTone, area: SupremeMissionArea | null): string => (area && tone === 'needs' ? '⚑ ' : '');
+
+const blockLabel = (tone: CalendarTone, area: SupremeMissionArea | null): string => (area ? `${area} · ${TONE_LABEL[tone]}` : TONE_LABEL[tone]);
+
+function EntryBadge({ entry, tone, area }: { entry: CalendarEntry; tone: CalendarTone; area: SupremeMissionArea | null }) {
   return (
-    <span className={cx('block truncate rounded border-2 px-1.5 py-0.5 text-left text-xs font-bold', TONE_CLASS[tone])} title={`${entry.title} · ${TONE_LABEL[tone]}`}>
+    <span className={cx('block truncate rounded border-2 px-1.5 py-0.5 text-left text-xs font-bold', blockClass(tone, area))} title={`${entry.title} · ${blockLabel(tone, area)}`}>
+      {needsFlag(tone, area)}
       {entry.kind === 'meeting' && entry.startTime ? `${entry.startTime.slice(0, 5)} ` : ''}
       {entry.title}
-      <span className="sr-only"> ({TONE_LABEL[tone]})</span>
+      <span className="sr-only"> ({blockLabel(tone, area)})</span>
     </span>
   );
 }
@@ -153,6 +178,18 @@ function Legend() {
           {TONE_LABEL[tone]}
         </li>
       ))}
+      {SUPREME_MISSION_AREAS.map((area) => (
+        <li key={area} className="flex items-center gap-1.5">
+          <span aria-hidden="true" className={cx('inline-block h-3 w-5 rounded-sm border-2', MISSION_AREA_CALENDAR_CLASS[area])} />
+          {area} ({MISSION_AREA_COLOR_NAMES[area]})
+        </li>
+      ))}
+      <li className="flex items-center gap-1.5">
+        <span aria-hidden="true" className="font-bold">
+          ⚑
+        </span>
+        Needs volunteers (on a coloured block)
+      </li>
       <li className="flex items-center gap-1.5">
         <span aria-hidden="true" className="inline-block h-3 w-5 rounded-sm border-2 border-birthday bg-birthday" />
         Birthday
@@ -169,7 +206,7 @@ function Legend() {
 
 interface DayModel {
   date: string;
-  items: { entry: CalendarEntry; tone: CalendarTone }[];
+  items: { entry: CalendarEntry; tone: CalendarTone; area: SupremeMissionArea | null }[];
   /** Phase 4.5: federal holidays and feasts (the All filter only) and Active members' birthdays. */
   observances: Observance[];
   birthdays: BirthdayEntry[];
@@ -216,8 +253,8 @@ function DayCell({
       {day.birthdays.slice(0, limit).map((b) => (
         <BirthdayFlare key={`b-${b.memberId}`} birthday={b} />
       ))}
-      {shown.map(({ entry, tone }) => (
-        <EntryBadge key={`${entry.kind}-${entry.id}`} entry={entry} tone={tone} />
+      {shown.map(({ entry, tone, area }) => (
+        <EntryBadge key={`${entry.kind}-${entry.id}`} entry={entry} tone={tone} area={area} />
       ))}
       {hidden > 0 ? <span className="text-xs font-bold text-muted">+{hidden} more</span> : null}
     </button>
@@ -463,6 +500,10 @@ function MasterCalendar() {
     ]);
     return { entries, feed, birthdays: birthdaysBetween(members, from, to) };
   }, [scope.councilId, from, to, user.memberId]);
+  // Sprint 8F: the Category lookup names each event's mission area for its colour.
+  const categories = useLoad(() => db.lookups.list('Category'), []);
+  const areaOf = (entry: CalendarEntry): SupremeMissionArea | null =>
+    entry.kind === 'event' ? missionAreaOfCategoryId(entry.event.CategoryID, categories.data ?? []) : null;
 
   const now = new Date();
   const entries = (data.data?.entries ?? []).filter((e) => (e.kind === 'event' ? layers.events : layers.meetings));
@@ -479,6 +520,7 @@ function MasterCalendar() {
     date,
     items: entriesOn(entries, date).map((entry) => ({
       entry,
+      area: areaOf(entry),
       tone: calendarTone(entry, entry.kind === 'event' ? (byEventDay.get(`${entry.id}|${date}`) ?? []).map((f) => f.shift) : [], now),
     })),
     observances: observancesOn(date),
@@ -578,10 +620,13 @@ function MasterCalendar() {
               {dayCount(model[0]) === 0 ? (
                 <Empty>{data.loading ? 'Loading the day…' : 'Nothing is scheduled on this day.'}</Empty>
               ) : (
-                model[0].items.map(({ entry, tone }) => (
-                  <div key={`${entry.kind}-${entry.id}`} className={cx('flex items-center justify-between gap-3 rounded border-2 px-3 py-2', TONE_CLASS[tone])}>
-                    <span className="font-bold">{entry.title}</span>
-                    <span className="text-sm">{entry.kind === 'meeting' ? meetingTimes(entry) : TONE_LABEL[tone]}</span>
+                model[0].items.map(({ entry, tone, area }) => (
+                  <div key={`${entry.kind}-${entry.id}`} className={cx('flex items-center justify-between gap-3 rounded border-2 px-3 py-2', blockClass(tone, area))}>
+                    <span className="font-bold">
+                      {needsFlag(tone, area)}
+                      {entry.title}
+                    </span>
+                    <span className="text-sm">{entry.kind === 'meeting' ? meetingTimes(entry) : blockLabel(tone, area)}</span>
                   </div>
                 ))
               )}
