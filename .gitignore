@@ -12,3 +12,11 @@ next-env.d.ts
 
 # Phase 7I: custom user guides kept by /api/council/compile-manual
 generated/custom_manuals/
+  
+  
+# Python Cache Clogs  
+__pycache__/  
+*.pyc  
+apps/web/__pycache__/  
+generated/__pycache__/  
+scripts/__pycache__/ 
