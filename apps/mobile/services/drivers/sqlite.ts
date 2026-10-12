@@ -23,7 +23,9 @@ import {
   assertMayReadOperationsKnowledge,
   assertMayWriteOperationsKnowledge,
   cleanOperationsKnowledgeEntry,
+  operationsKnowledgeCouncilStamp,
   operationsKnowledgeSignature,
+  withOriginCouncilStamp,
   assertMayKeepMinutes,
   assertMayKeepScrapbook,
   mayKeepScrapbook,
@@ -856,8 +858,9 @@ const DB_NAME = 'kofc.db';
  * 78: Council.is_loaner_library_enabled and district_number, CouncilAffiliations (the bilateral handshake) and
  *     budget_status on CouncilGoals and CouncilBudgetForecast (the planning workflow) (Sprints 8G/8H).
  * 79: CouncilOperationsKnowledge (the Global Operations Knowledge Vault and its archive) (Sprint 8I).
+ * 80: CouncilOperationsKnowledge.origin_council_stamp (the cross-council archive's badge) (Sprint 8J).
  */
-const SCHEMA_VERSION = 79;
+const SCHEMA_VERSION = 80;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -7575,12 +7578,12 @@ export class SqliteDataService implements DataService {
       ]))!;
     },
 
-    listOperationsKnowledge: async (actorId, councilId) => {
+    listOperationsKnowledge: async (actorId) => {
       const db = await this.ready();
-      assertMayReadOperationsKnowledge(await this.memberWriteActor(db, actorId), councilId, `read the operations knowledge of council ${councilId}`);
-      return db.getAllAsync<CouncilOperationsKnowledge>(
-        'SELECT * FROM [CouncilOperationsKnowledge] WHERE [council_id] = ? ORDER BY [date_logged] DESC, [entry_id] DESC',
-        [councilId],
+      assertMayReadOperationsKnowledge(await this.memberWriteActor(db, actorId), 'read the operations knowledge archive');
+      return withOriginCouncilStamp(
+        await db.getAllAsync<CouncilOperationsKnowledge>('SELECT * FROM [CouncilOperationsKnowledge] ORDER BY [date_logged] DESC, [entry_id] DESC'),
+        await db.getAllAsync<Council>('SELECT [id], [CouncilNumber], [CouncilName] FROM [Council]'),
       );
     },
 
@@ -7595,10 +7598,18 @@ export class SqliteDataService implements DataService {
         const member = await db.getFirstAsync<{ MemberFirstName: string; MemberLastName: string }>('SELECT [MemberFirstName], [MemberLastName] FROM [Member] WHERE [id] = ?', [
           actorId,
         ]);
+        const council = (await db.getFirstAsync<Council>('SELECT [CouncilNumber], [CouncilName] FROM [Council] WHERE [id] = ?', [councilId]))!;
         entryId = (
           await db.runAsync(
-            'INSERT INTO [CouncilOperationsKnowledge] ([council_id], [category_tag], [entry_text], [officer_signature], [date_logged]) VALUES (?, ?, ?, ?, ?)',
-            [councilId, clean.category_tag, clean.entry_text, operationsKnowledgeSignature(member?.MemberFirstName ?? '', member?.MemberLastName ?? '', actor), toTimestamp(this.now())],
+            'INSERT INTO [CouncilOperationsKnowledge] ([council_id], [category_tag], [entry_text], [officer_signature], [date_logged], [origin_council_stamp]) VALUES (?, ?, ?, ?, ?, ?)',
+            [
+              councilId,
+              clean.category_tag,
+              clean.entry_text,
+              operationsKnowledgeSignature(member?.MemberFirstName ?? '', member?.MemberLastName ?? '', actor),
+              toTimestamp(this.now()),
+              operationsKnowledgeCouncilStamp(council),
+            ],
           )
         ).lastInsertRowId;
       });

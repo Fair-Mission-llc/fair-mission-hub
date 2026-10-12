@@ -53,6 +53,7 @@ const entry = (entry_id: number, category_tag: OperationsKnowledgeCategory, date
   entry_text,
   officer_signature,
   date_logged,
+  origin_council_stamp: "Council 15295 · St. Mary's Cathedral Council",
 });
 
 describe('schema version 79', () => {
@@ -63,7 +64,7 @@ describe('schema version 79', () => {
     for (const col of ['[entry_id] INT NOT NULL IDENTITY', '[council_id] INT NOT NULL', '[category_tag] VARCHAR(20) NOT NULL', '[entry_text] TEXT NOT NULL', '[officer_signature] VARCHAR(255) NOT NULL', '[date_logged] DATETIME NOT NULL']) {
       expect(schema).toContain(col);
     }
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 79;');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (79|8\d);/);
     expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('CREATE TABLE [CouncilOperationsKnowledge]');
     expect(read('Seed.sql')).toContain('INSERT INTO [CouncilOperationsKnowledge]');
   });
@@ -74,10 +75,11 @@ describe('schema version 79', () => {
     expect(plain.debugStore.rows('CouncilOperationsKnowledge')).toHaveLength(0);
     const demo = new MemoryDataService({ presentationData: true });
     await demo.init();
-    const rows = demo.debugStore.rows('CouncilOperationsKnowledge') as unknown as CouncilOperationsKnowledge[];
+    // Sprint 8J adds one entry each from two brother councils after St. Mary's five.
+    const rows = (demo.debugStore.rows('CouncilOperationsKnowledge') as unknown as CouncilOperationsKnowledge[]).filter((r) => r.council_id === 1);
     expect(rows.map((r) => r.category_tag)).toEqual(['RECRUITING', 'TREASURY', 'CLERGY', 'COMPLIANCE', 'LOGISTICS']);
     expect(knowledgeYearsOf(rows)).toEqual(['2026-2027', '2025-2026', '2024-2025']);
-    expect(rows.every((r) => r.council_id === 1 && /, (Grand Knight|Deputy Grand Knight)$/.test(r.officer_signature))).toBe(true);
+    expect(rows.every((r) => /, (Grand Knight|Deputy Grand Knight)$/.test(r.officer_signature))).toBe(true);
   });
 });
 
@@ -110,11 +112,12 @@ describe('the vault rules (pure)', () => {
     expect(code(() => assertMayWriteOperationsKnowledge(writer({ roles: ['Grand Knight'], active: false }), 1, 'write'))).toBe('GRAND_KNIGHT_REQUIRED');
     expect(code(() => assertMayWriteOperationsKnowledge(writer({ roles: ['Grand Knight'] }), 2, 'write'))).toBe('COUNCIL_ACCESS_DENIED');
 
-    expect(code(() => assertMayReadOperationsKnowledge(writer({ roles: ['Treasurer'], officer: true }), 1, 'read'))).toBe('ok');
-    expect(code(() => assertMayReadOperationsKnowledge(writer({ memberType: 'Admin' }), 1, 'read'))).toBe('ok');
-    expect(code(() => assertMayReadOperationsKnowledge(writer(), 1, 'read'))).toBe('ADMIN_REQUIRED');
-    expect(code(() => assertMayReadOperationsKnowledge(writer({ roles: ['Treasurer'], officer: true, active: false }), 1, 'read'))).toBe('ADMIN_REQUIRED');
-    expect(code(() => assertMayReadOperationsKnowledge(writer({ roles: ['Treasurer'], officer: true }), 2, 'read'))).toBe('COUNCIL_ACCESS_DENIED');
+    expect(code(() => assertMayReadOperationsKnowledge(writer({ roles: ['Treasurer'], officer: true }), 'read'))).toBe('ok');
+    expect(code(() => assertMayReadOperationsKnowledge(writer({ memberType: 'Admin' }), 'read'))).toBe('ok');
+    expect(code(() => assertMayReadOperationsKnowledge(writer(), 'read'))).toBe('ADMIN_REQUIRED');
+    expect(code(() => assertMayReadOperationsKnowledge(writer({ roles: ['Treasurer'], officer: true, active: false }), 'read'))).toBe('ADMIN_REQUIRED');
+    // Sprint 8J: an officer of another council reads the shared archive too.
+    expect(code(() => assertMayReadOperationsKnowledge(writer({ roles: ['Treasurer'], officer: true, councilId: 2 }), 'read'))).toBe('ok');
   });
 
   it('mirrors the gates in the portal', () => {
@@ -161,7 +164,7 @@ describe.each(drivers)('the operations knowledge vault in the $name driver', (d)
     expect(second.officer_signature).toBe('Council Admin, Admin');
     expect(second.entry_id).toBeGreaterThan(first.entry_id);
 
-    const list = await db.history.listOperationsKnowledge(MEMBER.admin, 1);
+    const list = await db.history.listOperationsKnowledge(MEMBER.admin);
     expect(list.map((r) => r.entry_id)).toEqual([second.entry_id, first.entry_id]);
     expect(d.count(db, 'CouncilOperationsKnowledge')).toBe(2);
   });
@@ -174,18 +177,17 @@ describe.each(drivers)('the operations knowledge vault in the $name driver', (d)
 
     const fresh = await d.make();
     rawInsert(fresh, 'MemberRoles', { RoleID: 6, MemberID: MEMBER.member }); // Treasurer: an officer, not a writer
-    expect(await fresh.history.listOperationsKnowledge(MEMBER.member, 1)).toEqual([]);
+    expect(await fresh.history.listOperationsKnowledge(MEMBER.member)).toEqual([]);
     await expectRule(fresh.history.addOperationsKnowledge(MEMBER.member, 1, { category_tag: 'TREASURY', entry_text: 'x' }), 'GRAND_KNIGHT_REQUIRED');
     expect(d.count(fresh, 'CouncilOperationsKnowledge')).toBe(0);
   });
 
   it('rejects plain members, other councils and bad input without writing', async () => {
     const db = await d.make();
-    await expectRule(db.history.listOperationsKnowledge(MEMBER.member, 1), 'ADMIN_REQUIRED');
+    await expectRule(db.history.listOperationsKnowledge(MEMBER.member), 'ADMIN_REQUIRED');
     await expectRule(db.history.addOperationsKnowledge(MEMBER.member, 1, { category_tag: 'RECRUITING', entry_text: 'x' }), 'GRAND_KNIGHT_REQUIRED');
     const other = rawInsert(db, 'Council', { CouncilNumber: 2042, CouncilName: 'St. Anthony Council', State: 'OR' });
     await expectRule(db.history.addOperationsKnowledge(MEMBER.admin, other, { category_tag: 'RECRUITING', entry_text: 'x' }), 'COUNCIL_ACCESS_DENIED');
-    await expectRule(db.history.listOperationsKnowledge(MEMBER.admin, other), 'COUNCIL_ACCESS_DENIED');
     await expectRule(db.history.addOperationsKnowledge(MEMBER.admin, 1, { category_tag: 'GOSSIP' as never, entry_text: 'x' }), 'INVALID_INPUT');
     await expectRule(db.history.addOperationsKnowledge(MEMBER.admin, 1, { category_tag: 'RECRUITING', entry_text: ' ' }), 'INVALID_INPUT');
     await expectRule(db.history.addOperationsKnowledge(MEMBER.superAdmin, 9999, { category_tag: 'RECRUITING', entry_text: 'x' }), 'INVALID_INPUT');
@@ -209,6 +211,7 @@ describe('the vault and archive screens', () => {
 
   it('serves the read-only archive under System Settings', () => {
     const page = read('apps/web/app/system-settings/knowledge-archive/page.tsx');
+    expect(page).not.toContain('setCouncilId');
     expect(page).toContain('area="system-settings/knowledge-archive"');
     expect(page).toContain('KnowledgeArchiveGrid');
     const parts = read('apps/web/components/KnowledgeVaultParts.tsx');

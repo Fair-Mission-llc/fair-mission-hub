@@ -3494,3 +3494,20 @@ GO
 
 CREATE INDEX [CouncilOperationsKnowledge_Council_Idx] ON [CouncilOperationsKnowledge] ([council_id], [category_tag], [date_logged]);
 GO
+
+-- =========================================================================
+-- Sprint 8J: GLOBAL COMPLIANCE GUARDS AND MULTI-TENANT KNOWLEDGE ARCHIVES (schema version 80)
+--
+-- The Operations Knowledge Archive opens across councils: every Active officer and Admin of any council (and any Super
+-- Admin) reads every council's entries, and the "Filter by My Home Council Only" toggle narrows the grid to the viewer's
+-- own council. CouncilOperationsKnowledge gains one column:
+--   origin_council_stamp  the originating council badge, 'Council <number> · <name>', written when the entry is saved
+--                         (operationsKnowledgeCouncilStamp) so it keeps the council's name as it was; a blank stamp
+--                         (DEFAULT '') is filled from the Council table when the archive is read.
+-- Every vault save passes the content guard (foul language, hate speech, partisan keywords: KNOWLEDGE_CONTENT_BLOCKED)
+-- and the KofC Charter compliance gate (charter-compliance.ts): ADVISORY rules show the Charter Advisory Warning Panel,
+-- SEVERE rules disable the save button and the drivers refuse CHARTER_VIOLATION_BLOCKED. Writing rules are unchanged.
+-- The phone database version moves to 80.
+-- =========================================================================
+ALTER TABLE [CouncilOperationsKnowledge] ADD [origin_council_stamp] VARCHAR(255) NOT NULL DEFAULT '';
+GO

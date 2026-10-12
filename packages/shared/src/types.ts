@@ -1412,4 +1412,5 @@ export interface CouncilOperationsKnowledge {
   entry_text: string; // TEXT, at most OPERATIONS_KNOWLEDGE_MAX_LENGTH characters of light markdown
   officer_signature: string; // VARCHAR(255): the automatic stamp, '<first> <last>, <seat>'
   date_logged: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
+  origin_council_stamp: string; // VARCHAR(255), Sprint 8J: 'Council <number> · <name>' written at save; the archive's badge
 }

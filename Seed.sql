@@ -964,14 +964,19 @@ GO
 
 -- Sprint 8I (schema 79): five signed entries in St. Mary's Global Operations Knowledge Vault, from the two fraternal
 -- years before this one and this one, so the Operations Knowledge Archive has notes to filter by tag and year.
-INSERT INTO [CouncilOperationsKnowledge] ([council_id], [category_tag], [entry_text], [officer_signature], [date_logged])
+-- Sprint 8J (schema 80): every entry carries its originating council stamp, and two brother councils (St. Anthony and
+-- Holy Redeemer) add one entry each, so the cross-council archive and its home-council toggle have rows to filter.
+INSERT INTO [CouncilOperationsKnowledge] ([council_id], [category_tag], [entry_text], [officer_signature], [date_logged], [origin_council_stamp])
 VALUES
 (1, 'RECRUITING', '## Church-drive weekends
 - Book the parish **two months ahead**; the pastor wants the date on the bulletin calendar.
-- A table after every Mass beats one big Sunday. Bring Form 100 copies and pens.', 'Tom McDougal, Grand Knight', '2025-03-18 20:10:00'),
-(1, 'TREASURY', 'The bank changed signers only after **both** the Grand Knight and the Financial Secretary visited the branch in person. Plan for it in July.', 'Tom McDougal, Grand Knight', '2025-07-22 19:30:00'),
-(1, 'CLERGY', 'Father prefers a phone call, not email, for anything on the parish calendar. Give the chaplain the meeting agenda a week ahead.', 'David Reyes, Deputy Grand Knight', '2025-11-04 21:00:00'),
+- A table after every Mass beats one big Sunday. Bring Form 100 copies and pens.', 'Tom McDougal, Grand Knight', '2025-03-18 20:10:00', 'Council 15295 · St. Mary''s Cathedral Council'),
+(1, 'TREASURY', 'The bank changed signers only after **both** the Grand Knight and the Financial Secretary visited the branch in person. Plan for it in July.', 'Tom McDougal, Grand Knight', '2025-07-22 19:30:00', 'Council 15295 · St. Mary''s Cathedral Council'),
+(1, 'CLERGY', 'Father prefers a phone call, not email, for anything on the parish calendar. Give the chaplain the meeting agenda a week ahead.', 'David Reyes, Deputy Grand Knight', '2025-11-04 21:00:00', 'Council 15295 · St. Mary''s Cathedral Council'),
 (1, 'COMPLIANCE', '- File Form 1728 (Annual Survey of Fraternal Activity) by **January 31**.
-- Form 1295 (Semiannual Audit) needs all three Trustees to sign; book them in early January and early July.', 'Tom McDougal, Grand Knight', '2026-01-12 18:45:00'),
-(1, 'LOGISTICS', 'The fryer set lives in the rectory garage; the key is with the parish office. Return the propane tanks **full**.', 'GK User, Grand Knight', '2026-09-02 17:20:00');
+- Form 1295 (Semiannual Audit) needs all three Trustees to sign; book them in early January and early July.', 'Tom McDougal, Grand Knight', '2026-01-12 18:45:00', 'Council 15295 · St. Mary''s Cathedral Council'),
+(1, 'LOGISTICS', 'The fryer set lives in the rectory garage; the key is with the parish office. Return the propane tanks **full**.', 'GK User, Grand Knight', '2026-09-02 17:20:00', 'Council 15295 · St. Mary''s Cathedral Council'),
+(2, 'LOGISTICS', 'Our griddle and the banquet tables are in the **Cross-Council Loaner Library**. Ask two weeks ahead and pick them up from the hall storage room.', 'Paul Okafor, Grand Knight', '2026-02-10 19:00:00', 'Council 2042 · St. Anthony Council'),
+(3, 'RECRUITING', '- Pair every new member with a sponsor for his **first three meetings**.
+- Invite the whole family to the first council breakfast.', 'Martin Kowalski, Deputy Grand Knight', '2026-08-18 20:30:00', 'Council 3112 · Holy Redeemer Council');
 GO

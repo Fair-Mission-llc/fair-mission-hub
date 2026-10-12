@@ -4156,17 +4156,20 @@ export interface DataService {
      */
     saveHistorianBulletin(actorId: number, councilId: number, month: string, body: string): Promise<CouncilHistorianBulletin>;
     /**
-     * Sprint 8I, the Global Operations Knowledge Vault's archive (CouncilOperationsKnowledge): every entry of the council,
-     * newest first. Read-only. The council's Active officers and Admins, and any Active Super Admin
-     * (assertMayReadOperationsKnowledge: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED).
+     * Sprint 8I, the Global Operations Knowledge Vault's archive (CouncilOperationsKnowledge), newest first. Read-only.
+     * Sprint 8J: every council's entries (the multi-tenant archive), each carrying origin_council_stamp, which is filled
+     * from the Council table for a row saved without one. Any Active officer or Admin of any council, and any Active
+     * Super Admin (assertMayReadOperationsKnowledge: ADMIN_REQUIRED). Callers narrow to one council by council_id.
      */
-    listOperationsKnowledge(actorId: number, councilId: number): Promise<CouncilOperationsKnowledge[]>;
+    listOperationsKnowledge(actorId: number): Promise<CouncilOperationsKnowledge[]>;
     /**
      * Sprint 8I: appends a signed entry under one governance tag and resolves to it. The signature stamp
      * ('<first> <last>, <seat>', operationsKnowledgeSignature) and date_logged are written by the driver, never sent.
      * The council's Active Admins, Grand Knight and Deputy Grand Knight, and any Active Super Admin
      * (assertMayWriteOperationsKnowledge: GRAND_KNIGHT_REQUIRED, COUNCIL_ACCESS_DENIED). INVALID_INPUT for an unknown tag,
-     * blank text, text over OPERATIONS_KNOWLEDGE_MAX_LENGTH or an unknown council. Entries are never edited or deleted.
+     * blank text, text over OPERATIONS_KNOWLEDGE_MAX_LENGTH or an unknown council. Sprint 8J: KNOWLEDGE_CONTENT_BLOCKED
+     * (content guard) and CHARTER_VIOLATION_BLOCKED (a SEVERE Charter rule) refuse before anything is stored, and the
+     * driver writes origin_council_stamp (operationsKnowledgeCouncilStamp). Entries are never edited or deleted.
      */
     addOperationsKnowledge(actorId: number, councilId: number, input: NewOperationsKnowledgeInput): Promise<CouncilOperationsKnowledge>;
     /**

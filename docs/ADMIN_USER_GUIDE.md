@@ -3185,11 +3185,38 @@ The portal signs each entry. The signature shows your name and your seat, for ex
 
 | Who | Write entries | Read the archive |
 | --- | --- | --- |
-| Grand Knight (GK) and Deputy Grand Knight (DGK) | Yes | Yes |
-| The council's Admins | Yes | Yes |
-| Other officers of the council | No | Yes |
-| Super Admins | Yes, for any council | Yes, for any council |
+| Grand Knight (GK) and Deputy Grand Knight (DGK) | Yes, for their council | Yes, every council |
+| The council's Admins | Yes, for their council | Yes, every council |
+| Other officers of the council | No | Yes, every council |
+| Super Admins | Yes, for any council | Yes, every council |
 | Other members | No | No |
+
+### 22.1.1 Concept: one archive for every council
+
+The archive holds the entries of every council on the platform. An officer in one council can read what a brother council learned.
+
+Each entry shows a council badge, for example **🏛 Council 2042 · St. Anthony Council**. The portal writes the badge when the entry is saved. The badge of your own council is navy. The badge of a brother council is white.
+
+The **Filter by My Home Council Only** box hides the entries of other councils. Clear the box to see every council again.
+
+### 22.1.2 Concept: the content guard and the Charter Advisory Warning
+
+The archive is read by officers of every council. For this reason, the vault checks each entry two times: while you type, and again when you save.
+
+**The content guard** refuses an entry that contains foul language, hateful language or partisan political words. The red message names the kind of language. It does not repeat the word.
+
+**The Charter compliance gate** compares the entry with the non-partisan and non-profit rules of the Order. A matching rule opens the **Charter Advisory Warning** panel under the editor. The panel has two levels:
+
+| Level | Panel colour | What the rule covers | Can you save? |
+| --- | --- | --- | --- |
+| **Advisory** | Navy | Campaign signs at council events, the Order's name or emblem in politics, ballot measures and lobbying, cash without receipts. | Yes. Read the rule first. |
+| **Severe** (**SAVING IS BLOCKED**) | Red | Endorsing or opposing a candidate for public office, council money to a campaign, party or political action committee, private use of council funds. | No. **Save signed entry** stays grey until you change the text. |
+
+Each rule in the panel shows the **Source Authority**. The endorsement and campaign-money rules also quote the U.S. tax law for charitable funds (Internal Revenue Code § 501(c)(3)).
+
+The panel does not quote section numbers of the Charter, Constitution and Laws of the Knights of Columbus. The portal does not hold that text. Confirm the exact section with your State Deputy.
+
+The gate looks for words and phrases. It does not understand meaning. A rule can match a note that only warns against the act, for example "Do not endorse a candidate for mayor". Reword the note, for example "The council stays out of election campaigns".
 
 ### 22.2 Write a vault entry
 
@@ -3204,7 +3231,8 @@ The portal signs each entry. The signature shows your name and your seat, for ex
 1. Select a tag in **Governance tag**.
 2. Write the note in **Entry**. Use `#` for a heading, `-` for a bullet and `**text**` for bold text.
 3. Select **Preview** to check the note. Select **Write** to change the note.
-4. Select **Save signed entry**. You cannot undo this.
+4. Read the **Charter Advisory Warning** panel if it shows. Change the text when the panel is red.
+5. Select **Save signed entry**. You cannot undo this.
 
 **Expected result:** The card shows a message with the tag and your signature. The entry shows first under **Latest entries**.
 
@@ -3212,30 +3240,35 @@ The portal signs each entry. The signature shows your name and your seat, for ex
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | **Save signed entry** is grey. | The entry is empty. | Write the note first. |
+| **Save signed entry** is grey and the panel says **SAVING IS BLOCKED**. | The text matches a severe Charter rule. | Change the words the panel names. |
+| A red message says the entry contains foul, hateful or partisan language. | The content guard found a blocked word. | Remove the word or reword the note. |
+| The save fails with "crosses the Order's non-partisan or non-profit boundaries". | The portal checked the text again at save. | Change the text and save again. |
 | The vault card does not show. | You are not the GK, the DGK or an Admin. | Ask the GK to write the entry. |
 | The note is cut off. | An entry holds at most 8,000 characters. | Split the note into two entries. |
 
 ### 22.3 Search the Operations Knowledge Archive
 
-> **Who can do this:** the council's officers, the council's Admins and Super Admins. Other members do not see this page.
+> **Who can do this:** the officers and Admins of every council, and Super Admins. Other members do not see this page.
 
-**Goal:** Find the notes past leaders saved about one subject or one year.
+**Goal:** Find the notes past leaders of your council, or of brother councils, saved about one subject or one year.
 
 **Start point:** Sidebar → System Settings → **Operations Knowledge Archive**. The address is `/system-settings/knowledge-archive`. The **Open the archive** link on the vault card opens the same page.
 
 **Steps:**
-1. Select a tag in **Governance tag**. Select **Every tag** to see all tags.
-2. Select a year in **Fraternal year**. A fraternal year runs from July 1 to June 30.
-3. Type words in **Search** to find a note or a signature.
-4. Select a row to read the full note. Select the row again to close the note.
+1. Select **Filter by My Home Council Only** to see only your council's entries. Clear the box to see every council.
+2. Select a tag in **Governance tag**. Select **Every tag** to see all tags.
+3. Select a year in **Fraternal year**. A fraternal year runs from July 1 to June 30.
+4. Type words in **Search** to find a note, a signature or a council name.
+5. Select a row to read the full note. Select the row again to close the note.
 
-**Expected result:** The grid shows the matching entries, newest first. Each row shows the date, the fraternal year, the tag and the signature.
+**Expected result:** The grid shows the matching entries, newest first. Each row shows the date, the fraternal year, the council badge, the tag and the signature.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The grid says **No entry matches these filters.** | No entry has all the selected filters. | Select **Every tag** or **Every year**, or clear **Search**. |
-| A Super Admin sees the wrong council. | The page opens on your own council. | Select the council in **Council** at the top of the page. |
+| Entries from other councils show. | The archive shows every council. | Select **Filter by My Home Council Only**. |
+| Your council's entries do not show. | The search words or filters exclude them. | Clear **Search**, and select **Every tag** and **Every year**. |
 | You cannot add an entry here. | The archive is read-only. | Write entries on the **Oversight Desk**. |
 
 ---

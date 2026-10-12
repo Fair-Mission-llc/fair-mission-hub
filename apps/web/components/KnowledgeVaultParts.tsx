@@ -4,16 +4,25 @@
 // tags, write a note in light markdown (Write / Preview) and save it; the driver stamps the signature and the date.
 // KnowledgeArchiveGrid is the read-only archive under System Settings: every entry of the council, filtered by tag,
 // fraternal year and text, so a new chairman reads what the last ones learned.
-import { useState } from 'react';
+// Sprint 8J: the archive spans every council, each row badged with its originating council stamp, and the "Filter by My
+// Home Council Only" toggle narrows it to the viewer's council. The vault card runs the content guard and the KofC
+// Charter compliance gate (charter-compliance.ts) as the officer types: the Charter Advisory Warning Panel shows each
+// rule the draft breaks, and a SEVERE rule disables the save button until the text is corrected.
+import { useMemo, useState } from 'react';
 import {
+  CHARTER_ADVISORY_PANEL_TITLE,
+  CHARTER_SECTION_CHECK,
   describeError,
   filterOperationsKnowledge,
   KNOWLEDGE_ARCHIVE_HREF,
   knowledgeFraternalYear,
+  knowledgeContentProblem,
   knowledgeYearsOf,
   OPERATIONS_KNOWLEDGE_CATEGORIES,
   OPERATIONS_KNOWLEDGE_CATEGORY_LABELS,
   OPERATIONS_KNOWLEDGE_MAX_LENGTH,
+  reviewCharterCompliance,
+  type CharterReview,
   type CouncilOperationsKnowledge,
   type OperationsKnowledgeCategory,
   type SessionUser,
@@ -32,17 +41,68 @@ export function KnowledgeTag({ tag }: { tag: OperationsKnowledgeCategory }) {
   return <Pill tone="gold">{OPERATIONS_KNOWLEDGE_CATEGORY_LABELS[tag]}</Pill>;
 }
 
+/** The originating council stamp as a badge (Sprint 8J). */
+export function CouncilStampBadge({ stamp, home }: { stamp: string; home: boolean }) {
+  return (
+    <span
+      title={home ? 'Your home council' : 'Written by a brother council'}
+      className={cx(
+        'inline-block whitespace-nowrap rounded border-2 px-2 py-0.5 text-xs font-bold',
+        home ? 'border-navy bg-navy text-white' : 'border-navy bg-white text-navy',
+      )}
+    >
+      🏛 {stamp}
+    </span>
+  );
+}
+
 /**
- * The Oversight Desk's vault card (canWriteOperationsKnowledge): a tag picker, a markdown editor with preview, and the
- * council's three latest entries under it.
+ * The Charter Advisory Warning Panel (Sprint 8J): every Charter rule the draft breaks, with its authority. Gold-bordered
+ * navy for advisories; red when a SEVERE rule disables saving.
+ */
+export function CharterAdvisoryPanel({ review }: { review: CharterReview }) {
+  if (!review.level) return null;
+  const severe = review.blocksSave;
+  return (
+    <div role="alert" aria-label={CHARTER_ADVISORY_PANEL_TITLE} className={cx('rounded border-4 border-gold p-3 text-white', severe ? 'bg-brand-red' : 'bg-navy')}>
+      <p className="font-serif text-lg font-bold tracking-wide">
+        ⚠ {CHARTER_ADVISORY_PANEL_TITLE.toUpperCase()} {severe ? '- SAVING IS BLOCKED' : '- ADVISORY'}
+      </p>
+      <p className="mt-1 text-sm">
+        {severe
+          ? 'This draft crosses the non-partisan or non-profit boundaries of the Order. Correct the text to turn saving back on.'
+          : 'This draft may be saved, but read the rule below first.'}
+      </p>
+      <ul className="mt-2 flex flex-col gap-2">
+        {review.findings.map((f) => (
+          <li key={f.id} className="rounded border-2 border-gold bg-white px-3 py-2 text-navy">
+            <p className="font-bold">
+              {f.severity === 'SEVERE' ? '⛔' : 'ℹ'} {f.title}
+            </p>
+            <p className="text-sm">{f.rule}</p>
+            {f.quotation ? <blockquote className="mt-1 border-l-4 border-gold pl-2 text-sm italic">{f.quotation}</blockquote> : null}
+            <p className="mt-1 text-xs">Source Authority: {f.authority}.</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-xs">{CHARTER_SECTION_CHECK}</p>
+    </div>
+  );
+}
+
+/**
+ * The Oversight Desk's vault card (canWriteOperationsKnowledge): a tag picker, a markdown editor with preview, the
+ * live content guard and Charter Advisory Warning Panel, and the council's three latest entries under it.
  */
 export function OperationsKnowledgeVault({ user, councilId }: { user: SessionUser; councilId: number }) {
-  const entries = useLoad(() => db.history.listOperationsKnowledge(user.memberId, councilId), [user.memberId, councilId]);
+  const entries = useLoad(() => db.history.listOperationsKnowledge(user.memberId), [user.memberId]);
   const [tag, setTag] = useState<OperationsKnowledgeCategory>('RECRUITING');
   const [text, setText] = useState('');
   const [preview, setPreview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+  const review = useMemo(() => reviewCharterCompliance(text), [text]);
+  const contentProblem = useMemo(() => knowledgeContentProblem(text), [text]);
 
   const save = async () => {
     setBusy(true);
@@ -60,7 +120,7 @@ export function OperationsKnowledgeVault({ user, councilId }: { user: SessionUse
     }
   };
 
-  const latest = (entries.data ?? []).slice(0, 3);
+  const latest = (entries.data ?? []).filter((e) => e.council_id === councilId).slice(0, 3);
   return (
     <section aria-label="Global Operations Knowledge Vault" data-surface="navy" className="flex flex-col gap-3 rounded border-4 border-gold bg-navy p-4 text-white">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-gold pb-2">
@@ -118,11 +178,21 @@ export function OperationsKnowledgeVault({ user, councilId }: { user: SessionUse
           <span className="text-xs text-muted">
             {text.length.toLocaleString('en-US')} / {OPERATIONS_KNOWLEDGE_MAX_LENGTH.toLocaleString('en-US')} characters
           </span>
-          <Button disabled={busy || text.trim() === ''} onClick={() => void save()}>
+          <Button
+            disabled={busy || text.trim() === '' || review.blocksSave || contentProblem !== null}
+            title={review.blocksSave ? 'Correct the text the Charter Advisory Warning Panel names first' : undefined}
+            onClick={() => void save()}
+          >
             Save signed entry
           </Button>
         </div>
+        {contentProblem ? (
+          <p role="alert" className="mt-2 rounded border-2 border-brand-red px-3 py-2 text-sm font-bold text-brand-red">
+            {contentProblem}
+          </p>
+        ) : null}
       </div>
+      <CharterAdvisoryPanel review={review} />
       {message ? (
         <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
           {message.text}
@@ -149,9 +219,13 @@ export function OperationsKnowledgeVault({ user, councilId }: { user: SessionUse
   );
 }
 
-/** The read-only archive grid (assertMayReadOperationsKnowledge): tag, fraternal year and text filters over every entry. */
-export function KnowledgeArchiveGrid({ user, councilId }: { user: SessionUser; councilId: number }) {
-  const entries = useLoad(() => db.history.listOperationsKnowledge(user.memberId, councilId), [user.memberId, councilId]);
+/**
+ * The read-only archive grid (assertMayReadOperationsKnowledge): every council's entries with their council stamp, the
+ * "Filter by My Home Council Only" toggle, and tag, fraternal year and text filters.
+ */
+export function KnowledgeArchiveGrid({ user }: { user: SessionUser }) {
+  const entries = useLoad(() => db.history.listOperationsKnowledge(user.memberId), [user.memberId]);
+  const [homeOnly, setHomeOnly] = useState(false);
   const [category, setCategory] = useState<OperationsKnowledgeCategory | ''>('');
   const [year, setYear] = useState('');
   const [query, setQuery] = useState('');
@@ -159,10 +233,14 @@ export function KnowledgeArchiveGrid({ user, councilId }: { user: SessionUser; c
 
   const all: CouncilOperationsKnowledge[] = entries.data ?? [];
   const years = knowledgeYearsOf(all);
-  const rows = filterOperationsKnowledge(all, { category: category || null, fraternalYear: year || null, query });
+  const rows = filterOperationsKnowledge(all, { category: category || null, fraternalYear: year || null, query, homeCouncilId: homeOnly ? user.councilId : null });
 
   return (
     <div className="flex flex-col gap-3">
+      <label className={cx('flex w-fit cursor-pointer items-center gap-3 rounded border-4 px-4 py-2 text-base font-bold', homeOnly ? 'border-gold bg-navy text-white' : 'border-navy bg-white text-navy')}>
+        <input type="checkbox" className="h-5 w-5 accent-gold" checked={homeOnly} onChange={(e) => setHomeOnly(e.target.checked)} />
+        Filter by My Home Council Only
+      </label>
       <div className="flex flex-wrap items-end gap-3" role="search" aria-label="Filter the archive">
         <Field label="Governance tag" className="w-48">
           {(id) => (
@@ -189,7 +267,7 @@ export function KnowledgeArchiveGrid({ user, councilId }: { user: SessionUser; c
           )}
         </Field>
         <Field label="Search" className="min-w-56 flex-1">
-          {(id) => <Input id={id} type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Words in the note or the signature" />}
+          {(id) => <Input id={id} type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Words in the note, the signature or the council" />}
         </Field>
       </div>
       {entries.error ? <Notice tone="error">{entries.error}</Notice> : null}
@@ -201,13 +279,16 @@ export function KnowledgeArchiveGrid({ user, councilId }: { user: SessionUser; c
           <p className="text-sm text-muted">
             {rows.length} of {all.length} entr{all.length === 1 ? 'y' : 'ies'}. Click a row to read the full note.
           </p>
-          <Table caption="Operations knowledge archive" head={['Logged', 'Fraternal year', 'Tag', 'Signed by', 'Note']}>
+          <Table caption="Operations knowledge archive" head={['Logged', 'Fraternal year', 'Council', 'Tag', 'Signed by', 'Note']}>
             {rows.map((r) => {
               const open = openId === r.entry_id;
               return (
                 <tr key={r.entry_id} className={cx('align-top', open && 'bg-gold/10')}>
                   <Td className="whitespace-nowrap">{dayOf(r.date_logged)}</Td>
                   <Td className="whitespace-nowrap">{knowledgeFraternalYear(r.date_logged)}</Td>
+                  <Td>
+                    <CouncilStampBadge stamp={r.origin_council_stamp} home={r.council_id === user.councilId} />
+                  </Td>
                   <Td>
                     <KnowledgeTag tag={r.category_tag} />
                   </Td>

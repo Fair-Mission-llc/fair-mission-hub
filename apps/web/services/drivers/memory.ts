@@ -19,7 +19,9 @@ import {
   assertMayReadOperationsKnowledge,
   assertMayWriteOperationsKnowledge,
   cleanOperationsKnowledgeEntry,
+  operationsKnowledgeCouncilStamp,
   operationsKnowledgeSignature,
+  withOriginCouncilStamp,
   sortOperationsKnowledge,
   assertMayKeepMinutes,
   assertMayKeepScrapbook,
@@ -6368,14 +6370,14 @@ export class MemoryDataService implements DataService {
       });
     },
 
-    listOperationsKnowledge: async (actorId, councilId) => {
+    listOperationsKnowledge: async (actorId) => {
       const s = await this.ready();
-      assertMayReadOperationsKnowledge(this.memberWriteActor(s, actorId), councilId, `read the operations knowledge of council ${councilId}`);
+      assertMayReadOperationsKnowledge(this.memberWriteActor(s, actorId), 'read the operations knowledge archive');
       return sortOperationsKnowledge(
-        s
-          .rows('CouncilOperationsKnowledge')
-          .filter((r) => r.council_id === councilId)
-          .map((r) => ({ ...r }) as unknown as CouncilOperationsKnowledge),
+        withOriginCouncilStamp(
+          s.rows('CouncilOperationsKnowledge').map((r) => ({ ...r }) as unknown as CouncilOperationsKnowledge),
+          s.rows('Council') as unknown as Council[],
+        ),
       );
     },
 
@@ -6387,12 +6389,14 @@ export class MemoryDataService implements DataService {
         assertMayWriteOperationsKnowledge(actor, councilId, `write in the operations knowledge vault of council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
         const member = this.requireMember(s, actorId);
+        const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;
         const row = s.insert('CouncilOperationsKnowledge', {
           council_id: councilId,
           category_tag: clean.category_tag,
           entry_text: clean.entry_text,
           officer_signature: operationsKnowledgeSignature(member.MemberFirstName as string, member.MemberLastName as string, actor),
           date_logged: toTimestamp(this.now()),
+          origin_council_stamp: operationsKnowledgeCouncilStamp(council),
         });
         return { ...row } as unknown as CouncilOperationsKnowledge;
       });

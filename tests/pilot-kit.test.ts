@@ -27,7 +27,7 @@ const PERSONAS = [
 
 describe('schema version 70', () => {
   it('bumps the phone database and records the release', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (70|[7-9][1-9]);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = ([7-9]\d);/);
     expect(read('Schema.sql')).toContain('(schema version 70)');
   });
 

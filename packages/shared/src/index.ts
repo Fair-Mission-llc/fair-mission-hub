@@ -65,3 +65,4 @@ export * from './loaner-library';
 export * from './planning-workflow';
 export * from './council-affiliations';
 export * from './operations-knowledge';
+export * from './charter-compliance';

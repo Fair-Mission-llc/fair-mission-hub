@@ -7,10 +7,18 @@
 //               and Deputy Grand Knight, and any Active Super Admin (assertMayWriteOperationsKnowledge). Entries are
 //               append-only: there is no edit or delete, so the record a chair leaves stays as written.
 //   - Reading   System Settings > Operations Knowledge Archive (/system-settings/knowledge-archive), read-only: every
-//               Active officer and Admin of the council and any Active Super Admin (assertMayReadOperationsKnowledge),
+//               Active officer and Admin of any council and any Active Super Admin (assertMayReadOperationsKnowledge),
 //               filtered by tag, fraternal year (July 1 - June 30 of date_logged) and text (filterOperationsKnowledge).
+//
+// Sprint 8J (schema version 80) opens the archive across councils: the list returns every council's entries, each with
+// origin_council_stamp ('Council <number> · <name>', written when the entry is saved) shown as a badge, and the archive's
+// "Filter by My Home Council Only" toggle narrows it to the viewer's own council. Every save now passes the content guard
+// (the diary's foul-language, hate and partisan-keyword patterns, KNOWLEDGE_CONTENT_BLOCKED) and the KofC Charter
+// compliance gate (charter-compliance.ts, CHARTER_VIOLATION_BLOCKED for a SEVERE rule).
 // =========================================================================
+import { assertCharterCompliant } from './charter-compliance';
 import type { SessionUser } from './contract';
+import { findDiaryContentViolation, type DiaryContentCategory } from './history';
 import { holdsGrandKnightSeat, isAdmin, isSuperAdmin } from './permissions';
 import {
   BusinessRuleError,
@@ -21,7 +29,7 @@ import {
   SecurityPrivilegeError,
   type MemberWriteActor,
 } from './rules';
-import type { CouncilOperationsKnowledge, OperationsKnowledgeCategory } from './types';
+import type { Council, CouncilOperationsKnowledge, OperationsKnowledgeCategory } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
 
@@ -72,18 +80,15 @@ export function assertMayWriteOperationsKnowledge(actor: MemberWriteActor, counc
 }
 
 /**
- * Reading the archive: every Active officer (a Role with Officer = 1) and Admin of the council, or any Active Super
- * Admin. ADMIN_REQUIRED, or COUNCIL_ACCESS_DENIED for another council's leader.
+ * Reading the archive (Sprint 8J: every council's entries): every Active officer (a Role with Officer = 1) and Admin of
+ * any council, or any Active Super Admin. ADMIN_REQUIRED otherwise.
  */
-export function assertMayReadOperationsKnowledge(actor: MemberWriteActor, councilId: number, action: string): void {
-  if (hasSuperAdminRights(actor)) return;
-  const leader = hasAdminRights(actor) || (actor.active && actor.officer === true);
-  if (leader && actor.councilId === councilId) return;
-  if (leader) throw crossCouncil(actor, councilId, action);
+export function assertMayReadOperationsKnowledge(actor: MemberWriteActor, action: string): void {
+  if (hasSuperAdminRights(actor) || hasAdminRights(actor) || (actor.active && actor.officer === true)) return;
   throw new SecurityPrivilegeError(
     'ADMIN_REQUIRED',
-    `Only the council's officers, Admins or a Super Admin can ${action}; member ${actor.memberId} is ${describeActor(actor)}.`,
-    { actorId: actor.memberId, councilId },
+    `Only council officers, Admins or a Super Admin can ${action}; member ${actor.memberId} is ${describeActor(actor)}.`,
+    { actorId: actor.memberId },
   );
 }
 
@@ -107,6 +112,24 @@ export function operationsKnowledgeSignature(firstName: string, lastName: string
   return `${name}, ${signatureSeatOf(actor)}`.slice(0, 255);
 }
 
+// ---- the originating council stamp (Sprint 8J) ---------------------------------------------------------------------
+
+/** The badge text written into origin_council_stamp when an entry is saved: 'Council <number> · <name>'. */
+export const operationsKnowledgeCouncilStamp = (c: Pick<Council, 'CouncilNumber' | 'CouncilName'>): string =>
+  `Council ${c.CouncilNumber} · ${c.CouncilName}`.slice(0, 255);
+
+/** Fills a blank origin_council_stamp from the council table, for rows saved before schema 80. */
+export function withOriginCouncilStamp<R extends Pick<CouncilOperationsKnowledge, 'council_id' | 'origin_council_stamp'>>(
+  rows: readonly R[],
+  councils: readonly Pick<Council, 'id' | 'CouncilNumber' | 'CouncilName'>[],
+): R[] {
+  return rows.map((r) => {
+    if (r.origin_council_stamp) return r;
+    const c = councils.find((x) => x.id === r.council_id);
+    return { ...r, origin_council_stamp: c ? operationsKnowledgeCouncilStamp(c) : `Council #${r.council_id}` };
+  });
+}
+
 // ---- input --------------------------------------------------------------------------------------------------------------
 
 export interface NewOperationsKnowledgeInput {
@@ -117,7 +140,38 @@ export interface NewOperationsKnowledgeInput {
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 
-/** INVALID_INPUT for an unknown tag, blank text or text over OPERATIONS_KNOWLEDGE_MAX_LENGTH. */
+const CONTENT_LABEL: Record<DiaryContentCategory, string> = {
+  profanity: 'foul or vulgar language',
+  political: 'partisan political content',
+  hate: 'hateful language',
+};
+
+/**
+ * Sprint 8J, the vault's content guard: the diary's patterns (foul language, hate speech, partisan keywords).
+ * KNOWLEDGE_CONTENT_BLOCKED names the kind of language but never repeats the word. Returns `text`.
+ */
+export function assertKnowledgeTextAllowed(text: string): string {
+  const category = findDiaryContentViolation(text);
+  if (category) {
+    throw new BusinessRuleError(
+      'KNOWLEDGE_CONTENT_BLOCKED',
+      `This entry was not saved because it contains ${CONTENT_LABEL[category]}. The vault is read by officers of every council, so please reword it and save it again.`,
+      { category },
+    );
+  }
+  return text;
+}
+
+/** The content guard's verdict for the editor, or null for clean text. */
+export function knowledgeContentProblem(text: string): string | null {
+  const category = findDiaryContentViolation(text);
+  return category ? `This entry contains ${CONTENT_LABEL[category]}. Reword it before saving.` : null;
+}
+
+/**
+ * INVALID_INPUT for an unknown tag, blank text or text over OPERATIONS_KNOWLEDGE_MAX_LENGTH; then
+ * KNOWLEDGE_CONTENT_BLOCKED (content guard) and CHARTER_VIOLATION_BLOCKED (a SEVERE Charter rule).
+ */
 export function cleanOperationsKnowledgeEntry(input: NewOperationsKnowledgeInput): NewOperationsKnowledgeInput {
   if (input === null || typeof input !== 'object') throw invalid('Send the entry.');
   if (!isOperationsKnowledgeCategory(input.category_tag)) {
@@ -129,6 +183,8 @@ export function cleanOperationsKnowledgeEntry(input: NewOperationsKnowledgeInput
   if (text.length > OPERATIONS_KNOWLEDGE_MAX_LENGTH) {
     throw invalid(`An entry may be at most ${OPERATIONS_KNOWLEDGE_MAX_LENGTH.toLocaleString('en-US')} characters.`, { field: 'entry_text', length: text.length });
   }
+  assertKnowledgeTextAllowed(text);
+  assertCharterCompliant(text);
   return { category_tag: input.category_tag, entry_text: text };
 }
 
@@ -151,8 +207,10 @@ export interface OperationsKnowledgeFilter {
   category?: OperationsKnowledgeCategory | null;
   /** A fraternal year label ('2025-2026'); null or undefined: every year. */
   fraternalYear?: string | null;
-  /** Every word must appear in the text or the signature, ignoring case. */
+  /** Every word must appear in the text, the signature or the council stamp, ignoring case. */
   query?: string;
+  /** Sprint 8J: the "Filter by My Home Council Only" toggle - only this council's entries. null or undefined: every council. */
+  homeCouncilId?: number | null;
 }
 
 /** Newest first, then by entry_id (newest first). */
@@ -166,7 +224,8 @@ export function filterOperationsKnowledge<R extends CouncilOperationsKnowledge>(
     rows.filter((r) => {
       if (filter.category && r.category_tag !== filter.category) return false;
       if (filter.fraternalYear && knowledgeFraternalYear(r.date_logged) !== filter.fraternalYear) return false;
-      const text = `${r.entry_text} ${r.officer_signature}`.toLowerCase();
+      if (filter.homeCouncilId != null && r.council_id !== filter.homeCouncilId) return false;
+      const text = `${r.entry_text} ${r.officer_signature} ${r.origin_council_stamp ?? ''}`.toLowerCase();
       return words.every((w) => text.includes(w));
     }),
   );

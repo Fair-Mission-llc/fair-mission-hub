@@ -7539,6 +7539,16 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "origin_council_stamp",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": ""
+        }
       }
     ],
     "foreignKeys": [
@@ -12475,35 +12485,56 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "category_tag": "RECRUITING",
         "entry_text": "## Church-drive weekends\n- Book the parish **two months ahead**; the pastor wants the date on the bulletin calendar.\n- A table after every Mass beats one big Sunday. Bring Form 100 copies and pens.",
         "officer_signature": "Tom McDougal, Grand Knight",
-        "date_logged": "2025-03-18 20:10:00"
+        "date_logged": "2025-03-18 20:10:00",
+        "origin_council_stamp": "Council 15295 · St. Mary's Cathedral Council"
       },
       {
         "council_id": 1,
         "category_tag": "TREASURY",
         "entry_text": "The bank changed signers only after **both** the Grand Knight and the Financial Secretary visited the branch in person. Plan for it in July.",
         "officer_signature": "Tom McDougal, Grand Knight",
-        "date_logged": "2025-07-22 19:30:00"
+        "date_logged": "2025-07-22 19:30:00",
+        "origin_council_stamp": "Council 15295 · St. Mary's Cathedral Council"
       },
       {
         "council_id": 1,
         "category_tag": "CLERGY",
         "entry_text": "Father prefers a phone call, not email, for anything on the parish calendar. Give the chaplain the meeting agenda a week ahead.",
         "officer_signature": "David Reyes, Deputy Grand Knight",
-        "date_logged": "2025-11-04 21:00:00"
+        "date_logged": "2025-11-04 21:00:00",
+        "origin_council_stamp": "Council 15295 · St. Mary's Cathedral Council"
       },
       {
         "council_id": 1,
         "category_tag": "COMPLIANCE",
         "entry_text": "- File Form 1728 (Annual Survey of Fraternal Activity) by **January 31**.\n- Form 1295 (Semiannual Audit) needs all three Trustees to sign; book them in early January and early July.",
         "officer_signature": "Tom McDougal, Grand Knight",
-        "date_logged": "2026-01-12 18:45:00"
+        "date_logged": "2026-01-12 18:45:00",
+        "origin_council_stamp": "Council 15295 · St. Mary's Cathedral Council"
       },
       {
         "council_id": 1,
         "category_tag": "LOGISTICS",
         "entry_text": "The fryer set lives in the rectory garage; the key is with the parish office. Return the propane tanks **full**.",
         "officer_signature": "GK User, Grand Knight",
-        "date_logged": "2026-09-02 17:20:00"
+        "date_logged": "2026-09-02 17:20:00",
+        "origin_council_stamp": "Council 15295 · St. Mary's Cathedral Council"
+      },
+      {
+        "council_id": 2,
+        "category_tag": "LOGISTICS",
+        "entry_text": "Our griddle and the banquet tables are in the **Cross-Council Loaner Library**. Ask two weeks ahead and pick them up from the hall storage room.",
+        "officer_signature": "Paul Okafor, Grand Knight",
+        "date_logged": "2026-02-10 19:00:00",
+        "origin_council_stamp": "Council 2042 · St. Anthony Council"
+      },
+      {
+        "council_id": 3,
+        "category_tag": "RECRUITING",
+        "entry_text": "- Pair every new member with a sponsor for his **first three meetings**.\n- Invite the whole family to the first council breakfast.",
+        "officer_signature": "Martin Kowalski, Deputy Grand Knight",
+        "date_logged": "2026-08-18 20:30:00",
+        "origin_council_stamp": "Council 3112 · Holy Redeemer Council"
       }
     ]
   }
