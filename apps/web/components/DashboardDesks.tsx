@@ -32,6 +32,10 @@
 //
 // Sprints 8G/8H: the Grand Knight Desk also answers the council's incoming affiliation invites
 // (IncomingAffiliationInvites): Accept makes the pair ACTIVE and unlocks loaner library sharing between the councils.
+//
+// Sprint 8I: the Oversight Desk carries the high-contrast Global Operations Knowledge Vault card for the council's Admins,
+// Grand Knight and Deputy Grand Knight (OperationsKnowledgeVault, canWriteOperationsKnowledge): a governance tag, a
+// markdown note and an automatic signature stamp. The read-only archive is under System Settings.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -60,6 +64,7 @@ import {
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
   canReviewVolunteerQuarantine,
+  canWriteOperationsKnowledge,
   canViewExecutiveAudits,
   dailyVerse,
   DESK_FOCUS_TARGETS,
@@ -87,6 +92,7 @@ import {
 import { ExpenseStatusPill, HonorVoucherBadge } from '@/components/ExpenseParts';
 import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
 import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
+import { OperationsKnowledgeVault } from '@/components/KnowledgeVaultParts';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -761,6 +767,7 @@ function AwaitingHours({ councilId }: { councilId: number }) {
  * the council's feature_volunteer_quarantine flag is on, and the Inbound Council Mail Center for global Super Admins only.
  * Sprint 8C: the Shifts Awaiting Hours audit consolidates here for every executive-audit reader (canViewExecutiveAudits).
  * Sprint 8D/8E: the desk status badges, moved off Home, lead the desk.
+ * Sprint 8I: the Global Operations Knowledge Vault card for the council's Admins, Grand Knight and Deputy Grand Knight.
  */
 export function OversightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
@@ -786,6 +793,11 @@ export function OversightDesk({ user, councilId }: { user: SessionUser; councilI
       {canViewExecutiveAudits(user, councilId) ? (
         <DeskRow id={DESK_FOCUS_TARGETS.hours.rowId} label="Shifts awaiting hours">
           <AwaitingHours councilId={councilId} />
+        </DeskRow>
+      ) : null}
+      {canWriteOperationsKnowledge(user, councilId) ? (
+        <DeskRow id="desk-row-knowledge-vault" label="Global Operations Knowledge Vault">
+          <OperationsKnowledgeVault user={user} councilId={councilId} />
         </DeskRow>
       ) : null}
     </div>

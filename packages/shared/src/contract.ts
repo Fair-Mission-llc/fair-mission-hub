@@ -98,6 +98,7 @@ import type {
   CouncilHistoryAnnals,
   CouncilSpiritualDiary,
   CouncilHistorianBulletin,
+  CouncilOperationsKnowledge,
   AuditExecutionStatus,
   AuditPeriod,
   AuditTrusteeSignature,
@@ -124,6 +125,7 @@ import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './council-goals';
 import type { AssetLoanChange, LoanerLibraryEntry } from './loaner-library';
 import type { AffiliationDecision, AffiliationDirectory } from './council-affiliations';
+import type { NewOperationsKnowledgeInput } from './operations-knowledge';
 
 // 1. LOOKUPS
 /** The global lookup tables a Super Admin maintains (Blueprint: "System Lookup Manager"). */
@@ -4153,6 +4155,20 @@ export interface DataService {
      * HISTORIAN_BULLETIN_MAX_LENGTH or an unknown council.
      */
     saveHistorianBulletin(actorId: number, councilId: number, month: string, body: string): Promise<CouncilHistorianBulletin>;
+    /**
+     * Sprint 8I, the Global Operations Knowledge Vault's archive (CouncilOperationsKnowledge): every entry of the council,
+     * newest first. Read-only. The council's Active officers and Admins, and any Active Super Admin
+     * (assertMayReadOperationsKnowledge: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED).
+     */
+    listOperationsKnowledge(actorId: number, councilId: number): Promise<CouncilOperationsKnowledge[]>;
+    /**
+     * Sprint 8I: appends a signed entry under one governance tag and resolves to it. The signature stamp
+     * ('<first> <last>, <seat>', operationsKnowledgeSignature) and date_logged are written by the driver, never sent.
+     * The council's Active Admins, Grand Knight and Deputy Grand Knight, and any Active Super Admin
+     * (assertMayWriteOperationsKnowledge: GRAND_KNIGHT_REQUIRED, COUNCIL_ACCESS_DENIED). INVALID_INPUT for an unknown tag,
+     * blank text, text over OPERATIONS_KNOWLEDGE_MAX_LENGTH or an unknown council. Entries are never edited or deleted.
+     */
+    addOperationsKnowledge(actorId: number, councilId: number, input: NewOperationsKnowledgeInput): Promise<CouncilOperationsKnowledge>;
     /**
      * The council's In Memoriam roll (Sprint 6L Extension 5): a card for every member of the council whose MemberStatus is
      * 'Deceased', compiled fresh on each read from their CouncilLeadershipHistory seats and the council's annals and

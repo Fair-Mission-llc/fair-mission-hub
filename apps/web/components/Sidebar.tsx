@@ -158,6 +158,12 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Invite nearby councils in your state to affiliate, and answer their invites',
     restrictedTo: 'council Admins, the Grand Knight, the Deputy Grand Knight and Super Admins',
   },
+  'system-settings/knowledge-archive': {
+    href: '/system-settings/knowledge-archive',
+    label: 'Operations Knowledge Archive',
+    hint: "Search past officers' signed operating notes by tag and year",
+    restrictedTo: 'council officers, Admins and Super Admins',
+  },
   help: { href: '/help', label: 'Online Help Center', hint: 'Searchable answers from the user manuals, and feedback' },
   'governance/bylaws': { href: '/governance/bylaws', label: 'Constitutional Bylaws', hint: "The council's own bylaws, article by article" },
   'governance/advisor': {

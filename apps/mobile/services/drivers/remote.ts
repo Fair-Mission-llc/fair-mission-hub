@@ -321,6 +321,8 @@ export function createRemoteDataService(): DataService {
       addDiaryEntry: notImplemented('history.addDiaryEntry'),
       listHistorianBulletins: notImplemented('history.listHistorianBulletins'),
       saveHistorianBulletin: notImplemented('history.saveHistorianBulletin'),
+      listOperationsKnowledge: notImplemented('history.listOperationsKnowledge'),
+      addOperationsKnowledge: notImplemented('history.addOperationsKnowledge'),
       getInMemoriamRoll: notImplemented('history.getInMemoriamRoll'),
       saveInMemoriamEntry: notImplemented('history.saveInMemoriamEntry'),
       compileInMemoriam: notImplemented('history.compileInMemoriam'),

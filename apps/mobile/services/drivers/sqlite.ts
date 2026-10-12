@@ -20,6 +20,10 @@ import {
   DEFAULT_MEETING_PIN_TOKEN,
   cleanMeetingMinutes,
   cleanHistorianBulletin,
+  assertMayReadOperationsKnowledge,
+  assertMayWriteOperationsKnowledge,
+  cleanOperationsKnowledgeEntry,
+  operationsKnowledgeSignature,
   assertMayKeepMinutes,
   assertMayKeepScrapbook,
   mayKeepScrapbook,
@@ -671,6 +675,7 @@ import type {
   YearClosingRows,
   CouncilSpiritualDiary,
   CouncilHistorianBulletin,
+  CouncilOperationsKnowledge,
   CouncilInMemoriam,
   InMemoriamRoll,
   MemberStatus as MemberStatusRow,
@@ -850,8 +855,9 @@ const DB_NAME = 'kofc.db';
  *     borrower_name, borrower_council and expected_return_date (the Cross-Council Loaner Library) (Sprint 8F).
  * 78: Council.is_loaner_library_enabled and district_number, CouncilAffiliations (the bilateral handshake) and
  *     budget_status on CouncilGoals and CouncilBudgetForecast (the planning workflow) (Sprints 8G/8H).
+ * 79: CouncilOperationsKnowledge (the Global Operations Knowledge Vault and its archive) (Sprint 8I).
  */
-const SCHEMA_VERSION = 78;
+const SCHEMA_VERSION = 79;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -7567,6 +7573,36 @@ export class SqliteDataService implements DataService {
         councilId,
         clean.bulletin_month,
       ]))!;
+    },
+
+    listOperationsKnowledge: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayReadOperationsKnowledge(await this.memberWriteActor(db, actorId), councilId, `read the operations knowledge of council ${councilId}`);
+      return db.getAllAsync<CouncilOperationsKnowledge>(
+        'SELECT * FROM [CouncilOperationsKnowledge] WHERE [council_id] = ? ORDER BY [date_logged] DESC, [entry_id] DESC',
+        [councilId],
+      );
+    },
+
+    addOperationsKnowledge: async (actorId, councilId, input) => {
+      const clean = cleanOperationsKnowledgeEntry(input);
+      const db = await this.ready();
+      let entryId = 0;
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        assertMayWriteOperationsKnowledge(actor, councilId, `write in the operations knowledge vault of council ${councilId}`);
+        await this.assertCouncilsExist(db, [councilId]);
+        const member = await db.getFirstAsync<{ MemberFirstName: string; MemberLastName: string }>('SELECT [MemberFirstName], [MemberLastName] FROM [Member] WHERE [id] = ?', [
+          actorId,
+        ]);
+        entryId = (
+          await db.runAsync(
+            'INSERT INTO [CouncilOperationsKnowledge] ([council_id], [category_tag], [entry_text], [officer_signature], [date_logged]) VALUES (?, ?, ?, ?, ?)',
+            [councilId, clean.category_tag, clean.entry_text, operationsKnowledgeSignature(member?.MemberFirstName ?? '', member?.MemberLastName ?? '', actor), toTimestamp(this.now())],
+          )
+        ).lastInsertRowId;
+      });
+      return (await db.getFirstAsync<CouncilOperationsKnowledge>('SELECT * FROM [CouncilOperationsKnowledge] WHERE [entry_id] = ?', [entryId]))!;
     },
 
     getInMemoriamRoll: async (actorId, councilId) => {

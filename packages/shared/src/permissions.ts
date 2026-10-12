@@ -79,6 +79,7 @@ export type PortalArea =
   | 'system-settings/remote-assistance'
   | 'system-settings/impersonate'
   | 'system-settings/affiliations'
+  | 'system-settings/knowledge-archive'
   | 'navigation-guide'
   | 'performance/charts'
   | 'history'
@@ -279,6 +280,13 @@ export const canEditCouncilWideSettings = (u: Actor): boolean => canOpenOfficerT
  * Super Admin (who picks the council). Accepting an invite stays with the Grand Knight seat (canRespondToAffiliation).
  */
 export const canOpenAffiliationsDesk = (u: Actor): boolean => isAdmin(u) || holdsGrandKnightSeat(u);
+
+/**
+ * The Operations Knowledge Archive (Sprint 8I, /system-settings/knowledge-archive), mirroring
+ * assertMayReadOperationsKnowledge for the viewer's own council: its officers and Admins, and any Super Admin (who picks
+ * the council). Writing stays on the Oversight Desk's vault card (canWriteOperationsKnowledge).
+ */
+export const canOpenKnowledgeArchive = (u: Actor): boolean => canOpenOfficerTools(u);
 
 /**
  * Updating an event's results on the post-event ledger (Sprint 6R): strictly the event's owner, an elected officer
@@ -694,6 +702,8 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canEditCouncilWideSettings(u)) areas.push('system-settings/council-settings');
   // Sprints 8G/8H: the affiliations desk - council Admins, the Grand Knight and Deputy Grand Knight, Super Admins.
   if (canOpenAffiliationsDesk(u)) areas.push('system-settings/affiliations');
+  // Sprint 8I: the read-only Operations Knowledge Archive - the council's officers and Admins, and Super Admins.
+  if (canOpenKnowledgeArchive(u)) areas.push('system-settings/knowledge-archive');
   if (isAdmin(u) || canViewExecutiveDashboard(u, u.councilId)) areas.push('performance/charts');
   // Sprint 6K: every member reads the council's Team Legacy history and records oral history; the annals' keepers are
   // decided inside (assertMayKeepCouncilAnnals).
@@ -770,6 +780,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'system-settings/impersonate',
       'system-settings/council-settings',
       'system-settings/affiliations',
+      'system-settings/knowledge-archive',
       'members',
       'supreme-sync',
       'council-lookups',

@@ -150,6 +150,7 @@ describe('portal permissions', () => {
       'credentials-vault',
       'system-settings/council-settings',
       'system-settings/affiliations',
+      'system-settings/knowledge-archive',
       'performance/charts',
       'history',
       'faith-center',
@@ -201,6 +202,7 @@ describe('portal permissions', () => {
       'credentials-vault',
       'system-settings/council-settings',
       'system-settings/affiliations',
+      'system-settings/knowledge-archive',
       'performance/charts',
       'history',
       'faith-center',
@@ -209,7 +211,7 @@ describe('portal permissions', () => {
       'inventory/loaner-library',
       'navigation-guide',
     ]);
-    expect(portalAreas(officer)).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
+    expect(portalAreas(officer)).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'system-settings/knowledge-archive', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
     expect(portalAreas(member)).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'elections', 'ledger', 'expenses', 'charities/propose', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'history', 'faith-center', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
   });
 
@@ -307,7 +309,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
       ]);
     });
 
@@ -322,7 +324,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'supreme-sync', 'council-lookups', 'credentials-vault']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault']],
       ]);
     });
 
@@ -334,7 +336,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'council-lookups', 'credentials-vault']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'council-lookups', 'credentials-vault']],
       ]);
     });
 
@@ -349,7 +351,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'credentials-vault']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'credentials-vault']],
       ]);
       expect(shape(member)).toEqual([
         // Sprint 6L Extension: the Constitutional Advisor is an officer tool.
@@ -534,6 +536,7 @@ describe('portal permissions', () => {
         'governance/advisor',
         'credentials-vault',
         'system-settings/council-settings',
+        'system-settings/knowledge-archive',
         'performance/charts',
         'history',
         'faith-center',
@@ -543,7 +546,7 @@ describe('portal permissions', () => {
         'navigation-guide',
       ]);
     }
-    expect(portalAreas(actor({ isOfficer: true, roles: ['Recorder'] }))).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
+    expect(portalAreas(actor({ isOfficer: true, roles: ['Recorder'] }))).toEqual(['member-actions', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'system-settings/knowledge-archive', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'inventory/loaner-library', 'navigation-guide']);
   });
 
   it('gives council leadership the Supreme sync and the alert dispatch, each for their own council (Sprint 5T)', () => {

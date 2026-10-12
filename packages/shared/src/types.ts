@@ -1400,3 +1400,16 @@ export interface VolunteerQuarantine {
   /** The EventTime or ActivityTime row a clearance wrote; NULL until APPROVED. */
   cleared_time_id?: number | null;
 }
+
+/** Sprint 8I: the six governance tags of the Global Operations Knowledge Vault. */
+export type OperationsKnowledgeCategory = 'RECRUITING' | 'TREASURY' | 'CLERGY' | 'COMPLIANCE' | 'DEVOTIONAL' | 'LOGISTICS';
+
+/** Sprint 8I: one signed, append-only entry in a council's Global Operations Knowledge Vault (operations-knowledge.ts). */
+export interface CouncilOperationsKnowledge {
+  entry_id: number;
+  council_id: number; // Council
+  category_tag: OperationsKnowledgeCategory; // VARCHAR(20)
+  entry_text: string; // TEXT, at most OPERATIONS_KNOWLEDGE_MAX_LENGTH characters of light markdown
+  officer_signature: string; // VARCHAR(255): the automatic stamp, '<first> <last>, <seat>'
+  date_logged: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
+}

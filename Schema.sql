@@ -3458,3 +3458,39 @@ ALTER TABLE [CouncilGoals] ADD [budget_status] VARCHAR(20) NOT NULL DEFAULT 'DRA
 GO
 ALTER TABLE [CouncilBudgetForecast] ADD [budget_status] VARCHAR(20) NOT NULL DEFAULT 'DRAFT';
 GO
+
+-- =========================================================================
+-- Sprint 8I: GLOBAL OPERATIONS KNOWLEDGE VAULT (schema version 79)
+--
+-- CouncilOperationsKnowledge keeps a council's long-term operating notes, so a new chairman inherits what the last one
+-- learned (operations-knowledge.ts). Each row is one signed entry under one of six governance tags:
+--   category_tag       RECRUITING, TREASURY, CLERGY, COMPLIANCE, DEVOTIONAL or LOGISTICS (rules layer, no CHECK)
+--   entry_text         the note as plain text with light markdown, at most OPERATIONS_KNOWLEDGE_MAX_LENGTH characters
+--   officer_signature  the automatic stamp written when the entry is saved: '<first> <last>, <seat>' (the seat is Grand
+--                      Knight, Deputy Grand Knight, Admin or Super Admin)
+--   date_logged        when the entry was saved; its fraternal year (July 1 - June 30) files it in the archive
+-- The council's Active Admins, Grand Knight and Deputy Grand Knight, and any Active Super Admin, write entries from the
+-- Oversight Desk's Global Operations Knowledge Vault. Entries are append-only: there is no edit or delete. Every Active
+-- officer and Admin of the council (and any Super Admin) reads the archive under System Settings > Operations Knowledge
+-- Archive, filtered by tag, fraternal year and text.
+-- The phone database version moves to 79.
+-- =========================================================================
+CREATE TABLE [CouncilOperationsKnowledge] (
+	[entry_id] INT NOT NULL IDENTITY,
+	[council_id] INT NOT NULL,
+	[category_tag] VARCHAR(20) NOT NULL,
+	[entry_text] TEXT NOT NULL,
+	[officer_signature] VARCHAR(255) NOT NULL,
+	[date_logged] DATETIME NOT NULL,
+	PRIMARY KEY([entry_id])
+);
+GO
+
+ALTER TABLE [CouncilOperationsKnowledge]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE INDEX [CouncilOperationsKnowledge_Council_Idx] ON [CouncilOperationsKnowledge] ([council_id], [category_tag], [date_logged]);
+GO

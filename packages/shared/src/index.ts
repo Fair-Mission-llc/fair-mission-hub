@@ -64,3 +64,4 @@ export * from './council-goals';
 export * from './loaner-library';
 export * from './planning-workflow';
 export * from './council-affiliations';
+export * from './operations-knowledge';

@@ -120,6 +120,7 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
     { table: 'CouncilGoals', column: 'council_id', noun: ['annual goals year', 'annual goals years'] },
     { table: 'CouncilAffiliations', column: 'requesting_council_id', noun: ['affiliation invite sent', 'affiliation invites sent'] },
     { table: 'CouncilAffiliations', column: 'target_council_id', noun: ['affiliation invite received', 'affiliation invites received'] },
+    { table: 'CouncilOperationsKnowledge', column: 'council_id', noun: ['operations knowledge entry', 'operations knowledge entries'] },
   ],
   Parish: [{ table: 'Pastor', column: 'ParishID', noun: ['pastor', 'pastors'] }],
   Pastor: [],

@@ -115,6 +115,10 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member:
       "Lists the other councils in your state, nearest first. Send an affiliation invite, or accept one sent to your council. Affiliated councils can share loaner library equipment.",
   },
+  'system-settings/knowledge-archive': {
+    member:
+      "Shows the signed operating notes your council's leaders saved in the Global Operations Knowledge Vault. Filter by tag and fraternal year, or type words to search. Read-only.",
+  },
   members: { member: "Keeps the council's member roster: member types, roles and skills." },
   'supreme-sync': { member: 'Checks and files the Supreme Council reports (Forms 1728 and 1295) and syncs the roster.' },
   'council-lookups': { member: "Keeps the council's own lists: activities, donation types, payment methods and agenda templates." },

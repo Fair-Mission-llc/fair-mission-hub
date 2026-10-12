@@ -32,7 +32,8 @@
 19. [The Active Desks dashboard](#19-the-active-desks-dashboard)
 20. [The Cross-Council Loaner Library and the colour-coded calendar](#20-the-cross-council-loaner-library-and-the-colour-coded-calendar)
 21. [Planning workflows and bilateral council affiliations](#21-planning-workflows-and-bilateral-council-affiliations)
-22. [Appendix: QR code files](#appendix-qr-code-files)
+22. [The Global Operations Knowledge Vault and its archive](#22-the-global-operations-knowledge-vault-and-its-archive)
+23. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -3162,6 +3163,80 @@ Your members always see your own council's items. A brother council's item shows
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | An affiliated council's items do not show. | The other council has sharing off. | Ask the other council's GK to switch sharing on. |
+
+## 22. The Global Operations Knowledge Vault and its archive
+
+### 22.1 Concept: the Global Operations Knowledge Vault
+
+Officers change every year. The **Global Operations Knowledge Vault** keeps what each leader learned, so the next chairman does not start over.
+
+Each entry is one note under one governance tag:
+
+| Tag | What to write |
+| --- | --- |
+| **Recruiting** | Membership drives, parish contacts and what worked. |
+| **Treasury** | Bank signers, deadlines and money procedures. |
+| **Clergy** | How the pastor and the chaplain like to work with the council. |
+| **Compliance** | Supreme forms, due dates and audit steps. |
+| **Devotional** | Prayer, rosary and spiritual programs. |
+| **Logistics** | Equipment, storage places, keys and suppliers. |
+
+The portal signs each entry. The signature shows your name and your seat, for example **Tom McDougal, Grand Knight**. The portal also records the date. You cannot edit or delete an entry after you save it.
+
+| Who | Write entries | Read the archive |
+| --- | --- | --- |
+| Grand Knight (GK) and Deputy Grand Knight (DGK) | Yes | Yes |
+| The council's Admins | Yes | Yes |
+| Other officers of the council | No | Yes |
+| Super Admins | Yes, for any council | Yes, for any council |
+| Other members | No | No |
+
+### 22.2 Write a vault entry
+
+> **Who can do this:** the GK, the DGK, the council's Admins and Super Admins. Other members do not see this card.
+> **Warning:** you cannot edit or delete an entry after you save it.
+
+**Goal:** Save a signed note for the leaders who come after you.
+
+**Start point:** Active Desks → **Oversight Desk** → **Global Operations Knowledge Vault**.
+
+**Steps:**
+1. Select a tag in **Governance tag**.
+2. Write the note in **Entry**. Use `#` for a heading, `-` for a bullet and `**text**` for bold text.
+3. Select **Preview** to check the note. Select **Write** to change the note.
+4. Select **Save signed entry**. You cannot undo this.
+
+**Expected result:** The card shows a message with the tag and your signature. The entry shows first under **Latest entries**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Save signed entry** is grey. | The entry is empty. | Write the note first. |
+| The vault card does not show. | You are not the GK, the DGK or an Admin. | Ask the GK to write the entry. |
+| The note is cut off. | An entry holds at most 8,000 characters. | Split the note into two entries. |
+
+### 22.3 Search the Operations Knowledge Archive
+
+> **Who can do this:** the council's officers, the council's Admins and Super Admins. Other members do not see this page.
+
+**Goal:** Find the notes past leaders saved about one subject or one year.
+
+**Start point:** Sidebar → System Settings → **Operations Knowledge Archive**. The address is `/system-settings/knowledge-archive`. The **Open the archive** link on the vault card opens the same page.
+
+**Steps:**
+1. Select a tag in **Governance tag**. Select **Every tag** to see all tags.
+2. Select a year in **Fraternal year**. A fraternal year runs from July 1 to June 30.
+3. Type words in **Search** to find a note or a signature.
+4. Select a row to read the full note. Select the row again to close the note.
+
+**Expected result:** The grid shows the matching entries, newest first. Each row shows the date, the fraternal year, the tag and the signature.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The grid says **No entry matches these filters.** | No entry has all the selected filters. | Select **Every tag** or **Every year**, or clear **Search**. |
+| A Super Admin sees the wrong council. | The page opens on your own council. | Select the council in **Council** at the top of the page. |
+| You cannot add an entry here. | The archive is read-only. | Write entries on the **Oversight Desk**. |
 
 ---
 

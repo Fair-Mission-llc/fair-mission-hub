@@ -16,6 +16,11 @@ import {
   cleanMeetingPhotoUrl,
   cleanMeetingMinutes,
   cleanHistorianBulletin,
+  assertMayReadOperationsKnowledge,
+  assertMayWriteOperationsKnowledge,
+  cleanOperationsKnowledgeEntry,
+  operationsKnowledgeSignature,
+  sortOperationsKnowledge,
   assertMayKeepMinutes,
   assertMayKeepScrapbook,
   mayKeepScrapbook,
@@ -580,6 +585,7 @@ import type {
   YearClosingRows,
   CouncilSpiritualDiary,
   CouncilHistorianBulletin,
+  CouncilOperationsKnowledge,
   CouncilInMemoriam,
   InMemoriamRoll,
   MemberStatus as MemberStatusRow,
@@ -6359,6 +6365,36 @@ export class MemoryDataService implements DataService {
           return { ...existing } as unknown as CouncilHistorianBulletin;
         }
         return { ...s.insert('CouncilHistorianBulletin', { council_id: councilId, bulletin_month: clean.bulletin_month, ...values }) } as unknown as CouncilHistorianBulletin;
+      });
+    },
+
+    listOperationsKnowledge: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayReadOperationsKnowledge(this.memberWriteActor(s, actorId), councilId, `read the operations knowledge of council ${councilId}`);
+      return sortOperationsKnowledge(
+        s
+          .rows('CouncilOperationsKnowledge')
+          .filter((r) => r.council_id === councilId)
+          .map((r) => ({ ...r }) as unknown as CouncilOperationsKnowledge),
+      );
+    },
+
+    addOperationsKnowledge: async (actorId, councilId, input) => {
+      const clean = cleanOperationsKnowledgeEntry(input);
+      const s = await this.ready();
+      return s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        assertMayWriteOperationsKnowledge(actor, councilId, `write in the operations knowledge vault of council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const member = this.requireMember(s, actorId);
+        const row = s.insert('CouncilOperationsKnowledge', {
+          council_id: councilId,
+          category_tag: clean.category_tag,
+          entry_text: clean.entry_text,
+          officer_signature: operationsKnowledgeSignature(member.MemberFirstName as string, member.MemberLastName as string, actor),
+          date_logged: toTimestamp(this.now()),
+        });
+        return { ...row } as unknown as CouncilOperationsKnowledge;
       });
     },
 
