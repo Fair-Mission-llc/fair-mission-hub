@@ -755,7 +755,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Review a member's charity request and move the request forward.
 
-**Start point:** Sidebar → Finances → **Charity Vetting Queue**.
+**Start point:** **Active Desks** → **Grand Knight Desk** → **Charitable Grant Requests Vetting Board** folder. Other vetting officers use Sidebar → Finances → **Charity Vetting Queue**.
 
 **Steps:**
 1. Claim the request.
@@ -786,7 +786,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Pay a grant that the council approved.
 
-**Start point:** Sidebar → Finances → **Charity Payments Made Ledger**.
+**Start point:** **Active Desks** → **Financial Secretary Desk** → **Charity Check Issuance Console** folder. The Treasurer uses Sidebar → Finances → **Charity Payments Made Ledger**.
 
 **Steps:**
 1. Find the request in **Approved requests awaiting payment**.
@@ -1146,7 +1146,7 @@ A council can use its own Drive private key instead of the server key. A council
 
 **Goal:** Publish event photos, flyers and minutes for the council.
 
-**Start point:** Sidebar → Resources → **Fraternal Photo Gallery** or **Council Artifacts**.
+**Start point:** **Active Desks** → **Historian Desk** → **Google Drive Media Gallery Sync Board** folder, or Sidebar → Resources → **Council Artifacts**.
 
 **Steps:**
 1. In the gallery, choose the **Event**.
@@ -2504,11 +2504,11 @@ A Council Historian without an officer seat and without Admin rights gets two ta
 
 After you sign in, the portal opens on the dashboard **Home** desk when you hold an officer seat or Admin rights. A member without an officer seat or Admin rights opens on **Member Actions**.
 
-Every full desk page stays in the sidebar. The **Leadership Auditing Queue** page left the sidebar. Open the page from the **Financial Secretary Desk**.
+Every module that a seat works in is a folder at the top of that seat's desk (section 19.3.1). You do not use the sidebar to find these modules. The **Leadership Auditing Queue** page opens from the **Financial Secretary Desk**.
 
 ### 19.2 Concept: the Home desk
 
-The **Home** desk fits on one laptop or desktop screen. You do not scroll the page. **Home** holds six cards in two rows, and nothing else. Each card has a fixed height. A long list scrolls inside its own card.
+The **Home** desk fits on one laptop or desktop screen. You do not scroll the page. **Home** holds seven cards in two rows, and nothing else. Each card has a fixed height. A long list scrolls inside its own card.
 
 | Card on Home | What the card shows |
 | --- | --- |
@@ -2518,6 +2518,7 @@ The **Home** desk fits on one laptop or desktop screen. You do not scroll the pa
 | **Today's Event Agenda** | The council's events and meetings for today, with the time and the place. |
 | **Open Volunteer Shifts** | Shifts in the next 30 days that still need volunteers, with the number still needed. Select **Sign up** to take a shift. |
 | **Top 5 Fraternal Volunteers** | A navy card with a gold edge. The 5 active members of the council with the most hours logged at council events and activities in the current month, with their hours. |
+| **📿 Community Prayer Request List** | The council's open prayer intentions, newest first. Each intention shows who asked and how many brothers prayed. Select **[ 🙏 Praying Hands ]** to pray for an intention. Select **Add an intention** to open the **Faith Center**. |
 
 The **Top 5 Fraternal Volunteers** card counts only the current month. The card starts empty on the first day of each month. Members with equal hours share a place. The **Top 5 Volunteers Leaderboard** on the **Executive Dashboard** and the **Council Dashboard** counts all hours ever logged.
 
@@ -2540,7 +2541,7 @@ A badge with work waiting is filled with gold. The flagged hours badge is red. A
 
 Each badge is a link. Select a badge. The desk of the badge opens, and the matching list scrolls into view. A gold ring shows around the list for 2 seconds.
 
-The **Bible Verse of the Day** and the **Liturgical Feast Day Tracker** show only while the council's **Faith Center** module is on. A white-label organization does not see the two faith cards. **Home** then shows the other four cards.
+The **Bible Verse of the Day**, the **Liturgical Feast Day Tracker** and the **📿 Community Prayer Request List** show only while the council's **Faith Center** module is on. A white-label organization does not see the three faith cards. **Home** then shows the other four cards.
 
 ### 19.3 Concept: the desks
 
@@ -2550,13 +2551,33 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **Approved Expense Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. For the GK, the DGK and Super Admins, the **Cross-Council Loaner Library** controls (section 20.3). | Sidebar → Finances → **GK Expense Authorize** |
-| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The **Payment-request queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | Sidebar → Finances → **FS Expense Audit** |
-| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
-| **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
-| **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | Sidebar → Performance → **Council History** |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | Three module folders (section 19.3.1). The **Approved Expense Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. For the GK, the DGK and Super Admins, the **Cross-Council Loaner Library** controls (section 20.3). | **Open the Grand Knight Authorization Desk** link on the desk |
+| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | Two module folders. The **Payment-request queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | **Open the Financial Secretary Audit Desk** link on the desk |
+| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | Two module folders. The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | **Open the Treasurer Ledger Audit Desk** link on the desk |
+| **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | One module folder. The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
+| **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | One module folder. The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | None. The desk is the full page. |
 | **Oversight Desk** | The council's officers and Admins, and Super Admins | The status badges of every queue you may work, then the **Shifts awaiting hours** audit. The GK, the DGK, the council's Admins and Super Admins also get the **🚨 Flagged Hours Review Desk** (section 15). Only Super Admins get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
 | **Member Desk** | Every reader of the dashboard | **[ 🚗 Open Shifts Needing Volunteers ]**, **[ 📥 My Charity Requests ]**, **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
+
+### 19.3.1 Concept: module folders on the desks
+
+Each desk starts with its module folders. A folder is a closed bar with a 📁 icon, the module name and one line about the module. Select the bar to open the folder. The full module opens inside the desk. Select the bar again to close the folder.
+
+A folder shows only to a reader who may open the module. A reader who may not open a module does not see its folder. The module's own page also stays at its web address. The **Open ... as a full page** link at the bottom of an open folder opens that page.
+
+| Desk | Module folder | What the module does |
+| --- | --- | --- |
+| **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 4). |
+| **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. Officers only. |
+| **Grand Knight Desk** | **Connected Councils** | Invite nearby councils and answer their invites (section 21). |
+| **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
+| **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **📊 Budget Allocation & YOY Variance Analyzer**. |
+| **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. Only the FS, the Treasurer and Super Admins can run the match. |
+| **Recorder Desk** | **Council Resolutions and Motions Ledger** | Every motion on the council's meetings of this fraternal year, with its meeting, presenter, source and result. |
+| **Historian Desk** | **Google Drive Media Gallery Sync Board** | Upload and tag photos, build Smart Albums and play the slideshow. |
+
+The Deputy Grand Knight (DGK) gets the same **Grand Knight Desk** folders as the GK.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -2591,15 +2612,16 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 3. Read **Today's Event Agenda**. Select an event name to open the council calendar.
 4. Read the **Open Volunteer Shifts** card. Select **Sign up** beside a shift to take that shift.
 5. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
-6. To see the status badges, select the **Oversight Desk** tab.
-7. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
+6. Read the **📿 Community Prayer Request List** card. Select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
+7. To see the status badges, select the **Oversight Desk** tab.
+8. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
 
-**Expected result:** **Home** shows the six cards without a page scroll. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
+**Expected result:** **Home** shows the seven cards without a page scroll. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The verse and the feast tracker do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
+| The verse, the feast tracker and the prayer list do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
 | The status badges are not on **Home**. | The badges moved to the top of the **Oversight Desk**. | Select the **Oversight Desk** tab. |
 | A badge you expect does not show. | Your seat does not clear that desk, or the module is off. | Ask the officer who holds the seat. |
 | *"No member has logged hours this month yet."* | No active member of the council logged hours in the current month. | No action. The card fills when members log hours. |
@@ -2607,6 +2629,30 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
 | The page scrolls on a small screen. | The screen is shorter than a laptop screen. | Use a laptop or desktop screen, or zoom the browser out. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
+
+### 19.4.1 Open a module folder on your desk
+
+> **Who can do this:** the seat holder of the desk, the council's Admins and Super Admins. A folder shows only when your role may open its module.
+
+**Goal:** Work in an advanced module without leaving your desk.
+
+**Start point:** **Active Desks** row → your desk.
+
+**Steps:**
+1. Select your desk tab.
+2. Find the module folders at the top of the desk.
+3. Select the bar of the module folder. The folder opens and the module loads inside the desk.
+4. Do the work in the module.
+5. Select the bar again to close the folder.
+
+**Expected result:** The module works inside the desk the same as on its own page.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A folder in section 19.3.1 is not on your desk. | Your role may not open that module, or the council switched the module off. | Ask the seat holder or a Super Admin. |
+| The **Bank Statement Match-Window** shows a notice and no upload box. | Only the FS, the Treasurer and Super Admins can match bank statements. | Ask the Treasurer to run the match. |
+| You want the module on a larger screen. | The desk has less width than the full page. | Select **Open ... as a full page** at the bottom of the folder. |
 
 ### 19.5 Release approved expenses from the Grand Knight Desk
 
@@ -3100,7 +3146,7 @@ The GK sets the meeting point on **Council Wide Settings** → **Meeting Check-I
 
 **Goal:** Invite a nearby council of your state to affiliate.
 
-**Start point:** Sidebar → System Settings → **Connected Councils**. The address is `/system-settings/affiliations`.
+**Start point:** **Active Desks** → **Grand Knight Desk** → **Connected Councils** folder. A council Admin without a desk uses the page at `/system-settings/affiliations`.
 
 **Steps:**
 1. Find the council in the list of councils in your state. Use **Find a council** or **My district only** to shorten the list.

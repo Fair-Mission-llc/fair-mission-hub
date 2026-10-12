@@ -36,11 +36,18 @@
 // signup grid and the Top 5 Fraternal Volunteers leaderboard of the month - in one screen with no scrolling. The desk
 // status badges move to the top of the Oversight Desk. The Executive Summary leaves Home for its own page,
 // /executive-dashboard (EXECUTIVE_DASHBOARD_HREF), the sidebar's Executive Dashboard link.
+//
+// Sprint 8L (schema version 82): Omnipresent Officer Desks. Every advanced module a seat works in is mounted as a folder
+// at the top of its Active Desk (DESK_MODULES), so the desks never send anyone to the sidebar for it. Each folder is
+// cleared by the module's own portal area, exactly as its full page is. Home gains a seventh universal card, the
+// Community Prayer Request List (COMMUNITY_PRAYER_CARD_TITLE), over the council's open prayer intentions; like the verse
+// and the feast tracker it is Faith Center content.
 // =========================================================================
 import type { CalendarEntry, SessionUser, ShiftFeedItem } from './contract';
 import { observancesBetween, liturgicalBanner, type Observance } from './liturgical';
 import type { FeatureFlags } from './features';
 import {
+  type PortalArea,
   canOpenExpenseAuditDesk,
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
@@ -137,7 +144,39 @@ export const HOME_UNIVERSAL_CARDS = [
   "Today's Event Agenda",
   'Open Volunteer Shifts',
   'Top 5 Fraternal Volunteers',
+  'Community Prayer Request List',
 ] as const;
+
+/** The Home card over the council's open prayer intentions (Sprint 8L). */
+export const COMMUNITY_PRAYER_CARD_TITLE = '📿 Community Prayer Request List';
+
+/** One module folder mounted on an Active Desk (Sprint 8L): its title, the portal area that clears it, and its desk row. */
+export interface DeskModuleSpec {
+  desk: DashboardTabId;
+  title: string;
+  /** One line shown on the closed folder. */
+  summary: string;
+  /** The module's own portal area: the folder shows only to readers who may open it (portalAreas). */
+  area: PortalArea;
+  /** The DeskRow id, so a link can bring the folder into view. */
+  rowId: string;
+}
+
+/** Every module folder on the Active Desks (Sprint 8L), in display order per desk. */
+export const DESK_MODULES: readonly DeskModuleSpec[] = [
+  { desk: 'grand-knight', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
+  { desk: 'grand-knight', title: 'Constitutional Advisor Panels', summary: 'Ask a parliamentary or bylaws question', area: 'governance/advisor', rowId: 'module-advisor' },
+  { desk: 'grand-knight', title: 'Connected Councils', summary: 'Invite and answer nearby councils', area: 'system-settings/affiliations', rowId: 'module-connected-councils' },
+  { desk: 'financial-secretary', title: 'Semiannual Audit Form 1295 Center', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295' },
+  { desk: 'financial-secretary', title: 'Charity Check Issuance Console', summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks' },
+  { desk: 'treasurer', title: 'Annual Budget vs Actuals Ledger Grid', summary: 'Budgeted vs actual spend and the YOY variance analyzer', area: 'finance/dashboard', rowId: 'module-budget-vs-actuals' },
+  { desk: 'treasurer', title: 'Bank Statement Match-Window', summary: 'Match a bank statement CSV against the ledger', area: 'finance/dashboard', rowId: 'module-bank-match' },
+  { desk: 'recorder', title: 'Council Resolutions and Motions Ledger', summary: "Every motion of this fraternal year's meetings and its result", area: 'meetings', rowId: 'module-motions-ledger' },
+  { desk: 'historian', title: 'Google Drive Media Gallery Sync Board', summary: 'Upload, tag and file photos to the Drive media vault', area: 'gallery', rowId: 'module-media-gallery' },
+];
+
+/** The module folders of one desk, in display order. */
+export const deskModulesFor = (desk: DashboardTabId): DeskModuleSpec[] => DESK_MODULES.filter((m) => m.desk === desk);
 
 /**
  * A desk status badge's queue (Sprint 8A badges; Sprint 8C names the desk row each one opens). Sprint 8D/8E: the badges

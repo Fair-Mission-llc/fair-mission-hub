@@ -3,9 +3,12 @@
 // text, the Knight Shepherd presenting it and its strict time block. The time block is a badge the chair can start:
 // it counts the allocated minutes down to zero and turns red when the floor time is spent. Every member reads the
 // list, like the meeting itself; motions are added by routing a vetted charitable request (Pooled Vetting Desk).
+// Sprint 8L: MotionsLedger, the Recorder Desk's Council Resolutions and Motions Ledger - every motion on the council's
+// meetings from a date on, with its meeting and its result.
 import { useEffect, useState } from 'react';
 import { type ProposedMotionDetail } from '@kofc/shared';
-import { cx, Empty, Notice, Pill } from '@/components/ui';
+import { cx, Empty, Notice, Pill, Table, Td } from '@/components/ui';
+import { formatFullDate } from '@/lib/format';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -87,5 +90,46 @@ export function ProposedMotionsSection({ meetingId }: { meetingId: number }) {
         </ol>
       </div>
     </section>
+  );
+}
+
+/** The Council Resolutions and Motions Ledger (Sprint 8L): each motion on the council's meetings since `fromDate`, oldest meeting first. */
+export function MotionsLedger({ councilId, fromDate }: { councilId: number; fromDate: string }) {
+  const ledger = useLoad(async () => {
+    const meetings = await db.meetings.listUpcoming(councilId, { fromDate });
+    const motions = await Promise.all(meetings.map((m) => db.meetings.listProposedMotions(m.id)));
+    return meetings.flatMap((meeting, i) => motions[i].map((detail) => ({ meeting, detail })));
+  }, [councilId, fromDate]);
+  const rows = ledger.data ?? [];
+  const decided = rows.filter((r) => r.detail.motion.VoteResult !== 'Pending').length;
+  return (
+    <div className="flex flex-col gap-2">
+      {ledger.error ? <Notice tone="error">{ledger.error}</Notice> : null}
+      {ledger.data && rows.length === 0 ? <Empty>No motion has been placed on a meeting since {formatFullDate(fromDate)}.</Empty> : null}
+      {!ledger.data && !ledger.error ? <p className="text-sm text-muted">Reading the meetings…</p> : null}
+      {rows.length > 0 ? (
+        <>
+          <p className="text-sm">
+            {rows.length} motion{rows.length === 1 ? '' : 's'} since {formatFullDate(fromDate)} · {decided} decided
+          </p>
+          <Table caption="Council resolutions and motions" head={['Meeting', 'Motion', 'Floor presenter', 'Source', 'Result']}>
+            {rows.map(({ meeting, detail }) => (
+              <tr key={detail.motion.id}>
+                <Td className="whitespace-nowrap">
+                  <span className="font-bold">{formatFullDate(meeting.Date)}</span>
+                  <span className="block text-xs text-muted">{meeting['Meeting Name']}</span>
+                </Td>
+                <Td>{detail.motion.MotionText}</Td>
+                <Td>{`${detail.presenterFirstName} ${detail.presenterLastName}`.trim() || `Member ${detail.motion.PresenterMemberID}`}</Td>
+                <Td>{detail.motion.SourceType === 'CharitableRequest' ? `Charitable request #${detail.motion.SourceRecordID}` : 'Member motion'}</Td>
+                <Td>
+                  <Pill tone={detail.motion.VoteResult === 'Pending' ? 'gold' : detail.motion.VoteResult === 'Passed' ? 'navy' : 'redOutline'}>{detail.motion.VoteResult}</Pill>
+                </Td>
+              </tr>
+            ))}
+          </Table>
+        </>
+      ) : null}
+    </div>
   );
 }

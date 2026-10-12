@@ -1054,18 +1054,23 @@ A donation without a session is a standalone donation.
 
 **Start point:** Phone app → **Donate** tab.
 
+The **Start accepting donations** card is the phone's setup drawer. The phone chooses nothing for you. No event and no donation type is selected when the card opens. You choose each one yourself.
+
 **Steps:**
 1. Tap **Start accepting for an event**.
 2. Choose the event in **EVENT**.
-3. Optional: fill in **DEFAULT AMOUNT (OPTIONAL)**, **DEFAULT DONATION TYPE** and **DEFAULT DESCRIPTION (OPTIONAL)**.
-4. Tap **Start**.
+3. Choose the type in **DONATION TYPE**, for example **Parking**.
+4. Optional: type the standard rate in **STANDARD RATE (OPTIONAL)**, for example `10.00` for the parking rate.
+5. Optional: fill in **DEFAULT DESCRIPTION (OPTIONAL)**.
+6. Tap **Start**.
 
-**Expected result:** A gold **ACCEPTING DONATIONS** card shows the event, the count and the total.
+**Expected result:** A gold **ACCEPTING DONATIONS** card shows the event, the count and the total. The **Session setup** line shows the rate and the type you chose.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The event is not in the list. | The list shows an event from 2 hours before the first shift (by default; your council sets the time) until midnight after the event ends. | Wait for the event start. Record a later gift as standalone. |
+| *"Choose the event you are collecting for."* or *"Choose the donation type."* | You tapped **Start** before you chose the event or the type. | Choose both, then tap **Start**. |
 
 ### 7.2 Record a donation
 
@@ -1076,11 +1081,13 @@ A donation without a session is a standalone donation.
 
 **Start point:** Phone app → **Donate** → **How is the donor giving?**
 
+The phone does not pick a method or fill in an amount. You tap the method and type every amount yourself. The session's standard rate shows under **AMOUNT** as a reminder only.
+
 **Steps:**
-1. Tap the tile for the donor's method.
+1. Tap the tile for the donor's method, for example **Venmo**.
 2. For a QR method: turn the phone to the donor. Wait for the donor's payment confirmation.
 3. For a QR method: check the amount. Tap **Continue**.
-4. Enter or check the amount.
+4. Type the amount in **AMOUNT**, for example `10.00`.
 5. Choose the **DONATION TYPE**.
 6. Optional: fill in **DONOR NAME (OPTIONAL)** and **DESCRIPTION (OPTIONAL)**.
 7. Tap **Record donation**. The gift saves at once.
@@ -1167,7 +1174,7 @@ A donation without a session is a standalone donation.
 
 **Steps:**
 1. Turn on **🎬 Start Active Intake Session**. The intake opens for every phone on the event.
-2. Choose a preset amount.
+2. Tap the amount under **AMOUNT PER TAP**. No amount is chosen when the intake opens. The two large buttons show *"Tap an amount first"* until you tap one.
 3. Tap **💵 Log Cash Transaction** for cash. The gift saves at once.
 4. Tap **💳 Log Stripe CC Swipe** for a card. The app records the card gift only. The app charges no card.
 5. Tap **Hide overlay** to see the normal screen.
@@ -1179,7 +1186,31 @@ A donation without a session is a standalone donation.
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"Cash is not enabled"* | The council has no Cash method. | Ask your council Admin to enable Cash. |
+| The large buttons do not respond. | No amount is chosen. | Tap an amount under **AMOUNT PER TAP**. |
 | You tapped one time too many. | Each tap saves a donation. | Ask the Treasurer, the Financial Secretary or an Admin to correct the donation. |
+
+### 7.4.1 Record a cash box drop
+
+> **Who can do this:** any active member of a council linked to the event.
+> **Warning:** **Record donation** adds the cash total to the council's records at once.
+
+**Goal:** Record the cash box of a shift as one consolidated donation.
+
+**Start point:** Phone app → **Donate** → the **ACCEPTING DONATIONS** card.
+
+**Steps:**
+1. Count the cash in the cash box.
+2. Under **How is the donor giving?** tap **Cash**.
+3. Type the total in **AMOUNT**, for example `180.00`.
+4. Type a note in **DESCRIPTION (OPTIONAL)**, for example `Cash box drop - Saturday lot, 18 cars at $10.00`.
+5. Tap **Record donation**.
+
+**Expected result:** One cash donation with the full total shows under **Recorded for this event**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The cash shows twice. | A member also recorded each car's cash one at a time. | Ask the Financial Secretary to correct the donations. Record either single gifts or one drop, not both. |
 
 ### 7.5 Stop the donation session
 

@@ -80,7 +80,7 @@ describe.each(drivers)('$name driver: the Conference Room Pilot personas', (d) =
     const fsDesk = (await db.expenses.listCouncilQueue(fs, OWN)).filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id);
     expect(fsDesk).toEqual(expect.arrayContaining([14, 15, 16]));
     expect((await db.expenses.listTreasurerQueue(treasurer, OWN)).map((q) => q.report.id)).toEqual(expect.arrayContaining([17, 18]));
-    expect((await db.expenses.listAuthorizationQueue(gk, OWN)).map((q) => q.report.id)).toEqual([19]);
+    expect((await db.expenses.listAuthorizationQueue(gk, OWN)).map((q) => q.report.id)).toEqual([19, 23]);
 
     const held = await db.volunteerQuarantine.listPending(dgk, OWN);
     expect(held.map((h) => [h.memberName, h.row.activity_type, h.row.hours_reported])).toEqual([
@@ -280,8 +280,12 @@ describe('pilot kit PDFs', () => {
     expect(kit).not.toMatch(/\.print\(|lpr|os\.startfile/);
     // Sprint 7I Extension: the group flows create their records live and leave the meeting console out.
     const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('FEEDBACK_RATINGS: tuple'));
-    expect(group).not.toMatch(/Live Meeting Console|Mtgs tab|check in|report 1[4-9]/i);
-    expect(group).toContain('Propose Charity Grant');
+    // Sprint 8L: the charity flow now plays the whole sequence - submission, vetting, the floor debate and hand vote on the
+    // Live Meeting Console, and the check.
+    expect(group).not.toMatch(/Mtgs tab|check in|report 1[4-9]|report 2[0-3]/i);
+    expect(group).toContain('Record Hand Ballot Tally');
+    expect(group).toContain('Pay approved request');
+    expect(group).toContain('Propose or follow a charity grant');
     expect(group).toContain('Place on next agenda');
     // Sprint 7I Extension 2: the individual scripts leave the meeting console out too.
     expect(kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'))).not.toMatch(/Live Meeting Console|welcome line/i);
@@ -291,5 +295,55 @@ describe('pilot kit PDFs', () => {
     expect(read('.gitignore')).toContain('generated/custom_manuals/');
     expect(read('apps/web/app/api/council/compile-manual/route.ts')).toContain("join(root, 'generated', 'custom_manuals')");
     expect(readdirSync(join(ROOT, 'docs')).filter((f) => f.startsWith('POSTER_'))).toHaveLength(3);
+  });
+});
+
+// Sprint 8L: one 60-minute session (30 + 30), every web step from the Active Desks row, hand-set phones and large print.
+describe('Sprint 8L pilot kit', () => {
+  const kit = read('scripts/pilot_kit_pdf.py');
+  const personas = kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'));
+  const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('FEEDBACK_RATINGS: tuple'));
+
+  it('splits the session into a 30-minute individual phase and a 30-minute group phase', () => {
+    expect(kit).toContain('INDIVIDUAL_PHASE_MINUTES = 30');
+    expect(kit).toContain('GROUP_PHASE_MINUTES = 30');
+    expect(kit).toContain('Individual Desk Coordinate Phase');
+    expect(kit).toContain('Synchronized Group Workflow');
+    const minutes = [...group.matchAll(/minutes=(\d+)/g)].map((m) => Number(m[1]));
+    expect(minutes.reduce((a, b) => a + b, 0)).toBe(30);
+  });
+
+  it('starts every web step from the Active Desks folders, never the sidebar', () => {
+    expect(personas + group).not.toMatch(/sidebar|left navigation|Finances > (FS Expense Audit|GK Expense Authorize|Treasurer Ledger Audit Desk|Charity Vetting Queue|My Expense Reports)/);
+    for (const folder of [
+      'Charitable Grant Requests Vetting Board',
+      'Constitutional Advisor Panels',
+      'Connected Councils',
+      'Semiannual Audit Form 1295 Center',
+      'Charity Check Issuance Console',
+      'Annual Budget vs Actuals Ledger Grid',
+      'Bank Statement Match-Window',
+      'Google Drive Media Gallery Sync Board',
+    ])
+      expect(personas, folder).toContain(folder);
+  });
+
+  it('has the members set up the Donate tab by hand and Member Alpha log the cash box drop last', () => {
+    expect(personas).toContain('Nothing is pre-selected');
+    expect(personas).toContain('tap the Venmo tile yourself');
+    expect(personas).toContain('type 10.00 in STANDARD RATE');
+    const alpha = personas.slice(personas.indexOf("key='alpha'"), personas.indexOf("key='beta'"));
+    const last = alpha.slice(alpha.lastIndexOf('Step('));
+    expect(last).toContain('cash box drop');
+  });
+
+  it("reviews the budget sheet on the Treasurer's script and prints Member Beta's pages in large type", () => {
+    const treasurer = personas.slice(personas.indexOf("key='treasurer'"), personas.indexOf("key='dgk'"));
+    expect(treasurer).toContain('Budgeted vs. Current Actual Spend');
+    expect(treasurer).toContain('Budget Allocation & YOY Variance Analyzer');
+    const beta = personas.slice(personas.indexOf("key='beta'"));
+    expect(beta).toContain('large_print=True');
+    expect(kit).toMatch(/LARGE_PRINT_SCALE = 1\.\d+/);
+    expect(kit).toContain('styles(LARGE_PRINT_SCALE) if p.large_print else st');
   });
 });

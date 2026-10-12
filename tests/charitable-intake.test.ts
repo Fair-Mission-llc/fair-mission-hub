@@ -261,25 +261,27 @@ describe.each(drivers)('$name driver: presentation data', (d) => {
   it('loads the officers, expense sheets, charity checks and intake requests of Council 15295', async () => {
     const db = await makePresentation();
     expect(d.count(db, 'Member')).toBeGreaterThanOrEqual(19); // 3 test profiles, 15 officers and directors, the unregistered member
-    expect(d.count(db, 'ExpenseReport')).toBe(19);
+    expect(d.count(db, 'ExpenseReport')).toBe(23);
     // Sprint 5Z-4: one sheet awaiting the written order and one in the Treasurer's vault. Sprint 6Q: the ordered sheet
     // now waits on the Treasurer Ledger Audit Desk. Phase 7I: the pilot sheets add three for the written order (14-16), two
-    // for the Treasurer (17-18) and one coded sheet for the Grand Knight (19).
+    // for the Treasurer (17-18) and one coded sheet for the Grand Knight (19). Sprint 8L: four September sheets add two
+    // for the written order (20-21), one for the Treasurer (22) and one for the Grand Knight (23).
     const expenseQueue = await db.expenses.listCouncilQueue(MEMBER.admin, OWN);
-    expect(expenseQueue.filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id)).toEqual([11, 14, 15, 16]);
+    expect(expenseQueue.filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id)).toEqual([11, 14, 15, 16, 20, 21]);
     expect((await db.expenses.listTreasurerQueue(MEMBER.superAdmin, OWN)).map((q) => [q.report.id, q.financialSecretaryName])).toEqual([
       [12, 'Council Admin'],
       [17, 'FS User'],
       [18, 'FS User'],
+      [22, 'FS User'],
     ]);
-    expect((await db.expenses.listAuthorizationQueue(MEMBER.superAdmin, OWN)).map((q) => q.report.id)).toEqual([19]);
+    expect((await db.expenses.listAuthorizationQueue(MEMBER.superAdmin, OWN)).map((q) => q.report.id)).toEqual([19, 23]);
     expect(expenseQueue.filter((q) => isPayableExpenseReport(q.report)).map((q) => q.report.id)).toEqual([13]);
     expect(d.count(db, 'CharitableDisbursementLedger')).toBe(8);
 
     const trustee = await db.auth.signIn('francis.byrne@kofc15295.org', 'dev-pass-secure-9912');
     const queue = await db.charities.listCharitableRequestsQueue(trustee.memberId, OWN);
-    expect(queue.map((q) => q.request.RequestStatus)).toEqual(['Submitted', 'Submitted', 'Claimed by Trustee', 'Claimed by Trustee', 'Advanced']);
-    expect(queue[4]).toMatchObject({ vetterFirstName: 'George', relationshipName: 'State or Supreme Program' });
+    expect(queue.map((q) => q.request.RequestStatus)).toEqual(['Submitted', 'Submitted', 'Submitted', 'Submitted', 'Claimed by Trustee', 'Claimed by Trustee', 'Advanced']);
+    expect(queue[6]).toMatchObject({ vetterFirstName: 'George', relationshipName: 'State or Supreme Program' });
 
     const ledger = await db.charities.listCouncilLedger(MEMBER.admin, OWN);
     expect(ledger.reduce((n, e) => n + e.disbursements.length, 0)).toBe(8);
@@ -428,7 +430,7 @@ describe.each(drivers)('$name driver: Faith-in-Action presentation data (Sprint 
       ['Life', 1265.25, 34.25, 2],
     ]);
     const queue = await db.charities.listCharitableRequestsQueue(MEMBER.admin, OWN);
-    expect(queue.map((q) => q.missionAreaName)).toEqual(['Faith', 'Community', 'Life', 'Family', 'Community']);
+    expect(queue.map((q) => q.missionAreaName)).toEqual(['Faith', 'Community', 'Community', 'Community', 'Life', 'Family', 'Community']); // Sprint 8L: two more Community requests
   });
 });
 

@@ -36,6 +36,12 @@
 // Sprint 8I: the Oversight Desk carries the high-contrast Global Operations Knowledge Vault card for the council's Admins,
 // Grand Knight and Deputy Grand Knight (OperationsKnowledgeVault, canWriteOperationsKnowledge): a governance tag, a
 // markdown note and an automatic signature stamp. The read-only archive is under System Settings.
+// Sprint 8L - Omnipresent Officer Desks: each desk opens with its module folders (DeskModuleShelf, DESK_MODULES): the
+// Grand Knight Desk carries the Charitable Grant Requests Vetting Board, the Constitutional Advisor Panels and Connected
+// Councils; the Financial Secretary Desk the Semiannual Audit Form 1295 Center and the Charity Check Issuance Console; the
+// Treasurer Desk the Annual Budget vs Actuals Ledger Grid and the Bank Statement Match-Window; the Recorder Desk the
+// Council Resolutions and Motions Ledger; the Historian Desk the Google Drive Media Gallery Sync Board. Home gains the
+// '📿 Community Prayer Request List' card (Faith Center content, like the verse and the feast tracker).
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -44,7 +50,13 @@ import {
   buildReminderStream,
   bulletinMonthOf,
   canOpenRecorderDesk,
+  COMMUNITY_PRAYER_CARD_TITLE,
   councilWideSettings,
+  deskModulesFor,
+  describePrayerCount,
+  PRAYING_HANDS_LABEL,
+  type DashboardTabId,
+  type PrayerIntentionDetail,
   describeError,
   driveFileViewUrl,
   HISTORIAN_BULLETIN_MAX_LENGTH,
@@ -57,7 +69,6 @@ import {
   minutesDeskRows,
   canLendCouncilAssets,
   canRespondToAffiliation,
-  AFFILIATIONS_HREF,
   canLogConcludedRevenue,
   LOANER_LIBRARY_HREF,
   canOpenExpenseAuditDesk,
@@ -89,7 +100,14 @@ import {
   type MinutesCountdown,
   type SessionUser,
 } from '@kofc/shared';
+import { BankStatementMatchWindow, BudgetVsActualsModule, DeskModule, DeskModuleShelf, MotionsLedgerModule } from '@/components/DeskModules';
 import { ExpenseStatusPill, HonorVoucherBadge } from '@/components/ExpenseParts';
+import { CharityQueue as CharityCheckConsole } from '@/components/modules/CharityCheckConsole';
+import { VettingDesk as CharityVettingBoard } from '@/components/modules/CharityVettingBoard';
+import { Affiliations as ConnectedCouncils } from '@/components/modules/ConnectedCouncils';
+import { AdvisorTerminal as ConstitutionalAdvisor } from '@/components/modules/ConstitutionalAdvisor';
+import { PhotoGallery } from '@/components/modules/PhotoGallery';
+import { AuditDesk as TrusteeAuditDesk } from '@/components/modules/TrusteeAuditDesk';
 import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
 import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
 import { OperationsKnowledgeVault } from '@/components/KnowledgeVaultParts';
@@ -378,21 +396,94 @@ function TopVolunteersCard({ user, councilId }: { user: SessionUser; councilId: 
  * The Home tab's card grid (Sprint 8D/8E: the universal cards, HOME_UNIVERSAL_CARDS, and nothing else) in two rows of
  * fixed-height cards. The verse and the feast tracker come only with the Faith Center and a fraternal tenant.
  */
+/** One intention on the Home prayer card: its text, who asked, and the one-tap Praying Hands counter. */
+function PrayerRequestRow({ user, item }: { user: SessionUser; item: PrayerIntentionDetail }) {
+  const [count, setCount] = useState(item.prayerCount);
+  const [prayed, setPrayed] = useState(item.prayedByMeToday);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pray = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const tally = await db.prayers.pray(user.memberId, item.intention.id);
+      setCount(tally.prayerCount);
+      setPrayed(tally.prayedByMeToday);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <li className="border-t border-line py-1.5 first:border-t-0 first:pt-0">
+      <p>{item.intention.intention_text}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-muted">
+          {formatPersonName(item.authorFirstName, item.authorLastName)} · {describePrayerCount(count)}
+        </span>
+        <Button size="sm" variant={prayed ? 'secondary' : 'gold'} disabled={busy || prayed} aria-pressed={prayed} onClick={() => void pray()}>
+          {PRAYING_HANDS_LABEL}
+        </Button>
+      </div>
+      {error ? <p className="text-xs text-brand-red">{error}</p> : null}
+    </li>
+  );
+}
+
+/** The '📿 Community Prayer Request List' card on Home (Sprint 8L): the council's open prayer intentions (prayers.getBoard). */
+function CommunityPrayerCard({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const board = useLoad(() => db.prayers.getBoard(user.memberId, councilId), [user.memberId, councilId]);
+  const rows = board.data?.intentions ?? [];
+  return (
+    <HomeCard
+      title={COMMUNITY_PRAYER_CARD_TITLE}
+      actions={
+        <Link href="/faith-center" className="text-xs font-bold underline">
+          Add an intention
+        </Link>
+      }
+    >
+      {board.error ? <Notice tone="error">{board.error}</Notice> : null}
+      {board.data && rows.length === 0 ? <Empty>No open prayer intentions. Add one from the Faith Center.</Empty> : null}
+      <ul aria-label="Open prayer intentions">
+        {rows.map((item) => (
+          <PrayerRequestRow key={item.intention.id} user={user} item={item} />
+        ))}
+      </ul>
+    </HomeCard>
+  );
+}
+
 export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; councilId: number; faithOn: boolean }) {
   const today = toIsoDate(new Date());
   return (
-    <div className={cx('grid grid-cols-1 gap-3 md:grid-cols-2', faithOn ? 'xl:grid-cols-3' : 'xl:grid-cols-2')}>
+    <div className={cx('grid grid-cols-1 gap-3 md:grid-cols-2', faithOn ? 'xl:grid-cols-4' : 'xl:grid-cols-2')}>
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
       <TodaysAgenda councilId={councilId} today={today} />
       <OpenShiftsHomeCard user={user} />
       <TopVolunteersCard user={user} councilId={councilId} />
+      {faithOn ? <CommunityPrayerCard user={user} councilId={councilId} /> : null}
     </div>
   );
 }
 
 // ---- the Officer Desks --------------------------------------------------------------------------------
+
+/** The module folders of one desk (Sprint 8L), each rendering its module from `render`. */
+function DeskModulesFor({ user, desk, render }: { user: SessionUser; desk: DashboardTabId; render: (rowId: string) => ReactNode }) {
+  return (
+    <DeskModuleShelf>
+      {deskModulesFor(desk).map((spec) => (
+        <DeskModule key={spec.rowId} user={user} spec={spec}>
+          {render(spec.rowId)}
+        </DeskModule>
+      ))}
+    </DeskModuleShelf>
+  );
+}
 
 /** The Grand Knight Desk: the Voucher Release queue - sheets signed by the Financial Secretary and coded by the Treasurer. */
 export function GrandKnightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
@@ -400,6 +491,11 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   const rows = queue.data ?? [];
   return (
     <div className="flex flex-col gap-4">
+      <DeskModulesFor
+        user={user}
+        desk="grand-knight"
+        render={(rowId) => (rowId === 'module-vetting-board' ? <CharityVettingBoard /> : rowId === 'module-advisor' ? <ConstitutionalAdvisor /> : <ConnectedCouncils />)}
+      />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <DeskCount label="Approved expenses waiting for release" count={queue.data ? rows.length : null} href="/expenses/authorize" cta="Open the Grand Knight Authorization Desk" />
         <DeskCount label="Released approved expenses" href="/expenses/disbursements" cta="Open the Payments Made desk" />
@@ -428,12 +524,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
       {canRespondToAffiliation(user, councilId) ? (
         <DeskRow id="grand-knight-affiliations" label="Affiliation Invites">
           <IncomingAffiliationInvites user={user} councilId={councilId} />
-          <p className="mt-2 text-xs">
-            <Link href={AFFILIATIONS_HREF} className="font-bold underline">
-              Open Connected Councils
-            </Link>{' '}
-            to invite nearby councils.
-          </p>
+          <p className="mt-2 text-xs">Open the Connected Councils folder at the top of this desk to invite nearby councils.</p>
         </DeskRow>
       ) : null}
       {/* Sprint 8F: the Cross-Council Loaner Library's lending desk, for the Grand Knight and Deputy Grand Knight. */}
@@ -461,6 +552,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
   const rows = (queue.data ?? []).filter((d) => awaitsWrittenOrder(d.report));
   return (
     <div className="flex flex-col gap-4">
+      <DeskModulesFor user={user} desk="financial-secretary" render={(rowId) => (rowId === 'module-form-1295' ? <TrusteeAuditDesk /> : <CharityCheckConsole />)} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <DeskCount label="Sheets waiting for your payment request" count={queue.data ? rows.length : null} href="/expenses/audit" cta="Open the Financial Secretary Audit Desk" />
         <DeskCount label="All sheets in leadership's queue" count={queue.data ? queue.data.length : null} href="/expenses/queue" cta="Open the auditing queue" />
@@ -506,6 +598,13 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
   const rows = queue.data ?? [];
   return (
     <div className="flex flex-col gap-4">
+      <DeskModulesFor
+        user={user}
+        desk="treasurer"
+        render={(rowId) =>
+          rowId === 'module-budget-vs-actuals' ? <BudgetVsActualsModule user={user} councilId={councilId} /> : <BankStatementMatchWindow user={user} councilId={councilId} />
+        }
+      />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <DeskCount label="Sheets waiting for ledger coding" count={queue.data ? rows.length : null} href="/finance/treasurer-desk" cta="Open the Treasurer Ledger Audit Desk" />
         <DeskCount label="General ledger" href="/finance/ledger" cta="Open the general ledger" />
@@ -1055,6 +1154,7 @@ export function RecorderDesk({ user, councilId }: { user: SessionUser; councilId
 
   return (
     <div className="flex flex-col gap-4">
+      <DeskModulesFor user={user} desk="recorder" render={() => <MotionsLedgerModule councilId={councilId} />} />
       {data.error ? <Notice tone="error">{data.error}</Notice> : null}
       {current ? <LiveMeetingLaunch user={user} meeting={current.meeting} /> : null}
       <DeskRow id={DESK_FOCUS_TARGETS.minutes.rowId} label="Business calendar and minutes">
@@ -1289,12 +1389,15 @@ function OralHistories({ user, councilId }: { user: SessionUser; councilId: numb
  */
 export function HistorianDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   return (
-    <Panel title="Digital Fraternal Annals Scrapbook">
-      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
-        <MonthlyBulletins user={user} councilId={councilId} />
-        <MeetingPhotos user={user} councilId={councilId} />
-        <OralHistories user={user} councilId={councilId} />
-      </div>
-    </Panel>
+    <div className="flex flex-col gap-4">
+      <DeskModulesFor user={user} desk="historian" render={() => <PhotoGallery />} />
+      <Panel title="Digital Fraternal Annals Scrapbook">
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
+          <MonthlyBulletins user={user} councilId={councilId} />
+          <MeetingPhotos user={user} councilId={councilId} />
+          <OralHistories user={user} councilId={councilId} />
+        </div>
+      </Panel>
+    </div>
   );
 }

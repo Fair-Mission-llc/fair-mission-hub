@@ -403,7 +403,7 @@ describe('media vault rules', () => {
   });
 
   it('plays a looping fullscreen slideshow with a fade on the gallery page', () => {
-    const page = read('apps/web/app/gallery/page.tsx');
+    const page = read('apps/web/components/modules/PhotoGallery.tsx'); // Sprint 8L: moved so the Historian Desk mounts it
     expect(page).toContain('requestFullscreen');
     expect(page).toContain('SLIDESHOW_INTERVAL_MS');
     expect(page).toContain('motion-safe:animate-slide-fade');

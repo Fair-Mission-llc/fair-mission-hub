@@ -129,7 +129,8 @@ describe('advisor terminal page', () => {
   });
 
   it('titles the terminal, shows Source Authority and the warning box, and reads the bylaws feed', () => {
-    const page = read('apps/web/app/governance/advisor/page.tsx');
+    // Sprint 8L: the terminal lives in components/modules so the Grand Knight Desk mounts it too.
+    const page = read('apps/web/app/governance/advisor/page.tsx') + read('apps/web/components/modules/ConstitutionalAdvisor.tsx');
     expect(page).toContain('AI Fraternal &amp; Constitutional Advisor');
     expect(page).toContain('Source Authority:');
     expect(page).toContain('PARLIAMENTARY COMPLIANCE WARNING');

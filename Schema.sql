@@ -3511,3 +3511,13 @@ GO
 -- =========================================================================
 ALTER TABLE [CouncilOperationsKnowledge] ADD [origin_council_stamp] VARCHAR(255) NOT NULL DEFAULT '';
 GO
+
+-- =========================================================================
+-- Sprint 8L: OMNIPRESENT OFFICER DESKS AND THE COMMUNITY PRAYER REQUEST LIST (schema version 82)
+--
+-- No table change. The Community Prayer Request List card on Home reads the council's open intentions from
+-- CouncilPrayerIntention (Sprint 6L Extension 3), which already tracks the council's communal prayers; no second
+-- prayer table is added. The presentation seed adds three open intentions, flags Member Beta's profile for the large
+-- text layout, and puts four September expense sheets and two charity grant requests into the approval and vetting
+-- queues. The phone database version moves to 82 so phones rebuild with the new seed rows.
+-- =========================================================================

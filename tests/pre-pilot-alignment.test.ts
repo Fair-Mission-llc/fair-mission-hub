@@ -190,7 +190,7 @@ describe('standalone gallery uploads', () => {
   });
 
   it('offers past events, past meetings and standalone on the gallery page', () => {
-    const page = read('apps/web/app/gallery/page.tsx');
+    const page = read('apps/web/components/modules/PhotoGallery.tsx'); // Sprint 8L: moved so the Historian Desk mounts it
     for (const label of ["'Past event'", "'Past meeting'", "'Standalone'"]) expect(page).toContain(label);
     expect(page).toContain('e.StartDate <= today');
     expect(page).toContain('m.date <= today');

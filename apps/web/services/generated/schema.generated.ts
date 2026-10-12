@@ -11817,7 +11817,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "StatusID": 1,
         "DegreeID": 4,
         "MemberTypeID": 3,
-        "CredentialID": 28
+        "CredentialID": 28,
+        "flag_large_text_mode": 0
       },
       {
         "CouncilID": 1,
@@ -11834,7 +11835,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "StatusID": 1,
         "DegreeID": 3,
         "MemberTypeID": 3,
-        "CredentialID": 29
+        "CredentialID": 29,
+        "flag_large_text_mode": 0
       },
       {
         "CouncilID": 1,
@@ -11851,7 +11853,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "StatusID": 1,
         "DegreeID": 3,
         "MemberTypeID": 3,
-        "CredentialID": 30
+        "CredentialID": 30,
+        "flag_large_text_mode": 0
       },
       {
         "CouncilID": 1,
@@ -11868,7 +11871,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "StatusID": 1,
         "DegreeID": 3,
         "MemberTypeID": 3,
-        "CredentialID": 31
+        "CredentialID": 31,
+        "flag_large_text_mode": 0
       },
       {
         "CouncilID": 1,
@@ -11885,7 +11889,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "StatusID": 1,
         "DegreeID": 3,
         "MemberTypeID": 3,
-        "CredentialID": 32
+        "CredentialID": 32,
+        "flag_large_text_mode": 0
       },
       {
         "CouncilID": 1,
@@ -11902,7 +11907,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "StatusID": 1,
         "DegreeID": 1,
         "MemberTypeID": 3,
-        "CredentialID": 33
+        "CredentialID": 33,
+        "flag_large_text_mode": 0
       },
       {
         "CouncilID": 1,
@@ -11919,7 +11925,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "StatusID": 1,
         "DegreeID": 1,
         "MemberTypeID": 3,
-        "CredentialID": 34
+        "CredentialID": 34,
+        "flag_large_text_mode": 1
       }
     ]
   },
@@ -12276,6 +12283,178 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "date_logged": "2026-10-11 13:40:00",
         "quarantine_reason": "More than 5.0 hours against one activity: 6 hours reported for the day.",
         "clearance_status": "PENDING"
+      }
+    ]
+  },
+  {
+    "table": "CouncilPrayerIntention",
+    "rows": [
+      {
+        "council_id": 1,
+        "author_member_id": 34,
+        "intention_text": "For the healing of my eyes before cataract surgery next month, and for all brothers living with failing sight.",
+        "created_at": "2026-10-08 09:30:00"
+      },
+      {
+        "council_id": 1,
+        "author_member_id": 33,
+        "intention_text": "For the families who park with us each weekend, and for safe travel to and from Mass.",
+        "created_at": "2026-10-10 12:45:00"
+      },
+      {
+        "council_id": 1,
+        "author_member_id": 28,
+        "intention_text": "For the repose of the souls of our departed brothers, and comfort for their widows and families.",
+        "created_at": "2026-10-11 18:00:00"
+      }
+    ]
+  },
+  {
+    "table": "ExpenseReport",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 33,
+        "Status": "Submitted",
+        "LinkedEventID": null,
+        "FinancialSecretaryMemberID": null,
+        "FinancialSecretaryApprovedAt": null,
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 34,
+        "Status": "Submitted",
+        "LinkedEventID": null,
+        "FinancialSecretaryMemberID": null,
+        "FinancialSecretaryApprovedAt": null,
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 32,
+        "Status": "Submitted",
+        "LinkedEventID": null,
+        "FinancialSecretaryMemberID": 29,
+        "FinancialSecretaryApprovedAt": "2026-09-24 18:20:00",
+        "TreasurerMemberID": null,
+        "TreasurerReviewedAt": null,
+        "budget_line_id": null,
+        "general_ledger_account_id": null
+      },
+      {
+        "CouncilID": 1,
+        "SubmitterMemberID": 33,
+        "Status": "Submitted",
+        "LinkedEventID": null,
+        "FinancialSecretaryMemberID": 29,
+        "FinancialSecretaryApprovedAt": "2026-09-17 19:05:00",
+        "TreasurerMemberID": 30,
+        "TreasurerReviewedAt": "2026-09-19 20:15:00",
+        "budget_line_id": 25,
+        "general_ledger_account_id": 13
+      }
+    ]
+  },
+  {
+    "table": "ExpenseLineItem",
+    "rows": [
+      {
+        "ExpenseReportID": 20,
+        "DateOfExpense": "2026-09-20",
+        "Amount": 27.6,
+        "VendorName": "Costco",
+        "ExpenseDescription": "Bottled water for the September Rosary rally"
+      },
+      {
+        "ExpenseReportID": 21,
+        "DateOfExpense": "2026-09-13",
+        "Amount": 54.15,
+        "VendorName": "Staples",
+        "ExpenseDescription": "Printer ink for the parish bulletin inserts"
+      },
+      {
+        "ExpenseReportID": 22,
+        "DateOfExpense": "2026-09-08",
+        "Amount": 63.4,
+        "VendorName": "Walgreens",
+        "ExpenseDescription": "Photo prints for the council history album"
+      },
+      {
+        "ExpenseReportID": 23,
+        "DateOfExpense": "2026-09-05",
+        "Amount": 41.85,
+        "VendorName": "Fred Meyer",
+        "ExpenseDescription": "Hospitality supplies for the September council meeting"
+      }
+    ]
+  },
+  {
+    "table": "CharitableRequest",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "OrganizationName": "Northeast Portland Senior Meals",
+        "ContactName": "Grace Whitfield",
+        "ContactPhone": "503-555-0362",
+        "ContactEmail": "grace@nepdxseniormeals.org",
+        "AmountRequested": 400,
+        "RequestStatus": "Submitted",
+        "SubmittedAt": "2026-10-07 16:10:00",
+        "ShepherdMemberID": 34,
+        "MailingAddress": "3800 NE Sandy Blvd, Portland, OR 97232",
+        "RelationshipTypeID": 5,
+        "Is501c3": 1,
+        "EIN": null,
+        "Website": "https://nepdxseniormeals.org",
+        "OrgMission": "Hot weekday lunches for homebound seniors",
+        "IsRecurring": 0,
+        "FundsNeededBy": "2026-11-20 00:00:00",
+        "SpecificUse": "Thanksgiving meal trays for homebound seniors",
+        "TargetBeneficiary": "Forty homebound seniors",
+        "AccountabilityPlan": "Delivery log and a thank-you letter to the council",
+        "RequestTier": 1,
+        "VetterMemberID": null,
+        "VettingNotes": null,
+        "VettedDate": null,
+        "VoteStatus": "Pending",
+        "AmountApproved": 0,
+        "MissionAreaID": 3
+      },
+      {
+        "CouncilID": 1,
+        "OrganizationName": "Cathedral Coat Closet",
+        "ContactName": "Luis Ortega",
+        "ContactPhone": "503-555-0374",
+        "ContactEmail": "coats@stmaryscathedral.org",
+        "AmountRequested": 300,
+        "RequestStatus": "Submitted",
+        "SubmittedAt": "2026-10-09 11:25:00",
+        "ShepherdMemberID": 33,
+        "MailingAddress": "1716 NW Davis St, Portland, OR 97209",
+        "RelationshipTypeID": 1,
+        "Is501c3": 0,
+        "EIN": null,
+        "Website": null,
+        "OrgMission": "Free winter coats for parish families in need",
+        "IsRecurring": 1,
+        "FundsNeededBy": "2026-11-01 00:00:00",
+        "SpecificUse": "Children's winter coats and gloves",
+        "TargetBeneficiary": "Twenty-five parish children",
+        "AccountabilityPlan": "Receipts and a photo of the coat rack to the council",
+        "RequestTier": 1,
+        "VetterMemberID": null,
+        "VettingNotes": null,
+        "VettedDate": null,
+        "VoteStatus": "Pending",
+        "AmountApproved": 0,
+        "MissionAreaID": 3
       }
     ]
   },

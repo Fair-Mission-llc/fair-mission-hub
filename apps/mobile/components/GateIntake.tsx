@@ -5,6 +5,8 @@
 // '💳 Log Stripe CC Swipe' - that record a donation with nothing typed (gateIntakeEntry: the council's cash or card
 // method, the session's donation type, a gate description, the pinned event, the member and today). The overlay is navy
 // with white text (14.9:1); the cash target is white with navy text and the card target gold with navy text (6.4:1).
+// Sprint 8L: no amount is chosen for the member. The overlay opens with no chip selected (the session's standard rate is
+// offered as the first chip) and both targets stay disabled until the member taps an amount.
 // Note: '💳 Log Stripe CC Swipe' records a credit-card donation; no card is charged from the app.
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Switch, View } from 'react-native';
@@ -146,11 +148,12 @@ export function GateIntakeOverlay({
   const { color, radius, space, touchTarget, large } = useTheme();
   const insets = useSafeAreaInsets();
   const presets = defaults.amount != null && !GATE_INTAKE_AMOUNTS.includes(defaults.amount) ? [defaults.amount, ...GATE_INTAKE_AMOUNTS] : GATE_INTAKE_AMOUNTS;
-  const [amount, setAmount] = useState<number>(defaults.amount ?? 10);
+  const [amount, setAmount] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
 
   const log = async (target: GateIntakeTarget) => {
+    if (amount === null) return setFlash({ tone: 'error', text: 'Tap the amount the donor gave first.' });
     setBusy(true);
     setFlash(null);
     try {
@@ -227,16 +230,16 @@ export function GateIntakeOverlay({
           <View style={{ flex: 1, gap: space.lg, minHeight: 400 }}>
             <IntakeTarget
               label={GATE_INTAKE_TARGETS.cash.label}
-              detail={cash ? money(amount) : 'Cash is not enabled'}
+              detail={!cash ? 'Cash is not enabled' : amount === null ? 'Tap an amount first' : money(amount)}
               fill={color.white}
-              disabled={busy || !cash || types.length === 0}
+              disabled={busy || !cash || amount === null || types.length === 0}
               onPress={() => void log('cash')}
             />
             <IntakeTarget
               label={GATE_INTAKE_TARGETS.card.label}
-              detail={card ? money(amount) : 'Credit Card is not enabled'}
+              detail={!card ? 'Credit Card is not enabled' : amount === null ? 'Tap an amount first' : money(amount)}
               fill={large ? color.white : color.gold}
-              disabled={busy || !card || types.length === 0}
+              disabled={busy || !card || amount === null || types.length === 0}
               onPress={() => void log('card')}
             />
           </View>

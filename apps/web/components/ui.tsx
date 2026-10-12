@@ -2,6 +2,8 @@
 // Portal primitives. Colours are only the theme tokens declared in app/globals.css (navy, brand-red,
 // gold, white, muted, line); the default Tailwind palette is switched off, so nothing else compiles.
 import {
+  createContext,
+  useContext,
   useId,
   useRef,
   useState,
@@ -183,10 +185,17 @@ export function Panel({ title, actions, children, className }: { title: string; 
   );
 }
 
+/**
+ * Sprint 8L: true inside a module mounted on an Active Desk (DeskModule). The module's PageTitle then renders as a
+ * sub-heading, since the desk folder already names the module and the page has its own h1.
+ */
+export const EmbeddedModuleContext = createContext(false);
+
 export function PageTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
+  const embedded = useContext(EmbeddedModuleContext);
   return (
     <div className="mb-4 flex items-center justify-between gap-4">
-      <h1 className="font-serif text-2xl font-bold">{children}</h1>
+      {embedded ? <h3 className="font-serif text-lg font-bold">{children}</h3> : <h1 className="font-serif text-2xl font-bold">{children}</h1>}
       {actions}
     </div>
   );

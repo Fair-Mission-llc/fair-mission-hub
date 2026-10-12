@@ -102,7 +102,7 @@ describe.each(drivers)('the monthly leaderboard from the database ($name driver)
 });
 
 describe('Home holds only the universal cards', () => {
-  it('names the six cards in display order', () => {
+  it('names the seven cards in display order', () => {
     expect(HOME_UNIVERSAL_CARDS).toEqual([
       'Bible Verse of the Day',
       'Live Actionable Reminders',
@@ -110,16 +110,17 @@ describe('Home holds only the universal cards', () => {
       "Today's Event Agenda",
       'Open Volunteer Shifts',
       'Top 5 Fraternal Volunteers',
+      'Community Prayer Request List', // Sprint 8L
     ]);
   });
 
-  it('renders the six cards and nothing else in the Home grid', () => {
+  it('renders the seven cards and nothing else in the Home grid', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     const rendered = [...grid.matchAll(/<([A-Z]\w+) /g)].map((m) => m[1]);
-    expect(rendered).toEqual(['VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'OpenShiftsHomeCard', 'TopVolunteersCard']);
-    // Two rows of fixed-height cards: three across with the faith cards, two across without.
-    expect(grid).toContain("faithOn ? 'xl:grid-cols-3' : 'xl:grid-cols-2'");
+    expect(rendered).toEqual(['VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'OpenShiftsHomeCard', 'TopVolunteersCard', 'CommunityPrayerCard']);
+    // Two rows of fixed-height cards: four across with the faith cards (Sprint 8L: seven cards), two across without.
+    expect(grid).toContain("faithOn ? 'xl:grid-cols-4' : 'xl:grid-cols-2'");
     expect(desks).toContain('title="Open Volunteer Shifts"');
     expect(desks).toContain('title={`Top ${LEADERBOARD_SIZE} Fraternal Volunteers`}');
     expect(desks).toMatch(/function HomeCard\([\s\S]*?h-60/);
@@ -193,7 +194,7 @@ describe('the Executive Dashboard page', () => {
 describe('the guides', () => {
   it('walk through the six-card Home, the badges on the Oversight Desk and the Executive Dashboard page', () => {
     const admin = read('docs/ADMIN_USER_GUIDE.md');
-    expect(admin).toContain('**Home** holds six cards in two rows, and nothing else.');
+    expect(admin).toContain('**Home** holds seven cards in two rows, and nothing else.');
     expect(admin).toContain('| **Top 5 Fraternal Volunteers** |');
     expect(admin).toContain('The status badges at the top of the **Oversight Desk**:');
     expect(admin).toContain('### 19.13 Read the Executive Dashboard page');

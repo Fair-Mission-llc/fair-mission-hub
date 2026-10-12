@@ -860,8 +860,10 @@ const DB_NAME = 'kofc.db';
  * 79: CouncilOperationsKnowledge (the Global Operations Knowledge Vault and its archive) (Sprint 8I).
  * 80: CouncilOperationsKnowledge.origin_council_stamp (the cross-council archive's badge) (Sprint 8J).
  * 81: no table change. Plain-English lexicon pass on screen labels; phones rebuild so seeded text matches (Sprint 8K).
+ * 82: no table change. Seed adds three prayer intentions, Member Beta's large text flag, four September expense
+ *     sheets and two charity requests in the queues (Sprint 8L).
  */
-const SCHEMA_VERSION = 81;
+const SCHEMA_VERSION = 82;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

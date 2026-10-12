@@ -820,7 +820,8 @@ GO
 -- ==============================================================================
 -- Phase 7I: the Conference Room Pilot personas for Council 15295 (CouncilID 1) - seven anonymous logins, one per pilot
 -- desk, password dev-pass-secure-9912 like every seed login. Credentials 28-34 / Member 28-34, plain members
--- (MemberTypeID 3); their access comes from their seats. Each seat is shared with the holder above, and the pilot
+-- (MemberTypeID 3); their access comes from their seats. Sprint 8L: Member Beta is the pilot's senior brother with
+-- fading eyesight, so his profile starts in the large text layout (flag_large_text_mode = 1). Each seat is shared with the holder above, and the pilot
 -- holder is the newest (the highest MemberRoles id), so the seat lists, the agenda and the live console welcome read
 -- the pilot names. docs/INDIVIDUAL_PILOT_SCRIPTS.pdf and docs/GROUP_CROSS_DESK_SCRIPT.pdf walk through this data.
 -- ==============================================================================
@@ -838,16 +839,16 @@ GO
 INSERT INTO [Member] (
     [CouncilID], [MemberNumber], [MemberFirstName], [MemberLastName],
     [Phone], [StreetAddress1], [City], [State], [ZipCode], [Email],
-    [DateOfBirth], [StatusID], [DegreeID], [MemberTypeID], [CredentialID]
+    [DateOfBirth], [StatusID], [DegreeID], [MemberTypeID], [CredentialID], [flag_large_text_mode]
 )
 VALUES
-(1, 9900028, 'GK', 'User', '503-555-0128', '100 Parish Way', 'Portland', 'OR', '97201', 'gk_user@stmarys.org', '1970-01-01', 1, 4, 3, 28),
-(1, 9900029, 'FS', 'User', '503-555-0129', '100 Parish Way', 'Portland', 'OR', '97201', 'fs_user@stmarys.org', '1970-01-01', 1, 3, 3, 29),
-(1, 9900030, 'Treasurer', 'User', '503-555-0130', '100 Parish Way', 'Portland', 'OR', '97201', 'treasurer_user@stmarys.org', '1970-01-01', 1, 3, 3, 30),
-(1, 9900031, 'DGK', 'User', '503-555-0131', '100 Parish Way', 'Portland', 'OR', '97201', 'dgk_user@stmarys.org', '1970-01-01', 1, 3, 3, 31),
-(1, 9900032, 'Historian', 'User', '503-555-0132', '100 Parish Way', 'Portland', 'OR', '97201', 'historian_user@stmarys.org', '1970-01-01', 1, 3, 3, 32),
-(1, 9900033, 'Member', 'Alpha', '503-555-0133', '100 Parish Way', 'Portland', 'OR', '97201', 'member_alpha@stmarys.org', '1980-01-01', 1, 1, 3, 33),
-(1, 9900034, 'Member', 'Beta', '503-555-0134', '100 Parish Way', 'Portland', 'OR', '97201', 'member_beta@stmarys.org', '1980-01-01', 1, 1, 3, 34);
+(1, 9900028, 'GK', 'User', '503-555-0128', '100 Parish Way', 'Portland', 'OR', '97201', 'gk_user@stmarys.org', '1970-01-01', 1, 4, 3, 28, 0),
+(1, 9900029, 'FS', 'User', '503-555-0129', '100 Parish Way', 'Portland', 'OR', '97201', 'fs_user@stmarys.org', '1970-01-01', 1, 3, 3, 29, 0),
+(1, 9900030, 'Treasurer', 'User', '503-555-0130', '100 Parish Way', 'Portland', 'OR', '97201', 'treasurer_user@stmarys.org', '1970-01-01', 1, 3, 3, 30, 0),
+(1, 9900031, 'DGK', 'User', '503-555-0131', '100 Parish Way', 'Portland', 'OR', '97201', 'dgk_user@stmarys.org', '1970-01-01', 1, 3, 3, 31, 0),
+(1, 9900032, 'Historian', 'User', '503-555-0132', '100 Parish Way', 'Portland', 'OR', '97201', 'historian_user@stmarys.org', '1970-01-01', 1, 3, 3, 32, 0),
+(1, 9900033, 'Member', 'Alpha', '503-555-0133', '100 Parish Way', 'Portland', 'OR', '97201', 'member_alpha@stmarys.org', '1980-01-01', 1, 1, 3, 33, 0),
+(1, 9900034, 'Member', 'Beta', '503-555-0134', '100 Parish Way', 'Portland', 'OR', '97201', 'member_beta@stmarys.org', '1980-01-01', 1, 1, 3, 34, 1);
 GO
 
 INSERT INTO [MemberRoles] ([RoleID], [MemberID])
@@ -921,6 +922,51 @@ INSERT INTO [VolunteerQuarantine] ([council_id], [user_id], [activity_type], [ac
 VALUES
 (1, 33, 'SHIFT', 9, '2026-10-10', 6.50, 4.00, 'Stayed to restripe the overflow lot', '2026-10-10 13:15:00', 'More than 5.0 hours against one activity: 6.5 hours reported for the day. More than 1.0 hour over the scheduled shift: 6.5 hours reported against a 4-hour shift (limit 5).', 'PENDING'),
 (1, 34, 'MANUAL', 11, '2026-10-11', 6.00, NULL, 'Ushered all three Sunday Masses', '2026-10-11 13:40:00', 'More than 5.0 hours against one activity: 6 hours reported for the day.', 'PENDING');
+GO
+
+-- Sprint 8L (schema 82): three more open Council Prayer Intentions, posted by pilot personas, for the Community Prayer
+-- Request List card on Home. With Tom's two above, five are open. No Praying Hands taps are seeded.
+INSERT INTO [CouncilPrayerIntention] ([council_id], [author_member_id], [intention_text], [created_at]) VALUES
+(1, 34, 'For the healing of my eyes before cataract surgery next month, and for all brothers living with failing sight.', '2026-10-08 09:30:00'),
+(1, 33, 'For the families who park with us each weekend, and for safe travel to and from Mass.', '2026-10-10 12:45:00'),
+(1, 28, 'For the repose of the souls of our departed brothers, and comfort for their widows and families.', '2026-10-11 18:00:00');
+GO
+
+-- Sprint 8L: four older expense sheets from September in the approval queues (ExpenseReport 20-23, one line each):
+-- 20-21 wait for the FS persona's payment request, 22 carries it and waits for the Treasurer persona's ledger coding,
+-- and 23 is coded (budget line 25 Miscellaneous Others, GLAccount 13 Council Operational Costs) and waits for the GK.
+INSERT INTO [ExpenseReport] ([CouncilID], [SubmitterMemberID], [Status], [LinkedEventID], [FinancialSecretaryMemberID], [FinancialSecretaryApprovedAt], [TreasurerMemberID], [TreasurerReviewedAt], [budget_line_id], [general_ledger_account_id])
+VALUES
+(1, 33, 'Submitted', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 34, 'Submitted', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 32, 'Submitted', NULL, 29, '2026-09-24 18:20:00', NULL, NULL, NULL, NULL),
+(1, 33, 'Submitted', NULL, 29, '2026-09-17 19:05:00', 30, '2026-09-19 20:15:00', 25, 13);
+GO
+INSERT INTO [ExpenseLineItem] ([ExpenseReportID], [DateOfExpense], [Amount], [VendorName], [ExpenseDescription])
+VALUES
+(20, '2026-09-20', 27.60, 'Costco', 'Bottled water for the September Rosary rally'),
+(21, '2026-09-13', 54.15, 'Staples', 'Printer ink for the parish bulletin inserts'),
+(22, '2026-09-08', 63.40, 'Walgreens', 'Photo prints for the council history album'),
+(23, '2026-09-05', 41.85, 'Fred Meyer', 'Hospitality supplies for the September council meeting');
+GO
+
+-- Sprint 8L: two more charity grant requests waiting on the Pooled Vetting Desk (CharitableRequest 6-7), shepherded by
+-- the two member personas, so the pilot's vetting officers have fresh requests to claim.
+INSERT INTO [CharitableRequest] (
+    [CouncilID], [OrganizationName], [ContactName], [ContactPhone], [ContactEmail], [AmountRequested], [RequestStatus], [SubmittedAt],
+    [ShepherdMemberID], [MailingAddress], [RelationshipTypeID], [Is501c3], [EIN], [Website], [OrgMission], [IsRecurring],
+    [FundsNeededBy], [SpecificUse], [TargetBeneficiary], [AccountabilityPlan], [RequestTier],
+    [VetterMemberID], [VettingNotes], [VettedDate], [VoteStatus], [AmountApproved], [MissionAreaID]
+)
+VALUES
+(1, 'Northeast Portland Senior Meals', 'Grace Whitfield', '503-555-0362', 'grace@nepdxseniormeals.org', 400.00, 'Submitted', '2026-10-07 16:10:00',
+ 34, '3800 NE Sandy Blvd, Portland, OR 97232', 5, 1, NULL, 'https://nepdxseniormeals.org', 'Hot weekday lunches for homebound seniors', 0,
+ '2026-11-20 00:00:00', 'Thanksgiving meal trays for homebound seniors', 'Forty homebound seniors', 'Delivery log and a thank-you letter to the council', 1,
+ NULL, NULL, NULL, 'Pending', 0.00, 3),
+(1, 'Cathedral Coat Closet', 'Luis Ortega', '503-555-0374', 'coats@stmaryscathedral.org', 300.00, 'Submitted', '2026-10-09 11:25:00',
+ 33, '1716 NW Davis St, Portland, OR 97209', 1, 0, NULL, NULL, 'Free winter coats for parish families in need', 1,
+ '2026-11-01 00:00:00', 'Children''s winter coats and gloves', 'Twenty-five parish children', 'Receipts and a photo of the coat rack to the council', 1,
+ NULL, NULL, NULL, 'Pending', 0.00, 3);
 GO
 
 -- Sprint 8F (schema 77): St. Mary's 2026-2027 Annual Council Goals (CouncilGoals 1) and three items in the Cross-Council

@@ -7,8 +7,9 @@
 //     the donor to scan; physical items ask for a description and estimated value, and may carry a
 //     verification photo taken with the phone camera from the "Take Verification Photo" tile (stored in
 //     DonationPhotoURL). Sprint 7F Extension 2: a Check tile asks for the check number (required, Donation.CheckNumber).
-//  3. The form is pre-filled from the session defaults; the member corrects the amount if the donor gave
-//     something different, then records it or cancels.
+//  3. Sprint 8L: nothing is chosen or typed for the member. The setup card starts with no event and no donation type
+//     picked, the method is the tile the member taps, and the Amount box starts empty: the session's standard rate is
+//     only a hint beside it, so the member types each amount by hand, then records it or cancels.
 // While a session is running, the event's donations from every phone are listed, newest first.
 // Sprint 5Z-Mobile-Intake: tapping Venmo, ParishSoft, Zeffy or Zelle opens a full-screen pop-up with only that channel's
 // code (components/CollectionQrModal.tsx): the council's uploaded code first, else the one bundled with the app
@@ -16,6 +17,8 @@
 // Sprint 5Z-10 high-speed gate intake: the pinned-event card carries the '🎬 Start Active Intake Session' switch
 // (events.setIntakeSessionStatus). While the event's intake is Active, a full-screen overlay offers two one-tap targets,
 // cash and card, that log a donation at a preset amount with nothing typed (components/GateIntake.tsx).
+// Sprint 8L: the setup card ("Start accepting donations") is the member's on-device configuration drawer. The member
+// picks the event and the donation type by hand and may type a standard rate (e.g. the $10.00 parking tier).
 // Sprint 5Z-Final-Polish: the start card is a single bold heading, and the event dropdown offers only events at the
 // gate, under way or starting within the council's shift_signup_lock_hours (isEventAtGate; Sprint 7H, was a fixed 2 hours).
 import { useEffect, useState } from 'react';
@@ -86,9 +89,10 @@ function StartSessionForm({
   onCancel: () => void;
 }) {
   const { color, space } = useTheme();
-  const [eventId, setEventId] = useState<number | null>(events[0]?.id ?? null);
+  // Sprint 8L: no event or type is picked for the member; each is chosen by hand before Start.
+  const [eventId, setEventId] = useState<number | null>(null);
   const [amount, setAmount] = useState('');
-  const [typeId, setTypeId] = useState<number | null>(types[0]?.id ?? null);
+  const [typeId, setTypeId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -104,7 +108,8 @@ function StartSessionForm({
   const start = async () => {
     const parsed = parseAmount(amount, 'Default amount');
     if ('error' in parsed) return setError(parsed.error);
-    if (eventId === null) return;
+    if (eventId === null) return setError('Choose the event you are collecting for.');
+    if (types.length > 0 && typeId === null) return setError('Choose the donation type.');
     setBusy(true);
     setError(null);
     try {
@@ -128,16 +133,23 @@ function StartSessionForm({
         <Dropdown
           title="Event"
           value={eventId}
+          placeholder="Choose the event"
           options={events.map((e) => ({ value: e.id, label: `${e.EventName} · ${formatDate(e.StartDate)}` }))}
           onChange={setEventId}
         />
       </Field>
-      <Field label="DEFAULT AMOUNT (OPTIONAL)">
-        <AppInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="e.g. 20" />
+      <Field label="STANDARD RATE (OPTIONAL)">
+        <AppInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="e.g. 10.00" />
       </Field>
       {types.length > 0 ? (
-        <Field label="DEFAULT DONATION TYPE">
-          <Dropdown title="Donation type" value={typeId} options={types.map((t) => ({ value: t.id, label: t.DonationType }))} onChange={setTypeId} />
+        <Field label="DONATION TYPE">
+          <Dropdown
+            title="Donation type"
+            value={typeId}
+            placeholder="Choose the donation type"
+            options={types.map((t) => ({ value: t.id, label: t.DonationType }))}
+            onChange={setTypeId}
+          />
         </Field>
       ) : null}
       <Field label="DEFAULT DESCRIPTION (OPTIONAL)">
@@ -145,7 +157,7 @@ function StartSessionForm({
       </Field>
       <View style={{ flexDirection: 'row', gap: space.md }}>
         <Button title="Cancel" variant="secondary" style={{ flex: 1 }} onPress={onCancel} />
-        <Button title="Start" style={{ flex: 2 }} busy={busy} disabled={eventId === null} onPress={() => void start()} />
+        <Button title="Start" style={{ flex: 2 }} busy={busy} onPress={() => void start()} />
       </View>
     </Card>
   );
@@ -171,8 +183,9 @@ function DonationForm({
   // Sprint 7F Extension 2: a Check donation must carry the number printed on the check.
   const isCheck = option.kind === 'check';
   const [checkNumber, setCheckNumber] = useState('');
-  const [amount, setAmount] = useState(defaults.amount != null ? String(defaults.amount) : '');
-  const [typeId, setTypeId] = useState<number | null>(defaults.donationTypeId ?? types[0]?.id ?? null);
+  // Sprint 8L: the amount is always typed by hand; the session's standard rate is only shown as a hint.
+  const [amount, setAmount] = useState('');
+  const [typeId, setTypeId] = useState<number | null>(defaults.donationTypeId ?? null);
   const [donor, setDonor] = useState('');
   const [description, setDescription] = useState(isItem ? '' : (defaults.description ?? ''));
   const [photoPath, setPhotoPath] = useState<string | null>(null);
@@ -247,6 +260,11 @@ function DonationForm({
         <Field label={amountLabel.toUpperCase()}>
           <AppInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" style={{ fontSize: 22 }} />
         </Field>
+        {!isItem && defaults.amount != null ? (
+          <AppText variant="small" tone="muted">
+            Standard rate for this session: {money(defaults.amount)}. Type the amount the donor gave.
+          </AppText>
+        ) : null}
         {isCheck ? (
           <Field label="CHECK NUMBER (REQUIRED)">
             <AppInput
@@ -262,7 +280,7 @@ function DonationForm({
         ) : null}
         {types.length > 0 ? (
           <Field label="DONATION TYPE">
-            <Dropdown title="Donation type" value={typeId} options={types.map((t) => ({ value: t.id, label: t.DonationType }))} onChange={setTypeId} />
+            <Dropdown title="Donation type" value={typeId} placeholder="Choose the donation type" options={types.map((t) => ({ value: t.id, label: t.DonationType }))} onChange={setTypeId} />
           </Field>
         ) : (
           <Notice tone="error" message="Your council has no donation types yet, so donations cannot be recorded. A council admin adds them." />
@@ -390,7 +408,7 @@ function DonateScreenBody() {
               </AppText>
               {session.defaults.amount != null || session.defaults.description ? (
                 <AppText variant="small" tone="muted">
-                  Defaults: {[session.defaults.amount != null ? money(session.defaults.amount) : null, session.defaults.donationTypeId ? typeName.get(session.defaults.donationTypeId) : null, session.defaults.description]
+                  Session setup: {[session.defaults.amount != null ? money(session.defaults.amount) : null, session.defaults.donationTypeId ? typeName.get(session.defaults.donationTypeId) : null, session.defaults.description]
                     .filter(Boolean)
                     .join(' · ')}
                 </AppText>
