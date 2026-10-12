@@ -10,6 +10,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: '#002855' };
 
+// The portal frame every page shares (Providers -> Shell): navy header, the workspace tab row of Home and the Officer
+// Desks (Sprint 7J Extension 2, WorkspaceTabs), the left sidebar and the page.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">

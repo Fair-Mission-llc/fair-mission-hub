@@ -3225,3 +3225,12 @@ GO
 -- expense queues, roster import and inactivity sweep; the tab a browser opened last is kept in that browser only. The
 -- phone database version moves to 71 with the shared package.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 7J Extension 2: GLOBAL WORKSPACE TABS AND ROOT REDIRECT (schema version 72)
+--
+-- No table changes. The portal's Home and Officer Desk tabs leave the /dashboard page and sit in the page frame under
+-- the header on every page, for every reader who may open /dashboard; one click returns to /dashboard#<desk>. The
+-- portal root (/) opens /dashboard after sign-in, or the member hub for members whose seat does not open it. The phone
+-- database version moves to 72.
+-- =========================================================================

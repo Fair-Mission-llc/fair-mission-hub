@@ -1,16 +1,18 @@
 'use client';
 // The portal frame: navy header (logo, the calling council's number and name, the Messaging menu and Help shortcut, the alert bell, and the member menu with
 // the avatar that opens My Profile), the navy left Sidebar (Sidebar.tsx, Sprint 5Z-10) and a white content area. Nothing renders behind the sign-in gate.
+// Sprint 7J Extension 2: under the header, the workspace tab row (WorkspaceTabs.tsx) of Home and the Officer Desks.
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { councilLabel, countUnreadMessages, describeError, isFraternalTenant, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
+import { councilLabel, countUnreadMessages, describeError, isFraternalTenant, portalAreas, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
 import { AlertBell } from '@/components/AlertBell';
 import { MemberAvatar } from '@/components/MemberAvatar';
 import { AccessRequestForm, RemoteAssistButton, ViewAsBanner } from '@/components/PlatformAccessParts';
 import { NAV, Sidebar } from '@/components/Sidebar';
 import { Button, cx, Field, Input, Notice, PasswordInput } from '@/components/ui';
+import { WorkspaceTabs } from '@/components/WorkspaceTabs';
 import { useSession } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -467,6 +469,8 @@ function Frame({ children }: { children: ReactNode }) {
         <AlertBell />
         <MemberMenu />
       </header>
+      {/* Sprint 7J Extension 2: Home and the reader's Officer Desks, on every page for those who may open /dashboard. */}
+      {featuresLoaded && portalAreas(user, features, tenantType).includes('dashboard') ? <WorkspaceTabs user={user} /> : null}
       <ViewAsBanner />
       <div className="flex flex-1">
         <Sidebar user={user} pathname={pathname} features={features} tenant={tenantType} />

@@ -9,6 +9,7 @@ import {
   dashboardTabFromAnchor,
   dashboardTabsFor,
   feastDayTracker,
+  portalAreas,
   todaysAgenda,
   type CalendarEntry,
   type NotificationLog,
@@ -123,7 +124,7 @@ describe('Sprint 7J screens', () => {
   it('turns /dashboard into the tabbed cockpit and keeps the Executive Summary on Home', () => {
     const page = read('apps/web/app/dashboard/page.tsx');
     expect(page).toContain('dashboardTabsFor(user, scope.councilId)');
-    expect(page).toContain('<Tabs tabs={tabs}');
+    expect(page).toContain('useDashboardTab(tabs)');
     expect(page).toContain('<HomeWidgets');
     expect(page).toContain('<ExecutiveSummary councilId={scope.councilId} />');
     for (const desk of ['<GrandKnightDesk', '<FinancialSecretaryDesk', '<TreasurerDesk', '<MemberDesk']) expect(page).toContain(desk);
@@ -142,5 +143,35 @@ describe('Sprint 7J screens', () => {
 
   it('leaves the left sidebar intact', () => {
     expect(read('packages/shared/src/permissions.ts')).toContain("items: ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']");
+  });
+});
+
+describe('Sprint 7J Extension 2 global workspace tabs and root redirect', () => {
+  it('moves the phone database to 72 and records the change', () => {
+    expect(read('Schema.sql')).toContain('(schema version 72)');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[2-9]|[8-9]\d);/);
+    expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 72 | 7J Ext 2 |');
+  });
+
+  it('renders the tab row in the portal frame for dashboard readers, not on the dashboard page', () => {
+    const shell = read('apps/web/components/Shell.tsx');
+    expect(shell).toContain("portalAreas(user, features, tenantType).includes('dashboard') ? <WorkspaceTabs user={user} />");
+    expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<Tabs');
+    const tabs = read('apps/web/components/WorkspaceTabs.tsx');
+    expect(tabs).toContain('dashboardTabsFor(user, user.councilId)');
+    expect(tabs).toContain('href={`/dashboard#${tab.anchor}`}');
+    expect(tabs).toMatch(/sticky top-0/);
+  });
+
+  it('sends the portal root to /dashboard, or the member hub when the seat lacks it', () => {
+    const root = read('apps/web/app/page.tsx');
+    expect(root).toContain("redirect(portalAreas(user, features, tenantType).includes('dashboard') ? '/dashboard' : '/member-actions')");
+  });
+
+  it('gives plain members no dashboard, so they stay on the member hub', () => {
+    const plain = { memberId: 1, councilId: 1, memberType: 'Member' as const, isOfficer: false };
+    const officer = { ...plain, isOfficer: true, roles: ['Grand Knight'] };
+    expect(portalAreas(plain)).not.toContain('dashboard');
+    expect(portalAreas(officer)).toContain('dashboard');
   });
 });

@@ -36,7 +36,10 @@
 // (written orders, Excel roster imports and the inactivity sweep), the Treasurer Desk (Ledger Line Coder queue) and the
 // Member Desk. Each tab has a URL anchor (/dashboard#treasurer), and the last tab opened is remembered in this browser.
 // The left sidebar is unchanged and still reaches every desk page.
-import { useEffect, useState, type ReactNode } from 'react';
+//
+// Sprint 7J Extension 2: the tab row moved into the portal frame (WorkspaceTabs in Shell.tsx), so it stays under the
+// header on every page; this page only renders the tab the anchor (or this browser's last tab) names.
+import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
   canReviewBudgetPerformance,
@@ -44,14 +47,12 @@ import {
   canViewExecutiveAudits,
   currentFraternalYear,
   councilWideSettings,
-  dashboardTabFromAnchor,
   dashboardTabsFor,
   formatShiftWhen,
   hoursReminderCadence,
   hoursRemindersDue,
   isFraternalTenant,
   NO_SHOW_AUDIT_MONTHS,
-  type DashboardTabId,
   type MonthlySummary,
 } from '@kofc/shared';
 import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetParts';
@@ -62,7 +63,8 @@ import { MissionTracking } from '@/components/MissionTracking';
 import { InboundMailCenter } from '@/components/PlatformAccessParts';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
 import { FraternalRoadmap } from '@/components/RoadmapParts';
-import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
+import { useDashboardTab } from '@/components/WorkspaceTabs';
+import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -268,50 +270,21 @@ function AwaitingHours({ councilId }: { councilId: number }) {
   );
 }
 
-/** This browser's last dashboard tab (a per-viewer convenience; the page works without it). */
-const LAST_TAB_KEY = 'kofc.dashboard.tab';
-
-function readLastTab(): string | null {
-  try {
-    return window.localStorage.getItem(LAST_TAB_KEY);
-  } catch {
-    return null;
-  }
-}
-
 function Dashboard() {
   const user = useUser();
   const flags = useFeatureFlags();
   const tenantType = useTenantType();
   const scope = useCouncilScope();
   const tabs = dashboardTabsFor(user, scope.councilId);
-  const [tab, setTab] = useState<DashboardTabId>('home');
-  // The URL anchor wins; without one, the tab this browser opened last. A tab the reader lacks falls back to Home.
-  useEffect(() => {
-    const pick = () => setTab(dashboardTabFromAnchor(window.location.hash || readLastTab(), dashboardTabsFor(user, scope.councilId)));
-    pick();
-    window.addEventListener('hashchange', pick);
-    return () => window.removeEventListener('hashchange', pick);
-  }, [user, scope.councilId]);
-  const shown = tabs.some((t) => t.id === tab) ? tab : 'home';
-  const choose = (id: DashboardTabId) => {
-    setTab(id);
-    const anchor = tabs.find((t) => t.id === id)?.anchor ?? 'home';
-    try {
-      window.localStorage.setItem(LAST_TAB_KEY, anchor);
-    } catch {
-      // Storage blocked: the tab still opens, it is just not remembered.
-    }
-    window.history.replaceState(null, '', `#${anchor}`);
-  };
+  // Sprint 7J Extension 2: the tab row lives in the portal frame (WorkspaceTabs); the page shows the tab it opened.
+  const shown = useDashboardTab(tabs);
   // The verse and the feast tracker are Faith Center content, a Knights of Columbus extension.
   const faithOn = flags.feature_faith_center && isFraternalTenant(tenantType);
 
   return (
     <>
       <PageTitle actions={<CouncilSelect scope={scope} />}>Dashboard</PageTitle>
-      <Tabs tabs={tabs} value={shown} onChange={choose} label="Dashboard tabs" idPrefix="dashboard" />
-      <div id="dashboard-panel" role="tabpanel" aria-labelledby={`dashboard-tab-${shown}`} className="mt-4">
+      <div id="dashboard-panel" aria-label={tabs.find((t) => t.id === shown)?.label ?? 'Home'} className="mt-4">
         {shown === 'home' ? (
           <div className="flex flex-col gap-6">
             <HomeWidgets user={user} councilId={scope.councilId} faithOn={faithOn} />
