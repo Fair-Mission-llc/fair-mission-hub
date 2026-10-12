@@ -29,7 +29,8 @@
 16. [Council Wide Settings and platform settings](#16-council-wide-settings-and-platform-settings)
 17. [Access requests, check payments, asset photos, impersonation and remote help](#17-access-requests-check-payments-asset-photos-impersonation-and-remote-help)
 18. [Annual roadmap, meeting check-in and meeting photos](#18-annual-roadmap-meeting-check-in-and-meeting-photos)
-19. [Appendix: QR code files](#appendix-qr-code-files)
+19. [The tabbed dashboard and the Officer Desks](#19-the-tabbed-dashboard-and-the-officer-desks)
+20. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -2431,6 +2432,184 @@ When the location check fails, the phone asks for the 4-digit **meeting PIN**. T
 | The photo is gone after you reload the page. | The upload was not filed in Drive: the uploader is not an Admin, or the council's Drive is off. | Ask an Admin to upload the photo. Turn on Drive in the **Credentials Vault**. |
 | *"Google Drive did not accept the file."* | Drive refused the upload. | Try again later. |
 | Members' own photos are not in the panel. | A member's check-in photo stays on the member's phone. | Ask the member to send the photo to an Admin. |
+
+---
+
+## 19. The tabbed dashboard and the Officer Desks
+
+### 19.1 Concept: the tabbed dashboard
+
+The **Executive Dashboard** opens as a page with tabs. The page title reads **Dashboard**. A row of tabs sits under the title.
+
+- The **Home** tab is the first tab. Every reader of the dashboard gets the **Home** tab.
+- The Officer Desks follow the **Home** tab. Each desk collects the work of one officer seat on one screen.
+- The **Member Desk** is the last tab. Every reader of the dashboard gets the **Member Desk**.
+
+The **Home** tab shows four widgets at the top. The full **Executive Summary** follows the widgets. The **Executive Summary** keeps every card from earlier sprints: the **Inbound Council Mail Center**, the **🚨 Volunteer Time Quarantine Desk**, the **Annual Fraternal Roadmap**, the scorecards, the budget gauges and the **Executive audits**. Earlier sections of this guide name the **Executive Dashboard** as a start point. For those tasks, open the **Home** tab.
+
+| Widget on the Home tab | What the widget shows |
+| --- | --- |
+| **Bible Verse of the Day** | One short verse from the New American Bible, Revised Edition (NABRE). The verse changes each day. |
+| **Live Actionable Reminders** | Expense sheets that wait for your signature, then your unread alerts. High-priority lines come first. The list shows up to 8 lines and refreshes every minute. |
+| **Liturgical Feast Day Tracker** | Today's feast or season, and the feasts and holy days of the next 30 days. A Holy Day of Obligation shows a crimson badge. |
+| **Today's Event Agenda** | Every council event and meeting on today's date. All-day events come first. Meetings follow by start time. |
+
+The **Bible Verse of the Day** and the **Liturgical Feast Day Tracker** show only while the council's **Faith Center** module is on. A white-label organization does not see the two faith widgets.
+
+The left sidebar does not change. Every desk page stays in the sidebar. Use the sidebar when you need a page that the tabs do not show.
+
+### 19.2 Concept: the Officer Desks
+
+An Officer Desk is a summary of one physical desk. Each desk shows the count of sheets that wait, and the oldest 6 sheets in a grid. Each desk links to its full desk page. You sign on the full desk page. The tabs never sign, code or release a sheet.
+
+The portal shows a desk tab only to a reader who may open the full desk page.
+
+| Tab | Who gets the tab | What the tab shows | Full desk page |
+| --- | --- | --- | --- |
+| **Grand Knight Desk** | The council's Grand Knight (GK), the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the Financial Secretary's order and the Treasurer's coding, and wait for the final release. A link to the disbursement vault. | Sidebar → Finances → **GK Expense Authorize** |
+| **Financial Secretary Desk** | The council's Financial Secretary (FS), the council's Admins and Super Admins | The **Written-order queue**, the count of all sheets in the leadership queue, and the **Excel imports and roster sweeps** card. | Sidebar → Finances → **FS Expense Audit** |
+| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that carry the FS order and wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
+| **Member Desk** | Every reader of the dashboard | **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Shared Member Center** |
+
+A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
+
+Each tab has its own web address. The address is the dashboard address with the tab name after a `#` sign:
+
+| Tab | Address |
+| --- | --- |
+| **Home** | `/dashboard#home` |
+| **Grand Knight Desk** | `/dashboard#grand-knight` |
+| **Financial Secretary Desk** | `/dashboard#financial-secretary` |
+| **Treasurer Desk** | `/dashboard#treasurer` |
+| **Member Desk** | `/dashboard#member` |
+
+Save a desk address as a browser bookmark to open the desk directly. The browser also remembers the last tab you opened. The dashboard opens on that tab the next time. A tab you cannot open falls back to **Home**.
+
+### 19.3 Read the Home tab widgets
+
+> **Who can do this:** the council's Admins and officers, and Super Admins. Other members do not see the **Dashboard**.
+
+**Goal:** See today's verse, feasts, events and the work that waits for you.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Home**.
+
+**Steps:**
+1. Select the **Home** tab. The **Home** tab is selected when the page opens for the first time.
+2. Read the **Bible Verse of the Day** card.
+3. Read the **Live Actionable Reminders** card. A line with a link needs your signature.
+4. Select the link on a reminder line. The full desk page opens.
+5. Read the **Liturgical Feast Day Tracker** card. The pill on each line says how many days away the feast is.
+6. Read the **Today's Event Agenda** grid. Select an event or meeting name to open the council calendar.
+7. Scroll down to the **Executive Summary** for the month's scorecards and audits.
+
+**Expected result:** The four widgets show today's content. The **Executive Summary** shows the current month.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The verse and the feast tracker do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
+| *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
+| A reminder stays after you read the alert. | The stream refreshes once each minute. | Wait 1 minute, or reload the page. |
+| *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
+
+### 19.4 Release vouchers from the Grand Knight Desk
+
+> **Who can do this:** the council's Grand Knight and Super Admins sign. The council's Admins read the desk.
+> **Warning:** the final release sets the sheet to **Approved** and sends the sheet to payment. You cannot undo the release.
+
+**Goal:** Find the sheets that wait for the final release, and release them.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Grand Knight Desk**.
+
+**Steps:**
+1. Select the **Grand Knight Desk** tab.
+2. Read the **Vouchers waiting for release** count.
+3. Read the **Voucher Release queue** grid. The **Signed so far** column names the FS and the Treasurer.
+4. Select **Release vouchers on the full desk**. The **GK Expense Authorize** page opens.
+5. Select **✍️ Final Release for Payment** on each sheet. You cannot undo the release.
+
+**Expected result:** The released sheets leave the queue. The count on the **Grand Knight Desk** drops when you open the tab again.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **Grand Knight Desk** tab does not show. | You do not hold the Grand Knight seat on this council, and you are not an Admin. | Use the **Home** tab. Ask the Grand Knight to release the sheets. |
+| A sheet shows no release button on the full desk. | You submitted, ordered or coded that sheet (the collusion guard). | Ask a Super Admin to release the sheet. |
+
+### 19.5 Work the Financial Secretary Desk and the roster imports
+
+> **Who can do this:** the council's Financial Secretary and Super Admins sign orders. Only the council's Admins and Super Admins import the roster and run the sweep.
+> **Warning:** the inactivity sweep marks members **Inactive** at once. The roster import sends a welcome email to each new member. You cannot recall an email.
+
+**Goal:** Sign the waiting expense orders, and keep the roster current.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Financial Secretary Desk**.
+
+**Steps:**
+1. Select the **Financial Secretary Desk** tab.
+2. Read the **Sheets waiting for your written order** count.
+3. Select **Verify & sign on the full desk**. The **FS Expense Audit** page opens.
+4. Select **📝 Verify & Sign Expense** on each sheet. Return to the dashboard.
+5. In the **Excel imports and roster sweeps** card, select **Download the Excel roster template**.
+6. Fill in the template. Save the **Roster** sheet as CSV.
+7. Select **Supreme roster sync**. Load the CSV file on that page. Each new member gets a welcome email.
+8. Admins only: return to the desk. Select **Check for Inactive Members**. The sweep marks members **Inactive** at once.
+
+**Expected result:** The signed sheets move to the Treasurer. The sweep says *"Marked 2 members Inactive."* or *"No member is past the inactivity window."*
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Check for Inactive Members** does not show. | Only Admins run the sweep. | Ask an Admin to run the sweep. |
+| A plain member stays Active after the sweep. | The member logged service inside the council's inactivity window. | No action. Council Wide Settings sets the window (section 16). |
+| The roster file does not load. | The file is not CSV. | Save the **Roster** sheet as CSV, then load the file again. |
+
+### 19.6 Code sheets from the Treasurer Desk
+
+> **Who can do this:** the council's Treasurer and Super Admins code sheets. The council's Admins read the desk.
+
+**Goal:** Find the sheets that wait for a budget line and a ledger account, and code them.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Treasurer Desk**.
+
+**Steps:**
+1. Select the **Treasurer Desk** tab.
+2. Read the **Sheets waiting for ledger coding** count.
+3. Read the **Ledger Line Coder queue** grid. The **Signed so far** column names the FS who ordered each sheet.
+4. Select **Categorize & lock on the full desk**. The **Treasurer Ledger Audit Desk** opens.
+5. Pick the budget line and the ledger account for each sheet.
+6. Select **🏷️ Categorize & Lock Expense**. The sheet goes to the Grand Knight.
+
+**Expected result:** The coded sheets leave the queue. The sheets show on the **Grand Knight Desk**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **Treasurer Desk** tab does not show. | You do not hold the Treasurer seat on this council, and you are not an Admin. | Ask the Treasurer to code the sheets. |
+| **Log its concluded revenue** does not show. | Only the Treasurer and Super Admins log concluded revenue. | Ask the Treasurer to log the revenue. |
+
+### 19.7 Check your own work on the Member Desk
+
+> **Who can do this:** every reader of the dashboard.
+
+**Goal:** See your own unpaid expense sheets and your shifts for the next 30 days.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Member Desk**.
+
+**Steps:**
+1. Select the **Member Desk** tab.
+2. Read **My open expense sheets**. The status pill shows where each sheet stands.
+3. Select **Open my expenses** to edit a draft or submit a sheet.
+4. Read **My shifts: next 30 days**.
+5. Select **Open the Member Center** for the council's service record and your own impact card.
+
+**Expected result:** The desk lists each unpaid sheet and each coming shift.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A paid sheet does not show. | The desk lists only sheets that are not **Reimbursed**. | Open **My Expense Reports** to see paid sheets. |
+| A shift after 30 days does not show. | The desk lists the next 30 days only. | Open the council calendar. |
 
 ---
 

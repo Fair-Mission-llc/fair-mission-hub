@@ -28,7 +28,15 @@
 // Under the desks (Sprint 7G) every reader gets the Annual Fraternal Roadmap (RoadmapParts): Nominations, Elections and
 // the July 10 Budget Lock for the council's current cycle, with overdue steps pushed to council leadership, and the
 // Three-Signature Expense Flow tree with the live count waiting at each signature.
-import { useState, type ReactNode } from 'react';
+//
+// Sprint 7J: the page is a tabbed cockpit (officer-desks.ts dashboardTabsFor). Home leads with four widgets for every
+// reader - the Bible Verse of the Day, the Live Actionable Reminders Stream, the Liturgical Feast Day Tracker and
+// Today's Event Agenda (DashboardDesks) - and keeps the whole Executive Summary under them. Beside it, each reader gets
+// the Officer Desks their seat clears: the Grand Knight Desk (Voucher Release queue), the Financial Secretary Desk
+// (written orders, Excel roster imports and the inactivity sweep), the Treasurer Desk (Ledger Line Coder queue) and the
+// Member Desk. Each tab has a URL anchor (/dashboard#treasurer), and the last tab opened is remembered in this browser.
+// The left sidebar is unchanged and still reaches every desk page.
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
   canReviewBudgetPerformance,
@@ -36,22 +44,27 @@ import {
   canViewExecutiveAudits,
   currentFraternalYear,
   councilWideSettings,
+  dashboardTabFromAnchor,
+  dashboardTabsFor,
   formatShiftWhen,
   hoursReminderCadence,
   hoursRemindersDue,
+  isFraternalTenant,
   NO_SHOW_AUDIT_MONTHS,
+  type DashboardTabId,
   type MonthlySummary,
 } from '@kofc/shared';
 import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetParts';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
+import { FinancialSecretaryDesk, GrandKnightDesk, HomeWidgets, MemberDesk, TreasurerDesk } from '@/components/DashboardDesks';
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
 import { InboundMailCenter } from '@/components/PlatformAccessParts';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
 import { FraternalRoadmap } from '@/components/RoadmapParts';
-import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
+import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
-import { useFeatureFlags, useUser } from '@/lib/session';
+import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -255,62 +268,123 @@ function AwaitingHours({ councilId }: { councilId: number }) {
   );
 }
 
+/** This browser's last dashboard tab (a per-viewer convenience; the page works without it). */
+const LAST_TAB_KEY = 'kofc.dashboard.tab';
+
+function readLastTab(): string | null {
+  try {
+    return window.localStorage.getItem(LAST_TAB_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function Dashboard() {
   const user = useUser();
   const flags = useFeatureFlags();
+  const tenantType = useTenantType();
   const scope = useCouncilScope();
+  const tabs = dashboardTabsFor(user, scope.councilId);
+  const [tab, setTab] = useState<DashboardTabId>('home');
+  // The URL anchor wins; without one, the tab this browser opened last. A tab the reader lacks falls back to Home.
+  useEffect(() => {
+    const pick = () => setTab(dashboardTabFromAnchor(window.location.hash || readLastTab(), dashboardTabsFor(user, scope.councilId)));
+    pick();
+    window.addEventListener('hashchange', pick);
+    return () => window.removeEventListener('hashchange', pick);
+  }, [user, scope.councilId]);
+  const shown = tabs.some((t) => t.id === tab) ? tab : 'home';
+  const choose = (id: DashboardTabId) => {
+    setTab(id);
+    const anchor = tabs.find((t) => t.id === id)?.anchor ?? 'home';
+    try {
+      window.localStorage.setItem(LAST_TAB_KEY, anchor);
+    } catch {
+      // Storage blocked: the tab still opens, it is just not remembered.
+    }
+    window.history.replaceState(null, '', `#${anchor}`);
+  };
+  // The verse and the feast tracker are Faith Center content, a Knights of Columbus extension.
+  const faithOn = flags.feature_faith_center && isFraternalTenant(tenantType);
+
+  return (
+    <>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>Dashboard</PageTitle>
+      <Tabs tabs={tabs} value={shown} onChange={choose} label="Dashboard tabs" idPrefix="dashboard" />
+      <div id="dashboard-panel" role="tabpanel" aria-labelledby={`dashboard-tab-${shown}`} className="mt-4">
+        {shown === 'home' ? (
+          <div className="flex flex-col gap-6">
+            <HomeWidgets user={user} councilId={scope.councilId} faithOn={faithOn} />
+            <ExecutiveSummary councilId={scope.councilId} />
+          </div>
+        ) : shown === 'grand-knight' ? (
+          <GrandKnightDesk user={user} councilId={scope.councilId} />
+        ) : shown === 'financial-secretary' ? (
+          <FinancialSecretaryDesk user={user} councilId={scope.councilId} />
+        ) : shown === 'treasurer' ? (
+          <TreasurerDesk user={user} councilId={scope.councilId} />
+        ) : (
+          <MemberDesk user={user} />
+        )}
+      </div>
+    </>
+  );
+}
+
+/** The Executive Summary (Sprints 5Z-2.5 to 7G), the lower half of the Home tab since Sprint 7J. */
+function ExecutiveSummary({ councilId }: { councilId: number }) {
+  const user = useUser();
+  const flags = useFeatureFlags();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
-  const summary = useLoad(() => db.reports.monthlySummary(scope.councilId, year, month), [scope.councilId, year, month]);
+  const summary = useLoad(() => db.reports.monthlySummary(councilId, year, month), [councilId, year, month]);
   const years = Array.from({ length: 7 }, (_, i) => now.getFullYear() + 1 - i);
   const s = summary.data;
 
   return (
-    <>
-      <PageTitle
-        actions={
-          <div className="flex items-end gap-3">
-            <Field label="Month" className="w-40">
-              {(id) => (
-                <Select id={id} value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-                  {MONTHS.map((name, i) => (
-                    <option key={name} value={i + 1}>
-                      {name}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-            <Field label="Year" className="w-28">
-              {(id) => (
-                <Select id={id} value={year} onChange={(e) => setYear(Number(e.target.value))}>
-                  {years.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-            <CouncilSelect scope={scope} />
-          </div>
-        }
-      >
-        Executive Summary: {MONTHS[month - 1]} {year}
-      </PageTitle>
+    <section aria-labelledby="executive-summary-title">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b-2 border-navy pb-2">
+        <h2 id="executive-summary-title" className="font-serif text-2xl font-bold">
+          Executive Summary: {MONTHS[month - 1]} {year}
+        </h2>
+        <div className="flex items-end gap-3">
+          <Field label="Month" className="w-40">
+            {(id) => (
+              <Select id={id} value={month} onChange={(e) => setMonth(Number(e.target.value))}>
+                {MONTHS.map((name, i) => (
+                  <option key={name} value={i + 1}>
+                    {name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          <Field label="Year" className="w-28">
+            {(id) => (
+              <Select id={id} value={year} onChange={(e) => setYear(Number(e.target.value))}>
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        </div>
+      </div>
       {user.memberType === 'Super Admin' ? (
         <div className="mb-4">
           <InboundMailCenter />
         </div>
       ) : null}
-      {flags.feature_volunteer_quarantine && canReviewVolunteerQuarantine(user, scope.councilId) ? (
+      {flags.feature_volunteer_quarantine && canReviewVolunteerQuarantine(user, councilId) ? (
         <div className="mb-4">
-          <QuarantineDesk actorId={user.memberId} councilId={scope.councilId} />
+          <QuarantineDesk actorId={user.memberId} councilId={councilId} />
         </div>
       ) : null}
       <div className="mb-4">
-        <FraternalRoadmap user={user} councilId={scope.councilId} />
+        <FraternalRoadmap user={user} councilId={councilId} />
       </div>
       {summary.error ? <Notice tone="error">{summary.error}</Notice> : null}
       {!s ? (
@@ -318,11 +392,11 @@ function Dashboard() {
       ) : (
         <div className="flex flex-col gap-4">
           <Scorecards s={s} />
-          <EngagementCards councilId={scope.councilId} year={year} month={month} monthLabel={`${MONTHS[month - 1]} ${year}`} summary={s} />
-          {canReviewBudgetPerformance(user, scope.councilId) ? (
+          <EngagementCards councilId={councilId} year={year} month={month} monthLabel={`${MONTHS[month - 1]} ${year}`} summary={s} />
+          {canReviewBudgetPerformance(user, councilId) ? (
             <>
-              <MissionTracking actorId={user.memberId} councilId={scope.councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
-              <BudgetTracking actorId={user.memberId} councilId={scope.councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
+              <MissionTracking actorId={user.memberId} councilId={councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
+              <BudgetTracking actorId={user.memberId} councilId={councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
             </>
           ) : null}
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[24rem_minmax(0,1fr)]">
@@ -372,16 +446,16 @@ function Dashboard() {
           </div>
         </div>
       )}
-      {canViewExecutiveAudits(user, scope.councilId) ? (
+      {canViewExecutiveAudits(user, councilId) ? (
         <div className="mt-6 flex flex-col gap-4">
           <h2 className="font-serif text-xl font-bold">Executive audits</h2>
           <div className="grid grid-cols-1 items-start gap-4 2xl:grid-cols-2">
-            <NoShowAudit councilId={scope.councilId} />
-            <AwaitingHours councilId={scope.councilId} />
+            <NoShowAudit councilId={councilId} />
+            <AwaitingHours councilId={councilId} />
           </div>
         </div>
       ) : null}
-    </>
+    </section>
   );
 }
 

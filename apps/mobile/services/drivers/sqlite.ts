@@ -798,8 +798,9 @@ const DB_NAME = 'kofc.db';
  *     the name up; Council.shift_signup_lock_hours now sets the Donate screen's gate window (Sprint 7H).
  * 70: no table change - every St. Jude place renamed St. Mary's Cathedral, and the seven Conference Room Pilot personas
  *     with their pending expense sheets, held time entries and the Parish Parking Event (Phase 7I).
+ * 71: no table change - the portal dashboard becomes tabbed Home and Officer Desks (Sprint 7J); phones rebuild in step.
  */
-const SCHEMA_VERSION = 70;
+const SCHEMA_VERSION = 71;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

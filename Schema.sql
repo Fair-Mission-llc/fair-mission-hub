@@ -3215,3 +3215,13 @@ GO
 -- review (VolunteerQuarantine 1-2). Meeting 1's quorum base moves from 28 to 35 Active members. The phone database
 -- version moves to 70, so phones rebuild with the new seed.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 7J: TABBED DASHBOARD COCKPIT AND OFFICER DESKS (schema version 71)
+--
+-- No table changes. The portal's /dashboard becomes a tabbed workspace: a Home tab (Bible Verse of the Day, Live
+-- Actionable Reminders, Liturgical Feast Day Tracker, Today's Event Agenda, then the Executive Summary) and the Officer
+-- Desks each reader's seat clears (Grand Knight, Financial Secretary, Treasurer, Member). The desks read the existing
+-- expense queues, roster import and inactivity sweep; the tab a browser opened last is kept in that browser only. The
+-- phone database version moves to 71 with the shared package.
+-- =========================================================================
