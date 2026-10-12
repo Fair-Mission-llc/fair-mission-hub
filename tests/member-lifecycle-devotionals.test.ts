@@ -366,7 +366,8 @@ describe.each(drivers)('Sprint 7A services ($name driver)', ({ make }) => {
 
 describe('Sprint 7A screens', () => {
   it('puts the engagement row on the Executive Summary dashboard', () => {
-    const dashboard = read('apps/web/app/dashboard/page.tsx');
+    // Sprint 8D/8E: the Executive Summary is its own page.
+    const dashboard = read('apps/web/app/executive-dashboard/page.tsx');
     expect(dashboard).toContain('<EngagementCards');
     const parts = read('apps/web/components/EngagementParts.tsx');
     expect(parts).toContain('Top 5 Volunteers Leaderboard');

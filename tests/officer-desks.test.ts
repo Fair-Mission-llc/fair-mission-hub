@@ -131,8 +131,8 @@ describe('Sprint 7J screens', () => {
     expect(page).toContain('dashboardTabsFor(user, scope.councilId)');
     expect(page).toContain('useDashboardTab(tabs)');
     expect(page).toContain('<HomeWidgets');
-    // Sprint 8C: the Executive Summary sits in Home's own frame again (it was the Reports Desk in Sprint 8A).
-    expect(page).toContain('<ExecutiveSummary councilId={councilId} />');
+    // Sprint 8D/8E: the Executive Summary left Home for its own page (Home's frame in Sprint 8C, the Reports Desk in 8A).
+    expect(read('apps/web/app/executive-dashboard/page.tsx')).toContain('<ExecutiveSummary councilId={scope.councilId} />');
     for (const desk of ['<GrandKnightDesk', '<FinancialSecretaryDesk', '<TreasurerDesk', '<MemberDesk']) expect(page).toContain(desk);
   });
 
@@ -207,13 +207,16 @@ describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
     expect(landingRouteFor({ ...plain, memberType: 'Super Admin' })).toBe('/dashboard');
   });
 
-  it('keeps queues and forms off Home: a roadmap ribbon, status badges, widgets and the self-scrolling Executive Summary frame', () => {
+  it('keeps queues and forms off Home: only the universal widgets, with the badges and the summary elsewhere', () => {
     const page = read('apps/web/app/dashboard/page.tsx');
     const home = page.slice(page.indexOf('function HomeDesk('), page.indexOf('function Dashboard('));
-    // Sprint 8C: the Executive Summary (with its compact tiles) merged back into Home, in a frame that scrolls inside itself.
-    for (const part of ['<RoadmapRibbon', '<DeskStatusBadges', '<HomeWidgets', '<ExecutiveSummary', 'flex-1 overflow-y-auto']) expect(home).toContain(part);
-    for (const gone of ['<QuarantineDesk', '<InboundMailCenter', '<AwaitingHours']) expect(home).not.toContain(gone);
-    expect(page).toContain('<Scorecards s={s} compact />');
+    // Sprint 8D/8E: Home is the widget grid alone; the ribbon and the Executive Summary have their own page and the
+    // status badges lead the Oversight Desk.
+    expect(home).toContain('<HomeWidgets');
+    for (const gone of ['<RoadmapRibbon', '<DeskStatusBadges', '<ExecutiveSummary', '<QuarantineDesk', '<InboundMailCenter', '<AwaitingHours']) expect(home).not.toContain(gone);
+    const summary = read('apps/web/app/executive-dashboard/page.tsx');
+    expect(summary).toContain('<RoadmapRibbon');
+    expect(summary).toContain('<Scorecards s={s} compact />');
     expect(page).toContain("shown === 'oversight' ? (");
     expect(page).toContain('<OversightDesk user={user} councilId={scope.councilId} />');
     expect(page).not.toContain("shown === 'reports'");

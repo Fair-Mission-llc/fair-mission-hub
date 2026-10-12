@@ -15,7 +15,7 @@ import {
   DASHBOARD_TABS,
   dashboardTabsFor,
   DESK_FOCUS_TARGETS,
-  EXECUTIVE_DASHBOARD_HOME_HREF,
+  EXECUTIVE_DASHBOARD_HREF,
   expenseCounterSignBlock,
   GRAND_KNIGHT_AUTHORITY_ROLE_NAMES,
   holdsGrandKnightAuthority,
@@ -116,24 +116,23 @@ describe('the Reports Desk merged into Home', () => {
     }
   });
 
-  it('renders the Executive Summary - charts, ledger table and budget tracking - inside Home in a self-scrolling frame', () => {
-    const page = read('apps/web/app/dashboard/page.tsx');
-    const home = page.slice(page.indexOf('function HomeDesk('), page.indexOf('function Dashboard('));
-    expect(home).toContain('<ExecutiveSummary councilId={councilId} />');
-    expect(home).toContain('min-h-[18rem] flex-1 overflow-y-auto');
-    expect(home).toContain('lg:h-[calc(100dvh-14rem)]');
+  // Sprint 8D/8E moved the Executive Summary off Home onto its own page (/executive-dashboard).
+  it('keeps the Executive Summary - charts, ledger table and budget tracking - whole on the Executive Dashboard page', () => {
+    const page = read('apps/web/app/executive-dashboard/page.tsx');
+    expect(page).toContain('<ExecutiveSummary councilId={scope.councilId} />');
+    expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<ExecutiveSummary');
     const summary = page.slice(page.indexOf('function ExecutiveSummary('));
     for (const part of ['<Scorecards s={s} compact />', '<EngagementCards', '<BudgetTracking', '<MissionTracking', 'title="Financial ledger"', '<NoShowAudit']) expect(summary).toContain(part);
     expect(page).not.toContain('<AwaitingHours');
     expect(page).not.toContain("shown === 'reports'");
   });
 
-  it('makes the sidebar Executive Dashboard link reset the Active Desks to Home', () => {
-    expect(EXECUTIVE_DASHBOARD_HOME_HREF).toBe('/dashboard#home');
+  // Sprint 8D/8E: the link opens the Executive Summary's own page instead of resetting the Active Desks to Home.
+  it('points the sidebar Executive Dashboard link at the Executive Summary page', () => {
+    expect(EXECUTIVE_DASHBOARD_HREF).toBe('/executive-dashboard');
     const sidebar = read('apps/web/components/Sidebar.tsx');
-    expect(sidebar).toContain('href: EXECUTIVE_DASHBOARD_HOME_HREF');
-    expect(sidebar).toContain("if (item === 'dashboard') {");
-    expect(sidebar).toContain('<DeskLink anchor="home" current={current}');
+    expect(sidebar).toContain('href: EXECUTIVE_DASHBOARD_HREF');
+    expect(sidebar).not.toContain('<DeskLink anchor="home"');
   });
 });
 

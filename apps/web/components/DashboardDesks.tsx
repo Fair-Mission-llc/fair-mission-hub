@@ -21,6 +21,11 @@
 // beside the Volunteer Time Quarantine (its own reviewers only) and the Inbound Council Mail Center (global Super Admins
 // only). The Member Desk gains the '🚗 Open Shifts Needing Volunteers' card (sign up in one click) and the '📥 My Charity
 // Requests' card that follows each request the member shepherds through its tracking steps.
+//
+// Sprint 8D/8E: Home holds only the universal cards (HOME_UNIVERSAL_CARDS): the verse, the reminders, the feast tracker,
+// today's agenda, the Open Volunteer Shifts signup grid (the Member Desk card's compact twin, useOpenShiftSignup) and the
+// high-contrast Top 5 Fraternal Volunteers card - the council's Active members with the most hours logged this month
+// (reports.councilEngagement monthlyLeaderboard). The desk status badges move to the top of the Oversight Desk.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -48,6 +53,7 @@ import {
   canViewExecutiveAudits,
   dailyVerse,
   DESK_FOCUS_TARGETS,
+  LEADERBOARD_SIZE,
   hoursReminderCadence,
   hoursRemindersDue,
   isSuperAdmin,
@@ -76,7 +82,7 @@ import { InboundMailCenter, readAccessRequests } from '@/components/PlatformAcce
 import { QuarantineDesk } from '@/components/QuarantineDesk';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { DeskLink, DeskRow } from '@/components/WorkspaceTabs';
-import { formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
+import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { photoName, photoSrc } from '@/lib/media';
 import { useFeatureFlags, useSession } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -90,12 +96,16 @@ const DESK_ROWS = 6;
 
 /**
  * A Home card (Sprint 8A): a navy-ruled title over a fixed-height body. A long list scrolls inside the card, so Home
- * itself fits one screen.
+ * itself fits one screen. The navy tone (Sprint 8D/8E) is the high-contrast honor card: white on navy, gold-edged.
  */
-function HomeCard({ title, actions, children }: { title: string; actions?: ReactNode; children: ReactNode }) {
+function HomeCard({ title, actions, tone = 'white', children }: { title: string; actions?: ReactNode; tone?: 'white' | 'navy'; children: ReactNode }) {
   return (
-    <section aria-label={title} className="flex h-60 min-w-0 flex-col rounded border-2 border-navy bg-white">
-      <header className="flex items-center justify-between gap-2 border-b-2 border-navy px-3 py-1.5">
+    <section
+      aria-label={title}
+      data-surface={tone === 'navy' ? 'navy' : undefined}
+      className={cx('flex h-60 min-w-0 flex-col rounded', tone === 'navy' ? 'border-4 border-gold bg-navy text-white' : 'border-2 border-navy bg-white')}
+    >
+      <header className={cx('flex items-center justify-between gap-2 border-b-2 px-3 py-1.5', tone === 'navy' ? 'border-gold' : 'border-navy')}>
         <h2 className="truncate font-serif text-base font-bold">{title}</h2>
         {actions}
       </header>
@@ -267,15 +277,99 @@ function TodaysAgenda({ councilId, today }: { councilId: number; today: string }
   );
 }
 
-/** The Home tab's widget grid. The verse and the feast tracker come only with the Faith Center and a fraternal tenant. */
+/**
+ * The Open Volunteer Shifts card on Home (Sprint 8D/8E): the Member Desk's short-handed shifts in a compact grid, each
+ * signed up for in one click.
+ */
+function OpenShiftsHomeCard({ user }: { user: SessionUser }) {
+  const { rows, ready, error, busy, message, clearMessage, signUp } = useOpenShiftSignup(user);
+  return (
+    <HomeCard
+      title="Open Volunteer Shifts"
+      actions={
+        <Link href="/member-actions" className="text-xs font-bold underline">
+          All shifts
+        </Link>
+      }
+    >
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      {message ? (
+        <Notice tone={message.tone} onDismiss={clearMessage}>
+          {message.text}
+        </Notice>
+      ) : null}
+      {ready && rows.length === 0 ? <Empty>Every shift in the next {MEMBER_DESK_OPEN_SHIFT_DAYS} days has its volunteers.</Empty> : null}
+      {rows.length > 0 ? (
+        <ul className="flex flex-col gap-1.5" aria-label={`Shifts in the next ${MEMBER_DESK_OPEN_SHIFT_DAYS} days still short of volunteers`}>
+          {rows.map(({ shift, event }) => (
+            <li key={shift.id} className="flex items-center justify-between gap-2 border-b border-line pb-1">
+              <span className="min-w-0">
+                <span className="block truncate font-bold">{event.EventName}</span>
+                <span className="block truncate text-xs">
+                  {formatShiftWhen(shift)} · {shift.ShiftName} ·{' '}
+                  <span className="font-bold text-brand-red">short {Math.max(0, shift.MinNumberVolunteers - shift.NumberVolunteersSignedUp)}</span>
+                </span>
+              </span>
+              <Button size="sm" disabled={busy !== null} onClick={() => void signUp(shift.id, `${shift.ShiftName} (${event.EventName})`)}>
+                {busy === shift.id ? 'Signing up…' : 'Sign up'}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </HomeCard>
+  );
+}
+
+const HONOR_MEDALS = ['🥇', '🥈', '🥉'];
+
+/**
+ * The Top 5 Fraternal Volunteers card on Home (Sprint 8D/8E): the council's Active members with the most hours logged at
+ * its events and activities this month (reports.councilEngagement monthlyLeaderboard), white on navy.
+ */
+function TopVolunteersCard({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const engagement = useLoad(() => db.reports.councilEngagement(user.memberId, councilId, year, month), [user.memberId, councilId, year, month]);
+  const rows = engagement.data?.monthlyLeaderboard ?? [];
+  const monthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return (
+    <HomeCard tone="navy" title={`Top ${LEADERBOARD_SIZE} Fraternal Volunteers`} actions={<span className="text-xs font-bold text-gold">{monthLabel}</span>}>
+      {engagement.error ? <Notice tone="error">{engagement.error}</Notice> : null}
+      {engagement.data && rows.length === 0 ? <p className="text-sm">No member has logged hours this month yet. Be the first!</p> : null}
+      {rows.length > 0 ? (
+        <ol className="flex flex-col gap-1" aria-label={`Top ${LEADERBOARD_SIZE} volunteers of ${monthLabel}`}>
+          {rows.map((l) => (
+            <li key={l.memberId} className="flex items-center gap-2 border-b border-white/20 pb-1">
+              <span className="w-8 text-center text-lg font-bold" aria-label={`Rank ${l.rank}`}>
+                {HONOR_MEDALS[l.rank - 1] ?? `#${l.rank}`}
+              </span>
+              <span className="flex-1 truncate font-bold">{formatPersonName(l.firstName, l.lastName)}</span>
+              <span className="rounded bg-gold px-2 py-0.5 text-sm font-bold text-navy">{formatDecimalHours(l.hours)}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+      <p className="mt-1 text-xs">Hours logged at the council&apos;s events and activities this month.</p>
+    </HomeCard>
+  );
+}
+
+/**
+ * The Home tab's card grid (Sprint 8D/8E: the universal cards, HOME_UNIVERSAL_CARDS, and nothing else) in two rows of
+ * fixed-height cards. The verse and the feast tracker come only with the Faith Center and a fraternal tenant.
+ */
 export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; councilId: number; faithOn: boolean }) {
   const today = toIsoDate(new Date());
   return (
-    <div className={cx('grid grid-cols-1 gap-3 md:grid-cols-2', faithOn ? 'xl:grid-cols-4' : 'xl:grid-cols-2')}>
+    <div className={cx('grid grid-cols-1 gap-3 md:grid-cols-2', faithOn ? 'xl:grid-cols-3' : 'xl:grid-cols-2')}>
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
       <TodaysAgenda councilId={councilId} today={today} />
+      <OpenShiftsHomeCard user={user} />
+      <TopVolunteersCard user={user} councilId={councilId} />
     </div>
   );
 }
@@ -401,8 +495,11 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
   );
 }
 
-/** The Member Desk's '🚗 Open Shifts Needing Volunteers' card (Sprint 8C): the council's short-handed shifts, signed up for in one click. */
-function OpenShiftsCard({ user }: { user: SessionUser }) {
+/**
+ * The short-handed shifts of the member's council over the next 30 days and the one-click sign-up, shared by the Member
+ * Desk card (Sprint 8C) and Home's Open Volunteer Shifts card (Sprint 8D/8E).
+ */
+function useOpenShiftSignup(user: SessionUser) {
   const window30 = signupWindow(new Date());
   const feed = useLoad(
     () => db.events.listShiftFeed({ memberId: user.memberId, councilIds: [user.councilId], ...window30 }),
@@ -426,10 +523,16 @@ function OpenShiftsCard({ user }: { user: SessionUser }) {
     }
   };
 
+  return { rows, ready: Boolean(feed.data), error: feed.error, busy, message, clearMessage: () => setMessage(null), signUp };
+}
+
+/** The Member Desk's '🚗 Open Shifts Needing Volunteers' card (Sprint 8C): the council's short-handed shifts, signed up for in one click. */
+function OpenShiftsCard({ user }: { user: SessionUser }) {
+  const { rows, ready, error, busy, message, clearMessage, signUp } = useOpenShiftSignup(user);
   return (
     <Panel title={`[ 🚗 Open Shifts Needing Volunteers ] (${rows.length})`}>
-      {feed.error ? <Notice tone="error">{feed.error}</Notice> : null}
-      {feed.data && rows.length === 0 ? <Empty>Every shift in the next {MEMBER_DESK_OPEN_SHIFT_DAYS} days has its volunteers.</Empty> : null}
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      {ready && rows.length === 0 ? <Empty>Every shift in the next {MEMBER_DESK_OPEN_SHIFT_DAYS} days has its volunteers.</Empty> : null}
       {rows.length > 0 ? (
         <Table caption={`Shifts in the next ${MEMBER_DESK_OPEN_SHIFT_DAYS} days still short of volunteers`} head={['When', 'Event', 'Shift', 'Short by', '']}>
           {rows.slice(0, DESK_ROWS).map(({ shift, event }) => (
@@ -448,7 +551,7 @@ function OpenShiftsCard({ user }: { user: SessionUser }) {
         </Table>
       ) : null}
       {message ? (
-        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+        <Notice tone={message.tone} onDismiss={clearMessage}>
           {message.text}
         </Notice>
       ) : null}
@@ -621,12 +724,14 @@ function AwaitingHours({ councilId }: { councilId: number }) {
  * The Oversight Desk (Sprint 8A): the Volunteer Time Quarantine Desk for its reviewers (canReviewVolunteerQuarantine) while
  * the council's feature_volunteer_quarantine flag is on, and the Inbound Council Mail Center for global Super Admins only.
  * Sprint 8C: the Shifts Awaiting Hours audit consolidates here for every executive-audit reader (canViewExecutiveAudits).
+ * Sprint 8D/8E: the desk status badges, moved off Home, lead the desk.
  */
 export function OversightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
   const reviewer = canReviewVolunteerQuarantine(user, councilId);
   return (
     <div className="flex flex-col gap-4">
+      <DeskStatusBadges user={user} councilId={councilId} />
       {/* Sprint 8C: the council mail center is locked to global Super Admins - never a council's own Admins or officers. */}
       {isSuperAdmin(user) ? (
         <DeskRow id={DESK_FOCUS_TARGETS.access.rowId} label="Inbound Council Mail Center">
@@ -651,7 +756,7 @@ export function OversightDesk({ user, councilId }: { user: SessionUser; councilI
   );
 }
 
-// ---- Home status badges ------------------------------------------------------------------------------
+// ---- desk status badges ------------------------------------------------------------------------------
 
 interface DeskBadge {
   key: DeskBadgeKey;
@@ -665,7 +770,7 @@ interface DeskBadge {
 const BADGE_ORDER: DeskBadgeKey[] = ['vouchers', 'orders', 'coding', 'minutes', 'quarantine', 'access', 'hours', 'mine'];
 
 /**
- * The Home desk's status badges (Sprint 8A): one compact badge per queue the reader is cleared for - '[ 📋 3 Vouchers
+ * The desk status badges (Sprint 8A on Home; Sprint 8D/8E at the top of the Oversight Desk): one compact badge per queue the reader is cleared for - '[ 📋 3 Vouchers
  * Pending ]' - each opening its Active Desk. A badge with work waiting is filled; an empty queue stays an outline.
  * Sprint 8C: each badge is a click-through anchor to the workspace row it counts (DESK_FOCUS_TARGETS); the hours badge opens
  * the Oversight Desk, and the access-request badge is a global Super Admin's only.

@@ -815,8 +815,11 @@ const DB_NAME = 'kofc.db';
  * 75: no table change - the Shared Member Center is renamed the Council Dashboard, the Reports Desk merges into the
  *     Executive Dashboard's Home and the Deputy Grand Knight takes every Grand Knight grant (Sprint 8C); phones rebuild
  *     in step.
+ * 76: no table change - Home keeps only the universal cards with the month's Top 5 Fraternal Volunteers
+ *     (councilEngagement monthlyLeaderboard), the desk badges move to the Oversight Desk and the Executive Summary to
+ *     its own /executive-dashboard page (Sprint 8D/8E); phones rebuild in step.
  */
-const SCHEMA_VERSION = 75;
+const SCHEMA_VERSION = 76;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

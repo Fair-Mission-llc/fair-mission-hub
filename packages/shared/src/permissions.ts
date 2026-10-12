@@ -780,12 +780,23 @@ export interface PortalSidebarGroup extends Omit<PortalNavGroup, 'items'> {
 }
 
 /**
+ * The areas the sidebar may link. Sprint 8D/8E: the Executive Dashboard link opens the Executive Summary's own page, so a
+ * Council Historian whose only dashboard desk is the Historian Desk (no Admin keys, no executive seat) does not get it;
+ * they still reach /dashboard from the Active Desks row.
+ */
+function sidebarAllowed(u: Actor, flags: FeatureFlags, tenant: TenantType): Set<string> {
+  const allowed = new Set<string>(portalAreas(u, flags, tenant));
+  if (!isAdmin(u) && !canViewExecutiveDashboard(u, u.councilId)) allowed.delete('dashboard');
+  return allowed;
+}
+
+/**
  * The sidebar for `u` as the portal draws it: only the links portalAreas allows (which already leaves out modules the
  * council's feature flags switch off, Sprint 6A, and fraternal areas of a white-label tenant). A link the viewer may
  * not open is removed, never shown locked or greyed out (Sprint 6G Extension). A pillar with no entries is dropped.
  */
 export function portalSidebar(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, tenant: TenantType = DEFAULT_TENANT_TYPE): PortalSidebarGroup[] {
-  const allowed = new Set<string>(portalAreas(u, flags, tenant));
+  const allowed = sidebarAllowed(u, flags, tenant);
   return PORTAL_NAV_GROUPS.map(({ items, ...g }) => ({
     ...g,
     entries: items.filter((item) => allowed.has(item)).map((item) => ({ item })),
@@ -794,6 +805,6 @@ export function portalSidebar(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, t
 
 /** The sidebar for `u`: each group holding only the links portalAreas allows; empty groups are dropped. */
 export function portalNavGroups(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, tenant: TenantType = DEFAULT_TENANT_TYPE): PortalNavGroup[] {
-  const allowed = new Set<string>(portalAreas(u, flags, tenant));
+  const allowed = sidebarAllowed(u, flags, tenant);
   return PORTAL_NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((item) => allowed.has(item)) })).filter((g) => g.items.length > 0);
 }

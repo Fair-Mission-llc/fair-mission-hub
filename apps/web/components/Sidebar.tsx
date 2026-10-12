@@ -10,11 +10,11 @@
 // Sprint 8C: the Leadership Auditing Queue link is gone (the page stays reachable from the Financial Secretary Desk), the
 // member-center link is labelled Council Dashboard, and a click on Executive Dashboard always resets the Active Desks
 // to the Home landing deck (EXECUTIVE_DASHBOARD_HOME_HREF), even on /dashboard itself.
+// Sprint 8D/8E: Executive Dashboard is a plain link again, to the Executive Summary's own page (EXECUTIVE_DASHBOARD_HREF).
 import Link from 'next/link';
-import { DeskLink } from '@/components/WorkspaceTabs';
 import {
   canOpenArchiveVault,
-  EXECUTIVE_DASHBOARD_HOME_HREF,
+  EXECUTIVE_DASHBOARD_HREF,
   portalSidebar,
   whiteLabel,
   type FeatureFlags,
@@ -65,9 +65,9 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'lessons-registry': { href: '/lessons-registry', label: 'Lessons Registry', hint: 'Lessons learned across councils' },
   'distribution-lists': { href: '/distribution-lists', label: 'My Distribution Lists', hint: 'Your private member segments and the council-wide lists' },
   dashboard: {
-    href: EXECUTIVE_DASHBOARD_HOME_HREF,
+    href: EXECUTIVE_DASHBOARD_HREF,
     label: 'Executive Dashboard',
-    hint: 'The Home desk: status badges and the Executive Summary of Faith-in-Action, monthly hours, members and funds',
+    hint: 'The Executive Summary: Faith-in-Action, monthly hours, members and funds, budget tracking, roadmap and audits',
   },
   'finance/dashboard': { href: '/finance/dashboard', label: 'Financial Dashboard', hint: 'Liquidity tanks, balance scale, transfers, bank audits' },
   'finance/ledger': { href: '/finance/ledger', label: 'General Ledger Spreadsheet', hint: 'Chart of accounts with every posting' },
@@ -228,16 +228,6 @@ const navLinkClass = (current: boolean) =>
 /** One dense sidebar link: the label only, with its description as the tooltip; gold marker when current. */
 function NavLink({ item, current, tenant }: { item: PortalNavItem | 'navigation-guide'; current: boolean; tenant: TenantType }) {
   const { href, label, hint } = NAV[item];
-  // Sprint 8C: Executive Dashboard is a desk jump to Home - on /dashboard it switches the open desk back to Home.
-  if (item === 'dashboard') {
-    return (
-      <li title={whiteLabel(hint, tenant)}>
-        <DeskLink anchor="home" current={current} className={navLinkClass(current)}>
-          {whiteLabel(label, tenant)}
-        </DeskLink>
-      </li>
-    );
-  }
   return (
     <li>
       <Link href={href} title={whiteLabel(hint, tenant)} aria-current={current ? 'page' : undefined} className={navLinkClass(current)}>

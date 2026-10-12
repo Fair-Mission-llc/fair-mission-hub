@@ -77,7 +77,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     leader: "Reads the council's annual budget. Budget keepers draft it from May 1 to June 30 and approve it.",
   },
   'member-center': { member: "Shows the council's volunteers, hours, devotions and Top 5 leaderboard, and your own impact card." },
-  dashboard: { member: "Opens the Home desk: leadership's status badges and the Executive Summary of Faith in Action work, monthly hours, members and funds." },
+  dashboard: { member: "Opens the Executive Summary of Faith in Action work, monthly hours, members and funds, with the budget, roadmap and audits." },
   'performance/charts': { member: 'Charts membership growth and council service hours by month.' },
   history: { member: "Shows each year's officers, the council's achievements and the recorded oral histories. Record your own story here." },
   ledger: {

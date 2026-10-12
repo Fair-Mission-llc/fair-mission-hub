@@ -936,7 +936,7 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 
 **Goal:** Review one month of council activity.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard**. The **Executive Summary** is the scrolling frame at the bottom of **Home**.
+**Start point:** Sidebar → Performance → **Executive Dashboard**. The **Executive Summary** page opens.
 
 **Steps:**
 1. Choose the **Month** and the **Year**.
@@ -945,7 +945,7 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 4. Admins: read **Executive audits** for no-shows and shifts that need hours.
 
 <!-- KEEP_IMAGE: executive dashboard capture -->
-![Executive Dashboard Summaries (/dashboard)](../generated/dashboard_visual_catalog/dashboard.png)
+![Executive Dashboard Summaries (/executive-dashboard)](../generated/dashboard_visual_catalog/dashboard.png)
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: executive audits placeholder -->
@@ -1549,7 +1549,7 @@ The platform sends no message when an expense report changes status. The member 
 | --- | --- | --- | --- |
 | A shift starts in 24 hours | A reminder email with a calendar file | Every volunteer on the shift | The event's shift roster |
 | A meeting starts in 24 hours | A reminder email with a calendar file and the agenda | Every invitee | **Meeting Center** |
-| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Executive Dashboard** → **Oversight Desk** → **Shifts awaiting hours** |
+| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Active Desks** row → **Oversight Desk** → **Shifts awaiting hours** |
 | Every 7 days after that (the council can change the days, section 16.3) | A follow-up text, until the shift is older than the logging window (90 days by default) | The volunteer | Same panel. The row shows **Closed** when the window ends. |
 | An officer sends an urgent alert | A phone push alert and a bell entry, kept 6 months | Members with the chosen skills or shifts | **Council Messages & Alerts** → **Dispatch High-Priority Push Notification Alert** |
 | A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on **Affiliated Roster** or **Supreme Council Sync** |
@@ -1583,6 +1583,7 @@ Cash, budgets and the general ledger stay on the **Executive Dashboard** and the
 
 - The combined devotions show only totals. No card shows the devotions of one member.
 - Members with equal hours share a place on the leaderboard.
+- The **Top 5 Fraternal Volunteers** card on the dashboard **Home** desk is a different list. That card counts only the hours of the current month (section 19.2).
 - A white-label organization does not see the devotions card or the shield.
 
 ### 14.2 Open the Council Dashboard
@@ -1660,7 +1661,7 @@ The thresholds are the Canonization Rank benchmarks. You change the benchmarks o
 
 **Goal:** See the month's volunteers next to the cash collected.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Home**. Scroll the **Executive Summary** frame.
+**Start point:** Sidebar → Performance → **Executive Dashboard**. Scroll down to the navy overview card.
 
 **Steps:**
 1. Choose the **Month** and the **Year**.
@@ -1840,7 +1841,7 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 
 **Goal:** Decide each held entry, so that true hours count and false hours never count.
 
-**Start point:** **Active Desks** row → **Oversight Desk** → **🚨 Volunteer Time Quarantine Desk**. On **Home**, the **[ ⚠️ 2 Items Quarantined ]** badge opens the same desk.
+**Start point:** **Active Desks** row → **Oversight Desk** → **🚨 Volunteer Time Quarantine Desk**. At the top of the **Oversight Desk**, the **[ ⚠️ 2 Items Quarantined ]** badge scrolls to the same list.
 
 **Steps:**
 1. Read the count of pending entries in the desk header.
@@ -2064,7 +2065,7 @@ Approving a request marks the request as reviewed. Approving does not create the
 
 **Goal:** Mark a council's access request as reviewed.
 
-**Start point:** **Active Desks** row → **Oversight Desk** → **Inbound Council Mail Center**. On **Home**, the **📨 Access Requests** badge opens the same desk.
+**Start point:** **Active Desks** row → **Oversight Desk** → **Inbound Council Mail Center**. At the top of the **Oversight Desk**, the **📨 Access Requests** badge scrolls to the same card.
 
 **Steps:**
 1. Read the council name, the city, the state and the contact email of the request.
@@ -2338,7 +2339,7 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 
 ### 18.1 Concept: the Annual Fraternal Roadmap
 
-The **Annual Fraternal Roadmap** is a card in the **Executive Summary** frame on the dashboard **Home** desk. **Home** shows the same steps as one line, the roadmap ribbon. The card shows the three steps that hand the council over to its next fraternal year. A cycle carries the calendar year of its steps. The 2027 cycle elects and budgets the 2027-2028 fraternal year.
+The **Annual Fraternal Roadmap** is a card on the **Executive Dashboard** page. The top of the page shows the same steps as one line, the roadmap ribbon. The card shows the three steps that hand the council over to its next fraternal year. A cycle carries the calendar year of its steps. The 2027 cycle elects and budgets the 2027-2028 fraternal year.
 
 | Step | Window | The portal marks the step done when |
 | --- | --- | --- |
@@ -2366,7 +2367,7 @@ The card opens on the current cycle. The current cycle changes to the next year 
 
 **Goal:** See where the council stands on its yearly hand-over, and alert the leaders to a missed step.
 
-**Start point:** **Active Desks** row → **Home**. Select **Full roadmap ↓** in the roadmap ribbon. The **Executive Summary** frame scrolls to the card.
+**Start point:** Sidebar → Performance → **Executive Dashboard**. Select **Full roadmap ↓** in the roadmap ribbon. The page scrolls to the card.
 
 **Steps:**
 1. Scroll to the **Annual Fraternal Roadmap** card.
@@ -2485,13 +2486,14 @@ When the location check fails, the phone asks for the 4-digit **meeting PIN**. T
 
 ### 19.1 Concept: the Active Desks row
 
-The **Executive Dashboard** is a set of desks. A row of folder tabs sits under the navy header on every page. The row has the title **Active Desks**.
+The dashboard is a set of desks. A row of folder tabs sits under the navy header on every page. The row has the title **Active Desks**.
 
 - Each tab looks like the tab of a paper file folder. A navy outline frames each tab.
 - The open desk is white and raised. A deep gold edge runs along its top.
 - **Home** is the first tab. **Member Desk** is the last tab.
 - Select a tab on any page. The dashboard opens on that desk.
-- Select **Executive Dashboard** in the sidebar on any page. The dashboard always opens on **Home**, also when another desk is open.
+- Select the **Home** tab to return to **Home** from any page.
+- Select **Executive Dashboard** in the sidebar to open the **Executive Summary** page. That page is not a desk tab. See section 19.13.
 
 Only readers who may open the dashboard see the row. These readers are the council's Admins and officers, the Council Historian, and Super Admins.
 
@@ -2503,16 +2505,22 @@ Every full desk page stays in the sidebar. The **Leadership Auditing Queue** pag
 
 ### 19.2 Concept: the Home desk
 
-The **Home** desk fits on one laptop or desktop screen. You do not scroll the page. **Home** holds four rows. The last row scrolls inside its own frame.
+The **Home** desk fits on one laptop or desktop screen. You do not scroll the page. **Home** holds six cards in two rows, and nothing else. Each card has a fixed height. A long list scrolls inside its own card.
 
-| Row on Home | What the row shows |
+| Card on Home | What the card shows |
 | --- | --- |
-| Roadmap ribbon | The **Annual Fraternal Roadmap** steps on one line. Each step shows its status and due date. **Full roadmap ↓** scrolls the **Executive Summary** frame to the full card. |
-| Status badges | One badge for each queue you may work, with its count. Select a badge to open its desk at the matching list. |
-| Widgets | **Bible Verse of the Day**, **Live Actionable Reminders**, **Liturgical Feast Day Tracker** and **Today's Event Agenda**. A long list scrolls inside its own card. |
-| **Executive Summary** frame | The month and year pickers, the **Annual Fraternal Roadmap** card, the four stat tiles, the monthly activity overview, the leaderboard, the budget gauges, the **Financial ledger** table, the highlights and the no-show audit. The frame scrolls. The page does not. |
+| **Bible Verse of the Day** | One verse for the day, from the NABRE. |
+| **Live Actionable Reminders** | Your own unread alerts and the sheets that wait for your signature. A red edge is urgent. The card refreshes every minute. |
+| **Liturgical Feast Day Tracker** | Today's feast day and the feasts of the coming days. A holy day of obligation is marked. |
+| **Today's Event Agenda** | The council's events and meetings for today, with the time and the place. |
+| **Open Volunteer Shifts** | Shifts in the next 30 days that still need volunteers, with the number still needed. Select **Sign up** to take a shift. |
+| **Top 5 Fraternal Volunteers** | A navy card with a gold edge. The 5 active members of the council with the most hours logged at council events and activities in the current month, with their hours. |
 
-The status badges:
+The **Top 5 Fraternal Volunteers** card counts only the current month. The card starts empty on the first day of each month. Members with equal hours share a place. The **Top 5 Volunteers Leaderboard** on the **Executive Dashboard** and the **Council Dashboard** counts all hours ever logged.
+
+**Home** has no status badges, roadmap ribbon or **Executive Summary**. The status badges are at the top of the **Oversight Desk** (section 19.3). The roadmap ribbon and the **Executive Summary** are on the **Executive Dashboard** page (section 19.13).
+
+The status badges at the top of the **Oversight Desk**:
 
 | Badge | Desk it opens | Who sees the badge |
 | --- | --- | --- |
@@ -2529,7 +2537,7 @@ A badge with work waiting is filled with gold. The quarantine badge is red. A ba
 
 Each badge is a link. Select a badge. The desk of the badge opens, and the matching list scrolls into view. A gold ring shows around the list for 2 seconds.
 
-The **Bible Verse of the Day** and the **Liturgical Feast Day Tracker** show only while the council's **Faith Center** module is on. A white-label organization does not see the two faith widgets.
+The **Bible Verse of the Day** and the **Liturgical Feast Day Tracker** show only while the council's **Faith Center** module is on. A white-label organization does not see the two faith cards. **Home** then shows the other four cards.
 
 ### 19.3 Concept: the desks
 
@@ -2544,12 +2552,12 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | Sidebar → Performance → **Council History** |
-| **Oversight Desk** | The council's officers and Admins, and Super Admins | The **Shifts awaiting hours** audit. The GK, the DGK, the council's Admins and Super Admins also get the **🚨 Volunteer Time Quarantine Desk** (section 15). Only Super Admins get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
+| **Oversight Desk** | The council's officers and Admins, and Super Admins | The status badges of every queue you may work, then the **Shifts awaiting hours** audit. The GK, the DGK, the council's Admins and Super Admins also get the **🚨 Volunteer Time Quarantine Desk** (section 15). Only Super Admins get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
 | **Member Desk** | Every reader of the dashboard | **[ 🚗 Open Shifts Needing Volunteers ]**, **[ 📥 My Charity Requests ]**, **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
-Earlier sections of this guide name the **Executive Dashboard** as a start point. For those tasks, open **Home** and scroll the **Executive Summary** frame.
+Earlier sections of this guide name the **Executive Dashboard** as a start point. For those tasks, select **Executive Dashboard** in the sidebar. The **Executive Summary** page opens.
 
 Each tab has its own web address. The address is the dashboard address with the tab name after a `#` sign:
 
@@ -2569,28 +2577,30 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 ### 19.4 Read the Home desk
 
 > **Who can do this:** the council's Admins and officers, and Super Admins. Other members do not see the **Dashboard**.
-> **Warning:** when the roadmap ribbon shows an overdue step, the portal sends a push alert to the council's leaders. You cannot recall an alert.
 
-**Goal:** See the council's state and the work that waits for you, on one screen.
+**Goal:** See your reminders, today's agenda, the open shifts and the month's top volunteers, on one screen.
 
 **Start point:** **Active Desks** row → **Home**.
 
 **Steps:**
 1. Select the **Home** tab. The portal opens on **Home** after you sign in.
-2. Read the roadmap ribbon. The gold step is next. A red step is overdue.
-3. Read the status badges. A gold or red badge has work waiting.
-4. Select a badge. The badge's desk opens.
-5. Read the four widgets. Select a reminder link to open its full desk page.
-6. Scroll the **Executive Summary** frame for the stat tiles, the budget gauges, the ledger and the no-show audit.
-7. Choose another **Month** or **Year** in the frame to read an earlier month.
+2. Read the **Live Actionable Reminders** card. Select a reminder link to open its full desk page.
+3. Read **Today's Event Agenda**. Select an event name to open the council calendar.
+4. Read the **Open Volunteer Shifts** card. Select **Sign up** beside a shift to take that shift.
+5. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
+6. To see the status badges, select the **Oversight Desk** tab.
+7. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
 
-**Expected result:** **Home** shows the ribbon, the badges, the widgets and the **Executive Summary** frame without a page scroll.
+**Expected result:** **Home** shows the six cards without a page scroll. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The verse and the feast tracker do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
+| The status badges are not on **Home**. | The badges moved to the top of the **Oversight Desk**. | Select the **Oversight Desk** tab. |
 | A badge you expect does not show. | Your seat does not clear that desk, or the module is off. | Ask the officer who holds the seat. |
+| *"No member has logged hours this month yet."* | No active member of the council logged hours in the current month. | No action. The card fills when members log hours. |
+| *"Every shift in the next 30 days has its volunteers."* | No shift in the next 30 days is short of volunteers. | No action. |
 | *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
 | The page scrolls on a small screen. | The screen is shorter than a laptop screen. | Use a laptop or desktop screen, or zoom the browser out. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
@@ -2788,6 +2798,32 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 | *"The Drive vault is off, so the photo is kept in this browser only."* | The council's Google Drive is not connected. | Ask a Super Admin to connect Google Drive (section 10.8). |
 | The recorder does not show. | You recorded your one testimonial before. | No action. Each member records one testimonial. |
 | One month shows only one newsletter. | The council keeps one newsletter for each month. | Change the text and select **Save newsletter**. The new text replaces the old text. |
+
+### 19.13 Read the Executive Dashboard page
+
+> **Who can do this:** the council's Admins and officers, and Super Admins. A Council Historian without an officer seat does not see the **Executive Dashboard** link.
+> **Warning:** when the roadmap ribbon shows an overdue step, the portal sends a push alert to the council's leaders. You cannot recall an alert.
+
+**Goal:** Read one month of council activity: the roadmap, the stat tiles, the budget and the audits.
+
+**Start point:** Sidebar → Performance → **Executive Dashboard**. The address is `/executive-dashboard`.
+
+**Steps:**
+1. Read the roadmap ribbon at the top. The gold step is next. A red step is overdue. Select **Full roadmap ↓** to scroll to the full **Annual Fraternal Roadmap** card.
+2. Choose the **Month** and the **Year** of the **Executive Summary**.
+3. Read the four stat tiles, the monthly activity overview and the **Top 5 Volunteers Leaderboard**.
+4. Read the **Faith-in-Action Mission Tracking** card and the **Budget tracking** gauges.
+5. Read the **Financial ledger** table and the **Monthly highlights**.
+6. Read the no-show audit under **Executive audits**.
+
+**Expected result:** The page shows the whole **Executive Summary** for the month. The page scrolls like any other page. The **Active Desks** row stays under the header.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **Executive Dashboard** link does not show. | You do not hold an officer seat and you are not an Admin. | Ask a council Admin. |
+| The **Shifts awaiting hours** audit is not on the page. | The audit is on the **Oversight Desk**. | Select the **Oversight Desk** tab. |
+| The budget gauges do not show. | Your seat does not review the budget. | Ask the Grand Knight or the Financial Secretary. |
 
 ---
 

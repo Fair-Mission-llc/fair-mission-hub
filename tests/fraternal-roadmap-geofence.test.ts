@@ -337,7 +337,8 @@ describe.each(drivers)('Sprint 7G ($name driver)', (d) => {
 
 describe('Sprint 7G screens and manuals', () => {
   it('puts the roadmap and the signature tree on the Executive Dashboard', () => {
-    const page = read('apps/web/app/dashboard/page.tsx');
+    // Sprint 8D/8E: the Executive Dashboard is its own page.
+    const page = read('apps/web/app/executive-dashboard/page.tsx');
     expect(page).toContain('<FraternalRoadmap');
     const parts = read('apps/web/components/RoadmapParts.tsx');
     expect(parts).toContain('Annual Fraternal Roadmap');

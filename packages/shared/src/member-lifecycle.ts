@@ -343,7 +343,10 @@ export interface LeaderboardEntry extends VolunteerStanding {
   rank: number;
 }
 
-/** reports.councilEngagement: the month's volunteers and the council's all-time Top 5 Volunteers Leaderboard. */
+/**
+ * reports.councilEngagement: the month's volunteers, the council's all-time Top 5 Volunteers Leaderboard and (Sprint
+ * 8D/8E) the month's own Top 5, which Home's Top 5 Fraternal Volunteers card shows.
+ */
 export interface CouncilEngagement {
   councilId: number;
   year: number;
@@ -352,6 +355,8 @@ export interface CouncilEngagement {
   volunteers: VolunteerStanding[];
   /** The council's Active members with the most hours logged at its events and activities, ever. */
   leaderboard: LeaderboardEntry[];
+  /** Sprint 8D/8E: the council's Active members with the most hours logged at its events and activities in the month. */
+  monthlyLeaderboard: LeaderboardEntry[];
 }
 
 const byHoursThenName = (a: VolunteerStanding, b: VolunteerStanding) =>
@@ -391,16 +396,26 @@ export function buildCouncilEngagement(input: {
     input.logs.filter((l) => l.date >= input.fromDate && l.date <= input.toDate),
     byId,
   );
-  const ranked = standings(
-    input.logs.filter((l) => {
-      const m = byId.get(l.MemberID);
-      return m !== undefined && m.CouncilID === input.councilId && m.StatusID === input.activeStatusId;
-    }),
-    byId,
-  ).slice(0, LEADERBOARD_SIZE);
-  const leaderboard = ranked.map((s, i) => ({ ...s, rank: i > 0 && ranked[i - 1]!.hours === s.hours ? 0 : i + 1 }));
-  for (let i = 1; i < leaderboard.length; i++) if (leaderboard[i]!.rank === 0) leaderboard[i]!.rank = leaderboard[i - 1]!.rank;
-  return { councilId: input.councilId, year: input.year, month: input.month, volunteers, leaderboard };
+  const own = input.logs.filter((l) => {
+    const m = byId.get(l.MemberID);
+    return m !== undefined && m.CouncilID === input.councilId && m.StatusID === input.activeStatusId;
+  });
+  return {
+    councilId: input.councilId,
+    year: input.year,
+    month: input.month,
+    volunteers,
+    leaderboard: topFive(standings(own, byId)),
+    monthlyLeaderboard: topFive(standings(own.filter((l) => l.date >= input.fromDate && l.date <= input.toDate), byId)),
+  };
+}
+
+/** The first LEADERBOARD_SIZE standings with their ranks; members with equal hours share a rank (1, 2, 2, 4). */
+function topFive(sorted: readonly VolunteerStanding[]): LeaderboardEntry[] {
+  const ranked = sorted.slice(0, LEADERBOARD_SIZE);
+  const out = ranked.map((s, i) => ({ ...s, rank: i + 1 }));
+  for (let i = 1; i < out.length; i++) if (ranked[i - 1]!.hours === out[i]!.hours) out[i]!.rank = out[i - 1]!.rank;
+  return out;
 }
 
 // ---- multi-council affiliation log (Sprint 7A Extension, schema 60) ---------------------------------------------

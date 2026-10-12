@@ -30,6 +30,12 @@
 // Oversight Desk, which every executive-audit reader now opens (canOpenOversightDesk); the Volunteer Time Quarantine
 // stays with its own reviewers inside it. The sidebar's Executive Dashboard link always opens Home
 // (EXECUTIVE_DASHBOARD_HOME_HREF), and each Home status badge names the desk row it opens (DESK_FOCUS_TARGETS).
+//
+// Sprint 8D/8E (schema version 76): Home holds only the universal cards (HOME_UNIVERSAL_CARDS) - the Bible Verse of the
+// Day, the Live Actionable Reminders, the Liturgical Feast Day Tracker, Today's Event Agenda, the Open Volunteer Shifts
+// signup grid and the Top 5 Fraternal Volunteers leaderboard of the month - in one screen with no scrolling. The desk
+// status badges move to the top of the Oversight Desk. The Executive Summary leaves Home for its own page,
+// /executive-dashboard (EXECUTIVE_DASHBOARD_HREF), the sidebar's Executive Dashboard link.
 // =========================================================================
 import type { CalendarEntry, SessionUser, ShiftFeedItem } from './contract';
 import { observancesBetween, liturgicalBanner, type Observance } from './liturgical';
@@ -115,12 +121,28 @@ export function dashboardTabFromAnchor(hash: string | null | undefined, tabs: re
 export const ACTIVE_DESKS_TITLE = 'Active Desks';
 
 /**
- * Sprint 8C: where the sidebar's Executive Dashboard link goes. A click there always resets the view to the Home landing
- * deck, whichever desk the reader opened last.
+ * Where the sidebar's Executive Dashboard link goes. Sprint 8C sent it to the Home landing deck (/dashboard#home); since
+ * Sprint 8D/8E it is the Executive Summary's own page, off the Active Desks.
  */
-export const EXECUTIVE_DASHBOARD_HOME_HREF = '/dashboard#home';
+export const EXECUTIVE_DASHBOARD_HREF = '/executive-dashboard';
 
-/** A Home status badge's queue (Sprint 8A badges; Sprint 8C names the desk row each one opens). */
+/**
+ * The cards on Home (Sprint 8D/8E), in display order - nothing else sits there. The verse and the feast tracker are Faith
+ * Center content, so a council with the Faith Center off (or a white-label tenant) sees the other four.
+ */
+export const HOME_UNIVERSAL_CARDS = [
+  'Bible Verse of the Day',
+  'Live Actionable Reminders',
+  'Liturgical Feast Day Tracker',
+  "Today's Event Agenda",
+  'Open Volunteer Shifts',
+  'Top 5 Fraternal Volunteers',
+] as const;
+
+/**
+ * A desk status badge's queue (Sprint 8A badges; Sprint 8C names the desk row each one opens). Sprint 8D/8E: the badges
+ * sit at the top of the Oversight Desk, no longer on Home.
+ */
 export type DeskBadgeKey = 'vouchers' | 'orders' | 'coding' | 'minutes' | 'quarantine' | 'access' | 'hours' | 'mine';
 
 /**

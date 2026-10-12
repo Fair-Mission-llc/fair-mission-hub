@@ -3307,3 +3307,16 @@ GO
 -- The Member Desk gains the Open Shifts Needing Volunteers and My Charity Requests cards, and the Canonization Rank
 -- benchmarks are edited only in System Settings > Council Wide Settings. The phone database version moves to 75.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8D/8E: UNIVERSAL HOME TAB PURIFICATION AND VOLUNTEER LEADERBOARDS (schema version 76)
+--
+-- No table changes. The Active Desks' Home tab holds only the universal cards: the Bible Verse of the Day, the Live
+-- Actionable Reminders, the Liturgical Feast Day Tracker, Today's Event Agenda, the Open Volunteer Shifts signup grid and
+-- the new Top 5 Fraternal Volunteers card - the council's Active members ranked by the hours they logged at its events
+-- (EventTime) and activities (ActivityTime) in the current month (reports.councilEngagement monthlyLeaderboard). Home fits
+-- one screen with no scrolling. The desk status badges move to the top of the Oversight Desk, and the Executive Summary
+-- - month picker, roadmap, stat tiles, engagement, budget and mission tracking, ledger table, highlights and the no-show
+-- audit - leaves Home for its own page, /executive-dashboard, the sidebar's Executive Dashboard link. The phone database
+-- version moves to 76.
+-- =========================================================================
