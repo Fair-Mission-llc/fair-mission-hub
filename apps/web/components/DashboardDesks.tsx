@@ -401,18 +401,18 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <DeskCount label="Vouchers waiting for release" count={queue.data ? rows.length : null} href="/expenses/authorize" cta="Open the Grand Knight Authorization Desk" />
-        <DeskCount label="Released vouchers" href="/expenses/disbursements" cta="Open the disbursement vault" />
+        <DeskCount label="Approved expenses waiting for release" count={queue.data ? rows.length : null} href="/expenses/authorize" cta="Open the Grand Knight Authorization Desk" />
+        <DeskCount label="Released approved expenses" href="/expenses/disbursements" cta="Open the Payments Made desk" />
       </div>
-      <DeskRow id={DESK_FOCUS_TARGETS.vouchers.rowId} label="Voucher Release queue">
-        <Panel title={`Voucher Release queue (${rows.length})`}>
+      <DeskRow id={DESK_FOCUS_TARGETS.vouchers.rowId} label="Approved Expense Release queue">
+        <Panel title={`Approved Expense Release queue (${rows.length})`}>
           {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
           {queue.data ? (
             <SheetQueue
               caption="Sheets waiting for the Grand Knight's final release"
               rows={rows}
               href="/expenses/authorize"
-              cta="Release vouchers on the full desk"
+              cta="Release approved expenses on the full desk"
               signerColumn={(d) => (
                 <>
                   FS: {d.financialSecretaryName || '–'}
@@ -430,7 +430,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
           <IncomingAffiliationInvites user={user} councilId={councilId} />
           <p className="mt-2 text-xs">
             <Link href={AFFILIATIONS_HREF} className="font-bold underline">
-              Open Bilateral Fraternal Affiliations
+              Open Connected Councils
             </Link>{' '}
             to invite nearby councils.
           </p>
@@ -462,13 +462,13 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <DeskCount label="Sheets waiting for your written order" count={queue.data ? rows.length : null} href="/expenses/audit" cta="Open the Financial Secretary Audit Desk" />
+        <DeskCount label="Sheets waiting for your payment request" count={queue.data ? rows.length : null} href="/expenses/audit" cta="Open the Financial Secretary Audit Desk" />
         <DeskCount label="All sheets in leadership's queue" count={queue.data ? queue.data.length : null} href="/expenses/queue" cta="Open the auditing queue" />
       </div>
-      <DeskRow id={DESK_FOCUS_TARGETS.orders.rowId} label="Written-order queue">
-        <Panel title={`Written-order queue (${rows.length})`}>
+      <DeskRow id={DESK_FOCUS_TARGETS.orders.rowId} label="Payment-request queue">
+        <Panel title={`Payment-request queue (${rows.length})`}>
           {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
-          {queue.data ? <SheetQueue caption="Sheets waiting for the Financial Secretary's written order" rows={rows} href="/expenses/audit" cta="Verify & sign on the full desk" /> : null}
+          {queue.data ? <SheetQueue caption="Sheets waiting for the Financial Secretary's payment request" rows={rows} href="/expenses/audit" cta="Verify & sign on the full desk" /> : null}
         </Panel>
       </DeskRow>
       <Panel title="Excel roster imports">
@@ -782,11 +782,11 @@ export function OversightDesk({ user, councilId }: { user: SessionUser; councilI
         </DeskRow>
       ) : null}
       {reviewer ? (
-        <DeskRow id={DESK_FOCUS_TARGETS.quarantine.rowId} label="Volunteer Time Quarantine Desk">
+        <DeskRow id={DESK_FOCUS_TARGETS.quarantine.rowId} label="Flagged Hours Review Desk">
           {flags.feature_volunteer_quarantine ? (
             <QuarantineDesk actorId={user.memberId} councilId={councilId} />
           ) : (
-            <Notice tone="info">The Volunteer Time Quarantine is switched off for this council (Feature Flags), so no time entry is held for review.</Notice>
+            <Notice tone="info">The Flagged Hours Review is switched off for this council (Feature Flags), so no time entry is held for review.</Notice>
           )}
         </DeskRow>
       ) : null}
@@ -831,9 +831,9 @@ export function DeskStatusBadges({ user, councilId }: { user: SessionUser; counc
     const add = (key: DeskBadgeKey, icon: string, one: string, many: string, count: () => Promise<number>) =>
       reads.push(count().then((n) => out.push({ key, icon, one, many, count: n })));
     if (canOpenExpenseAuthorizeDesk(user, councilId))
-      add('vouchers', '📋', 'Voucher Pending', 'Vouchers Pending', async () => (await db.expenses.listAuthorizationQueue(user.memberId, councilId)).length);
+      add('vouchers', '📋', 'Approved Expense Awaiting Payment', 'Approved Expenses Awaiting Payment', async () => (await db.expenses.listAuthorizationQueue(user.memberId, councilId)).length);
     if (canOpenExpenseAuditDesk(user, councilId))
-      add('orders', '✍️', 'Written Order Waiting', 'Written Orders Waiting', async () =>
+      add('orders', '✍️', 'Payment Request Waiting', 'Payment Requests Waiting', async () =>
         (await db.expenses.listCouncilQueue(user.memberId, councilId)).filter((d) => awaitsWrittenOrder(d.report)).length,
       );
     if (canOpenTreasurerDesk(user, councilId))
@@ -845,7 +845,7 @@ export function DeskStatusBadges({ user, councilId }: { user: SessionUser; counc
         return minutesDeskRows(meetings, today, councilWideSettings(council).meeting_minutes_due_days).filter((r) => r.state === 'open' || r.state === 'overdue').length;
       });
     if (flags.feature_volunteer_quarantine && canReviewVolunteerQuarantine(user, councilId))
-      add('quarantine', '⚠️', 'Item Quarantined', 'Items Quarantined', async () => (await db.volunteerQuarantine.listPending(user.memberId, councilId)).length);
+      add('quarantine', '⚠️', 'Flagged Hours Entry', 'Flagged Hours Entries', async () => (await db.volunteerQuarantine.listPending(user.memberId, councilId)).length);
     if (isSuperAdmin(user))
       add('access', '📨', 'Access Request', 'Access Requests', async () => (await readAccessRequests()).filter((r) => r.status === 'PENDING').length);
     if (canViewExecutiveAudits(user, councilId))

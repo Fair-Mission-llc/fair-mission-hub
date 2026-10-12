@@ -210,7 +210,7 @@ export function SignatureTrail({ detail }: { detail: ExpenseReportDetail }) {
   return (
     <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3" aria-label={`Signatures on expense report ${report.id}`}>
       <SignatureLine
-        label="📜 Written order · Financial Secretary"
+        label="📜 Payment request · Financial Secretary"
         memberId={report.FinancialSecretaryMemberID}
         name={detail.financialSecretaryName}
         at={report.FinancialSecretaryApprovedAt}

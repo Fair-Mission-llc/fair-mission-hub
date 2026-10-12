@@ -112,12 +112,12 @@ PERSONAS: tuple[Persona, ...] = (
             Step(SIGN_IN_WEB, 'Sign in as gk_user@stmarys.org with the pilot password on the facilitator\'s board.',
                  'The sidebar opens with the seven pillars: Governance, Faith In Action, Finances, Performance, Resources, Answers and System Settings.'),
             Step('Finances > GK Expense Authorize', 'Read the waiting report from Historian User: Aaron Brothers, $89.99, frames for the Past Grand Knights wall.',
-                 'Report 19 shows the Financial Secretary\'s written order and the Treasurer\'s coding (Miscellaneous Others, Council Operational Costs).'),
+                 'Report 19 shows the Financial Secretary\'s payment request and the Treasurer\'s coding (Miscellaneous Others, Council Operational Costs).'),
             Step('Finances > GK Expense Authorize', 'Click Final Release for Payment on report 19.',
-                 'The row reads "Released to the Treasurer". The report is Approved and now waits in Bulk Check Disbursements.'),
+                 'The row reads "Released to the Treasurer". The report is Approved and now waits in Bulk Check Payments Made.'),
             Step('Faith In Action > Event Planner', f'Open the {PILOT_EVENT}.',
                  'Six Lot attendants shifts from October 10 to October 25; each shift has its 2 volunteers signed up (Member Alpha and Member Beta).'),
-            Step('Active Desks > Oversight Desk', 'Find the Volunteer Time Quarantine Desk. Do not decide the entries; the Deputy Grand Knight does that in his script.',
+            Step('Active Desks > Oversight Desk', 'Find the Flagged Hours Review Desk. Do not decide the entries; the Deputy Grand Knight does that in his script.',
                  'Two held entries: Member Alpha, 6.5 hours on a 4-hour parking shift, and Member Beta, 6 hours of Ushering.'),
         ),
     ),
@@ -130,15 +130,15 @@ PERSONAS: tuple[Persona, ...] = (
         day_in_life=(
             'Monday evening after the parking weekend. Three new expense reports came in: cones and vests for the lot '
             'attendants, a cash box and receipt books, and archival sleeves for the council history. The Financial '
-            'Secretary checks each receipt against the event and issues the written order, the first of the three '
+            'Secretary checks each receipt against the event and issues the payment request, the first of the three '
             'signatures. A report without what the council needs goes back to the member with a reason.'
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as fs_user@stmarys.org with the pilot password.', 'The Finances pillar lists FS Expense Audit.'),
             Step('Finances > FS Expense Audit', 'Read the queue on the Financial Secretary Audit Desk.',
-                 'Reports 14 (Member Alpha, Home Depot, $84.97), 15 (Member Beta, Office Depot, $32.48) and 16 (Historian User, Michaels, $46.20) wait for the written order.'),
+                 'Reports 14 (Member Alpha, Home Depot, $84.97), 15 (Member Beta, Office Depot, $32.48) and 16 (Historian User, Michaels, $46.20) wait for the payment request.'),
             Step('Finances > FS Expense Audit', 'Click Verify & Sign Expense on report 14.',
-                 'The row reads "Written order issued". Report 14 moves to the Treasurer Ledger Audit Desk.'),
+                 'The row reads "Payment request issued". Report 14 moves to the Treasurer Ledger Audit Desk.'),
             Step('Finances > FS Expense Audit', 'Click Verify & Sign Expense on report 16.', 'Report 16 moves to the Treasurer Ledger Audit Desk.'),
             Step('Active Desks > Financial Secretary Desk > Open the auditing queue', 'Find report 15. Type "Please add the receipt photo" in Reason for returning (required), then click Return to member.',
                  'Report 15 goes back to Member Beta as a Draft with your reason. Its signatures are cleared.'),
@@ -152,7 +152,7 @@ PERSONAS: tuple[Persona, ...] = (
         seat='Treasurer (Treasurer User)',
         device='Laptop (web portal)',
         day_in_life=(
-            'The Treasurer keeps the council\'s books honest. Every report that carries the written order comes to him '
+            'The Treasurer keeps the council\'s books honest. Every report that carries the payment request comes to him '
             'to be charged to a line of the approved 2026-2027 budget and to a general ledger account. After the Grand '
             'Knight\'s final release, he writes the check. The Collusion Guard stops him from coding a report he ordered '
             'himself.'
@@ -160,13 +160,13 @@ PERSONAS: tuple[Persona, ...] = (
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as treasurer_user@stmarys.org with the pilot password.', 'The Finances pillar lists Treasurer Ledger Audit Desk.'),
             Step('Finances > Treasurer Ledger Audit Desk', 'Read the queue.',
-                 'Reports 17 (Member Alpha, FedEx Office yard signs, $118.50) and 18 (Member Beta, Safeway, $54.75) carry FS User\'s written order and wait for coding.'),
+                 'Reports 17 (Member Alpha, FedEx Office yard signs, $118.50) and 18 (Member Beta, Safeway, $54.75) carry FS User\'s payment request and wait for coding.'),
             Step('Finances > Treasurer Ledger Audit Desk', 'On report 17 choose Miscellaneous Others in Assign Ledger Budget Line Item and Event Operational Costs in Assign General Ledger Account, then click Categorize & Lock Expense.',
                  'The row reads "Coded to the ledger". Report 17 moves to GK Expense Authorize.'),
             Step('Finances > Treasurer Ledger Audit Desk', 'On report 18 choose Monthly Council Meetings and Council Operational Costs, then click Categorize & Lock Expense.',
                  'Report 18 moves to GK Expense Authorize.'),
-            Step('Finances > Bulk Check Disbursements', 'After the Grand Knight releases report 19, select it, type check number 1201 and click Issue Disbursement Check.',
-                 'Report 19 is Reimbursed and the check appears in the disbursement history.'),
+            Step('Finances > Bulk Check Payments Made', 'After the Grand Knight releases report 19, select it, type check number 1201 and click Record Payment Made by Check.',
+                 'Report 19 is Reimbursed and the check appears in the payments-made history.'),
             Step('Finances > General Ledger Spreadsheet', 'Read the Council Operational Costs and Event Operational Costs accounts.', 'The accounts list their postings; the chart of accounts matches the seeded 14 accounts plus Opening Balance Equity.'),
         ),
     ),
@@ -184,7 +184,7 @@ PERSONAS: tuple[Persona, ...] = (
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as dgk_user@stmarys.org with the pilot password.', 'The Performance pillar lists Executive Dashboard.'),
-            Step('Active Desks > Oversight Desk', 'Find the Volunteer Time Quarantine Desk and read both entries.',
+            Step('Active Desks > Oversight Desk', 'Find the Flagged Hours Review Desk and read both entries.',
                  'Member Alpha: 6.5 hours on Parish Parking Event - Lot attendants - Saturday, note "Stayed to restripe the overflow lot". Member Beta: 6 hours of Ushering, note "Ushered all three Sunday Masses".'),
             Step('Active Desks > Oversight Desk', 'On Member Beta\'s entry click Approve & Add to Time Log.',
                  'The entry leaves the desk. Beta\'s 6 hours now count in the Council Dashboard and on the Executive Dashboard.'),
@@ -281,7 +281,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
                  'The report is Submitted. Write its report number in the Notes field.', who='Member Beta'),
             Step('Finances > FS Expense Audit (on the wireless display)', 'Reload the Financial Secretary Audit Desk.',
                  'Both new reports are on the desk with Member Alpha\'s and Member Beta\'s names, amounts and vendors, beside any older ones.', who='FS User'),
-            Step('Finances > FS Expense Audit', 'Click Verify & Sign Expense on Member Alpha\'s new report.', 'The row reads "Written order issued" and leaves the desk.', who='FS User'),
+            Step('Finances > FS Expense Audit', 'Click Verify & Sign Expense on Member Alpha\'s new report.', 'The row reads "Payment request issued" and leaves the desk.', who='FS User'),
             Step('Active Desks > Financial Secretary Desk > Open the auditing queue', 'Find Member Beta\'s new report. Type "Please add the receipt photo" in Reason for returning (required) and click Return to member.',
                  'The report goes back to Member Beta as a Draft.', who='FS User'),
             Step('Finances > My Expense Reports', 'Open the returned report, read the reason, click + Add receipt, attach a photo and Submit for approval again.',
@@ -290,7 +290,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
             Step('Finances > Treasurer Ledger Audit Desk', 'On each new report choose Miscellaneous Others in Assign Ledger Budget Line Item and Event Operational Costs in Assign General Ledger Account, then click Categorize & Lock Expense.',
                  'Both rows read "Coded to the ledger" and move to GK Expense Authorize.', who='Treasurer User'),
             Step('Finances > GK Expense Authorize', 'Click Final Release for Payment on both new reports.', 'Both reports are Approved and released to the Treasurer.', who='GK User'),
-            Step('Finances > Bulk Check Disbursements', 'Pay Member Alpha\'s report with check number 1401, then Member Beta\'s with check 1402 (Issue Disbursement Check).',
+            Step('Finances > Bulk Check Payments Made', 'Pay Member Alpha\'s report with check number 1401, then Member Beta\'s with check 1402 (Record Payment Made by Check).',
                  'Both reports are Reimbursed.', who='Treasurer User'),
             Step('Finances > My Expense Reports', 'Reload the list.', 'Each member sees his report Reimbursed with its check number.', who='Member Alpha and Member Beta'),
         ),
@@ -324,7 +324,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
                  'The hours save directly: 4 hours is inside the shift and its 1.0-hour allowance.', who='Member Beta'),
             Step('Phone > Report tab', 'Under Which shift? choose Lot attendants - Sunday (October 11). Under How long? enter 7 hours. Tap Save time.',
                  'The phone says the hours were sent to leadership review before they count.', who='Member Alpha'),
-            Step('Active Desks > Oversight Desk (on the wireless display)', 'Open the Volunteer Time Quarantine Desk.',
+            Step('Active Desks > Oversight Desk (on the wireless display)', 'Open the Flagged Hours Review Desk.',
                  'Member Alpha\'s new 7-hour entry is on the desk with its reason: more than 1.0 hour over the 4-hour shift.', who='DGK User'),
             Step('Active Desks > Oversight Desk', 'Click Reject & Remove on Member Alpha\'s new entry.', 'The entry leaves the desk; its 7 hours never count.', who='DGK User'),
             Step('Phone > Report tab', 'Report the Sunday shift again with 4 hours and tap Save time.', 'The hours save directly.', who='Member Alpha'),
@@ -354,7 +354,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
         context=(
             'A food bank near the cathedral asked Member Alpha for help. He becomes its Knight Shepherd: he files the '
             'request, answers the vetting officer\'s question and follows it on his 3-step tracking notice (Vetting, '
-            'Presentation, Disbursement). The Financial Secretary vets it on the wireless display; he may, because he is not '
+            'Presentation, Payment Made). The Financial Secretary vets it on the wireless display; he may, because he is not '
             'its Shepherd. The 10-day rule then puts it on the agenda of the soonest Monthly meeting at least 10 days away.'
         ),
         steps=(
@@ -372,9 +372,9 @@ GROUP_FLOWS: tuple[Flow, ...] = (
         ),
         after=(
             'After this session: the council votes the motion at that meeting. When it passes, the request appears on '
-            'Finances > Charitable Disbursements Ledger under Approved requests awaiting payment. The Financial Secretary or '
+            'Finances > Charity Payments Made Ledger under Approved requests awaiting payment. The Financial Secretary or '
             'the Treasurer clicks Pay approved request, types the check number and issues the check for the approved amount. '
-            'The request\'s tracker then shows the Disbursement done, the check is listed against the charity, and the '
+            'The request\'s tracker then shows the Payment Made step done, the check is listed against the charity, and the '
             'target budget line is charged. The Shepherd cannot write that check himself.'
         ),
     ),
@@ -789,14 +789,14 @@ def poster_financial(output: Path, generated: str) -> None:
     stages = [
         ('1', 'File the expense report', 'Any member', 'Finances > My Expense Reports  |  phone Expenses',
          'New expense report: link the event or meeting, add each receipt line, submit. Status: Submitted.'),
-        ('2', 'Written order', 'Financial Secretary', 'Finances > FS Expense Audit',
+        ('2', 'Payment request', 'Financial Secretary', 'Finances > FS Expense Audit',
          'Check the receipts and click Verify & Sign Expense. The first signature.'),
         ('3', 'Ledger coding', 'Treasurer', 'Finances > Treasurer Ledger Audit Desk',
          'Assign the budget line and the general ledger account, then Categorize & Lock Expense.'),
         ('4', 'Final release', 'Grand Knight', 'Finances > GK Expense Authorize',
          'Final Release for Payment. The report is Approved and released to the Treasurer.'),
-        ('5', 'Pay by check', 'Financial Secretary or Treasurer', 'Finances > Bulk Check Disbursements',
-         'Type the check number and Issue Disbursement Check. Status: Reimbursed.'),
+        ('5', 'Pay by check', 'Financial Secretary or Treasurer', 'Finances > Bulk Check Payments Made',
+         'Type the check number and Record Payment Made by Check. Status: Reimbursed.'),
     ]
     for i, (n, title, who, screen, detail) in enumerate(stages):
         stage_box(c, x, y, col_w, h, n, title, who, screen, detail, GOLD if n == '5' else NAVY)
@@ -821,7 +821,7 @@ def poster_financial(output: Path, generated: str) -> None:
         'FS and Treasurer post deposits and transfers in the General Ledger.',
     ], GOLD)
     note_panel(c, side_x, side_y, side_w, None, 'Charity grants going out', [
-        'After the council votes a grant, it waits in Finances > Charitable Disbursements Ledger.',
+        'After the council votes a grant, it waits in Finances > Charity Payments Made Ledger.',
         'FS or Treasurer: Pay approved request, one check for the approved amount.',
         "The grant's budget line is charged; the Shepherd cannot pay it.",
     ], NAVY)
@@ -834,7 +834,7 @@ def poster_charity(output: Path, generated: str) -> None:
     c = pdfcanvas.Canvas(str(output), pagesize=TABLOID)
     c.setTitle('Charity Lifecycle Poster')
     c.setAuthor('Knights of Columbus Tracking Platform')
-    poster_frame(c, 'Charity Grant Lifecycle', 'Vetting  >  Presentation  >  Disbursement', generated)
+    poster_frame(c, 'Charity Grant Lifecycle', 'Vetting  >  Presentation  >  Payment Made', generated)
     w = PW - 2 * PM
     x, y = PM, PH - 2.55 * inch
     h, gap = 112, 22
@@ -849,7 +849,7 @@ def poster_charity(output: Path, generated: str) -> None:
          'Place on next agenda puts it on the soonest Monthly meeting at least 10 days away, as a proposed motion.'),
         ('5', 'Council vote', 'The members at the meeting', 'Governance > Live Meeting Console',
          'Secret smartphone ballot, or the Recorder\'s hand tally. Decided Passed, Failed or Tabled.'),
-        ('6', 'Pay the grant', 'Financial Secretary or Treasurer - never the Shepherd', 'Finances > Charitable Disbursements Ledger',
+        ('6', 'Pay the grant', 'Financial Secretary or Treasurer - never the Shepherd', 'Finances > Charity Payments Made Ledger',
          'Pay approved request: one check for the approved amount, listed against the charity and charged to the budget line.'),
         ('7', 'Follow up', 'The Trustees', 'Six months after filing',
          'The Trustees are prompted for a status report on what the grant did.'),
@@ -869,7 +869,7 @@ def poster_charity(output: Path, generated: str) -> None:
 MATRIX_COLUMNS = ('Member', 'Historian', 'FS', 'Treasurer', 'DGK', 'GK', 'Council Admin')
 MATRIX_ROWS: tuple[tuple[str, str], ...] = (
     ('File own expense reports', 'YYYYYYY'),
-    ('Issue the written order (FS Expense Audit)', '--Y---V'),
+    ('Issue the payment request (FS Expense Audit)', '--Y---V'),
     ('Code to budget line and ledger (Treasurer desk)', '---Y--V'),
     ('Final release for payment (GK Expense Authorize)', '----YYV'),
     ('Pay expense checks', '--YY---'),

@@ -50,7 +50,7 @@ function Step({ n, title, done, children }: { n: number; title: string; done: bo
 
 function LineRow({ line, editable, busy, onToggle }: { line: TrusteeAuditLine; editable: boolean; busy: boolean; onToggle: (verified: boolean) => void }) {
   const e = line.entry;
-  const label = `${e.DateLogged.slice(0, 10)} ${line.accountName}: ${e.Description}, ${e.DebitAmount > 0 ? `receipt ${formatMoney(e.DebitAmount)}` : `disbursement ${formatMoney(e.CreditAmount)}`}`;
+  const label = `${e.DateLogged.slice(0, 10)} ${line.accountName}: ${e.Description}, ${e.DebitAmount > 0 ? `receipt ${formatMoney(e.DebitAmount)}` : `payment made ${formatMoney(e.CreditAmount)}`}`;
   return (
     <tr className="border-t-2 border-line align-top">
       <td className="p-2">
@@ -227,7 +227,7 @@ function AuditDesk() {
                             Receipt
                           </th>
                           <th scope="col" className="p-2 text-right">
-                            Disbursement
+                            Payment Made
                           </th>
                           <th scope="col" className="p-2">
                             Verified by
@@ -256,7 +256,7 @@ function AuditDesk() {
                     [
                       ['Cash at start', ws.cashBalanceBeginning],
                       ['+ Receipts', ws.receipts],
-                      ['− Disbursements', ws.disbursements],
+                      ['− Payments Made', ws.disbursements],
                       ['= Cash at end', ws.cashBalanceEnding],
                     ] as const
                   ).map(([label, value]) => (

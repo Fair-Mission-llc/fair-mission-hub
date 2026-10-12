@@ -60,7 +60,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager, live console and the phone app Meetings tab' },
   feature_expense_reporting: {
     label: 'Expense reporting',
-    hint: 'Member expense reports, the FS, Treasurer and GK signature desks, check disbursements and the phone app expense screen',
+    hint: 'Member expense reports, the FS, Treasurer and GK signature desks, check payments made and the phone app expense screen',
   },
   feature_faith_center: {
     label: 'Faith Center',
@@ -71,8 +71,8 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   feature_council_history: { label: 'Council history', hint: 'The Team Legacy history page: annals, diary, oral histories and the In Memoriam roll' },
   feature_live_meeting_console: { label: 'Live meeting console', hint: 'The live meeting console: agenda, check-ins, secret ballots and hand tallies' },
   feature_volunteer_quarantine: {
-    label: 'Volunteer time quarantine',
-    hint: "The 5/5 over-reporting and +1 hour shift padding guards, and the leadership dashboard's Volunteer Time Quarantine Desk",
+    label: 'Flagged hours review',
+    hint: "The 5/5 over-reporting and +1 hour shift padding guards, and the leadership dashboard's Flagged Hours Review Desk",
   },
 };
 

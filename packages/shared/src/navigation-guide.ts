@@ -66,7 +66,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   'finance/treasurer-desk': { member: 'The Treasurer assigns each ordered expense report to a budget line and a ledger account.' },
   expenses: { member: 'Files your own expense reports with receipts and shows where each report is in the approval steps.' },
   'expenses/disbursements': { member: 'Pays fully signed expense reports by check.' },
-  'expenses/audit': { member: 'The Financial Secretary checks each submitted expense report and issues the written order.' },
+  'expenses/audit': { member: 'The Financial Secretary checks each submitted expense report and issues the payment request.' },
   'expenses/authorize': { member: 'The Grand Knight counter-signs each ordered expense report.' },
   'charities/vetting': { member: 'Claims, checks and moves forward the charity grant requests that members bring to the council.' },
   'charities/propose': { member: 'Brings a charity or organization to the council for a grant and follows the request to its decision.' },

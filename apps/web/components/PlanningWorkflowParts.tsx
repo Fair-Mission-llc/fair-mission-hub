@@ -132,7 +132,7 @@ export function FraternalPlanningWorkflow({ user, council }: { user: SessionUser
 
   return (
     <Panel
-      title="Fraternal Planning & Budgeting Workflow"
+      title="Annual Budget Planner"
       className="mb-6"
       actions={
         years.length > 1 ? (
@@ -281,7 +281,7 @@ export function LoanerLibrarySharingCard({ user, council, onSaved }: { user: Ses
           </Link>{' '}
           only when both councils have sharing on and the two are affiliated (
           <Link href="/system-settings/affiliations" className="font-bold underline">
-            Bilateral Fraternal Affiliations
+            Connected Councils
           </Link>
           ). Your own items always show to your members.
         </p>

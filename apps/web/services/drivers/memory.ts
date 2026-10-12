@@ -2737,7 +2737,7 @@ export class MemoryDataService implements DataService {
         const actor = this.memberWriteActor(s, actorId);
         const row = this.requireExpenseReport(s, reportId);
         const report = row as unknown as ExpenseReport;
-        assertMayIssueExpenseOrder(actor, report.CouncilID, `issue the written order for expense report ${reportId}`);
+        assertMayIssueExpenseOrder(actor, report.CouncilID, `issue the payment request for expense report ${reportId}`);
         assertNotSelfApproval(actor, report);
         assertExpenseSignatureStage(report, 'financialSecretary');
         Object.assign(row, { FinancialSecretaryMemberID: actorId, FinancialSecretaryApprovedAt: toTimestamp(this.now()) });

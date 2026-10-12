@@ -221,8 +221,8 @@ describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
     expect(page).toContain('<OversightDesk user={user} councilId={scope.councilId} />');
     expect(page).not.toContain("shown === 'reports'");
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toContain("'Vouchers Pending'");
-    expect(desks).toContain("'Items Quarantined'");
+    expect(desks).toContain("'Approved Expenses Awaiting Payment'");
+    expect(desks).toContain("'Flagged Hours Entries'");
     expect(desks).toContain('[ {b.icon} {text} ]');
     expect(desks).toContain('<QuarantineDesk actorId={user.memberId} councilId={councilId} />');
     expect(read('apps/web/components/RoadmapParts.tsx')).toContain('export function RoadmapRibbon');

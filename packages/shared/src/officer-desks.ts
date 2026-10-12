@@ -227,7 +227,7 @@ export function buildReminderStream(
   };
   desk(q.writtenOrder, 'desk-fs', 'Verify & sign expense orders', '/expenses/audit');
   desk(q.ledgerCoding, 'desk-treasurer', 'Categorize & lock expenses to the ledger', '/finance/treasurer-desk');
-  desk(q.counterSignature, 'desk-gk', 'Release vouchers for payment', '/expenses/authorize');
+  desk(q.counterSignature, 'desk-gk', 'Release approved expenses for payment', '/expenses/authorize');
   const unread = input.alerts
     .filter((a) => !a.IsRead && !(input.readIds?.has(a.id) ?? false))
     .slice()

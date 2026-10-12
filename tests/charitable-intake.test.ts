@@ -473,10 +473,10 @@ describe.each(drivers)('$name driver: Grand Knight and Deputy Grand Knight execu
 });
 
 describe("the Shepherd's 3-step track and Trustee follow-up (pure, Sprint 5Z-Member-Charity)", () => {
-  it('places a request on Vetting, Presentation or Disbursement', () => {
+  it('places a request on Vetting, Presentation or Payment Made', () => {
     const at = (RequestStatus: string, VoteStatus = 'Pending', PaymentOrderId: number | null = null) =>
       charitableTrackingPosition({ RequestStatus, VoteStatus, PaymentOrderId } as never);
-    expect(CHARITABLE_TRACKING_STEPS).toEqual(['Vetting', 'Presentation', 'Disbursement']);
+    expect(CHARITABLE_TRACKING_STEPS).toEqual(['Vetting', 'Presentation', 'Payment Made']);
     expect(at('Submitted')).toEqual({ stepIndex: 0, stopped: false });
     expect(at('Claimed by Trustee')).toEqual({ stepIndex: 0, stopped: false });
     expect(at('Declined')).toEqual({ stepIndex: 0, stopped: true });
@@ -506,12 +506,12 @@ describe("the Shepherd's 3-step track and Trustee follow-up (pure, Sprint 5Z-Mem
       key: 'charitable:request:12:filed',
       memberId: 3,
       requestId: 12,
-      steps: ['Vetting', 'Presentation', 'Disbursement'],
+      steps: ['Vetting', 'Presentation', 'Payment Made'],
       trusteeFollowUpDate: '2027-04-02',
     });
     expect(notice.text).toMatch(/^KofC: Thank you, Pat\. Request #12 for St\. Mary's Cathedral Youth Ministry \(\$800\.00\) is filed\./);
     expect(notice.text.indexOf('Vetting')).toBeLessThan(notice.text.indexOf('Presentation'));
-    expect(notice.text.indexOf('Presentation')).toBeLessThan(notice.text.indexOf('Disbursement'));
+    expect(notice.text.indexOf('Presentation')).toBeLessThan(notice.text.indexOf('Payment Made'));
     expect(notice.text).toMatch(/status report on 2027-04-02\.$/);
 
     const logged: unknown[][] = [];

@@ -25,7 +25,7 @@
 12. [Troubleshooting reference](#12-troubleshooting-reference)
 13. [Automated messages reference](#13-automated-messages-reference)
 14. [Member engagement and the roster lifecycle](#14-member-engagement-and-the-roster-lifecycle)
-15. [Volunteer time quarantine](#15-volunteer-time-quarantine)
+15. [Flagged hours review](#15-flagged-hours-review)
 16. [Council Wide Settings and platform settings](#16-council-wide-settings-and-platform-settings)
 17. [Access requests, check payments, asset photos, impersonation and remote help](#17-access-requests-check-payments-asset-photos-impersonation-and-remote-help)
 18. [Annual roadmap, meeting check-in and meeting photos](#18-annual-roadmap-meeting-check-in-and-meeting-photos)
@@ -59,7 +59,7 @@ A member has one member type. A member may also hold one or more officer roles.
 | Officer role | Extra access |
 | --- | --- |
 | **Grand Knight** and **Deputy Grand Knight** | The executive dashboard and the charity vetting desk. Both counter-sign expenses, appoint officers and keep the cadence, the agenda templates, the bylaws, the meeting check-in and the base dues rate. The Deputy Grand Knight (DGK) has the same access as the Grand Knight (GK). |
-| **Financial Secretary** | Issues written orders on expenses. Posts to the general ledger. Pays checks. |
+| **Financial Secretary** | Issues payment requests on expenses. Posts to the general ledger. Pays checks. |
 | **Treasurer** | Posts to the general ledger. Pays checks. |
 | **Trustee** | Vets charity requests. Follows up on grants after 6 months. |
 | **Recorder** | Edits the live agenda. Records hand tallies. |
@@ -104,7 +104,7 @@ The rule includes the five officer desks: **Live Meeting Console**, **Annual Cad
 | --- | --- | --- |
 | **Governance** | Live Meeting Console, Annual Cadence Manager, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor | Officers, the GK, Admins. The Constitutional Advisor shows to officers, Admins and Super Admins only. |
 | **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar | Admins plan. Members volunteer. |
-| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, My Expense Reports, Bulk Check Disbursements, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charitable Disbursements Ledger, Donations History, Annual Budget Projections | Finance officers, the GK, Admins |
+| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Projections | Finance officers, the GK, Admins |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Post-event Ledger, Lessons Registry | Seated officers, Admins |
 | **Resources** | Fraternal Photo Gallery, Council Artifacts, Marketing Factory, 📂 Council Archive Vault | Every member. The Marketing Factory and the vault link show to officers and Admins only. |
 | **Answers** | Online Help Center, SOP Center | Every member |
@@ -176,13 +176,13 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
 | `flag_complex_shifts` | **Event shifts** | Event Planner, the shift tabs of Member Actions Hub | **Signup**, and the shift mode of **Report** |
 | `flag_meeting_management` | **Meeting management** | Meeting Center, Annual Cadence Manager, Live Meeting Console | **Mtgs** |
-| `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit, Treasurer Ledger Audit Desk, GK Expense Authorize, Bulk Check Disbursements | The expense screen and the **Expense reports** card on **Home** |
+| `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit, Treasurer Ledger Audit Desk, GK Expense Authorize, Bulk Check Payments Made | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
 | `feature_council_history` | **Council history** | Council history (Team Legacy) | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
-| `feature_volunteer_quarantine` | **Volunteer time quarantine** | The **Volunteer Time Quarantine Desk** on the **Oversight Desk** of the dashboard. Members' hours also stop going to review (section 15). | None |
+| `feature_volunteer_quarantine` | **Flagged hours review** | The **Flagged Hours Review Desk** on the **Oversight Desk** of the dashboard. Members' hours also stop going to review (section 15). | None |
 
 The flags follow four rules.
 
@@ -576,10 +576,10 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 | Step | Who acts | Where | Status tag |
 | --- | --- | --- | --- |
 | 1. File | The member | **My Expense Reports** | **Submitted** |
-| 2. Written order | The Financial Secretary | **FS Expense Audit** → **📝 Verify & Sign Expense** | **Order Issued** |
+| 2. Payment request | The Financial Secretary | **FS Expense Audit** → **📝 Verify & Sign Expense** | **Order Issued** |
 | 3. Categorize | The Treasurer | **Treasurer Ledger Audit Desk** → **🏷️ Categorize & Lock Expense** | **Order Issued** |
 | 4. Final release | The Grand Knight | **GK Expense Authorize** → **✍️ Final Release for Payment** | **Approved** |
-| 5. Pay | The FS or the Treasurer | **Bulk Check Disbursements** | **Reimbursed** |
+| 5. Pay | The FS or the Treasurer | **Bulk Check Payments Made** | **Reimbursed** |
 | Return | Council leadership | **Leadership Auditing Queue** → **Reject & Return** | **Returned** |
 
 - A Super Admin may sign either line, but never both lines of the same report.
@@ -595,7 +595,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 ![My Expense Reports (/expenses)](../generated/dashboard_visual_catalog/expenses.png)
 <!-- /KEEP_IMAGE -->
 
-### 6.2 Issue a written order
+### 6.2 Issue a payment request
 
 > **Prerequisite (who can do this):** You must be the council's Financial Secretary or a Super Admin. Council Admins read the desk only.
 > **Warning:** the order is a signature. The report moves to the Grand Knight.
@@ -641,12 +641,12 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 ![GK Authorization Desk (/expenses/authorize)](../generated/dashboard_visual_catalog/expenses_authorize.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The member sees **Approved**. The report shows in **Bulk Check Disbursements**.
+**Expected result:** The member sees **Approved**. The report shows in **Bulk Check Payments Made**.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| **🔒 Collusion Guard** shows. | You issued the written order. | Another signer must give the final release. |
+| **🔒 Collusion Guard** shows. | You issued the payment request. | Another signer must give the final release. |
 
 ### 6.4 Return a report to the member
 
@@ -681,15 +681,15 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Record the checks for dual-signed reports.
 
-**Start point:** Sidebar → Finances → **Bulk Check Disbursements**.
+**Start point:** Sidebar → Finances → **Bulk Check Payments Made**.
 
 **Steps:**
 1. Tick the reports to pay. The page lists only reports with both signatures.
 2. Enter the check number and the payout date for each report.
 3. Save.
 
-<!-- KEEP_IMAGE: bulk check disbursements capture -->
-![Bulk Check Disbursements (/expenses/disbursements)](../generated/dashboard_visual_catalog/expenses_disbursements.png)
+<!-- KEEP_IMAGE: bulk check payments made capture -->
+![Bulk Check Payments Made (/expenses/disbursements)](../generated/dashboard_visual_catalog/expenses_disbursements.png)
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** The member sees **Reimbursed** with the check number.
@@ -786,7 +786,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Pay a grant that the council approved.
 
-**Start point:** Sidebar → Finances → **Charitable Disbursements Ledger**.
+**Start point:** Sidebar → Finances → **Charity Payments Made Ledger**.
 
 **Steps:**
 1. Find the request in **Approved requests awaiting payment**.
@@ -1539,7 +1539,7 @@ Quick answers are also in **Answers → Online Help Center**.
 | Request filed | A tracking message with the three steps and the follow-up date | The Knight Shepherd | **Charity Vetting Queue** |
 | 1. Vetting | None | — | **Charity Vetting Queue** |
 | 2. Presentation | None | — | The meeting agenda and the **Live Meeting Console** |
-| 3. Disbursement | None | — | **Charitable Disbursements Ledger** |
+| 3. Payment Made | None | — | **Charity Payments Made Ledger** |
 | 6 months after filing | The Trustees ask the Shepherd for a status report. The app sends no reminder. | The Trustees | The date in the Shepherd's tracking message |
 
 ### Expense reports
@@ -1777,12 +1777,12 @@ The sweep follows these rules:
 
 ---
 
-## 15. Volunteer time quarantine
+## 15. Flagged hours review
 
-### 15.1 Concept: the volunteer time quarantine
+### 15.1 Concept: the flagged hours review
 
-The volunteer time quarantine protects the council's hour totals from over-reporting.
-The platform holds some hour entries for leadership review. A held entry is in quarantine.
+The flagged hours review protects the council's hour totals from over-reporting.
+The platform holds some hour entries for leadership review. A held entry is flagged for review.
 A held entry does not count anywhere until a leader clears it. The rule covers these totals:
 
 - The council's monthly summary and the **Executive Dashboard** hours.
@@ -1834,8 +1834,8 @@ The rules apply to regular members only. These members are exempt. The platform 
 
 Appointed officers, such as the Financial Secretary (FS), follow the rules.
 
-A Super Admin can switch the quarantine off. The Super Admin turns off **Volunteer time quarantine** in the Feature Flags Control Center (section 3).
-When the switch is off, every entry counts at once. The desk is hidden. Entries that wait for review stay in quarantine until the switch is on again.
+A Super Admin can switch the flagged hours review off. The Super Admin turns off **Flagged hours review** in the Feature Flags Control Center (section 3).
+When the switch is off, every entry counts at once. The desk is hidden. Entries that wait for review stay flagged until the switch is on again.
 
 ### 15.5 Approve or reject held volunteer time
 
@@ -1844,7 +1844,7 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 
 **Goal:** Decide each held entry, so that true hours count and false hours never count.
 
-**Start point:** **Active Desks** row → **Oversight Desk** → **🚨 Volunteer Time Quarantine Desk**. At the top of the **Oversight Desk**, the **[ ⚠️ 2 Items Quarantined ]** badge scrolls to the same list.
+**Start point:** **Active Desks** row → **Oversight Desk** → **🚨 Flagged Hours Review Desk**. At the top of the **Oversight Desk**, the **[ ⚠️ 2 Flagged Hours Entries ]** badge scrolls to the same list.
 
 **Steps:**
 1. Read the count of pending entries in the desk header.
@@ -1859,8 +1859,8 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The desk is not on the dashboard. | Your role is not GK, DGK or Admin, or the quarantine switch is off. | Ask a Super Admin to check your role and the **Volunteer time quarantine** switch. |
-| The desk says "has switched Volunteer time quarantine off". | A Super Admin opened another council, and that council has the switch off. | Turn the switch on for that council, or choose another council. |
+| The desk is not on the dashboard. | Your role is not GK, DGK or Admin, or the flagged hours review switch is off. | Ask a Super Admin to check your role and the **Flagged hours review** switch. |
+| The desk says "has switched Flagged hours review off". | A Super Admin opened another council, and that council has the switch off. | Turn the switch on for that council, or choose another council. |
 | An approved shift report replaced other hours. | A member has one report for each shift. Approval writes the held report over the old one. | Ask the member to report the correct hours again. |
 | An approved activity entry is missing. | Someone deleted the activity after the member logged the time. | Restore the activity. Ask the member to log the time again. |
 | A member says the hours are lost. | The entry waits on the desk. | Decide the entry. Tell the member that held hours count after a leader approves them. |
@@ -2405,7 +2405,7 @@ Under the roadmap, the **Three-Signature Expense Flow** draws the path of an exp
 | Box | Who acts | What the step does |
 | --- | --- | --- |
 | **Member submits** | Any member | The member submits the expense report. |
-| **1. Written order** | Financial Secretary | The Financial Secretary audits the report and issues the written order. |
+| **1. Payment request** | Financial Secretary | The Financial Secretary audits the report and issues the payment request. |
 | **2. Ledger coding** | Treasurer | The Treasurer picks the budget line and the ledger account. |
 | **3. Counter-signature** | Grand Knight | The Grand Knight signs. The report becomes Approved. |
 | **Check paid** | Financial Secretary or Treasurer | The check is recorded. The report becomes Reimbursed. |
@@ -2527,16 +2527,16 @@ The status badges at the top of the **Oversight Desk**:
 
 | Badge | Desk it opens | Who sees the badge |
 | --- | --- | --- |
-| **[ 📋 3 Vouchers Pending ]** | **Grand Knight Desk** → **Voucher Release queue** | The Grand Knight (GK), the Deputy Grand Knight (DGK), the council's Admins and Super Admins |
-| **[ ✍️ 2 Written Orders Waiting ]** | **Financial Secretary Desk** → **Written-order queue** | The Financial Secretary (FS), the council's Admins and Super Admins |
+| **[ 📋 3 Approved Expenses Awaiting Payment ]** | **Grand Knight Desk** → **Approved Expense Release queue** | The Grand Knight (GK), the Deputy Grand Knight (DGK), the council's Admins and Super Admins |
+| **[ ✍️ 2 Payment Requests Waiting ]** | **Financial Secretary Desk** → **Payment-request queue** | The Financial Secretary (FS), the council's Admins and Super Admins |
 | **[ 🏷️ 1 Sheet to Code ]** | **Treasurer Desk** → **Ledger Line Coder queue** | The Treasurer, the council's Admins and Super Admins |
 | **[ 📝 2 Minutes Due ]** | **Recorder Desk** → **Business calendar** | The Recorder, the council's Admins and Super Admins |
-| **[ ⚠️ 2 Items Quarantined ]** | **Oversight Desk** → **Volunteer Time Quarantine Desk** | The GK, the DGK, the council's Admins and Super Admins, while **Volunteer time quarantine** is on |
+| **[ ⚠️ 2 Flagged Hours Entries ]** | **Oversight Desk** → **Flagged Hours Review Desk** | The GK, the DGK, the council's Admins and Super Admins, while **Flagged hours review** is on |
 | **[ 📨 1 Access Request ]** | **Oversight Desk** → **Inbound Council Mail Center** | Super Admins only. A council Admin never sees the badge. |
 | **[ ⏳ 4 Shifts Awaiting Hours ]** | **Oversight Desk** → **Shifts awaiting hours** | The council's officers and Admins, and Super Admins |
 | **[ 💼 2 Open Sheets of Mine ]** | **Member Desk** → **My open expense sheets** | Every reader of the dashboard |
 
-A badge with work waiting is filled with gold. The quarantine badge is red. A badge with a count of 0 is white.
+A badge with work waiting is filled with gold. The flagged hours badge is red. A badge with a count of 0 is white.
 
 Each badge is a link. Select a badge. The desk of the badge opens, and the matching list scrolls into view. A gold ring shows around the list for 2 seconds.
 
@@ -2550,12 +2550,12 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. For the GK, the DGK and Super Admins, the **Cross-Council Loaner Library** controls (section 20.3). | Sidebar → Finances → **GK Expense Authorize** |
-| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The **Written-order queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | Sidebar → Finances → **FS Expense Audit** |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **Approved Expense Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. For the GK, the DGK and Super Admins, the **Cross-Council Loaner Library** controls (section 20.3). | Sidebar → Finances → **GK Expense Authorize** |
+| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The **Payment-request queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | Sidebar → Finances → **FS Expense Audit** |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | Sidebar → Performance → **Council History** |
-| **Oversight Desk** | The council's officers and Admins, and Super Admins | The status badges of every queue you may work, then the **Shifts awaiting hours** audit. The GK, the DGK, the council's Admins and Super Admins also get the **🚨 Volunteer Time Quarantine Desk** (section 15). Only Super Admins get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
+| **Oversight Desk** | The council's officers and Admins, and Super Admins | The status badges of every queue you may work, then the **Shifts awaiting hours** audit. The GK, the DGK, the council's Admins and Super Admins also get the **🚨 Flagged Hours Review Desk** (section 15). Only Super Admins get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
 | **Member Desk** | Every reader of the dashboard | **[ 🚗 Open Shifts Needing Volunteers ]**, **[ 📥 My Charity Requests ]**, **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
@@ -2608,7 +2608,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | The page scrolls on a small screen. | The screen is shorter than a laptop screen. | Use a laptop or desktop screen, or zoom the browser out. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
 
-### 19.5 Release vouchers from the Grand Knight Desk
+### 19.5 Release approved expenses from the Grand Knight Desk
 
 > **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Super Admins sign. The council's Admins read the desk.
 > **Warning:** the final release sets the sheet to **Approved** and sends the sheet to payment. You cannot undo the release.
@@ -2619,9 +2619,9 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 **Steps:**
 1. Select the **Grand Knight Desk** tab.
-2. Read the **Vouchers waiting for release** count.
-3. Read the **Voucher Release queue** grid. The **Signed so far** column names the FS and the Treasurer.
-4. Select **Release vouchers on the full desk**. The **GK Expense Authorize** page opens.
+2. Read the **Approved expenses waiting for release** count.
+3. Read the **Approved Expense Release queue** grid. The **Signed so far** column names the FS and the Treasurer.
+4. Select **Release approved expenses on the full desk**. The **GK Expense Authorize** page opens.
 5. Select **✍️ Final Release for Payment** on each sheet. You cannot undo the release.
 
 **Expected result:** The released sheets leave the queue. The count on the **Grand Knight Desk** drops when you open the tab again.
@@ -2643,7 +2643,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 **Steps:**
 1. Select the **Financial Secretary Desk** tab.
-2. Read the **Sheets waiting for your written order** count.
+2. Read the **Sheets waiting for your payment request** count.
 3. Select **Verify & sign on the full desk**. The **FS Expense Audit** page opens.
 4. Select **📝 Verify & Sign Expense** on each sheet. Return to the dashboard.
 5. In the **Excel roster imports** card, select **Download the Excel roster template**.
@@ -2987,7 +2987,7 @@ The legend above the calendar lists every colour and mark.
 
 ## 21. Planning workflows and bilateral council affiliations
 
-### 21.1 Concept: the Fraternal Planning & Budgeting Workflow
+### 21.1 Concept: the Annual Budget Planner
 
 The council plans each fraternal year in the two months before the year starts. The fraternal year runs from July 1 to June 30.
 
@@ -3010,7 +3010,7 @@ The July 1 goals lock has no exception. Nobody can change the goals of a started
 
 The budget vote must be recorded by July 10. After July 10, only a Super Admin can record the vote, with the override.
 
-The **Fraternal Planning & Budgeting Workflow** banner leads the **Council Wide Settings** page. The banner shows the four steps and marks the current step **(now)**. Under the steps, the banner shows the year's goals and the budget status.
+The **Annual Budget Planner** banner leads the **Council Wide Settings** page. The banner shows the four steps and marks the current step **(now)**. Under the steps, the banner shows the year's goals and the budget status.
 
 ### 21.2 Draft and review the year's goals
 
@@ -3018,7 +3018,7 @@ The **Fraternal Planning & Budgeting Workflow** banner leads the **Council Wide 
 
 **Goal:** Save the targets of the next fraternal year and mark them reviewed before July 1.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Fraternal Planning & Budgeting Workflow**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Annual Budget Planner**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**. The next year shows first.
@@ -3043,7 +3043,7 @@ The **Fraternal Planning & Budgeting Workflow** banner leads the **Council Wide 
 
 **Goal:** Record that leadership reviewed the drafted budget in June.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Fraternal Planning & Budgeting Workflow** → **Annual budget**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Annual Budget Planner** → **Annual budget**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**.
@@ -3089,7 +3089,7 @@ Two councils of the same state can affiliate. An affiliation is a handshake betw
 
 A council Admin can send an invite but cannot accept one. Only the GK or the DGK of the invited council accepts the invite.
 
-The **Bilateral Fraternal Affiliations** directory lists the other councils of your state. The nearest council shows first. The portal measures the distance between the meeting points of the councils. A council without a meeting point follows in district order. Councils of your own district show first.
+The **Connected Councils** directory lists the other councils of your state. The nearest council shows first. The portal measures the distance between the meeting points of the councils. A council without a meeting point follows in district order. Councils of your own district show first.
 
 The GK sets the meeting point on **Council Wide Settings** → **Meeting Check-In**. A Super Admin enters the district number on the **Councils** page.
 
@@ -3100,7 +3100,7 @@ The GK sets the meeting point on **Council Wide Settings** → **Meeting Check-I
 
 **Goal:** Invite a nearby council of your state to affiliate.
 
-**Start point:** Sidebar → System Settings → **Bilateral Fraternal Affiliations**. The address is `/system-settings/affiliations`.
+**Start point:** Sidebar → System Settings → **Connected Councils**. The address is `/system-settings/affiliations`.
 
 **Steps:**
 1. Find the council in the list of councils in your state. Use **Find a council** or **My district only** to shorten the list.
@@ -3121,7 +3121,7 @@ The GK sets the meeting point on **Council Wide Settings** → **Meeting Check-I
 
 **Goal:** Answer an invite that another council sent to your council.
 
-**Start point:** Active Desks → **Grand Knight Desk** → **Affiliation Invites**. The same invites show at the top of **Bilateral Fraternal Affiliations**.
+**Start point:** Active Desks → **Grand Knight Desk** → **Affiliation Invites**. The same invites show at the top of **Connected Councils**.
 
 **Steps:**
 1. Read the council name, the distance and the invite date.
@@ -3142,7 +3142,7 @@ Your members always see your own council's items. A brother council's item shows
 
 | Rule | Where to set it |
 | --- | --- |
-| The two councils are **Affiliated**. | **Bilateral Fraternal Affiliations** |
+| The two councils are **Affiliated**. | **Connected Councils** |
 | Your council has sharing on. | **Council Wide Settings** → **Cross-Council Loaner Library Sharing** |
 | The brother council has sharing on. | The brother council's **Council Wide Settings** |
 

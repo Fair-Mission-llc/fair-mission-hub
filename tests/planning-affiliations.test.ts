@@ -397,8 +397,8 @@ describe('the portal pages', () => {
 
   it('documents the sprint in the admin guide', () => {
     const guide = read('docs/ADMIN_USER_GUIDE.md');
-    expect(guide).toContain('Fraternal Planning & Budgeting Workflow');
-    expect(guide).toContain('Bilateral Fraternal Affiliations');
+    expect(guide).toContain('Annual Budget Planner');
+    expect(guide).toContain('Connected Councils');
     expect(guide).toContain('July 10');
   });
 });

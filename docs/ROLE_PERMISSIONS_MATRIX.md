@@ -43,10 +43,10 @@ Every permission also requires an **Active** membership status. Inactive members
 | File an expense report and read their own | 👤 | 👤 | 👤 | 👤 | 👤 | 👤 |
 | Open the council's audit queue and return a report | — | — | ✅ | ✅ | ✅ | — |
 | Open the FS Audit Desk | — | — | ✅ | — | 👁️ | — |
-| Issue the written order (first signature) | — | — | ✅ ¹ | — | — | — |
+| Issue the payment request (first signature) | — | — | ✅ ¹ | — | — | — |
 | Open the GK Authorization Desk | — | — | — | — | 👁️ | ✅ |
-| Counter-sign the voucher (second signature, approves) | — | — | — | — | — | ✅ ¹ ³ |
-| Issue a check (disbursement ledger) | — | — | ✅ ¹ | ✅ ¹ | — | — |
+| Counter-sign the expense report (second signature, approves) | — | — | — | — | — | ✅ ¹ ³ |
+| Issue a check (payments-made ledger) | — | — | ✅ ¹ | ✅ ¹ | — | — |
 | Record a donation (phone donation desk) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Change or delete a donation | 👤 ² | 👤 ² | ✅ | ✅ | ✅ | 👤 ² |
 | Pay a charity check | — | — | ✅ | ✅ | — | — |
@@ -54,8 +54,8 @@ Every permission also requires an **Active** membership status. Inactive members
 
 1. **Nobody** signs or pays a report they submitted (`SELF_APPROVAL_BLOCKED`, `SELF_PAYOUT_BLOCKED`), including a Super Admin. Checks pay only reports carrying both signatures (Sprint 5Z-4). Rules: `assertMayIssueExpenseOrder`, `assertMayAuthorizeExpenseOrder`, `assertMayAuditCouncilExpenses`, `assertMayDisburseCouncilExpenses`, `assertDualSigned`.
 2. A member may change a donation they recorded, or one on an event they own (`canChangeDonation`).
-3. **Collusion Guard:** the officer who issued a report's written order may not also counter-sign it (`DUAL_SIGNATURE_CONFLICT`). This matters for a Super Admin, who may sign either line. 👁️ means the Admin can open the desk to follow the work but cannot sign.
-4. Sprint 5Z-Member-Charity: Propose Charity Grant is the **only** entry path for an organization's request; there is no public intake page. The signed-in member is always the Knight Shepherd. Saving sends the Shepherd a 3-step tracking message (Vetting, Presentation, Disbursement), and the Trustees are prompted for a status report 6 months after filing.
+3. **Collusion Guard:** the officer who issued a report's payment request may not also counter-sign it (`DUAL_SIGNATURE_CONFLICT`). This matters for a Super Admin, who may sign either line. 👁️ means the Admin can open the desk to follow the work but cannot sign.
+4. Sprint 5Z-Member-Charity: Propose Charity Grant is the **only** entry path for an organization's request; there is no public intake page. The signed-in member is always the Knight Shepherd. Saving sends the Shepherd a 3-step tracking message (Vetting, Presentation, Payment Made), and the Trustees are prompted for a status report 6 months after filing.
 
 ## 2. Annual Budgets
 

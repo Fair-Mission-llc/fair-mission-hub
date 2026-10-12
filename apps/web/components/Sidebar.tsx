@@ -85,7 +85,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'expenses/audit': {
     href: '/expenses/audit',
     label: 'FS Expense Audit',
-    hint: 'Issue written orders on submitted reports',
+    hint: 'Issue payment requests on submitted reports',
     restrictedTo: 'the Financial Secretary and Admins',
   },
   'expenses/authorize': {
@@ -94,10 +94,10 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Counter-sign ordered reports',
     restrictedTo: 'the Grand Knight, the Deputy Grand Knight and Admins',
   },
-  'expenses/disbursements': { href: '/expenses/disbursements', label: 'Bulk Check Disbursements', hint: 'Pay dual-signed reports by check' },
+  'expenses/disbursements': { href: '/expenses/disbursements', label: 'Bulk Check Payments Made', hint: 'Pay dual-signed reports by check' },
   'charities/propose': { href: '/charities/propose', label: 'Propose Charity Grant', hint: "Shepherd an organization's request to the council and follow it" },
   'charities/registry': { href: '/charities/registry', label: 'Global Charities Registry', hint: 'Search, suggest and add charities' },
-  'charities/queue': { href: '/charities/queue', label: 'Charitable Disbursements Ledger', hint: 'Pay charity proposals by check' },
+  'charities/queue': { href: '/charities/queue', label: 'Charity Payments Made Ledger', hint: 'Pay charity proposals by check' },
   'charities/vetting': {
     href: '/charities/vetting',
     label: 'Charity Vetting Queue',
@@ -154,7 +154,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'system-settings/affiliations': {
     href: '/system-settings/affiliations',
-    label: 'Bilateral Fraternal Affiliations',
+    label: 'Connected Councils',
     hint: 'Invite nearby councils in your state to affiliate, and answer their invites',
     restrictedTo: 'council Admins, the Grand Knight, the Deputy Grand Knight and Super Admins',
   },

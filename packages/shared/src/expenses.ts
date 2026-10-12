@@ -442,18 +442,18 @@ export function assertExpenseSignatureStage(
   const ordered = report.FinancialSecretaryMemberID != null;
   const coded = report.TreasurerMemberID != null;
   if (stage === 'financialSecretary') {
-    assertExpenseStatus(report, 'Submitted', 'receive a written order');
-    if (ordered) throw stageConflict(report, stage, "already carries the Financial Secretary's written order.");
+    assertExpenseStatus(report, 'Submitted', 'receive a payment request');
+    if (ordered) throw stageConflict(report, stage, "already carries the Financial Secretary's payment request.");
     return;
   }
   if (stage === 'treasurer') {
     assertExpenseStatus(report, 'Submitted', 'be coded to the ledger');
-    if (!ordered) throw stageConflict(report, stage, "awaits the Financial Secretary's written order, so the Treasurer cannot code it yet.");
+    if (!ordered) throw stageConflict(report, stage, "awaits the Financial Secretary's payment request, so the Treasurer cannot code it yet.");
     if (coded) throw stageConflict(report, stage, "already carries the Treasurer's ledger coding.");
     return;
   }
   assertExpenseStatus(report, 'Submitted', 'be authorized');
-  if (!ordered) throw stageConflict(report, stage, "awaits the Financial Secretary's written order, so the Grand Knight cannot counter-sign it yet.");
+  if (!ordered) throw stageConflict(report, stage, "awaits the Financial Secretary's payment request, so the Grand Knight cannot counter-sign it yet.");
   if (!coded) throw stageConflict(report, stage, "awaits the Treasurer's ledger coding, so the Grand Knight cannot counter-sign it yet.");
 }
 
@@ -490,7 +490,7 @@ export function assertDualSigned(report: Pick<ExpenseReport, 'id'> & SignatureFi
   if (isDualSigned(report)) return;
   throw new BusinessRuleError(
     'EXPENSE_STATUS_CONFLICT',
-    `Expense report ${report.id} lacks the Financial Secretary's written order or the Grand Knight's counter-signature, so no check can pay it.`,
+    `Expense report ${report.id} lacks the Financial Secretary's payment request or the Grand Knight's counter-signature, so no check can pay it.`,
     { reportId: report.id, financialSecretaryMemberId: report.FinancialSecretaryMemberID ?? null, grandKnightMemberId: report.GrandKnightMemberID ?? null },
   );
 }

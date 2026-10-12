@@ -42,9 +42,9 @@ export function QuarantineDesk({ actorId, councilId }: { actorId: number; counci
   };
 
   return (
-    <section aria-label="Volunteer Time Quarantine Desk" className="rounded border-4 border-brand-red bg-navy px-5 py-4 text-white">
+    <section aria-label="Flagged Hours Review Desk" className="rounded border-4 border-brand-red bg-navy px-5 py-4 text-white">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-serif text-xl font-bold">🚨 Volunteer Time Quarantine Desk</h2>
+        <h2 className="font-serif text-xl font-bold">🚨 Flagged Hours Review Desk</h2>
         <span className="rounded bg-brand-red px-2 py-0.5 text-sm font-bold">{rows.length} pending</span>
       </div>
       <p className="mt-1 text-sm">

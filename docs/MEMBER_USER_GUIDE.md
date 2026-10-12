@@ -919,7 +919,7 @@ Two officers sign the report. Then the council pays you by check.
 | --- | --- |
 | **Draft** | You saved the report. You did not submit the report. |
 | **Submitted** | The report waits for the Financial Secretary. |
-| **Order Issued** | The Financial Secretary signed a written order. The report waits for the Grand Knight. |
+| **Order Issued** | The Financial Secretary signed a payment request. The report waits for the Grand Knight. |
 | **Approved** | The Grand Knight signed. The report waits for payment. |
 | **Reimbursed** | The Financial Secretary or the Treasurer recorded your check. |
 | **Returned** (red) | Leadership sent the report back. The reason shows on the report. |
@@ -1211,7 +1211,7 @@ A donation without a session is a standalone donation.
 ### Concept: the Knight Shepherd
 
 Any member can bring an organization's request to the council. The member who files the request is the Knight Shepherd.
-The request moves through three steps: **Vetting**, **Presentation** at a council meeting, and **Disbursement** of the check.
+The request moves through three steps: **Vetting**, **Presentation** at a council meeting, and **Payment Made** by check.
 The Trustees ask the Shepherd for a status report 6 months after the filing date.
 
 ### 8.1 File a charity grant request

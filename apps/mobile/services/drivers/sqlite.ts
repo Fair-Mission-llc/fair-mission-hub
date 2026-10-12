@@ -859,8 +859,9 @@ const DB_NAME = 'kofc.db';
  *     budget_status on CouncilGoals and CouncilBudgetForecast (the planning workflow) (Sprints 8G/8H).
  * 79: CouncilOperationsKnowledge (the Global Operations Knowledge Vault and its archive) (Sprint 8I).
  * 80: CouncilOperationsKnowledge.origin_council_stamp (the cross-council archive's badge) (Sprint 8J).
+ * 81: no table change. Plain-English lexicon pass on screen labels; phones rebuild so seeded text matches (Sprint 8K).
  */
-const SCHEMA_VERSION = 80;
+const SCHEMA_VERSION = 81;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -3219,7 +3220,7 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         const actor = await this.memberWriteActor(db, actorId);
         const row = await this.requireExpenseReport(db, reportId);
-        assertMayIssueExpenseOrder(actor, row.CouncilID, `issue the written order for expense report ${reportId}`);
+        assertMayIssueExpenseOrder(actor, row.CouncilID, `issue the payment request for expense report ${reportId}`);
         assertNotSelfApproval(actor, row);
         assertExpenseSignatureStage(row, 'financialSecretary');
         await db.runAsync('UPDATE [ExpenseReport] SET [FinancialSecretaryMemberID] = ?, [FinancialSecretaryApprovedAt] = ? WHERE [id] = ?', [

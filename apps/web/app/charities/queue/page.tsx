@@ -222,7 +222,7 @@ function PayForm({ detail, councilId, onPaid, onCancel }: { detail: CharityPropo
       </Field>
       <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={busy || blocked || checkNumber.trim() === '' || payoutDate === '' || amount.trim() === ''}>
-          {busy ? 'Recording the check…' : 'Confirm & Transmit Disbursement Check'}
+          {busy ? 'Recording the check…' : 'Confirm & Record Payment Made'}
         </Button>
         <Button variant="secondary" disabled={busy} onClick={onCancel}>
           Cancel
@@ -466,7 +466,7 @@ function CharityQueue() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Charitable Disbursements Ledger</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>Charity Payments Made Ledger</PageTitle>
       {!canDisburse ? (
         <Notice tone="error">Only this council&apos;s Financial Secretary or Treasurer, or a Super Admin, issues charity checks.</Notice>
       ) : (

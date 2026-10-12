@@ -245,7 +245,7 @@ export function SignatureFlowTree({ counts }: { counts: SignatureFlowCounts }) {
       <div
         role="img"
         aria-label={
-          `Member submits, then the Financial Secretary's written order (${counts.awaitingFinancialSecretary} waiting), the Treasurer's ledger coding ` +
+          `Member submits, then the Financial Secretary's payment request (${counts.awaitingFinancialSecretary} waiting), the Treasurer's ledger coding ` +
           `(${counts.awaitingTreasurer} waiting), the Grand Knight's counter-signature (${counts.awaitingGrandKnight} waiting), and the check ` +
           `(${counts.awaitingCheck} waiting). Council leadership may return a submitted sheet to the member as a draft.`
         }
@@ -253,7 +253,7 @@ export function SignatureFlowTree({ counts }: { counts: SignatureFlowCounts }) {
       >
         <FlowStep title="Member submits" who="Any member" tone="start" />
         <Arrow />
-        <FlowStep title="1. Written order" who="Financial Secretary" count={counts.awaitingFinancialSecretary} />
+        <FlowStep title="1. Payment request" who="Financial Secretary" count={counts.awaitingFinancialSecretary} />
         <Arrow />
         <FlowStep title="2. Ledger coding" who="Treasurer" count={counts.awaitingTreasurer} />
         <Arrow />

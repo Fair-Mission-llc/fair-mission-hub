@@ -101,7 +101,7 @@ function TreasurerDesk() {
     const block = expenseLedgerCodeBlock(user, d.report);
     if (block === 'collusion') {
       return (
-        <span title="Collusion Guard: you issued the written order on this report, so another officer must code it.">
+        <span title="Collusion Guard: you issued the payment request on this report, so another officer must code it.">
           <Pill tone="redOutline">🔒 Collusion Guard</Pill>
         </span>
       );
@@ -170,8 +170,8 @@ function TreasurerDesk() {
               <SignatureDeskTable
                 rows={rows}
                 refs={refs}
-                caption="Expense reports carrying the Financial Secretary's written order, oldest first. Choose a budget line and a ledger account for each, then code it."
-                empty="No written orders are waiting for ledger coding."
+                caption="Expense reports carrying the Financial Secretary's payment request, oldest first. Choose a budget line and a ledger account for each, then code it."
+                empty="No payment requests are waiting for ledger coding."
                 action={action}
                 drawer={(d) =>
                   mayReturn && !coded.has(d.report.id) ? (

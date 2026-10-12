@@ -38,10 +38,10 @@ const NO_REFS: ExpenseReferenceOptions = { events: [], meetings: [], activities:
 function IssuedCheck({ result, onDismiss }: { result: ExpenseDisbursementResult; onDismiss: () => void }) {
   const { disbursement, reports } = result;
   return (
-    <section aria-label="Disbursement check issued" className="rounded border-2 border-navy border-l-8 border-l-gold bg-white p-4">
+    <section aria-label="Payment made by check" className="rounded border-2 border-navy border-l-8 border-l-gold bg-white p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide">Disbursement check issued</p>
+          <p className="text-xs font-bold uppercase tracking-wide">Payment made by check</p>
           <p className="font-serif text-xl font-bold">
             Check {disbursement.CheckNumber} · {formatMoney(disbursement.TotalAmount)}
           </p>
@@ -137,7 +137,7 @@ function DisbursementLedger() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Bulk Check Disbursements</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>Bulk Check Payments Made</PageTitle>
       {!canDisburse ? (
         <Notice tone="error">Only this council&apos;s Financial Secretary or Treasurer, or a Super Admin, issues expense checks.</Notice>
       ) : (
@@ -152,7 +152,7 @@ function DisbursementLedger() {
               ) : approved.length === 0 ? (
                 <Empty>No dual-signed expense reports are waiting for a check.</Empty>
               ) : (
-                <Table caption="Expense reports carrying the Financial Secretary's written order and the Grand Knight's counter-signature. Tick the reports this check pays." head={[selectAll, 'Report', 'Payee', 'Spent for', 'Receipts', 'Total', '']}>
+                <Table caption="Expense reports carrying the Financial Secretary's payment request and the Grand Knight's counter-signature. Tick the reports this check pays." head={[selectAll, 'Report', 'Payee', 'Spent for', 'Receipts', 'Total', '']}>
                   {approved.map((d) => {
                     const mayPay = canPayExpenseReport(user, d.report);
                     const open = expanded === d.report.id;
@@ -234,7 +234,7 @@ function DisbursementLedger() {
                   {(id) => <Textarea id={id} maxLength={DISBURSEMENT_NOTES_MAX_LENGTH} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. September reimbursements" />}
                 </Field>
                 <Button type="submit" disabled={busy || chosen.length === 0 || checkNumber.trim() === '' || payoutDate === ''}>
-                  {busy ? 'Recording the check…' : 'Issue Disbursement Check'}
+                  {busy ? 'Recording the check…' : 'Record Payment Made by Check'}
                 </Button>
                 <p className="text-xs text-muted">Every selected report is marked Reimbursed with this check, or none are if any cannot be paid.</p>
               </form>

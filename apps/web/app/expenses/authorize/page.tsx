@@ -159,7 +159,7 @@ function AuthorizationDesk() {
                 <>
                   {' '}
                   <Link href="/expenses/disbursements" className="font-bold underline">
-                    Open Bulk Check Disbursements
+                    Open Bulk Check Payments Made
                   </Link>
                 </>
               ) : null}
@@ -172,8 +172,8 @@ function AuthorizationDesk() {
               <SignatureDeskTable
                 rows={rows}
                 refs={refs}
-                caption="Expense reports carrying the Financial Secretary's written order and the Treasurer's ledger coding, oldest first. Open a report's receipts to review them."
-                empty="No written orders are waiting for your counter-signature."
+                caption="Expense reports carrying the Financial Secretary's payment request and the Treasurer's ledger coding, oldest first. Open a report's receipts to review them."
+                empty="No payment requests are waiting for your counter-signature."
                 action={action}
                 drawer={(d) => (
                   <>

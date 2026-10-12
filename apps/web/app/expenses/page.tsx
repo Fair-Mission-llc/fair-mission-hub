@@ -515,8 +515,8 @@ function ExpenseSheetView({ detail, refs, charities }: { detail: ExpenseReportDe
   const note: Record<typeof report.Status, string> = {
     Draft: '',
     Submitted: report.FinancialSecretaryMemberID != null
-      ? 'The Financial Secretary issued the written order; waiting for the Grand Knight’s counter-signature.'
-      : 'Waiting for the Financial Secretary’s written order.',
+      ? 'The Financial Secretary issued the payment request; waiting for the Grand Knight’s counter-signature.'
+      : 'Waiting for the Financial Secretary’s payment request.',
     Approved: 'Approved. The Financial Secretary or Treasurer will include it in the next check run.',
     Reimbursed: 'Paid.',
   };

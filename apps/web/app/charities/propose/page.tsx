@@ -138,7 +138,7 @@ function GrantProposal() {
         tone: 'info',
         text:
           `Request #${saved.request.id} from ${saved.request.OrganizationName} for ${formatMoney(saved.request.AmountRequested)} is filed. ` +
-          `It moves through Vetting, Presentation and Disbursement; follow it under My requests. ` +
+          `It moves through Vetting, Presentation and Payment Made; follow it under My requests. ` +
           `The Trustees will ask for a status report on ${formatFullDate(notice.trusteeFollowUpDate)}.`,
       });
       setDraft(EMPTY);

@@ -757,7 +757,7 @@ export function buildCharitableRequestDetails(
 // ---- the Shepherd's 3-step tracking notice and Trustee follow-up (Sprint 5Z-Member-Charity) ----
 
 /** The three steps a filed request moves through, as the Shepherd's tracking notice and My requests table name them. */
-export const CHARITABLE_TRACKING_STEPS = ['Vetting', 'Presentation', 'Disbursement'] as const;
+export const CHARITABLE_TRACKING_STEPS = ['Vetting', 'Presentation', 'Payment Made'] as const;
 export type CharitableTrackingStep = (typeof CHARITABLE_TRACKING_STEPS)[number];
 /** Months after SubmittedAt when the council's Trustees are prompted for the request's status report. */
 export const CHARITABLE_TRUSTEE_FOLLOWUP_MONTHS = 6;
@@ -818,7 +818,7 @@ export function buildCharitableTrackingNotice(detail: Pick<CharitableRequestDeta
       `KofC: Thank you, ${detail.shepherdFirstName}. Request #${request.id} for ${request.OrganizationName} ($${request.AmountRequested.toFixed(2)}) is filed. ` +
       `Step 1, Vetting: an officer or Trustee other than you audits it. ` +
       `Step 2, Presentation: it goes on a Monthly meeting agenda for the council's vote. ` +
-      `Step 3, Disbursement: the Financial Secretary or Treasurer issues the check. ` +
+      `Step 3, Payment Made: the Financial Secretary or Treasurer issues the check. ` +
       `The Trustees will ask for a status report on ${followUp}.`,
   };
 }

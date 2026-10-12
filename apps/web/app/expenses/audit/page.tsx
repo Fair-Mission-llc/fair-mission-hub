@@ -65,7 +65,7 @@ function AuditDesk() {
       setOrdered((now) => new Map(now).set(signed.report.id, signed));
       setMessage({
         tone: 'info',
-        text: `Written order issued on report #${signed.report.id} (${formatMoney(signed.total)}) for ${submitterName(signed)}. It now waits for the Treasurer to code it to the ledger.`,
+        text: `Payment request issued on report #${signed.report.id} (${formatMoney(signed.total)}) for ${submitterName(signed)}. It now waits for the Treasurer to code it to the ledger.`,
         next: true,
       });
       await queue.reload();
@@ -77,7 +77,7 @@ function AuditDesk() {
   };
 
   const action = (d: ExpenseReportDetail) => {
-    if (ordered.has(d.report.id)) return <Pill tone="navy">✓ Written order issued</Pill>;
+    if (ordered.has(d.report.id)) return <Pill tone="navy">✓ Payment request issued</Pill>;
     const block = expenseOrderBlock(user, d.report);
     // A row the viewer may not sign shows no signing control at all, only who signs it.
     if (block === 'own-report') {
@@ -118,15 +118,15 @@ function AuditDesk() {
               ) : null}
             </Notice>
           ) : null}
-          <Panel title={`Awaiting the written order (${pending.length})`} actions={<span className="text-sm font-bold">{formatMoney(pendingTotal)} pending</span>}>
+          <Panel title={`Awaiting the payment request (${pending.length})`} actions={<span className="text-sm font-bold">{formatMoney(pendingTotal)} pending</span>}>
             {queue.loading && !queue.data ? (
               <p className="text-sm text-muted">Loading…</p>
             ) : (
               <SignatureDeskTable
                 rows={rows}
                 refs={refs}
-                caption="Submitted expense reports awaiting the Financial Secretary's written order, oldest first. Open a report's receipts to audit them."
-                empty="No submitted expense reports are waiting for a written order."
+                caption="Submitted expense reports awaiting the Financial Secretary's payment request, oldest first. Open a report's receipts to audit them."
+                empty="No submitted expense reports are waiting for a payment request."
                 action={action}
                 drawer={(d) =>
                   mayReturn && !ordered.has(d.report.id) ? (

@@ -37,7 +37,7 @@ function Affiliations() {
           ) : null
         }
       >
-        Bilateral Fraternal Affiliations
+        Connected Councils
       </PageTitle>
       <p className="mb-4 text-base">
         Affiliate with nearby councils in your state to lend each other equipment. Send an invite; the other council&apos;s Grand Knight accepts it on their

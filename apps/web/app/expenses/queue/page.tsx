@@ -49,7 +49,7 @@ function AuditQueue() {
 
   const desk = (awaitingOrder: boolean) => {
     const href = awaitingOrder ? '/expenses/audit' : '/expenses/authorize';
-    const label = awaitingOrder ? 'Awaiting written order' : 'Awaiting counter-signature';
+    const label = awaitingOrder ? 'Awaiting payment request' : 'Awaiting counter-signature';
     const reachable = awaitingOrder ? canOpenExpenseAuditDesk(user, councilId) : canOpenExpenseAuthorizeDesk(user, councilId);
     return reachable ? (
       <Link href={href} className="font-bold underline">
@@ -74,7 +74,7 @@ function AuditQueue() {
             </Notice>
           ) : null}
           <Notice tone="info">
-            Expense reports are approved by two signatures: the Financial Secretary&apos;s written order, then the Grand Knight&apos;s counter-signature.
+            Expense reports are approved by two signatures: the Financial Secretary&apos;s payment request, then the Grand Knight&apos;s counter-signature.
             This queue tracks them and returns reports to their members.
           </Notice>
           {awaitingPayment.length > 0 ? (
@@ -84,7 +84,7 @@ function AuditQueue() {
                 <>
                   .{' '}
                   <Link href="/expenses/disbursements" className="font-bold underline">
-                    Open Bulk Check Disbursements
+                    Open Bulk Check Payments Made
                   </Link>
                 </>
               ) : (
