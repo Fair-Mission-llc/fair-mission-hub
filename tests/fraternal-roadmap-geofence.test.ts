@@ -345,7 +345,7 @@ describe('Sprint 7G screens and manuals', () => {
   });
 
   it('adds the meeting check-in card to Council Wide Settings and the meeting photo to the live console', () => {
-    expect(read('apps/web/app/setup/council-settings/page.tsx')).toContain('<MeetingCheckInCard');
+    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('<MeetingCheckInCard');
     const live = read('apps/web/app/meetings/live/page.tsx');
     expect(live).toContain('MEETING_PHOTO_DRIVE_FOLDER');
     expect(live).toContain('setMeetingPhoto');

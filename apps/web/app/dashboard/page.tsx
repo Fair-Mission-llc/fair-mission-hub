@@ -39,11 +39,17 @@
 //
 // Sprint 7J Extension 2: the tab row moved into the portal frame (WorkspaceTabs in Shell.tsx), so it stays under the
 // header on every page; this page only renders the tab the anchor (or this browser's last tab) names.
+//
+// Sprint 8A: Home is a no-scroll cockpit. It holds only the single-line roadmap ribbon (RoadmapRibbon), the desk status
+// badges (DeskStatusBadges: '[ 📋 3 Vouchers Pending ]', '[ ⚠️ 2 Items Quarantined ]', each opening its Active Desk), the
+// month's four stat tiles in compact form and the four fixed-height widgets. Every queue, form and list left Home: the
+// Volunteer Time Quarantine Desk and the Inbound Council Mail Center live on the Oversight Desk, and the full Executive
+// Summary - month picker, roadmap card, budget and mission tracking, ledger, highlights and personnel audits - on the
+// Reports Desk. The inactivity sweep lives on System Settings > Council Wide Settings.
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
   canReviewBudgetPerformance,
-  canReviewVolunteerQuarantine,
   canViewExecutiveAudits,
   currentFraternalYear,
   councilWideSettings,
@@ -57,13 +63,11 @@ import {
 } from '@kofc/shared';
 import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetParts';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { FinancialSecretaryDesk, GrandKnightDesk, HomeWidgets, MemberDesk, TreasurerDesk } from '@/components/DashboardDesks';
+import { DeskStatusBadges, FinancialSecretaryDesk, GrandKnightDesk, HomeWidgets, MemberDesk, OversightDesk, TreasurerDesk } from '@/components/DashboardDesks';
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
-import { InboundMailCenter } from '@/components/PlatformAccessParts';
-import { QuarantineDesk } from '@/components/QuarantineDesk';
-import { FraternalRoadmap } from '@/components/RoadmapParts';
-import { useDashboardTab } from '@/components/WorkspaceTabs';
+import { FraternalRoadmap, RoadmapRibbon } from '@/components/RoadmapParts';
+import { DeskLink, useDashboardTab } from '@/components/WorkspaceTabs';
 import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
@@ -72,38 +76,46 @@ import { db } from '@/services/db';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-/** A stat tile: sentence-case label, the value large in the body font, one line of context under it. */
-function StatTile({ label, value, detail, tone = 'navy' }: { label: string; value: ReactNode; detail: ReactNode; tone?: 'navy' | 'red' }) {
+/**
+ * A stat tile: sentence-case label, the value large in the body font, one line of context under it. Compact (Home,
+ * Sprint 8A) trims the padding and the figure so four tiles sit in one short row.
+ */
+function StatTile({ label, value, detail, tone = 'navy', compact = false }: { label: string; value: ReactNode; detail: ReactNode; tone?: 'navy' | 'red'; compact?: boolean }) {
   return (
-    <section aria-label={label} className="flex flex-col gap-1 rounded border-2 border-navy border-t-8 border-t-gold bg-white px-4 py-3">
+    <section aria-label={label} className={cx('flex min-w-0 flex-col rounded border-2 border-navy border-t-8 border-t-gold bg-white', compact ? 'px-3 py-1.5' : 'gap-1 px-4 py-3')}>
       <h2 className="text-sm font-bold">{label}</h2>
-      <p className={cx('text-4xl font-bold leading-tight', tone === 'red' ? 'text-brand-red' : 'text-navy')}>{value}</p>
-      <p className="text-xs text-muted">{detail}</p>
+      <p className={cx('font-bold leading-tight', compact ? 'text-2xl' : 'text-4xl', tone === 'red' ? 'text-brand-red' : 'text-navy')}>{value}</p>
+      <p className="truncate text-xs text-muted">{detail}</p>
     </section>
   );
 }
 
-function Scorecards({ s }: { s: MonthlySummary }) {
+function Scorecards({ s, compact = false }: { s: MonthlySummary; compact?: boolean }) {
   const deficit = s.finances.net < 0;
+  const tile = { compact };
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className={cx('grid grid-cols-2 xl:grid-cols-4', compact ? 'gap-3' : 'gap-4 md:grid-cols-2')}>
       <StatTile
+        {...tile}
         label="Total labor hours"
         value={formatDecimalHours(s.laborHours.total)}
         detail={`${formatDecimalHours(s.laborHours.events)} at events · ${formatDecimalHours(s.laborHours.activities)} on activities`}
       />
       <StatTile
+        {...tile}
         label="Unique Knights participating"
         value={s.uniqueMembers.toLocaleString('en-US')}
         detail="Members who logged event or activity time"
       />
       <StatTile
+        {...tile}
         label="Net balance"
         tone={deficit ? 'red' : 'navy'}
         value={formatMoney(s.finances.net)}
         detail={`${deficit ? 'Deficit' : s.finances.net > 0 ? 'Surplus' : 'Break-even'}: ${formatMoney(s.finances.raised)} raised − ${formatMoney(s.finances.spend)} spent`}
       />
       <StatTile
+        {...tile}
         label="Community outreach"
         value={s.outreach.attendees.toLocaleString('en-US')}
         detail={`Attendees across ${s.outreach.events} event${s.outreach.events === 1 ? '' : 's'}`}
@@ -270,6 +282,38 @@ function AwaitingHours({ councilId }: { councilId: number }) {
   );
 }
 
+/** This month's four stat tiles in compact form, for Home. */
+function HomeScorecards({ councilId }: { councilId: number }) {
+  const now = new Date();
+  const summary = useLoad(() => db.reports.monthlySummary(councilId, now.getFullYear(), now.getMonth() + 1), [councilId]);
+  if (summary.error) return <Notice tone="error">{summary.error}</Notice>;
+  return summary.data ? <Scorecards s={summary.data} compact /> : <p className="text-sm text-muted">Loading the month…</p>;
+}
+
+/**
+ * The Home desk (Sprint 8A): one screen, no page scroll. The roadmap ribbon, the desk status badges, this month's stat
+ * tiles and the four fixed-height widgets; all the work sits one click away on its Active Desk.
+ */
+function HomeDesk({ councilId, faithOn }: { councilId: number; faithOn: boolean }) {
+  const user = useUser();
+  return (
+    <div className="flex flex-col gap-3">
+      <RoadmapRibbon
+        user={user}
+        councilId={councilId}
+        fullLink={
+          <DeskLink anchor="reports" className="font-bold underline">
+            Full roadmap →
+          </DeskLink>
+        }
+      />
+      <DeskStatusBadges user={user} councilId={councilId} />
+      <HomeScorecards councilId={councilId} />
+      <HomeWidgets user={user} councilId={councilId} faithOn={faithOn} />
+    </div>
+  );
+}
+
 function Dashboard() {
   const user = useUser();
   const flags = useFeatureFlags();
@@ -283,19 +327,20 @@ function Dashboard() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Dashboard</PageTitle>
-      <div id="dashboard-panel" aria-label={tabs.find((t) => t.id === shown)?.label ?? 'Home'} className="mt-4">
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{tabs.find((t) => t.id === shown)?.label ?? 'Home'}</PageTitle>
+      <div id="dashboard-panel" aria-label={tabs.find((t) => t.id === shown)?.label ?? 'Home'}>
         {shown === 'home' ? (
-          <div className="flex flex-col gap-6">
-            <HomeWidgets user={user} councilId={scope.councilId} faithOn={faithOn} />
-            <ExecutiveSummary councilId={scope.councilId} />
-          </div>
+          <HomeDesk councilId={scope.councilId} faithOn={faithOn} />
         ) : shown === 'grand-knight' ? (
           <GrandKnightDesk user={user} councilId={scope.councilId} />
         ) : shown === 'financial-secretary' ? (
           <FinancialSecretaryDesk user={user} councilId={scope.councilId} />
         ) : shown === 'treasurer' ? (
           <TreasurerDesk user={user} councilId={scope.councilId} />
+        ) : shown === 'oversight' ? (
+          <OversightDesk user={user} councilId={scope.councilId} />
+        ) : shown === 'reports' ? (
+          <ExecutiveSummary councilId={scope.councilId} />
         ) : (
           <MemberDesk user={user} />
         )}
@@ -304,10 +349,9 @@ function Dashboard() {
   );
 }
 
-/** The Executive Summary (Sprints 5Z-2.5 to 7G), the lower half of the Home tab since Sprint 7J. */
+/** The Executive Summary (Sprints 5Z-2.5 to 7G): the lower half of Home in Sprint 7J, the Reports Desk since Sprint 8A. */
 function ExecutiveSummary({ councilId }: { councilId: number }) {
   const user = useUser();
-  const flags = useFeatureFlags();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -346,16 +390,6 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
           </Field>
         </div>
       </div>
-      {user.memberType === 'Super Admin' ? (
-        <div className="mb-4">
-          <InboundMailCenter />
-        </div>
-      ) : null}
-      {flags.feature_volunteer_quarantine && canReviewVolunteerQuarantine(user, councilId) ? (
-        <div className="mb-4">
-          <QuarantineDesk actorId={user.memberId} councilId={councilId} />
-        </div>
-      ) : null}
       <div className="mb-4">
         <FraternalRoadmap user={user} councilId={councilId} />
       </div>

@@ -4,18 +4,23 @@
 // and Today's Event Agenda - and each desk is a compact grid of the queues of one physical desk, with a link to the full
 // desk page for every signature. The desks never sign anything themselves: the commands stay on their own pages, behind
 // their own gates (expenseOrderBlock, expenseLedgerCodeBlock, expenseCounterSignBlock).
+//
+// Sprint 8A: Home is a no-scroll cockpit. Its widgets are compact fixed-height cards (a long list scrolls inside its card,
+// never the page), and every queue that used to sit on Home is now one status badge (DeskStatusBadges) that opens its
+// Active Desk. The Volunteer Time Quarantine Desk and the Inbound Council Mail Center move to the Oversight Desk. The
+// inactivity sweep left the Financial Secretary Desk for System Settings > Council Wide Settings.
 import Link from 'next/link';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import {
   awaitsWrittenOrder,
   buildReminderStream,
-  canAdministerCouncil,
   canLogConcludedRevenue,
   canOpenExpenseAuditDesk,
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
+  canReviewVolunteerQuarantine,
+  canViewExecutiveAudits,
   dailyVerse,
-  describeError,
   feastDayTracker,
   FEAST_TRACKER_DAYS,
   formatShiftWhen,
@@ -27,9 +32,12 @@ import {
   type SessionUser,
 } from '@kofc/shared';
 import { ExpenseStatusPill, HonorVoucherBadge } from '@/components/ExpenseParts';
-import { Button, cx, Empty, Notice, Panel, Pill, Table, Td } from '@/components/ui';
+import { InboundMailCenter, readAccessRequests } from '@/components/PlatformAccessParts';
+import { QuarantineDesk } from '@/components/QuarantineDesk';
+import { cx, Empty, Notice, Panel, Pill, Table, Td } from '@/components/ui';
+import { DeskLink } from '@/components/WorkspaceTabs';
 import { formatFullDate, formatMoney, formatPersonName } from '@/lib/format';
-import { useSession } from '@/lib/session';
+import { useFeatureFlags, useSession } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -37,6 +45,22 @@ import { db } from '@/services/db';
 const MEMBER_DESK_SHIFT_DAYS = 30;
 /** How many rows a desk grid shows before pointing to the full desk. */
 const DESK_ROWS = 6;
+
+/**
+ * A Home card (Sprint 8A): a navy-ruled title over a fixed-height body. A long list scrolls inside the card, so Home
+ * itself fits one screen.
+ */
+function HomeCard({ title, actions, children }: { title: string; actions?: ReactNode; children: ReactNode }) {
+  return (
+    <section aria-label={title} className="flex h-60 min-w-0 flex-col rounded border-2 border-navy bg-white">
+      <header className="flex items-center justify-between gap-2 border-b-2 border-navy px-3 py-1.5">
+        <h2 className="truncate font-serif text-base font-bold">{title}</h2>
+        {actions}
+      </header>
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 text-sm">{children}</div>
+    </section>
+  );
+}
 
 const shortDay = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
@@ -99,29 +123,29 @@ function SheetQueue({ caption, rows, href, cta, signerColumn }: { caption: strin
 function VerseOfTheDay({ today }: { today: string }) {
   const verse = dailyVerse(today);
   return (
-    <Panel title="Bible Verse of the Day">
-      <blockquote className="border-l-8 border-gold pl-4">
-        <p className="font-serif text-lg">“{verse.text}”</p>
-        <p className="mt-2 font-bold">{verse.reference} (NABRE)</p>
+    <HomeCard title="Bible Verse of the Day">
+      <blockquote className="border-l-4 border-gold pl-3">
+        <p className="font-serif text-base">“{verse.text}”</p>
+        <p className="mt-1 font-bold">{verse.reference} (NABRE)</p>
       </blockquote>
-      <p className="mt-3 text-xs text-muted">{NABRE_NOTICE}</p>
-    </Panel>
+      <p className="mt-2 text-xs text-muted">{NABRE_NOTICE}</p>
+    </HomeCard>
   );
 }
 
 function FeastDayTracker({ today }: { today: string }) {
   const tracker = feastDayTracker(today);
   return (
-    <Panel title="Liturgical Feast Day Tracker">
-      <div data-surface="navy" className={cx('rounded border-l-8 bg-navy p-4 text-white', tracker.today.holyDayOfObligation ? 'border-crimson' : 'border-gold')}>
-        <p className="font-serif text-lg font-bold">{tracker.today.text}</p>
+    <HomeCard title="Liturgical Feast Day Tracker">
+      <div data-surface="navy" className={cx('rounded border-l-8 bg-navy px-3 py-2 text-white', tracker.today.holyDayOfObligation ? 'border-crimson' : 'border-gold')}>
+        <p className="font-serif text-base font-bold">{tracker.today.text}</p>
         {tracker.today.holyDayOfObligation ? <p className="mt-1 inline-block rounded bg-crimson px-2 py-0.5 text-sm font-bold">{HOLY_DAY_BADGE}</p> : null}
         {tracker.today.note ? <p className="mt-1 text-sm">{tracker.today.note}</p> : null}
       </div>
       {tracker.upcoming.length === 0 ? (
-        <p className="mt-3 text-sm text-muted">No feast or holy day in the next {FEAST_TRACKER_DAYS} days.</p>
+        <p className="mt-2 text-sm text-muted">No feast or holy day in the next {FEAST_TRACKER_DAYS} days.</p>
       ) : (
-        <ul className="mt-3 flex max-h-64 flex-col gap-2 overflow-y-auto pr-1" aria-label={`Feasts in the next ${FEAST_TRACKER_DAYS} days`}>
+        <ul className="mt-2 flex flex-col gap-1" aria-label={`Feasts in the next ${FEAST_TRACKER_DAYS} days`}>
           {tracker.upcoming.map((o) => (
             <li key={`${o.date}-${o.title}`} className="flex items-baseline justify-between gap-3 border-b border-line pb-1 text-sm">
               <span>
@@ -133,7 +157,7 @@ function FeastDayTracker({ today }: { today: string }) {
           ))}
         </ul>
       )}
-    </Panel>
+    </HomeCard>
   );
 }
 
@@ -155,13 +179,13 @@ function ReminderStream({ user, councilId }: { user: SessionUser; councilId: num
   }, [reload]);
   const rows = stream.data ?? [];
   return (
-    <Panel title="Live Actionable Reminders" actions={rows.length > 0 ? <Pill tone="red">{rows.length}</Pill> : null}>
+    <HomeCard title="Live Actionable Reminders" actions={rows.length > 0 ? <Pill tone="red">{rows.length}</Pill> : null}>
       {stream.error ? <Notice tone="error">{stream.error}</Notice> : null}
       {stream.data && rows.length === 0 ? <Empty>You are all caught up. Nothing needs your action.</Empty> : null}
       {rows.length > 0 ? (
-        <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto pr-1" aria-label="Actionable reminders">
+        <ul className="flex flex-col gap-1.5" aria-label="Actionable reminders">
           {rows.map((r) => (
-            <li key={r.key} className={cx('rounded border-l-4 bg-white px-3 py-2 ring-1 ring-line', r.priority === 'High' ? 'border-brand-red' : r.priority === 'Medium' ? 'border-gold' : 'border-line')}>
+            <li key={r.key} className={cx('rounded border-l-4 bg-white px-2 py-1 ring-1 ring-line', r.priority === 'High' ? 'border-brand-red' : r.priority === 'Medium' ? 'border-gold' : 'border-line')}>
               <p className="font-bold">{r.href ? <Link href={r.href} className="underline">{r.title}</Link> : r.title}</p>
               <p className="text-sm">{r.detail}</p>
             </li>
@@ -169,7 +193,7 @@ function ReminderStream({ user, councilId }: { user: SessionUser; councilId: num
         </ul>
       ) : null}
       <p className="mt-2 text-xs text-muted">Refreshes every minute. The alert bell keeps the full six-month log.</p>
-    </Panel>
+    </HomeCard>
   );
 }
 
@@ -177,7 +201,7 @@ function TodaysAgenda({ councilId, today }: { councilId: number; today: string }
   const entries = useLoad(() => db.events.listCalendarRange(councilId, today, today), [councilId, today]);
   const rows = todaysAgenda(entries.data ?? [], today);
   return (
-    <Panel title={`Today's Event Agenda · ${formatFullDate(today)}`}>
+    <HomeCard title="Today's Event Agenda">
       {entries.error ? <Notice tone="error">{entries.error}</Notice> : null}
       {entries.data && rows.length === 0 ? <Empty>No event or meeting today. The council calendar shows what is coming.</Empty> : null}
       {rows.length > 0 ? (
@@ -196,7 +220,8 @@ function TodaysAgenda({ councilId, today }: { councilId: number; today: string }
           ))}
         </Table>
       ) : null}
-    </Panel>
+      <p className="mt-1 text-xs text-muted">{formatFullDate(today)}</p>
+    </HomeCard>
   );
 }
 
@@ -204,7 +229,7 @@ function TodaysAgenda({ councilId, today }: { councilId: number; today: string }
 export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; councilId: number; faithOn: boolean }) {
   const today = toIsoDate(new Date());
   return (
-    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+    <div className={cx('grid grid-cols-1 gap-3 md:grid-cols-2', faithOn ? 'xl:grid-cols-4' : 'xl:grid-cols-2')}>
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
@@ -247,25 +272,13 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   );
 }
 
-/** The Financial Secretary Desk: the written-order queue, the Excel roster import and the inactivity sweep. */
+/**
+ * The Financial Secretary Desk: the written-order queue and the Excel roster import. Sprint 8A moved the inactivity sweep
+ * to System Settings > Council Wide Settings.
+ */
 export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const queue = useLoad(() => db.expenses.listCouncilQueue(user.memberId, councilId), [user.memberId, councilId]);
   const rows = (queue.data ?? []).filter((d) => awaitsWrittenOrder(d.report));
-  const admin = canAdministerCouncil(user, councilId);
-  const [sweeping, setSweeping] = useState(false);
-  const [message, setMessage] = useState<{ tone: 'info' | 'error'; text: string } | null>(null);
-  const sweep = async () => {
-    setSweeping(true);
-    setMessage(null);
-    try {
-      const changed = await db.members.sweepInactive(user.memberId, councilId);
-      setMessage({ tone: 'info', text: changed.length === 0 ? 'No member is past the inactivity window.' : `Marked ${changed.length} member${changed.length === 1 ? '' : 's'} Inactive.` });
-    } catch (err) {
-      setMessage({ tone: 'error', text: describeError(err) });
-    } finally {
-      setSweeping(false);
-    }
-  };
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -276,7 +289,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
         {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
         {queue.data ? <SheetQueue caption="Sheets waiting for the Financial Secretary's written order" rows={rows} href="/expenses/audit" cta="Verify & sign on the full desk" /> : null}
       </Panel>
-      <Panel title="Excel imports and roster sweeps">
+      <Panel title="Excel roster imports">
         <ul className="flex flex-col gap-3 text-sm">
           <li>
             <span className="font-bold">1. Build the roster.</span>{' '}
@@ -292,25 +305,14 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
             </Link>{' '}
             card. New members get the welcome email and a one-time setup code.
           </li>
-          <li>
-            <span className="font-bold">3. Sweep for inactive members.</span> Marks Inactive every plain member with no logged service inside the council&apos;s
-            inactivity window.
-          </li>
         </ul>
-        {admin ? (
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <Button onClick={() => void sweep()} disabled={sweeping}>
-              {sweeping ? 'Checking…' : 'Check for Inactive Members'}
-            </Button>
-          </div>
-        ) : (
-          <p className="mt-3 text-xs text-muted">Only the council&apos;s Admins import the roster and run the sweep. Ask an Admin if the roster needs it.</p>
-        )}
-        {message ? (
-          <div className="mt-3">
-            <Notice tone={message.tone}>{message.text}</Notice>
-          </div>
-        ) : null}
+        <p className="mt-3 text-xs text-muted">
+          Looking for the inactivity sweep? It is on{' '}
+          <Link href="/system-settings/council-settings" className="font-bold underline">
+            System Settings: Council Wide Settings
+          </Link>
+          , for the council&apos;s Admins.
+        </p>
       </Panel>
     </div>
   );
@@ -403,5 +405,93 @@ export function MemberDesk({ user }: { user: SessionUser }) {
         </p>
       </Panel>
     </div>
+  );
+}
+
+/**
+ * The Oversight Desk (Sprint 8A): the Volunteer Time Quarantine Desk while the council's feature_volunteer_quarantine flag
+ * is on, and for a Super Admin the Inbound Council Mail Center. Both left Home for this desk.
+ */
+export function OversightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const flags = useFeatureFlags();
+  return (
+    <div className="flex flex-col gap-4">
+      {user.memberType === 'Super Admin' ? <InboundMailCenter /> : null}
+      {flags.feature_volunteer_quarantine ? (
+        <QuarantineDesk actorId={user.memberId} councilId={councilId} />
+      ) : (
+        <Notice tone="info">The Volunteer Time Quarantine is switched off for this council (Feature Flags), so no time entry is held for review.</Notice>
+      )}
+    </div>
+  );
+}
+
+// ---- Home status badges ------------------------------------------------------------------------------
+
+interface DeskBadge {
+  key: string;
+  icon: string;
+  /** The wording after the count, for one and for many. */
+  one: string;
+  many: string;
+  count: number;
+  anchor: string;
+}
+
+const BADGE_ORDER = ['vouchers', 'orders', 'coding', 'quarantine', 'access', 'hours', 'mine'];
+
+/**
+ * The Home desk's status badges (Sprint 8A): one compact badge per queue the reader is cleared for - '[ 📋 3 Vouchers
+ * Pending ]' - each opening its Active Desk. A badge with work waiting is filled; an empty queue stays an outline.
+ */
+export function DeskStatusBadges({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const flags = useFeatureFlags();
+  const badges = useLoad(async () => {
+    const out: DeskBadge[] = [];
+    const reads: Promise<unknown>[] = [];
+    const add = (key: string, icon: string, one: string, many: string, anchor: string, count: () => Promise<number>) =>
+      reads.push(count().then((n) => out.push({ key, icon, one, many, anchor, count: n })));
+    if (canOpenExpenseAuthorizeDesk(user, councilId))
+      add('vouchers', '📋', 'Voucher Pending', 'Vouchers Pending', 'grand-knight', async () => (await db.expenses.listAuthorizationQueue(user.memberId, councilId)).length);
+    if (canOpenExpenseAuditDesk(user, councilId))
+      add('orders', '✍️', 'Written Order Waiting', 'Written Orders Waiting', 'financial-secretary', async () =>
+        (await db.expenses.listCouncilQueue(user.memberId, councilId)).filter((d) => awaitsWrittenOrder(d.report)).length,
+      );
+    if (canOpenTreasurerDesk(user, councilId))
+      add('coding', '🏷️', 'Sheet to Code', 'Sheets to Code', 'treasurer', async () => (await db.expenses.listTreasurerQueue(user.memberId, councilId)).length);
+    if (flags.feature_volunteer_quarantine && canReviewVolunteerQuarantine(user, councilId))
+      add('quarantine', '⚠️', 'Item Quarantined', 'Items Quarantined', 'oversight', async () => (await db.volunteerQuarantine.listPending(user.memberId, councilId)).length);
+    if (user.memberType === 'Super Admin')
+      add('access', '📨', 'Access Request', 'Access Requests', 'oversight', async () => (await readAccessRequests()).filter((r) => r.status === 'PENDING').length);
+    if (canViewExecutiveAudits(user, councilId))
+      add('hours', '⏳', 'Shift Awaiting Hours', 'Shifts Awaiting Hours', 'reports', async () => (await db.reports.listShiftsAwaitingHours(councilId)).filter((r) => !r.closed).length);
+    add('mine', '💼', 'Open Sheet of Mine', 'Open Sheets of Mine', 'member', async () =>
+      (await db.expenses.listUserReports(user.memberId)).filter((d) => d.report.Status !== 'Reimbursed').length,
+    );
+    // A failed read drops only its own badge.
+    await Promise.allSettled(reads);
+    return out.sort((a, b) => BADGE_ORDER.indexOf(a.key) - BADGE_ORDER.indexOf(b.key));
+  }, [user, councilId, flags.feature_volunteer_quarantine]);
+  const rows = badges.data ?? [];
+  return (
+    <nav aria-label="Desk status" className="flex flex-wrap items-center gap-2">
+      {!badges.data ? <span className="text-sm text-muted">Counting the desks…</span> : null}
+      {rows.map((b) => {
+        const text = `${b.count} ${b.count === 1 ? b.one : b.many}`;
+        return (
+          <DeskLink
+            key={b.key}
+            anchor={b.anchor}
+            label={`${text}: open the desk`}
+            className={cx(
+              'whitespace-nowrap rounded border-2 px-3 py-1 text-sm font-bold',
+              b.count === 0 ? 'border-navy bg-white text-navy' : b.key === 'quarantine' ? 'border-brand-red bg-brand-red text-white' : 'border-navy bg-gold text-navy',
+            )}
+          >
+            [ {b.icon} {text} ]
+          </DeskLink>
+        );
+      })}
+    </nav>
   );
 }

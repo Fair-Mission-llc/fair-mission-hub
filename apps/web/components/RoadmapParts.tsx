@@ -12,7 +12,10 @@
 // Under it, the Three-Signature Expense Flow draws the expense sheet's path as a tree - the member's submission, the
 // Financial Secretary's written order, the Treasurer's ledger coding, the Grand Knight's counter-signature and the
 // check - with the council's live count waiting at each signature, and the "returned to the member" branch (expenses.rejectReport).
-import { useEffect, useRef, useState } from 'react';
+//
+// Sprint 8A: the dashboard's Home desk shows the roadmap as RoadmapRibbon - one compact line of status chips that links
+// to the full card on the Reports Desk. Both send the overdue alerts the same way (useRoadmapAlerts).
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { FraternalRoadmap as Roadmap, RoadmapMilestone, RoadmapMilestoneStatus, SessionUser, SignatureFlowCounts } from '@kofc/shared';
 import { Button, cx, Notice, Panel, Pill } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';
@@ -75,18 +78,15 @@ function MilestoneNode({ milestone, index }: { milestone: RoadmapMilestone; inde
   );
 }
 
-/** The Annual Fraternal Roadmap card, opening on the current cycle (roadmapCycleYear), with the year's arrows. */
-export function FraternalRoadmap({ user, councilId }: { user: SessionUser; councilId: number }) {
-  const [cycleYear, setCycleYear] = useState<number | null>(null);
-  const roadmap = useLoad(() => db.elections.getFraternalRoadmap(user.memberId, councilId, cycleYear ?? undefined), [user.memberId, councilId, cycleYear]);
+/**
+ * Overdue steps of the current cycle alert leadership once per dashboard visit; the data layer skips repeats. `current`
+ * is false while the reader browses another year. Returns the note to show, if any.
+ */
+function useRoadmapAlerts(r: Roadmap | null | undefined, current: boolean, user: SessionUser, councilId: number): string | null {
   const [alertNote, setAlertNote] = useState<string | null>(null);
   const swept = useRef<string | null>(null);
-  const r = roadmap.data;
-  const year = r?.cycleYear ?? null;
-
-  // Overdue steps of the current cycle alert leadership once per dashboard visit; the data layer skips repeats.
   useEffect(() => {
-    if (!r || cycleYear !== null || !maySendAlerts(user, councilId)) return;
+    if (!r || !current || !maySendAlerts(user, councilId)) return;
     if (!r.milestones.some((m) => m.status === 'overdue')) return;
     const key = `${councilId}:${r.cycleYear}`;
     if (swept.current === key) return;
@@ -101,7 +101,17 @@ export function FraternalRoadmap({ user, councilId }: { user: SessionUser; counc
         ),
       )
       .catch(() => setAlertNote(null));
-  }, [r, cycleYear, user, councilId]);
+  }, [r, current, user, councilId]);
+  return alertNote;
+}
+
+/** The Annual Fraternal Roadmap card, opening on the current cycle (roadmapCycleYear), with the year's arrows. */
+export function FraternalRoadmap({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const [cycleYear, setCycleYear] = useState<number | null>(null);
+  const roadmap = useLoad(() => db.elections.getFraternalRoadmap(user.memberId, councilId, cycleYear ?? undefined), [user.memberId, councilId, cycleYear]);
+  const r = roadmap.data;
+  const year = r?.cycleYear ?? null;
+  const alertNote = useRoadmapAlerts(r, cycleYear === null, user, councilId);
 
   return (
     <Panel
@@ -145,6 +155,52 @@ export function FraternalRoadmap({ user, councilId }: { user: SessionUser; counc
       )}
       {r ? <SignatureFlowTree counts={r.signatureFlow} /> : null}
     </Panel>
+  );
+}
+
+const CHIP_LOOK: Record<RoadmapMilestoneStatus, string> = {
+  complete: 'border-navy bg-navy text-white',
+  upcoming: 'border-gold bg-white text-navy',
+  overdue: 'border-brand-red bg-brand-red text-white',
+  scheduled: 'border-line bg-white text-navy',
+};
+
+const shortDate = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+/**
+ * The Home desk's single-line roadmap (Sprint 8A): the current cycle's milestones as chips joined by a navy rule, each
+ * with its status and due date, and a link to the full card on the Reports Desk. It never wraps; a narrow screen scrolls
+ * it sideways.
+ */
+export function RoadmapRibbon({ user, councilId, fullLink }: { user: SessionUser; councilId: number; fullLink: ReactNode }) {
+  const roadmap = useLoad(() => db.elections.getFraternalRoadmap(user.memberId, councilId), [user.memberId, councilId]);
+  const r = roadmap.data;
+  const alertNote = useRoadmapAlerts(r, true, user, councilId);
+  return (
+    <section
+      aria-label="Annual Fraternal Roadmap"
+      title={alertNote ?? undefined}
+      className="flex items-center gap-3 overflow-x-auto whitespace-nowrap rounded border-2 border-navy bg-white px-3 py-1.5 text-sm"
+    >
+      <span className="shrink-0 font-serif font-bold">🗺️ Roadmap{r ? ` ${r.cycleYear}` : ''}</span>
+      {roadmap.error ? <span className="text-brand-red">{roadmap.error}</span> : null}
+      {!r ? (
+        roadmap.error ? null : <span className="text-muted">Loading…</span>
+      ) : (
+        <ol aria-label={`Roadmap for ${r.cycleYear}`} className="flex shrink-0 items-center">
+          {r.milestones.map((m, i) => (
+            <li key={m.id} className="flex items-center">
+              {i > 0 ? <span aria-hidden="true" className="h-1 w-6 bg-navy" /> : null}
+              <span className={cx('rounded-full border-2 px-2.5 py-0.5 font-bold', CHIP_LOOK[m.status])}>
+                {m.status === 'complete' ? '✓ ' : m.status === 'overdue' ? '! ' : ''}
+                {m.title} · {STATUS_TEXT[m.status]} · {shortDate(m.dueOn)}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <span className="ml-auto shrink-0">{fullLink}</span>
+    </section>
   );
 }
 

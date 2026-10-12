@@ -8,7 +8,7 @@
 //   - max_shift_padding_hours (DEFAULT 1.0): a shift report may run this many hours over the shift's scheduled length;
 //   - inactivity_threshold_days (DEFAULT 365): the inactivity check marks Inactive a member with no logged service in
 //     more than this many days (member-lifecycle.ts planInactivitySweep).
-// The council's Active Admins and officers (a Role with Officer = 1) edit them on /setup/council-settings, and any
+// The council's Active Admins and officers (a Role with Officer = 1) edit them on /system-settings/council-settings, and any
 // Super Admin for any council (councils.setCouncilWideSettings).
 //
 // Platform Settings are the universal limits every council shares, kept in the one-row PlatformSettings table and

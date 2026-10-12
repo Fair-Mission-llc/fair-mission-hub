@@ -130,8 +130,8 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     label: 'Navigation Guide',
     hint: 'What each link in your sidebar does, in plain English',
   },
-  'setup/council-settings': {
-    href: '/setup/council-settings',
+  'system-settings/council-settings': {
+    href: '/system-settings/council-settings',
     label: 'Council Wide Settings',
     hint: 'Daily activity and hour limits, shift padding and the inactive-member window',
     restrictedTo: 'council officers, Admins and Super Admins',

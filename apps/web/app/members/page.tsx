@@ -5,7 +5,8 @@
 // training classes for editing. Admins work on their own council, Super Admins pick any.
 // The member type choices come from grantableMemberTypes, and the drivers enforce the same tiers
 // (ADMIN_REQUIRED, SUPER_ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED), so a refusal is reported, never hidden.
-// Sprint 7A: Admins mark charter members on the form and run the inactivity sweep from the page header.
+// Sprint 7A: Admins mark charter members on the form. (The inactivity sweep that sat in the page header moved to
+// System Settings > Council Wide Settings in Sprint 8A.)
 // Sprint 7F: Super Admins get an "Impersonate User" button on each row (mayImpersonateMember: never themselves or another
 // Super Admin). It opens a read-only view of the portal as that member, which the gold banner ends.
 import { useEffect, useState } from 'react';
@@ -16,7 +17,6 @@ import {
   canEditMember,
   describeError,
   grantableMemberTypes,
-  councilWideSettings,
   mayImpersonateMember,
   type Degree,
   type Member,
@@ -340,15 +340,12 @@ function MemberForm({
 function Roster() {
   const user = useUser();
   const scope = useCouncilScope();
-  const council = useLoad(() => db.councils.get(scope.councilId), [scope.councilId]);
-  const inactiveDays = councilWideSettings(council.data).inactivity_threshold_days;
   const [selected, setSelected] = useState<number | 'new' | null>(null);
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<number | 'all'>('all');
   const [skillsOpen, setSkillsOpen] = useState(false);
   const [extensionsOpen, setExtensionsOpen] = useState(false);
   const [sweepMessage, setSweepMessage] = useState<Message | null>(null);
-  const [sweeping, setSweeping] = useState(false);
   const { impersonate } = useSession();
   const router = useRouter();
   const canImpersonate = user.memberType === 'Super Admin';
@@ -388,28 +385,6 @@ function Roster() {
   const current = typeof selected === 'number' ? members.data?.find((r) => r.member.id === selected)?.member ?? null : null;
   const failure = lookups.error ?? members.error;
 
-  // Sprint 7A: the inactivity sweep (members.sweepInactive). There is no scheduler in the portal, so an Admin runs it here.
-  // Sprint 7C: the button reads 'Check for Inactive Members' and the window is the council's inactivity_threshold_days.
-  const sweep = async () => {
-    setSweeping(true);
-    setSweepMessage(null);
-    try {
-      const swept = await db.members.sweepInactive(user.memberId, scope.councilId);
-      setSweepMessage({
-        tone: 'info',
-        text:
-          swept.length === 0
-            ? `No active member has gone more than ${inactiveDays} days without logged service.`
-            : `Marked ${swept.length} member${swept.length === 1 ? '' : 's'} Inactive: ${swept.map((m) => `${m.MemberFirstName} ${m.MemberLastName}`).join(', ')}.`,
-      });
-      await members.reload();
-    } catch (err) {
-      setSweepMessage({ tone: 'error', text: describeError(err) });
-    } finally {
-      setSweeping(false);
-    }
-  };
-
   return (
     <>
       <PageTitle
@@ -419,16 +394,6 @@ function Roster() {
             <Button variant="secondary" onClick={() => setSkillsOpen(true)} aria-expanded={skillsOpen}>
               Skills
             </Button>
-            {canCreateMembers(user, scope.councilId) ? (
-              <Button
-                variant="secondary"
-                disabled={sweeping}
-                title={`Marks Inactive every active member with no logged service in more than ${inactiveDays} days (set on Council Wide Settings)`}
-                onClick={() => void sweep()}
-              >
-                {sweeping ? 'Checking…' : '🔍 Check for Inactive Members'}
-              </Button>
-            ) : null}
             {canCreateMembers(user, scope.councilId) ? <Button onClick={() => setSelected('new')}>Add member</Button> : null}
           </div>
         }

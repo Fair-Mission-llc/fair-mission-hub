@@ -381,9 +381,10 @@ describe('Sprint 7A screens', () => {
     expect(tracker).toContain('CanonizationShield');
   });
 
-  it('gives Admins the charter flag and the inactivity sweep on the roster', () => {
+  it('gives Admins the charter flag on the roster and the inactivity sweep on Council Wide Settings (Sprint 8A)', () => {
     const roster = read('apps/web/app/members/page.tsx');
-    expect(roster).toContain('db.members.sweepInactive');
+    expect(roster).not.toContain('db.members.sweepInactive');
     expect(roster).toContain('Charter member');
+    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('db.members.sweepInactive');
   });
 });

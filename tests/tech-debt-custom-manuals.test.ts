@@ -156,7 +156,7 @@ describe('custom user guides', () => {
     expect(route).toContain('mayCompileCustomManual(session.actor, payload.council.id)');
     expect(route).toContain("'compile_all_manuals.py'");
     expect(route).toContain('runPythonScript(');
-    const page = read('apps/web/app/setup/council-settings/page.tsx');
+    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
     expect(page).toContain('📥 Generate Custom Admin Guide PDF');
     expect(page).toContain('📥 Generate Custom Member Guide PDF');
     const script = read('scripts/compile_all_manuals.py');

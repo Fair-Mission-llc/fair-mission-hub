@@ -9,6 +9,8 @@ import {
   dashboardTabFromAnchor,
   dashboardTabsFor,
   feastDayTracker,
+  landingRouteFor,
+  ACTIVE_DESKS_TITLE,
   portalAreas,
   todaysAgenda,
   type CalendarEntry,
@@ -36,23 +38,24 @@ describe('schema version 71', () => {
 
 describe('dashboard tabs by seat (pure)', () => {
   it('lists Home first and the Member Desk last', () => {
-    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'member']);
+    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'oversight', 'reports', 'member']);
   });
 
   it('gives each officer only their own desk', () => {
-    expect(ids(member({ roles: ['Grand Knight'] }))).toEqual(['home', 'grand-knight', 'member']);
-    expect(ids(member({ roles: ['Financial Secretary'] }))).toEqual(['home', 'financial-secretary', 'member']);
-    expect(ids(member({ roles: ['Treasurer'] }))).toEqual(['home', 'treasurer', 'member']);
-    expect(ids(member({ roles: ['Recorder'] }))).toEqual(['home', 'member']);
+    expect(ids(member({ roles: ['Grand Knight'] }))).toEqual(['home', 'grand-knight', 'oversight', 'reports', 'member']);
+    expect(ids(member({ roles: ['Deputy Grand Knight'] }))).toEqual(['home', 'oversight', 'reports', 'member']);
+    expect(ids(member({ roles: ['Financial Secretary'] }))).toEqual(['home', 'financial-secretary', 'reports', 'member']);
+    expect(ids(member({ roles: ['Treasurer'] }))).toEqual(['home', 'treasurer', 'reports', 'member']);
+    expect(ids(member({ roles: ['Recorder'] }))).toEqual(['home', 'reports', 'member']);
   });
 
   it("clears a seat only on the officer's own council", () => {
-    expect(ids(member({ roles: ['Grand Knight'] }), 2)).toEqual(['home', 'member']);
+    expect(ids(member({ roles: ['Grand Knight'] }), 2)).toEqual(['home', 'reports', 'member']);
   });
 
   it("gives the council's Admins and any Super Admin every desk, as the full desk pages do", () => {
     expect(ids(member({ memberType: 'Admin' }))).toEqual(DASHBOARD_TABS.map((t) => t.id));
-    expect(ids(member({ memberType: 'Admin' }), 2)).toEqual(['home', 'member']);
+    expect(ids(member({ memberType: 'Admin' }), 2)).toEqual(['home', 'reports', 'member']);
     expect(ids(member({ memberType: 'Super Admin' }), 2)).toEqual(DASHBOARD_TABS.map((t) => t.id));
   });
 
@@ -136,7 +139,8 @@ describe('Sprint 7J screens', () => {
     expect(desks).toContain('db.expenses.listAuthorizationQueue');
     expect(desks).toContain('db.expenses.listTreasurerQueue');
     expect(desks).toContain('/templates/roster_import_template.xlsx');
-    expect(desks).toContain('db.members.sweepInactive');
+    // Sprint 8A: the sweep left the Financial Secretary Desk for System Settings.
+    expect(desks).not.toContain('db.members.sweepInactive');
     // The desks summarize; the signatures stay on the full desk pages behind their own gates.
     expect(desks).not.toMatch(/grandKnightAuthorizeOrder|treasurerLedgerAudit|financialSecretaryAuditOrder/);
   });
@@ -159,13 +163,14 @@ describe('Sprint 7J Extension 2 global workspace tabs and root redirect', () => 
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<Tabs');
     const tabs = read('apps/web/components/WorkspaceTabs.tsx');
     expect(tabs).toContain('dashboardTabsFor(user, user.councilId)');
-    expect(tabs).toContain('href={`/dashboard#${tab.anchor}`}');
+    expect(tabs).toContain('href={`/dashboard#${anchor}`}');
+    expect(tabs).toContain('anchor={tab.anchor}');
     expect(tabs).toMatch(/sticky top-0/);
   });
 
   it('sends the portal root to /dashboard, or the member hub when the seat lacks it', () => {
     const root = read('apps/web/app/page.tsx');
-    expect(root).toContain("redirect(portalAreas(user, features, tenantType).includes('dashboard') ? '/dashboard' : '/member-actions')");
+    expect(root).toContain('redirect(landingRouteFor(user, features, tenantType))');
   });
 
   it('gives plain members no dashboard, so they stay on the member hub', () => {
@@ -173,5 +178,56 @@ describe('Sprint 7J Extension 2 global workspace tabs and root redirect', () => 
     const officer = { ...plain, isOfficer: true, roles: ['Grand Knight'] };
     expect(portalAreas(plain)).not.toContain('dashboard');
     expect(portalAreas(officer)).toContain('dashboard');
+  });
+});
+
+describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
+  it('moves the phone database to 73 and records the change', () => {
+    expect(read('Schema.sql')).toContain('(schema version 73)');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[3-9]|[8-9]\d);/);
+    expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 73 | 8A |');
+  });
+
+  it('titles the frame row Active Desks and draws folder tabs with a gold open edge', () => {
+    expect(ACTIVE_DESKS_TITLE).toBe('Active Desks');
+    const tabs = read('apps/web/components/WorkspaceTabs.tsx');
+    expect(tabs).toContain('aria-label={ACTIVE_DESKS_TITLE}');
+    expect(tabs).toContain('rounded-t-lg border-x-2 border-t-2 border-navy');
+    expect(tabs).toContain('border-t-[6px] border-t-gold');
+  });
+
+  it('sends officers and Admins to /dashboard and plain members to the member hub', () => {
+    const plain = { memberId: 1, councilId: 1, memberType: 'Member' as const, isOfficer: false };
+    expect(landingRouteFor(plain)).toBe('/member-actions');
+    expect(landingRouteFor({ ...plain, isOfficer: true, roles: ['Recorder'] })).toBe('/dashboard');
+    expect(landingRouteFor({ ...plain, memberType: 'Admin' })).toBe('/dashboard');
+    expect(landingRouteFor({ ...plain, memberType: 'Super Admin' })).toBe('/dashboard');
+  });
+
+  it('keeps queues, forms and lists off Home: a roadmap ribbon, status badges, compact tiles and widgets only', () => {
+    const page = read('apps/web/app/dashboard/page.tsx');
+    const home = page.slice(page.indexOf('function HomeDesk('), page.indexOf('function Dashboard('));
+    for (const part of ['<RoadmapRibbon', '<DeskStatusBadges', '<HomeScorecards', '<HomeWidgets']) expect(home).toContain(part);
+    for (const gone of ['<QuarantineDesk', '<InboundMailCenter', '<FraternalRoadmap', '<NoShowAudit', '<AwaitingHours', '<BudgetTracking', '<ExecutiveSummary']) expect(home).not.toContain(gone);
+    expect(page).toContain("shown === 'oversight' ? (");
+    expect(page).toContain('<OversightDesk user={user} councilId={scope.councilId} />');
+    expect(page).toContain("shown === 'reports' ? (");
+    const desks = read('apps/web/components/DashboardDesks.tsx');
+    expect(desks).toContain("'Vouchers Pending'");
+    expect(desks).toContain("'Items Quarantined'");
+    expect(desks).toContain('[ {b.icon} {text} ]');
+    expect(desks).toContain('<QuarantineDesk actorId={user.memberId} councilId={councilId} />');
+    expect(read('apps/web/components/RoadmapParts.tsx')).toContain('export function RoadmapRibbon');
+  });
+
+  it('houses Council Wide Settings and the inactivity sweep under System Settings only', () => {
+    expect(portalAreas({ memberId: 1, councilId: 1, memberType: 'Admin', isOfficer: false })).toContain('system-settings/council-settings');
+    expect(read('apps/web/components/Sidebar.tsx')).toContain("href: '/system-settings/council-settings'");
+    expect(read('apps/web/app/setup/council-settings/page.tsx')).toContain("redirect('/system-settings/council-settings')");
+    const settings = read('apps/web/app/system-settings/council-settings/page.tsx');
+    expect(settings).toContain('<InactivitySweepCard council={council} />');
+    expect(settings).toContain('canAdministerCouncil(user, council.id)');
+    expect(read('apps/web/app/members/page.tsx')).not.toContain('sweepInactive');
+    expect(read('apps/web/components/DashboardDesks.tsx')).not.toContain('sweepInactive');
   });
 });

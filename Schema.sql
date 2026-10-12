@@ -3234,3 +3234,14 @@ GO
 -- portal root (/) opens /dashboard after sign-in, or the member hub for members whose seat does not open it. The phone
 -- database version moves to 72.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8A: EXECUTIVE DASHBOARD PURGE AND ACTIVE DESKS (schema version 73)
+--
+-- No table changes. The frame's tab row is titled Active Desks and drawn as card-index folder tabs. The dashboard's
+-- Home desk fits one screen: a single-line roadmap ribbon, status badges that open each desk, this month's stat tiles
+-- and four fixed-height widgets. The Volunteer Time Quarantine Desk and the Inbound Council Mail Center move to a new
+-- Oversight Desk, and the full Executive Summary to a new Reports Desk. Council Wide Settings moves to
+-- /system-settings/council-settings and becomes the only home of the inactivity sweep. The portal root sends officers
+-- and Admins to /dashboard first. The phone database version moves to 73.
+-- =========================================================================

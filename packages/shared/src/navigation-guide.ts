@@ -101,7 +101,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   'system-settings/remote-assistance': {
     member: 'Shows the screens officers and Admins share when they click Request Remote Officer Assistance, so you can guide them.',
   },
-  'setup/council-settings': {
+  'system-settings/council-settings': {
     member:
       "Sets the council's own numbers in three cards: the expense filing window, the volunteer time limits and logging window, and the hours reminder timing. Click (i) beside a field for what it does.",
   },

@@ -2514,7 +2514,7 @@ export interface DataService {
      */
     setRankThresholds(actorId: number, councilId: number, thresholds: RankThresholds): Promise<Council>;
     /**
-     * Sprint 7C: the Council Wide Settings page (/setup/council-settings). Saves one or more of the council's
+     * Sprint 7C: the Council Wide Settings page (/system-settings/council-settings). Saves one or more of the council's
      * quarantine_max_daily_activities, quarantine_max_single_hours, max_shift_padding_hours and inactivity_threshold_days
      * (council-settings.ts cleanCouncilWideSettings) and resolves to the updated council; a field left out keeps its
      * stored value. By an Active Admin or officer of the council, or an Active Super Admin (ADMIN_REQUIRED,

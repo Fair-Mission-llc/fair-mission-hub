@@ -73,7 +73,7 @@ export type PortalArea =
   | 'resources/bulletins'
   | 'resources/marketing'
   | 'credentials-vault'
-  | 'setup/council-settings'
+  | 'system-settings/council-settings'
   | 'system-settings/global-settings'
   | 'system-settings/remote-assistance'
   | 'navigation-guide'
@@ -258,7 +258,7 @@ export const canOpenConstitutionalAdvisor = (u: Actor): boolean => canOpenOffice
 export const canOpenCredentialsVault = (u: Actor): boolean => canOpenOfficerTools(u);
 
 /**
- * The Council Wide Settings page (Sprint 7C, /setup/council-settings), mirroring assertMayEditCouncilWideSettings: the
+ * The Council Wide Settings page (Sprint 7C, /system-settings/council-settings), mirroring assertMayEditCouncilWideSettings: the
  * council's Admins and officers, and any Super Admin.
  */
 export const canEditCouncilWideSettings = (u: Actor): boolean => canOpenOfficerTools(u);
@@ -663,7 +663,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canOpenConstitutionalAdvisor(u)) areas.push('governance/advisor');
   if (canOpenCredentialsVault(u)) areas.push('credentials-vault');
   // Sprint 7C: the Council Wide Settings page - the volunteer time limits and the inactivity window - is an officer tool too.
-  if (canEditCouncilWideSettings(u)) areas.push('setup/council-settings');
+  if (canEditCouncilWideSettings(u)) areas.push('system-settings/council-settings');
   if (isAdmin(u) || canViewExecutiveDashboard(u, u.councilId)) areas.push('performance/charts');
   // Sprint 6K: every member reads the council's Team Legacy history and records oral history; the annals' keepers are
   // decided inside (assertMayKeepCouncilAnnals).
@@ -734,7 +734,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'feature-flags',
       'system-settings/global-settings',
       'system-settings/remote-assistance',
-      'setup/council-settings',
+      'system-settings/council-settings',
       'members',
       'supreme-sync',
       'council-lookups',

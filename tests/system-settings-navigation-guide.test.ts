@@ -24,7 +24,7 @@ const grandKnight = actor({ isOfficer: true, roles: ['Grand Knight'] });
 const member = actor();
 
 const FINANCE_DESKS = ['finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'finance/audit', 'finance/treasurer-desk', 'expenses/queue', 'expenses/audit', 'expenses/authorize', 'expenses/disbursements', 'charities/queue', 'charities/vetting', 'donations', 'dashboard'];
-const ADMIN_DESKS = ['councils', 'feature-flags', 'system-settings/global-settings', 'setup/council-settings', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'lookups', 'parishes', 'activities', 'events'];
+const ADMIN_DESKS = ['councils', 'feature-flags', 'system-settings/global-settings', 'system-settings/council-settings', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'lookups', 'parishes', 'activities', 'events'];
 
 describe('Schema 63', () => {
   it('bumps the phone schema version and records the release without a table change', () => {

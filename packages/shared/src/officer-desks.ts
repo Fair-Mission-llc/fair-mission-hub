@@ -10,16 +10,25 @@
 //   - Treasurer Desk           canOpenTreasurerDesk        (the Ledger Line Coder queue at /finance/treasurer-desk)
 //   - Member Desk              every dashboard reader      (their own expense sheets and coming shifts)
 // The sidebar is not changed: every desk page stays reachable from it.
+//
+// Sprint 8A (schema version 73): the tab row is titled Active Desks. Home becomes a no-scroll cockpit of status
+// badges, so the work it used to hold moves onto two more desks:
+//   - Oversight Desk           canReviewVolunteerQuarantine (the Volunteer Time Quarantine Desk; for a Super Admin also
+//                                                           the Inbound Council Mail Center)
+//   - Reports Desk             every dashboard reader      (the full Executive Summary, roadmap and personnel audits)
+// landingRouteFor names where the portal root sends a signed-in reader.
 // =========================================================================
 import type { CalendarEntry, SessionUser } from './contract';
 import { observancesBetween, liturgicalBanner, type Observance } from './liturgical';
-import { canOpenExpenseAuditDesk, canOpenExpenseAuthorizeDesk, canOpenTreasurerDesk } from './permissions';
+import type { FeatureFlags } from './features';
+import { canOpenExpenseAuditDesk, canOpenExpenseAuthorizeDesk, canOpenTreasurerDesk, canReviewVolunteerQuarantine, isAdmin, portalAreas } from './permissions';
 import { addDays } from './planning';
+import type { TenantType } from './tenant';
 import type { NotificationLog } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
 
-export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'member';
+export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'oversight' | 'reports' | 'member';
 
 export interface DashboardTab {
   id: DashboardTabId;
@@ -34,16 +43,20 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'grand-knight', label: 'Grand Knight Desk', anchor: 'grand-knight' },
   { id: 'financial-secretary', label: 'Financial Secretary Desk', anchor: 'financial-secretary' },
   { id: 'treasurer', label: 'Treasurer Desk', anchor: 'treasurer' },
+  { id: 'oversight', label: 'Oversight Desk', anchor: 'oversight' },
+  { id: 'reports', label: 'Reports Desk', anchor: 'reports' },
   { id: 'member', label: 'Member Desk', anchor: 'member' },
 ];
 
-/** The tabs this reader gets on the council's dashboard: Home and the Member Desk always, each officer desk by its gate. */
+/** The tabs this reader gets on the council's dashboard: Home, Reports and Member always, each other desk by its gate. */
 export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
   const cleared: Record<DashboardTabId, boolean> = {
     home: true,
     'grand-knight': canOpenExpenseAuthorizeDesk(u, councilId),
     'financial-secretary': canOpenExpenseAuditDesk(u, councilId),
     treasurer: canOpenTreasurerDesk(u, councilId),
+    oversight: canReviewVolunteerQuarantine(u, councilId),
+    reports: true,
     member: true,
   };
   return DASHBOARD_TABS.filter((t) => cleared[t.id]);
@@ -53,6 +66,18 @@ export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
 export function dashboardTabFromAnchor(hash: string | null | undefined, tabs: readonly DashboardTab[]): DashboardTabId {
   const anchor = String(hash ?? '').replace(/^#/, '').trim().toLowerCase();
   return tabs.find((t) => t.anchor === anchor)?.id ?? 'home';
+}
+
+/** The title of the frame's tab row (Sprint 8A). */
+export const ACTIVE_DESKS_TITLE = 'Active Desks';
+
+/**
+ * Where the portal root (/) sends a signed-in reader (Sprint 8A): anyone holding an officer seat or Admin keys, and
+ * anyone else whose seat opens the dashboard, lands on the /dashboard Active Desks hub; plain members keep the member hub.
+ */
+export function landingRouteFor(u: Actor, flags?: FeatureFlags, tenant?: TenantType): '/dashboard' | '/member-actions' {
+  if (isAdmin(u) || u.isOfficer) return '/dashboard';
+  return portalAreas(u, flags, tenant).includes('dashboard') ? '/dashboard' : '/member-actions';
 }
 
 // ---- the live actionable reminders stream ----------------------------------------------------------

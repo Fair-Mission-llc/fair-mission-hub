@@ -171,9 +171,9 @@ describe('Council Wide Settings page and plain-English labels', () => {
     const base = { memberId: 9, councilId: 1, isOfficer: false };
     expect(canEditCouncilWideSettings({ ...base, memberType: 'Member' })).toBe(false);
     expect(canEditCouncilWideSettings({ ...base, memberType: 'Member', isOfficer: true })).toBe(true);
-    expect(portalAreas({ ...base, memberType: 'Admin' })).toContain('setup/council-settings');
-    expect(PORTAL_NAV_GROUPS.find((g) => g.id === 'setup')!.items).toContain('setup/council-settings');
-    const page = read('apps/web/app/setup/council-settings/page.tsx');
+    expect(portalAreas({ ...base, memberType: 'Admin' })).toContain('system-settings/council-settings');
+    expect(PORTAL_NAV_GROUPS.find((g) => g.id === 'setup')!.items).toContain('system-settings/council-settings');
+    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
     expect(page).toContain('Council Wide Settings');
     expect(page).toContain('db.councils.setCouncilWideSettings');
     // Sprint 7C Extension: the Platform Limits card moved to Global System Parameters.
@@ -187,7 +187,8 @@ describe('Council Wide Settings page and plain-English labels', () => {
     const parts = read('apps/web/components/ExpenseParts.tsx');
     expect(parts).toContain("EXPENSE_APPROVE_LABEL = '📝 Verify & Sign Expense'");
     expect(parts).toContain("EXPENSE_COUNTERSIGN_LABEL = '✍️ Final Release for Payment'");
-    expect(read('apps/web/app/members/page.tsx')).toContain('🔍 Check for Inactive Members');
+    // Sprint 8A: the sweep lives only on System Settings > Council Wide Settings.
+    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('🔍 Check for Inactive Members');
     const guide = read('docs/ADMIN_USER_GUIDE.md');
     for (const old of ['Clear Hours to Ledger', 'Delete Fraudulent Time', 'Code to Ledger', '📜 Approve Expense', 'Countersign Expense', 'Run inactivity sweep']) {
       expect(guide).not.toContain(old);

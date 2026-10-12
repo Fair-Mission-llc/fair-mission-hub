@@ -439,10 +439,10 @@ describe('sign-in gates and the mail center', () => {
     expect(read('apps/mobile/app/sign-in.tsx')).toContain('db.accessRequests.submit(draft)');
   });
 
-  it('shows the Inbound Council Mail Center to Super Admins on the Executive Dashboard', () => {
-    const page = read('apps/web/app/dashboard/page.tsx');
-    expect(page).toContain("user.memberType === 'Super Admin' ? (");
-    expect(page).toContain('<InboundMailCenter />');
+  it('shows the Inbound Council Mail Center to Super Admins on the dashboard Oversight Desk (Sprint 8A)', () => {
+    const desks = read('apps/web/components/DashboardDesks.tsx');
+    expect(desks).toContain("{user.memberType === 'Super Admin' ? <InboundMailCenter /> : null}");
+    expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<InboundMailCenter />');
     expect(read('apps/web/components/PlatformAccessParts.tsx')).not.toMatch(/bg-black/);
   });
 

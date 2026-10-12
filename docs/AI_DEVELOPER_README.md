@@ -166,7 +166,7 @@ The platform is multi-tenant at two levels.
 
 ### 4.3 Feature flags and settings
 
-Behavior is also switched per council by `flag_*` and `feature_*` columns on `Council` (see `/feature-flags`), by council-wide limits on `/setup/council-settings`, and by the one-row `PlatformSettings` table for platform-wide limits. Check these before you assume a screen is broken: it may be switched off.
+Behavior is also switched per council by `flag_*` and `feature_*` columns on `Council` (see `/feature-flags`), by council-wide limits on `/system-settings/council-settings`, and by the one-row `PlatformSettings` table for platform-wide limits. Check these before you assume a screen is broken: it may be switched off.
 
 Since Sprint 7E (schema 64) the day and hour windows are settings too, never constants. Each council sets its expense filing window, volunteer logging window and hours reminder delay and cadence (`Council` columns). Super Admins set the meeting invitation horizon and the portal session length (`PlatformSettings`). `packages/shared/src/council-settings.ts` is the source of truth: each setting has its range, its card on the settings pages, its (i) help text and an `inUse` mark. Seven settings are saved for features that do not exist yet (`inUse: false`). Read a council's values with `councilWideSettings(council)` and the platform's with `platformSettings(row)`. The old constants (`EXPENSE_SUBMISSION_GRACE_DAYS`, `HOURS_REMINDER_FIRST_DAY` and so on) are only the defaults. The live values for a signed-in member are on the **Navigation Guide** under **Your time limits**.
 

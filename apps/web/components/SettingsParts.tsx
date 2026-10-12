@@ -1,5 +1,5 @@
 'use client';
-// Sprint 7C: the number forms behind the Council Wide Settings page (/setup/council-settings) and the Super Admin's
+// Sprint 7C: the number forms behind the Council Wide Settings page (/system-settings/council-settings) and the Super Admin's
 // Platform Settings on Global System Parameters (/system-settings/global-settings; on /lookups until the Sprint 7C
 // Extension). Each field shows its plain-English label, its range and what it does; saving sends only the fields that
 // changed. The rules (labels, ranges, quarter-hour steps) come from council-settings.ts, which the

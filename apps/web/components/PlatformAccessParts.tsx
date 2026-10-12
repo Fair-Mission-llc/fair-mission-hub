@@ -89,7 +89,7 @@ export function AccessRequestForm({ onCancel }: { onCancel: () => void }) {
 
 // ---- Inbound Council Mail Center ------------------------------------------------------
 
-async function readAccessRequests(): Promise<CouncilAccessRequest[]> {
+export async function readAccessRequests(): Promise<CouncilAccessRequest[]> {
   const res = await fetch(ACCESS_REQUESTS_ROUTE).catch(() => null);
   const body = (await res?.json().catch(() => null)) as { requests?: CouncilAccessRequest[]; message?: string } | null;
   if (!res?.ok) throw new Error(body?.message ?? 'The server did not answer.');

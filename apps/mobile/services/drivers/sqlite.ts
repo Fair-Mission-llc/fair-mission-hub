@@ -801,8 +801,10 @@ const DB_NAME = 'kofc.db';
  * 71: no table change - the portal dashboard becomes tabbed Home and Officer Desks (Sprint 7J); phones rebuild in step.
  * 72: no table change - the portal's Home and Officer Desk tabs move into the page frame on every page, and the portal
  *     root opens /dashboard (Sprint 7J Extension 2); phones rebuild in step.
+ * 73: no table change - the portal dashboard becomes the no-scroll Active Desks hub with Oversight and Reports desks,
+ *     and Council Wide Settings moves under /system-settings (Sprint 8A); phones rebuild in step.
  */
-const SCHEMA_VERSION = 72;
+const SCHEMA_VERSION = 73;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

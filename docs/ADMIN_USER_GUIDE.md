@@ -29,7 +29,7 @@
 16. [Council Wide Settings and platform settings](#16-council-wide-settings-and-platform-settings)
 17. [Access requests, check payments, asset photos, impersonation and remote help](#17-access-requests-check-payments-asset-photos-impersonation-and-remote-help)
 18. [Annual roadmap, meeting check-in and meeting photos](#18-annual-roadmap-meeting-check-in-and-meeting-photos)
-19. [The tabbed dashboard and the Officer Desks](#19-the-tabbed-dashboard-and-the-officer-desks)
+19. [The Active Desks dashboard](#19-the-active-desks-dashboard)
 20. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
@@ -179,7 +179,7 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
 | `feature_council_history` | **Council history** | Council history (Team Legacy) | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
-| `feature_volunteer_quarantine` | **Volunteer time quarantine** | The **Volunteer Time Quarantine Desk** on the Executive Dashboard. Members' hours also stop going to review (section 15). | None |
+| `feature_volunteer_quarantine` | **Volunteer time quarantine** | The **Volunteer Time Quarantine Desk** on the **Oversight Desk** of the dashboard. Members' hours also stop going to review (section 15). | None |
 
 The flags follow four rules.
 
@@ -936,7 +936,7 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 
 **Goal:** Review one month of council activity.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard**.
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Reports Desk** tab. **Home** shows only this month's four tiles.
 
 **Steps:**
 1. Choose the **Month** and the **Year**.
@@ -1549,7 +1549,7 @@ The platform sends no message when an expense report changes status. The member 
 | --- | --- | --- | --- |
 | A shift starts in 24 hours | A reminder email with a calendar file | Every volunteer on the shift | The event's shift roster |
 | A meeting starts in 24 hours | A reminder email with a calendar file and the agenda | Every invitee | **Meeting Center** |
-| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Executive Dashboard** → **Shifts awaiting hours** |
+| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Executive Dashboard** → **Reports Desk** → **Shifts awaiting hours** |
 | Every 7 days after that (the council can change the days, section 16.3) | A follow-up text, until the shift is older than the logging window (90 days by default) | The volunteer | Same panel. The row shows **Closed** when the window ends. |
 | An officer sends an urgent alert | A phone push alert and a bell entry, kept 6 months | Members with the chosen skills or shifts | **Council Messages & Alerts** → **Dispatch High-Priority Push Notification Alert** |
 | A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on **Affiliated Roster** or **Supreme Council Sync** |
@@ -1636,7 +1636,7 @@ The shield has four levels. A member reaches a level when both the hours and the
 
 **Goal:** Set the hours and events that make a Saint in your council.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Top 5 Volunteers Leaderboard**.
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Reports Desk** → **Top 5 Volunteers Leaderboard**.
 
 **Steps:**
 1. Find **Canonization shield thresholds** under the leaderboard.
@@ -1658,7 +1658,7 @@ The shield has four levels. A member reaches a level when both the hours and the
 
 **Goal:** See the month's volunteers next to the cash collected.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard**.
+**Start point:** Sidebar → Performance → **Executive Dashboard** → **Reports Desk** tab.
 
 **Steps:**
 1. Choose the **Month** and the **Year**.
@@ -1743,12 +1743,15 @@ The platform keeps a history of every council that a member belongs to. The hist
 
 **Goal:** Mark members **Inactive** after more days without logged service than the council allows.
 
-**Start point:** Sidebar → System Settings → **Affiliated Roster**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Roster Inactivity Sweep** card.
+
+The **Roster Inactivity Sweep** card is the only place to run the check. The roster page and the **Financial Secretary Desk** do not show the button.
 
 **Steps:**
-1. Check the number of days in **Council Wide Settings** (section 16.3). The default is 365 days.
-2. Select **🔍 Check for Inactive Members** at the top of the roster. The check starts at once.
-3. Read the message. The message names each member marked **Inactive**.
+1. Check the number of days in **Days without service before a member counts as inactive** (section 16.3). The default is 365 days.
+2. Scroll to the **Roster Inactivity Sweep** card.
+3. Select **🔍 Check for Inactive Members**. The check starts at once. You cannot undo the check.
+4. Read the message. The message names each member marked **Inactive**.
 
 **Expected result:** Each named member shows **Inactive** in the roster.
 
@@ -1764,6 +1767,7 @@ The sweep follows these rules:
 | --- | --- | --- |
 | A member was marked **Inactive** by mistake. | The member served but did not log hours. | Set the member's **Status** to **Active** on the member form. Ask the member to log hours. |
 | A quiet member stays **Active**. | The member has no join date, or is an Admin. | Enter the **Date joined council**. Change an Admin's status by hand. |
+| The card says *"Only the council's Admins and Super Admins run the sweep."* | Officers may open **Council Wide Settings**, but only Admins run the check. | Ask a council Admin to run the check. |
 
 ---
 
@@ -1834,7 +1838,7 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 
 **Goal:** Decide each held entry, so that true hours count and false hours never count.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **🚨 Volunteer Time Quarantine Desk** (at the top of the page).
+**Start point:** **Active Desks** row → **Oversight Desk** → **🚨 Volunteer Time Quarantine Desk**. On **Home**, the **[ ⚠️ 2 Items Quarantined ]** badge opens the same desk.
 
 **Steps:**
 1. Read the count of pending entries in the desk header.
@@ -1865,13 +1869,15 @@ Some numbers belong to one council. Other numbers belong to every council at onc
 
 | Kind | Who changes it | Where | What it holds |
 | --- | --- | --- | --- |
-| Council Wide Settings | The council's Admins and officers, or a Super Admin | Sidebar → System Settings → **Council Wide Settings** | The volunteer time limits, the time windows and the reminder timing of one council |
+| Council Wide Settings | The council's Admins and officers, or a Super Admin | Sidebar → System Settings → **Council Wide Settings** | The volunteer time limits, the time windows and the reminder timing of one council. The **Roster Inactivity Sweep** card (council Admins and Super Admins run it). |
 | Platform Settings | Super Admins only | Sidebar → System Settings → **Global System Parameters** → **Platform Settings** | The invitation lead time, the sign-in length, the record retention, the recording time limit and two character limits for every council |
 | Base dues rate and tenant type | Super Admins only | Sidebar → System Settings → **Global System Parameters** → **Global Council Parameters Dashboard** | The dues rate and the organization type of one council |
 
 A new council starts with the default values. A change applies to the next entry that a member saves. A change never moves hours that are already logged or held.
 
 The time windows and reminder days were fixed numbers in earlier versions. Each council now sets its own numbers.
+
+The page address is `/system-settings/council-settings`. Every administration and setup page sits under the System Settings pillar. An old bookmark to `/setup/council-settings` opens the new address.
 
 ### 16.2 Concept: the setting cards and the (i) help
 
@@ -2038,7 +2044,7 @@ A council that is not on the platform can ask for access from the sign-in page. 
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
-The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests in the **Inbound Council Mail Center** card on the Executive Dashboard.
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests in the **Inbound Council Mail Center** card on the **Oversight Desk** of the dashboard.
 
 Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
 
@@ -2056,7 +2062,7 @@ Approving a request marks the request as reviewed. Approving does not create the
 
 **Goal:** Mark a council's access request as reviewed.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Inbound Council Mail Center**.
+**Start point:** **Active Desks** row → **Oversight Desk** → **Inbound Council Mail Center**. On **Home**, the **📨 Access Requests** badge opens the same desk.
 
 **Steps:**
 1. Read the council name, the city, the state and the contact email of the request.
@@ -2292,7 +2298,7 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 
 ### 18.1 Concept: the Annual Fraternal Roadmap
 
-The **Annual Fraternal Roadmap** is a card on the **Executive Dashboard**. The card shows the three steps that hand the council over to its next fraternal year. A cycle carries the calendar year of its steps. The 2027 cycle elects and budgets the 2027-2028 fraternal year.
+The **Annual Fraternal Roadmap** is a card on the **Reports Desk** of the dashboard. **Home** shows the same steps as one line, the roadmap ribbon. The card shows the three steps that hand the council over to its next fraternal year. A cycle carries the calendar year of its steps. The 2027 cycle elects and budgets the 2027-2028 fraternal year.
 
 | Step | Window | The portal marks the step done when |
 | --- | --- | --- |
@@ -2320,7 +2326,7 @@ The card opens on the current cycle. The current cycle changes to the next year 
 
 **Goal:** See where the council stands on its yearly hand-over, and alert the leaders to a missed step.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard**.
+**Start point:** **Active Desks** row → **Reports Desk**. On **Home**, select **Full roadmap →** in the roadmap ribbon.
 
 **Steps:**
 1. Scroll to the **Annual Fraternal Roadmap** card.
@@ -2435,43 +2441,68 @@ When the location check fails, the phone asks for the 4-digit **meeting PIN**. T
 
 ---
 
-## 19. The tabbed dashboard and the Officer Desks
+## 19. The Active Desks dashboard
 
-### 19.1 Concept: the tabbed dashboard
+### 19.1 Concept: the Active Desks row
 
-The **Executive Dashboard** opens as a page with tabs. The page title reads **Dashboard**. A row of tabs sits under the title.
+The **Executive Dashboard** is a set of desks. A row of folder tabs sits under the navy header on every page. The row has the title **Active Desks**.
 
-- The **Home** tab is the first tab. Every reader of the dashboard gets the **Home** tab.
-- The Officer Desks follow the **Home** tab. Each desk collects the work of one officer seat on one screen.
-- The **Member Desk** is the last tab. Every reader of the dashboard gets the **Member Desk**.
+- Each tab looks like the tab of a paper file folder. A navy outline frames each tab.
+- The open desk is white and raised. A deep gold edge runs along its top.
+- **Home** is the first tab. **Member Desk** is the last tab.
+- Select a tab on any page. The dashboard opens on that desk.
 
-The **Home** tab shows four widgets at the top. The full **Executive Summary** follows the widgets. The **Executive Summary** keeps every card from earlier sprints: the **Inbound Council Mail Center**, the **🚨 Volunteer Time Quarantine Desk**, the **Annual Fraternal Roadmap**, the scorecards, the budget gauges and the **Executive audits**. Earlier sections of this guide name the **Executive Dashboard** as a start point. For those tasks, open the **Home** tab.
+Only readers who may open the dashboard see the row. These readers are the council's Admins and officers, and Super Admins.
 
-| Widget on the Home tab | What the widget shows |
+After you sign in, the portal opens on the dashboard **Home** desk when you hold an officer seat or Admin rights. A member without an officer seat or Admin rights opens on **Member Actions**.
+
+The left sidebar does not change. Every desk page stays in the sidebar.
+
+### 19.2 Concept: the Home desk
+
+The **Home** desk fits on one screen. You do not scroll the page. **Home** holds four rows and no work lists.
+
+| Row on Home | What the row shows |
 | --- | --- |
-| **Bible Verse of the Day** | One short verse from the New American Bible, Revised Edition (NABRE). The verse changes each day. |
-| **Live Actionable Reminders** | Expense sheets that wait for your signature, then your unread alerts. High-priority lines come first. The list shows up to 8 lines and refreshes every minute. |
-| **Liturgical Feast Day Tracker** | Today's feast or season, and the feasts and holy days of the next 30 days. A Holy Day of Obligation shows a crimson badge. |
-| **Today's Event Agenda** | Every council event and meeting on today's date. All-day events come first. Meetings follow by start time. |
+| Roadmap ribbon | The **Annual Fraternal Roadmap** steps on one line. Each step shows its status and due date. **Full roadmap →** opens the **Reports Desk**. |
+| Status badges | One badge for each queue you may work, with its count. Select a badge to open its desk. |
+| Stat tiles | This month's labor hours, unique Knights, net balance and community outreach. |
+| Widgets | **Bible Verse of the Day**, **Live Actionable Reminders**, **Liturgical Feast Day Tracker** and **Today's Event Agenda**. A long list scrolls inside its own card. |
+
+The status badges:
+
+| Badge | Desk it opens | Who sees the badge |
+| --- | --- | --- |
+| **[ 📋 3 Vouchers Pending ]** | **Grand Knight Desk** | The Grand Knight (GK), the council's Admins and Super Admins |
+| **[ ✍️ 2 Written Orders Waiting ]** | **Financial Secretary Desk** | The Financial Secretary (FS), the council's Admins and Super Admins |
+| **[ 🏷️ 1 Sheet to Code ]** | **Treasurer Desk** | The Treasurer, the council's Admins and Super Admins |
+| **[ ⚠️ 2 Items Quarantined ]** | **Oversight Desk** | The GK, the Deputy Grand Knight (DGK), the council's Admins and Super Admins, while **Volunteer time quarantine** is on |
+| **[ 📨 1 Access Request ]** | **Oversight Desk** | Super Admins |
+| **[ ⏳ 4 Shifts Awaiting Hours ]** | **Reports Desk** | Every reader of the dashboard |
+| **[ 💼 2 Open Sheets of Mine ]** | **Member Desk** | Every reader of the dashboard |
+
+A badge with work waiting is filled with gold. The quarantine badge is red. A badge with a count of 0 is white.
 
 The **Bible Verse of the Day** and the **Liturgical Feast Day Tracker** show only while the council's **Faith Center** module is on. A white-label organization does not see the two faith widgets.
 
-The left sidebar does not change. Every desk page stays in the sidebar. Use the sidebar when you need a page that the tabs do not show.
+### 19.3 Concept: the desks
 
-### 19.2 Concept: the Officer Desks
+A desk summarizes the work of one seat. A desk links to its full desk page. You sign on the full desk page. The desks never sign, code or release a sheet.
 
-An Officer Desk is a summary of one physical desk. Each desk shows the count of sheets that wait, and the oldest 6 sheets in a grid. Each desk links to its full desk page. You sign on the full desk page. The tabs never sign, code or release a sheet.
-
-The portal shows a desk tab only to a reader who may open the full desk page.
+The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's Grand Knight (GK), the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the Financial Secretary's order and the Treasurer's coding, and wait for the final release. A link to the disbursement vault. | Sidebar → Finances → **GK Expense Authorize** |
-| **Financial Secretary Desk** | The council's Financial Secretary (FS), the council's Admins and Super Admins | The **Written-order queue**, the count of all sheets in the leadership queue, and the **Excel imports and roster sweeps** card. | Sidebar → Finances → **FS Expense Audit** |
-| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that carry the FS order and wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
+| **Grand Knight Desk** | The council's GK, the council's Admins and Super Admins | The **Voucher Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. | Sidebar → Finances → **GK Expense Authorize** |
+| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The **Written-order queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | Sidebar → Finances → **FS Expense Audit** |
+| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | Sidebar → Finances → **Treasurer Ledger Audit Desk** |
+| **Oversight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The **🚨 Volunteer Time Quarantine Desk** (section 15). Super Admins also get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
+| **Reports Desk** | Every reader of the dashboard | The full **Executive Summary**: the month and year pickers, the **Annual Fraternal Roadmap** card, the stat tiles, the budget gauges, the ledger, the highlights and the **Executive audits**. | None. The desk is the full page. |
 | **Member Desk** | Every reader of the dashboard | **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Shared Member Center** |
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
+
+Earlier sections of this guide name the **Executive Dashboard** as a start point. For those tasks, open the **Reports Desk**.
 
 Each tab has its own web address. The address is the dashboard address with the tab name after a `#` sign:
 
@@ -2481,45 +2512,49 @@ Each tab has its own web address. The address is the dashboard address with the 
 | **Grand Knight Desk** | `/dashboard#grand-knight` |
 | **Financial Secretary Desk** | `/dashboard#financial-secretary` |
 | **Treasurer Desk** | `/dashboard#treasurer` |
+| **Oversight Desk** | `/dashboard#oversight` |
+| **Reports Desk** | `/dashboard#reports` |
 | **Member Desk** | `/dashboard#member` |
 
 Save a desk address as a browser bookmark to open the desk directly. The browser also remembers the last tab you opened. The dashboard opens on that tab the next time. A tab you cannot open falls back to **Home**.
 
-### 19.3 Read the Home tab widgets
+### 19.4 Read the Home desk
 
 > **Who can do this:** the council's Admins and officers, and Super Admins. Other members do not see the **Dashboard**.
+> **Warning:** when the roadmap ribbon shows an overdue step, the portal sends a push alert to the council's leaders. You cannot recall an alert.
 
-**Goal:** See today's verse, feasts, events and the work that waits for you.
+**Goal:** See the council's state and the work that waits for you, on one screen.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Home**.
+**Start point:** **Active Desks** row → **Home**.
 
 **Steps:**
-1. Select the **Home** tab. The **Home** tab is selected when the page opens for the first time.
-2. Read the **Bible Verse of the Day** card.
-3. Read the **Live Actionable Reminders** card. A line with a link needs your signature.
-4. Select the link on a reminder line. The full desk page opens.
-5. Read the **Liturgical Feast Day Tracker** card. The pill on each line says how many days away the feast is.
-6. Read the **Today's Event Agenda** grid. Select an event or meeting name to open the council calendar.
-7. Scroll down to the **Executive Summary** for the month's scorecards and audits.
+1. Select the **Home** tab. The portal opens on **Home** after you sign in.
+2. Read the roadmap ribbon. The gold step is next. A red step is overdue.
+3. Read the status badges. A gold or red badge has work waiting.
+4. Select a badge. The badge's desk opens.
+5. Read the four stat tiles for this month.
+6. Read the four widgets. Select a reminder link to open its full desk page.
+7. Select **Reports Desk** for other months, the budget gauges and the audits.
 
-**Expected result:** The four widgets show today's content. The **Executive Summary** shows the current month.
+**Expected result:** **Home** shows the ribbon, the badges, the tiles and the widgets without a page scroll.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The verse and the feast tracker do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
+| A badge you expect does not show. | Your seat does not clear that desk, or the module is off. | Ask the officer who holds the seat. |
 | *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
-| A reminder stays after you read the alert. | The stream refreshes once each minute. | Wait 1 minute, or reload the page. |
+| The page scrolls on a small screen. | The screen is shorter than a laptop screen. | Use a laptop or desktop screen, or zoom the browser out. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
 
-### 19.4 Release vouchers from the Grand Knight Desk
+### 19.5 Release vouchers from the Grand Knight Desk
 
 > **Who can do this:** the council's Grand Knight and Super Admins sign. The council's Admins read the desk.
 > **Warning:** the final release sets the sheet to **Approved** and sends the sheet to payment. You cannot undo the release.
 
 **Goal:** Find the sheets that wait for the final release, and release them.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Grand Knight Desk**.
+**Start point:** **Active Desks** row → **Grand Knight Desk**.
 
 **Steps:**
 1. Select the **Grand Knight Desk** tab.
@@ -2536,41 +2571,39 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | The **Grand Knight Desk** tab does not show. | You do not hold the Grand Knight seat on this council, and you are not an Admin. | Use the **Home** tab. Ask the Grand Knight to release the sheets. |
 | A sheet shows no release button on the full desk. | You submitted, ordered or coded that sheet (the collusion guard). | Ask a Super Admin to release the sheet. |
 
-### 19.5 Work the Financial Secretary Desk and the roster imports
+### 19.6 Work the Financial Secretary Desk and the roster imports
 
-> **Who can do this:** the council's Financial Secretary and Super Admins sign orders. Only the council's Admins and Super Admins import the roster and run the sweep.
-> **Warning:** the inactivity sweep marks members **Inactive** at once. The roster import sends a welcome email to each new member. You cannot recall an email.
+> **Who can do this:** the council's Financial Secretary and Super Admins sign orders. Only the council's Admins and Super Admins import the roster.
+> **Warning:** the roster import sends a welcome email to each new member. You cannot recall an email.
 
 **Goal:** Sign the waiting expense orders, and keep the roster current.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Financial Secretary Desk**.
+**Start point:** **Active Desks** row → **Financial Secretary Desk**.
 
 **Steps:**
 1. Select the **Financial Secretary Desk** tab.
 2. Read the **Sheets waiting for your written order** count.
 3. Select **Verify & sign on the full desk**. The **FS Expense Audit** page opens.
 4. Select **📝 Verify & Sign Expense** on each sheet. Return to the dashboard.
-5. In the **Excel imports and roster sweeps** card, select **Download the Excel roster template**.
+5. In the **Excel roster imports** card, select **Download the Excel roster template**.
 6. Fill in the template. Save the **Roster** sheet as CSV.
 7. Select **Supreme roster sync**. Load the CSV file on that page. Each new member gets a welcome email.
-8. Admins only: return to the desk. Select **Check for Inactive Members**. The sweep marks members **Inactive** at once.
 
-**Expected result:** The signed sheets move to the Treasurer. The sweep says *"Marked 2 members Inactive."* or *"No member is past the inactivity window."*
+**Expected result:** The signed sheets move to the Treasurer. The new members show in the roster.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| **Check for Inactive Members** does not show. | Only Admins run the sweep. | Ask an Admin to run the sweep. |
-| A plain member stays Active after the sweep. | The member logged service inside the council's inactivity window. | No action. Council Wide Settings sets the window (section 16). |
+| The inactivity sweep is not on the desk. | The sweep moved to System Settings. | Open Sidebar → System Settings → **Council Wide Settings** (section 14.9). |
 | The roster file does not load. | The file is not CSV. | Save the **Roster** sheet as CSV, then load the file again. |
 
-### 19.6 Code sheets from the Treasurer Desk
+### 19.7 Code sheets from the Treasurer Desk
 
 > **Who can do this:** the council's Treasurer and Super Admins code sheets. The council's Admins read the desk.
 
 **Goal:** Find the sheets that wait for a budget line and a ledger account, and code them.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Treasurer Desk**.
+**Start point:** **Active Desks** row → **Treasurer Desk**.
 
 **Steps:**
 1. Select the **Treasurer Desk** tab.
@@ -2588,13 +2621,13 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | The **Treasurer Desk** tab does not show. | You do not hold the Treasurer seat on this council, and you are not an Admin. | Ask the Treasurer to code the sheets. |
 | **Log its concluded revenue** does not show. | Only the Treasurer and Super Admins log concluded revenue. | Ask the Treasurer to log the revenue. |
 
-### 19.7 Check your own work on the Member Desk
+### 19.8 Check your own work on the Member Desk
 
 > **Who can do this:** every reader of the dashboard.
 
 **Goal:** See your own unpaid expense sheets and your shifts for the next 30 days.
 
-**Start point:** Sidebar → Performance → **Executive Dashboard** → **Member Desk**.
+**Start point:** **Active Desks** row → **Member Desk**.
 
 **Steps:**
 1. Select the **Member Desk** tab.
