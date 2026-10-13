@@ -2051,7 +2051,7 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 
 ### 17.1 Concept: council access requests
 
-A council that is not on the platform can ask for access from the sign-in page. The sign-in page has a **🏢 Register Your Council / Request Access** button on the web and on the phone.
+A council that is not on the platform can ask for access from the sign-in page. The sign-in page has a small **[ 🔑 Request Access ]** link under the sign-in prompts, on the web and on the phone. Select the link to open the form.
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
@@ -2513,7 +2513,7 @@ Every module that a seat works in is a folder at the top of that seat's desk (se
 
 ### 19.2 Concept: the Home desk
 
-The **Home** desk fits on one laptop or desktop screen. You do not scroll the page. **Home** holds seven cards in two rows, and nothing else. Each card has a fixed height. A long list scrolls inside its own card.
+**Home** holds seven large cards, and nothing else. The cards show two across on a laptop screen, and three across on a very wide screen. Each card grows to show its full list. Scroll the page to see the lower cards.
 
 | Card on Home | What the card shows |
 | --- | --- |
@@ -2607,7 +2607,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 > **Who can do this:** the council's Admins and officers, and Super Admins. Other members do not see the **Dashboard**.
 
-**Goal:** See your reminders, today's agenda, the open shifts and the month's top volunteers, on one screen.
+**Goal:** See your reminders, today's agenda, the open shifts and the month's top volunteers.
 
 **Start point:** **Active Desks** row → **Home**.
 
@@ -2621,7 +2621,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 7. To see the status badges, select the **Oversight Desk** tab.
 8. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
 
-**Expected result:** **Home** shows the seven cards without a page scroll. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
+**Expected result:** **Home** shows the seven cards. Scroll the page to see the lower cards. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -2632,7 +2632,6 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | *"No member has logged hours this month yet."* | No active member of the council logged hours in the current month. | No action. The card fills when members log hours. |
 | *"Every shift in the next 30 days has its volunteers."* | No shift in the next 30 days is short of volunteers. | No action. |
 | *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
-| The page scrolls on a small screen. | The screen is shorter than a laptop screen. | Use a laptop or desktop screen, or zoom the browser out. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
 
 ### 19.4.1 Open a module folder on your desk
@@ -3671,6 +3670,46 @@ The desk has three folders across the top:
 | --- | --- | --- |
 | The **Super Admin Desk** tab is missing. | You signed in with another account, or you view the portal as another member. | Sign in with the platform owner's account. Stop the view-as session. |
 | A module switch has no effect on a council. | The council's members must reload the portal. | Ask the members to reload the page. |
+
+## 26. The global search bar
+
+### 26.1 Concept: the global search bar
+
+The portal header has a search bar between the council name and the **Messaging** menu. The search bar is on every page.
+
+Type 2 or more letters. A list of results opens under the search bar. The results are in four kinds:
+
+| Kind | What the result opens |
+| --- | --- |
+| **Page** | A portal page that your role can open. The search never shows a page that your sidebar does not show. |
+| **Event** | One of your council's events. The result opens the **Event Planner** if you can plan events. Otherwise, the result opens the **Visual Master Calendar**. |
+| **Member** | An active member of your council. Only readers of the **Affiliated Roster** get member results. The result opens the roster. |
+| **Help** | The **Online Help Center** and the **Interactive Help Desk**, with your words already in their search box. The two help results are always at the end of the list. |
+
+Each kind shows at most 5 results.
+
+### 26.2 Find a page, an event, a member or a help answer
+
+> **Who can do this:** every signed-in member. Member results show only for readers of the **Affiliated Roster**.
+
+**Goal:** Open a page, an event, a member or a help answer from the header.
+
+**Start point:** The search bar in the portal header.
+
+**Steps:**
+1. Select the search bar.
+2. Type 2 or more letters, for example `budget` or `fish fry`.
+3. Select a result. Or use the up and down arrow keys, then push **Enter**.
+
+**Expected result:** The page of the result opens. A help result opens its help page with your words already searched.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| No list opens. | You typed fewer than 2 letters. | Type more letters. |
+| Only the two help results show. | No page, event or member name starts with your words. | Try fewer or different words. Or select a help result. |
+| No member results show. | Your role cannot open the **Affiliated Roster**. | No action. Ask a council Admin to find the member. |
+| A page you expect does not show. | Your role cannot open the page, or the council's module is off. | Ask a council Admin. |
 
 ## Appendix: QR code files
 

@@ -3722,3 +3722,13 @@ GO
 -- =========================================================================
 ALTER TABLE [Donation] ADD [historical_account_owner_entity] VARCHAR(20) NOT NULL DEFAULT 'COUNCIL' CONSTRAINT [CK_Donation_historical_account_owner_entity] CHECK ([historical_account_owner_entity] IN ('COUNCIL', 'PARISH', 'THIRD_PARTY'));
 GO
+
+-- =========================================================================
+-- Sprint 8P Stage 1: GLOBAL SHELL INFRASTRUCTURE AND HOME PAGE EXPANSION (schema version 87)
+--
+-- No table changes. The portal header carries a global search bar (global-search.ts searchGlobal) that finds the
+-- reader's own pages, the council's events, the council's members for roster readers, and links into the Online Help
+-- Center and the Interactive Help Desk. The sign-in page's access request button becomes the understated
+-- '[ 🔑 Request Access ]' link on the web and the phone. The Home cards are larger, grow with their content and the
+-- page scrolls in the browser (the Sprint 8A one-screen rule is retired). The phone database version moves to 87.
+-- =========================================================================

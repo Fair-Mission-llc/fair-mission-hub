@@ -22,6 +22,12 @@ const invalid = (message: string, details: Record<string, unknown> = {}) => new 
 /** CouncilAccessRequests.status values: every request starts PENDING; a Super Admin marks it APPROVED. */
 export const ACCESS_REQUEST_STATUSES: readonly AccessRequestStatus[] = ['PENDING', 'APPROVED'];
 /** Where every new access request is emailed: Council 15295's own mailbox. */
+/**
+ * Sprint 8P Stage 1: the sign-in page's understated access request link, the same text on the web and the phone. It
+ * replaced the full-width '🏢 Register Your Council / Request Access' button.
+ */
+export const ACCESS_REQUEST_LINK_LABEL = '[ 🔑 Request Access ]';
+
 export const ACCESS_REQUEST_NOTIFY_EMAIL = 'council15295@stmarys.org';
 /** Longest council_name (VARCHAR(150)). */
 export const ACCESS_REQUEST_COUNCIL_NAME_MAX_LENGTH = 150;

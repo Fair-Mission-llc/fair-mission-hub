@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  ACCESS_REQUEST_LINK_LABEL,
   ACCESS_REQUEST_NOTIFY_EMAIL,
   accessRequestEmail,
   assertAccessRequestTransition,
@@ -433,9 +434,12 @@ describe('remote assistance', () => {
 });
 
 describe('sign-in gates and the mail center', () => {
-  it('puts the Register Your Council button on both sign-in screens', () => {
-    expect(read('apps/web/components/Shell.tsx')).toContain('🏢 Register Your Council / Request Access');
-    expect(read('apps/mobile/app/sign-in.tsx')).toContain('🏢 Register Your Council / Request Access');
+  it('puts the understated access request link on both sign-in screens (Sprint 8P Stage 1)', () => {
+    expect(ACCESS_REQUEST_LINK_LABEL).toBe('[ 🔑 Request Access ]');
+    for (const screen of ['apps/web/components/Shell.tsx', 'apps/mobile/app/sign-in.tsx']) {
+      expect(read(screen)).toContain('{ACCESS_REQUEST_LINK_LABEL}');
+      expect(read(screen)).not.toContain('🏢 Register Your Council / Request Access');
+    }
     expect(read('apps/mobile/app/sign-in.tsx')).toContain('db.accessRequests.submit(draft)');
   });
 

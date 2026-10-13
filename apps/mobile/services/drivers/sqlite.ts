@@ -903,8 +903,10 @@ const DB_NAME = 'kofc.db';
  *     ParishDisbursementRequest.settlement_method (CHECK / PARISH_HELD) (Sprint 8O).
  * 86: Donation.historical_account_owner_entity, the owner snapshot stamped when a donation is recorded (Sprint 8O
  *     Extension).
+ * 87: no table change - the portal header's global search bar, the understated '[ 🔑 Request Access ]' sign-in link
+ *     on the web and the phone, and the larger, page-scrolling Home tiles (Sprint 8P Stage 1); phones rebuild in step.
  */
-const SCHEMA_VERSION = 86;
+const SCHEMA_VERSION = 87;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

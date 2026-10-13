@@ -5,8 +5,8 @@
 // desk page for every signature. The desks never sign anything themselves: the commands stay on their own pages, behind
 // their own gates (expenseOrderBlock, expenseLedgerCodeBlock, expenseCounterSignBlock).
 //
-// Sprint 8A: Home is a no-scroll cockpit. Its widgets are compact fixed-height cards (a long list scrolls inside its card,
-// never the page), and every queue that used to sit on Home is now one status badge (DeskStatusBadges) that opens its
+// Sprint 8A: Home was a no-scroll cockpit of compact fixed-height cards (Sprint 8P Stage 1 retired that: the cards are
+// larger, grow with their content and the page scrolls in the browser), and every queue that used to sit on Home is now one status badge (DeskStatusBadges) that opens its
 // Active Desk. The Volunteer Time Quarantine Desk and the Inbound Council Mail Center move to the Oversight Desk. The
 // inactivity sweep left the Financial Secretary Desk for System Settings > Council Wide Settings.
 //
@@ -138,21 +138,22 @@ const MEMBER_DESK_SHIFT_DAYS = 30;
 const DESK_ROWS = 6;
 
 /**
- * A Home card (Sprint 8A): a navy-ruled title over a fixed-height body. A long list scrolls inside the card, so Home
- * itself fits one screen. The navy tone (Sprint 8D/8E) is the high-contrast honor card: white on navy, gold-edged.
+ * A Home card (Sprint 8A): a navy-ruled title over its body. Sprint 8P Stage 1: the fixed height and the inner scroll are
+ * gone - the card is at least 20rem tall (min-h-80) and grows with its content, and the page scrolls in the browser.
+ * The navy tone (Sprint 8D/8E) is the high-contrast honor card: white on navy, gold-edged.
  */
 function HomeCard({ title, actions, tone = 'white', children }: { title: string; actions?: ReactNode; tone?: 'white' | 'navy'; children: ReactNode }) {
   return (
     <section
       aria-label={title}
       data-surface={tone === 'navy' ? 'navy' : undefined}
-      className={cx('flex h-60 min-w-0 flex-col rounded', tone === 'navy' ? 'border-4 border-gold bg-navy text-white' : 'border-2 border-navy bg-white')}
+      className={cx('flex min-h-80 min-w-0 flex-col rounded', tone === 'navy' ? 'border-4 border-gold bg-navy text-white' : 'border-2 border-navy bg-white')}
     >
-      <header className={cx('flex items-center justify-between gap-2 border-b-2 px-3 py-1.5', tone === 'navy' ? 'border-gold' : 'border-navy')}>
-        <h2 className="truncate font-serif text-base font-bold">{title}</h2>
+      <header className={cx('flex items-center justify-between gap-2 border-b-2 px-4 py-2.5', tone === 'navy' ? 'border-gold' : 'border-navy')}>
+        <h2 className="truncate font-serif text-lg font-bold">{title}</h2>
         {actions}
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 text-sm">{children}</div>
+      <div className="flex-1 px-4 py-3 text-base">{children}</div>
     </section>
   );
 }
@@ -400,8 +401,8 @@ function TopVolunteersCard({ user, councilId }: { user: SessionUser; councilId: 
 }
 
 /**
- * The Home tab's card grid (Sprint 8D/8E: the universal cards, HOME_UNIVERSAL_CARDS, and nothing else) in two rows of
- * fixed-height cards. The verse and the feast tracker come only with the Faith Center and a fraternal tenant.
+ * The Home tab's card grid (Sprint 8D/8E: the universal cards, HOME_UNIVERSAL_CARDS, and nothing else). Sprint 8P Stage
+ * 1: wide tiles - two across, three across on very wide screens with the faith cards - that grow with their content. The verse and the feast tracker come only with the Faith Center and a fraternal tenant.
  */
 /** One intention on the Home prayer card: its text, who asked, and the one-tap Praying Hands counter. */
 function PrayerRequestRow({ user, item }: { user: SessionUser; item: PrayerIntentionDetail }) {
@@ -465,7 +466,7 @@ function CommunityPrayerCard({ user, councilId }: { user: SessionUser; councilId
 export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; councilId: number; faithOn: boolean }) {
   const today = toIsoDate(new Date());
   return (
-    <div className={cx('grid grid-cols-1 gap-3 md:grid-cols-2', faithOn ? 'xl:grid-cols-4' : 'xl:grid-cols-2')}>
+    <div className={cx('grid grid-cols-1 gap-6 lg:grid-cols-2', faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2')}>
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
@@ -837,7 +838,7 @@ function AwaitingHours({ councilId }: { councilId: number }) {
       {awaiting.error ? <Notice tone="error">{awaiting.error}</Notice> : null}
       {awaiting.data && rows.length === 0 ? <Empty>Every volunteer on a past shift has logged their hours.</Empty> : null}
       {rows.length > 0 ? (
-        <div className="max-h-[28rem] overflow-y-auto">
+        <div>
           <Table caption="Past shifts whose volunteers have not logged hours" head={['Member', 'Phone', 'Shift', 'Event', 'Days since', 'Reminders']}>
             {rows.map((r) => {
               const late = !r.closed && r.daysSinceShift >= cadence.delayDays;
@@ -1181,7 +1182,7 @@ export function RecorderDesk({ user, councilId }: { user: SessionUser; councilId
           <Panel title={`Business calendar (${waiting} awaiting minutes)`}>
             {data.data && rows.length === 0 ? <Empty>No meeting in the last {MINUTES_DESK_PAST_DAYS} days or the next {MINUTES_DESK_AHEAD_DAYS}.</Empty> : null}
             {!data.data && !data.error ? <p className="text-sm text-muted">Reading the calendar…</p> : null}
-            <ul aria-label="Meetings and their minutes" className="flex max-h-[28rem] flex-col gap-1 overflow-y-auto">
+            <ul aria-label="Meetings and their minutes" className="flex flex-col gap-1">
               {rows.map((r) => (
                 <li key={r.meeting.id}>
                   <button
@@ -1375,7 +1376,7 @@ function OralHistories({ user, councilId }: { user: SessionUser; councilId: numb
       {matrix.error ? <Notice tone="error">{matrix.error}</Notice> : null}
       {m && recordings.length === 0 ? <Empty>No member has recorded a testimonial yet.</Empty> : null}
       {recordings.length > 0 ? (
-        <ul aria-label="Recorded testimonials" className="flex max-h-48 flex-col divide-y divide-line overflow-y-auto">
+        <ul aria-label="Recorded testimonials" className="flex flex-col divide-y divide-line">
           {recordings.map((d) => (
             <li key={d.entry.id} className="flex items-center justify-between gap-2 py-1 text-sm">
               <span>

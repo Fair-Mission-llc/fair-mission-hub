@@ -66,6 +66,11 @@
 // Sprint 8O: the Super Admin Desk (SuperAdminDesk) - the platform owner's own cockpit, a tab only their personal session
 // is given (super-admin-desk.ts isPlatformOwner): the Feedback Communication Center, the Council Access Request Approval
 // Queue and the System Feature Flag Control Panel.
+//
+// Sprint 8P Stage 1: the one-screen rule is retired. The Home cards are larger (wider tiles, two across, three on very
+// wide screens with the faith cards), grow with their content instead of scrolling inside themselves, and the page
+// scrolls in the browser. The desks' inner scroll lists (Shifts awaiting hours, the business calendar, the oral history
+// recordings) also open out onto the page.
 import { dashboardTabsFor, isFraternalTenant } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import {
@@ -84,7 +89,7 @@ import { PageTitle } from '@/components/ui';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 
 /**
- * The Home desk (Sprint 8A, Sprint 8D/8E): one screen, no page scroll - only the universal cards. All the work sits one
+ * The Home desk (Sprint 8A, Sprint 8D/8E): only the universal cards (Sprint 8P Stage 1: large tiles, the page scrolls). All the work sits one
  * click away on its Active Desk, and the Executive Summary on the Executive Dashboard page.
  */
 function HomeDesk({ councilId, faithOn }: { councilId: number; faithOn: boolean }) {

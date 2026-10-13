@@ -119,11 +119,14 @@ describe('Home holds only the universal cards', () => {
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     const rendered = [...grid.matchAll(/<([A-Z]\w+) /g)].map((m) => m[1]);
     expect(rendered).toEqual(['VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'OpenShiftsHomeCard', 'TopVolunteersCard', 'CommunityPrayerCard']);
-    // Two rows of fixed-height cards: four across with the faith cards (Sprint 8L: seven cards), two across without.
-    expect(grid).toContain("faithOn ? 'xl:grid-cols-4' : 'xl:grid-cols-2'");
+    // Sprint 8P Stage 1: wide tiles - two across, three across on very wide screens with the faith cards.
+    expect(grid).toContain("faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2'");
     expect(desks).toContain('title="Open Volunteer Shifts"');
     expect(desks).toContain('title={`Top ${LEADERBOARD_SIZE} Fraternal Volunteers`}');
-    expect(desks).toMatch(/function HomeCard\([\s\S]*?h-60/);
+    // Sprint 8P Stage 1: no fixed height and no inner scroll; the card grows and the page scrolls.
+    const card = desks.slice(desks.indexOf('function HomeCard('), desks.indexOf('const shortDay'));
+    expect(card).toContain('min-h-80');
+    expect(card).not.toMatch(/ h-60 |overflow-y-auto/);
   });
 
   it('builds the leaderboard card in high contrast from the monthly ledger read', () => {
@@ -194,7 +197,7 @@ describe('the Executive Dashboard page', () => {
 describe('the guides', () => {
   it('walk through the six-card Home, the badges on the Oversight Desk and the Executive Dashboard page', () => {
     const admin = read('docs/ADMIN_USER_GUIDE.md');
-    expect(admin).toContain('**Home** holds seven cards in two rows, and nothing else.');
+    expect(admin).toContain('**Home** holds seven large cards, and nothing else.');
     expect(admin).toContain('| **Top 5 Fraternal Volunteers** |');
     expect(admin).toContain('The status badges at the top of the **Oversight Desk**:');
     expect(admin).toContain('### 19.13 Read the Executive Dashboard page');

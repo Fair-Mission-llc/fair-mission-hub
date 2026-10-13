@@ -4,10 +4,10 @@
 // (PasswordInput); "Forgot Password?" runs forgotPassword -> resetCode -> newPassword -> signedIn.
 // Sprint 6D: once this phone holds a biometric key (minted with the setup code), the email and password prompts lead
 // with "Sign In with FaceID / Biometrics", which skips the password.
-// Sprint 7F: "Register Your Council / Request Access" under the first prompt opens a short form for a council that is not
+// Sprint 7F: the access request link (Sprint 8P Stage 1: the understated '[ 🔑 Request Access ]') under the first prompt opens a short form for a council that is not
 // on the platform yet (accessRequests.submit; the notice goes to ACCESS_REQUEST_NOTIFY_EMAIL).
 import { useState } from 'react';
-import { ACCESS_REQUEST_NOTIFY_EMAIL } from '@kofc/shared';
+import { ACCESS_REQUEST_LINK_LABEL, ACCESS_REQUEST_NOTIFY_EMAIL } from '@kofc/shared';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { BrandMark } from '@/components/BrandHeader';
 import { AppInput, AppText, Button, Card, Field, Notice, PasswordInput } from '@/components/ui';
@@ -84,6 +84,18 @@ function ForgotLink({ onPress }: { onPress: () => void }) {
   );
 }
 
+/** Sprint 8P Stage 1: the understated '[ 🔑 Request Access ]' text link that opens the access request form. */
+function AccessRequestLink({ onPress }: { onPress: () => void }) {
+  const { space } = useTheme();
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel="Request access for your council" onPress={onPress} hitSlop={8} style={{ alignSelf: 'center', paddingVertical: space.xs }}>
+      <AppText variant="small" tone="muted">
+        {ACCESS_REQUEST_LINK_LABEL}
+      </AppText>
+    </Pressable>
+  );
+}
+
 /** The biometric sign-in button and an "or" rule above the password route; hidden when the phone holds no key. */
 function BiometricSignIn({ email, busy, onPress }: { email: string | null; busy: boolean; onPress: () => void }) {
   const { space } = useTheme();
@@ -154,7 +166,7 @@ export default function SignInScreen() {
               </Field>
               <Button title="Continue" busy={busy} disabled={!email.trim()} onPress={() => void run(() => submitEmail(email))} />
               <ForgotLink onPress={startPasswordReset} />
-              <Button title="🏢 Register Your Council / Request Access" variant="secondary" onPress={() => setRegistering(true)} />
+              <AccessRequestLink onPress={() => setRegistering(true)} />
             </>
           ) : null}
 

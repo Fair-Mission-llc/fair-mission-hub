@@ -2,12 +2,15 @@
 // The portal frame: navy header (logo, the calling council's number and name, the Messaging menu and Help shortcut, the alert bell, and the member menu with
 // the avatar that opens My Profile), the navy left Sidebar (Sidebar.tsx, Sprint 5Z-10) and a white content area. Nothing renders behind the sign-in gate.
 // Sprint 7J Extension 2: under the header, the workspace tab row (WorkspaceTabs.tsx) of Home and the Officer Desks.
+// Sprint 8P Stage 1: the header row carries the global search bar (GlobalSearch.tsx) between the council name and the
+// Messaging menu, and the sign-in page's access request button became the understated '[ 🔑 Request Access ]' link.
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { councilLabel, countUnreadMessages, describeError, isFraternalTenant, portalAreas, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
+import { ACCESS_REQUEST_LINK_LABEL, councilLabel, countUnreadMessages, describeError, isFraternalTenant, portalAreas, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
 import { AlertBell } from '@/components/AlertBell';
+import { GlobalSearch } from '@/components/GlobalSearch';
 import { MemberAvatar } from '@/components/MemberAvatar';
 import { AccessRequestForm, RemoteAssistButton, ViewAsBanner } from '@/components/PlatformAccessParts';
 import { NAV, Sidebar } from '@/components/Sidebar';
@@ -437,9 +440,9 @@ function SignIn() {
             setError(null);
             setRegistering(true);
           }}
-          className="rounded border-2 border-navy bg-white px-4 py-3 text-base font-bold text-navy hover:bg-gold"
+          className="self-center text-xs text-muted hover:text-navy hover:underline"
         >
-          🏢 Register Your Council / Request Access
+          {ACCESS_REQUEST_LINK_LABEL}
         </button>
         {devHint ? <p className="text-xs text-muted">Development data: testadmin@kofc.org or testsuperadmin@kofc.org, password dev-pass-secure-9912.</p> : null}
       </form>
@@ -458,9 +461,13 @@ function Frame({ children }: { children: ReactNode }) {
       <header data-surface="navy" className="flex items-center gap-4 border-b-4 border-gold bg-navy px-6 py-3 text-white">
         {/* Sprint 6Z-Dual-Gate-Model: the order's emblem and name belong to Knights of Columbus councils only. */}
         {isFraternalTenant(tenantType) ? <BrandMark /> : null}
-        <div className="flex-1">
+        <div className="shrink-0">
           <p className="font-serif text-xl font-bold leading-tight">{TENANT_VOCABULARY[tenantType].organizationName}</p>
           <p className="text-sm">{council.data ? councilLabel(council.data) : ' '}</p>
+        </div>
+        {/* Sprint 8P Stage 1: the global search bar - the reader's pages, events, members and both help archives. */}
+        <div className="flex min-w-0 flex-1 justify-center">
+          <GlobalSearch />
         </div>
         {/* Sprint 7F: officers and Admins may share their screen with the Super Admins; not inside a view-as session. */}
         {!impersonator && user.memberType !== 'Super Admin' && (user.isOfficer || user.memberType === 'Admin') ? <RemoteAssistButton /> : null}

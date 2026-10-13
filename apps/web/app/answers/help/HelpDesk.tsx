@@ -3,7 +3,7 @@
 // searchGuideTasks ranks the member user guide's task workflows against the keywords. The chosen task shows its five
 // parts on the left and, on the right, a read-only CSS mock of the phone screen the task starts on (phoneTarget), or
 // the portal start point for a web-only task. The tasks arrive from the server page, parsed from the guide at build.
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { phoneTarget, PHONE_TABS, searchGuideTasks, type GuideTask, type PhoneTarget } from '@kofc/shared';
 import { MarkdownInline } from '@/components/Markdown';
 import { cx, Empty, Field, Input, PageTitle, Panel } from '@/components/ui';
@@ -14,6 +14,11 @@ const MAX_RESULTS = 8;
 
 export function HelpDesk({ tasks }: { tasks: GuideTask[] }) {
   const [query, setQuery] = useState('');
+  // Sprint 8P Stage 1: the header's global search opens this page with ?q= - start with those words.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('q');
+    if (q) setQuery(q);
+  }, []);
   const [chosenId, setChosenId] = useState('');
   const results = searchGuideTasks(tasks, query).slice(0, MAX_RESULTS);
   const task = results.find((t) => t.id === chosenId) ?? results[0];
