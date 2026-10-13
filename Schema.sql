@@ -3599,3 +3599,83 @@ GO
 
 CREATE INDEX [ParishDisbursementRequest_Council_Idx] ON [ParishDisbursementRequest] ([council_id], [status]);
 GO
+
+-- =========================================================================
+-- Sprint 8N: HIGH-VOLUME BATCH CODING AND CASH BOX AUDIT CLOSURES (schema version 84)
+--
+-- An event's collection (its Donation rows) now has a lifecycle of its own, kept on the Event row
+-- (cash-audit.ts EVENT_COLLECTION_WORKFLOW; rules layer, no CHECK):
+--   collection_status                  'OPEN' (DEFAULT) while phones may log donations, 'CONCLUDED' once a member taps
+--                                      '[ 🛑 Conclude Event Session & Lock Logs ]' on the phone, 'RECONCILED' once the
+--                                      Treasurer closes the cash box audit. A CONCLUDED or RECONCILED collection takes no
+--                                      new donation and its donations can no longer be changed or deleted
+--                                      (COLLECTION_SESSION_CONCLUDED); concluding also closes the gate intake.
+--   collection_concluded_at / _by      when and by whom the session was concluded (NULL until then)
+--   verified_cash_amount               DECIMAL NULL: the paper currency the Treasurer physically counted at the close
+--   cash_discrepancy_reason            VARCHAR NULL: why the count differs from the logged cash (required when it does)
+--   cash_verified_by_member_id / _at   the Treasurer who closed the audit, and when
+--   cash_over_short_transaction_id     the JournalEntry.TransactionID of the Over/Short Reconciliation Line, NULL when
+--                                      the count matched the logs to the cent
+-- The Over/Short Reconciliation Line is a balanced posting of the difference between the count and the logged cash
+-- (the event's Cash donations): an overage debits the cash account and credits the council's 'Cash Over/Short' ledger
+-- line, a shortage the reverse. The drivers add the 'Cash Over/Short' Expense account to a council's chart the first time
+-- it is needed. The phone's Donation rows are never edited: the adjustment lives only in the ledger.
+--
+-- Donation gains its batch coding stamp. The Treasurer Desk's High-Volume Batch Transaction Coder selects un-coded
+-- electronic donations (card and QR-code methods) and codes them to one Revenue ledger line in one action, which posts a
+-- single balanced transaction (debit the cash account, credit the Revenue line) and stamps every donation in the batch:
+--   revenue_gl_account_id  INT NULL FK GLAccount - the Revenue line the donation was coded to (NULL = un-coded)
+--   coding_batch_id        VARCHAR(36) NULL - the batch's JournalEntry.TransactionID, shared by every donation in it
+--   coded_by_member_id     INT NULL FK Member, coded_at DATETIME NULL
+-- A coded donation can no longer be changed or deleted (DONATION_ALREADY_CODED). The presentation seed marks the
+-- donations whose deposits the seeded ledger already holds (events 1, 3 and 4) as coded, so they are not coded twice.
+-- The phone database version moves to 84.
+-- =========================================================================
+ALTER TABLE [Event] ADD [collection_status] VARCHAR(20) NOT NULL DEFAULT 'OPEN';
+GO
+ALTER TABLE [Event] ADD [collection_concluded_at] DATETIME NULL;
+GO
+ALTER TABLE [Event] ADD [collection_concluded_by_member_id] INT NULL;
+GO
+ALTER TABLE [Event] ADD [verified_cash_amount] DECIMAL(18,2) NULL;
+GO
+ALTER TABLE [Event] ADD [cash_discrepancy_reason] VARCHAR(255) NULL;
+GO
+ALTER TABLE [Event] ADD [cash_verified_by_member_id] INT NULL;
+GO
+ALTER TABLE [Event] ADD [cash_verified_at] DATETIME NULL;
+GO
+ALTER TABLE [Event] ADD [cash_over_short_transaction_id] VARCHAR(36) NULL;
+GO
+ALTER TABLE [Event]
+ADD FOREIGN KEY([collection_concluded_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Event]
+ADD FOREIGN KEY([cash_verified_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+ALTER TABLE [Donation] ADD [revenue_gl_account_id] INT NULL;
+GO
+ALTER TABLE [Donation] ADD [coding_batch_id] VARCHAR(36) NULL;
+GO
+ALTER TABLE [Donation] ADD [coded_by_member_id] INT NULL;
+GO
+ALTER TABLE [Donation] ADD [coded_at] DATETIME NULL;
+GO
+ALTER TABLE [Donation]
+ADD FOREIGN KEY([revenue_gl_account_id])
+REFERENCES [GLAccount]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Donation]
+ADD FOREIGN KEY([coded_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE INDEX [Donation_Coding_Idx] ON [Donation] ([CouncilID], [revenue_gl_account_id]);
+GO

@@ -1129,3 +1129,22 @@ A Church Disbursement Request (parish-split.ts): the parish's share of one event
 Rules. Nothing is posted while a request is PENDING. Deleting a council with requests is blocked (maintenance.ts).
 New methods. councils.setParishSplitSettings, finance.getParishSplitConsole, finance.issueChurchDisbursementRequest, finance.recordChurchDisbursementPayment.
 ________________________________________
+# 43. Batch Coding and Cash Box Audit Closures (Sprint 8N)
+Schema version 84; the phone database version moves to 84.
+[Event] (the collection lifecycle, cash-audit.ts EVENT_COLLECTION_WORKFLOW)
+•	collection_status (VARCHAR(20), NOT NULL, DEFAULT 'OPEN') — OPEN, CONCLUDED or RECONCILED (rules layer, no CHECK). Only an OPEN collection takes, changes or deletes donations (COLLECTION_SESSION_CONCLUDED). RECONCILED is final.
+•	collection_concluded_at (DATETIME, NULL) — When '[ 🛑 Conclude Event Session & Lock Logs ]' was tapped on a phone (events.concludeCollectionSession), or when the Treasurer's audit concluded the session. A repeat keeps the first stamp.
+•	collection_concluded_by_member_id (INT, NULL) — Foreign Key references Member(id). Who concluded it.
+•	verified_cash_amount (DECIMAL(18,2), NULL) — The paper currency the Treasurer physically counted at the cash box audit closure.
+•	cash_discrepancy_reason (VARCHAR(255), NULL) — Why the count differs from the logged cash. Required when it does.
+•	cash_verified_by_member_id (INT, NULL) — Foreign Key references Member(id). The Treasurer who closed the audit.
+•	cash_verified_at (DATETIME, NULL) — When the audit was closed.
+•	cash_over_short_transaction_id (VARCHAR(36), NULL) — The JournalEntry.TransactionID of the Over/Short Reconciliation Line; NULL when the count matched the logs.
+[Donation] (the batch coding stamp, written only by finance.batchCodeDonations)
+•	revenue_gl_account_id (INT, NULL) — Foreign Key references GLAccount(id). The Revenue line the donation was coded to; NULL = un-coded.
+•	coding_batch_id (VARCHAR(36), NULL) — The batch posting's JournalEntry.TransactionID, shared by every donation in the batch. The presentation seed stamps the donations whose deposits the seeded ledger already holds (seed-txn-0002, -0004, -0008).
+•	coded_by_member_id (INT, NULL) — Foreign Key references Member(id). The Treasurer.
+•	coded_at (DATETIME, NULL) — When the batch was coded.
+Rules. The High-Volume Batch Transaction Coder lists un-coded card and QR-code donations (ELECTRONIC_DONATION_KINDS). One batch posts one balanced transaction: a debit to the council's first cash account and a credit to the chosen Revenue line. A coded donation cannot be changed or deleted (DONATION_ALREADY_CODED). The Cash Box Audit Closure Panel compares the counted cash with the event's Cash donations; any difference posts the Over/Short Reconciliation Line against the council's 'Cash Over/Short' Expense line (added to the chart on first use): an overage debits cash and credits Cash Over/Short, a shortage the reverse. Donation rows are never edited by the audit. Coding and closing: the council's Treasurer or a Super Admin (TREASURER_REQUIRED); reading: the general ledger readers.
+New methods. events.concludeCollectionSession, finance.getBatchCodingQueue, finance.batchCodeDonations, finance.getCashAuditBoard, finance.closeCashAudit.
+________________________________________

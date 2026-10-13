@@ -205,7 +205,7 @@ describe.each(drivers)('$name driver: the parish split engine', (d) => {
 
 describe('Sprint 8M: schema 83 and the phone Donate tab', () => {
   it('bumps the phone database to 83 and records the release', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 83;');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[3-9]|9\d);/);
     const schema = read('Schema.sql');
     expect(schema).toContain('(schema version 83)');
     expect(schema).toContain('ALTER TABLE [Council] ADD [parish_split_enabled] INT NOT NULL DEFAULT 0;');

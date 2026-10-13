@@ -274,7 +274,8 @@ PERSONAS: tuple[Persona, ...] = (
             'Member Alpha volunteers as a lot attendant on the parking weekends. Before the first car arrives he sets up '
             'his phone by hand, exactly as he would at the gate: nothing on the Donate tab is chosen or typed for him. '
             'Cars pay the $25.00 parking rate by Venmo or in cash, and at the end of the shift he records the cash box as '
-            'one consolidated drop.'
+            'one consolidated drop. When the lot closes he concludes the session on his phone, which locks the logs so the '
+            'Treasurer can count the cash box against them.'
         ),
         steps=(
             Step(SIGN_IN_PHONE, 'Sign in as member_alpha@stmarys.org with the pilot password.', 'The tab bar shows Home, Mtgs, Signup, Report and Donate.'),
@@ -286,8 +287,10 @@ PERSONAS: tuple[Persona, ...] = (
                  'A message reads "Recorded $25.00 by Venmo for Parish Parking Event". Nothing was filled in for you.'),
             Step('Web > Active Desks > Member Desk > Open my expenses', f'Sign in on the laptop. Click New expense report, link it to the {PILOT_EVENT}, add a line (Dollar Tree, $12.00, chalk for lot lane markings) and submit it.',
                  'The new report is Submitted and appears on the Financial Secretary Desk.'),
-            Step('Phone > Donate tab', 'Final step - the cash box drop. Count the cash box (use $180.00 for the pilot). Tap the Cash tile, type 180.00 in AMOUNT, type "Cash box drop - Saturday lot" in DESCRIPTION, and tap Record donation. Then tap Stop accepting - the event is over.',
-                 'One consolidated $180.00 cash donation is recorded for the event, and the phone leaves the intake session.'),
+            Step('Phone > Donate tab', 'The cash box drop. Count the cash box (use $180.00 for the pilot). Tap the Cash tile, type 180.00 in AMOUNT, type "Cash box drop - Saturday lot" in DESCRIPTION, and tap Record donation.',
+                 'One consolidated $180.00 cash donation is recorded for the event. The ACCEPTING DONATIONS card is still open.'),
+            Step('Phone > Donate tab > [ 🛑 Conclude Event Session & Lock Logs ]', f'Final step - close the gate. On the ACCEPTING DONATIONS card tap [ 🛑 Conclude Event Session & Lock Logs ]. Read the warning, then tap Yes, conclude & lock.',
+                 f'A message reads "{PILOT_EVENT} is concluded and its logs are locked. The Treasurer can now count the cash box." The phone leaves the intake session, the event is no longer offered under Start accepting for an event, and nobody can add or change a donation for it. The collection is now ready for the Treasurer\'s cash box audit.'),
         ),
     ),
     Persona(

@@ -12,6 +12,7 @@
 // members can accept donations for the same event from different phones.
 // =========================================================================
 import type { CouncilDonationOption, DataService, DonationMethodKind, NewDonation } from './contract';
+import { assertCollectionOpen } from './cash-audit';
 import { EVENT_INTAKE_SESSION_STATUSES } from './finance';
 import { BusinessRuleError, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 import type { Donation, DonationType, EventIntakeSessionStatus } from './types';
@@ -66,6 +67,8 @@ export class DonationSessionController {
   async start(eventId: number, defaults: DonationDefaults = {}): Promise<DonationSessionState> {
     const event = await this.db.events.get(eventId);
     if (!event) throw new BusinessRuleError('EVENT_NOT_FOUND', `No event with id ${eventId}.`, { eventId });
+    // Sprint 8N: a concluded collection takes no more donations (COLLECTION_SESSION_CONCLUDED).
+    assertCollectionOpen(event, 'start accepting donations for it');
     const councils = await this.db.events.listCouncilIds(eventId);
     if (!councils.includes(this.councilId)) {
       throw new BusinessRuleError(

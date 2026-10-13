@@ -575,6 +575,23 @@ import {
   type ParishDisbursementRequest,
   type ParishSplitConsole,
 } from '@kofc/shared';
+import {
+  assertCollectionOpen,
+  assertDonationNotCoded,
+  buildBatchCodingQueue,
+  buildCashAuditBoard,
+  CASH_OVER_SHORT_ACCOUNT_NAME,
+  CASH_OVER_SHORT_ACCOUNT_TYPE,
+  cashOverShortAccount,
+  cleanCashAudit,
+  isCollectionOpen,
+  nextCollectionStatus,
+  planBatchCoding,
+  planCollectionConclusion,
+  planOverShortLines,
+  type BatchCodingRow,
+  type CashAuditBoard,
+} from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
   Event,
@@ -874,8 +891,11 @@ const DB_NAME = 'kofc.db';
  *     sheets and two charity requests in the queues (Sprint 8L).
  * 83: Council.parish_split_enabled, parish_split_percentage and parish_split_gl_line_id, ParishDisbursementRequest
  *     (the Church Disbursement Request) and the seeded Parish Fundraiser Share ledger line (Sprint 8M Core).
+ * 84: Event.collection_status (OPEN / CONCLUDED / RECONCILED) with its conclusion and cash box audit stamps
+ *     (verified_cash_amount, cash_discrepancy_reason, the Over/Short Reconciliation Line's transaction) and the Donation
+ *     batch coding stamp (revenue_gl_account_id, coding_batch_id, coded_by_member_id, coded_at) (Sprint 8N).
  */
-const SCHEMA_VERSION = 83;
+const SCHEMA_VERSION = 84;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -2798,6 +2818,7 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         await this.requireMember(db, actorId);
         await this.assertDonationReferences(db, clean);
+        await this.assertDonationCollectionOpen(db, clean.EventID, 'log another donation for it');
         await this.withFundsSync(db, [clean.EventID], async () => {
           const res = await db.runAsync(
             `INSERT INTO [Donation] ([CouncilID], [DonationDate], [DonationMethodID], [DonationTypeID], [Donor],
@@ -2829,7 +2850,10 @@ export class SqliteDataService implements DataService {
         const actor = await this.memberWriteActor(db, actorId);
         const existing = await this.requireDonation(db, id);
         assertMayChangeDonation(actor, existing, await this.eventOwnerOf(db, existing.EventID), `change donation ${id}`);
+        assertDonationNotCoded(existing, `change donation ${id}`);
+        await this.assertDonationCollectionOpen(db, existing.EventID, `change donation ${id}`);
         const clean = mergeDonationChanges(existing, changes, this.now());
+        await this.assertDonationCollectionOpen(db, clean.EventID, `move donation ${id} to it`);
         if ((clean.EventID ?? null) !== (existing.EventID ?? null)) {
           assertMayChangeDonation(actor, existing, await this.eventOwnerOf(db, clean.EventID), `move donation ${id} to another event`);
         }
@@ -2850,12 +2874,21 @@ export class SqliteDataService implements DataService {
         const actor = await this.memberWriteActor(db, actorId);
         const existing = await this.requireDonation(db, id);
         assertMayChangeDonation(actor, existing, await this.eventOwnerOf(db, existing.EventID), `delete donation ${id}`);
+        assertDonationNotCoded(existing, `delete donation ${id}`);
+        await this.assertDonationCollectionOpen(db, existing.EventID, `delete donation ${id}`);
         await this.withFundsSync(db, [existing.EventID], async () => {
           await db.runAsync('DELETE FROM [Donation] WHERE [id] = ?', [id]);
         });
       });
     },
   };
+
+  /** Sprint 8N: COLLECTION_SESSION_CONCLUDED unless the donation's event (if any) still takes donations. */
+  private async assertDonationCollectionOpen(db: SQLite.SQLiteDatabase, eventId: number | null | undefined, action: string): Promise<void> {
+    if (eventId == null) return;
+    const event = await db.getFirstAsync<Event>('SELECT [id], [EventName], [collection_status] FROM [Event] WHERE [id] = ?', [eventId]);
+    assertCollectionOpen(event, action);
+  }
 
   /** The ids a donation points at must exist and belong together (method enabled, the council's type and event). */
   private async assertDonationReferences(db: SQLite.SQLiteDatabase, clean: CleanDonation): Promise<void> {
@@ -3835,7 +3868,23 @@ export class SqliteDataService implements DataService {
         const actor = await this.memberWriteActor(db, actorId);
         const event = await this.requireEvent(db, eventId);
         assertMayRunEventIntake(actor, eventId, await this.councilIdsOf(db, eventId));
+        if (next === 'Active') assertCollectionOpen(event as unknown as Event, 'open its gate intake again');
         await db.runAsync('UPDATE [Event] SET [IntakeSessionStatus] = ? WHERE [id] = ?', [nextIntakeSessionStatus(event.IntakeSessionStatus, next, eventId), eventId]);
+      });
+      return (await this.requireEvent(db, eventId)) as unknown as Event;
+    },
+
+    concludeCollectionSession: async (actorId, eventId) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const event = await this.requireEvent(db, eventId);
+        assertMayRunEventIntake(actor, eventId, await this.councilIdsOf(db, eventId));
+        const next = planCollectionConclusion(event as unknown as Event, actorId, toTimestamp(this.now()));
+        await db.runAsync(
+          'UPDATE [Event] SET [collection_status] = ?, [collection_concluded_at] = ?, [collection_concluded_by_member_id] = ?, [IntakeSessionStatus] = ? WHERE [id] = ?',
+          [next.collection_status!, next.collection_concluded_at ?? null, next.collection_concluded_by_member_id ?? null, next.IntakeSessionStatus!, eventId],
+        );
       });
       return (await this.requireEvent(db, eventId)) as unknown as Event;
     },
@@ -7279,6 +7328,95 @@ export class SqliteDataService implements DataService {
       return this.parishDisbursementDetail(db, requestId);
     },
 
+    getBatchCodingQueue: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the batch coder of council ${councilId}`);
+      await this.assertCouncilsExist(db, [councilId]);
+      return buildBatchCodingQueue(councilId, await this.batchCodingRows(db, councilId), await this.glAccounts(db, councilId));
+    },
+
+    batchCodeDonations: async (actorId, councilId, input) => {
+      const db = await this.ready();
+      let result: Awaited<ReturnType<DataService['finance']['batchCodeDonations']>> | null = null;
+      await db.withTransactionAsync(async () => {
+        assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `code donations for council ${councilId}`);
+        await this.assertCouncilsExist(db, [councilId]);
+        const plan = planBatchCoding(councilId, await this.batchCodingRows(db, councilId), await this.glAccounts(db, councilId), input, this.now());
+        assertLedgerPeriodsOpen(plan.lines, await this.councilAudits(db, councilId));
+        const ids = await this.insertJournalLines(db, councilId, plan.lines);
+        const posted = await db.getFirstAsync<{ TransactionID: string }>('SELECT [TransactionID] FROM [JournalEntry] WHERE [id] = ?', [ids[0] ?? 0]);
+        const batchId = posted!.TransactionID;
+        const codedAt = toTimestamp(this.now());
+        for (const id of plan.donationIds) {
+          await db.runAsync('UPDATE [Donation] SET [revenue_gl_account_id] = ?, [coding_batch_id] = ?, [coded_by_member_id] = ?, [coded_at] = ? WHERE [id] = ?', [
+            plan.revenueAccount.id,
+            batchId,
+            actorId,
+            codedAt,
+            id,
+          ]);
+        }
+        result = {
+          batchId,
+          donationIds: plan.donationIds,
+          count: plan.donationIds.length,
+          total: plan.total,
+          revenueAccountId: plan.revenueAccount.id,
+          revenueAccountName: plan.revenueAccount.AccountName,
+        };
+      });
+      return result!;
+    },
+
+    getCashAuditBoard: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the cash box audits of council ${councilId}`);
+      await this.assertCouncilsExist(db, [councilId]);
+      return this.cashAuditBoard(db, councilId);
+    },
+
+    closeCashAudit: async (actorId, councilId, input) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `close cash box audits for council ${councilId}`);
+        await this.assertCouncilsExist(db, [councilId]);
+        const clean = cleanCashAudit(await this.cashAuditBoard(db, councilId), input, councilId);
+        if (clean.variance !== 0 && !cashOverShortAccount(await this.glAccounts(db, councilId), councilId)) {
+          await db.runAsync(
+            'INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [ParentAccountID], [IsVirtualGoal], [TargetGoalAmount]) VALUES (?, ?, ?, NULL, 0, 0)',
+            [councilId, CASH_OVER_SHORT_ACCOUNT_NAME, CASH_OVER_SHORT_ACCOUNT_TYPE],
+          );
+        }
+        const lines = planOverShortLines(clean, await this.glAccounts(db, councilId), councilId, this.now());
+        assertLedgerPeriodsOpen(lines, await this.councilAudits(db, councilId));
+        let transactionId: string | null = null;
+        if (lines.length > 0) {
+          const ids = await this.insertJournalLines(db, councilId, lines);
+          transactionId = (await db.getFirstAsync<{ TransactionID: string }>('SELECT [TransactionID] FROM [JournalEntry] WHERE [id] = ?', [ids[0] ?? 0]))?.TransactionID ?? null;
+        }
+        const event = (await this.requireEvent(db, clean.row.eventId)) as unknown as Event;
+        const now = toTimestamp(this.now());
+        const concluded = isCollectionOpen(event) ? planCollectionConclusion(event, actorId, now) : event;
+        await db.runAsync(
+          `UPDATE [Event] SET [collection_status] = ?, [collection_concluded_at] = ?, [collection_concluded_by_member_id] = ?, [IntakeSessionStatus] = 'Inactive',
+             [verified_cash_amount] = ?, [cash_discrepancy_reason] = ?, [cash_verified_by_member_id] = ?, [cash_verified_at] = ?, [cash_over_short_transaction_id] = ?
+           WHERE [id] = ?`,
+          [
+            nextCollectionStatus(event, 'reconcile'),
+            concluded.collection_concluded_at ?? null,
+            concluded.collection_concluded_by_member_id ?? null,
+            clean.verified,
+            clean.reason,
+            actorId,
+            now,
+            transactionId,
+            clean.row.eventId,
+          ],
+        );
+      });
+      return this.cashAuditBoard(db, councilId);
+    },
+
     transferAssetFunds: async (actorId, sourceAccountId, targetAccountId, amount, options = {}) => {
       const db = await this.ready();
       let ids: number[] = [];
@@ -7503,6 +7641,45 @@ export class SqliteDataService implements DataService {
   private async parishDisbursementDetail(db: SQLite.SQLiteDatabase, requestId: number): Promise<ParishDisbursementDetail> {
     const row = (await db.getFirstAsync<ParishDisbursementRequest>('SELECT [council_id] FROM [ParishDisbursementRequest] WHERE [id] = ?', [requestId]))!;
     return (await this.parishSplitConsole(db, row.council_id)).requests.find((d) => d.request.id === requestId)!;
+  }
+
+  /** Sprint 8N: the council's donations as the batch coder sees them. */
+  private async batchCodingRows(db: SQLite.SQLiteDatabase, councilId: number): Promise<BatchCodingRow[]> {
+    const rows = await db.getAllAsync<Donation & { methodName: string | null; eventName: string | null }>(
+      `SELECT d.*, m.[DonationMethod] AS methodName, e.[EventName] AS eventName FROM [Donation] d
+         LEFT JOIN [DonationMethod] m ON m.[id] = d.[DonationMethodID]
+         LEFT JOIN [Event] e ON e.[id] = d.[EventID]
+       WHERE d.[CouncilID] = ?`,
+      [councilId],
+    );
+    return rows.map(({ methodName, eventName, ...donation }) => {
+      const name = methodName ?? `Method ${donation.DonationMethodID}`;
+      return {
+        donation: donation as Donation,
+        methodName: name,
+        kind: donationMethodKind(name),
+        eventName: donation.EventID == null ? null : (eventName ?? `Event ${donation.EventID}`),
+      };
+    });
+  }
+
+  /** Sprint 8N: the Cash Box Audit Closure Panel of the council. */
+  private async cashAuditBoard(db: SQLite.SQLiteDatabase, councilId: number): Promise<CashAuditBoard> {
+    const events = await db.getAllAsync<Event>('SELECT e.* FROM [Event] e JOIN [EventCouncils] ec ON ec.[EventID] = e.[id] WHERE ec.[CouncilID] = ?', [councilId]);
+    const methods = await db.getAllAsync<{ id: number; DonationMethod: string }>('SELECT [id], [DonationMethod] FROM [DonationMethod]');
+    const kinds = new Map(methods.map((m) => [m.id, donationMethodKind(m.DonationMethod)]));
+    const donations = await db.getAllAsync<{ EventID: number; DonationAmount: number; DonationMethodID: number }>(
+      'SELECT d.[EventID], d.[DonationAmount], d.[DonationMethodID] FROM [Donation] d JOIN [EventCouncils] ec ON ec.[EventID] = d.[EventID] AND ec.[CouncilID] = d.[CouncilID] WHERE d.[CouncilID] = ?',
+      [councilId],
+    );
+    const members = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string }>('SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member]');
+    return buildCashAuditBoard(
+      councilId,
+      events,
+      donations.map((d) => ({ EventID: d.EventID, DonationAmount: d.DonationAmount, kind: kinds.get(d.DonationMethodID) ?? 'other' })),
+      await this.glAccounts(db, councilId),
+      new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
+    );
   }
 
   private glAccounts(db: SQLite.SQLiteDatabase, councilId: number): Promise<GLAccount[]> {

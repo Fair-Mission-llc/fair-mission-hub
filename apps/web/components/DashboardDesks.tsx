@@ -45,6 +45,8 @@
 // Sprint 8M Core: the Treasurer Desk carries the Parish Fundraiser Revenue Split Console (ParishSplitConsoleCard), whose
 // '[ 📋 Issue Church Disbursement Request ]' sends the parish's share to the Financial Secretary Desk's Church
 // Disbursement Requests card (ChurchDisbursementQueue), where the check is recorded.
+// Sprint 8N: the Treasurer Desk opens with the Cash Box Audit Closure Panel (its variance metrics above the fold) and the
+// High-Volume Batch Transaction Coder, which codes many un-coded electronic donations to one Revenue line at once.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -115,6 +117,7 @@ import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
 import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
 import { OperationsKnowledgeVault } from '@/components/KnowledgeVaultParts';
 import { ChurchDisbursementQueue, ParishSplitConsoleCard } from '@/components/ParishSplitParts';
+import { BatchTransactionCoder, CashBoxAuditPanel } from '@/components/CashAuditParts';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -605,6 +608,12 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
   const rows = queue.data ?? [];
   return (
     <div className="flex flex-col gap-4">
+      <DeskRow id="treasurer-cash-box-audit" label="Cash Box Audit Closure Panel">
+        <CashBoxAuditPanel user={user} councilId={councilId} />
+      </DeskRow>
+      <DeskRow id="treasurer-batch-coder" label="High-Volume Batch Transaction Coder">
+        <BatchTransactionCoder user={user} councilId={councilId} />
+      </DeskRow>
       <DeskModulesFor
         user={user}
         desk="treasurer"

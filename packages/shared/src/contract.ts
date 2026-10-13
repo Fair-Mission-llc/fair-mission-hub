@@ -127,6 +127,7 @@ import type { AssetLoanChange, LoanerLibraryEntry } from './loaner-library';
 import type { AffiliationDecision, AffiliationDirectory } from './council-affiliations';
 import type { NewOperationsKnowledgeInput } from './operations-knowledge';
 import type { ChurchDisbursementPaymentInput, ParishDisbursementDetail, ParishSplitConsole, ParishSplitSettingsInput } from './parish-split';
+import type { BatchCodingInput, BatchCodingQueue, BatchCodingResult, CashAuditBoard, CashAuditInput } from './cash-audit';
 
 // 1. LOOKUPS
 /** The global lookup tables a Super Admin maintains (Blueprint: "System Lookup Manager"). */
@@ -3040,6 +3041,15 @@ export interface DataService {
      */
     setIntakeSessionStatus(actorId: number, eventId: number, status: EventIntakeSessionStatus): Promise<Event>;
     /**
+     * Sprint 8N: '[ 🛑 Conclude Event Session & Lock Logs ]' on the phone - moves the event's collection OPEN -> CONCLUDED
+     * (cash-audit.ts planCollectionConclusion), closes its gate intake and stamps who concluded it and when. From then on
+     * no donation is logged, changed or deleted for the event (COLLECTION_SESSION_CONCLUDED) and the Treasurer's Cash Box
+     * Audit Closure Panel shows it ready for the count. A repeat keeps the first stamp. Whoever runs the event's intake
+     * (assertMayRunEventIntake: COUNCIL_ACCESS_DENIED). EVENT_NOT_FOUND for an unknown event, ILLEGAL_STATE_TRANSITION
+     * once the Treasurer has reconciled it.
+     */
+    concludeCollectionSession(actorId: number, eventId: number): Promise<Event>;
+    /**
      * The event's Planning Hours (Sprint 6P): every entry with the logger's name, newest planning date first, and the
      * total. Rejects EVENT_NOT_FOUND for an unknown event.
      */
@@ -4029,6 +4039,38 @@ export interface DataService {
      * AUDIT_PERIOD_LOCKED for a date inside a signed audit period.
      */
     recordChurchDisbursementPayment(actorId: number, requestId: number, input: ChurchDisbursementPaymentInput): Promise<ParishDisbursementDetail>;
+    /**
+     * Sprint 8N: the High-Volume Batch Transaction Coder's grid (cash-audit.ts buildBatchCodingQueue) - the council's
+     * un-coded electronic (card and QR-code) donations, the Revenue lines on offer and the cash account. The general
+     * ledger readers (assertMayReadGeneralLedger). INVALID_INPUT for an unknown council.
+     */
+    getBatchCodingQueue(actorId: number, councilId: number): Promise<BatchCodingQueue>;
+    /**
+     * Sprint 8N: codes the selected un-coded electronic donations to one Revenue line as a single group action - posts
+     * one balanced transaction for their total (debit cash, credit the Revenue line) and stamps each donation with the
+     * line, the batch's TransactionID, the Treasurer and the time (planBatchCoding). The council's Active Treasurer or an
+     * Active Super Admin (TREASURER_REQUIRED, COUNCIL_ACCESS_DENIED). INVALID_INPUT for an empty or repeated selection, a
+     * donation of another council or not electronic, or a line that is not a Revenue line of the council;
+     * DONATION_ALREADY_CODED for a donation coded before; AUDIT_PERIOD_LOCKED inside a signed audit period. Nothing is
+     * written when it rejects.
+     */
+    batchCodeDonations(actorId: number, councilId: number, input: BatchCodingInput): Promise<BatchCodingResult>;
+    /**
+     * Sprint 8N: the Cash Box Audit Closure Panel (buildCashAuditBoard) - each event's logged cash, collection status and
+     * closed count, with the variance metrics shown above the fold. The general ledger readers
+     * (assertMayReadGeneralLedger). INVALID_INPUT for an unknown council.
+     */
+    getCashAuditBoard(actorId: number, councilId: number): Promise<CashAuditBoard>;
+    /**
+     * Sprint 8N: closes an event's cash box audit with the paper currency the Treasurer counted - stores
+     * verified_cash_amount and cash_discrepancy_reason, posts the Over/Short Reconciliation Line for any difference against
+     * the council's 'Cash Over/Short' line (added to the chart the first time it is needed) and moves the collection to
+     * RECONCILED, concluding it first when no phone did. The phone's Donation rows are never changed. The council's Active
+     * Treasurer or an Active Super Admin (TREASURER_REQUIRED, COUNCIL_ACCESS_DENIED). INVALID_INPUT for an event with no
+     * logged cash, a bad count or a discrepancy with no reason; ILLEGAL_STATE_TRANSITION for an audit already closed;
+     * AUDIT_PERIOD_LOCKED inside a signed audit period. Resolves to the refreshed board.
+     */
+    closeCashAudit(actorId: number, councilId: number, input: CashAuditInput): Promise<CashAuditBoard>;
     /**
      * Moves `amount` between two Asset accounts of one council as a balanced pair of lines: a debit to the target and a
      * credit to the source (planAssetTransfer). Funding or releasing a virtual goal is a transfer with its parent

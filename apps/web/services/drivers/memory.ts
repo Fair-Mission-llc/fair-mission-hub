@@ -572,6 +572,23 @@ import {
   type ParishDisbursementRequest,
   type ParishSplitConsole,
 } from '@kofc/shared';
+import {
+  assertCollectionOpen,
+  assertDonationNotCoded,
+  buildBatchCodingQueue,
+  buildCashAuditBoard,
+  CASH_OVER_SHORT_ACCOUNT_NAME,
+  CASH_OVER_SHORT_ACCOUNT_TYPE,
+  cashOverShortAccount,
+  cleanCashAudit,
+  isCollectionOpen,
+  nextCollectionStatus,
+  planBatchCoding,
+  planCollectionConclusion,
+  planOverShortLines,
+  type BatchCodingRow,
+  type CashAuditBoard,
+} from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
   Event,
@@ -2419,6 +2436,7 @@ export class MemoryDataService implements DataService {
       return s.transaction(() => {
         this.requireMember(s, actorId);
         this.assertDonationReferences(s, clean);
+        this.assertDonationCollectionOpen(s, clean.EventID, 'log another donation for it');
         return this.withFundsSync(s, [clean.EventID], () => ({ ...s.insert('Donation', { ...clean, RecordedBy: actorId }) }) as unknown as Donation);
       });
     },
@@ -2430,7 +2448,10 @@ export class MemoryDataService implements DataService {
         const row = this.requireDonation(s, id);
         const existing = { ...row } as unknown as Donation;
         assertMayChangeDonation(actor, existing, this.eventOwnerOf(s, existing.EventID), `change donation ${id}`);
+        assertDonationNotCoded(existing, `change donation ${id}`);
+        this.assertDonationCollectionOpen(s, existing.EventID, `change donation ${id}`);
         const clean = mergeDonationChanges(existing, changes, this.now());
+        this.assertDonationCollectionOpen(s, clean.EventID, `move donation ${id} to it`);
         if ((clean.EventID ?? null) !== (existing.EventID ?? null)) {
           assertMayChangeDonation(actor, existing, this.eventOwnerOf(s, clean.EventID), `move donation ${id} to another event`);
         }
@@ -2448,10 +2469,18 @@ export class MemoryDataService implements DataService {
         const actor = this.memberWriteActor(s, actorId);
         const existing = { ...this.requireDonation(s, id) } as unknown as Donation;
         assertMayChangeDonation(actor, existing, this.eventOwnerOf(s, existing.EventID), `delete donation ${id}`);
+        assertDonationNotCoded(existing, `delete donation ${id}`);
+        this.assertDonationCollectionOpen(s, existing.EventID, `delete donation ${id}`);
         this.withFundsSync(s, [existing.EventID], () => s.remove('Donation', (r) => r.id === id));
       });
     },
   };
+
+  /** Sprint 8N: COLLECTION_SESSION_CONCLUDED unless the donation's event (if any) still takes donations. */
+  private assertDonationCollectionOpen(s: MemoryStore, eventId: number | null | undefined, action: string): void {
+    if (eventId == null) return;
+    assertCollectionOpen(s.rows('Event').find((e) => e.id === eventId) as unknown as Event | undefined, action);
+  }
 
   /** The ids a donation points at must exist and belong together (method enabled, the council's type and event). */
   private assertDonationReferences(s: MemoryStore, clean: CleanDonation): void {
@@ -3241,7 +3270,19 @@ export class MemoryDataService implements DataService {
         const actor = this.memberWriteActor(s, actorId);
         const event = this.requireEvent(s, eventId);
         assertMayRunEventIntake(actor, eventId, this.councilIdsOf(s, eventId));
+        if (next === 'Active') assertCollectionOpen(event as unknown as Event, 'open its gate intake again');
         event.IntakeSessionStatus = nextIntakeSessionStatus(event.IntakeSessionStatus, next, eventId);
+        return { ...event } as unknown as Event;
+      });
+    },
+
+    concludeCollectionSession: async (actorId, eventId) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        const event = this.requireEvent(s, eventId);
+        assertMayRunEventIntake(actor, eventId, this.councilIdsOf(s, eventId));
+        Object.assign(event, planCollectionConclusion(event as unknown as Event, actorId, toTimestamp(this.now())));
         return { ...event } as unknown as Event;
       });
     },
@@ -6162,6 +6203,77 @@ export class MemoryDataService implements DataService {
       });
     },
 
+    getBatchCodingQueue: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayReadGeneralLedger(this.memberWriteActor(s, actorId), councilId, `read the batch coder of council ${councilId}`);
+      this.assertCouncilsExist(s, [councilId]);
+      return buildBatchCodingQueue(councilId, this.batchCodingRows(s, councilId), this.glAccounts(s, councilId));
+    },
+
+    batchCodeDonations: async (actorId, councilId, input) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayCodeExpenseLedger(this.memberWriteActor(s, actorId), councilId, `code donations for council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const plan = planBatchCoding(councilId, this.batchCodingRows(s, councilId), this.glAccounts(s, councilId), input, this.now());
+        assertLedgerPeriodsOpen(plan.lines, this.councilAudits(s, councilId));
+        const batchId = this.insertJournalLines(s, councilId, plan.lines)[0]!.TransactionID as string;
+        const stamp = { revenue_gl_account_id: plan.revenueAccount.id, coding_batch_id: batchId, coded_by_member_id: actorId, coded_at: toTimestamp(this.now()) };
+        const ids = new Set(plan.donationIds);
+        for (const row of s.rows('Donation')) if (ids.has(row.id as number)) Object.assign(row, stamp);
+        return {
+          batchId,
+          donationIds: plan.donationIds,
+          count: plan.donationIds.length,
+          total: plan.total,
+          revenueAccountId: plan.revenueAccount.id,
+          revenueAccountName: plan.revenueAccount.AccountName,
+        };
+      });
+    },
+
+    getCashAuditBoard: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayReadGeneralLedger(this.memberWriteActor(s, actorId), councilId, `read the cash box audits of council ${councilId}`);
+      this.assertCouncilsExist(s, [councilId]);
+      return this.cashAuditBoard(s, councilId);
+    },
+
+    closeCashAudit: async (actorId, councilId, input) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayCodeExpenseLedger(this.memberWriteActor(s, actorId), councilId, `close cash box audits for council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const clean = cleanCashAudit(this.cashAuditBoard(s, councilId), input, councilId);
+        if (clean.variance !== 0 && !cashOverShortAccount(this.glAccounts(s, councilId), councilId)) {
+          s.insert('GLAccount', {
+            CouncilID: councilId,
+            AccountName: CASH_OVER_SHORT_ACCOUNT_NAME,
+            AccountType: CASH_OVER_SHORT_ACCOUNT_TYPE,
+            ParentAccountID: null,
+            IsVirtualGoal: 0,
+            TargetGoalAmount: 0,
+          });
+        }
+        const lines = planOverShortLines(clean, this.glAccounts(s, councilId), councilId, this.now());
+        assertLedgerPeriodsOpen(lines, this.councilAudits(s, councilId));
+        const posted = lines.length > 0 ? this.insertJournalLines(s, councilId, lines) : [];
+        const event = this.requireEvent(s, clean.row.eventId);
+        const now = toTimestamp(this.now());
+        const concluded = isCollectionOpen(event as unknown as Event) ? planCollectionConclusion(event as unknown as Event, actorId, now) : {};
+        Object.assign(event, concluded, {
+          collection_status: nextCollectionStatus(event as unknown as Event, 'reconcile'),
+          IntakeSessionStatus: 'Inactive',
+          verified_cash_amount: clean.verified,
+          cash_discrepancy_reason: clean.reason,
+          cash_verified_by_member_id: actorId,
+          cash_verified_at: now,
+          cash_over_short_transaction_id: posted[0]?.TransactionID ?? null,
+        });
+        return this.cashAuditBoard(s, councilId);
+      });
+    },
+
     transferAssetFunds: async (actorId, sourceAccountId, targetAccountId, amount, options = {}) => {
       const s = await this.ready();
       return s.transaction(() => {
@@ -6364,6 +6476,40 @@ export class MemoryDataService implements DataService {
   private parishDisbursementDetail(s: MemoryStore, requestId: number): ParishDisbursementDetail {
     const row = s.rows('ParishDisbursementRequest').find((r) => r.id === requestId)!;
     return this.parishSplitConsole(s, row.council_id as number).requests.find((d) => d.request.id === requestId)!;
+  }
+
+  /** Sprint 8N: the council's donations as the batch coder sees them. */
+  private batchCodingRows(s: MemoryStore, councilId: number): BatchCodingRow[] {
+    const methods = new Map(s.rows('DonationMethod').map((m) => [m.id as number, m.DonationMethod as string]));
+    const events = new Map(s.rows('Event').map((e) => [e.id as number, e.EventName as string]));
+    return s
+      .rows('Donation')
+      .filter((d) => d.CouncilID === councilId)
+      .map((d) => {
+        const methodName = methods.get(d.DonationMethodID as number) ?? `Method ${d.DonationMethodID as number}`;
+        return {
+          donation: { ...d } as unknown as Donation,
+          methodName,
+          kind: donationMethodKind(methodName),
+          eventName: d.EventID == null ? null : (events.get(d.EventID as number) ?? `Event ${d.EventID as number}`),
+        };
+      });
+  }
+
+  /** Sprint 8N: the Cash Box Audit Closure Panel of the council. */
+  private cashAuditBoard(s: MemoryStore, councilId: number): CashAuditBoard {
+    const eventIds = new Set(s.rows('EventCouncils').filter((ec) => ec.CouncilID === councilId).map((ec) => ec.EventID as number));
+    const kinds = new Map(s.rows('DonationMethod').map((m) => [m.id, donationMethodKind(m.DonationMethod as string)]));
+    return buildCashAuditBoard(
+      councilId,
+      s.rows('Event').filter((e) => eventIds.has(e.id as number)).map((e) => ({ ...e }) as unknown as Event),
+      s
+        .rows('Donation')
+        .filter((d) => d.CouncilID === councilId && d.EventID != null && eventIds.has(d.EventID as number))
+        .map((d) => ({ EventID: d.EventID as number, DonationAmount: d.DonationAmount as number, kind: kinds.get(d.DonationMethodID) ?? 'other' })),
+      this.glAccounts(s, councilId),
+      new Map(s.rows('Member').map((m) => [m.id as number, `${m.MemberFirstName as string} ${m.MemberLastName as string}`])),
+    );
   }
 
   private glAccounts(s: MemoryStore, councilId: number): GLAccount[] {

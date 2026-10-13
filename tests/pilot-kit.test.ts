@@ -352,13 +352,16 @@ describe('Sprint 8L pilot kit', () => {
       expect(personas, folder).toContain(folder);
   });
 
-  it('has the members set up the Donate tab by hand and Member Alpha log the cash box drop last', () => {
+  it('has the members set up the Donate tab by hand and Member Alpha log the cash box drop, then conclude the session', () => {
     expect(personas).toContain('Nothing is pre-selected');
     expect(personas).toContain('tap the Venmo tile yourself');
     expect(personas).toContain('type 25.00 in STANDARD RATE');
     const alpha = personas.slice(personas.indexOf("key='alpha'"), personas.indexOf("key='beta'"));
     const last = alpha.slice(alpha.lastIndexOf('Step('));
-    expect(last).toContain('cash box drop');
+    // Sprint 8N: the conclude step follows the cash box drop.
+    const drop = alpha.slice(alpha.lastIndexOf('Step(', alpha.lastIndexOf('Step(') - 1), alpha.lastIndexOf('Step('));
+    expect(drop).toContain('cash box drop');
+    expect(last).toContain('[ 🛑 Conclude Event Session & Lock Logs ]');
   });
 
   it("reviews the budget sheet on the Treasurer's script and prints Member Beta's pages in large type", () => {
@@ -399,7 +402,8 @@ describe('Sprint 8M Extension pilot kit', () => {
       expect(steps, key).toContain('25.00');
     }
     const alpha = persona('alpha', 'beta');
-    expect(alpha.slice(alpha.lastIndexOf('Step('))).toContain('type 180.00 in AMOUNT');
+    // Sprint 8N: the $180 drop is the step before the session is concluded.
+    expect(alpha.slice(alpha.lastIndexOf('Step(', alpha.lastIndexOf('Step(') - 1), alpha.lastIndexOf('Step('))).toContain('type 180.00 in AMOUNT');
   });
 
   it('plays six flows: no phone parking collections, Flow 5 vetting only, Flow 6 the parish settlement with check 1404', () => {

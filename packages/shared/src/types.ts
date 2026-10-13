@@ -273,10 +273,29 @@ export interface Event {
    * by events.setFlyerFile. NULL until a flyer is filed.
    */
   GoogleDriveFlyerFileID?: string | null;
+  /**
+   * Sprint 8N (Schema 84): the collection's lifecycle (cash-audit.ts EVENT_COLLECTION_WORKFLOW). VARCHAR(20) DEFAULT
+   * 'OPEN'; 'CONCLUDED' after '[ 🛑 Conclude Event Session & Lock Logs ]' on a phone, 'RECONCILED' after the Treasurer's
+   * cash box audit closure. Only an OPEN collection takes or changes donations.
+   */
+  collection_status?: EventCollectionStatus;
+  collection_concluded_at?: string | null; // DATETIME
+  collection_concluded_by_member_id?: number | null; // Member
+  /** DECIMAL(18,2) NULL: the paper currency the Treasurer counted at the cash box audit closure. */
+  verified_cash_amount?: number | null;
+  /** VARCHAR(255) NULL: why the count differs from the logged cash; required when it does. */
+  cash_discrepancy_reason?: string | null;
+  cash_verified_by_member_id?: number | null; // Member: the Treasurer
+  cash_verified_at?: string | null; // DATETIME
+  /** VARCHAR(36) NULL: the JournalEntry.TransactionID of the Over/Short Reconciliation Line; NULL when the count matched. */
+  cash_over_short_transaction_id?: string | null;
 }
 
 /** Event.IntakeSessionStatus values (Sprint 5Z-7). */
 export type EventIntakeSessionStatus = 'Inactive' | 'Active';
+
+/** Event.collection_status values (Sprint 8N). */
+export type EventCollectionStatus = 'OPEN' | 'CONCLUDED' | 'RECONCILED';
 
 
 export interface EventCouncils {
@@ -660,6 +679,11 @@ export interface Donation {
   DonationPhotoURL?: string | null;
   RecordedBy?: number | null;         // the member who recorded it; stamped by donations.record, never changed
   CheckNumber?: string | null;        // VARCHAR(50), Sprint 7F Extension 2: required for a Check donation, else null
+  /** Sprint 8N (Schema 84): the batch coding stamp, written only by finance.batchCodeDonations; NULL = un-coded. */
+  revenue_gl_account_id?: number | null; // GLAccount: the Revenue line
+  coding_batch_id?: string | null;       // VARCHAR(36): the batch posting's JournalEntry.TransactionID
+  coded_by_member_id?: number | null;    // Member: the Treasurer
+  coded_at?: string | null;              // DATETIME
 }
 
 export interface Skill {

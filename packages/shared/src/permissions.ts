@@ -397,6 +397,13 @@ export const canIssueChurchDisbursement = (u: Actor, councilId: number): boolean
  */
 export const canPayChurchDisbursement = (u: Actor, councilId: number): boolean => isSuperAdmin(u) || (isFinancialSecretary(u) && u.councilId === councilId);
 
+/**
+ * Sprint 8N: the High-Volume Batch Transaction Coder and the Cash Box Audit Closure Panel on the Treasurer Desk, mirroring
+ * finance.batchCodeDonations and finance.closeCashAudit: the council's Treasurer or any Super Admin.
+ */
+export const canBatchCodeDonations = (u: Actor, councilId: number): boolean => canLogConcludedRevenue(u, councilId);
+export const canCloseCashAudit = (u: Actor, councilId: number): boolean => canLogConcludedRevenue(u, councilId);
+
 /** Why the signed-in officer may not sign a line on a sheet (Sprint 5Z-4), or null when they may. */
 export type ExpenseSignatureBlock = 'seat' | 'own-report' | 'collusion';
 

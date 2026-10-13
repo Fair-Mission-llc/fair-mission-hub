@@ -553,20 +553,23 @@ VALUES
 (8, 13, 5.00), (8, 8, 5.00), (8, 5, 4.75), (8, 16, 5.00);
 GO
 -- DonationMethodID: 1 Cash, 2 Credit Card, 3 Venmo, 4 Zelle, 7 Physical Items. DonationTypeID: 2 Parish Event, 3 Meals, 4 Unsolicited.
-INSERT INTO [Donation] ([CouncilID], [DonationDate], [DonationMethodID], [DonationTypeID], [Donor], [DonationDesciption], [EventID], [DonationAmount], [RecordedBy])
+-- Sprint 8N: the donations whose deposits the seeded ledger already holds (the rally, the picnic and the pancake
+-- breakfast: seed-txn-0002, -0004 and -0008) carry that posting as their coding batch, so the High-Volume Batch
+-- Transaction Coder never codes them twice. The Tootsie Roll QR code and the baby bottle Zelle gifts stay un-coded.
+INSERT INTO [Donation] ([CouncilID], [DonationDate], [DonationMethodID], [DonationTypeID], [Donor], [DonationDesciption], [EventID], [DonationAmount], [RecordedBy], [revenue_gl_account_id], [coding_batch_id], [coded_by_member_id], [coded_at])
 VALUES
-(1, '2026-07-12', 1, 2, NULL, 'Rally free-will offering', 1, 180.00, 7),
-(1, '2026-09-10', 1, 2, NULL, 'Holy Hour vocations basket', 2, 95.00, 7),
-(1, '2026-07-26', 1, 3, NULL, 'Picnic plates, cash', 3, 640.00, 7),
-(1, '2026-07-26', 3, 3, NULL, 'Picnic plates, Venmo', 3, 215.00, 7),
-(1, '2026-08-16', 1, 3, NULL, 'Pancake plates, cash', 4, 525.00, 2),
-(1, '2026-08-16', 2, 3, NULL, 'Pancake plates, card reader', 4, 310.00, 2),
-(1, '2026-08-22', 1, 4, NULL, 'Tootsie Roll cans', 5, 1120.50, 7),
-(1, '2026-08-22', 3, 4, NULL, 'Tootsie Roll QR code', 5, 260.00, 7),
-(1, '2026-09-12', 1, 4, 'Anonymous parishioner', 'Pantry cash gift', 6, 150.00, 2),
-(1, '2026-09-12', 7, 4, 'Safeway NE Broadway', 'Pallet of canned goods (physical items)', 6, 300.00, 2),
-(1, '2026-07-19', 1, 2, NULL, 'Baby bottles returned, cash and coins', 7, 865.25, 7),
-(1, '2026-07-19', 4, 2, NULL, 'Baby bottle campaign, Zelle', 7, 400.00, 7);
+(1, '2026-07-12', 1, 2, NULL, 'Rally free-will offering', 1, 180.00, 7, 10, 'seed-txn-0002', 7, '2026-07-12 00:00:00'),
+(1, '2026-09-10', 1, 2, NULL, 'Holy Hour vocations basket', 2, 95.00, 7, NULL, NULL, NULL, NULL),
+(1, '2026-07-26', 1, 3, NULL, 'Picnic plates, cash', 3, 640.00, 7, 9, 'seed-txn-0004', 7, '2026-07-27 00:00:00'),
+(1, '2026-07-26', 3, 3, NULL, 'Picnic plates, Venmo', 3, 215.00, 7, 9, 'seed-txn-0004', 7, '2026-07-27 00:00:00'),
+(1, '2026-08-16', 1, 3, NULL, 'Pancake plates, cash', 4, 525.00, 2, 9, 'seed-txn-0008', 7, '2026-08-17 00:00:00'),
+(1, '2026-08-16', 2, 3, NULL, 'Pancake plates, card reader', 4, 310.00, 2, 9, 'seed-txn-0008', 7, '2026-08-17 00:00:00'),
+(1, '2026-08-22', 1, 4, NULL, 'Tootsie Roll cans', 5, 1120.50, 7, NULL, NULL, NULL, NULL),
+(1, '2026-08-22', 3, 4, NULL, 'Tootsie Roll QR code', 5, 260.00, 7, NULL, NULL, NULL, NULL),
+(1, '2026-09-12', 1, 4, 'Anonymous parishioner', 'Pantry cash gift', 6, 150.00, 2, NULL, NULL, NULL, NULL),
+(1, '2026-09-12', 7, 4, 'Safeway NE Broadway', 'Pallet of canned goods (physical items)', 6, 300.00, 2, NULL, NULL, NULL, NULL),
+(1, '2026-07-19', 1, 2, NULL, 'Baby bottles returned, cash and coins', 7, 865.25, 7, NULL, NULL, NULL, NULL),
+(1, '2026-07-19', 4, 2, NULL, 'Baby bottle campaign, Zelle', 7, 400.00, 7, NULL, NULL, NULL, NULL);
 GO
 
 -- ==============================================================================

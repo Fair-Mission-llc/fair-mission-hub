@@ -1636,6 +1636,65 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "collection_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "OPEN"
+        }
+      },
+      {
+        "name": "collection_concluded_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "collection_concluded_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "verified_cash_amount",
+        "kind": "real",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "cash_discrepancy_reason",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "cash_verified_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "cash_verified_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "cash_over_short_transaction_id",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -1652,6 +1711,16 @@ export const TABLES: Record<string, TableMeta> = {
       {
         "column": "MissionAreaID",
         "refTable": "CouncilMissionArea",
+        "refColumn": "id"
+      },
+      {
+        "column": "collection_concluded_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "cash_verified_by_member_id",
+        "refTable": "Member",
         "refColumn": "id"
       }
     ],
@@ -2511,6 +2580,34 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "revenue_gl_account_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "coding_batch_id",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "coded_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "coded_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -2536,6 +2633,16 @@ export const TABLES: Record<string, TableMeta> = {
       },
       {
         "column": "RecordedBy",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "revenue_gl_account_id",
+        "refTable": "GLAccount",
+        "refColumn": "id"
+      },
+      {
+        "column": "coded_by_member_id",
         "refTable": "Member",
         "refColumn": "id"
       }
@@ -10216,7 +10323,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Rally free-will offering",
         "EventID": 1,
         "DonationAmount": 180,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": 10,
+        "coding_batch_id": "seed-txn-0002",
+        "coded_by_member_id": 7,
+        "coded_at": "2026-07-12 00:00:00"
       },
       {
         "CouncilID": 1,
@@ -10227,7 +10338,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Holy Hour vocations basket",
         "EventID": 2,
         "DonationAmount": 95,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": null,
+        "coding_batch_id": null,
+        "coded_by_member_id": null,
+        "coded_at": null
       },
       {
         "CouncilID": 1,
@@ -10238,7 +10353,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Picnic plates, cash",
         "EventID": 3,
         "DonationAmount": 640,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": 9,
+        "coding_batch_id": "seed-txn-0004",
+        "coded_by_member_id": 7,
+        "coded_at": "2026-07-27 00:00:00"
       },
       {
         "CouncilID": 1,
@@ -10249,7 +10368,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Picnic plates, Venmo",
         "EventID": 3,
         "DonationAmount": 215,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": 9,
+        "coding_batch_id": "seed-txn-0004",
+        "coded_by_member_id": 7,
+        "coded_at": "2026-07-27 00:00:00"
       },
       {
         "CouncilID": 1,
@@ -10260,7 +10383,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Pancake plates, cash",
         "EventID": 4,
         "DonationAmount": 525,
-        "RecordedBy": 2
+        "RecordedBy": 2,
+        "revenue_gl_account_id": 9,
+        "coding_batch_id": "seed-txn-0008",
+        "coded_by_member_id": 7,
+        "coded_at": "2026-08-17 00:00:00"
       },
       {
         "CouncilID": 1,
@@ -10271,7 +10398,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Pancake plates, card reader",
         "EventID": 4,
         "DonationAmount": 310,
-        "RecordedBy": 2
+        "RecordedBy": 2,
+        "revenue_gl_account_id": 9,
+        "coding_batch_id": "seed-txn-0008",
+        "coded_by_member_id": 7,
+        "coded_at": "2026-08-17 00:00:00"
       },
       {
         "CouncilID": 1,
@@ -10282,7 +10413,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Tootsie Roll cans",
         "EventID": 5,
         "DonationAmount": 1120.5,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": null,
+        "coding_batch_id": null,
+        "coded_by_member_id": null,
+        "coded_at": null
       },
       {
         "CouncilID": 1,
@@ -10293,7 +10428,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Tootsie Roll QR code",
         "EventID": 5,
         "DonationAmount": 260,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": null,
+        "coding_batch_id": null,
+        "coded_by_member_id": null,
+        "coded_at": null
       },
       {
         "CouncilID": 1,
@@ -10304,7 +10443,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Pantry cash gift",
         "EventID": 6,
         "DonationAmount": 150,
-        "RecordedBy": 2
+        "RecordedBy": 2,
+        "revenue_gl_account_id": null,
+        "coding_batch_id": null,
+        "coded_by_member_id": null,
+        "coded_at": null
       },
       {
         "CouncilID": 1,
@@ -10315,7 +10458,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Pallet of canned goods (physical items)",
         "EventID": 6,
         "DonationAmount": 300,
-        "RecordedBy": 2
+        "RecordedBy": 2,
+        "revenue_gl_account_id": null,
+        "coding_batch_id": null,
+        "coded_by_member_id": null,
+        "coded_at": null
       },
       {
         "CouncilID": 1,
@@ -10326,7 +10473,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Baby bottles returned, cash and coins",
         "EventID": 7,
         "DonationAmount": 865.25,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": null,
+        "coding_batch_id": null,
+        "coded_by_member_id": null,
+        "coded_at": null
       },
       {
         "CouncilID": 1,
@@ -10337,7 +10488,11 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "DonationDesciption": "Baby bottle campaign, Zelle",
         "EventID": 7,
         "DonationAmount": 400,
-        "RecordedBy": 7
+        "RecordedBy": 7,
+        "revenue_gl_account_id": null,
+        "coding_batch_id": null,
+        "coded_by_member_id": null,
+        "coded_at": null
       }
     ]
   },

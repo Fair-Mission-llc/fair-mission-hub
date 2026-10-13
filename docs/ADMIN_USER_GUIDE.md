@@ -34,7 +34,8 @@
 21. [Planning workflows and bilateral council affiliations](#21-planning-workflows-and-bilateral-council-affiliations)
 22. [The Global Operations Knowledge Vault and its archive](#22-the-global-operations-knowledge-vault-and-its-archive)
 23. [Parish fundraiser splits](#23-parish-fundraiser-splits)
-24. [Appendix: QR code files](#appendix-qr-code-files)
+24. [Batch coding and cash box audits](#24-batch-coding-and-cash-box-audits)
+25. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -3418,6 +3419,132 @@ The officer who issues a request cannot also pay the request.
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | **Record Payment Made** is unavailable. | The check number is empty, or you issued the request. | Enter the check number, or ask another finance officer to pay. |
+
+## 24. Batch coding and cash box audits
+
+### 24.1 Concept: the event collection lifecycle
+
+Each event's donations form one collection. The collection moves through three states:
+
+| State | Set by | What it means |
+| --- | --- | --- |
+| **Session open** | Default | Phones can log donations for the event. Members can change their donations. |
+| **Concluded** | A member on the phone, or the Treasurer's audit | The logs are locked. No phone can add, change or delete a donation for the event. The gate intake closes. |
+| **Reconciled** | The Treasurer | The Treasurer counted the cash box and closed the audit. Nothing can change the collection after this. |
+
+A member concludes the collection with **[ 🛑 Conclude Event Session & Lock Logs ]** on the phone. The Treasurer's audit concludes a collection that no phone concluded. Standalone donations are not part of any collection. Members can always log standalone donations.
+
+### 24.2 Concept: batch coding of electronic donations
+
+Card and QR-code donations (Venmo, Zelle, Zeffy and ParishSoft) arrive one by one. The Treasurer codes these donations to the general ledger in groups.
+
+The **🧮 High-Volume Batch Transaction Coder** on the **Treasurer Desk** lists every electronic donation that has no ledger line yet. The Treasurer selects donations and picks one Revenue line. One action codes the whole selection.
+
+Each batch posts one transaction to the general ledger:
+
+| Line | Account | Amount |
+| --- | --- | --- |
+| Debit | The council's first cash account, for example **Operating Checking** | The total of the selected donations |
+| Credit | The Revenue line that the Treasurer picked | The same total |
+
+Each donation in the batch keeps the Revenue line and the batch number. Nobody can change or delete a coded donation.
+
+Cash, check and physical-item donations do not show in the coder. The pilot data codes the rally, picnic and pancake breakfast donations already, because the ledger holds their deposits.
+
+### 24.3 Concept: the cash box audit and the Over/Short Reconciliation Line
+
+The phones log each cash donation. At the end of the event, the Treasurer counts the paper currency in the cash box. The count can differ from the logs.
+
+The **💵 Cash Box Audit Closure Panel** on the **Treasurer Desk** compares the count with the logs. The difference is the variance:
+
+- **Over $…**: the cash box holds more than the logs.
+- **Short $…**: the cash box holds less than the logs.
+- **Balanced**: the count matches the logs to the cent.
+
+When the variance is not zero, the platform posts an **Over/Short Reconciliation Line** to the general ledger. The posting uses the **Cash Over/Short** ledger line. The platform adds the **Cash Over/Short** line to the chart of accounts the first time a council needs it.
+
+| Variance | Debit | Credit |
+| --- | --- | --- |
+| Over | Cash account | **Cash Over/Short** |
+| Short | **Cash Over/Short** | Cash account |
+
+The phone logs never change. The adjustment lives only in the general ledger. The event row keeps the counted amount, the reason for the difference and the name of the Treasurer.
+
+Four figures show at the top of the panel: **Events awaiting the count**, **Logged cash to verify**, **Concluded on a phone** and **Net over / short**.
+
+### 24.4 Conclude an event session on the phone
+
+> **Who can do this:** any active member of a council that the event belongs to.
+> **Warning:** Concluding locks the donation logs for every phone. You cannot open the session again.
+
+**Goal:** Close the event's donation intake at the end of the event.
+
+**Start point:** Phone → **Donate** tab → the **ACCEPTING DONATIONS** card.
+
+**Steps:**
+1. Record the last donation, for example the cash box drop.
+2. Tap **[ 🛑 Conclude Event Session & Lock Logs ]**.
+3. Read the warning.
+4. Tap **Yes, conclude & lock**. You cannot undo this.
+
+**Expected result:** The message **… is concluded and its logs are locked. The Treasurer can now count the cash box.** shows. The phone leaves the session. The event is no longer in the **EVENT** list of **Start accepting donations**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| You tapped the button by mistake. | The warning card is open. | Tap **Cancel**. |
+| A donation is refused with "collection session is concluded". | Another phone concluded the session. | Record the gift as a standalone donation and tell the Treasurer. |
+
+### 24.5 Code electronic donations in a batch
+
+> **Who can do this:** the council's Treasurer and Super Admins. Other officers and Admins read the coder.
+> **Warning:** Coding posts money to the general ledger. You cannot undo the coding.
+
+**Goal:** Code many electronic donations to one Revenue line in one action.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **🧮 High-Volume Batch Transaction Coder**.
+
+**Steps:**
+1. Read the un-coded total.
+2. Select **[✓ Select All Un-coded Transactions]**, or select the checkbox on each donation.
+3. Select the line in **Revenue GL line for the selection**.
+4. Check the count and the total on the button.
+5. Select **Code selected to this Revenue line**. You cannot undo this.
+
+**Expected result:** The message **Coded … donations ($…) to … as one posting.** shows. The coded donations leave the grid.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The button is unavailable. | No donation is selected, or no Revenue line is chosen. | Select donations and a line. |
+| A cash donation is not in the grid. | The coder lists only card and QR-code donations. | Count cash on the **💵 Cash Box Audit Closure Panel** (24.6). |
+| The refusal says the donation is coded. | Another batch coded the donation already. | Reload the desk. |
+
+### 24.6 Close a cash box audit
+
+> **Who can do this:** the council's Treasurer and Super Admins. Other officers and Admins read the panel.
+> **Warning:** Closing the audit posts any difference to the general ledger and locks the event's logs. You cannot undo the closure.
+
+**Goal:** Record the counted cash for an event and balance any difference.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **💵 Cash Box Audit Closure Panel**.
+
+**Steps:**
+1. Count the paper currency from the event's cash box.
+2. Find the event row. Read **Logged cash**.
+3. Enter the count in **Counted cash**.
+4. Read **Variance**.
+5. If the variance is not **Balanced**, enter the reason in **Reason for a difference**.
+6. Select **Close cash audit & lock**. You cannot undo this.
+
+**Expected result:** The message **… is reconciled** shows. The event moves to **Closed cash box audits** with the count, the variance and your name. **Net over / short** includes the new variance.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Close cash audit & lock** is unavailable. | The count is empty, or the variance needs a reason. | Enter the count and the reason. |
+| An event is not on the panel. | The event has no cash donations. | No count is needed. |
+| The session still shows **Session open**. | No phone concluded the session. | Close the audit. The closure concludes the session. |
 
 ## Appendix: QR code files
 

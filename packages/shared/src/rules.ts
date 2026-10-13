@@ -149,7 +149,9 @@ export type BusinessRuleCode =
   | 'AFFILIATION_CONFLICT'
   | 'AFFILIATION_OUT_OF_STATE'
   | 'PARISH_SPLIT_GL_LINE_REQUIRED'
-  | 'PARISH_SPLIT_DISABLED';
+  | 'PARISH_SPLIT_DISABLED'
+  | 'COLLECTION_SESSION_CONCLUDED'
+  | 'DONATION_ALREADY_CODED';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {

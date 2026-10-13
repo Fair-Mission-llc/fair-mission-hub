@@ -24,11 +24,17 @@
 // Check tile stays for real-world gate work (Sprint 8M Extension restored it after 8M Core hid it).
 // Sprint 5Z-Final-Polish: the start card is a single bold heading, and the event dropdown offers only events at the
 // gate, under way or starting within the council's shift_signup_lock_hours (isEventAtGate; Sprint 7H, was a fixed 2 hours).
+// Sprint 8N: the pinned-event card ends with '[ 🛑 Conclude Event Session & Lock Logs ]' (events.concludeCollectionSession).
+// After a second tap to confirm, the event's collection is CONCLUDED for every phone: the gate intake closes, no more
+// donations are logged or changed for it, and the Treasurer's Cash Box Audit Closure Panel shows it ready for the count.
+// The event dropdown leaves out concluded events.
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import {
+  CONCLUDE_EVENT_SESSION_LABEL,
   councilWideSettings,
   formatDate,
+  isCollectionOpen,
   isEventAtGate,
   PHONE_STANDARD_RATE_HINT,
   SPACING,
@@ -332,7 +338,8 @@ function DonateScreenBody() {
     const ahead = 86_400_000 + leadHours * 3_600_000;
     const nearby = events.filter((e) => e.StartDate <= toIsoDate(new Date(now.getTime() + ahead)) && e.EndDate >= toIsoDate(new Date(now.getTime() - 86_400_000)));
     const shifts = await Promise.all(nearby.map((e) => db.events.listShifts(e.id)));
-    return { methods, types, leadHours, events: nearby.filter((e, i) => isEventAtGate(e, shifts[i], now, leadHours)) };
+    // Sprint 8N: a concluded collection takes no more donations, so it is not offered.
+    return { methods, types, leadHours, events: nearby.filter((e, i) => isCollectionOpen(e) && isEventAtGate(e, shifts[i], now, leadHours)) };
   }, [user.councilId]);
 
   const stream = useLoad(
@@ -358,6 +365,27 @@ function DonateScreenBody() {
       setIntakeBusy(false);
     }
   };
+
+  // Sprint 8N: the conclude button asks once more before it locks the logs for every phone.
+  const [confirmConclude, setConfirmConclude] = useState(false);
+  const [concluding, setConcluding] = useState(false);
+  const conclude = async () => {
+    if (!session.active) return;
+    const name = session.eventName;
+    setConcluding(true);
+    try {
+      await db.events.concludeCollectionSession(user.memberId, session.eventId);
+      controller.stop();
+      setConfirmConclude(false);
+      setMessage({ tone: 'info', text: `${name} is concluded and its logs are locked. The Treasurer can now count the cash box.` });
+      await setup.reload();
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setConcluding(false);
+    }
+  };
+  useEffect(() => setConfirmConclude(false), [pinnedEventId]);
 
   // Leaving a half-filled form when the session changes would record against the wrong event.
   useEffect(() => setPicked(null), [pinnedEventId]);
@@ -427,6 +455,21 @@ function DonateScreenBody() {
                   setMessage({ tone: 'info', text: `Stopped accepting donations for ${session.eventName}. New donations are standalone.` });
                 }}
               />
+              {confirmConclude ? (
+                <Card accent={color.red}>
+                  <AppText variant="title">Conclude {session.eventName}?</AppText>
+                  <AppText>
+                    This locks the donation logs for every phone. Nobody can add or change a donation for this event after this. The Treasurer counts the cash box
+                    next.
+                  </AppText>
+                  <View style={{ flexDirection: 'row', gap: space.md }}>
+                    <Button title="Cancel" variant="secondary" style={{ flex: 1 }} disabled={concluding} onPress={() => setConfirmConclude(false)} />
+                    <Button title="Yes, conclude & lock" variant="danger" style={{ flex: 2 }} busy={concluding} onPress={() => void conclude()} />
+                  </View>
+                </Card>
+              ) : (
+                <Button title={CONCLUDE_EVENT_SESSION_LABEL} variant="danger" onPress={() => setConfirmConclude(true)} />
+              )}
             </Card>
           ) : starting ? (
             <StartSessionForm
