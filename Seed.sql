@@ -1026,3 +1026,11 @@ VALUES
 (3, 'RECRUITING', '- Pair every new member with a sponsor for his **first three meetings**.
 - Invite the whole family to the first council breakfast.', 'Martin Kowalski, Deputy Grand Knight', '2026-08-18 20:30:00', 'Council 3112 · Holy Redeemer Council');
 GO
+
+-- Sprint 8M Core (schema 83): the general ledger line St. Mary's charges the parish's share of a fundraiser to
+-- (GLAccount 16, an Expense account). The parish split itself stays off (Council.parish_split_enabled = 0) until an
+-- officer switches it on under Council Wide Settings and picks this line.
+INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [ParentAccountID], [IsVirtualGoal], [TargetGoalAmount])
+VALUES
+(1, 'Parish Fundraiser Share', 'Expense', NULL, 0, 0.00);
+GO

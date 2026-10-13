@@ -147,7 +147,9 @@ export type BusinessRuleCode =
   | 'COUNCIL_GOALS_LOCKED'
   | 'BUDGET_VOTE_DEADLINE_PASSED'
   | 'AFFILIATION_CONFLICT'
-  | 'AFFILIATION_OUT_OF_STATE';
+  | 'AFFILIATION_OUT_OF_STATE'
+  | 'PARISH_SPLIT_GL_LINE_REQUIRED'
+  | 'PARISH_SPLIT_DISABLED';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {

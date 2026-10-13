@@ -737,9 +737,42 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parish_split_enabled",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "parish_split_percentage",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 50
+        }
+      },
+      {
+        "name": "parish_split_gl_line_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parish_split_gl_line_id",
+        "refTable": "GLAccount",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "AffiliatedCouncils": {
@@ -7559,6 +7592,146 @@ export const TABLES: Record<string, TableMeta> = {
       }
     ],
     "uniqueKeys": []
+  },
+  "ParishDisbursementRequest": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "event_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "gross_collections",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "split_percentage",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "amount",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "gl_account_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "PENDING"
+        },
+        "allowed": [
+          "PENDING",
+          "PAID"
+        ]
+      },
+      {
+        "name": "requested_by_member_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "requested_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "paid_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "paid_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "check_number",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "transaction_id",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "event_id",
+        "refTable": "Event",
+        "refColumn": "id"
+      },
+      {
+        "column": "gl_account_id",
+        "refTable": "GLAccount",
+        "refColumn": "id"
+      },
+      {
+        "column": "requested_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "paid_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
   }
 };
 
@@ -12714,6 +12887,19 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "officer_signature": "Martin Kowalski, Deputy Grand Knight",
         "date_logged": "2026-08-18 20:30:00",
         "origin_council_stamp": "Council 3112 · Holy Redeemer Council"
+      }
+    ]
+  },
+  {
+    "table": "GLAccount",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "AccountName": "Parish Fundraiser Share",
+        "AccountType": "Expense",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
       }
     ]
   }

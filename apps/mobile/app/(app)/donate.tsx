@@ -6,7 +6,8 @@
 //  2. The method is one tap on a large tile. Venmo/Zelle/Zeffy/Parishsoft show the council's QR code for
 //     the donor to scan; physical items ask for a description and estimated value, and may carry a
 //     verification photo taken with the phone camera from the "Take Verification Photo" tile (stored in
-//     DonationPhotoURL). Sprint 7F Extension 2: a Check tile asks for the check number (required, Donation.CheckNumber).
+//     DonationPhotoURL). Sprint 8M Core: the phone offers no Check tile (phoneDonationOptions); checks are logged on the
+//     web portal, where the check number is required.
 //  3. Sprint 8L: nothing is chosen or typed for the member. The setup card starts with no event and no donation type
 //     picked, the method is the tile the member taps, and the Amount box starts empty: the session's standard rate is
 //     only a hint beside it, so the member types each amount by hand, then records it or cancels.
@@ -19,6 +20,8 @@
 // cash and card, that log a donation at a preset amount with nothing typed (components/GateIntake.tsx).
 // Sprint 8L: the setup card ("Start accepting donations") is the member's on-device configuration drawer. The member
 // picks the event and the donation type by hand and may type a standard rate (e.g. the $10.00 parking tier).
+// Sprint 8M Core: the standard rate's placeholder suggests $25.00 (PHONE_STANDARD_RATE_HINT), still typed by hand, and the
+// description box reads EVENT DESCRIPTION (OPTIONAL): the default description of every donation in the session.
 // Sprint 5Z-Final-Polish: the start card is a single bold heading, and the event dropdown offers only events at the
 // gate, under way or starting within the council's shift_signup_lock_hours (isEventAtGate; Sprint 7H, was a fixed 2 hours).
 import { useEffect, useState } from 'react';
@@ -27,6 +30,8 @@ import {
   councilWideSettings,
   formatDate,
   isEventAtGate,
+  PHONE_STANDARD_RATE_HINT,
+  phoneDonationOptions,
   SPACING,
   toIsoDate,
   type CouncilDonationOption,
@@ -58,8 +63,6 @@ interface DonationValues {
   donor: string;
   description: string;
   photoPath: string | null;
-  /** Sprint 7F Extension 2: required for a Check donation, null otherwise. */
-  checkNumber: string | null;
 }
 
 /** Amount text to dollars; blank is null. Anything else non-numeric is an error naming the field. */
@@ -139,7 +142,7 @@ function StartSessionForm({
         />
       </Field>
       <Field label="STANDARD RATE (OPTIONAL)">
-        <AppInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="e.g. 10.00" />
+        <AppInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder={`e.g. ${PHONE_STANDARD_RATE_HINT.toFixed(2)}`} />
       </Field>
       {types.length > 0 ? (
         <Field label="DONATION TYPE">
@@ -152,7 +155,7 @@ function StartSessionForm({
           />
         </Field>
       ) : null}
-      <Field label="DEFAULT DESCRIPTION (OPTIONAL)">
+      <Field label="EVENT DESCRIPTION (OPTIONAL)">
         <AppInput value={description} onChangeText={setDescription} maxLength={255} />
       </Field>
       <View style={{ flexDirection: 'row', gap: space.md }}>
@@ -180,9 +183,6 @@ function DonationForm({
 }) {
   const { color, space } = useTheme();
   const isItem = option.kind === 'item';
-  // Sprint 7F Extension 2: a Check donation must carry the number printed on the check.
-  const isCheck = option.kind === 'check';
-  const [checkNumber, setCheckNumber] = useState('');
   // Sprint 8L: the amount is always typed by hand; the session's standard rate is only shown as a hint.
   const [amount, setAmount] = useState('');
   const [typeId, setTypeId] = useState<number | null>(defaults.donationTypeId ?? null);
@@ -201,7 +201,6 @@ function DonationForm({
     if ('error' in parsed) return setError(parsed.error);
     if (parsed.value === null) return setError(`Enter the ${amountLabel.toLowerCase()}.`);
     if (isItem && description.trim() === '') return setError('Describe the donated items, e.g. "3 boxes of canned food".');
-    if (isCheck && checkNumber.trim() === '') return setError('Enter the check number printed on the check.');
     if (typeId === null) return setError('Choose a donation type.');
     setBusy(true);
     setError(null);
@@ -212,7 +211,6 @@ function DonationForm({
         donor: donor.trim(),
         description: description.trim(),
         photoPath: isItem ? photoPath : null,
-        checkNumber: isCheck ? checkNumber.trim() : null,
       });
     } catch (err) {
       setError(describeError(err));
@@ -265,19 +263,6 @@ function DonationForm({
             Standard rate for this session: {money(defaults.amount)}. Type the amount the donor gave.
           </AppText>
         ) : null}
-        {isCheck ? (
-          <Field label="CHECK NUMBER (REQUIRED)">
-            <AppInput
-              value={checkNumber}
-              onChangeText={setCheckNumber}
-              maxLength={50}
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholder="The number printed on the check"
-              accessibilityLabel="Check number, required"
-            />
-          </Field>
-        ) : null}
         {types.length > 0 ? (
           <Field label="DONATION TYPE">
             <Dropdown title="Donation type" value={typeId} placeholder="Choose the donation type" options={types.map((t) => ({ value: t.id, label: t.DonationType }))} onChange={setTypeId} />
@@ -328,7 +313,7 @@ function DonateScreenBody() {
     const ahead = 86_400_000 + leadHours * 3_600_000;
     const nearby = events.filter((e) => e.StartDate <= toIsoDate(new Date(now.getTime() + ahead)) && e.EndDate >= toIsoDate(new Date(now.getTime() - 86_400_000)));
     const shifts = await Promise.all(nearby.map((e) => db.events.listShifts(e.id)));
-    return { methods, types, leadHours, events: nearby.filter((e, i) => isEventAtGate(e, shifts[i], now, leadHours)) };
+    return { methods: phoneDonationOptions(methods), types, leadHours, events: nearby.filter((e, i) => isEventAtGate(e, shifts[i], now, leadHours)) };
   }, [user.councilId]);
 
   const stream = useLoad(
@@ -379,7 +364,6 @@ function DonateScreenBody() {
       Donor: v.donor || null,
       DonationDesciption: v.description || null,
       DonationPhotoURL: v.photoPath,
-      CheckNumber: v.checkNumber,
     });
     const where = session.active ? ` for ${session.eventName}` : ' as a standalone donation';
     setMessage({ tone: 'info', text: `Recorded ${money(saved.DonationAmount)} by ${option.method.DonationMethod}${where}. Thank the donor!` });

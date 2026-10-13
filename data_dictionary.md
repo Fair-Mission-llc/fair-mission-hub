@@ -1104,3 +1104,28 @@ Rules. The archive filters by tag, fraternal year and words in the text, signatu
 Sprint 8J (schema 80). history.listOperationsKnowledge(actorId) returns every council's entries; any Active officer or Admin of any council, or any Active Super Admin, may read (assertMayReadOperationsKnowledge: ADMIN_REQUIRED). The archive's "Filter by My Home Council Only" toggle narrows to council_id = the viewer's council (filter homeCouncilId). Every save passes the content guard (findDiaryContentViolation: KNOWLEDGE_CONTENT_BLOCKED) and the KofC Charter compliance gate (charter-compliance.ts, reviewCharterCompliance / assertCharterCompliant: CHARTER_VIOLATION_BLOCKED for a SEVERE rule; ADVISORY rules only show the Charter Advisory Warning panel).
 New methods. history.listOperationsKnowledge, history.addOperationsKnowledge.
 ________________________________________
+# 42. Parametric Parish Splits (Sprint 8M Core)
+Schema version 83; the phone database version moves to 83.
+[Council] (three new columns, edited on System Settings > Council Wide Settings: councils.setParishSplitSettings, the Council Wide Settings editors)
+•	parish_split_enabled (INT, NOT NULL, DEFAULT 0) — 1 switches the parish split on.
+•	parish_split_percentage (DECIMAL(5,2), NOT NULL, DEFAULT 50.00) — The parish's share of a fundraiser's collections, 0.01 to 100.00.
+•	parish_split_gl_line_id (INT, NULL) — Foreign Key references GLAccount(id). The Expense line (not a virtual goal) the share is charged to. Required while the split is on: the page will not save without it and the drivers refuse PARISH_SPLIT_GL_LINE_REQUIRED.
+[ParishDisbursementRequest]
+A Church Disbursement Request (parish-split.ts): the parish's share of one event's live collections, issued by the Treasurer from the Parish Fundraiser Revenue Split Console on the Treasurer Desk (finance.issueChurchDisbursementRequest; the council's Treasurer or a Super Admin) and paid by the Financial Secretary from the Financial Secretary Desk (finance.recordChurchDisbursementPayment; the council's Financial Secretary or a Super Admin, never the officer who issued it).
+•	id (INT, NOT NULL) — Primary Key. Auto-incrementing identifier.
+•	council_id (INT, NOT NULL) — Foreign Key references Council(id).
+•	event_id (INT, NOT NULL) — Foreign Key references Event(id). The fundraiser whose collections were split.
+•	gross_collections (DECIMAL(18,2), NOT NULL) — The event's money donations (physical items left out) when the request was issued.
+•	split_percentage (DECIMAL(5,2), NOT NULL) — The council's percentage then.
+•	amount (DECIMAL(18,2), NOT NULL) — The share less the shares already requested for the event.
+•	gl_account_id (INT, NOT NULL) — Foreign Key references GLAccount(id). The designated GL line then.
+•	status (VARCHAR(20), NOT NULL, DEFAULT 'PENDING') — CHECK PENDING or PAID.
+•	requested_by_member_id (INT, NOT NULL) — Foreign Key references Member(id). The Treasurer.
+•	requested_at (DATETIME, NOT NULL) — When the request was issued.
+•	paid_by_member_id (INT, NULL) — Foreign Key references Member(id). The Financial Secretary.
+•	paid_at (DATETIME, NULL) — The payment date.
+•	check_number (VARCHAR(50), NULL) — The check that paid the parish.
+•	transaction_id (VARCHAR(36), NULL) — The JournalEntry.TransactionID of the payment: a debit to the GL line and a credit to the council's first cash account.
+Rules. Nothing is posted while a request is PENDING. Deleting a council with requests is blocked (maintenance.ts).
+New methods. councils.setParishSplitSettings, finance.getParishSplitConsole, finance.issueChurchDisbursementRequest, finance.recordChurchDisbursementPayment.
+________________________________________

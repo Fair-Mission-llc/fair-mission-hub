@@ -42,6 +42,9 @@
 // Treasurer Desk the Annual Budget vs Actuals Ledger Grid and the Bank Statement Match-Window; the Recorder Desk the
 // Council Resolutions and Motions Ledger; the Historian Desk the Google Drive Media Gallery Sync Board. Home gains the
 // '📿 Community Prayer Request List' card (Faith Center content, like the verse and the feast tracker).
+// Sprint 8M Core: the Treasurer Desk carries the Parish Fundraiser Revenue Split Console (ParishSplitConsoleCard), whose
+// '[ 📋 Issue Church Disbursement Request ]' sends the parish's share to the Financial Secretary Desk's Church
+// Disbursement Requests card (ChurchDisbursementQueue), where the check is recorded.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -111,6 +114,7 @@ import { AuditDesk as TrusteeAuditDesk } from '@/components/modules/TrusteeAudit
 import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
 import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
 import { OperationsKnowledgeVault } from '@/components/KnowledgeVaultParts';
+import { ChurchDisbursementQueue, ParishSplitConsoleCard } from '@/components/ParishSplitParts';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -563,6 +567,9 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
           {queue.data ? <SheetQueue caption="Sheets waiting for the Financial Secretary's payment request" rows={rows} href="/expenses/audit" cta="Verify & sign on the full desk" /> : null}
         </Panel>
       </DeskRow>
+      <DeskRow id="financial-secretary-church-disbursements" label="Church Disbursement Requests">
+        <ChurchDisbursementQueue user={user} councilId={councilId} />
+      </DeskRow>
       <Panel title="Excel roster imports">
         <ul className="flex flex-col gap-3 text-sm">
           <li>
@@ -631,6 +638,9 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
             </p>
           ) : null}
         </Panel>
+      </DeskRow>
+      <DeskRow id="treasurer-parish-split" label="Parish Fundraiser Revenue Split Console">
+        <ParishSplitConsoleCard user={user} councilId={councilId} />
       </DeskRow>
     </div>
   );

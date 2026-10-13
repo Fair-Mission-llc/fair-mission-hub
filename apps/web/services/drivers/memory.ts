@@ -562,6 +562,16 @@ import {
   assertMayAttachAssetPhoto,
   cleanAssetPhotoUrl,
 } from '@kofc/shared';
+import {
+  buildParishSplitConsole,
+  cleanParishSplitSettings,
+  parishSplitSettings,
+  planChurchDisbursementPayment,
+  planChurchDisbursementRequest,
+  type ParishDisbursementDetail,
+  type ParishDisbursementRequest,
+  type ParishSplitConsole,
+} from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
   Event,
@@ -1517,6 +1527,16 @@ export class MemoryDataService implements DataService {
       const row = this.requireRecord(s, 'Council', councilId);
       row.is_loaner_library_enabled = enabled ? 1 : 0;
       return { ...row } as unknown as Council;
+    },
+
+    setParishSplitSettings: async (actorId, councilId, input) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayEditCouncilWideSettings(this.memberWriteActor(s, actorId), councilId);
+        const row = this.requireRecord(s, 'Council', councilId);
+        Object.assign(row, cleanParishSplitSettings(input, parishSplitSettings(row as unknown as Council), this.glAccounts(s, councilId), councilId));
+        return { ...row } as unknown as Council;
+      });
     },
 
     listAffiliationDirectory: async (actorId, councilId) => {
@@ -6090,6 +6110,58 @@ export class MemoryDataService implements DataService {
       });
     },
 
+    getParishSplitConsole: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayReadGeneralLedger(this.memberWriteActor(s, actorId), councilId, `read the parish split of council ${councilId}`);
+      this.assertCouncilsExist(s, [councilId]);
+      return this.parishSplitConsole(s, councilId);
+    },
+
+    issueChurchDisbursementRequest: async (actorId, councilId, eventId) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayCodeExpenseLedger(this.memberWriteActor(s, actorId), councilId, `issue church disbursement requests for council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const view = this.parishSplitConsole(s, councilId);
+        const plan = planChurchDisbursementRequest(view.settings, view.events, eventId, councilId);
+        const row = s.insert('ParishDisbursementRequest', {
+          council_id: councilId,
+          ...plan,
+          status: 'PENDING',
+          requested_by_member_id: actorId,
+          requested_at: toTimestamp(this.now()),
+          paid_by_member_id: null,
+          paid_at: null,
+          check_number: null,
+          transaction_id: null,
+        });
+        return this.parishDisbursementDetail(s, row.id as number);
+      });
+    },
+
+    recordChurchDisbursementPayment: async (actorId, requestId, input) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        const row = s.rows('ParishDisbursementRequest').find((r) => r.id === requestId);
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No church disbursement request with id ${requestId}.`, { requestId });
+        const request = { ...row } as unknown as ParishDisbursementRequest;
+        assertMayIssueExpenseOrder(actor, request.council_id, `pay church disbursement request ${requestId}`);
+        const event = s.rows('Event').find((e) => e.id === request.event_id);
+        const plan = planChurchDisbursementPayment(request, actor, input, this.glAccounts(s, request.council_id), (event?.EventName as string) ?? `Event ${request.event_id}`, this.now());
+        assertLedgerPeriodsOpen(plan.lines, this.councilAudits(s, request.council_id));
+        const posted = this.insertJournalLines(s, request.council_id, plan.lines);
+        Object.assign(row, {
+          status: 'PAID',
+          paid_by_member_id: actorId,
+          paid_at: plan.paidAt,
+          check_number: plan.checkNumber,
+          transaction_id: posted[0]?.TransactionID ?? null,
+        });
+        return this.parishDisbursementDetail(s, requestId);
+      });
+    },
+
     transferAssetFunds: async (actorId, sourceAccountId, targetAccountId, amount, options = {}) => {
       const s = await this.ready();
       return s.transaction(() => {
@@ -6268,6 +6340,30 @@ export class MemoryDataService implements DataService {
       memberNames,
       now: this.now(),
     });
+  }
+
+  /** Sprint 8M Core: the Parish Fundraiser Revenue Split Console of the council. */
+  private parishSplitConsole(s: MemoryStore, councilId: number): ParishSplitConsole {
+    const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;
+    const eventIds = new Set(s.rows('EventCouncils').filter((ec) => ec.CouncilID === councilId).map((ec) => ec.EventID as number));
+    const kinds = new Map(s.rows('DonationMethod').map((m) => [m.id, donationMethodKind(m.DonationMethod as string)]));
+    return buildParishSplitConsole(
+      councilId,
+      council,
+      this.glAccounts(s, councilId),
+      s.rows('Event').filter((e) => eventIds.has(e.id as number)) as unknown as Event[],
+      s
+        .rows('Donation')
+        .filter((d) => d.CouncilID === councilId && d.EventID != null && eventIds.has(d.EventID as number))
+        .map((d) => ({ EventID: d.EventID as number, DonationAmount: d.DonationAmount as number, isItem: kinds.get(d.DonationMethodID) === 'item' })),
+      s.rows('ParishDisbursementRequest').filter((r) => r.council_id === councilId) as unknown as ParishDisbursementRequest[],
+      new Map(s.rows('Member').map((m) => [m.id as number, `${m.MemberFirstName as string} ${m.MemberLastName as string}`])),
+    );
+  }
+
+  private parishDisbursementDetail(s: MemoryStore, requestId: number): ParishDisbursementDetail {
+    const row = s.rows('ParishDisbursementRequest').find((r) => r.id === requestId)!;
+    return this.parishSplitConsole(s, row.council_id as number).requests.find((d) => d.request.id === requestId)!;
   }
 
   private glAccounts(s: MemoryStore, councilId: number): GLAccount[] {

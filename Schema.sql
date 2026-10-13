@@ -3521,3 +3521,81 @@ GO
 -- text layout, and puts four September expense sheets and two charity grant requests into the approval and vetting
 -- queues. The phone database version moves to 82 so phones rebuild with the new seed rows.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8M Core: PARAMETRIC PARISH SPLITS (schema version 83)
+--
+-- A white-label council may owe its parish a share of what a fundraiser collects (parish-split.ts). Three Council
+-- columns make the split each council's own setting, edited on System Settings > Council Wide Settings:
+--   parish_split_enabled     INT DEFAULT 0 - 1 switches the split engine on
+--   parish_split_percentage  the parish's share of the collections, from 0.01 to 100.00 (DEFAULT 50.00)
+--   parish_split_gl_line_id  the general ledger line (an Expense account of the council) the parish's share is charged
+--                            to. NULL while the split is off; the drivers refuse to switch the split on without it
+--                            (PARISH_SPLIT_GL_LINE_REQUIRED), and the page will not save without one.
+-- ParishDisbursementRequest is the Church Disbursement Request, a payment request the Treasurer issues from the
+-- Parish Fundraiser Revenue Split Console on the Treasurer Desk: the parish's share of one event's live collections
+-- (its money donations) less the shares already requested, held PENDING against the designated GL line as a liability
+-- to the parish. It waits on the Financial Secretary Desk until the Financial Secretary records the check (PAID), which
+-- posts one balanced transaction: a debit to the GL line and a credit to the cash account (transaction_id). The GL line
+-- and percentage are copied onto the request, so a later settings change never rewrites it.
+-- The phone database version moves to 83. The phone's Donate tab no longer offers the Check tile.
+-- =========================================================================
+ALTER TABLE [Council] ADD [parish_split_enabled] INT NOT NULL DEFAULT 0;
+GO
+ALTER TABLE [Council] ADD [parish_split_percentage] DECIMAL(5,2) NOT NULL DEFAULT 50.00;
+GO
+ALTER TABLE [Council] ADD [parish_split_gl_line_id] INT NULL;
+GO
+ALTER TABLE [Council]
+ADD FOREIGN KEY([parish_split_gl_line_id])
+REFERENCES [GLAccount]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE TABLE [ParishDisbursementRequest] (
+	[id] INT NOT NULL IDENTITY,
+	[council_id] INT NOT NULL,
+	[event_id] INT NOT NULL,
+	[gross_collections] DECIMAL(18,2) NOT NULL,
+	[split_percentage] DECIMAL(5,2) NOT NULL,
+	[amount] DECIMAL(18,2) NOT NULL,
+	[gl_account_id] INT NOT NULL,
+	[status] VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK ([status] IN ('PENDING', 'PAID')),
+	[requested_by_member_id] INT NOT NULL,
+	[requested_at] DATETIME NOT NULL,
+	[paid_by_member_id] INT NULL,
+	[paid_at] DATETIME NULL,
+	[check_number] VARCHAR(50) NULL,
+	[transaction_id] VARCHAR(36) NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [ParishDisbursementRequest]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [ParishDisbursementRequest]
+ADD FOREIGN KEY([event_id])
+REFERENCES [Event]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [ParishDisbursementRequest]
+ADD FOREIGN KEY([gl_account_id])
+REFERENCES [GLAccount]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [ParishDisbursementRequest]
+ADD FOREIGN KEY([requested_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [ParishDisbursementRequest]
+ADD FOREIGN KEY([paid_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE INDEX [ParishDisbursementRequest_Council_Idx] ON [ParishDisbursementRequest] ([council_id], [status]);
+GO

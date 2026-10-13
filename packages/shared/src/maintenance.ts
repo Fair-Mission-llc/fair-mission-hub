@@ -121,6 +121,7 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
     { table: 'CouncilAffiliations', column: 'requesting_council_id', noun: ['affiliation invite sent', 'affiliation invites sent'] },
     { table: 'CouncilAffiliations', column: 'target_council_id', noun: ['affiliation invite received', 'affiliation invites received'] },
     { table: 'CouncilOperationsKnowledge', column: 'council_id', noun: ['operations knowledge entry', 'operations knowledge entries'] },
+    { table: 'ParishDisbursementRequest', column: 'council_id', noun: ['church disbursement request', 'church disbursement requests'] },
   ],
   Parish: [{ table: 'Pastor', column: 'ParishID', noun: ['pastor', 'pastors'] }],
   Pastor: [],

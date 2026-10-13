@@ -30,6 +30,9 @@
 // May, Review in June, the July 1 lock that freezes the year's Annual Council Goals as read-only information blocks, and
 // the council's final budget vote by July 10. The Cross-Council Loaner Library Sharing card switches
 // Council.is_loaner_library_enabled; a brother council's item shows only when both affiliated councils have it on.
+//
+// Sprint 8M Core: the Parish Fundraiser Split card (ParishSplitSettingsCard) sets the split's switch, percentage and GL
+// line; it will not save the split on without a GL line.
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -49,6 +52,7 @@ import { RequireArea } from '@/components/CouncilScope';
 import { RankThresholdsCard } from '@/components/EngagementParts';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { FraternalPlanningWorkflow, LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
+import { ParishSplitSettingsCard } from '@/components/ParishSplitParts';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
@@ -182,6 +186,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
       <InactivitySweepCard council={council} />
       <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
       <LoanerLibrarySharingCard user={user} council={council} onSaved={onSaved} />
+      <ParishSplitSettingsCard user={user} council={council} onSaved={onSaved} />
       <CustomGuidesCard council={council} />
     </>
   );

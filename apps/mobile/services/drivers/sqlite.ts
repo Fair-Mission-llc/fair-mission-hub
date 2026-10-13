@@ -565,6 +565,16 @@ import {
   assertMayAttachAssetPhoto,
   cleanAssetPhotoUrl,
 } from '@kofc/shared';
+import {
+  buildParishSplitConsole,
+  cleanParishSplitSettings,
+  parishSplitSettings,
+  planChurchDisbursementPayment,
+  planChurchDisbursementRequest,
+  type ParishDisbursementDetail,
+  type ParishDisbursementRequest,
+  type ParishSplitConsole,
+} from '@kofc/shared';
 import type {
   CouncilCadenceConfig,
   Event,
@@ -862,8 +872,10 @@ const DB_NAME = 'kofc.db';
  * 81: no table change. Plain-English lexicon pass on screen labels; phones rebuild so seeded text matches (Sprint 8K).
  * 82: no table change. Seed adds three prayer intentions, Member Beta's large text flag, four September expense
  *     sheets and two charity requests in the queues (Sprint 8L).
+ * 83: Council.parish_split_enabled, parish_split_percentage and parish_split_gl_line_id, ParishDisbursementRequest
+ *     (the Church Disbursement Request) and the seeded Parish Fundraiser Share ledger line (Sprint 8M Core).
  */
-const SCHEMA_VERSION = 82;
+const SCHEMA_VERSION = 83;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1701,6 +1713,23 @@ export class SqliteDataService implements DataService {
         assertMayEditCouncilWideSettings(await this.memberWriteActor(db, actorId), councilId);
         await this.requireRecord(db, 'Council', councilId);
         await db.runAsync('UPDATE [Council] SET [is_loaner_library_enabled] = ? WHERE [id] = ?', [enabled ? 1 : 0, councilId]);
+      });
+      return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
+    },
+
+    setParishSplitSettings: async (actorId, councilId, input) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayEditCouncilWideSettings(await this.memberWriteActor(db, actorId), councilId);
+        await this.requireRecord(db, 'Council', councilId);
+        const council = await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]);
+        const next = cleanParishSplitSettings(input, parishSplitSettings(council), await this.glAccounts(db, councilId), councilId);
+        await db.runAsync('UPDATE [Council] SET [parish_split_enabled] = ?, [parish_split_percentage] = ?, [parish_split_gl_line_id] = ? WHERE [id] = ?', [
+          next.parish_split_enabled,
+          next.parish_split_percentage,
+          next.parish_split_gl_line_id,
+          councilId,
+        ]);
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
@@ -7204,6 +7233,52 @@ export class SqliteDataService implements DataService {
       return this.journalEntriesById(db, ids);
     },
 
+    getParishSplitConsole: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the parish split of council ${councilId}`);
+      await this.assertCouncilsExist(db, [councilId]);
+      return this.parishSplitConsole(db, councilId);
+    },
+
+    issueChurchDisbursementRequest: async (actorId, councilId, eventId) => {
+      const db = await this.ready();
+      let requestId = 0;
+      await db.withTransactionAsync(async () => {
+        assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `issue church disbursement requests for council ${councilId}`);
+        await this.assertCouncilsExist(db, [councilId]);
+        const view = await this.parishSplitConsole(db, councilId);
+        const plan = planChurchDisbursementRequest(view.settings, view.events, eventId, councilId);
+        requestId = (
+          await db.runAsync(
+            `INSERT INTO [ParishDisbursementRequest] ([council_id], [event_id], [gross_collections], [split_percentage], [amount], [gl_account_id], [status], [requested_by_member_id], [requested_at])
+             VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)`,
+            [councilId, plan.event_id, plan.gross_collections, plan.split_percentage, plan.amount, plan.gl_account_id, actorId, toTimestamp(this.now())],
+          )
+        ).lastInsertRowId;
+      });
+      return this.parishDisbursementDetail(db, requestId);
+    },
+
+    recordChurchDisbursementPayment: async (actorId, requestId, input) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const request = await db.getFirstAsync<ParishDisbursementRequest>('SELECT * FROM [ParishDisbursementRequest] WHERE [id] = ?', [requestId]);
+        if (!request) throw new BusinessRuleError('RECORD_NOT_FOUND', `No church disbursement request with id ${requestId}.`, { requestId });
+        assertMayIssueExpenseOrder(actor, request.council_id, `pay church disbursement request ${requestId}`);
+        const event = await db.getFirstAsync<{ EventName: string }>('SELECT [EventName] FROM [Event] WHERE [id] = ?', [request.event_id]);
+        const plan = planChurchDisbursementPayment(request, actor, input, await this.glAccounts(db, request.council_id), event?.EventName ?? `Event ${request.event_id}`, this.now());
+        assertLedgerPeriodsOpen(plan.lines, await this.councilAudits(db, request.council_id));
+        const ids = await this.insertJournalLines(db, request.council_id, plan.lines);
+        const posted = await db.getFirstAsync<{ TransactionID: string | null }>('SELECT [TransactionID] FROM [JournalEntry] WHERE [id] = ?', [ids[0] ?? 0]);
+        await db.runAsync(
+          "UPDATE [ParishDisbursementRequest] SET [status] = 'PAID', [paid_by_member_id] = ?, [paid_at] = ?, [check_number] = ?, [transaction_id] = ? WHERE [id] = ?",
+          [actorId, plan.paidAt, plan.checkNumber, posted?.TransactionID ?? null, requestId],
+        );
+      });
+      return this.parishDisbursementDetail(db, requestId);
+    },
+
     transferAssetFunds: async (actorId, sourceAccountId, targetAccountId, amount, options = {}) => {
       const db = await this.ready();
       let ids: number[] = [];
@@ -7398,6 +7473,36 @@ export class SqliteDataService implements DataService {
       memberNames: new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
       now: this.now(),
     });
+  }
+
+  /** Sprint 8M Core: the Parish Fundraiser Revenue Split Console of the council. */
+  private async parishSplitConsole(db: SQLite.SQLiteDatabase, councilId: number): Promise<ParishSplitConsole> {
+    const council = await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]);
+    const events = await db.getAllAsync<Event>(
+      'SELECT e.[id], e.[EventName], e.[StartDate], e.[EndDate] FROM [Event] e JOIN [EventCouncils] ec ON ec.[EventID] = e.[id] WHERE ec.[CouncilID] = ?',
+      [councilId],
+    );
+    const methods = await db.getAllAsync<{ id: number; DonationMethod: string }>('SELECT [id], [DonationMethod] FROM [DonationMethod]');
+    const kinds = new Map(methods.map((m) => [m.id, donationMethodKind(m.DonationMethod)]));
+    const donations = await db.getAllAsync<{ EventID: number; DonationAmount: number; DonationMethodID: number }>(
+      'SELECT d.[EventID], d.[DonationAmount], d.[DonationMethodID] FROM [Donation] d JOIN [EventCouncils] ec ON ec.[EventID] = d.[EventID] AND ec.[CouncilID] = d.[CouncilID] WHERE d.[CouncilID] = ?',
+      [councilId],
+    );
+    const members = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string }>('SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member]');
+    return buildParishSplitConsole(
+      councilId,
+      council ?? {},
+      await this.glAccounts(db, councilId),
+      events,
+      donations.map((d) => ({ EventID: d.EventID, DonationAmount: d.DonationAmount, isItem: kinds.get(d.DonationMethodID) === 'item' })),
+      await db.getAllAsync<ParishDisbursementRequest>('SELECT * FROM [ParishDisbursementRequest] WHERE [council_id] = ?', [councilId]),
+      new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
+    );
+  }
+
+  private async parishDisbursementDetail(db: SQLite.SQLiteDatabase, requestId: number): Promise<ParishDisbursementDetail> {
+    const row = (await db.getFirstAsync<ParishDisbursementRequest>('SELECT [council_id] FROM [ParishDisbursementRequest] WHERE [id] = ?', [requestId]))!;
+    return (await this.parishSplitConsole(db, row.council_id)).requests.find((d) => d.request.id === requestId)!;
   }
 
   private glAccounts(db: SQLite.SQLiteDatabase, councilId: number): Promise<GLAccount[]> {

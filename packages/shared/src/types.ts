@@ -143,6 +143,14 @@ export interface Council {
   is_loaner_library_enabled?: number | null;
   /** Sprints 8G/8H (Schema 78): the council's state district number (INT NULL), the affiliations directory's tiebreak. */
   district_number?: number | null;
+  /**
+   * Sprint 8M Core (Schema 83): the parish split (parish-split.ts). INT DEFAULT 0 - 1 switches it on; the parish's share
+   * of a fundraiser's collections (DECIMAL(5,2), DEFAULT 50.00); the GL line (an Expense GLAccount of the council) the
+   * share is charged to, required while the split is on (PARISH_SPLIT_GL_LINE_REQUIRED).
+   */
+  parish_split_enabled?: number | null;
+  parish_split_percentage?: number | null;
+  parish_split_gl_line_id?: number | null;
 }
 
 /**
@@ -1413,4 +1421,28 @@ export interface CouncilOperationsKnowledge {
   officer_signature: string; // VARCHAR(255): the automatic stamp, '<first> <last>, <seat>'
   date_logged: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
   origin_council_stamp: string; // VARCHAR(255), Sprint 8J: 'Council <number> · <name>' written at save; the archive's badge
+}
+
+/** Sprint 8M Core: ParishDisbursementRequest.status - PENDING until the Financial Secretary records the check. */
+export type ParishDisbursementStatus = 'PENDING' | 'PAID';
+
+/**
+ * Sprint 8M Core: a Church Disbursement Request (parish-split.ts) - the parish's share of one event's collections, issued
+ * by the Treasurer and paid by the Financial Secretary.
+ */
+export interface ParishDisbursementRequest {
+  id: number;
+  council_id: number; // Council
+  event_id: number; // Event: the fundraiser whose collections were split
+  gross_collections: number; // DECIMAL(18,2): the event's money collections when the request was issued
+  split_percentage: number; // DECIMAL(5,2): the council's percentage then
+  amount: number; // DECIMAL(18,2): the share less the shares already requested
+  gl_account_id: number; // GLAccount: the designated GL line then
+  status: ParishDisbursementStatus; // VARCHAR(20), CHECK PENDING / PAID
+  requested_by_member_id: number; // Member: the Treasurer
+  requested_at: string; // DATETIME
+  paid_by_member_id?: number | null; // Member: the Financial Secretary
+  paid_at?: string | null; // DATETIME
+  check_number?: string | null; // VARCHAR(50)
+  transaction_id?: string | null; // VARCHAR(36): the JournalEntry.TransactionID of the payment
 }

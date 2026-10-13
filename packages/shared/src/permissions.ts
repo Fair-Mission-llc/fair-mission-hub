@@ -385,6 +385,18 @@ export const canOpenTreasurerDesk = (u: Actor, councilId: number): boolean =>
  */
 export const canLogConcludedRevenue = (u: Actor, councilId: number): boolean => isSuperAdmin(u) || (isTreasurer(u) && u.councilId === councilId);
 
+/**
+ * Sprint 8M Core: '[ 📋 Issue Church Disbursement Request ]' on the Parish Fundraiser Revenue Split Console, mirroring
+ * finance.issueChurchDisbursementRequest: the council's Treasurer or any Super Admin.
+ */
+export const canIssueChurchDisbursement = (u: Actor, councilId: number): boolean => canLogConcludedRevenue(u, councilId);
+
+/**
+ * Sprint 8M Core: 'Record Payment Made' on a Church Disbursement Request, mirroring finance.recordChurchDisbursementPayment:
+ * the council's Financial Secretary or any Super Admin.
+ */
+export const canPayChurchDisbursement = (u: Actor, councilId: number): boolean => isSuperAdmin(u) || (isFinancialSecretary(u) && u.councilId === councilId);
+
 /** Why the signed-in officer may not sign a line on a sheet (Sprint 5Z-4), or null when they may. */
 export type ExpenseSignatureBlock = 'seat' | 'own-report' | 'collusion';
 

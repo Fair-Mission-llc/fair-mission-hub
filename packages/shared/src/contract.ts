@@ -126,6 +126,7 @@ import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './
 import type { AssetLoanChange, LoanerLibraryEntry } from './loaner-library';
 import type { AffiliationDecision, AffiliationDirectory } from './council-affiliations';
 import type { NewOperationsKnowledgeInput } from './operations-knowledge';
+import type { ChurchDisbursementPaymentInput, ParishDisbursementDetail, ParishSplitConsole, ParishSplitSettingsInput } from './parish-split';
 
 // 1. LOOKUPS
 /** The global lookup tables a Super Admin maintains (Blueprint: "System Lookup Manager"). */
@@ -2538,6 +2539,15 @@ export interface DataService {
      */
     setLoanerLibraryEnabled(actorId: number, councilId: number, enabled: boolean): Promise<Council>;
     /**
+     * Sprint 8M Core: saves the council's parish split (parish-split.ts cleanParishSplitSettings) - on or off, the
+     * parish's percentage and the GL line (an Expense account of the council) the share is charged to - and resolves to
+     * the updated council; a field left out keeps its stored value. The Council Wide Settings editors
+     * (assertMayEditCouncilWideSettings: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED). RECORD_NOT_FOUND for an unknown council,
+     * INVALID_INPUT for a bad percentage, an unknown field or a GL line that is not an expense line of the council, and
+     * PARISH_SPLIT_GL_LINE_REQUIRED when the split would be on without a GL line. Nothing is written when it rejects.
+     */
+    setParishSplitSettings(actorId: number, councilId: number, input: ParishSplitSettingsInput): Promise<Council>;
+    /**
      * Sprints 8G/8H: the Bilateral Fraternal Affiliations directory (council-affiliations.ts buildAffiliationDirectory) -
      * the council's same-state neighbours, nearest first by meeting point, then in district order, each with its latest
      * handshake, and the invites waiting for the council's answer. The council's Admins, Grand Knight and Deputy Grand
@@ -3995,6 +4005,30 @@ export interface DataService {
      * signed audit period. Resolves to the two stored lines, debit first.
      */
     logConcludedRevenue(actorId: number, councilId: number, input: ConcludedRevenueInput): Promise<JournalEntry[]>;
+    /**
+     * Sprint 8M Core: the Parish Fundraiser Revenue Split Console (parish-split.ts) - the council's split settings, its
+     * designated GL line, each event's live money collections with the parish share and what is already requested, and
+     * every Church Disbursement Request. The general ledger readers (assertMayReadGeneralLedger). INVALID_INPUT for an
+     * unknown council.
+     */
+    getParishSplitConsole(actorId: number, councilId: number): Promise<ParishSplitConsole>;
+    /**
+     * Sprint 8M Core: '[ 📋 Issue Church Disbursement Request ]' - holds the parish share of `eventId`'s collections, less
+     * the shares already requested, as a PENDING payment request against the designated GL line, for the Financial
+     * Secretary to pay. Nothing is posted to the ledger yet. The council's Active Treasurer or an Active Super Admin
+     * (TREASURER_REQUIRED, COUNCIL_ACCESS_DENIED). PARISH_SPLIT_DISABLED while the split is off,
+     * PARISH_SPLIT_GL_LINE_REQUIRED without a GL line, INVALID_INPUT for an event with no collections or nothing left.
+     */
+    issueChurchDisbursementRequest(actorId: number, councilId: number, eventId: number): Promise<ParishDisbursementDetail>;
+    /**
+     * Sprint 8M Core: the Financial Secretary's 'Record Payment Made' on a Church Disbursement Request - posts a debit to
+     * the request's GL line and a credit to the council's cash account with the check number, and marks the request PAID.
+     * The council's Active Financial Secretary or an Active Super Admin (FINANCIAL_SECRETARY_REQUIRED,
+     * COUNCIL_ACCESS_DENIED). RECORD_NOT_FOUND for an unknown request, ILLEGAL_STATE_TRANSITION for one already paid,
+     * DUAL_SIGNATURE_CONFLICT for the officer who issued it, INVALID_INPUT for a blank check number or a future date,
+     * AUDIT_PERIOD_LOCKED for a date inside a signed audit period.
+     */
+    recordChurchDisbursementPayment(actorId: number, requestId: number, input: ChurchDisbursementPaymentInput): Promise<ParishDisbursementDetail>;
     /**
      * Moves `amount` between two Asset accounts of one council as a balanced pair of lines: a debit to the target and a
      * credit to the source (planAssetTransfer). Funding or releasing a virtual goal is a transfer with its parent
