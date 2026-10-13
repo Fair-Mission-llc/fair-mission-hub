@@ -151,6 +151,11 @@ export interface Council {
   parish_split_enabled?: number | null;
   parish_split_percentage?: number | null;
   parish_split_gl_line_id?: number | null;
+  /**
+   * Sprint 8Q (Schema 90): INT DEFAULT 1 - 0 switches off FaceID / biometric sign-in on the phones of the council's
+   * members (feature-deployment.ts biometricLoginEnabled). A missing or NULL value reads as on.
+   */
+  biometric_login_enabled?: number | null;
 }
 
 /**
@@ -776,7 +781,7 @@ export interface ExpenseReport {
   general_ledger_account_id?: number | null;
   /** Sprint 6Q: a long-running council activity (Activities) the sheet spends for, instead of an event or meeting. */
   LinkedActivityID?: number | null;
-  /** BIT, Sprint 6S (Schema 58): the Honor Voucher - the member has no receipt, so the receipt file requirement is lifted. */
+  /** BIT, Sprint 6S (Schema 58): the Honorary Expense - the member has no receipt, so the receipt file requirement is lifted. */
   flag_missing_receipt?: number;
   /** Sprint 6S: why there is no receipt; required while flag_missing_receipt is 1. */
   missing_receipt_reason?: string | null;
@@ -1254,12 +1259,22 @@ export interface CouncilSpiritualDiary {
   created_at: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS' UTC
 }
 
+/**
+ * CouncilHistorianBulletin.body_format (Sprint 8Q): 'STRUCTURED' parts paragraphs at blank lines and reads '## ' lines as
+ * section headings and '- ' lines as bullet items; 'PLAIN' shows the text as typed, line breaks kept.
+ */
+export type BulletinBodyFormat = 'STRUCTURED' | 'PLAIN';
+
 /** One monthly text bulletin of the Historian Desk's scrapbook (Sprint 8B): one row per council and month. */
 export interface CouncilHistorianBulletin {
   id: number;
   council_id: number;
   bulletin_month: string; // CHAR(7), 'YYYY-MM'
   body: string; // VARCHAR(MAX), at most HISTORIAN_BULLETIN_MAX_LENGTH characters
+  /** Sprint 8Q (Schema 90): the bulletin's headline, at most BULLETIN_HEADLINE_MAX_LENGTH characters. */
+  headline?: string | null; // VARCHAR(200)
+  /** Sprint 8Q (Schema 90): how the body is laid out (recorder-historian.ts parseBulletinBlocks). Missing reads as 'STRUCTURED'. */
+  body_format?: BulletinBodyFormat | null; // VARCHAR(20), DEFAULT 'STRUCTURED'
   author_member_id?: number | null; // Member: who last saved it
   updated_at: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS' UTC
 }

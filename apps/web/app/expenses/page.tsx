@@ -11,7 +11,7 @@
 // pre-select that request's target budget line.
 // Sprint 6S: a sheet holds several receipts (merchant, gross total, file), and each line item may be itemised from one
 // of them; a line bought for personal use on a shared ticket is ticked 'Personal' and the council does not pay it. The
-// Honor Voucher box covers a sheet with no receipt and asks why. With receipt reading connected on the Credentials
+// Honorary Expense box covers a sheet with no receipt and asks why. With receipt reading connected on the Credentials
 // Vault page, 'Read receipt' sends an attached file to Azure Document Intelligence and pre-fills the receipt and lines.
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -47,7 +47,7 @@ import {
   type LinkableCharitableRequest,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
-import { ExpenseSheetItems, ExpenseStatusPill, HonorVoucherBadge, ReceiptLink } from '@/components/ExpenseParts';
+import { ExpenseSheetItems, ExpenseStatusPill, HonoraryExpenseBadge, ReceiptLink } from '@/components/ExpenseParts';
 import { useCouncilTimings } from '@/components/SettingsParts';
 import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Select, Table, Td, Textarea } from '@/components/ui';
 import { formatFullDate, formatMoney } from '@/lib/format';
@@ -120,7 +120,7 @@ function ExpenseSheetForm({
   const [receipts, setReceipts] = useState<ReceiptRow[]>(() =>
     (detail?.receipts ?? []).map((r) => ({ ...expenseReceiptDraftFrom(r), key: nextKey.current++ })),
   );
-  const [honorVoucher, setHonorVoucher] = useState(() => Boolean(detail?.report.flag_missing_receipt));
+  const [honoraryExpense, setHonoraryExpense] = useState(() => Boolean(detail?.report.flag_missing_receipt));
   const [missingReason, setMissingReason] = useState(() => detail?.report.missing_receipt_reason ?? '');
   const ocr = useLoad(receiptOcrAvailable, []);
   const [reading, setReading] = useState<number | null>(null);
@@ -207,8 +207,8 @@ function ExpenseSheetForm({
           is_long_term_asset: longTermAsset,
           charity_request_id: charityRequestId ? Number(charityRequestId) : null,
           receipts: expenseReceiptsFromDrafts(receipts),
-          flag_missing_receipt: honorVoucher,
-          missing_receipt_reason: honorVoucher ? missingReason : null,
+          flag_missing_receipt: honoraryExpense,
+          missing_receipt_reason: honoraryExpense ? missingReason : null,
         },
         items,
       );
@@ -378,13 +378,13 @@ function ExpenseSheetForm({
 
       <div className="flex max-w-xl flex-col gap-2 rounded border-2 border-navy p-3">
         <label className="flex items-start gap-2 text-sm">
-          <input type="checkbox" className="mt-0.5 size-4" checked={honorVoucher} onChange={(e) => setHonorVoucher(e.target.checked)} />
+          <input type="checkbox" className="mt-0.5 size-4" checked={honoraryExpense} onChange={(e) => setHonoraryExpense(e.target.checked)} />
           <span>
-            <span className="font-bold">⚠️ I have no receipt (Honor Voucher)</span>
-            <span className="block text-xs text-muted">The receipt was lost or never given. Leadership sees an Honor Voucher warning on this report.</span>
+            <span className="font-bold">⚠️ I have no receipt (Honorary Expense)</span>
+            <span className="block text-xs text-muted">The receipt was lost or never given. Leadership sees an Honorary Expense warning on this report.</span>
           </span>
         </label>
-        {honorVoucher ? (
+        {honoraryExpense ? (
           <Field label="Why is there no receipt? (required)" hint={`${missingReason.trim().length}/${MISSING_RECEIPT_REASON_MAX_LENGTH} characters.`}>
             {(id) => (
               <Textarea
@@ -534,7 +534,7 @@ function ExpenseSheetView({ detail, refs, charities }: { detail: ExpenseReportDe
           Reimbursed by check <span className="font-bold">{disbursement.CheckNumber}</span> dated {formatFullDate(disbursement.PayoutDate)}.
         </Notice>
       ) : null}
-      <HonorVoucherBadge detail={detail} withReason />
+      <HonoraryExpenseBadge detail={detail} withReason />
       <ExpenseSheetItems detail={detail} />
     </div>
   );

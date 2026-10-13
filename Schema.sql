@@ -2810,7 +2810,7 @@ ALTER TABLE [Council] ADD [feature_live_meeting_console] BIT NOT NULL DEFAULT 1;
 GO
 
 -- =========================================================================
--- Sprint 6S: MULTI-RECEIPT SPLIT-TICKET SHEETS AND HONOR VOUCHERS (schema version 58)
+-- Sprint 6S: MULTI-RECEIPT SPLIT-TICKET SHEETS AND HONORARY EXPENSES (schema version 58)
 --
 -- ExpenseReceipts holds the receipts behind one expense sheet: the merchant, the receipt's gross total and the stored
 -- receipt file. A sheet may carry several. Each ExpenseLineItem may point at the receipt it was itemised from
@@ -2821,9 +2821,9 @@ GO
 -- and balance-sheet figure counts only lines with is_personal_exclusion = 0. On a submitted sheet the lines itemised
 -- from a receipt (council and personal together) must add up to that receipt's gross_total (expenses.ts).
 --
--- ExpenseReport.flag_missing_receipt is the Honor Voucher: the member has no receipt for the sheet. A sheet without it
+-- ExpenseReport.flag_missing_receipt is the Honorary Expense: the member has no receipt for the sheet. A sheet without it
 -- must carry a receipt file on every receipt row; with it the file requirement is lifted and missing_receipt_reason
--- (required) explains why. The Treasurer and Grand Knight desks print '⚠️ HONOR VOUCHER - NO RECEIPT ATTACHED' on any
+-- (required) explains why. The Treasurer and Grand Knight desks print '⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED' on any
 -- sheet that is flagged or carries no receipt at all.
 -- =========================================================================
 CREATE TABLE [ExpenseReceipts] (
@@ -3758,3 +3758,25 @@ GO
 -- the Operations Knowledge Archive everywhere. The Member Desk's two shift trackers sit side by side at the top. The
 -- phone database version moves to 89.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8Q: SETTINGS ACCORDIONS, HOME BULLETINS AND LEXICON PURIFICATION (schema version 90)
+--
+-- The missing-receipt flag (ExpenseReport.flag_missing_receipt) is named the Honorary Expense everywhere; its badge reads
+-- '⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED'. No column is renamed.
+-- Council gains biometric_login_enabled: INT DEFAULT 1 - 0 switches off FaceID / biometric sign-in on the phones of
+-- the council's members (the password prompt's toggle hides, a setup code mints no device key and a stored key is
+-- forgotten at its next use). It is one row of the Council Feature Deployment Matrix on Council Wide Settings, which
+-- now opens as two accordion buckets: Operational Configuration and System Information.
+-- CouncilHistorianBulletin gains a headline (VARCHAR(200) NULL) and body_format: 'STRUCTURED' (DEFAULT - blank lines
+-- part paragraphs, '## ' lines are section headings, '- ' lines are bullet items) or 'PLAIN' (the text as typed, line
+-- breaks kept). The newest saved bulletins lead every member's Home and Member Actions page
+-- (history.listBulletinFeed, any member of the council).
+-- The phone database version moves to 90.
+-- =========================================================================
+ALTER TABLE [Council] ADD [biometric_login_enabled] INT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [CouncilHistorianBulletin] ADD [headline] VARCHAR(200) NULL;
+GO
+ALTER TABLE [CouncilHistorianBulletin] ADD [body_format] VARCHAR(20) NOT NULL DEFAULT 'STRUCTURED' CONSTRAINT [CK_CouncilHistorianBulletin_body_format] CHECK ([body_format] IN ('STRUCTURED', 'PLAIN'));
+GO

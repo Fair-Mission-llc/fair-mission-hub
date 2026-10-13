@@ -77,7 +77,8 @@ REQUIRED_SCREEN_NAMES = ('Council Artifacts', 'Donations History', 'Credentials 
 # Retired screen names and corporate jargon the guide must not contain. 'Enterprise' alone is allowed: the Drive
 # archive's real root folder is named 'Fraternal Enterprise Suite' (DRIVE_VAULT_ROOT) and the guide must match it.
 BANNED_TERMS = (
-    (r'\bBulletins?\b', "the retired name of 'Council Artifacts'"),
+    # Sprint 8Q: the Home feed '[ 📰 Latest Council Newsletters & Bulletins ]' keeps the word in its own title.
+    (r'(?<!Newsletters & )\bBulletins?\b', "the retired name of 'Council Artifacts'"),
     (r'\bGYST\b', "the retired name of the 'Microsoft Co-Pilot'"),
     (r'\bDonations Ledger\b', "the retired name of 'Donations History'"),
     (r'\bstakeholders?\b', 'corporate jargon'),

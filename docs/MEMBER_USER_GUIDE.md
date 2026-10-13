@@ -233,6 +233,7 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 | The biometric button does not show. | You created your password on another phone, or before biometric sign-in existed. | Sign in with your password, with the **[ 🔘 Enable FaceID / Biometric Login ]** switch on (2.4.1). |
 | *"The biometric check did not pass."* | The phone did not recognize your face or finger. | Try again, or sign in with your password. |
 | *"Face ID or fingerprint is not available on this phone right now."* | The phone has no enrolled face or finger. | Sign in with your password. |
+| *"Your council has turned off biometric sign-in."* | Your council's leaders turned off biometric sign-in. The phone deletes its biometric key. | Sign in with your password. |
 
 ### 2.4.1 Turn on Face ID sign-in from the password screen
 
@@ -255,6 +256,7 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 | --- | --- | --- |
 | The switch does not show. | The phone has no enrolled face or finger, or biometric sign-in is already on for you. | Enroll a face or finger in the phone settings. Or use the biometric button (2.4). |
 | You signed in, but the biometric button does not show the next time. | The scan did not pass, or you tapped **Use password**. | Sign in with your password again, with the switch on. |
+| You signed in with the switch on, but no scan came. | Your council turned off biometric sign-in. | Sign in with your password. |
 
 ### 2.5 Sign in to the web portal
 
@@ -1459,6 +1461,27 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | --- | --- | --- |
 | Your hours are lower than you expect. | Some hours wait for leadership review. | Wait for a leader to approve the hours. Then open the page again. |
 | **My impact** shows no council history. | The council did not record your earlier councils. | Tell your council Admin. |
+
+### 9.8 Read the council newsletters
+
+> **Who can do this:** any signed-in member of the council.
+
+**Goal:** Read the newest newsletters from your Council Historian.
+
+**Start point:** Web portal → Faith In Action → **Member Actions Hub**. Officers and Admins also see the card on **Home**.
+
+**Steps:**
+1. Open **Member Actions Hub**. The **[ 📰 Latest Council Newsletters & Bulletins ]** card is at the top of the page.
+2. Read the newest newsletter. It shows in full.
+3. To read an older newsletter, select its headline.
+
+**Expected result:** The newsletter shows its headline, its month and its text, with paragraphs, section headings and bullets.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The card does not show. | The council has no saved newsletter yet. | No action. The card shows when the Council Historian saves a newsletter. |
+| You look for the card on the phone. | The newsletter card is in the web portal only. | Open the web portal. |
 
 ---
 

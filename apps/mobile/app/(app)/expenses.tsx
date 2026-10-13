@@ -109,7 +109,7 @@ function ExpenseDraftForm({
   const [rows, setRows] = useState<Row[]>(() =>
     detail && detail.lineItems.length > 0 ? detail.lineItems.map((li) => keyed(expenseLineDraftFrom(li, detail.receipts))) : [keyed(blankExpenseLine(today))],
   );
-  const [honorVoucher, setHonorVoucher] = useState(() => Boolean(detail?.report.flag_missing_receipt));
+  const [honoraryExpense, setHonoraryExpense] = useState(() => Boolean(detail?.report.flag_missing_receipt));
   const [missingReason, setMissingReason] = useState(() => detail?.report.missing_receipt_reason ?? '');
   const [busy, setBusy] = useState<'Draft' | 'Submitted' | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -150,8 +150,8 @@ function ExpenseDraftForm({
           is_long_term_asset: longTermAsset,
           charity_request_id: detail?.report.charity_request_id ?? null, // keeps a link set on the web (Sprint 6H)
           receipts: expenseReceiptInputsOf(detail?.receipts ?? []), // keeps receipts entered on the web (Sprint 6S)
-          flag_missing_receipt: honorVoucher,
-          missing_receipt_reason: honorVoucher ? missingReason : null,
+          flag_missing_receipt: honoraryExpense,
+          missing_receipt_reason: honoraryExpense ? missingReason : null,
         },
         items,
       );
@@ -225,12 +225,12 @@ function ExpenseDraftForm({
           council’s assets inventory at the report total.
         </AppText>
         <ToggleSwitch
-          label="⚠️ No receipt (Honor Voucher)"
-          hint="The receipt was lost or never given. Leadership sees an Honor Voucher warning on this report."
-          value={honorVoucher}
-          onChange={setHonorVoucher}
+          label="⚠️ No receipt (Honorary Expense)"
+          hint="The receipt was lost or never given. Leadership sees an Honorary Expense warning on this report."
+          value={honoraryExpense}
+          onChange={setHonoraryExpense}
         />
-        {honorVoucher ? (
+        {honoraryExpense ? (
           <Field label="WHY IS THERE NO RECEIPT? (REQUIRED)">
             <AppInput
               value={missingReason}

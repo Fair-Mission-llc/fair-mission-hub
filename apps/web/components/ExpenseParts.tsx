@@ -11,7 +11,7 @@ import {
   describeError,
   expenseReferenceLabel,
   expenseStatusBadge,
-  HONOR_VOUCHER_BADGE,
+  HONORARY_EXPENSE_BADGE,
   REJECTION_REASON_MAX_LENGTH,
   type CouncilBudgetForecast,
   type ChartOfAccountsNode,
@@ -70,16 +70,16 @@ export function ReceiptLink({ url }: { url: string | null | undefined }) {
 }
 
 /**
- * The Honor Voucher badge (Sprint 6S): high contrast, on any sheet flagged as having no receipt or carrying none at
+ * The Honorary Expense badge (Sprint 6S): high contrast, on any sheet flagged as having no receipt or carrying none at
  * all. With `reason` it also quotes the member's explanation.
  */
-export function HonorVoucherBadge({ detail, withReason = false }: { detail: Pick<ExpenseReportDetail, 'honorVoucher' | 'report'>; withReason?: boolean }) {
-  if (!detail.honorVoucher) return null;
+export function HonoraryExpenseBadge({ detail, withReason = false }: { detail: Pick<ExpenseReportDetail, 'honoraryExpense' | 'report'>; withReason?: boolean }) {
+  if (!detail.honoraryExpense) return null;
   const reason = detail.report.missing_receipt_reason;
   return (
     <span className="inline-flex flex-col gap-1">
       <span role="status" className="inline-block rounded border-2 border-memorial bg-gold px-2 py-0.5 text-xs font-black uppercase tracking-wide text-memorial">
-        {HONOR_VOUCHER_BADGE}
+        {HONORARY_EXPENSE_BADGE}
       </span>
       {withReason ? (
         <span className="text-sm">
@@ -323,7 +323,7 @@ export function SignatureDeskTable({
               <Td className="font-bold">
                 <span className="flex flex-col items-start gap-1">
                   #{d.report.id}
-                  <HonorVoucherBadge detail={d} />
+                  <HonoraryExpenseBadge detail={d} />
                 </span>
               </Td>
               <Td>{submitterName(d)}</Td>
@@ -349,7 +349,7 @@ export function SignatureDeskTable({
               <tr>
                 <Td colSpan={7} className="border-l-8 border-l-gold bg-white">
                   <div id={`desk-${d.report.id}`} className="flex flex-col gap-3 py-2">
-                    <HonorVoucherBadge detail={d} withReason />
+                    <HonoraryExpenseBadge detail={d} withReason />
                     <ExpenseSheetItems detail={d} />
                     <SignatureTrail detail={d} />
                     {drawer ? drawer(d) : null}

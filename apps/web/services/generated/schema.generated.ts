@@ -764,6 +764,16 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "biometric_login_enabled",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 1
+        }
       }
     ],
     "foreignKeys": [
@@ -7416,6 +7426,27 @@ export const TABLES: Record<string, TableMeta> = {
         "default": {
           "kind": "now"
         }
+      },
+      {
+        "name": "headline",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "body_format",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "STRUCTURED"
+        },
+        "allowed": [
+          "STRUCTURED",
+          "PLAIN"
+        ]
       }
     ],
     "foreignKeys": [

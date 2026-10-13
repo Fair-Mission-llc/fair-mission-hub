@@ -23,7 +23,7 @@ import { addDays } from './planning';
 import { councilLabel, sortCouncils } from './presentation';
 import { BusinessRuleError, describeActor, hasAdminRights, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 import { councilTenantType, type TenantType } from './tenant';
-import type { Council, Meeting } from './types';
+import type { BulletinBodyFormat, Council, CouncilHistorianBulletin, Meeting } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType'> & { roles?: readonly string[] };
 
@@ -185,15 +185,140 @@ export interface LiveMeetingLaunch {
 /** 'YYYY-MM' for the month of an ISO date. */
 export const bulletinMonthOf = (isoDate: string): string => isoDate.slice(0, 7);
 
-/** INVALID_INPUT for a month that is not 'YYYY-MM' or a body over HISTORIAN_BULLETIN_MAX_LENGTH. A blank body is allowed (an empty draft). */
+/**
+ * INVALID_INPUT for a month that is not 'YYYY-MM' or a body over HISTORIAN_BULLETIN_MAX_LENGTH. A blank body is allowed (an empty draft).
+ * Sprint 8Q: the body keeps clean paragraph spacing - trailing spaces leave each line and a run of blank lines closes up
+ * to one, the paragraph break parseBulletinBlocks reads.
+ */
 export function cleanHistorianBulletin(month: unknown, body: unknown): { bulletin_month: string; body: string } {
   if (typeof month !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month.trim())) throw invalid('Name the bulletin month as YYYY-MM.', { field: 'month' });
   if (body !== null && body !== undefined && typeof body !== 'string') throw invalid('The bulletin must be text.', { field: 'body' });
-  const text = (body ?? '').replace(/\r\n/g, '\n').trim();
+  const text = (body ?? '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
   if (text.length > HISTORIAN_BULLETIN_MAX_LENGTH) {
     throw invalid(`A bulletin may be at most ${HISTORIAN_BULLETIN_MAX_LENGTH.toLocaleString('en-US')} characters.`, { field: 'body', length: text.length });
   }
   return { bulletin_month: month.trim(), body: text };
+}
+
+// ---- Sprint 8Q: structured bulletins and the Home feed ----------------------------------------------------
+
+/** Longest CouncilHistorianBulletin.headline (the column's VARCHAR(200)). */
+export const BULLETIN_HEADLINE_MAX_LENGTH = 200;
+/** The body layouts a bulletin may use (CouncilHistorianBulletin.body_format). */
+export const BULLETIN_BODY_FORMATS: readonly BulletinBodyFormat[] = ['STRUCTURED', 'PLAIN'];
+/** How each layout is named on the Historian Desk. */
+export const BULLETIN_BODY_FORMAT_LABELS: Record<BulletinBodyFormat, string> = {
+  STRUCTURED: 'Paragraphs, headings and bullets',
+  PLAIN: 'Plain text as typed',
+};
+/** The title of the Home and Member Actions feed. */
+export const BULLETIN_FEED_TITLE = '[ 📰 Latest Council Newsletters & Bulletins ]';
+/** How many bulletins the feed shows, newest first. */
+export const BULLETIN_FEED_LIMIT = 3;
+
+/** The layout fields of history.saveHistorianBulletin (Sprint 8Q). A field left out keeps its stored value. */
+export interface BulletinLayoutInput {
+  headline?: string | null;
+  body_format?: BulletinBodyFormat;
+}
+
+/** INVALID_INPUT for a headline over BULLETIN_HEADLINE_MAX_LENGTH or an unknown body format. A blank headline is stored as NULL. */
+export function cleanBulletinLayout(input: BulletinLayoutInput | null | undefined): { headline?: string | null; body_format?: BulletinBodyFormat } {
+  const out: { headline?: string | null; body_format?: BulletinBodyFormat } = {};
+  if (input?.headline !== undefined) {
+    if (input.headline !== null && typeof input.headline !== 'string') throw invalid('The headline must be text.', { field: 'headline' });
+    const headline = (input.headline ?? '').replace(/\s+/g, ' ').trim();
+    if (headline.length > BULLETIN_HEADLINE_MAX_LENGTH) {
+      throw invalid(`A headline may be at most ${BULLETIN_HEADLINE_MAX_LENGTH} characters.`, { field: 'headline', length: headline.length });
+    }
+    out.headline = headline === '' ? null : headline;
+  }
+  if (input?.body_format !== undefined) {
+    if (!BULLETIN_BODY_FORMATS.includes(input.body_format)) {
+      throw invalid(`The bulletin layout must be ${BULLETIN_BODY_FORMATS.join(' or ')}.`, { field: 'body_format', value: input.body_format });
+    }
+    out.body_format = input.body_format;
+  }
+  return out;
+}
+
+/** One block of a bulletin as the portal draws it. */
+export type BulletinBlock = { kind: 'heading'; text: string } | { kind: 'paragraph'; lines: string[] } | { kind: 'list'; items: string[] };
+
+/**
+ * A bulletin body as blocks. STRUCTURED (the default): blank lines part paragraphs, a '## ' (or '# ') line is a section
+ * heading and a run of '- ' (or '* ') lines is a bullet list; a single line break inside a paragraph is kept. PLAIN: the
+ * whole text is one paragraph with its line breaks kept.
+ */
+export function parseBulletinBlocks(body: string | null | undefined, format: BulletinBodyFormat | null | undefined = 'STRUCTURED'): BulletinBlock[] {
+  const text = (body ?? '').replace(/\r\n?/g, '\n').trim();
+  if (text === '') return [];
+  if (format === 'PLAIN') return [{ kind: 'paragraph', lines: text.split('\n') }];
+  const blocks: BulletinBlock[] = [];
+  let paragraph: string[] = [];
+  let list: string[] = [];
+  const flush = () => {
+    if (paragraph.length > 0) blocks.push({ kind: 'paragraph', lines: paragraph });
+    if (list.length > 0) blocks.push({ kind: 'list', items: list });
+    paragraph = [];
+    list = [];
+  };
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    const heading = /^#{1,3}\s+(.+)$/.exec(line);
+    const bullet = /^[-*]\s+(.+)$/.exec(line);
+    if (line === '') {
+      flush();
+    } else if (heading) {
+      flush();
+      blocks.push({ kind: 'heading', text: heading[1].trim() });
+    } else if (bullet) {
+      if (paragraph.length > 0) flush();
+      list.push(bullet[1].trim());
+    } else {
+      if (list.length > 0) flush();
+      paragraph.push(line);
+    }
+  }
+  flush();
+  return blocks;
+}
+
+/** A bulletin's headline, or its month written out ('October 2026 Newsletter') when it has none. */
+export function bulletinTitle(b: Pick<CouncilHistorianBulletin, 'bulletin_month' | 'headline'>): string {
+  const headline = (b.headline ?? '').trim();
+  if (headline) return headline;
+  const [y, m] = b.bulletin_month.split('-').map(Number);
+  return `${new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })} Newsletter`;
+}
+
+/**
+ * The Home feed (history.listBulletinFeed): the council's saved bulletins with text, up to the current month (a month
+ * drafted ahead stays off the feed), newest month first, at most `limit`.
+ */
+export function bulletinFeed<T extends Pick<CouncilHistorianBulletin, 'bulletin_month' | 'body'>>(rows: readonly T[], today: string, limit = BULLETIN_FEED_LIMIT): T[] {
+  const month = bulletinMonthOf(today);
+  return rows
+    .filter((r) => r.body.trim() !== '' && r.bulletin_month <= month)
+    .slice()
+    .sort((a, b) => b.bulletin_month.localeCompare(a.bulletin_month))
+    .slice(0, Math.max(0, limit));
+}
+
+/** history.listBulletinFeed: any member of the council and any Active Super Admin; COUNCIL_ACCESS_DENIED otherwise. */
+export function assertMayReadBulletinFeed(actor: MemberWriteActor, councilId: number): void {
+  if (hasSuperAdminRights(actor) || actor.councilId === councilId) return;
+  throw new SecurityPrivilegeError('COUNCIL_ACCESS_DENIED', `Member ${actor.memberId} of council ${actor.councilId} cannot read the bulletins of council ${councilId}.`, {
+    actorId: actor.memberId,
+    actorCouncilId: actor.councilId,
+    councilId,
+  });
 }
 
 // ---- the view-as council context ------------------------------------------------------------------------

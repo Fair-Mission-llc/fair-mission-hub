@@ -20,6 +20,9 @@ import {
   DEFAULT_MEETING_PIN_TOKEN,
   cleanMeetingMinutes,
   cleanHistorianBulletin,
+  cleanBulletinLayout,
+  bulletinFeed,
+  assertMayReadBulletinFeed,
   assertMayReadOperationsKnowledge,
   assertMayWriteOperationsKnowledge,
   cleanOperationsKnowledgeEntry,
@@ -855,7 +858,7 @@ const DB_NAME = 'kofc.db';
  *     Ledger Audit Desk and activity-linked expenses; JournalEntry.LinkedActivityID - post-event revenue (Sprint 6Q).
  * 57: Council.ein_number and the six feature_* module flags (Sprint 6R).
  * 58: ExpenseReceipts, ExpenseLineItem.is_personal_exclusion and receipt_id - multi-receipt split tickets; and
- *     ExpenseReport.flag_missing_receipt and missing_receipt_reason - the Honor Voucher (Sprint 6S).
+ *     ExpenseReport.flag_missing_receipt and missing_receipt_reason - the Honorary Expense (Sprint 6S).
  * 59: MemberDevotionals, Member.flag_charter_member, Council.rank_threshold_hours and rank_threshold_events (Sprint 7A).
  * 60: MemberCouncilAffiliationLog - the multi-council membership trail (Sprint 7A Extension).
  * 61: VolunteerQuarantine - time entries held for leadership review - and Council.feature_volunteer_quarantine (Sprint 7B).
@@ -910,8 +913,11 @@ const DB_NAME = 'kofc.db';
  * 89: no table change - every officer desk becomes a drawer blotter, the Oversight Desk tab is dissolved into Grand
  *     Knight Desk drawers, CouncilOperationsKnowledge is the Operations Knowledge Archive everywhere and the Member
  *     Desk's shift trackers sit side by side (Sprint 8P Stage 3); phones rebuild in step.
+ * 90: Council.biometric_login_enabled and CouncilHistorianBulletin.headline and body_format - the Council Feature
+ *     Deployment Matrix's biometric switch, structured newsletters and the Home bulletin feed; the missing-receipt flag
+ *     is named the Honorary Expense (Sprint 8Q).
  */
-const SCHEMA_VERSION = 89;
+const SCHEMA_VERSION = 90;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1749,6 +1755,17 @@ export class SqliteDataService implements DataService {
         assertMayEditCouncilWideSettings(await this.memberWriteActor(db, actorId), councilId);
         await this.requireRecord(db, 'Council', councilId);
         await db.runAsync('UPDATE [Council] SET [is_loaner_library_enabled] = ? WHERE [id] = ?', [enabled ? 1 : 0, councilId]);
+      });
+      return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
+    },
+
+    setBiometricLoginEnabled: async (actorId, councilId, enabled) => {
+      if (typeof enabled !== 'boolean') throw new BusinessRuleError('INVALID_INPUT', 'Biometric sign-in must be on (true) or off (false).', { enabled });
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayEditCouncilWideSettings(await this.memberWriteActor(db, actorId), councilId);
+        await this.requireRecord(db, 'Council', councilId);
+        await db.runAsync('UPDATE [Council] SET [biometric_login_enabled] = ? WHERE [id] = ?', [enabled ? 1 : 0, councilId]);
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
@@ -7882,14 +7899,23 @@ export class SqliteDataService implements DataService {
       return (await db.getFirstAsync<CouncilSpiritualDiary>('SELECT * FROM [CouncilSpiritualDiary] WHERE [id] = ?', [entryId]))!;
     },
 
+    listBulletinFeed: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayReadBulletinFeed(await this.memberWriteActor(db, actorId), councilId);
+      const rows = await db.getAllAsync<CouncilHistorianBulletin>('SELECT * FROM [CouncilHistorianBulletin] WHERE [council_id] = ?', [councilId]);
+      return bulletinFeed(rows, toIsoDate(this.now()));
+    },
+
     listHistorianBulletins: async (actorId, councilId) => {
       const db = await this.ready();
       assertMayKeepScrapbook(await this.memberWriteActor(db, actorId), councilId, `read the bulletins of council ${councilId}`);
       return db.getAllAsync<CouncilHistorianBulletin>('SELECT * FROM [CouncilHistorianBulletin] WHERE [council_id] = ? ORDER BY [bulletin_month] DESC', [councilId]);
     },
 
-    saveHistorianBulletin: async (actorId, councilId, month, body) => {
+    saveHistorianBulletin: async (actorId, councilId, month, body, layout) => {
       const clean = cleanHistorianBulletin(month, body);
+      const cleanLayout = cleanBulletinLayout(layout);
+      const layoutColumns = Object.keys(cleanLayout) as (keyof typeof cleanLayout)[];
       const db = await this.ready();
       await db.withTransactionAsync(async () => {
         assertMayKeepScrapbook(await this.memberWriteActor(db, actorId), councilId, `write the bulletins of council ${councilId}`);
@@ -7899,16 +7925,14 @@ export class SqliteDataService implements DataService {
           clean.bulletin_month,
         ]);
         if (existing) {
-          await db.runAsync('UPDATE [CouncilHistorianBulletin] SET [body] = ?, [author_member_id] = ?, [updated_at] = ? WHERE [id] = ?', [
-            clean.body,
-            actorId,
-            toTimestamp(this.now()),
-            existing.id,
-          ]);
+          await db.runAsync(
+            `UPDATE [CouncilHistorianBulletin] SET [body] = ?, ${layoutColumns.map((c) => `[${c}] = ?, `).join('')}[author_member_id] = ?, [updated_at] = ? WHERE [id] = ?`,
+            [clean.body, ...layoutColumns.map((c) => cleanLayout[c] ?? null), actorId, toTimestamp(this.now()), existing.id],
+          );
         } else {
           await db.runAsync(
-            'INSERT INTO [CouncilHistorianBulletin] ([council_id], [bulletin_month], [body], [author_member_id], [updated_at]) VALUES (?, ?, ?, ?, ?)',
-            [councilId, clean.bulletin_month, clean.body, actorId, toTimestamp(this.now())],
+            'INSERT INTO [CouncilHistorianBulletin] ([council_id], [bulletin_month], [body], [headline], [body_format], [author_member_id], [updated_at]) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [councilId, clean.bulletin_month, clean.body, cleanLayout.headline ?? null, cleanLayout.body_format ?? 'STRUCTURED', actorId, toTimestamp(this.now())],
           );
         }
       });

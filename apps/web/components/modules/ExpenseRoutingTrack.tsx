@@ -21,7 +21,7 @@ import {
   type ExpenseReferenceOptions,
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
-import { ExpenseSheetItems, ExpenseStatusPill, HonorVoucherBadge, ReturnToMemberForm, SignatureTrail, submitterName } from '@/components/ExpenseParts';
+import { ExpenseSheetItems, ExpenseStatusPill, HonoraryExpenseBadge, ReturnToMemberForm, SignatureTrail, submitterName } from '@/components/ExpenseParts';
 import { Empty, Notice, PageTitle, Panel, Table, Td } from '@/components/ui';
 import { formatMoney } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -140,7 +140,7 @@ export function AuditQueue() {
                         <tr>
                           <Td colSpan={8} className="border-l-8 border-l-gold bg-white">
                             <div id={`audit-${d.report.id}`} className="flex flex-col gap-3 py-2">
-                              <HonorVoucherBadge detail={d} withReason />
+                              <HonoraryExpenseBadge detail={d} withReason />
                               <ExpenseSheetItems detail={d} />
                               <SignatureTrail detail={d} />
                               <div className="border-t border-line pt-3">

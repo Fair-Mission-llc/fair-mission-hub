@@ -87,6 +87,10 @@ import {
   describeError,
   driveFileViewUrl,
   HISTORIAN_BULLETIN_MAX_LENGTH,
+  BULLETIN_BODY_FORMATS,
+  BULLETIN_BODY_FORMAT_LABELS,
+  BULLETIN_HEADLINE_MAX_LENGTH,
+  type BulletinBodyFormat,
   isDriveFileId,
   MEETING_PHOTO_DRIVE_FOLDER,
   MINUTES_DESK_AHEAD_DAYS,
@@ -143,6 +147,7 @@ import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
 import { OperationsKnowledgeArchiveEntryForm } from '@/components/KnowledgeArchiveParts';
 import { ChurchDisbursementQueue, ParishSplitConsoleCard } from '@/components/ParishSplitParts';
 import { BatchTransactionCoder, CashBoxAuditPanel } from '@/components/CashAuditParts';
+import { BulletinBody, LatestBulletinsFeed } from '@/components/BulletinParts';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -449,6 +454,7 @@ export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; c
   const today = toIsoDate(new Date());
   return (
     <div className={cx('grid grid-cols-1 gap-6 lg:grid-cols-2', faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2')}>
+      <LatestBulletinsFeed memberId={user.memberId} councilId={councilId} className="col-span-full" />
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
@@ -1353,21 +1359,29 @@ export function RecorderDesk({ user, councilId }: { user: SessionUser; councilId
 
 // ---- the Historian Desk (Sprint 8B) -------------------------------------------------------------------
 
-/** The Historian's monthly text bulletins (CouncilHistorianBulletin): one per month, any month re-opened from the list. */
+/**
+ * The Historian's monthly text bulletins (CouncilHistorianBulletin): one per month, any month re-opened from the list.
+ * Sprint 8Q: each has a headline and a body format - STRUCTURED (blank lines part paragraphs, '## ' headings, '- '
+ * bullets) or PLAIN - with a live preview as members will read it on Home.
+ */
 function MonthlyBulletins({ user, councilId }: { user: SessionUser; councilId: number }) {
   const list = useLoad(() => db.history.listHistorianBulletins(user.memberId, councilId), [user.memberId, councilId]);
   const [month, setMonth] = useState(() => bulletinMonthOf(toIsoDate(new Date())));
   const stored = (list.data ?? []).find((b) => b.bulletin_month === month) ?? null;
   const [body, setBody] = useState('');
+  const [headline, setHeadline] = useState('');
+  const [format, setFormat] = useState<BulletinBodyFormat>('STRUCTURED');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
   useEffect(() => setBody(stored?.body ?? ''), [month, stored?.body]);
+  useEffect(() => setHeadline(stored?.headline ?? ''), [month, stored?.headline]);
+  useEffect(() => setFormat(stored?.body_format ?? 'STRUCTURED'), [month, stored?.body_format]);
 
   const save = async () => {
     setBusy(true);
     setMessage(null);
     try {
-      await db.history.saveHistorianBulletin(user.memberId, councilId, month, body);
+      await db.history.saveHistorianBulletin(user.memberId, councilId, month, body, { headline, body_format: format });
       setMessage({ tone: 'info', text: 'Newsletter saved.' });
       await list.reload();
     } catch (err) {
@@ -1384,9 +1398,41 @@ function MonthlyBulletins({ user, councilId }: { user: SessionUser; councilId: n
       <Field label="Month" className="w-48">
         {(id) => <Input id={id} type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />}
       </Field>
-      <Field label="Newsletter text">
-        {(id) => <Textarea id={id} rows={7} maxLength={HISTORIAN_BULLETIN_MAX_LENGTH} value={body} onChange={(e) => setBody(e.target.value)} placeholder="This month at the council…" />}
+      <Field label="Headline">
+        {(id) => <Input id={id} maxLength={BULLETIN_HEADLINE_MAX_LENGTH} value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="October at the council" />}
       </Field>
+      <Field label="Layout" className="w-72">
+        {(id) => (
+          <Select id={id} value={format} onChange={(e) => setFormat(e.target.value as BulletinBodyFormat)}>
+            {BULLETIN_BODY_FORMATS.map((f) => (
+              <option key={f} value={f}>
+                {BULLETIN_BODY_FORMAT_LABELS[f]}
+              </option>
+            ))}
+          </Select>
+        )}
+      </Field>
+      <Field label="Newsletter text">
+        {(id) => (
+          <Textarea
+            id={id}
+            rows={10}
+            maxLength={HISTORIAN_BULLETIN_MAX_LENGTH}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder={'## This month\n\nLeave a blank line between paragraphs.\n\n- Start a line with a dash for a bullet'}
+          />
+        )}
+      </Field>
+      {format === 'STRUCTURED' ? (
+        <p className="text-xs text-muted">Leave a blank line between paragraphs. Start a line with ## for a section heading, or with - for a bullet.</p>
+      ) : null}
+      {body.trim() ? (
+        <details className="rounded border border-line px-3 py-2">
+          <summary className="cursor-pointer text-sm font-bold">Preview as members see it on Home</summary>
+          <BulletinBody bulletin={{ body, body_format: format }} className="mt-2" />
+        </details>
+      ) : null}
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-muted">{stored ? `Last saved ${stored.updated_at.slice(0, 10)}` : 'Not saved yet'}</span>
         <Button disabled={busy} onClick={() => void save()}>

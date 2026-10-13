@@ -1,5 +1,5 @@
 // Sprint 6S (schema 58): multi-receipt split-ticket expense sheets (ExpenseReceipts, ExpenseLineItem.is_personal_exclusion
-// and receipt_id), the Honor Voucher (ExpenseReport.flag_missing_receipt and missing_receipt_reason) and the Azure
+// and receipt_id), the Honorary Expense (ExpenseReport.flag_missing_receipt and missing_receipt_reason) and the Azure
 // Document Intelligence receipt reader, whose endpoint and key live in the Credentials Vault. Azure is replaced here by
 // a recorded fake fetch.
 import { readFileSync } from 'node:fs';
@@ -18,8 +18,8 @@ import {
   expenseLinesFromDrafts,
   expenseReceiptsFromDrafts,
   blankExpenseLine,
-  HONOR_VOUCHER_BADGE,
-  isHonorVoucherSheet,
+  HONORARY_EXPENSE_BADGE,
+  isHonoraryExpenseSheet,
   parseAzureReceipt,
   planExpenseAssetConversion,
   resolveDocumentIntelligenceEndpoint,
@@ -51,7 +51,7 @@ const splitTicket = (): ExpenseLineItemInput[] => [
 ];
 
 describe('schema 58', () => {
-  it('adds ExpenseReceipts, the split-ticket line columns and the Honor Voucher, and bumps the phone database', () => {
+  it('adds ExpenseReceipts, the split-ticket line columns and the Honorary Expense, and bumps the phone database', () => {
     const schema = read('Schema.sql');
     expect(TABLES.ExpenseReceipts.columns.map((c) => c.name)).toEqual(['id', 'expense_id', 'merchant_name', 'gross_total', 'receipt_file_url']);
     expect(schema).toContain('[gross_total] DECIMAL(18,2) NOT NULL');
@@ -64,8 +64,8 @@ describe('schema 58', () => {
   });
 });
 
-describe('split-ticket and Honor Voucher rules (pure)', () => {
-  it('cleans receipts and asks for a file on submission unless the sheet is an Honor Voucher', () => {
+describe('split-ticket and Honorary Expense rules (pure)', () => {
+  it('cleans receipts and asks for a file on submission unless the sheet is an Honorary Expense', () => {
     expect(cleanExpenseReceipts(undefined, 'Submitted', 0)).toEqual([]);
     expect(cleanExpenseReceipts([{ ...costco, merchant_name: '  Costco ' }], 'Submitted', 0)).toEqual([costco]);
     expect(() => cleanExpenseReceipts([{ ...costco, gross_total: 0 }], 'Draft', 0)).toThrow(/more than 0/);
@@ -76,7 +76,7 @@ describe('split-ticket and Honor Voucher rules (pure)', () => {
     expect(cleanExpenseReceipts([noFile], 'Submitted', 1)).toEqual([noFile]);
   });
 
-  it('requires a reason with the Honor Voucher and stores none without it', () => {
+  it('requires a reason with the Honorary Expense and stores none without it', () => {
     expect(cleanExpenseReportInput({ Status: 'Draft' })).toMatchObject({ flag_missing_receipt: 0, missing_receipt_reason: null });
     expect(cleanExpenseReportInput({ Status: 'Draft', missing_receipt_reason: 'ignored' }).missing_receipt_reason).toBeNull();
     expect(cleanExpenseReportInput({ Status: 'Draft', flag_missing_receipt: true, missing_receipt_reason: ' Cash at the market ' })).toMatchObject({
@@ -102,13 +102,13 @@ describe('split-ticket and Honor Voucher rules (pure)', () => {
     expect(() => cleanExpenseLineItems([line({ receipt_index: 1 })], 'Draft', NOW, 1)).toThrow(/names receipt 1, which is not on this sheet/);
   });
 
-  it('shows the Honor Voucher badge when the sheet is flagged or carries no receipt at all', () => {
-    expect(HONOR_VOUCHER_BADGE).toBe('⚠️ HONOR VOUCHER - NO RECEIPT ATTACHED');
-    expect(isHonorVoucherSheet({ flag_missing_receipt: 1 }, [costco], [])).toBe(true);
-    expect(isHonorVoucherSheet({}, [], [{ ReceiptPhotoURL: null }])).toBe(true);
-    expect(isHonorVoucherSheet({}, [{ receipt_file_url: null }], [])).toBe(true);
-    expect(isHonorVoucherSheet({}, [costco], [])).toBe(false);
-    expect(isHonorVoucherSheet({ flag_missing_receipt: 0 }, [], [{ ReceiptPhotoURL: 'receipts/a.jpg' }])).toBe(false);
+  it('shows the Honorary Expense badge when the sheet is flagged or carries no receipt at all', () => {
+    expect(HONORARY_EXPENSE_BADGE).toBe('⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED');
+    expect(isHonoraryExpenseSheet({ flag_missing_receipt: 1 }, [costco], [])).toBe(true);
+    expect(isHonoraryExpenseSheet({}, [], [{ ReceiptPhotoURL: null }])).toBe(true);
+    expect(isHonoraryExpenseSheet({}, [{ receipt_file_url: null }], [])).toBe(true);
+    expect(isHonoraryExpenseSheet({}, [costco], [])).toBe(false);
+    expect(isHonoraryExpenseSheet({ flag_missing_receipt: 0 }, [], [{ ReceiptPhotoURL: 'receipts/a.jpg' }])).toBe(false);
   });
 
   it('keeps personal lines out of the form total and an asset cost basis', () => {
@@ -161,7 +161,7 @@ describe.each(drivers)('multi-receipt sheets ($name driver)', (d) => {
     ]);
     expect(saved.total).toBe(52);
     expect(saved.personalTotal).toBe(15.25);
-    expect(saved.honorVoucher).toBe(false);
+    expect(saved.honoraryExpense).toBe(false);
     const byReceipt = saved.lineItems.map((li) => saved.receipts.findIndex((r) => r.id === li.receipt_id));
     expect(byReceipt.sort()).toEqual([0, 0, 1]);
     expect(saved.lineItems.filter((li) => li.is_personal_exclusion).map((li) => li.Amount)).toEqual([15.25]);
@@ -189,7 +189,7 @@ describe.each(drivers)('multi-receipt sheets ($name driver)', (d) => {
     expect(d.count(db, 'ExpenseReceipts')).toBe(before - 1);
   });
 
-  it('takes an Honor Voucher without a receipt file and shows its badge', async () => {
+  it('takes an Honorary Expense without a receipt file and shows its badge', async () => {
     const db = await d.make();
     await expectRule(
       db.expenses.submitReport(MEMBER.member, { Status: 'Submitted', receipts: [{ ...costco, gross_total: 40, receipt_file_url: null }] }, [line({ receipt_index: 0 })]),
@@ -201,9 +201,9 @@ describe.each(drivers)('multi-receipt sheets ($name driver)', (d) => {
       [line({ VendorName: 'Farmers market' })],
     );
     expect(voucher.report).toMatchObject({ flag_missing_receipt: 1, missing_receipt_reason: 'Cash purchase; no receipt given.' });
-    expect(voucher.honorVoucher).toBe(true);
+    expect(voucher.honoraryExpense).toBe(true);
     const [queued] = (await db.expenses.listCouncilQueue(MEMBER.admin, OWN)).filter((q) => q.report.id === voucher.report.id);
-    expect(queued.honorVoucher).toBe(true);
+    expect(queued.honoraryExpense).toBe(true);
   });
 });
 
@@ -229,14 +229,14 @@ describe('Administrator User Guide print edition', () => {
       .split('\n')
       .filter((l) => !l.trim().startsWith('<!--'))
       .join('\n');
-    for (const banned of [/\bBulletins?\b/i, /\bGYST\b/i, /\bDonations Ledger\b/i, /\bstakeholders?\b/i, /\bsynerg/i, /\bleverag/i, /\bfintech\b/i, /\bSaaS\b/i, /\bKPIs?\b/i]) {
+    for (const banned of [/(?<!Newsletters & )\bBulletins?\b/i, /\bGYST\b/i, /\bDonations Ledger\b/i, /\bstakeholders?\b/i, /\bsynerg/i, /\bleverag/i, /\bfintech\b/i, /\bSaaS\b/i, /\bKPIs?\b/i]) {
       expect(prose, String(banned)).not.toMatch(banned);
     }
   });
 
-  it('documents split tickets, the Honor Voucher and receipt reading', () => {
-    expect(guide).toContain('### 6.14 Concept: receipts, split tickets and Honor Vouchers');
-    expect(guide).toContain(HONOR_VOUCHER_BADGE);
+  it('documents split tickets, the Honorary Expense and receipt reading', () => {
+    expect(guide).toContain('### 6.14 Concept: receipts, split tickets and Honorary Expenses');
+    expect(guide).toContain(HONORARY_EXPENSE_BADGE);
     expect(guide).toContain('### 10.8 Connect the council email, Google Drive, Microsoft Co-Pilot and receipt reading');
   });
 });

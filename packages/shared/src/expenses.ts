@@ -37,7 +37,7 @@ export const RECEIPT_MERCHANT_MAX_LENGTH = 255;
 /** Longest ExpenseReport.missing_receipt_reason; the column is TEXT, the cap keeps a sheet readable (Sprint 6S). */
 export const MISSING_RECEIPT_REASON_MAX_LENGTH = 2000;
 /** The badge the Treasurer and Grand Knight desks print on a sheet with no receipt (Sprint 6S). */
-export const HONOR_VOUCHER_BADGE = '⚠️ HONOR VOUCHER - NO RECEIPT ATTACHED';
+export const HONORARY_EXPENSE_BADGE = '⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 
@@ -60,7 +60,7 @@ export interface CleanExpenseReportInput {
   charity_request_id: number | null;
   /** Sprint 6Q: a long-running activity of the sheet's council; never together with an event or meeting. */
   LinkedActivityID: number | null;
-  /** BIT (Sprint 6S): the Honor Voucher. */
+  /** BIT (Sprint 6S): the Honorary Expense. */
   flag_missing_receipt: number;
   /** Required while flag_missing_receipt is 1; null otherwise (an unflagged sheet keeps no reason). */
   missing_receipt_reason: string | null;
@@ -82,7 +82,7 @@ export function cleanExpenseReportInput(input: ExpenseReportInput): CleanExpense
     is_long_term_asset: longTermAssetFlag(input.is_long_term_asset),
     charity_request_id: optionalId(input.charity_request_id, 'Linked charitable request'),
     LinkedActivityID: optionalId(input.LinkedActivityID, 'Linked activity'),
-    ...honorVoucherFields(input),
+    ...honoraryExpenseFields(input),
   };
   if (clean.LinkedActivityID !== null && (clean.LinkedEventID !== null || clean.LinkedMeetingID !== null)) {
     throw invalid('An expense report linked to an activity cannot also name an event or a meeting.', { field: 'LinkedActivityID' });
@@ -103,14 +103,14 @@ function bitFlag(value: unknown, label: string, field: string): number {
 }
 
 /**
- * The Honor Voucher (Sprint 6S): a flagged sheet must say why it has no receipt, as a draft too; an unflagged sheet
+ * The Honorary Expense (Sprint 6S): a flagged sheet must say why it has no receipt, as a draft too; an unflagged sheet
  * stores no reason.
  */
-function honorVoucherFields(input: ExpenseReportInput): Pick<CleanExpenseReportInput, 'flag_missing_receipt' | 'missing_receipt_reason'> {
+function honoraryExpenseFields(input: ExpenseReportInput): Pick<CleanExpenseReportInput, 'flag_missing_receipt' | 'missing_receipt_reason'> {
   const flag = bitFlag(input.flag_missing_receipt, 'The missing receipt flag', 'flag_missing_receipt');
   if (flag === 0) return { flag_missing_receipt: 0, missing_receipt_reason: null };
   const reason = optionalText(input.missing_receipt_reason, 'Missing receipt reason', MISSING_RECEIPT_REASON_MAX_LENGTH);
-  if (reason === null) throw invalid('An Honor Voucher needs the reason there is no receipt.', { field: 'missing_receipt_reason' });
+  if (reason === null) throw invalid('An Honorary Expense needs the reason there is no receipt.', { field: 'missing_receipt_reason' });
   return { flag_missing_receipt: 1, missing_receipt_reason: reason };
 }
 
@@ -122,7 +122,7 @@ export type CleanExpenseLineItem = Omit<ExpenseLineItemInput, 'is_personal_exclu
 
 /**
  * expenses.submitReport (Sprint 6S): the receipts behind the sheet. Each needs a merchant and a gross total above 0
- * in whole cents. On a submitted sheet every receipt needs its file, unless the sheet is an Honor Voucher.
+ * in whole cents. On a submitted sheet every receipt needs its file, unless the sheet is an Honorary Expense.
  */
 export function cleanExpenseReceipts(
   receipts: readonly ExpenseReceiptInput[] | null | undefined,
@@ -138,7 +138,7 @@ export function cleanExpenseReceipts(
     if (gross === 0) throw invalid(`${label} gross total must be more than 0.`, { receiptIndex: i });
     const file = optionalText(r.receipt_file_url, `${label} file`, EXPENSE_RECEIPT_URL_MAX_LENGTH);
     if (status === 'Submitted' && file === null && flagMissingReceipt !== 1) {
-      throw invalid(`${label} has no receipt file. Attach it, or tick the Honor Voucher and say why there is no receipt.`, {
+      throw invalid(`${label} has no receipt file. Attach it, or tick the Honorary Expense and say why there is no receipt.`, {
         receiptIndex: i,
         field: 'receipt_file_url',
       });
@@ -518,10 +518,10 @@ export const sumAmounts = (amounts: readonly number[]): number =>
 export const isReimbursableLine = (li: Partial<Pick<ExpenseLineItem, 'is_personal_exclusion'>>): boolean => !li.is_personal_exclusion;
 
 /**
- * The Honor Voucher badge (Sprint 6S): the sheet is flagged, or it carries no receipt at all - no ExpenseReceipts row
+ * The Honorary Expense badge (Sprint 6S): the sheet is flagged, or it carries no receipt at all - no ExpenseReceipts row
  * with a file and no line item with a receipt photo.
  */
-export function isHonorVoucherSheet(
+export function isHonoraryExpenseSheet(
   report: Partial<Pick<ExpenseReport, 'flag_missing_receipt'>>,
   receipts: readonly Pick<ExpenseReceipts, 'receipt_file_url'>[],
   lineItems: readonly Pick<ExpenseLineItem, 'ReceiptPhotoURL'>[],
@@ -563,7 +563,7 @@ export function buildExpenseReportDetails(
       total: sumAmounts(items.filter(isReimbursableLine).map((li) => li.Amount)),
       receipts: sheetReceipts,
       personalTotal: sumAmounts(items.filter((li) => !isReimbursableLine(li)).map((li) => li.Amount)),
-      honorVoucher: isHonorVoucherSheet(report, sheetReceipts, items),
+      honoraryExpense: isHonoraryExpenseSheet(report, sheetReceipts, items),
       submitterFirstName: submitter?.MemberFirstName ?? '',
       submitterLastName: submitter?.MemberLastName ?? '',
       disbursement: disbursement ? { ...disbursement } : null,

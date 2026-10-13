@@ -10,9 +10,12 @@
 //
 // The SQLite driver has no server, so the key is checked only against what the keystore holds; when the remote driver
 // arrives, the key is what the API will validate (as with the session token in session.ts).
+//
+// Sprint 8Q: a council can switch biometric sign-in off (Council.biometric_login_enabled, the Council Feature Deployment
+// Matrix). Then no key is minted for its members, and a stored key is forgotten at its next use.
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
-import type { DataService, SessionUser } from '@kofc/shared';
+import { biometricLoginEnabled, type DataService, type SessionUser } from '@kofc/shared';
 import { randomTokenHex, refreshSessionUser, type KeyValueStore } from './session';
 
 export interface BiometricKey {
@@ -32,7 +35,19 @@ export interface BiometricScanner {
 
 export type BiometricSignInResult =
   | { ok: true; user: SessionUser }
-  | { ok: false; reason: 'noKey' | 'unavailable' | 'refused' | 'revoked' };
+  | { ok: false; reason: 'noKey' | 'unavailable' | 'refused' | 'revoked' | 'councilOff' };
+
+/**
+ * Sprint 8Q: whether the member's council allows biometric sign-in (Council.biometric_login_enabled). A council that
+ * cannot be read counts as allowing it, the column's default.
+ */
+export async function councilAllowsBiometric(db: DataService, councilId: number): Promise<boolean> {
+  try {
+    return biometricLoginEnabled(await db.councils.get(councilId));
+  } catch {
+    return true;
+  }
+}
 
 const BIOMETRIC_KEY = 'kofc.biometricKey';
 
@@ -84,6 +99,10 @@ export class BiometricLogin {
     if (!user) {
       await this.forget();
       return { ok: false, reason: 'revoked' };
+    }
+    if (!(await councilAllowsBiometric(db, user.councilId))) {
+      await this.forget();
+      return { ok: false, reason: 'councilOff' };
     }
     return { ok: true, user };
   }

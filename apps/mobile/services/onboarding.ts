@@ -19,7 +19,7 @@
 // submitPassword do nothing until the screen offers restart().
 import type { DataService, SessionUser } from '@kofc/shared';
 import { BusinessRuleError } from '@kofc/shared';
-import type { BiometricLogin } from './biometric-login';
+import { councilAllowsBiometric, type BiometricLogin } from './biometric-login';
 import type { SessionStore } from './session';
 
 /** The council whose admin is shown when an email is not recognised. */
@@ -89,6 +89,7 @@ const BIOMETRIC_FAILURES = {
   unavailable: 'Face ID or fingerprint is not available on this phone right now. Sign in with your password.',
   refused: 'The biometric check did not pass. Try again or sign in with your password.',
   revoked: 'Biometric sign-in on this phone is no longer valid. Sign in with your password.',
+  councilOff: 'Your council has turned off biometric sign-in. Sign in with your password.',
 } as const;
 
 export class OnboardingController {
@@ -136,7 +137,10 @@ export class OnboardingController {
         // was typed; anyone else is refused without a valid code.
         const user = await this.deps.db.auth.signUp(current.email, password, setupCode?.trim() ?? '');
         // The setup code was accepted: mint this phone's biometric key. A keystore failure must not undo the sign-up.
-        await this.deps.biometric?.enroll(user, current.email).catch(() => undefined);
+        // Sprint 8Q: not when the council has switched biometric sign-in off.
+        if (this.deps.biometric && (await councilAllowsBiometric(this.deps.db, user.councilId))) {
+          await this.deps.biometric.enroll(user, current.email).catch(() => undefined);
+        }
         return await this.finish(user);
       } catch (err) {
         if (err instanceof BusinessRuleError && err.code === 'ALREADY_REGISTERED') {
@@ -151,7 +155,9 @@ export class OnboardingController {
       if (!user) return this.set({ ...current, error: 'Incorrect password. Please try again.' });
       // Sprint 8P Stage 2: the biometric toggle was on - one scan, then this phone keeps a key. A refused scan or a
       // keystore failure never blocks the password sign-in.
-      if (options.enableBiometric) await this.deps.biometric?.enrollAfterScan(user, current.email).catch(() => false);
+      if (options.enableBiometric && this.deps.biometric && (await councilAllowsBiometric(this.deps.db, user.councilId))) {
+        await this.deps.biometric.enrollAfterScan(user, current.email).catch(() => false);
+      }
       return this.finish(user);
     }
     return current;

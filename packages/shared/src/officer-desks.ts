@@ -133,10 +133,12 @@ export const ACTIVE_DESKS_TITLE = 'Active Desks';
 export const EXECUTIVE_DASHBOARD_HREF = '/executive-dashboard';
 
 /**
- * The cards on Home (Sprint 8D/8E), in display order - nothing else sits there. The verse and the feast tracker are Faith
+ * The cards on Home (Sprint 8D/8E), in display order - nothing else sits there. Sprint 8Q: the Latest Council
+ * Newsletters & Bulletins feed (BULLETIN_FEED_TITLE) leads, the full width of the deck, when the council has one saved. The verse and the feast tracker are Faith
  * Center content, so a council with the Faith Center off (or a white-label tenant) sees the other four.
  */
 export const HOME_UNIVERSAL_CARDS = [
+  'Latest Council Newsletters & Bulletins',
   'Bible Verse of the Day',
   'Live Actionable Reminders',
   'Liturgical Feast Day Tracker',

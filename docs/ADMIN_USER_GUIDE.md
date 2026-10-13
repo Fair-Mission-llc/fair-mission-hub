@@ -913,7 +913,7 @@ A new rollup refreshes the baselines only. The rollup never changes proposed amo
 | --- | --- | --- |
 | The button is greyed out. | The year has no lines, or the year opens after May 1. | Run the rollup first. |
 
-### 6.14 Concept: receipts, split tickets and Honor Vouchers
+### 6.14 Concept: receipts, split tickets and Honorary Expenses
 
 A report holds one or more receipts. Each receipt has a merchant, a gross total and a receipt file. Each line item names the receipt it comes from.
 
@@ -921,15 +921,15 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 | --- | --- | --- |
 | Receipt | One ticket from one merchant, with its full total and its file. | A **Receipts** table with **R1**, **R2** and so on. |
 | Split ticket | One receipt with council items and personal items. The member lists all items and ticks **Personal** on the member's own items. | Personal lines are struck through. The total reads **Council reimburses**. |
-| Honor Voucher | The member has no receipt. The member ticks **⚠️ I have no receipt (Honor Voucher)** and writes the reason. | **⚠️ HONOR VOUCHER - NO RECEIPT ATTACHED** with the member's reason. |
+| Honorary Expense | The member has no receipt. The member ticks **⚠️ I have no receipt (Honorary Expense)** and writes the reason. | **⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED** with the member's reason. |
 
 - The council pays only the lines without **Personal**. Checks, budgets, asset costs and the balance sheet leave personal lines out.
 - On a submitted report, the lines of each receipt must add up to the receipt's gross total.
-- On a submitted report, each receipt needs its file. An Honor Voucher lifts this rule. The reason is mandatory.
-- The **⚠️ HONOR VOUCHER - NO RECEIPT ATTACHED** badge also shows on a report that has no receipt file at all.
+- On a submitted report, each receipt needs its file. An Honorary Expense lifts this rule. The reason is mandatory.
+- The **⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED** badge also shows on a report that has no receipt file at all.
 - When receipt reading is connected (10.8), **🔍 Read receipt** fills in the merchant, the total and the lines from the attached photo. The member checks every figure before saving.
 
-> **Warning:** check the reason on every Honor Voucher before you sign. The badge shows on the FS, Treasurer and GK desks and in the **Leadership Auditing Queue**.
+> **Warning:** check the reason on every Honorary Expense before you sign. The badge shows on the FS, Treasurer and GK desks and in the **Leadership Auditing Queue**.
 
 ---
 
@@ -1909,6 +1909,44 @@ Some fields show a red **Not used yet** tag. The portal saves the number for a f
 
 The screenshot above shows the page before the cards were added. The fields and their labels are the same.
 
+### 16.2.1 Concept: the two accordion buckets
+
+Under the **Annual Budget Planner** banner, **Council Wide Settings** has two accordion buckets. Each bucket has a navy bar with a gold edge. Select the bar to open or close the bucket.
+
+| Bucket | Opens | What the bucket holds |
+| --- | --- | --- |
+| **🔧 Operational Configuration** | Open when the page opens | The cards that change how the council works: **Financial Submissions**, **Volunteer & Meeting Operations**, **Reminder Cadences**, **Meeting Check-In**, **Roster Inactivity Sweep**, **Canonization Rank Benchmarks**, **Cross-Council Loaner Library Sharing** and **Parish Fundraiser Split**. Then the **Payment & Account Settings** links and the **Council Feature Deployment Matrix** (section 16.2.2). |
+| **📋 System Information** | Closed. Select the bar to open it. | Read-only facts: the **Council Instance Record**, the **Reference Archives** links and the **Custom User Guides** card. |
+
+The **Payment & Account Settings** links show only the pages that you may open: **Council Lookups** (payment methods and their account owners, and the email gateway), **Credentials Vault**, **Feature Flags Control Center** and **Global System Parameters**.
+
+The **Council Instance Record** shows the council number and name, the organization type, the district, the EIN, the base dues rate, the email gateway, the date the bylaws were last saved and the database schema version. You cannot change these facts here. Each fact changes on its own page.
+
+The **Reference Archives** links show only the pages that you may open: **Operations Knowledge Archive**, **System Lookups** and **Supreme Sync**.
+
+### 16.2.2 Concept: the Council Feature Deployment Matrix
+
+The **Council Feature Deployment Matrix** is the last card in **🔧 Operational Configuration**. The matrix shows which advanced capabilities and modules are on for the council. Each row has a status badge.
+
+| Badge | Meaning |
+| --- | --- |
+| **🟢 DEPLOYED** | The capability or module is on for this council. |
+| **⚪ AVAILABLE / OFF** | The platform has the capability, but this council has it off. |
+
+**Advanced capabilities** rows:
+
+| Row | 🟢 DEPLOYED when | Where it is switched |
+| --- | --- | --- |
+| **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, on this page |
+| **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, on this page |
+| **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 16.4.1) |
+| **Geofenced Meeting Check-In** | The council has a meeting point. | **Meeting Check-In** card, on this page |
+| **Council Email Gateway** | The council has an outgoing mail server. | **Council Lookups** → **Email Gateway** |
+
+**Council modules** rows: one row for each of the twelve module switches (section 3). A Super Admin changes them on the **Feature Flags Control Center**.
+
+The card counts the rows that are on, for example *"14 of 17 deployed"*. The matrix changes nothing by itself, except the **Biometric Authentication** button.
+
 ### 16.3 Concept: the council settings
 
 **Financial Submissions** card:
@@ -1956,7 +1994,7 @@ The logging window also ends the hours reminders. A shift older than the window 
 
 **Steps:**
 1. Super Admins only: choose the council in **Council** at the top of the page.
-2. Find the card that holds the setting (section 16.3).
+2. Make sure **🔧 Operational Configuration** is open. Find the card that holds the setting (section 16.3).
 3. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
 4. Enter the new number.
 5. Select the save button of the card, for example **Save Financial Submissions**.
@@ -1972,6 +2010,29 @@ The logging window also ends the hours reminders. A shift older than the window 
 | The message says the value must be "from" one number "to" another. | The value is outside the allowed range (section 16.3). | Enter a value inside the range. |
 | The message says "Nothing changed." | Every number in the card is the same as the saved value. | Change a number, then save. |
 | A field with **Not used yet** has no effect. | No feature reads the number yet. | No fix is needed. Keep the default. |
+| You cannot find the cards. | **🔧 Operational Configuration** is closed. | Select the **🔧 Operational Configuration** bar. |
+
+### 16.4.1 Turn biometric sign-in on or off for the council
+
+> **Prerequisite (who can do this):** You must be a council Admin or a council officer of the council, or a Super Admin.
+
+**Goal:** Allow or stop Face ID and fingerprint sign-in on the phones of the council's members.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **🔧 Operational Configuration** → **Council Feature Deployment Matrix**.
+
+**Steps:**
+1. Super Admins only: choose the council in **Council** at the top of the page.
+2. Find the **Biometric Authentication** row.
+3. Select **Turn off** to stop biometric sign-in. Select **Turn on** to allow it again.
+
+**Expected result:** The badge changes to **⚪ AVAILABLE / OFF** or **🟢 DEPLOYED**. While it is off, a phone makes no new biometric key for a member of the council. A key that a phone already holds is deleted at its next use, and the member signs in with the password.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The row has no button. | You are not an Admin or an officer of the council. | Ask a council Admin to make the change. |
+| A member still sees the **[ 🔘 Enable FaceID / Biometric Login ]** switch. | The phone does not know the member's council before the sign-in. | No action. The phone makes no key after the sign-in. |
+| A member reads *"Your council has turned off biometric sign-in."* | Biometric sign-in is off for the council. | The member signs in with the password. |
 
 ### 16.5 Concept: the Global System Parameters page
 
@@ -2513,10 +2574,11 @@ Every module that a seat works in is a folder at the top of that seat's desk (se
 
 ### 19.2 Concept: the Home desk
 
-**Home** holds seven large cards, and nothing else. The cards show two across on a laptop screen, and three across on a very wide screen. Each card grows to show its full list. Scroll the page to see the lower cards.
+**Home** holds eight large cards, and nothing else. The cards show two across on a laptop screen, and three across on a very wide screen. Each card grows to show its full list. Scroll the page to see the lower cards.
 
 | Card on Home | What the card shows |
 | --- | --- |
+| **[ 📰 Latest Council Newsletters & Bulletins ]** | The council's newest newsletters from the Council Historian, up to 3, newest first, across the full width of **Home**. The newest newsletter shows in full. Select another headline to read it. The card shows only when the council has a saved newsletter. |
 | **Bible Verse of the Day** | One verse for the day, from the NABRE. |
 | **Live Actionable Reminders** | Your own unread alerts and the sheets that wait for your signature. A red edge is urgent. The card refreshes every minute. |
 | **Liturgical Feast Day Tracker** | Today's feast day and the feasts of the coming days. A holy day of obligation is marked. |
@@ -2661,20 +2723,21 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 > **Who can do this:** the council's Admins and officers, and Super Admins. Other members do not see the **Dashboard**.
 
-**Goal:** See your reminders, today's agenda, the open shifts and the month's top volunteers.
+**Goal:** See the council's newsletters, your reminders, today's agenda, the open shifts and the month's top volunteers.
 
 **Start point:** **Active Desks** row → **Home**.
 
 **Steps:**
 1. Select the **Home** tab. The portal opens on **Home** after you sign in.
-2. Read the **Live Actionable Reminders** card. Select a reminder link to open its full desk page.
-3. Read **Today's Event Agenda**. Select an event name to open the council calendar.
-4. Read the **Open Volunteer Shifts** card. Select **Sign up** beside a shift to take that shift.
-5. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
-6. Read the **📿 Community Prayer Request List** card. Select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
-7. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
+2. Read the **[ 📰 Latest Council Newsletters & Bulletins ]** card at the top. Select an older headline to open that newsletter.
+3. Read the **Live Actionable Reminders** card. Select a reminder link to open its full desk page.
+4. Read **Today's Event Agenda**. Select an event name to open the council calendar.
+5. Read the **Open Volunteer Shifts** card. Select **Sign up** beside a shift to take that shift.
+6. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
+7. Read the **📿 Community Prayer Request List** card. Select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
+8. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
 
-**Expected result:** **Home** shows the seven cards. Scroll the page to see the lower cards. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
+**Expected result:** **Home** shows the eight cards. Scroll the page to see the lower cards. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -2685,6 +2748,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | *"Every shift in the next 30 days has its volunteers."* | No shift in the next 30 days is short of volunteers. | No action. |
 | *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
+| The newsletter card does not show. | The council has no saved newsletter for this month or an earlier month. | Ask the Council Historian to write one (section 19.12). |
 
 ### 19.4.1 Open a drawer on your desk
 
@@ -2919,14 +2983,25 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 **Steps:**
 1. Select the **Historian Desk** tab.
 2. Select the **Monthly Newsletters** tile. In **📰 Monthly newsletters**, select the **Month**.
-3. Type the newsletter text. Select **Save newsletter**.
-4. To open an earlier newsletter, select its month button under the text box.
-5. In **📷 Parish event and meeting photos**, select the **Meeting**.
-6. Select **Upload photo**, then pick the image file.
-7. In **🎙️ Oral history recordings**, select **Listen** beside a recording to play it.
-8. To record your own testimonial, use the recorder under the list.
+3. Optional: type a **Headline**. Without a headline, the newsletter has the name of its month, for example *"October 2026 Newsletter"*.
+4. Choose the **Layout** (see the table under the steps).
+5. Type the newsletter text. Leave a blank line between paragraphs.
+6. Optional: select **Preview as members see it on Home** to check the layout.
+7. Select **Save newsletter**.
+8. To open an earlier newsletter, select its month button under the text box.
+9. In **📷 Parish event and meeting photos**, select the **Meeting**.
+10. Select **Upload photo**, then pick the image file.
+11. In **🎙️ Oral history recordings**, select **Listen** beside a recording to play it.
+12. To record your own testimonial, use the recorder under the list.
 
-**Expected result:** The newsletter shows *"Newsletter saved."* The photo shows under the meeting name. The portal files the photo in the council's Google Drive under **Media / Meeting_Photos**.
+| Layout | How the text shows |
+| --- | --- |
+| **Paragraphs, headings and bullets** | A blank line starts a new paragraph. A line that starts with `## ` is a section heading. A line that starts with `- ` is a bullet. This is the default. |
+| **Plain text as typed** | The text shows as one block, with your line breaks kept. |
+
+The portal removes spaces at the end of each line and closes up a run of blank lines to one blank line.
+
+**Expected result:** The newsletter shows *"Newsletter saved."* A saved newsletter for this month or an earlier month shows at the top of **Home** and **Member Actions Hub** for every member of the council. A newsletter for a later month stays off the feed until its month. The photo shows under the meeting name. The portal files the photo in the council's Google Drive under **Media / Meeting_Photos**.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -2934,6 +3009,8 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 | *"The Drive vault is off, so the photo is kept in this browser only."* | The council's Google Drive is not connected. | Ask a Super Admin to connect Google Drive (section 10.8). |
 | The recorder does not show. | You recorded your one testimonial before. | No action. Each member records one testimonial. |
 | One month shows only one newsletter. | The council keeps one newsletter for each month. | Change the text and select **Save newsletter**. The new text replaces the old text. |
+| The newsletter does not show on **Home**. | The newsletter is blank, or its month is later than this month. | Type the text, or wait for its month. |
+| A `##` or `-` shows in the newsletter. | The **Layout** is **Plain text as typed**. | Choose **Paragraphs, headings and bullets** and save again. |
 
 ### 19.12.1 Read the Fraternal Diary Entry Logs
 

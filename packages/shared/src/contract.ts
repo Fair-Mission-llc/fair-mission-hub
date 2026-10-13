@@ -119,7 +119,7 @@ import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
-import type { LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
+import type { BulletinLayoutInput, LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeofenceChanges } from './geofence';
 import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './council-goals';
@@ -708,7 +708,7 @@ export interface ExpenseReportInput {
    */
   LinkedActivityID?: number | null;
   /**
-   * Sprint 6S: the Honor Voucher. True when the member has no receipt; missing_receipt_reason is then required and the
+   * Sprint 6S: the Honorary Expense. True when the member has no receipt; missing_receipt_reason is then required and the
    * receipts need no file. Left out it is false.
    */
   flag_missing_receipt?: boolean | number;
@@ -789,8 +789,8 @@ export interface ExpenseReportDetail {
   receipts: ExpenseReceipts[];
   /** Sprint 6S: the personal-exclusion lines in total, which the council does not pay. */
   personalTotal: number;
-  /** Sprint 6S: the Honor Voucher badge shows - the sheet is flagged, or carries no receipt row or receipt file at all. */
-  honorVoucher: boolean;
+  /** Sprint 6S: the Honorary Expense badge shows - the sheet is flagged, or carries no receipt row or receipt file at all. */
+  honoraryExpense: boolean;
   submitterFirstName: string;
   submitterLastName: string;
   disbursement: ExpenseDisbursement | null;
@@ -2540,6 +2540,13 @@ export interface DataService {
      */
     setLoanerLibraryEnabled(actorId: number, councilId: number, enabled: boolean): Promise<Council>;
     /**
+     * Sprint 8Q: switches FaceID / biometric sign-in (Council.biometric_login_enabled) on or off for the phones of the
+     * council's members, from the Council Feature Deployment Matrix on Council Wide Settings. Its editors
+     * (assertMayEditCouncilWideSettings: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED). RECORD_NOT_FOUND for an unknown council,
+     * INVALID_INPUT for a value that is not a boolean.
+     */
+    setBiometricLoginEnabled(actorId: number, councilId: number, enabled: boolean): Promise<Council>;
+    /**
      * Sprint 8M Core: saves the council's parish split (parish-split.ts cleanParishSplitSettings) - on or off, the
      * parish's percentage and the GL line (an Expense account of the council) the share is charged to - and resolves to
      * the updated council; a field left out keeps its stored value. The Council Wide Settings editors
@@ -4233,9 +4240,17 @@ export interface DataService {
     /**
      * Sprint 8B: creates or replaces the council's bulletin for one month ('YYYY-MM', cleanHistorianBulletin) and
      * resolves to it. Same keepers as listHistorianBulletins. INVALID_INPUT for a bad month, a body over
-     * HISTORIAN_BULLETIN_MAX_LENGTH or an unknown council.
+     * HISTORIAN_BULLETIN_MAX_LENGTH or an unknown council. Sprint 8Q: `layout` sets the headline and the body format
+     * (cleanBulletinLayout: INVALID_INPUT for a headline over BULLETIN_HEADLINE_MAX_LENGTH or an unknown format); a field
+     * left out keeps its stored value, and a new bulletin starts STRUCTURED with no headline.
      */
-    saveHistorianBulletin(actorId: number, councilId: number, month: string, body: string): Promise<CouncilHistorianBulletin>;
+    saveHistorianBulletin(actorId: number, councilId: number, month: string, body: string, layout?: BulletinLayoutInput): Promise<CouncilHistorianBulletin>;
+    /**
+     * Sprint 8Q, the Home feed: the council's saved bulletins with text up to this month, newest first, at most
+     * BULLETIN_FEED_LIMIT (recorder-historian.ts bulletinFeed). Any member of the council and any Active Super Admin
+     * (assertMayReadBulletinFeed: COUNCIL_ACCESS_DENIED).
+     */
+    listBulletinFeed(actorId: number, councilId: number): Promise<CouncilHistorianBulletin[]>;
     /**
      * Sprint 8I, the Operations Knowledge Archive's archive (CouncilOperationsKnowledge), newest first. Read-only.
      * Sprint 8J: every council's entries (the multi-tenant archive), each carrying origin_council_stamp, which is filled

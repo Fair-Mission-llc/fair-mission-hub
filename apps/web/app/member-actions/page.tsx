@@ -12,6 +12,7 @@
 //     window again.
 // Sprint 6A: when the council switches off flag_complex_shifts, the two shift tabs and the shift half of the hour ledger
 // go, leaving the roster and the activity log.
+// Sprint 8Q: the council's newest newsletters (LatestBulletinsFeed) lead the page, above the tabs, for every member.
 import { useState, type ReactNode } from 'react';
 import {
   councilLabel,
@@ -37,6 +38,7 @@ import {
   type Council,
   type Shift,
 } from '@kofc/shared';
+import { LatestBulletinsFeed } from '@/components/BulletinParts';
 import { useCouncilTimings } from '@/components/SettingsParts';
 import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
 import { formatFullDate, formatPersonName, formatPhone } from '@/lib/format';
@@ -529,6 +531,7 @@ function HourLedger() {
 const SHIFT_TABS: ReadonlySet<Tab> = new Set(['shifts', 'desk']);
 
 export default function MemberActionsPage() {
+  const user = useUser();
   const { flag_complex_shifts: shiftsOn } = useFeatureFlags();
   const tabs = shiftsOn ? TABS : TABS.filter((t) => !SHIFT_TABS.has(t.id));
   const [chosen, setTab] = useState<Tab>('shifts');
@@ -536,6 +539,7 @@ export default function MemberActionsPage() {
   return (
     <>
       <PageTitle>Member Actions</PageTitle>
+      <LatestBulletinsFeed memberId={user.memberId} councilId={user.councilId} className="mb-6" />
       <Tabs tabs={tabs} value={tab} onChange={setTab} label="Member actions" idPrefix="member-actions" />
       <div id="member-actions-panel" role="tabpanel" aria-labelledby={`member-actions-tab-${tab}`} className="pt-4">
         {tab === 'shifts' ? <ActiveShifts /> : tab === 'desk' ? <RegistrationDesk /> : tab === 'roster' ? <FraternalRoster /> : <HourLedger />}

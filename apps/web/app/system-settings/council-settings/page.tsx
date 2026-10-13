@@ -33,6 +33,13 @@
 //
 // Sprint 8M Core: the Parish Fundraiser Split card (ParishSplitSettingsCard) sets the split's switch, percentage and GL
 // line; it will not save the split on without a GL line.
+//
+// Sprint 8Q: under the planning banner the page is two accordion buckets (FeatureDeploymentParts.tsx SettingsBucket,
+// feature-deployment.ts COUNCIL_SETTINGS_BUCKETS). '🔧 Operational Configuration' (open on arrival) holds every card
+// that changes how the council works, the payment and account settings pages, and the Council Feature Deployment Matrix
+// (FeatureDeploymentMatrix: a '🟢 DEPLOYED' or '⚪ AVAILABLE / OFF' badge per advanced capability and module, with the
+// Biometric Authentication switch). '📋 System Information' holds the read-only Council Instance Record, the reference
+// archives and the Custom User Guides.
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -50,6 +57,7 @@ import {
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { RankThresholdsCard } from '@/components/EngagementParts';
+import { CouncilInstanceRecord, FeatureDeploymentMatrix, OPERATIONAL_SETTINGS_PAGES, SettingsBucket, SettingsLinkCards, SYSTEM_REFERENCE_PAGES } from '@/components/FeatureDeploymentParts';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { FraternalPlanningWorkflow, LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
 import { ParishSplitSettingsCard } from '@/components/ParishSplitParts';
@@ -170,24 +178,32 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
   return (
     <>
       <FraternalPlanningWorkflow key={council.id} user={user} council={council} />
-      <p className="mb-4 text-base">
-        Each card saves on its own. Click <strong>(i)</strong> beside a field to see where and how the number changes the portal. A field marked{' '}
-        <strong>Not used yet</strong> is saved for a future feature and changes nothing today.
-      </p>
-      <GroupedSettingsCards
-        formKey={`${council.id}-${COUNCIL_WIDE_SETTING_NAMES.map((n) => values[n]).join('-')}`}
-        names={COUNCIL_WIDE_SETTING_NAMES}
-        rules={COUNCIL_WIDE_SETTING_RULES}
-        values={values}
-        groups={COUNCIL_SETTING_GROUP_ORDER}
-        onSave={save}
-      />
-      <MeetingCheckInCard user={user} councilId={council.id} />
-      <InactivitySweepCard council={council} />
-      <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
-      <LoanerLibrarySharingCard user={user} council={council} onSaved={onSaved} />
-      <ParishSplitSettingsCard user={user} council={council} onSaved={onSaved} />
-      <CustomGuidesCard council={council} />
+      <SettingsBucket id="operational" defaultOpen>
+        <p className="mb-4 text-base">
+          Each card saves on its own. Click <strong>(i)</strong> beside a field to see where and how the number changes the portal. A field marked{' '}
+          <strong>Not used yet</strong> is saved for a future feature and changes nothing today.
+        </p>
+        <GroupedSettingsCards
+          formKey={`${council.id}-${COUNCIL_WIDE_SETTING_NAMES.map((n) => values[n]).join('-')}`}
+          names={COUNCIL_WIDE_SETTING_NAMES}
+          rules={COUNCIL_WIDE_SETTING_RULES}
+          values={values}
+          groups={COUNCIL_SETTING_GROUP_ORDER}
+          onSave={save}
+        />
+        <MeetingCheckInCard user={user} councilId={council.id} />
+        <InactivitySweepCard council={council} />
+        <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
+        <LoanerLibrarySharingCard user={user} council={council} onSaved={onSaved} />
+        <ParishSplitSettingsCard user={user} council={council} onSaved={onSaved} />
+        <SettingsLinkCards title="Payment & Account Settings" pages={OPERATIONAL_SETTINGS_PAGES} />
+        <FeatureDeploymentMatrix council={council} onSaved={onSaved} />
+      </SettingsBucket>
+      <SettingsBucket id="information">
+        <CouncilInstanceRecord council={council} />
+        <SettingsLinkCards title="Reference Archives" pages={SYSTEM_REFERENCE_PAGES} />
+        <CustomGuidesCard council={council} />
+      </SettingsBucket>
     </>
   );
 }

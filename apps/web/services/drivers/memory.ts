@@ -16,6 +16,9 @@ import {
   cleanMeetingPhotoUrl,
   cleanMeetingMinutes,
   cleanHistorianBulletin,
+  cleanBulletinLayout,
+  bulletinFeed,
+  assertMayReadBulletinFeed,
   assertMayReadOperationsKnowledge,
   assertMayWriteOperationsKnowledge,
   cleanOperationsKnowledgeEntry,
@@ -1548,6 +1551,15 @@ export class MemoryDataService implements DataService {
       assertMayEditCouncilWideSettings(this.memberWriteActor(s, actorId), councilId);
       const row = this.requireRecord(s, 'Council', councilId);
       row.is_loaner_library_enabled = enabled ? 1 : 0;
+      return { ...row } as unknown as Council;
+    },
+
+    setBiometricLoginEnabled: async (actorId, councilId, enabled) => {
+      if (typeof enabled !== 'boolean') throw new BusinessRuleError('INVALID_INPUT', 'Biometric sign-in must be on (true) or off (false).', { enabled });
+      const s = await this.ready();
+      assertMayEditCouncilWideSettings(this.memberWriteActor(s, actorId), councilId);
+      const row = this.requireRecord(s, 'Council', councilId);
+      row.biometric_login_enabled = enabled ? 1 : 0;
       return { ...row } as unknown as Council;
     },
 
@@ -6624,13 +6636,14 @@ export class MemoryDataService implements DataService {
         .sort((a, b) => b.bulletin_month.localeCompare(a.bulletin_month));
     },
 
-    saveHistorianBulletin: async (actorId, councilId, month, body) => {
+    saveHistorianBulletin: async (actorId, councilId, month, body, layout) => {
       const clean = cleanHistorianBulletin(month, body);
+      const cleanLayout = cleanBulletinLayout(layout);
       const s = await this.ready();
       return s.transaction(() => {
         assertMayKeepScrapbook(this.memberWriteActor(s, actorId), councilId, `write the bulletins of council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
-        const values = { body: clean.body, author_member_id: actorId, updated_at: toTimestamp(this.now()) };
+        const values = { body: clean.body, ...cleanLayout, author_member_id: actorId, updated_at: toTimestamp(this.now()) };
         const existing = s.rows('CouncilHistorianBulletin').find((r) => r.council_id === councilId && r.bulletin_month === clean.bulletin_month);
         if (existing) {
           Object.assign(existing, values);
@@ -6638,6 +6651,16 @@ export class MemoryDataService implements DataService {
         }
         return { ...s.insert('CouncilHistorianBulletin', { council_id: councilId, bulletin_month: clean.bulletin_month, ...values }) } as unknown as CouncilHistorianBulletin;
       });
+    },
+
+    listBulletinFeed: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayReadBulletinFeed(this.memberWriteActor(s, actorId), councilId);
+      const rows = s
+        .rows('CouncilHistorianBulletin')
+        .filter((r) => r.council_id === councilId)
+        .map((r) => ({ ...r }) as unknown as CouncilHistorianBulletin);
+      return bulletinFeed(rows, toIsoDate(this.now()));
     },
 
     listOperationsKnowledge: async (actorId) => {
