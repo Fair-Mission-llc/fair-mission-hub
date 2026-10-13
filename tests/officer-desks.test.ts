@@ -163,9 +163,9 @@ describe('Sprint 7J Extension 2 global workspace tabs and root redirect', () => 
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 72 | 7J Ext 2 |');
   });
 
-  it('renders the tab row in the portal frame for dashboard readers, not on the dashboard page', () => {
+  it('renders the tab row in the portal frame for every member (Sprint 8R), not on the dashboard page', () => {
     const shell = read('apps/web/components/Shell.tsx');
-    expect(shell).toContain("portalAreas(user, features, tenantType).includes('dashboard') ? <WorkspaceTabs user={user} />");
+    expect(shell).toContain("portalAreas(user, features, tenantType).includes('home') ? <WorkspaceTabs user={user} />");
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<Tabs');
     const tabs = read('apps/web/components/WorkspaceTabs.tsx');
     expect(tabs).toContain('dashboardTabsFor(user, user.councilId)');
@@ -174,15 +174,16 @@ describe('Sprint 7J Extension 2 global workspace tabs and root redirect', () => 
     expect(tabs).toMatch(/sticky top-0/);
   });
 
-  it('sends the portal root to /dashboard, or the member hub when the seat lacks it', () => {
+  it('sends the portal root to /dashboard (Sprint 8R: for every member)', () => {
     const root = read('apps/web/app/page.tsx');
     expect(root).toContain('redirect(landingRouteFor(user, features, tenantType))');
   });
 
-  it('gives plain members no dashboard, so they stay on the member hub', () => {
+  it('gives plain members Home but not the Executive Dashboard', () => {
     const plain = { memberId: 1, councilId: 1, memberType: 'Member' as const, isOfficer: false };
     const officer = { ...plain, isOfficer: true, roles: ['Grand Knight'] };
     expect(portalAreas(plain)).not.toContain('dashboard');
+    expect(portalAreas(plain)).toContain('home');
     expect(portalAreas(officer)).toContain('dashboard');
   });
 });
@@ -202,9 +203,9 @@ describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
     expect(tabs).toContain('border-t-[6px] border-t-gold');
   });
 
-  it('sends officers and Admins to /dashboard and plain members to the member hub', () => {
+  it('sends officers, Admins and (Sprint 8R) plain members to /dashboard', () => {
     const plain = { memberId: 1, councilId: 1, memberType: 'Member' as const, isOfficer: false };
-    expect(landingRouteFor(plain)).toBe('/member-actions');
+    expect(landingRouteFor(plain)).toBe('/dashboard');
     expect(landingRouteFor({ ...plain, isOfficer: true, roles: ['Recorder'] })).toBe('/dashboard');
     expect(landingRouteFor({ ...plain, memberType: 'Admin' })).toBe('/dashboard');
     expect(landingRouteFor({ ...plain, memberType: 'Super Admin' })).toBe('/dashboard');

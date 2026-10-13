@@ -148,6 +148,7 @@ import { OperationsKnowledgeArchiveEntryForm } from '@/components/KnowledgeArchi
 import { ChurchDisbursementQueue, ParishSplitConsoleCard } from '@/components/ParishSplitParts';
 import { BatchTransactionCoder, CashBoxAuditPanel } from '@/components/CashAuditParts';
 import { BulletinBody, LatestBulletinsFeed } from '@/components/BulletinParts';
+import { VolunteerCenter } from '@/components/VolunteerCenter';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -318,7 +319,7 @@ function OpenShiftsHomeCard({ user }: { user: SessionUser }) {
     <HomeCard
       title="Open Volunteer Shifts"
       actions={
-        <Link href="/member-actions" className="text-xs font-bold underline">
+        <Link href="/dashboard#volunteer-center" className="text-xs font-bold underline">
           All shifts
         </Link>
       }
@@ -455,6 +456,7 @@ export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; c
   return (
     <div className={cx('grid grid-cols-1 gap-6 lg:grid-cols-2', faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2')}>
       <LatestBulletinsFeed memberId={user.memberId} councilId={councilId} className="col-span-full" />
+      <VolunteerCenter className="col-span-full" />
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
@@ -862,8 +864,8 @@ function OpenShiftsCard({ user }: { user: SessionUser }) {
       ) : null}
       <p className="mt-2 text-sm">
         {rows.length > DESK_ROWS ? `${rows.length - DESK_ROWS} more short-handed. ` : ''}
-        <Link href="/member-actions" className="font-bold underline">
-          Open the Member Actions Hub
+        <Link href="/dashboard#volunteer-center" className="font-bold underline">
+          Open the Volunteer Center on Home
         </Link>
       </p>
     </Panel>

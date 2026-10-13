@@ -28,7 +28,7 @@ type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOffi
  * areas PORTAL_AREA_ROUTES names (portalAreaHref).
  */
 export type PortalArea =
-  | 'member-actions'
+  | 'home'
   | 'calendar'
   | 'gallery'
   | 'lookups'
@@ -90,7 +90,8 @@ export type PortalArea =
   | 'profile';
 
 /** Areas served from a route other than `/${area}`: the budget center lives at /budget (Sprint 5Y-2). */
-export const PORTAL_AREA_ROUTES: Partial<Record<PortalArea, string>> = { 'financials/budget': '/budget' };
+// Sprint 8R: 'home' is the universal Home tab of /dashboard, every signed-in member's landing page.
+export const PORTAL_AREA_ROUTES: Partial<Record<PortalArea, string>> = { 'financials/budget': '/budget', home: '/dashboard' };
 
 /** The route of a portal area. */
 export const portalAreaHref = (area: PortalArea): string => PORTAL_AREA_ROUTES[area] ?? `/${area}`;
@@ -669,8 +670,9 @@ export const canDesignateBudgetDirector = (u: Actor, member: Pick<Member, 'Counc
  * areas for every role.
  */
 export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, tenant: TenantType = DEFAULT_TENANT_TYPE): PortalArea[] {
-  // Admins and Super Admins volunteer too, so the member hub leads everyone's navigation, then the shared views.
-  const areas: PortalArea[] = ['member-actions', 'calendar', 'gallery'];
+  // Sprint 8R: every signed-in member opens Home (/dashboard), which holds the volunteer tools the Member Actions page
+  // used to; Admins and Super Admins volunteer too. Then the shared views.
+  const areas: PortalArea[] = ['home', 'calendar', 'gallery'];
   if (canMaintainLookups(u)) areas.push('lookups');
   if (canMaintainCouncils(u)) areas.push('councils');
   if (canOpenFeatureFlagsControlCenter(u)) areas.push('feature-flags');
@@ -773,7 +775,7 @@ export interface PortalNavGroup {
  */
 export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
-  { id: 'faith', label: 'Faith In Action', items: ['activities', 'member-actions', 'events', 'calendar', 'faith-center'] },
+  { id: 'faith', label: 'Faith In Action', items: ['activities', 'home', 'events', 'calendar', 'faith-center'] },
   {
     id: 'finances',
     label: 'Finances',

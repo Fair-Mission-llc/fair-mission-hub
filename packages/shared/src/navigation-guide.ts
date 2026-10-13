@@ -55,7 +55,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'governance/advisor': { member: 'Answers a parliamentary question with a citation from the bylaws or the baseline rules.' },
   activities: { member: "Keeps the council's list of standing activities, such as ushering or the food drive." },
-  'member-actions': { member: 'Your home page: your shifts, sign-ups, the member roster and your logged service hours.' },
+  home: { member: "Your landing page: the council's newsletters, your shifts and sign-ups, the member roster, your logged service hours and the Home cards." },
   events: { member: 'Plans an event: its dates, shifts, sign-up targets and linked councils.' },
   calendar: { member: 'Shows every event, shift and meeting on a monthly calendar.' },
   'faith-center': { member: "Shows today's feast day, the daily Bible verse and the Council Prayer Intentions List." },

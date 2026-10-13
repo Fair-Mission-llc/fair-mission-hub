@@ -31,8 +31,18 @@ describe('schema version 69', () => {
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (69|[7-9]\d);/);
   });
 
-  it('removes the stray root tsconfig.json', () => {
-    expect(existsSync(join(__dirname, '..', 'tsconfig.json'))).toBe(false);
+  // Sprint 8R: Expo tooling keeps writing a root tsconfig.json stub ({ "extends": "expo/tsconfig.base" }). It is ignored
+  // by git (.gitignore '/tsconfig.json'), so it can never be committed, and a local copy no longer fails the suite.
+  it('keeps the stray root tsconfig.json out of the repository', () => {
+    expect(read('.gitignore').split(/\r?\n/).map((l) => l.trim())).toContain('/tsconfig.json');
+    const path = join(__dirname, '..', 'tsconfig.json');
+    if (existsSync(path)) {
+      // A local file is tolerated only as the Expo stub, never as a real project config.
+      const stub = JSON.parse(readFileSync(path, 'utf8')) as { extends?: string; compilerOptions?: Record<string, unknown>; include?: unknown };
+      expect(stub.extends).toBe('expo/tsconfig.base');
+      expect(Object.keys(stub.compilerOptions ?? {})).toEqual([]);
+      expect(stub.include).toBeUndefined();
+    }
   });
 });
 

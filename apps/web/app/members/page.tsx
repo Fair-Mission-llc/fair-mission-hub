@@ -353,8 +353,8 @@ function Roster() {
     setSweepMessage(null);
     try {
       await impersonate(memberId);
-      // The member may not have this page, so the view opens on everyone's hub.
-      router.push('/member-actions');
+      // The member may not have this page, so the view opens on everyone's Home (Sprint 8R).
+      router.push('/dashboard');
     } catch (err) {
       setSweepMessage({ tone: 'error', text: describeError(err) });
     }

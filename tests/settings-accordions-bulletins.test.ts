@@ -149,11 +149,11 @@ describe('structured bulletins (pure)', () => {
     expect(BULLETIN_FEED_TITLE).toBe('[ 📰 Latest Council Newsletters & Bulletins ]');
   });
 
-  it('leads Home and Member Actions with the feed', () => {
+  it('leads Home with the feed (Sprint 8R: the Member Actions page is gone)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     expect(grid).toContain('<LatestBulletinsFeed memberId={user.memberId} councilId={councilId} className="col-span-full" />');
-    expect(read('apps/web/app/member-actions/page.tsx')).toContain('<LatestBulletinsFeed memberId={user.memberId} councilId={user.councilId}');
+    expect(grid.indexOf('<LatestBulletinsFeed')).toBeLessThan(grid.indexOf('<VolunteerCenter'));
   });
 });
 

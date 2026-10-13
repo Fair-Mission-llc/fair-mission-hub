@@ -477,8 +477,8 @@ function Frame({ children }: { children: ReactNode }) {
         <AlertBell />
         <MemberMenu />
       </header>
-      {/* Sprint 7J Extension 2: Home and the reader's Officer Desks, on every page for those who may open /dashboard. */}
-      {featuresLoaded && portalAreas(user, features, tenantType).includes('dashboard') ? <WorkspaceTabs user={user} /> : null}
+      {/* Sprint 7J Extension 2: Home and the reader's Officer Desks, on every page. Sprint 8R: every member opens Home. */}
+      {featuresLoaded && portalAreas(user, features, tenantType).includes('home') ? <WorkspaceTabs user={user} /> : null}
       <ViewAsBanner />
       {/* Sprint 8P Stage 2: the way back after a desk drawer had to open another page. */}
       <BackToDeskBlotterAnchor />

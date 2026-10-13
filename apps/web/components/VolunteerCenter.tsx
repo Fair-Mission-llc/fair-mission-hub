@@ -1,6 +1,8 @@
 'use client';
-// Member Actions: the volunteer side of the portal. Admins and Super Admins are Brother Knights who work shifts
-// too, so every signed-in member gets the same four tabs:
+// The Volunteer Check-In & Service Center (Sprint 8R): the volunteer side of the portal, a full-width section of Home
+// (DashboardDesks.tsx HomeWidgets). It was the separate Member Actions page (/member-actions) until Sprint 8R deleted
+// that route; every signed-in member now lands on Home and finds it there. Admins and Super Admins are Brother Knights
+// who work shifts too, so every signed-in member gets the same four tabs:
 //   - My active shifts: upcoming signups; a shift within URGENT_WITHIN_DAYS (48 hours) is shown in Secondary Red.
 //   - Registration desk: open shifts of my council and its sister councils that still need volunteers to reach
 //     MinNumberVolunteers. events.signupForShift adds the seat and increments NumberVolunteersSignedUp in one step,
@@ -12,7 +14,7 @@
 //     window again.
 // Sprint 6A: when the council switches off flag_complex_shifts, the two shift tabs and the shift half of the hour ledger
 // go, leaving the roster and the activity log.
-// Sprint 8Q: the council's newest newsletters (LatestBulletinsFeed) lead the page, above the tabs, for every member.
+// Sprint 8Q: the council's newest newsletters (LatestBulletinsFeed) led the page; since Sprint 8R they lead Home.
 import { useState, type ReactNode } from 'react';
 import {
   councilLabel,
@@ -37,10 +39,10 @@ import {
   visibleFeed,
   type Council,
   type Shift,
+  VOLUNTEER_CENTER_TITLE,
 } from '@kofc/shared';
-import { LatestBulletinsFeed } from '@/components/BulletinParts';
 import { useCouncilTimings } from '@/components/SettingsParts';
-import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
+import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
 import { formatFullDate, formatPersonName, formatPhone } from '@/lib/format';
 import { useFeatureFlags, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -530,20 +532,22 @@ function HourLedger() {
 /** The shift tabs, which flag_complex_shifts switches off (Sprint 6A). */
 const SHIFT_TABS: ReadonlySet<Tab> = new Set(['shifts', 'desk']);
 
-export default function MemberActionsPage() {
-  const user = useUser();
+/** The section's id: links to '/dashboard#volunteer-center' open Home and scroll here. */
+export const VOLUNTEER_CENTER_ID = 'volunteer-center';
+
+/** The Volunteer Check-In & Service Center section of Home. */
+export function VolunteerCenter({ className }: { className?: string }) {
   const { flag_complex_shifts: shiftsOn } = useFeatureFlags();
   const tabs = shiftsOn ? TABS : TABS.filter((t) => !SHIFT_TABS.has(t.id));
   const [chosen, setTab] = useState<Tab>('shifts');
   const tab = tabs.some((t) => t.id === chosen) ? chosen : tabs[0].id;
   return (
-    <>
-      <PageTitle>Member Actions</PageTitle>
-      <LatestBulletinsFeed memberId={user.memberId} councilId={user.councilId} className="mb-6" />
-      <Tabs tabs={tabs} value={tab} onChange={setTab} label="Member actions" idPrefix="member-actions" />
-      <div id="member-actions-panel" role="tabpanel" aria-labelledby={`member-actions-tab-${tab}`} className="pt-4">
+    <section id={VOLUNTEER_CENTER_ID} aria-label={VOLUNTEER_CENTER_TITLE} className={cx('scroll-mt-4 rounded border-2 border-navy bg-white p-4', className)}>
+      <h2 className="mb-3 font-serif text-xl font-bold">{VOLUNTEER_CENTER_TITLE}</h2>
+      <Tabs tabs={tabs} value={tab} onChange={setTab} label="Volunteer center" idPrefix="volunteer-center" />
+      <div id="volunteer-center-panel" role="tabpanel" aria-labelledby={`volunteer-center-tab-${tab}`} className="pt-4">
         {tab === 'shifts' ? <ActiveShifts /> : tab === 'desk' ? <RegistrationDesk /> : tab === 'roster' ? <FraternalRoster /> : <HourLedger />}
       </div>
-    </>
+    </section>
   );
 }

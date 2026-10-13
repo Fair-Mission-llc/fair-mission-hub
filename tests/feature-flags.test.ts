@@ -39,7 +39,7 @@ describe('feature flag rules', () => {
     for (const gone of ['elections', 'elections/appointments', 'donations', 'charities/propose', 'charities/vetting', 'events', 'meetings', 'meetings/cadence', 'meetings/live']) {
       expect(areas).not.toContain(gone);
     }
-    for (const kept of ['member-actions', 'ledger', 'expenses', 'finance/ledger', 'finance/balance-sheet', 'financials/budget', 'activities', 'charities/queue']) {
+    for (const kept of ['home', 'ledger', 'expenses', 'finance/ledger', 'finance/balance-sheet', 'financials/budget', 'activities', 'charities/queue']) {
       expect(areas).toContain(kept);
     }
   });

@@ -71,6 +71,9 @@
 // wide screens with the faith cards), grow with their content instead of scrolling inside themselves, and the page
 // scrolls in the browser. The desks' inner scroll lists (Shifts awaiting hours, the business calendar, the oral history
 // recordings) also open out onto the page.
+// Sprint 8R: /dashboard is every signed-in member's landing page (the 'home' area, landingRouteFor). Home leads with
+// the newsletters feed, then the Volunteer Check-In & Service Center (the four tabs of the deleted Member Actions page),
+// then the cards. The Executive Dashboard page keeps the 'dashboard' area.
 // Sprint 8P Stage 3: every officer desk is a desk blotter of slide-out drawers, and the Oversight Desk tab is dissolved -
 // its Flagged Hours Review, Shifts Awaiting Hours and Inbound Council Mail Center are Grand Knight Desk drawers, and the
 // Shifts Awaiting Hours audit is also back on the Executive Dashboard page for every executive-audit reader.
@@ -138,7 +141,7 @@ function Dashboard() {
 
 export default function DashboardPage() {
   return (
-    <RequireArea area="dashboard">
+    <RequireArea area="home">
       <Dashboard />
     </RequireArea>
   );

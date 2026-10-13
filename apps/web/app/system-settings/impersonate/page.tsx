@@ -75,8 +75,8 @@ function Directory() {
     setBusy(p.memberId);
     try {
       await impersonate(p.memberId);
-      // The member may not have this page, so the view opens on everyone's hub.
-      router.push('/member-actions');
+      // The member may not have this page, so the view opens on everyone's Home (Sprint 8R).
+      router.push('/dashboard');
     } catch (err) {
       setError(describeError(err));
       setBusy(null);

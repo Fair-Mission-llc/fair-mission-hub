@@ -3780,3 +3780,13 @@ ALTER TABLE [CouncilHistorianBulletin] ADD [headline] VARCHAR(200) NULL;
 GO
 ALTER TABLE [CouncilHistorianBulletin] ADD [body_format] VARCHAR(20) NOT NULL DEFAULT 'STRUCTURED' CONSTRAINT [CK_CouncilHistorianBulletin_body_format] CHECK ([body_format] IN ('STRUCTURED', 'PLAIN'));
 GO
+
+-- =========================================================================
+-- Sprint 8R: UNIVERSAL HOME LANDING, LEFT NAV GUIDES AND TEST HARDENING (schema version 91)
+--
+-- No table changes. Every signed-in member - plain member, officer, Admin or Super Admin - lands on the universal Home
+-- tab of /dashboard (landingRouteFor, the 'home' portal area). The Member Actions page (/member-actions) is deleted: its
+-- four tabs (My active shifts, Registration desk, Fraternal roster, Hour ledger) are Home's Volunteer Check-In &
+-- Service Center, under the Latest Council Newsletters & Bulletins feed. The user guides open with collapsible maps of
+-- the left navigation. The phone database version moves to 91.
+-- =========================================================================

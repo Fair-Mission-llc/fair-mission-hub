@@ -93,19 +93,19 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
 ];
 
 /**
- * Sprint 8B: a Council Historian who holds no officer seat and no Admin keys. Their seat opens /dashboard for the
- * Historian Desk only (and their own Member Desk), never Home's council figures.
+ * Sprint 8B: a Council Historian who holds no officer seat and no Admin keys. Sprint 8R: they open Home like every
+ * member; the flag only tells the sidebar's Executive Dashboard link it is there for the Historian Desk.
  */
 export const isHistorianDeskOnly = (u: Actor): boolean => !isAdmin(u) && !u.isOfficer && canOpenHistorianDesk(u, u.councilId);
 
 /**
- * The tabs this reader gets on the council's dashboard: Home and Member always (Home not for a Historian-only reader),
- * each other desk by its gate. Sprint 8C: the Reports Desk merged into Home.
+ * The tabs this reader gets on the council's dashboard: Home and Member always, each other desk by its gate. Sprint 8C:
+ * the Reports Desk merged into Home. Sprint 8R: Home for every signed-in member, plain members and a Historian-only
+ * reader included - it is everyone's landing page (landingRouteFor).
  */
 export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
-  const executive = !isHistorianDeskOnly(u);
   const cleared: Record<DashboardTabId, boolean> = {
-    home: executive,
+    home: true,
     'grand-knight': canOpenExpenseAuthorizeDesk(u, councilId),
     'financial-secretary': canOpenExpenseAuditDesk(u, councilId),
     treasurer: canOpenTreasurerDesk(u, councilId),
@@ -202,13 +202,19 @@ export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; 
   mine: { anchor: 'member', rowId: 'desk-row-my-sheets' },
 };
 
+/** Sprint 8R: every signed-in member's landing page - the universal Home tab of the Active Desks. */
+export const HOME_LANDING_ROUTE = '/dashboard';
+
+/** The title of Home's volunteer section (components/VolunteerCenter.tsx), which replaced the Member Actions page. */
+export const VOLUNTEER_CENTER_TITLE = '🙋 Volunteer Check-In & Service Center';
+
 /**
- * Where the portal root (/) sends a signed-in reader (Sprint 8A): anyone holding an officer seat or Admin keys, and
- * anyone else whose seat opens the dashboard, lands on the /dashboard Active Desks hub; plain members keep the member hub.
+ * Where the portal root (/) sends a signed-in reader. Sprint 8A sent plain members to the Member Actions page; Sprint 8R
+ * deleted that page, so EVERY signed-in member - plain member, officer, Admin or Super Admin - lands on Home. The
+ * arguments stay for the callers that pass them.
  */
-export function landingRouteFor(u: Actor, flags?: FeatureFlags, tenant?: TenantType): '/dashboard' | '/member-actions' {
-  if (isAdmin(u) || u.isOfficer) return '/dashboard';
-  return portalAreas(u, flags, tenant).includes('dashboard') ? '/dashboard' : '/member-actions';
+export function landingRouteFor(_u?: Actor, _flags?: FeatureFlags, _tenant?: TenantType): typeof HOME_LANDING_ROUTE {
+  return HOME_LANDING_ROUTE;
 }
 
 // ---- the Member Desk cards (Sprint 8C) ---------------------------------------------------------------

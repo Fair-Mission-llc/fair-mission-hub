@@ -460,7 +460,7 @@ function DayDetails({
                 </ul>
               )}
               <div className="flex flex-wrap gap-3 text-sm">
-                <Link href="/member-actions" className="font-bold underline">
+                <Link href="/dashboard#volunteer-center" className="font-bold underline">
                   All open shifts
                 </Link>
                 {recordable.data?.has(e.id) ? (

@@ -79,17 +79,18 @@ describe('the seat desks (pure)', () => {
     expect(canOpenHistorianDesk(seat({ memberType: 'Super Admin' }), 3)).toBe(true);
   });
 
-  it('adds the two tabs after the Treasurer Desk, and gives a Historian without an officer seat only their desks', () => {
+  it('adds the two tabs after the Treasurer Desk, and gives a Historian without an officer seat Home and their desks', () => {
     const ids = (u: ReturnType<typeof seat>) => dashboardTabsFor(u, OWN).map((t) => t.id);
     // Sprint 8C: no Reports Desk; every officer reads the Oversight Desk.
     expect(ids(seat({ roles: ['Recorder'], isOfficer: true }))).toEqual(['home', 'recorder', 'member']);
     expect(ids(seat({ memberType: 'Admin' }))).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'member']);
     const historian = seat({ roles: [COUNCIL_HISTORIAN_ROLE] });
     expect(isHistorianDeskOnly(historian)).toBe(true);
-    expect(ids(historian)).toEqual(['historian', 'member']);
+    // Sprint 8R: Home is every member's landing tab, the Historian-only reader's too.
+    expect(ids(historian)).toEqual(['home', 'historian', 'member']);
     expect(ids(seat({ roles: [COUNCIL_HISTORIAN_ROLE, 'Recorder'], isOfficer: true }))).toEqual(['home', 'recorder', 'historian', 'member']);
-    // A tab the reader lacks falls back to their first tab, which is Home for everyone but the Historian-only reader.
-    expect(dashboardTabFromAnchor('#reports', dashboardTabsFor(historian, OWN))).toBe('historian');
+    // A tab the reader lacks falls back to their first tab, which is Home for everyone.
+    expect(dashboardTabFromAnchor('#reports', dashboardTabsFor(historian, OWN))).toBe('home');
     expect(dashboardTabFromAnchor('#nope', dashboardTabsFor(seat({ memberType: 'Admin' }), OWN))).toBe('home');
   });
 

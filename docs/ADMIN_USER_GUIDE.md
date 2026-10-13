@@ -2,7 +2,7 @@
 
 **Audience:** Council Admins, Super Admins, the Grand Knight (GK), the Deputy Grand Knight (DGK), the Financial Secretary (FS), the Treasurer, Trustees and other council officers.
 
-**Covers:** the management pages of the web portal, grouped by the seven sidebar pillars.
+**Covers:** the management pages of the web portal. Part 2 maps the left navigation first, then the desks and the phone tabs.
 
 > **Every administrator is also a member.** Signing up, logging hours and taking donations are in the [Member User Guide](MEMBER_USER_GUIDE.md).
 > The full access table is in the [Role Permissions Matrix](ROLE_PERMISSIONS_MATRIX.md).
@@ -12,7 +12,7 @@
 ## Contents
 
 1. [Roles and access](#1-roles-and-access)
-2. [The seven pillars](#2-the-seven-pillars)
+2. [Left navigation map](#2-left-navigation-map)
 3. [Module feature flags](#3-module-feature-flags)
 4. [Governance](#4-governance)
 5. [Faith In Action](#5-faith-in-action)
@@ -78,7 +78,7 @@ A member has one member type. A member may also hold one or more officer roles.
 > A renamed role removes finance access from the officers who hold the role. Keep both names exactly as written.
 
 <!-- KEEP_IMAGE: member actions hub with the role-filtered sidebar -->
-![Member Actions Hub with the role-filtered sidebar (/member-actions)](../generated/dashboard_visual_catalog/member-actions.png)
+![The role-filtered sidebar (captured on the earlier Member Actions page, now the Volunteer Center on Home)](../generated/dashboard_visual_catalog/member-actions.png)
 <!-- /KEEP_IMAGE -->
 
 ### 1.3 Choose the council
@@ -92,35 +92,266 @@ The navy header shows your own council, your name, your member type and your off
 
 ---
 
-## 2. The seven pillars
+## 2. Left navigation map
 
-### 2.1 Concept: pillar navigation
+This part maps every link of the left navigation, then the **Active Desks** tabs, then the phone app. Each category is a collapsible block. Only the overview is open. Select a category title to open it. Select the title again to close it.
 
-The sidebar has seven pillars. Every pillar is always open. A pillar shows only the links that your role may open.
-A pillar with no allowed links does not show.
+### 2.1 Overview: how the left navigation works
 
-A link that your role cannot open does not show. The sidebar never shows a locked or greyed-out link.
-The rule includes the five officer desks: **Live Meeting Console**, **Annual Cadence Manager**, **FS Expense Audit**, **GK Expense Authorize** and **Charity Vetting Queue**.
+<details open>
+<summary>📍 Overview — read this first</summary>
 
-| Pillar | Links, in sidebar order | Main audience |
+- **Everyone lands on Home.** After you sign in, the portal opens on the **Home** tab of the **Active Desks** row. This is true for every member, officer, Admin and Super Admin (section 19.2).
+- **The sidebar shows only your links.** A link that your role cannot open does not show. The sidebar never shows a locked or greyed-out link. A pillar with no allowed links does not show.
+- **Seven pillars, always open.** The sidebar groups its links into seven pillars: **Governance**, **Faith In Action**, **Finances**, **Performance**, **Resources**, **Answers** and **System Settings**. Section 2.3 lists the links of each pillar.
+- **The Navigation Guide is at the top.** It explains each link that your sidebar shows (sections 2.6 and 2.7).
+- **Three pages open from the header.** **Messaging** (envelope icon) opens **Council Messages & Alerts** and **My Distribution Lists**. **Help** (question-mark icon) opens the **Online Help Center**. Your name opens **My Profile**.
+- **The Active Desks row is on every page.** It holds **Home** and the desks that your seat clears (section 2.4).
+- **Switched-off modules are gone.** A module that your council switched off has no link (section 3).
+
+</details>
+
+### 2.2 Left navigation by category
+
+The categories group the links by the work you do. A link can sit in a different pillar from its category. The **Pillar** column names where to find the link in the sidebar.
+
+<details>
+<summary>🏠 Dashboard</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Home** | Faith In Action | Every member | The newsletters feed, the **🙋 Volunteer Check-In & Service Center** and the Home cards | 19.2 |
+| **Executive Dashboard** | Performance | Officers, Admins, the Council Historian | The roadmap ribbon and the **Executive Summary** | 19.13 |
+| **Council Dashboard** | Performance | Every member | The council's engagement, the leaderboards and the membership history | 14.1 |
+| **Financial Dashboard** | Finances | General ledger readers | The council's money at a glance | 6.6 |
+| **Growth & Hours Charts** | Performance | Officers, Admins | Membership growth and service hours by month | 7.2 |
+
+</details>
+
+<details>
+<summary>📅 Calendars</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Visual Master Calendar** | Faith In Action | Every member | Events, shifts, meetings and birthdays by date, in mission colours | 20.4 |
+| **Event Planner** | Faith In Action | Event planners, Admins | Event dates, shifts and sign-up targets | 5 |
+| **Annual Cadence Manager** | Governance | Officers, Admins | The year's meeting pattern | 4.4 |
+| **Meeting Center** | Governance | Every member | Meetings, invitations and minutes | 4 |
+| **Live Meeting Console** | Governance | Officers, Admins | The live agenda, check-ins, ballots and hand tallies | 4.1 |
+
+</details>
+
+<details>
+<summary>👥 Rosters</summary>
+
+<details>
+<summary>Council roster</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Affiliated Roster** | System Settings | Admins, roster keepers | Members, member types and skills | 14 |
+| **Supreme Council Sync** | System Settings | Admins, finance officers | The roster sync with Supreme | 10.4 |
+| **Home** → **Fraternal roster** tab | Faith In Action | Every member | The phone and email of active brothers | 19.2 |
+
+</details>
+
+<details>
+<summary>Officer seats and connected councils</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Council Officer Nominations** | Governance | Every member | Nominations for elected offices | 4.7 |
+| **Appointed Leadership Matrix** | Governance | The GK, the DGK, Admins | The appointed seats | 4.7 |
+| **Connected Councils** | System Settings | The GK, the DGK, Admins | Affiliation invites and the connected councils | 21.5 |
+
+</details>
+
+</details>
+
+<details>
+<summary>✅ Vetting</summary>
+
+<details>
+<summary>Expense signatures</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **FS Expense Audit** | Finances | The FS, Admins | Reports that wait for a payment request | 19.6 |
+| **Treasurer Ledger Audit Desk** | Finances | The Treasurer, Admins | Reports to code to a budget line and a GL account | 19.7 |
+| **GK Expense Authorize** | Finances | The GK, the DGK, Admins | Reports that wait for the final signature | 19.5 |
+
+</details>
+
+<details>
+<summary>Charity grants</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Propose Charity Grant** | Finances | Every member | The charity proposal form | 6.8 |
+| **Charity Vetting Queue** | Finances | Officers, Trustees, Admins | Proposals to vet | 6.8 |
+| **Charity Payments Made Ledger** | Finances | Finance officers, Super Admins | Approved grants and their checks | 6.9 |
+
+</details>
+
+<details>
+<summary>Audits</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Trustee Audit Desk** | Finances | Trustees, general ledger readers | The semiannual audit and its period locks | 6 |
+
+</details>
+
+</details>
+
+<details>
+<summary>📒 Ledgers</summary>
+
+<details>
+<summary>Money ledgers</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **General Ledger Spreadsheet** | Finances | General ledger readers | The chart of accounts and every posting | 6.6 |
+| **Balance Sheet** | Finances | General ledger readers | Assets, liabilities and net worth | 6.6 |
+| **My Expense Reports** | Finances | Every member | Your own expense reports and their status | 6.1 |
+| **Bulk Check Payments Made** | Finances | Finance officers, Super Admins | Approved reports paid by check | 6.5 |
+| **Donations History** | Finances | Officers, Admins | Recorded donations | 6.10 |
+| **Annual Budget Projections** | Finances | Every member reads it | The council's annual budget | 6.11 |
+
+</details>
+
+<details>
+<summary>Service and asset ledgers</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Post-event Ledger** | Performance | Every member | Event results that event owners record | 7.3 |
+| **Home** → **Hour ledger** tab | Faith In Action | Every member | Your logged service hours | 19.2 |
+| **Cross-Council Loaner Library** | Resources | Every member | The items the council and its connected councils lend | 20.1 |
+
+</details>
+
+</details>
+
+<details>
+<summary>🗄️ Archives</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Council History** | Performance | Every member | Annals, the diary, oral histories and the In Memoriam roll | 7 |
+| **Operations Knowledge Archive** | System Settings | Officers, Admins | Every lesson the councils filed | 22.3 |
+| **Lessons Registry** | Performance | Officers, Admins | Lessons from past events | 7.5 |
+| **Fraternal Photo Gallery** | Resources | Every member | Event and meeting photos | 8.4 |
+| **Council Artifacts** | Resources | Every member | Flyers, minutes and photo albums filed in Google Drive | 8.4 |
+| **Constitutional Bylaws** | Governance | Every member | The council's bylaws | 4.8 |
+| **SOP Center** | Answers | Every member | The standard operating procedures | 9.2 |
+
+</details>
+
+<details>
+<summary>⚙️ Settings, planning and help</summary>
+
+<details>
+<summary>Planning and faith</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Standalone Activities** | Faith In Action | Admins, activity keepers | The council's standing activities | 5.4 |
+| **Faith Center** | Faith In Action | Every member | The feast day, the daily verse and the prayer intentions | 5 |
+| **Marketing Factory** | Resources | Officers, Admins | Event flyers | 8.5 |
+| **Constitutional Advisor** | Governance | Officers, Admins, Super Admins | Parliamentary answers with citations | 4 |
+
+</details>
+
+<details>
+<summary>Help</summary>
+
+| Link | Pillar | Who sees it | What it holds | Section |
+| --- | --- | --- | --- | --- |
+| **Online Help Center** | Answers | Every member | Answers to common questions | 9 |
+| **Interactive Help Desk** | Answers | Every member | Task search over the member guide | 9 |
+| **Navigation Guide** | Top of the sidebar | Every member | One sentence for each of your links | 2.6 |
+
+</details>
+
+<details>
+<summary>System Settings</summary>
+
+| Link | Who sees it | What it holds | Section |
+| --- | --- | --- | --- |
+| **Council Wide Settings** | Officers, Admins, Super Admins | 🔧 Operational Configuration and 📋 System Information | 16 |
+| **Council Lookup Tables** | Admins, finance officers | Payment methods, lists and the email gateway | 10.7 |
+| **Credentials Vault** | Officers, Admins, Super Admins | Sealed keys for Drive, mail and receipt reading | 10.8 |
+| **Feature Flags Control Center** | Super Admins | The module switches of each council | 3 |
+| **Global System Parameters** | Super Admins | Dues, organization type and platform settings | 16.5 |
+| **Councils** | Super Admins | The council list | 10.9 |
+| **Global Charities Registry** | Super Admins | The shared charity list | 10.9 |
+| **Global Governance Matrices** | Super Admins | The global lookup tables | 10.9 |
+| **Parish & Pastors Linkage** | Admins | Parishes and their pastors | 10.9 |
+| **Remote Assistance Desk** | Super Admins | Co-watching help sessions | 17.9 |
+| **View-As Member Lookup** | Super Admins | View the portal as one member | 17.7 |
+| **Administrative Feedback Loops** | Admins, Super Admins | Notes to the platform owner | 25.4 |
+
+</details>
+
+</details>
+
+### 2.3 The links of each pillar
+
+<details>
+<summary>📋 The seven pillars, in sidebar order</summary>
+
+| Pillar | Links, in sidebar order |
+| --- | --- |
+| **Governance** | Live Meeting Console, Annual Cadence Manager, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
+| **Faith In Action** | Standalone Activities, Home, Event Planner, Visual Master Calendar, Faith Center |
+| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Trustee Audit Desk, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Projections |
+| **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
+| **Resources** | Fraternal Photo Gallery, Council Artifacts, Marketing Factory, Cross-Council Loaner Library |
+| **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
+| **System Settings** | Councils, Feature Flags Control Center, Global System Parameters, Remote Assistance Desk, View-As Member Lookup, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Archive, Affiliated Roster, Supreme Council Sync, Council Lookup Tables, Credentials Vault, Global Charities Registry, Global Governance Matrices, Parish & Pastors Linkage |
+
+The **System Settings** pillar had the name **Setup** in earlier versions of the portal.
+
+</details>
+
+### 2.4 Desks map: the Active Desks tabs
+
+<details>
+<summary>🗂️ The desk tabs and their drawers</summary>
+
+| Tab | Who gets the tab | Drawers or sections | Section |
+| --- | --- | --- | --- |
+| **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, **🙋 Volunteer Check-In & Service Center**, then the Home cards | 19.2 |
+| **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 25 |
+| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Inbound Council Mail Center, Charitable Grant Requests Vetting Board, Planning & Budgeting Workflow, Council Election Tracker, Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels | 19.5 |
+| **Financial Secretary Desk** | The FS, Admins, Super Admins | Payment Requests, Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, Charity Check Issuance Console, Excel Roster Imports | 19.6 |
+| **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Planning & Budgeting Workflow, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window, Parish Fundraiser Revenue Split Console | 19.7 |
+| **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger | 19.10 |
+| **Historian Desk** | The Council Historian, Admins, Super Admins | Fraternal Diary Entry Logs, Monthly Newsletters, Meeting Photos, Oral History Recordings, Google Drive Media Gallery Sync Board | 19.12 |
+| **Member Desk** | Every member | Your own sheets and your shift trackers | 19.8 |
+
+</details>
+
+### 2.5 Mobile lines: the phone app tabs
+
+<details>
+<summary>📱 The five phone tabs</summary>
+
+| Tab | Use the tab to | Can the council switch it off? |
 | --- | --- | --- |
-| **Governance** | Live Meeting Console, Annual Cadence Manager, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor | Officers, the GK, Admins. The Constitutional Advisor shows to officers, Admins and Super Admins only. |
-| **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar | Admins plan. Members volunteer. |
-| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Projections | Finance officers, the GK, Admins |
-| **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Post-event Ledger, Lessons Registry | Seated officers, Admins |
-| **Resources** | Fraternal Photo Gallery, Council Artifacts, Marketing Factory, 📂 Council Archive Vault | Every member. The Marketing Factory and the vault link show to officers and Admins only. |
-| **Answers** | Online Help Center, SOP Center | Every member |
-| **System Settings** | Councils, Feature Flags Control Center, Global System Parameters, Council Wide Settings, Affiliated Roster, Supreme Council Sync, Council Lookup Tables, Credentials Vault, Global Charities Registry, Global Governance Matrices, Parish & Pastors Linkage | Admins, finance officers, Super Admins. The Council Wide Settings and the Credentials Vault show to officers, Admins and Super Admins only. Global System Parameters shows to Super Admins only. |
+| **Home** | See your upcoming shifts and your expense report summary | No |
+| **Mtgs** | Answer meeting invitations and read agendas | Yes, with **Meeting management** |
+| **Signup** | Find shifts in the next 30 days and sign up | Yes, with **Event shifts** |
+| **Report** | Log hours for a council activity or a shift | No |
+| **Donate** | Record cash, card, QR-code and item donations | Yes, with **Fundraising inflow** |
 
-Three pages open from the header, not from the sidebar.
+The navy header of the phone holds the **envelope** (messages) and **your name** (**Settings**, large text and **Sign out**). The member guide explains each phone task.
 
-- **Messaging** (envelope icon) → **Council Messages & Alerts** and **My Distribution Lists**.
-- **Help** (question-mark icon) → **Online Help Center**.
-- Your name → **My Profile**.
+</details>
 
-The **System Settings** pillar had the name **Setup** in earlier versions of the portal. The links in the pillar did not change.
-
-### 2.2 Concept: the Navigation Guide
+### 2.6 Concept: the Navigation Guide
 
 The **Navigation Guide** link is at the top of the sidebar, above the seven pillars. Every member sees the link.
 
@@ -139,7 +370,7 @@ A module that your council switched off is not in the guide, because the module 
 
 The **Your time limits** part of the guide lists the time windows and reminder days in force for you now. The guide reads the numbers from your council's settings and the platform settings each time the page opens. A member sees the limits that a member meets: the expense window, the logging window, the hours reminders, the invitation lead time and the sign-in length. A leader also sees every other time setting. The settings that no feature uses yet are listed last under **Saved for future features (not used yet)**.
 
-### 2.3 Read your Navigation Guide
+### 2.7 Read your Navigation Guide
 
 > **Prerequisite (who can do this):** Every signed-in member.
 
@@ -176,7 +407,7 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 | `flag_mobile_elections` | **Officer elections** | Council Officer Nominations, Appointed Leadership Matrix | None |
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Donate** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
-| `flag_complex_shifts` | **Event shifts** | Event Planner, the shift tabs of Member Actions Hub | **Signup**, and the shift mode of **Report** |
+| `flag_complex_shifts` | **Event shifts** | Event Planner, the shift tabs of the Volunteer Center on Home | **Signup**, and the shift mode of **Report** |
 | `flag_meeting_management` | **Meeting management** | Meeting Center, Annual Cadence Manager, Live Meeting Console | **Mtgs** |
 | `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit, Treasurer Ledger Audit Desk, GK Expense Authorize, Bulk Check Payments Made | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
@@ -2564,17 +2795,17 @@ The dashboard is a set of desks. A row of folder tabs sits under the navy header
 - Select the **Home** tab to return to **Home** from any page.
 - Select **Executive Dashboard** in the sidebar to open the **Executive Summary** page. That page is not a desk tab. See section 19.13.
 
-Only readers who may open the dashboard see the row. These readers are the council's Admins and officers, the Council Historian, and Super Admins.
+Every signed-in member sees the row. A plain member gets **Home** and **Member Desk**. Each officer seat adds its own desk.
 
-A Council Historian without an officer seat and without Admin rights gets two tabs only: **Historian Desk** and **Member Desk**. This Historian does not get **Home**. This Historian still gets the **Executive Dashboard** link in the sidebar (section 19.13).
+A Council Historian without an officer seat and without Admin rights gets **Home**, **Historian Desk** and **Member Desk**. This Historian also gets the **Executive Dashboard** link in the sidebar (section 19.13).
 
-After you sign in, the portal opens on the dashboard **Home** desk when you hold an officer seat or Admin rights. A member without an officer seat or Admin rights opens on **Member Actions**.
+After you sign in, the portal opens on the **Home** tab. This is true for every member, officer, Admin and Super Admin. The earlier **Member Actions** page is gone. Its four tabs are the **🙋 Volunteer Check-In & Service Center** on **Home**.
 
 Every module that a seat works in is a folder at the top of that seat's desk (section 19.3.1). You do not use the sidebar to find these modules. The **Leadership Auditing Queue** page opens from the **Financial Secretary Desk**.
 
 ### 19.2 Concept: the Home desk
 
-**Home** holds eight large cards, and nothing else. The cards show two across on a laptop screen, and three across on a very wide screen. Each card grows to show its full list. Scroll the page to see the lower cards.
+**Home** holds eight large cards, and nothing else. The newsletters card leads across the full width. Under it is the **🙋 Volunteer Check-In & Service Center**, a full-width section with four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. The section was the separate **Member Actions** page before. The other cards show two across on a laptop screen, and three across on a very wide screen. Each card grows to show its full list. Scroll the page to see the lower cards.
 
 | Card on Home | What the card shows |
 | --- | --- |
@@ -2721,21 +2952,22 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 ### 19.4 Read the Home desk
 
-> **Who can do this:** the council's Admins and officers, and Super Admins. Other members do not see the **Dashboard**.
+> **Who can do this:** every signed-in member.
 
-**Goal:** See the council's newsletters, your reminders, today's agenda, the open shifts and the month's top volunteers.
+**Goal:** See the council's newsletters, your volunteer tools, your reminders, today's agenda, the open shifts and the month's top volunteers.
 
 **Start point:** **Active Desks** row → **Home**.
 
 **Steps:**
 1. Select the **Home** tab. The portal opens on **Home** after you sign in.
 2. Read the **[ 📰 Latest Council Newsletters & Bulletins ]** card at the top. Select an older headline to open that newsletter.
-3. Read the **Live Actionable Reminders** card. Select a reminder link to open its full desk page.
-4. Read **Today's Event Agenda**. Select an event name to open the council calendar.
-5. Read the **Open Volunteer Shifts** card. Select **Sign up** beside a shift to take that shift.
-6. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
-7. Read the **📿 Community Prayer Request List** card. Select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
-8. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
+3. In the **🙋 Volunteer Check-In & Service Center**, select a tab: **My active shifts**, **Registration desk**, **Fraternal roster** or **Hour ledger**.
+4. Read the **Live Actionable Reminders** card. Select a reminder link to open its full desk page.
+5. Read **Today's Event Agenda**. Select an event name to open the council calendar.
+6. Read the **Open Volunteer Shifts** card. Select **Sign up** beside a shift to take that shift.
+7. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
+8. Read the **📿 Community Prayer Request List** card. Select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
+9. Officers and Admins: to see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
 
 **Expected result:** **Home** shows the eight cards. Scroll the page to see the lower cards. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
 
@@ -3001,7 +3233,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 
 The portal removes spaces at the end of each line and closes up a run of blank lines to one blank line.
 
-**Expected result:** The newsletter shows *"Newsletter saved."* A saved newsletter for this month or an earlier month shows at the top of **Home** and **Member Actions Hub** for every member of the council. A newsletter for a later month stays off the feed until its month. The photo shows under the meeting name. The portal files the photo in the council's Google Drive under **Media / Meeting_Photos**.
+**Expected result:** The newsletter shows *"Newsletter saved."* A saved newsletter for this month or an earlier month shows at the top of **Home** for every member of the council. A newsletter for a later month stays off the feed until its month. The photo shows under the meeting name. The portal files the photo in the council's Google Drive under **Media / Meeting_Photos**.
 
 **Common problems:**
 | Problem | Cause | Fix |

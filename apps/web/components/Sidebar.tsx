@@ -39,7 +39,7 @@ export interface NavEntry {
  * and keeps its entry for the pages that link to it.
  */
 export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue', NavEntry> = {
-  'member-actions': { href: '/member-actions', label: 'Member Actions Hub', hint: 'My shifts, sign-ups, roster, hours' },
+  home: { href: '/dashboard', label: 'Home', hint: 'Newsletters, my shifts, sign-ups, roster, hours and the Home cards' },
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },

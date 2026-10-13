@@ -286,6 +286,8 @@ def styles() -> dict[str, ParagraphStyle]:
         'h1': ParagraphStyle('h1', parent=base, fontName=FONTS.bold, fontSize=20, leading=24, textColor=NAVY, spaceBefore=4, spaceAfter=10),
         'h2': ParagraphStyle('h2', parent=base, fontName=FONTS.bold, fontSize=15, leading=19, textColor=NAVY, spaceBefore=6, spaceAfter=8),
         'h3': ParagraphStyle('h3', parent=base, fontName=FONTS.bold, fontSize=12, leading=15.5, textColor=NAVY, spaceBefore=10, spaceAfter=5),
+        # Sprint 8R: the title of a collapsible <details> block, printed open with a gold rule above it.
+        'summary': ParagraphStyle('summary', parent=base, fontName=FONTS.bold, fontSize=11, leading=14, textColor=NAVY, spaceBefore=8, spaceAfter=4),
         'cell': ParagraphStyle('cell', parent=base, fontSize=8.5, leading=11, spaceAfter=0),
         'head': ParagraphStyle('head', parent=base, fontName=FONTS.bold, fontSize=8.5, leading=11, textColor=colors.white, spaceAfter=0),
         'quote': ParagraphStyle('quote', parent=base, fontSize=9.5, leading=13, spaceAfter=2),
@@ -411,6 +413,10 @@ class Heading(Paragraph):
         self.outline_key = key
 
 
+DETAILS_TAG = re.compile(r'</?details(\s+open)?>', re.IGNORECASE)
+SUMMARY_TAG = re.compile(r'<summary>(.*)</summary>', re.IGNORECASE)
+
+
 def build_story(markdown: str, base: Path, st: dict[str, ParagraphStyle]) -> list:
     story: list = []
     lines = markdown.splitlines()
@@ -429,6 +435,20 @@ def build_story(markdown: str, base: Path, st: dict[str, ParagraphStyle]) -> lis
 
         if stripped.startswith('<!--'):  # editorial markers such as KEEP_IMAGE
             flush_para()
+            i += 1
+            continue
+        # Sprint 8R: the guides' collapsible maps. A browser opens only the overview block; paper prints every block
+        # open, each under its summary as a bookmarked sub-heading.
+        if DETAILS_TAG.fullmatch(stripped):
+            flush_para()
+            i += 1
+            continue
+        summary = SUMMARY_TAG.fullmatch(stripped)
+        if summary:
+            flush_para()
+            text = summary.group(1).strip()
+            story.append(HRFlowable(width='100%', thickness=1, color=GOLD, spaceBefore=4, spaceAfter=2))
+            story.append(Heading(text, st['summary'], 2, f'details-{len(story)}-{slug(text)}'))
             i += 1
             continue
         if not stripped:

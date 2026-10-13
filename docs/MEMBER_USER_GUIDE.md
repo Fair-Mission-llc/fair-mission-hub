@@ -83,19 +83,75 @@ The navy header at the top of the phone has two more controls.
 
 ### 1.4 Web portal sidebar
 
-The web portal sidebar has seven groups, called pillars. Every member sees these member pages.
+Each block below is collapsible. Only the overview is open. Select a title to open it.
 
-| Pillar | Member pages |
-| --- | --- |
-| **Governance** | Meeting Center, Council Officer Nominations, Constitutional Bylaws |
-| **Faith In Action** | Member Actions Hub, Visual Master Calendar |
-| **Finances** | My Expense Reports, Propose Charity Grant, Annual Budget Projections |
-| **Performance** | Council Dashboard, Post-event Ledger (event owners record results here) |
-| **Resources** | Fraternal Photo Gallery, Council Artifacts |
-| **Answers** | Online Help Center, SOP Center |
+<details open>
+<summary>📍 Overview — read this first</summary>
+
+- After you sign in, the portal opens on **Home**. **Home** shows the council's newsletters and the **🙋 Volunteer Check-In & Service Center** with your shifts, sign-ups, the roster and your hours.
+- The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
+- **Navigation Guide** at the top of the sidebar explains each of your links.
+
+</details>
+
+<details>
+<summary>🏠 Dashboard</summary>
+
+| Link | Pillar | What it holds |
+| --- | --- | --- |
+| **Home** | Faith In Action | The newsletters, the Volunteer Center and the Home cards |
+| **Council Dashboard** | Performance | Your impact and the council's engagement |
+
+</details>
+
+<details>
+<summary>📅 Calendars and meetings</summary>
+
+| Link | Pillar | What it holds |
+| --- | --- | --- |
+| **Visual Master Calendar** | Faith In Action | Events, shifts and meetings by date |
+| **Meeting Center** | Governance | Meetings, invitations and minutes |
+
+</details>
+
+<details>
+<summary>👥 Rosters and offices</summary>
+
+| Link | Pillar | What it holds |
+| --- | --- | --- |
+| **Home** → **Fraternal roster** tab | Faith In Action | The phone and email of active brothers |
+| **Council Officer Nominations** | Governance | Nominations for elected offices |
+
+</details>
+
+<details>
+<summary>📒 Ledgers and money</summary>
+
+| Link | Pillar | What it holds |
+| --- | --- | --- |
+| **Home** → **Hour ledger** tab | Faith In Action | Your logged service hours |
+| **My Expense Reports** | Finances | Your expense reports and their status |
+| **Propose Charity Grant** | Finances | The charity proposal form |
+| **Annual Budget Projections** | Finances | The council's annual budget |
+| **Post-event Ledger** | Performance | Event results (event owners record them here) |
+
+</details>
+
+<details>
+<summary>🗄️ Archives and answers</summary>
+
+| Link | Pillar | What it holds |
+| --- | --- | --- |
+| **Fraternal Photo Gallery** | Resources | Event and meeting photos |
+| **Council Artifacts** | Resources | Flyers, minutes and photo albums |
+| **Constitutional Bylaws** | Governance | The council's bylaws |
+| **Online Help Center** | Answers | Answers to common questions |
+| **SOP Center** | Answers | The standard operating procedures |
+
+</details>
 
 <!-- KEEP_IMAGE: member actions hub placeholder -->
-![Member Actions Hub (placeholder)](../generated/mobile_app_catalog/member_actions_hub.png)
+![Volunteer Check-In & Service Center on Home (placeholder)](../generated/mobile_app_catalog/member_actions_hub.png)
 <!-- /KEEP_IMAGE -->
 
 The sidebar shows only the pages that your role can open. Officer desks that your role cannot open do not show.
@@ -395,7 +451,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 
 **Goal:** Put your name on a shift that still needs volunteers.
 
-**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Registration desk** tab.
+**Start point:** **Home** → **🙋 Volunteer Check-In & Service Center** → **Registration desk** tab.
 
 **Steps:**
 1. Optional: choose a council in **Council**. The default is **All: my council and sister councils**.
@@ -419,7 +475,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 
 **Goal:** See the shifts that you signed up for.
 
-**Start point:** Phone app → **Home** → **My shifts**. Web portal → Faith In Action → **Member Actions Hub** → **My active shifts**.
+**Start point:** Phone app → **Home** → **My shifts**. Web portal → **Home** → **🙋 Volunteer Check-In & Service Center** → **My active shifts**.
 
 **Steps:**
 1. Open the start point.
@@ -654,7 +710,7 @@ Time that you saved earlier today stays saved.
 
 **Goal:** Log shift or activity time from a computer.
 
-**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Hour ledger** tab.
+**Start point:** **Home** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** tab.
 
 **Steps:**
 1. For a shift: go to **Report time on a shift**. Choose the shift in **Shift I worked**.
@@ -677,7 +733,7 @@ Time that you saved earlier today stays saved.
 
 **Goal:** Check which shifts still need hours.
 
-**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Hour ledger** → **My shift history**.
+**Start point:** **Home** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** → **My shift history**.
 
 **Steps:**
 1. Read the status of each past shift.
@@ -1356,7 +1412,7 @@ The Trustees ask the Shepherd for a status report 6 months after the filing date
 
 **Goal:** Contact another member.
 
-**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Fraternal roster** tab.
+**Start point:** **Home** → **🙋 Volunteer Check-In & Service Center** → **Fraternal roster** tab.
 
 **Steps:**
 1. Enter a name or a member number in **Search by name or number**.
@@ -1468,10 +1524,10 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 
 **Goal:** Read the newest newsletters from your Council Historian.
 
-**Start point:** Web portal → Faith In Action → **Member Actions Hub**. Officers and Admins also see the card on **Home**.
+**Start point:** Web portal → **Home** (the portal opens there after you sign in).
 
 **Steps:**
-1. Open **Member Actions Hub**. The **[ 📰 Latest Council Newsletters & Bulletins ]** card is at the top of the page.
+1. Open **Home**. The **[ 📰 Latest Council Newsletters & Bulletins ]** card is at the top of the page.
 2. Read the newest newsletter. It shows in full.
 3. To read an older newsletter, select its headline.
 

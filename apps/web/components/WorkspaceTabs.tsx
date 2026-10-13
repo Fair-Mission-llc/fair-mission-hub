@@ -2,7 +2,7 @@
 // Sprint 7J Extension 2: the workspace tab row (Home and the Officer Desks the reader's seat clears, officer-desks.ts
 // dashboardTabsFor) moves out of /dashboard into the portal frame. It sits under the navy header on every page, so a
 // reader can browse the sidebar and come back to a desk in one click: /dashboard#<anchor>. Only readers who may open
-// /dashboard (the 'dashboard' portal area) get the row. The dashboard page reads the open tab with useDashboardTab.
+// /dashboard (the 'home' portal area: every signed-in member since Sprint 8R) get the row. The dashboard page reads the open tab with useDashboardTab.
 //
 // Sprint 8A: the row is titled Active Desks and each tab is drawn as a card-index folder tab - a navy outline jacket with
 // rounded top corners and roomy padding, the open folder raised in white with a deep gold top edge so it joins the page
