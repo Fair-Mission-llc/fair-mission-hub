@@ -285,7 +285,7 @@ describe('Super Admin Desk', () => {
     expect(isPlatformOwner({ ...owner, username: 'another.super@kofc.org' })).toBe(false);
     expect(isPlatformOwner({ ...owner, memberType: 'Admin' })).toBe(false);
     expect(isPlatformOwner({ ...owner, username: undefined })).toBe(false);
-    expect(dashboardTabsFor(owner, OWN).at(-1)).toMatchObject({ id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE });
+    expect(dashboardTabsFor(owner, OWN)[1]).toMatchObject({ id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE });
     expect(dashboardTabsFor({ ...owner, username: 'another.super@kofc.org' }, OWN).map((t) => t.id)).not.toContain('super-admin');
   });
 

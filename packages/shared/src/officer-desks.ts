@@ -77,6 +77,9 @@ export interface DashboardTab {
 /** Every tab, in the order the tab row shows them. */
 export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'home', label: 'Home', anchor: 'home' },
+  // Sprint 8O: the platform owner's own cockpit (super-admin-desk.ts isPlatformOwner). Sprint 8O Extension: drawn
+  // second, right after Home.
+  { id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE, anchor: 'super-admin' },
   { id: 'grand-knight', label: 'Grand Knight Desk', anchor: 'grand-knight' },
   { id: 'financial-secretary', label: 'Financial Secretary Desk', anchor: 'financial-secretary' },
   { id: 'treasurer', label: 'Treasurer Desk', anchor: 'treasurer' },
@@ -84,8 +87,6 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'historian', label: 'Historian Desk', anchor: 'historian' },
   { id: 'oversight', label: 'Oversight Desk', anchor: 'oversight' },
   { id: 'member', label: 'Member Desk', anchor: 'member' },
-  // Sprint 8O: the platform owner's own cockpit (super-admin-desk.ts isPlatformOwner), drawn last and apart.
-  { id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE, anchor: 'super-admin' },
 ];
 
 /**

@@ -39,8 +39,8 @@ describe('schema version 71', () => {
 describe('dashboard tabs by seat (pure)', () => {
   it('lists Home first and the Member Desk last', () => {
     // Sprint 8C: the Reports Desk merged into Home.
-    // Sprint 8O: the platform owner's Super Admin Desk is drawn last, apart from the council desks.
-    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'oversight', 'member', 'super-admin']);
+    // Sprint 8O Extension: the platform owner's Super Admin Desk is drawn second, right after Home.
+    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'super-admin', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'oversight', 'member']);
   });
 
   it('gives each officer only their own desk', () => {
