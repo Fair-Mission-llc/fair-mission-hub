@@ -67,6 +67,7 @@ import {
   addDays,
   awaitsWrittenOrder,
   buildReminderStream,
+  isFraternalTenant,
   bulletinMonthOf,
   COMMUNITY_PRAYER_CARD_TITLE,
   councilWideSettings,
@@ -309,50 +310,6 @@ function TodaysAgenda({ councilId, today }: { councilId: number; today: string }
   );
 }
 
-/**
- * The Open Volunteer Shifts card on Home (Sprint 8D/8E): the Member Desk's short-handed shifts in a compact grid, each
- * signed up for in one click.
- */
-function OpenShiftsHomeCard({ user }: { user: SessionUser }) {
-  const { rows, ready, error, busy, message, clearMessage, signUp } = useOpenShiftSignup(user);
-  return (
-    <HomeCard
-      title="Open Volunteer Shifts"
-      actions={
-        <Link href="/dashboard#volunteer-center" className="text-xs font-bold underline">
-          All shifts
-        </Link>
-      }
-    >
-      {error ? <Notice tone="error">{error}</Notice> : null}
-      {message ? (
-        <Notice tone={message.tone} onDismiss={clearMessage}>
-          {message.text}
-        </Notice>
-      ) : null}
-      {ready && rows.length === 0 ? <Empty>Every shift in the next {MEMBER_DESK_OPEN_SHIFT_DAYS} days has its volunteers.</Empty> : null}
-      {rows.length > 0 ? (
-        <ul className="flex flex-col gap-1.5" aria-label={`Shifts in the next ${MEMBER_DESK_OPEN_SHIFT_DAYS} days still short of volunteers`}>
-          {rows.map(({ shift, event }) => (
-            <li key={shift.id} className="flex items-center justify-between gap-2 border-b border-line pb-1">
-              <span className="min-w-0">
-                <span className="block truncate font-bold">{event.EventName}</span>
-                <span className="block truncate text-xs">
-                  {formatShiftWhen(shift)} · {shift.ShiftName} ·{' '}
-                  <span className="font-bold text-brand-red">short {Math.max(0, shift.MinNumberVolunteers - shift.NumberVolunteersSignedUp)}</span>
-                </span>
-              </span>
-              <Button size="sm" disabled={busy !== null} onClick={() => void signUp(shift.id, `${shift.ShiftName} (${event.EventName})`)}>
-                {busy === shift.id ? 'Signing up…' : 'Sign up'}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </HomeCard>
-  );
-}
-
 const HONOR_MEDALS = ['🥇', '🥈', '🥉'];
 
 /**
@@ -451,19 +408,21 @@ function CommunityPrayerCard({ user, councilId }: { user: SessionUser; councilId
   );
 }
 
+/**
+ * Sprint 8R Corrected: Home is purely informational - council-wide feeds only, with no workflow button: the newsletters
+ * feed, the verse and the feast tracker (with the Faith Center), today's agenda and the month's Top 5 Fraternal
+ * Volunteers honor board. The reminders, the shift sign-ups, the prayer card's Praying Hands and the Volunteer Check-In
+ * & Service Center live on the Member Desk.
+ */
 export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; councilId: number; faithOn: boolean }) {
   const today = toIsoDate(new Date());
   return (
     <div className={cx('grid grid-cols-1 gap-6 lg:grid-cols-2', faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2')}>
       <LatestBulletinsFeed memberId={user.memberId} councilId={councilId} className="col-span-full" />
-      <VolunteerCenter className="col-span-full" />
       {faithOn ? <VerseOfTheDay today={today} /> : null}
-      <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
       <TodaysAgenda councilId={councilId} today={today} />
-      <OpenShiftsHomeCard user={user} />
       <TopVolunteersCard user={user} councilId={councilId} />
-      {faithOn ? <CommunityPrayerCard user={user} councilId={councilId} /> : null}
     </div>
   );
 }
@@ -864,9 +823,7 @@ function OpenShiftsCard({ user }: { user: SessionUser }) {
       ) : null}
       <p className="mt-2 text-sm">
         {rows.length > DESK_ROWS ? `${rows.length - DESK_ROWS} more short-handed. ` : ''}
-        <Link href="/dashboard#volunteer-center" className="font-bold underline">
-          Open the Volunteer Center on Home
-        </Link>
+        The Volunteer Check-In &amp; Service Center below lists every open shift.
       </p>
     </Panel>
   );
@@ -911,8 +868,14 @@ function MyCharityRequestsCard({ user }: { user: SessionUser }) {
  * the desk's top row, the same height, with the charity requests and expense sheets under them. This desk keeps plain
  * panels: no drawers, so a volunteer sees their shifts at once.
  */
+/**
+ * The Member Desk: every member's volunteer tracking. The two shift trackers sit side by side, equal height, across the
+ * top row; then the charity and expense cards, the reminders and (with the Faith Center) the prayer card; then the
+ * Volunteer Check-In & Service Center (Sprint 8R Corrected: moved here from Home, which stays informational).
+ */
 export function MemberDesk({ user }: { user: SessionUser }) {
   const flags = useFeatureFlags();
+  const faithOn = flags.feature_faith_center && isFraternalTenant(useTenantType());
   const today = toIsoDate(new Date());
   const through = toIsoDate(new Date(Date.now() + MEMBER_DESK_SHIFT_DAYS * 86_400_000));
   const sheets = useLoad(() => db.expenses.listUserReports(user.memberId), [user.memberId]);
@@ -970,6 +933,11 @@ export function MemberDesk({ user }: { user: SessionUser }) {
           </Panel>
         </DeskRow>
       </div>
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+        <ReminderStream user={user} councilId={user.councilId} />
+        {faithOn ? <CommunityPrayerCard user={user} councilId={user.councilId} /> : null}
+      </div>
+      <VolunteerCenter />
     </div>
   );
 }

@@ -3786,7 +3786,10 @@ GO
 --
 -- No table changes. Every signed-in member - plain member, officer, Admin or Super Admin - lands on the universal Home
 -- tab of /dashboard (landingRouteFor, the 'home' portal area). The Member Actions page (/member-actions) is deleted: its
--- four tabs (My active shifts, Registration desk, Fraternal roster, Hour ledger) are Home's Volunteer Check-In &
--- Service Center, under the Latest Council Newsletters & Bulletins feed. The user guides open with collapsible maps of
--- the left navigation. The phone database version moves to 91.
+-- four tabs (My active shifts, Registration desk, Fraternal roster, Hour ledger) are the Volunteer Check-In & Service
+-- Center. Sprint 8R Corrected (still version 91): Home is purely informational - the Latest Council Newsletters &
+-- Bulletins feed, the verse, the feast tracker, today's agenda and the Top 5 honor board, with no workflow button - and
+-- the Volunteer Center, the reminders, the sign-ups and the prayer card sit on the restored Member Desk under its twin
+-- shift trackers. The user guides and the Navigation Guide page open with collapsible, role-customized maps of the left
+-- navigation, then the desks, the timed settings and the phone tabs. The phone database version moves to 91.
 -- =========================================================================

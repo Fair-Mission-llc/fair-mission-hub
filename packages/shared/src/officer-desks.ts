@@ -135,17 +135,28 @@ export const EXECUTIVE_DASHBOARD_HREF = '/executive-dashboard';
 /**
  * The cards on Home (Sprint 8D/8E), in display order - nothing else sits there. Sprint 8Q: the Latest Council
  * Newsletters & Bulletins feed (BULLETIN_FEED_TITLE) leads, the full width of the deck, when the council has one saved. The verse and the feast tracker are Faith
- * Center content, so a council with the Faith Center off (or a white-label tenant) sees the other four.
+ * Center content, so a council with the Faith Center off (or a white-label tenant) sees the other three.
+ * Sprint 8R Corrected: Home is purely informational - council-wide feeds with no workflow button. The Live Actionable
+ * Reminders, the Open Volunteer Shifts sign-ups and the Community Prayer Request List (Praying Hands) moved to the
+ * Member Desk with the Volunteer Check-In & Service Center (MEMBER_DESK_SECTIONS).
  */
 export const HOME_UNIVERSAL_CARDS = [
   'Latest Council Newsletters & Bulletins',
   'Bible Verse of the Day',
-  'Live Actionable Reminders',
   'Liturgical Feast Day Tracker',
   "Today's Event Agenda",
-  'Open Volunteer Shifts',
   'Top 5 Fraternal Volunteers',
+] as const;
+
+/** The Member Desk's sections, in display order (Sprint 8R Corrected); the first two share the top row at equal height. */
+export const MEMBER_DESK_SECTIONS = [
+  '🚗 Open Shifts Needing Volunteers',
+  'My shifts',
+  '📥 My Charity Requests',
+  'My open expense sheets',
+  'Live Actionable Reminders',
   'Community Prayer Request List',
+  '🙋 Volunteer Check-In & Service Center',
 ] as const;
 
 /** The Home card over the council's open prayer intentions (Sprint 8L). */
@@ -205,7 +216,7 @@ export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; 
 /** Sprint 8R: every signed-in member's landing page - the universal Home tab of the Active Desks. */
 export const HOME_LANDING_ROUTE = '/dashboard';
 
-/** The title of Home's volunteer section (components/VolunteerCenter.tsx), which replaced the Member Actions page. */
+/** The title of the Member Desk's volunteer section (components/VolunteerCenter.tsx), which replaced the Member Actions page. */
 export const VOLUNTEER_CENTER_TITLE = '🙋 Volunteer Check-In & Service Center';
 
 /**

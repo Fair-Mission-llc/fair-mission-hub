@@ -1,5 +1,7 @@
 'use client';
-// The Volunteer Check-In & Service Center (Sprint 8R): the volunteer side of the portal, a full-width section of Home
+// The Volunteer Check-In & Service Center (Sprint 8R): the volunteer side of the portal. Sprint 8R Corrected: it sits on
+// the Member Desk under the twin shift trackers (DashboardDesks.tsx MemberDesk), not on Home, which stays informational.
+// Sprint 8R first placed it on Home
 // (DashboardDesks.tsx HomeWidgets). It was the separate Member Actions page (/member-actions) until Sprint 8R deleted
 // that route; every signed-in member now lands on Home and finds it there. Admins and Super Admins are Brother Knights
 // who work shifts too, so every signed-in member gets the same four tabs:
@@ -532,7 +534,7 @@ function HourLedger() {
 /** The shift tabs, which flag_complex_shifts switches off (Sprint 6A). */
 const SHIFT_TABS: ReadonlySet<Tab> = new Set(['shifts', 'desk']);
 
-/** The section's id: links to '/dashboard#volunteer-center' open Home and scroll here. */
+/** The section's id on the Member Desk (/dashboard#member). */
 export const VOLUNTEER_CENTER_ID = 'volunteer-center';
 
 /** The Volunteer Check-In & Service Center section of Home. */

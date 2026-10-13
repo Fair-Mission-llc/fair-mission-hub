@@ -916,9 +916,9 @@ const DB_NAME = 'kofc.db';
  * 90: Council.biometric_login_enabled and CouncilHistorianBulletin.headline and body_format - the Council Feature
  *     Deployment Matrix's biometric switch, structured newsletters and the Home bulletin feed; the missing-receipt flag
  *     is named the Honorary Expense (Sprint 8Q).
- * 91: no table change - every signed-in member lands on the web portal's universal Home tab, the Member Actions page
- *     becomes Home's Volunteer Check-In & Service Center, and the guides lead with the left navigation (Sprint 8R);
- *     phones rebuild in step.
+ * 91: no table change - every signed-in member lands on the web portal's informational Home tab, the Member Actions
+ *     page becomes the Member Desk's Volunteer Check-In & Service Center, and the guides and the Navigation Guide lead
+ *     with collapsible, role-customized left-navigation maps (Sprint 8R and its correction); phones rebuild in step.
  */
 const SCHEMA_VERSION = 91;
 

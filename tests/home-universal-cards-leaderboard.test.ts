@@ -102,27 +102,23 @@ describe.each(drivers)('the monthly leaderboard from the database ($name driver)
 });
 
 describe('Home holds only the universal cards', () => {
-  it('names the eight cards in display order', () => {
+  it('names the five informational cards in display order (Sprint 8R Corrected)', () => {
     expect(HOME_UNIVERSAL_CARDS).toEqual([
       'Latest Council Newsletters & Bulletins', // Sprint 8Q
       'Bible Verse of the Day',
-      'Live Actionable Reminders',
       'Liturgical Feast Day Tracker',
       "Today's Event Agenda",
-      'Open Volunteer Shifts',
       'Top 5 Fraternal Volunteers',
-      'Community Prayer Request List', // Sprint 8L
     ]);
   });
 
-  it('renders the eight cards and nothing else in the Home grid', () => {
+  it('renders the five cards and nothing else in the Home grid', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     const rendered = [...grid.matchAll(/<([A-Z]\w+) /g)].map((m) => m[1]);
-    expect(rendered).toEqual(['LatestBulletinsFeed', 'VolunteerCenter', 'VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'OpenShiftsHomeCard', 'TopVolunteersCard', 'CommunityPrayerCard']);
+    expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard']);
     // Sprint 8P Stage 1: wide tiles - two across, three across on very wide screens with the faith cards.
     expect(grid).toContain("faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2'");
-    expect(desks).toContain('title="Open Volunteer Shifts"');
     expect(desks).toContain('title={`Top ${LEADERBOARD_SIZE} Fraternal Volunteers`}');
     // Sprint 8P Stage 1: no fixed height and no inner scroll; the card grows and the page scrolls.
     const card = desks.slice(desks.indexOf('function HomeCard('), desks.indexOf('const shortDay'));
@@ -139,9 +135,9 @@ describe('Home holds only the universal cards', () => {
     expect(desks).toContain("'border-4 border-gold bg-navy text-white'");
   });
 
-  it('shares the one-click sign-up between Home and the Member Desk', () => {
+  it('keeps the one-click sign-up on the Member Desk only (Sprint 8R Corrected)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks.match(/useOpenShiftSignup\(user\)/g)).toHaveLength(2);
+    expect(desks.match(/useOpenShiftSignup\(user\)/g)).toHaveLength(1);
     expect(desks).toContain('db.events.signupForShift(user.memberId, shiftId)');
   });
 
@@ -197,7 +193,7 @@ describe('the Executive Dashboard page', () => {
 describe('the guides', () => {
   it('walk through the six-card Home, the badges on the Oversight Desk and the Executive Dashboard page', () => {
     const admin = read('docs/ADMIN_USER_GUIDE.md');
-    expect(admin).toContain('**Home** holds eight large cards, and nothing else.');
+    expect(admin).toContain('**Home** holds five large cards, and nothing else.');
     expect(admin).toContain('| **Top 5 Fraternal Volunteers** |');
     // Sprint 8P Stage 3: the badge strip and the Oversight Desk are gone.
     expect(admin).toContain('The portal has no status badge strip and no **Oversight Desk**.');

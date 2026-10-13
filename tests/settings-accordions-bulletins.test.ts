@@ -153,7 +153,7 @@ describe('structured bulletins (pure)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     expect(grid).toContain('<LatestBulletinsFeed memberId={user.memberId} councilId={councilId} className="col-span-full" />');
-    expect(grid.indexOf('<LatestBulletinsFeed')).toBeLessThan(grid.indexOf('<VolunteerCenter'));
+    expect(grid.indexOf('<LatestBulletinsFeed')).toBeLessThan(grid.indexOf('<VerseOfTheDay'));
   });
 });
 

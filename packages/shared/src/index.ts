@@ -73,3 +73,4 @@ export * from './super-admin-desk';
 export * from './global-search';
 export * from './desk-drawers';
 export * from './feature-deployment';
+export * from './navigation-map';

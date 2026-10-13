@@ -6,8 +6,15 @@
 // on white, bold labels, for easy reading.
 // Sprint 7E: "Your time limits" lists the windows and reminder timings in force for this member right now
 // (navigationTimings), read live from their council's settings and the platform's, never fixed numbers.
+//
+// Sprint 8R Corrected: the page is a sidebar-first collapsible map (navigation-map.ts navigationGuideMap). The overview
+// is open; every other block starts closed: the sidebar categories (Dashboard, Calendars, Rosters, Vetting, Ledgers,
+// Archives, Settings), then the reader's own desk tabs, the time limits and the phone tabs. Its depth follows the
+// session: a plain member reads one summary per link and desk they can open; council leadership and Super Admins read
+// the full map - the leader wording, the pillar of each link and every drawer of each desk they hold.
 import Link from 'next/link';
-import { navigationGuide, navigationTimings, whiteLabel } from '@kofc/shared';
+import type { ReactNode } from 'react';
+import { navigationGuide, navigationGuideMap, navigationTimings, whiteLabel } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { usePlatformSettings } from '@/components/SettingsParts';
 import { NAV } from '@/components/Sidebar';
@@ -16,10 +23,28 @@ import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
+/** One collapsible block of the map; only the overview passes `open`. */
+function MapBlock({ id, title, open = false, children }: { id: string; title: string; open?: boolean; children: ReactNode }) {
+  return (
+    <details id={`guide-${id}`} open={open} className="group border-t-2 border-black pt-3">
+      <summary className="flex cursor-pointer list-none items-center gap-2 text-lg font-bold uppercase tracking-wide">
+        <span aria-hidden="true" className="w-4 shrink-0 transition-transform group-open:rotate-90">
+          ›
+        </span>
+        {title}
+      </summary>
+      <div className="pt-2">{children}</div>
+    </details>
+  );
+}
+
 export default function NavigationGuidePage() {
   const user = useUser();
   const tenant = useTenantType();
-  const guide = navigationGuide(user, useFeatureFlags(), tenant);
+  const flags = useFeatureFlags();
+  const guide = navigationGuide(user, flags, tenant);
+  const map = navigationGuideMap(user, flags, tenant);
+  const full = map.depth === 'full';
   const text = (s: string) => whiteLabel(s, tenant);
   const council = useLoad(() => db.councils.get(user.councilId), [user.councilId]);
   const platform = usePlatformSettings();
@@ -29,37 +54,77 @@ export default function NavigationGuidePage() {
   return (
     <RequireArea area="navigation-guide">
       <PageTitle>Navigation Guide</PageTitle>
-      <div className="flex flex-col gap-5 rounded border-2 border-black bg-white p-5 text-black">
-        <section aria-labelledby="guide-persona">
+      <div className="flex flex-col gap-3 rounded border-2 border-black bg-white p-5 text-black">
+        <MapBlock id="overview" title="📍 Overview" open>
           <h2 id="guide-persona" className="text-lg font-bold">
             You are signed in as: {guide.persona}
             {guide.roles.length > 0 ? ` (${guide.roles.join(', ')})` : ''}
           </h2>
-          <p className="text-base">{text(guide.summary)} Each link below is in your sidebar, in the same order.</p>
-        </section>
-        {guide.groups.map((group) => (
-          <section key={group.id} aria-labelledby={`guide-${group.id}`} className="border-t-2 border-black pt-3">
-            <h2 id={`guide-${group.id}`} className="mb-2 text-lg font-bold uppercase tracking-wide">
-              {text(group.label)}
-            </h2>
+          <p className="text-base">
+            {text(guide.summary)} The portal opens on <strong>Home</strong> after you sign in.{' '}
+            {full
+              ? 'You see the full map: each link with the pillar it sits in, and every drawer of your desks.'
+              : 'You see a short summary of each link and desk that you can open.'}{' '}
+            Select a block title below to open it.
+          </p>
+          <h3 className="mb-1 mt-3 text-base font-bold">In the top bar</h3>
+          <dl className="flex flex-col gap-2">
+            {guide.topBar.map(({ item, explanation }) => (
+              <div key={item}>
+                <dt>
+                  <Link href={NAV[item].href} className="text-base font-bold underline">
+                    {text(NAV[item].label)}
+                  </Link>
+                </dt>
+                <dd className="text-base">{text(explanation)}</dd>
+              </div>
+            ))}
+          </dl>
+        </MapBlock>
+
+        {map.categories.map((category) => (
+          <MapBlock key={category.id} id={category.id} title={`${category.label} (${category.entries.length})`}>
             <dl className="flex flex-col gap-2">
-              {group.entries.map(({ item, explanation }) => (
+              {category.entries.map(({ item, explanation, pillar }) => (
                 <div key={item}>
                   <dt>
                     <Link href={NAV[item].href} className="text-base font-bold underline">
                       {text(NAV[item].label)}
                     </Link>
+                    {pillar ? <span className="text-sm"> · sidebar: {text(pillar)}</span> : null}
                   </dt>
                   <dd className="text-base">{text(explanation)}</dd>
                 </div>
               ))}
             </dl>
-          </section>
+          </MapBlock>
         ))}
-        <section aria-labelledby="guide-timings" className="border-t-2 border-black pt-3">
-          <h2 id="guide-timings" className="mb-1 text-lg font-bold uppercase tracking-wide">
-            Your time limits
-          </h2>
+
+        <MapBlock id="desks" title={`🗂️ Your desks (${map.desks.length})`}>
+          <dl className="flex flex-col gap-3">
+            {map.desks.map((desk) => (
+              <div key={desk.id}>
+                <dt>
+                  <Link href={`/dashboard#${desk.id}`} className="text-base font-bold underline">
+                    {text(desk.label)}
+                  </Link>
+                </dt>
+                <dd className="text-base">
+                  {text(desk.summary)}
+                  {desk.sections.length > 0 ? (
+                    <ul className="mt-1 flex list-disc flex-col gap-0.5 pl-6 text-sm">
+                      {desk.sections.map((s) => (
+                        <li key={s}>{text(s)}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </MapBlock>
+
+        <MapBlock id="timings" title="⏱️ Your time limits">
           <p className="mb-2 text-base">
             These are your council&apos;s settings right now. Council leaders change them on Council Wide Settings; Super Admins change the shared ones
             on Global System Parameters.
@@ -89,24 +154,18 @@ export default function NavigationGuidePage() {
               </ul>
             </>
           ) : null}
-        </section>
-        <section aria-labelledby="guide-top-bar" className="border-t-2 border-black pt-3">
-          <h2 id="guide-top-bar" className="mb-2 text-lg font-bold uppercase tracking-wide">
-            In the top bar
-          </h2>
+        </MapBlock>
+
+        <MapBlock id="phone" title={`📱 Phone app tabs (${map.phoneTabs.length})`}>
           <dl className="flex flex-col gap-2">
-            {guide.topBar.map(({ item, explanation }) => (
-              <div key={item}>
-                <dt>
-                  <Link href={NAV[item].href} className="text-base font-bold underline">
-                    {text(NAV[item].label)}
-                  </Link>
-                </dt>
-                <dd className="text-base">{text(explanation)}</dd>
+            {map.phoneTabs.map(({ tab, summary }) => (
+              <div key={tab}>
+                <dt className="text-base font-bold">{tab}</dt>
+                <dd className="text-base">{text(summary)}</dd>
               </div>
             ))}
           </dl>
-        </section>
+        </MapBlock>
       </div>
     </RequireArea>
   );
