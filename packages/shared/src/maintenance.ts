@@ -9,6 +9,7 @@
 // donations and messages keep their history. A distribution list's member entries are the one exception;
 // they belong to the list and go with it.
 // =========================================================================
+import { cleanAccountOwnerEntity, type AccountOwnerEntity } from './account-ownership';
 import { cleanDistrictNumber } from './council-affiliations';
 import type {
   DistributionListChanges,
@@ -237,15 +238,20 @@ export function cleanDonationType(input: { DonationType?: unknown }): { Donation
   return { DonationType: assertText(input.DonationType ?? '', 'Donation type', 100) };
 }
 
-/** A donation method a council enables, with the optional QR image URL that routes payments to its account. */
-export function cleanCouncilDonationMethod(input: { DonationMethodID?: unknown; DonationMethodURL?: unknown }): {
+/**
+ * A donation method a council enables, with the optional QR image URL that routes payments to its account. Sprint 8O: the
+ * account's owner (account-ownership.ts) must be chosen explicitly - COUNCIL, PARISH or THIRD_PARTY - on every save.
+ */
+export function cleanCouncilDonationMethod(input: { DonationMethodID?: unknown; DonationMethodURL?: unknown; account_owner_entity?: unknown }): {
   DonationMethodID: number;
   DonationMethodURL: string | null;
+  account_owner_entity: AccountOwnerEntity;
 } {
-  assertKnownFields(input, ['DonationMethodID', 'DonationMethodURL'], 'CouncilDonationMethod');
+  assertKnownFields(input, ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity'], 'CouncilDonationMethod');
   return {
     DonationMethodID: assertInteger(input.DonationMethodID, 'Donation method', 1),
     DonationMethodURL: optionalText(input.DonationMethodURL, 'Donation method URL', 255),
+    account_owner_entity: cleanAccountOwnerEntity(input.account_owner_entity),
   };
 }
 

@@ -62,6 +62,10 @@
 // the Top 5 Fraternal Volunteers leaderboard of the month - in one screen with no scrolling. The roadmap ribbon and the
 // Executive Summary moved to their own page, /executive-dashboard (the sidebar's Executive Dashboard link), and the
 // desk status badges to the top of the Oversight Desk.
+//
+// Sprint 8O: the Super Admin Desk (SuperAdminDesk) - the platform owner's own cockpit, a tab only their personal session
+// is given (super-admin-desk.ts isPlatformOwner): the Feedback Communication Center, the Council Access Request Approval
+// Queue and the System Feature Flag Control Panel.
 import { dashboardTabsFor, isFraternalTenant } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import {
@@ -74,6 +78,7 @@ import {
   RecorderDesk,
   TreasurerDesk,
 } from '@/components/DashboardDesks';
+import { SuperAdminDesk } from '@/components/SuperAdminDesk';
 import { useDashboardTab } from '@/components/WorkspaceTabs';
 import { PageTitle } from '@/components/ui';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
@@ -116,6 +121,8 @@ function Dashboard() {
           <HistorianDesk user={user} councilId={scope.councilId} />
         ) : shown === 'oversight' ? (
           <OversightDesk user={user} councilId={scope.councilId} />
+        ) : shown === 'super-admin' ? (
+          <SuperAdminDesk user={user} />
         ) : (
           <MemberDesk user={user} />
         )}

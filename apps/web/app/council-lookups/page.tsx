@@ -20,8 +20,16 @@
 //
 // Sprint 6L Extension: the Outbound Email Gateway tab moved to the Credentials Vault page (/credentials-vault), and the
 // Base Dues Rate tab is gone - Council.base_dues_rate is set only on the Global Parameters Dashboard (/lookups).
+//
+// Sprint 8O: the Enabled donation methods grid is the payment configuration drawer. Each method names who owns the account
+// it pays into - Council, Parish or Third party (account-ownership.ts). A new row starts with no owner, and the save is
+// held, with the gate's message, until every edited row has one; the drivers refuse a missing owner too (INVALID_INPUT).
 import { useEffect, useState } from 'react';
 import {
+  ACCOUNT_OWNER_COLUMN_LABEL,
+  ACCOUNT_OWNER_ENTITIES,
+  ACCOUNT_OWNER_LABELS,
+  accountOwnerGateMessage,
   AGENDA_TEMPLATE_MAX_LENGTH,
   canConfigureBallot,
   canManageAgendaTemplates,
@@ -44,6 +52,8 @@ interface Column {
   optional?: boolean;
   /** A drop-down of ids; the value is stored as a number. */
   options?: { value: number; label: string }[];
+  /** Sprint 8O: a drop-down of text codes that starts blank, so the choice must be made explicitly. */
+  choices?: { value: string; label: string }[];
 }
 
 type Values = Record<string, string>;
@@ -87,6 +97,7 @@ function useColumns(table: CouncilLookupTableName): { columns: Column[] | null; 
     CouncilDonationMethod: [
       { key: 'DonationMethodID', label: 'Method', options: options.data },
       { key: 'DonationMethodURL', label: 'QR code image URL', maxLength: 255, optional: true },
+      { key: 'account_owner_entity', label: ACCOUNT_OWNER_COLUMN_LABEL, choices: ACCOUNT_OWNER_ENTITIES.map((o) => ({ value: o, label: ACCOUNT_OWNER_LABELS[o] })) },
     ],
     CouncilBudgetCategory: [{ key: 'CategoryName', label: 'Budget category (fund)', maxLength: 255 }],
   };
@@ -102,7 +113,7 @@ function toRecord(row: DraftRow, columns: Column[]): Record<string, unknown> {
   const out: Record<string, unknown> = row.id === null ? {} : { id: row.id };
   for (const c of columns) {
     const text = row.values[c.key] ?? '';
-    out[c.key] = c.options ? (text === '' ? null : Number(text)) : c.optional && text.trim() === '' ? null : text;
+    out[c.key] = c.options ? (text === '' ? null : Number(text)) : c.choices ? (text === '' ? null : text) : c.optional && text.trim() === '' ? null : text;
   }
   return out;
 }
@@ -132,6 +143,8 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
 
   const noun = NOUNS[table];
   const pending = drafts.filter(isChanged);
+  // Sprint 8O: the payment configuration gate - every edited payment method must name its account owner.
+  const gate = table === 'CouncilDonationMethod' ? accountOwnerGateMessage(pending.map((d) => d.values.account_owner_entity)) : null;
   const set = (key: string, field: string, value: string) =>
     setDrafts((ds) => ds.map((d) => (d.key === key ? { ...d, values: { ...d.values, [field]: value } } : d)));
   const addRow = () =>
@@ -174,7 +187,7 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
         <Button variant="secondary" onClick={addRow}>
           Add {noun}
         </Button>
-        <Button disabled={busy || pending.length === 0} onClick={save}>
+        <Button disabled={busy || pending.length === 0 || gate !== null} onClick={save}>
           {busy ? 'Saving…' : `Save changes${pending.length ? ` (${pending.length})` : ''}`}
         </Button>
         {pending.length > 0 ? (
@@ -184,6 +197,7 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
         ) : null}
         <p className="text-xs text-muted">Changes are saved together: if one row is refused, none are written.</p>
       </div>
+      {gate ? <Notice tone="error">{gate}</Notice> : null}
 
       <Table caption={`${TAB_LABELS[table]} for the council`} head={['ID', ...columns.map((c) => (c.optional ? `${c.label} (optional)` : c.label)), 'Status', 'Actions']}>
         {drafts.map((d) => {
@@ -196,6 +210,21 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
                   {c.options ? (
                     <Select aria-label={c.label} value={d.values[c.key]} onChange={(e) => set(d.key, c.key, e.target.value)}>
                       {c.options.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </Select>
+                  ) : c.choices ? (
+                    <Select
+                      aria-label={c.label}
+                      aria-invalid={d.values[c.key] === ''}
+                      value={d.values[c.key]}
+                      onChange={(e) => set(d.key, c.key, e.target.value)}
+                      className={cx(d.values[c.key] === '' && 'border-brand-red')}
+                    >
+                      <option value="">Choose…</option>
+                      {c.choices.map((o) => (
                         <option key={o.value} value={o.value}>
                           {o.label}
                         </option>

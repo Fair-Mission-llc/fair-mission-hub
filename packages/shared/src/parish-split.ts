@@ -16,17 +16,29 @@
 // parish. It waits on the Financial Secretary Desk until the Financial Secretary types the check number and records the
 // payment (finance.recordChurchDisbursementPayment), which posts a debit to the GL line and a credit to the cash account.
 // The Treasurer who issued a request may not also pay it. Drivers load rows, call these helpers, then only store.
+//
+// Sprint 8O (schema 85): the console reads each payment method's account owner (account-ownership.ts). An electronic
+// donation given through a PARISH-owned method is Revenue Held by Parish: the parish already has that money. Such an
+// event's row shows the Revenue Held by Parish Settlement Notice instead of the check-cutting steps, and the Treasurer's
+// '[ ⛪ Log Parish-Held Settlement Credit ]' (the same finance.issueChurchDisbursementRequest) stores the defensive
+// tracking credit: a request with settlement_method 'PARISH_HELD', PAID at once, with no check and no ledger posting
+// (no money moves). The credit counts against the share, so a check request afterwards covers only what is still owed,
+// and the batch coder never codes those donations to the council's books - nothing is posted twice.
 // =========================================================================
 import { isPhysicalPropertyAccount } from './audits';
 import { cleanJournalDate, compareGLAccounts, isBankAccount, type CleanJournalLine } from './finance';
 import { assertText, BusinessRuleError, toIsoDate, type MemberWriteActor } from './rules';
-import type { Council, Event, GLAccount, ParishDisbursementRequest } from './types';
+import type { Council, Event, GLAccount, ParishDisbursementRequest, ParishSettlementMethod } from './types';
 
 export const PARISH_SPLIT_CONSOLE_TITLE = '⛪ Parish Fundraiser Revenue Split Console';
 export const ISSUE_CHURCH_DISBURSEMENT_LABEL = '[ 📋 Issue Church Disbursement Request ]';
 export const CHURCH_DISBURSEMENT_QUEUE_TITLE = '⛪ Church Disbursement Requests';
 export const RECORD_CHURCH_PAYMENT_LABEL = 'Record Payment Made';
 export const PARISH_SPLIT_SETTINGS_TITLE = 'Parish Fundraiser Split';
+/** Sprint 8O: the notice an event with parish-held revenue shows in place of the check-cutting steps. */
+export const PARISH_HELD_NOTICE_TITLE = 'Revenue Held by Parish Settlement Notice';
+/** Sprint 8O: the console button that logs the defensive tracking credit for parish-held revenue. */
+export const LOG_PARISH_HELD_CREDIT_LABEL = '[ ⛪ Log Parish-Held Settlement Credit ]';
 
 export const DEFAULT_PARISH_SPLIT_PERCENTAGE = 50;
 export const PARISH_SPLIT_MIN_PERCENTAGE = 0.01;
@@ -147,37 +159,87 @@ export interface ParishSplitEventRow {
   share: number;
   /** What earlier Church Disbursement Requests for the event already hold, PENDING or PAID. */
   alreadyRequested: number;
-  /** share less alreadyRequested, never below 0: what the next request would hold. */
+  /** share less alreadyRequested, never below 0: what is still to settle, by credit or check. */
   available: number;
+  /** Sprint 8O: the event's electronic donations given through PARISH-owned methods - revenue the parish already holds. */
+  parishHeldCollections: number;
+  /** Sprint 8O: what earlier PARISH_HELD tracking credits for the event already settled. */
+  parishHeldCredited: number;
+  /** Sprint 8O: the tracking credit the next action would log: unsettled parish-held revenue, at most `available`. */
+  parishHeldCreditAvailable: number;
+  /** Sprint 8O: what a check must still cover once that credit is logged: available less parishHeldCreditAvailable. */
+  checkDue: number;
+  /** Sprint 8O: parish-held revenue above the whole share - money the parish holds that belongs to the council. */
+  parishHeldExcess: number;
+  /** Sprint 8O: what the next issue logs - the tracking credit first, then a check - or null when nothing is left. */
+  nextSettlement: ParishSettlementMethod | null;
 }
 
-/** A donation as the console counts it; `isItem` marks a physical-item gift (an estimated value, not money). */
+/**
+ * A donation as the console counts it; `isItem` marks a physical-item gift (an estimated value, not money). Sprint 8O:
+ * `parishHeld` marks an electronic gift through a PARISH-owned method (cash-audit.ts isParishHeldDonation).
+ */
 export interface ParishSplitDonation {
   EventID?: number | null;
   DonationAmount: number;
   isItem: boolean;
+  parishHeld?: boolean;
+}
+
+/** A request's settlement method, with the column default for a row stored before Sprint 8O. */
+export const settlementMethodOf = (request: Pick<ParishDisbursementRequest, 'settlement_method'>): ParishSettlementMethod =>
+  request.settlement_method === 'PARISH_HELD' ? 'PARISH_HELD' : 'CHECK';
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
+const money = (n: number) => `$${n.toFixed(2)}`;
+
+/** Sprint 8O: the Revenue Held by Parish Settlement Notice's text for one console row. */
+export function parishHeldNoticeText(
+  row: Pick<ParishSplitEventRow, 'parishHeldCollections' | 'parishHeldCreditAvailable' | 'checkDue' | 'parishHeldExcess' | 'share'>,
+): string {
+  const parts = [
+    `The parish already holds ${money(row.parishHeldCollections)} of this event's electronic donations, given through payment methods whose account the parish owns.`,
+    row.parishHeldCreditAvailable > 0
+      ? `Log the ${money(row.parishHeldCreditAvailable)} tracking credit: no check is cut for it and nothing is posted to the ledger, because no money moves.`
+      : 'Its tracking credit is logged.',
+    row.checkDue > 0 ? `A check still covers the remaining ${money(row.checkDue)} of the ${money(row.share)} share.` : 'No check is needed for this event.',
+  ];
+  if (row.parishHeldExcess > 0) parts.push(`The parish holds ${money(row.parishHeldExcess)} more than its share; collect that from the parish outside the portal.`);
+  return parts.join(' ');
 }
 
 /** The console's rows: the council's events with money collections or earlier requests, newest first. */
 export function buildParishSplitRows(
   events: readonly Pick<Event, 'id' | 'EventName' | 'StartDate' | 'EndDate'>[],
   donations: readonly ParishSplitDonation[],
-  requests: readonly Pick<ParishDisbursementRequest, 'event_id' | 'amount'>[],
+  requests: readonly Pick<ParishDisbursementRequest, 'event_id' | 'amount' | 'settlement_method'>[],
   percentage: number,
 ): ParishSplitEventRow[] {
   const cents = new Map<number, number>();
+  const heldCents = new Map<number, number>();
   for (const d of donations) {
     if (d.isItem || d.EventID == null) continue;
     cents.set(d.EventID, (cents.get(d.EventID) ?? 0) + Math.round(d.DonationAmount * 100));
+    if (d.parishHeld) heldCents.set(d.EventID, (heldCents.get(d.EventID) ?? 0) + Math.round(d.DonationAmount * 100));
   }
   const requested = new Map<number, number>();
-  for (const r of requests) requested.set(r.event_id, (requested.get(r.event_id) ?? 0) + Math.round(r.amount * 100));
+  const credited = new Map<number, number>();
+  for (const r of requests) {
+    requested.set(r.event_id, (requested.get(r.event_id) ?? 0) + Math.round(r.amount * 100));
+    if (settlementMethodOf(r) === 'PARISH_HELD') credited.set(r.event_id, (credited.get(r.event_id) ?? 0) + Math.round(r.amount * 100));
+  }
   return events
     .filter((e) => (cents.get(e.id) ?? 0) > 0 || requested.has(e.id))
     .map((e) => {
       const grossCollections = (cents.get(e.id) ?? 0) / 100;
       const share = parishShare(grossCollections, percentage);
       const alreadyRequested = (requested.get(e.id) ?? 0) / 100;
+      const available = Math.max(0, round2(share - alreadyRequested));
+      const parishHeldCollections = (heldCents.get(e.id) ?? 0) / 100;
+      const parishHeldCredited = (credited.get(e.id) ?? 0) / 100;
+      const parishHeldCreditAvailable = Math.min(available, Math.max(0, round2(parishHeldCollections - parishHeldCredited)));
+      const checkDue = Math.max(0, round2(available - parishHeldCreditAvailable));
+      const nextSettlement: ParishSettlementMethod | null = parishHeldCreditAvailable > 0 ? 'PARISH_HELD' : checkDue > 0 ? 'CHECK' : null;
       return {
         eventId: e.id,
         eventName: e.EventName,
@@ -186,7 +248,13 @@ export function buildParishSplitRows(
         grossCollections,
         share,
         alreadyRequested,
-        available: Math.max(0, Math.round((share - alreadyRequested) * 100) / 100),
+        available,
+        parishHeldCollections,
+        parishHeldCredited,
+        parishHeldCreditAvailable,
+        checkDue,
+        parishHeldExcess: Math.max(0, round2(parishHeldCollections - share)),
+        nextSettlement,
       };
     })
     .sort((a, b) => b.startDate.localeCompare(a.startDate) || a.eventName.localeCompare(b.eventName));
@@ -224,10 +292,13 @@ export interface PlannedChurchDisbursement {
   split_percentage: number;
   amount: number;
   gl_account_id: number;
+  /** Sprint 8O: 'PARISH_HELD' for the tracking credit (stored PAID at once, nothing posted), else 'CHECK'. */
+  settlement_method: ParishSettlementMethod;
 }
 
 /**
- * finance.issueChurchDisbursementRequest: the next request for `eventId`. PARISH_SPLIT_DISABLED while the split is off,
+ * finance.issueChurchDisbursementRequest: the next request for `eventId`. Sprint 8O: while the event has parish-held
+ * revenue not yet credited, the next request is that PARISH_HELD tracking credit; after it, a CHECK request for the rest. PARISH_SPLIT_DISABLED while the split is off,
  * PARISH_SPLIT_GL_LINE_REQUIRED without a GL line, INVALID_INPUT for an event with no collections or nothing left to
  * request.
  */
@@ -242,12 +313,14 @@ export function planChurchDisbursementRequest(settings: ParishSplitSettings, row
   if (row.available <= 0) {
     throw invalid(`"${row.eventName}"'s parish share of ${row.share.toFixed(2)} is already requested in full.`, { eventId, share: row.share, alreadyRequested: row.alreadyRequested });
   }
+  const parishHeld = row.nextSettlement === 'PARISH_HELD';
   return {
     event_id: row.eventId,
     gross_collections: row.grossCollections,
     split_percentage: settings.parish_split_percentage,
-    amount: row.available,
+    amount: parishHeld ? row.parishHeldCreditAvailable : row.checkDue,
     gl_account_id: settings.parish_split_gl_line_id,
+    settlement_method: parishHeld ? 'PARISH_HELD' : 'CHECK',
   };
 }
 
@@ -273,7 +346,8 @@ export function planChurchDisbursementPayment(
   now: Date,
 ): { lines: CleanJournalLine[]; checkNumber: string; paidAt: string } {
   if (request.status !== 'PENDING') {
-    throw new BusinessRuleError('ILLEGAL_STATE_TRANSITION', `Church Disbursement Request ${request.id} is already paid (check ${request.check_number ?? '?'}).`, {
+    const how = settlementMethodOf(request) === 'PARISH_HELD' ? 'settled by revenue the parish already holds' : `already paid (check ${request.check_number ?? '?'})`;
+    throw new BusinessRuleError('ILLEGAL_STATE_TRANSITION', `Church Disbursement Request ${request.id} is ${how}.`, {
       requestId: request.id,
       status: request.status,
     });

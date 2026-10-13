@@ -92,7 +92,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member: 'Lists the equipment councils lend to each other and who has each item.',
     leader: 'Lists the equipment councils lend to each other. The Grand Knight and Deputy Grand Knight lend, pause and check in your council items.',
   },
-  help: { member: 'Searches answers from the user manuals and sends feedback.' },
+  help: { member: 'Searches answers from the user manuals.' },
   'answers/help': { member: 'Type what you want to do and see the steps from the member guide.' },
   'answers/sop': { member: "Reads the council's standard operating procedures." },
   councils: { member: 'Adds, edits and deletes councils and their registration details.' },
@@ -106,6 +106,9 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'system-settings/impersonate': {
     member: 'Finds any member in any council by typing a name, or by opening a council, then a role group. Click View as to see the portal as that member, read-only.',
+  },
+  'system-settings/feedback': {
+    member: "Sends a note or bug report from your council's Admins to the platform owner. Super Admins also read every note here.",
   },
   'system-settings/council-settings': {
     member:

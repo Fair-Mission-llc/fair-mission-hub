@@ -108,30 +108,32 @@ describe.each(drivers)('$name driver: marking no-shows', (d) => {
 });
 
 describe.each(drivers)('$name driver: system feedback', (d) => {
-  it('stores a member’s report, trimmed and stamped now', async () => {
+  // Sprint 8O: the Administrative Feedback Loops - only Admins and Super Admins send notes.
+  it('stores an Admin’s note, trimmed and stamped now', async () => {
     const db = await d.make();
-    const saved = await db.feedback.submit(MEMBER.member, '  The shift feed hides my council.  ');
-    expect(saved).toMatchObject({ MemberID: MEMBER.member, FeedbackText: 'The shift feed hides my council.', SubmittedAt: toTimestamp(NOW) });
+    const saved = await db.feedback.submit(MEMBER.admin, '  The shift feed hides my council.  ');
+    expect(saved).toMatchObject({ MemberID: MEMBER.admin, FeedbackText: 'The shift feed hides my council.', SubmittedAt: toTimestamp(NOW) });
     expect(d.count(db, 'SystemFeedback')).toBe(1);
   });
 
-  it('refuses empty or over-long text and unknown members without writing', async () => {
+  it('refuses a member below Admin clearance, empty or over-long text and unknown members without writing', async () => {
     const db = await d.make();
-    await expectRule(db.feedback.submit(MEMBER.member, '   '), 'INVALID_INPUT');
-    await expectRule(db.feedback.submit(MEMBER.member, 'x'.repeat(FEEDBACK_MAX_LENGTH + 1)), 'INVALID_INPUT');
+    await expectRule(db.feedback.submit(MEMBER.member, 'Hello'), 'ADMIN_REQUIRED');
+    await expectRule(db.feedback.submit(MEMBER.admin, '   '), 'INVALID_INPUT');
+    await expectRule(db.feedback.submit(MEMBER.admin, 'x'.repeat(FEEDBACK_MAX_LENGTH + 1)), 'INVALID_INPUT');
     await expectRule(db.feedback.submit(9999, 'Hello'), 'MEMBER_NOT_FOUND');
     expect(d.count(db, 'SystemFeedback')).toBe(0);
-    expect((await db.feedback.submit(MEMBER.member, 'x'.repeat(FEEDBACK_MAX_LENGTH))).FeedbackText).toHaveLength(FEEDBACK_MAX_LENGTH);
+    expect((await db.feedback.submit(MEMBER.admin, 'x'.repeat(FEEDBACK_MAX_LENGTH))).FeedbackText).toHaveLength(FEEDBACK_MAX_LENGTH);
   });
 
   it('opens the inbox, newest first with each sender, to Super Admins only', async () => {
     const db = await d.make();
-    await db.feedback.submit(MEMBER.member, 'First report');
+    await db.feedback.submit(MEMBER.superAdmin, 'First report');
     await db.feedback.submit(MEMBER.admin, 'Second report');
 
     const inbox = await db.feedback.listInbox(MEMBER.superAdmin);
     expect(inbox.map((e) => e.feedback.FeedbackText)).toEqual(['Second report', 'First report']);
-    const member = await db.members.get(MEMBER.member);
+    const member = await db.members.get(MEMBER.superAdmin);
     const council = await db.councils.get(OWN);
     expect(inbox[1]).toMatchObject({
       firstName: member?.MemberFirstName,

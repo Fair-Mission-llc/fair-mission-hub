@@ -78,6 +78,7 @@ export type PortalArea =
   | 'system-settings/global-settings'
   | 'system-settings/remote-assistance'
   | 'system-settings/impersonate'
+  | 'system-settings/feedback'
   | 'system-settings/affiliations'
   | 'system-settings/knowledge-archive'
   | 'navigation-guide'
@@ -196,6 +197,13 @@ export const canOpenRemoteAssistanceDesk = (u: Actor): boolean => isSuperAdmin(u
  * /api/admin/impersonate and auth.impersonate enforce. Council -> clearance group -> person, across every council.
  */
 export const canOpenImpersonationLookup = (u: Actor): boolean => isSuperAdmin(u);
+
+/**
+ * System Settings > Administrative Feedback Loops (Sprint 8O, /system-settings/feedback): a session whose clearance is
+ * ADMIN or higher - council Admins and Super Admins - the tier feedback.submit enforces (assertMaySubmitFeedback). The
+ * feedback form left the Online Help Center, so no member or volunteer screen offers it.
+ */
+export const canOpenAdministrativeFeedback = (u: Actor): boolean => isAdmin(u);
 
 /** Super Admins act on any council; Admins only on their own. */
 export const canAdministerCouncil = (u: Actor, councilId: number): boolean =>
@@ -669,6 +677,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canOpenGlobalSystemParameters(u)) areas.push('system-settings/global-settings');
   if (canOpenRemoteAssistanceDesk(u)) areas.push('system-settings/remote-assistance');
   if (canOpenImpersonationLookup(u)) areas.push('system-settings/impersonate');
+  if (canOpenAdministrativeFeedback(u)) areas.push('system-settings/feedback');
   if (canOpenCouncilLookups(u)) areas.push('council-lookups');
   if (canAppointOfficers(u)) areas.push('elections/appointments');
   if (isAdmin(u)) areas.push('parishes', 'members', 'activities');
@@ -797,6 +806,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'system-settings/global-settings',
       'system-settings/remote-assistance',
       'system-settings/impersonate',
+      'system-settings/feedback',
       'system-settings/council-settings',
       'system-settings/affiliations',
       'system-settings/knowledge-archive',

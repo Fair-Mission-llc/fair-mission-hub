@@ -1395,25 +1395,25 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | --- | --- | --- |
 | The header shows no title or **Sign out**. | Large text mode hides the header text. | Tap **⚙ Settings** to sign out or to turn the mode off. |
 
-### 9.6 Send feedback or report a bug
+### 9.6 Report a problem or share an idea
 
 > **Who can do this:** any member.
 
-**Goal:** Tell the platform administrators about a problem or an idea.
+**Goal:** Tell your council's Admin about a problem or an idea.
 
-**Start point:** Sidebar → Answers → **Online Help Center** → **Submit System Feedback or Bug Report**.
+**Start point:** Header → **Messaging** → the Communications Hub.
 
 **Steps:**
-1. Check your name, council, phone and email. Change these details in **My Profile**.
-2. Describe the problem in **What happened, or what would help?** Use up to 2,000 characters.
-3. Select **Send feedback**.
+1. Start a message to your council's Admin.
+2. Describe the screen you were on, what you did and what you expected.
+3. Send the message.
 
-**Expected result:** A message shows *"Thank you. Your feedback was sent to the platform administrators."*
+**Expected result:** Your council's Admin gets the message. The Admin sends the note on to the platform owner from **Administrative Feedback Loops** when needed.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The contact fields are locked. | The form copies your profile. | Change the details in **My Profile**. |
+| The Online Help Center has no feedback form. | Since Sprint 8O, only council Admins send notes to the platform owner. | Message your council's Admin. |
 
 ### 9.7 Open the Council Dashboard
 

@@ -3679,3 +3679,30 @@ GO
 
 CREATE INDEX [Donation_Coding_Idx] ON [Donation] ([CouncilID], [revenue_gl_account_id]);
 GO
+
+-- =========================================================================
+-- Sprint 8O: SUPER ADMIN COCKPIT AND ACCOUNT OWNERSHIP SPLITS (schema version 85)
+--
+-- CouncilDonationMethod gains account_owner_entity: who owns the account an enabled payment method (an electronic
+-- gateway profile: a card reader, a Venmo, Zelle or Zeffy page, a parish giving portal) pays into -
+--   'COUNCIL'      (DEFAULT) the council's own account; the council's books record the money as its revenue,
+--   'PARISH'       the parish's account; the parish already holds what is given that way,
+--   'THIRD_PARTY'  someone else's account (a vendor or a partner charity).
+-- The payment method editor (Council Lookups > Enabled donation methods) will not save a row until its owner is chosen
+-- from the three (account-ownership.ts cleanAccountOwnerEntity; ACCOUNT_OWNER_REQUIRED_TEXT).
+--
+-- The Parish Fundraiser Revenue Split Console reads the owner. An electronic donation (card and QR-code methods) given
+-- through a PARISH-owned method is Revenue Held by Parish: the parish's share is first settled out of it, with no check.
+-- ParishDisbursementRequest gains settlement_method -
+--   'CHECK'        (DEFAULT) the Sprint 8M request the Financial Secretary pays with a check,
+--   'PARISH_HELD'  the defensive tracking credit the console logs for revenue the parish already holds: it is stored PAID
+--                  at once, with no check number and no ledger posting (no money moves), and it counts against the share,
+--                  so a later check request covers only what is still owed.
+-- The High-Volume Batch Transaction Coder never offers or codes a donation given through a PARISH-owned method, so
+-- revenue the council never received cannot be posted to its books twice.
+-- The phone database version moves to 85.
+-- =========================================================================
+ALTER TABLE [CouncilDonationMethod] ADD [account_owner_entity] VARCHAR(20) NOT NULL DEFAULT 'COUNCIL' CONSTRAINT [CK_CouncilDonationMethod_account_owner_entity] CHECK ([account_owner_entity] IN ('COUNCIL', 'PARISH', 'THIRD_PARTY'));
+GO
+ALTER TABLE [ParishDisbursementRequest] ADD [settlement_method] VARCHAR(20) NOT NULL DEFAULT 'CHECK' CONSTRAINT [CK_ParishDisbursementRequest_settlement_method] CHECK ([settlement_method] IN ('CHECK', 'PARISH_HELD'));
+GO

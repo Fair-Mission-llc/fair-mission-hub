@@ -116,6 +116,7 @@ import {
   assertMayManageCouncilLookups,
   assertMayMarkNoShow,
   assertMayReadFeedback,
+  assertMaySubmitFeedback,
   assertMayReadLessonsRegistry,
   assertMayCreateMember,
   assertMayEditMemberExtensions,
@@ -575,6 +576,8 @@ import {
 import {
   assertCollectionOpen,
   assertDonationNotCoded,
+  accountOwnersByMethod,
+  isParishHeldDonation,
   buildBatchCodingQueue,
   buildCashAuditBoard,
   CASH_OVER_SHORT_ACCOUNT_NAME,
@@ -6165,14 +6168,17 @@ export class MemoryDataService implements DataService {
         this.assertCouncilsExist(s, [councilId]);
         const view = this.parishSplitConsole(s, councilId);
         const plan = planChurchDisbursementRequest(view.settings, view.events, eventId, councilId);
+        // Sprint 8O: the parish-held tracking credit is settled at once - no check, no ledger posting.
+        const now = toTimestamp(this.now());
+        const held = plan.settlement_method === 'PARISH_HELD';
         const row = s.insert('ParishDisbursementRequest', {
           council_id: councilId,
           ...plan,
-          status: 'PENDING',
+          status: held ? 'PAID' : 'PENDING',
           requested_by_member_id: actorId,
-          requested_at: toTimestamp(this.now()),
-          paid_by_member_id: null,
-          paid_at: null,
+          requested_at: now,
+          paid_by_member_id: held ? actorId : null,
+          paid_at: held ? now : null,
           check_number: null,
           transaction_id: null,
         });
@@ -6459,6 +6465,7 @@ export class MemoryDataService implements DataService {
     const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;
     const eventIds = new Set(s.rows('EventCouncils').filter((ec) => ec.CouncilID === councilId).map((ec) => ec.EventID as number));
     const kinds = new Map(s.rows('DonationMethod').map((m) => [m.id, donationMethodKind(m.DonationMethod as string)]));
+    const owners = accountOwnersByMethod(s.rows('CouncilDonationMethod') as unknown as CouncilDonationMethod[], councilId);
     return buildParishSplitConsole(
       councilId,
       council,
@@ -6467,7 +6474,12 @@ export class MemoryDataService implements DataService {
       s
         .rows('Donation')
         .filter((d) => d.CouncilID === councilId && d.EventID != null && eventIds.has(d.EventID as number))
-        .map((d) => ({ EventID: d.EventID as number, DonationAmount: d.DonationAmount as number, isItem: kinds.get(d.DonationMethodID) === 'item' })),
+        .map((d) => ({
+          EventID: d.EventID as number,
+          DonationAmount: d.DonationAmount as number,
+          isItem: kinds.get(d.DonationMethodID) === 'item',
+          parishHeld: isParishHeldDonation(kinds.get(d.DonationMethodID) ?? 'other', owners.get(d.DonationMethodID as number)),
+        })),
       s.rows('ParishDisbursementRequest').filter((r) => r.council_id === councilId) as unknown as ParishDisbursementRequest[],
       new Map(s.rows('Member').map((m) => [m.id as number, `${m.MemberFirstName as string} ${m.MemberLastName as string}`])),
     );
@@ -6482,6 +6494,7 @@ export class MemoryDataService implements DataService {
   private batchCodingRows(s: MemoryStore, councilId: number): BatchCodingRow[] {
     const methods = new Map(s.rows('DonationMethod').map((m) => [m.id as number, m.DonationMethod as string]));
     const events = new Map(s.rows('Event').map((e) => [e.id as number, e.EventName as string]));
+    const owners = accountOwnersByMethod(s.rows('CouncilDonationMethod') as unknown as CouncilDonationMethod[], councilId);
     return s
       .rows('Donation')
       .filter((d) => d.CouncilID === councilId)
@@ -6492,6 +6505,7 @@ export class MemoryDataService implements DataService {
           methodName,
           kind: donationMethodKind(methodName),
           eventName: d.EventID == null ? null : (events.get(d.EventID as number) ?? `Event ${d.EventID as number}`),
+          accountOwner: owners.get(d.DonationMethodID as number),
         };
       });
   }
@@ -6916,6 +6930,7 @@ export class MemoryDataService implements DataService {
       const clean = cleanFeedbackText(text);
       const s = await this.ready();
       this.requireMember(s, memberId);
+      assertMaySubmitFeedback(this.memberWriteActor(s, memberId));
       const row = s.insert('SystemFeedback', { MemberID: memberId, SubmittedAt: toTimestamp(this.now()), FeedbackText: clean });
       return { ...row } as unknown as SystemFeedback;
     },

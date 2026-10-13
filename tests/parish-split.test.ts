@@ -93,7 +93,23 @@ describe('parish split rules', () => {
       50,
     );
     expect(rows).toEqual([
-      { eventId: 9, eventName: 'Parish Parking Event', startDate: '2026-10-10', endDate: '2026-10-31', grossCollections: 205, share: 102.5, alreadyRequested: 40, available: 62.5 },
+      {
+        eventId: 9,
+        eventName: 'Parish Parking Event',
+        startDate: '2026-10-10',
+        endDate: '2026-10-31',
+        grossCollections: 205,
+        share: 102.5,
+        alreadyRequested: 40,
+        available: 62.5,
+        // Sprint 8O: nothing here was given through a parish-owned account, so the whole rest is a check.
+        parishHeldCollections: 0,
+        parishHeldCredited: 0,
+        parishHeldCreditAvailable: 0,
+        checkDue: 62.5,
+        parishHeldExcess: 0,
+        nextSettlement: 'CHECK',
+      },
     ]);
   });
 });

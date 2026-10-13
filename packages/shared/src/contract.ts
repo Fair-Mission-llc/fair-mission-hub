@@ -4028,6 +4028,10 @@ export interface DataService {
      * Secretary to pay. Nothing is posted to the ledger yet. The council's Active Treasurer or an Active Super Admin
      * (TREASURER_REQUIRED, COUNCIL_ACCESS_DENIED). PARISH_SPLIT_DISABLED while the split is off,
      * PARISH_SPLIT_GL_LINE_REQUIRED without a GL line, INVALID_INPUT for an event with no collections or nothing left.
+     * Sprint 8O: while the event has revenue held by the parish (electronic donations through PARISH-owned methods) not
+     * yet credited, the call is '[ ⛪ Log Parish-Held Settlement Credit ]' instead: it stores a request with
+     * settlement_method 'PARISH_HELD' for that amount (at most what is left), PAID at once, with no check and no ledger
+     * posting. The next call then holds what is still owed as a PENDING check request.
      */
     issueChurchDisbursementRequest(actorId: number, councilId: number, eventId: number): Promise<ParishDisbursementDetail>;
     /**
@@ -4162,7 +4166,8 @@ export interface DataService {
   feedback: {
     /**
      * Saves a feedback or bug report from `memberId`, stamped SubmittedAt now. Rejects MEMBER_NOT_FOUND for an
-     * unknown member and INVALID_INPUT for empty text or text over FEEDBACK_MAX_LENGTH characters.
+     * unknown member and INVALID_INPUT for empty text or text over FEEDBACK_MAX_LENGTH characters. Sprint 8O: an
+     * Administrative Feedback Loops note - only an Active Admin or Super Admin may send one (ADMIN_REQUIRED).
      */
     submit(memberId: number, text: string): Promise<SystemFeedback>;
     /** Every report, newest first, with its sender. Only an Active Super Admin may read it (SUPER_ADMIN_REQUIRED). */

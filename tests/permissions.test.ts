@@ -108,6 +108,7 @@ describe('portal permissions', () => {
       'system-settings/global-settings',
       'system-settings/remote-assistance',
       'system-settings/impersonate',
+      'system-settings/feedback',
       'council-lookups',
       'elections/appointments',
       'parishes',
@@ -163,6 +164,7 @@ describe('portal permissions', () => {
       'member-actions',
       'calendar',
       'gallery',
+      'system-settings/feedback',
       'council-lookups',
       'parishes',
       'members',
@@ -309,7 +311,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
+        ['System Settings', ['system-settings/feedback', 'system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
       ]);
     });
 

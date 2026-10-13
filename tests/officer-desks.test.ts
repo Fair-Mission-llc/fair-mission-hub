@@ -39,7 +39,8 @@ describe('schema version 71', () => {
 describe('dashboard tabs by seat (pure)', () => {
   it('lists Home first and the Member Desk last', () => {
     // Sprint 8C: the Reports Desk merged into Home.
-    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'oversight', 'member']);
+    // Sprint 8O: the platform owner's Super Admin Desk is drawn last, apart from the council desks.
+    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'oversight', 'member', 'super-admin']);
   });
 
   it('gives each officer only their own desk', () => {
@@ -56,9 +57,11 @@ describe('dashboard tabs by seat (pure)', () => {
   });
 
   it("gives the council's Admins and any Super Admin every desk, as the full desk pages do", () => {
-    expect(ids(member({ memberType: 'Admin' }))).toEqual(DASHBOARD_TABS.map((t) => t.id));
+    // Sprint 8O: every desk but the Super Admin Desk, which only the platform owner's own account gets.
+    const councilDesks = DASHBOARD_TABS.map((t) => t.id).filter((id) => id !== 'super-admin');
+    expect(ids(member({ memberType: 'Admin' }))).toEqual(councilDesks);
     expect(ids(member({ memberType: 'Admin' }), 2)).toEqual(['home', 'member']);
-    expect(ids(member({ memberType: 'Super Admin' }), 2)).toEqual(DASHBOARD_TABS.map((t) => t.id));
+    expect(ids(member({ memberType: 'Super Admin' }), 2)).toEqual(councilDesks);
   });
 
   it('opens the tab a URL anchor names, falling back to Home for an unknown or uncleared one', () => {

@@ -1,30 +1,23 @@
 'use client';
 // Online Help Center: the troubleshooting workflows of docs/MEMBER_USER_GUIDE.md and docs/ADMIN_USER_GUIDE.md as a
-// searchable question-and-answer accordion, plus a feedback and bug-report form (feedback.submit) and, for Super Admins
-// only, the feedback inbox (feedback.listInbox). Open to every signed-in member. The time windows and limits quoted
+// searchable question-and-answer accordion. Open to every signed-in member. Sprint 8O: the feedback and bug-report form and
+// the Super Admin feedback inbox left this page for System Settings > Administrative Feedback Loops (Admins and higher)
+// and the Super Admin Desk (components/FeedbackParts.tsx). The time windows and limits quoted
 // come from the shared rule constants, so an answer cannot drift from what the drivers enforce. Sprint 7E: the logging
 // window and the hours reminder cadence are the member's own council's settings (useCouncilTimings), read live.
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import {
   ALERT_HISTORY_MONTHS,
   type CouncilWideSettings,
-  councilLabel,
-  describeError,
-  FEEDBACK_MAX_LENGTH,
   FEED_HORIZON_MONTHS,
   MAX_HOURS_PER_ENTRY,
   MIN_PASSWORD_LENGTH,
   NO_SHOW_AUDIT_MONTHS,
   NO_SHOW_WINDOW_MONTHS,
   PRIORITY_WITHIN_DAYS,
-  isSuperAdmin,
 } from '@kofc/shared';
 import { useCouncilTimings } from '@/components/SettingsParts';
-import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Table, Td, Textarea } from '@/components/ui';
-import { formatPhone } from '@/lib/format';
-import { useUser } from '@/lib/session';
-import { useLoad } from '@/lib/use-load';
-import { db } from '@/services/db';
+import { Empty, Field, Input, PageTitle, Pill } from '@/components/ui';
 
 type Audience = 'Everyone' | 'Admins & officers';
 interface Topic {
@@ -351,113 +344,8 @@ const matches = (topic: Topic, words: string[]) => {
   return words.every((w) => text.includes(w));
 };
 
-function ReadOnly({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-bold uppercase tracking-wide text-navy">{label}</span>
-      <span className="rounded border border-line bg-white px-2 py-1.5 text-sm text-navy">{value || '–'}</span>
-    </div>
-  );
-}
-
-function FeedbackForm({ onSent }: { onSent: () => void }) {
-  const user = useUser();
-  const member = useLoad(() => db.members.get(user.memberId), [user.memberId]);
-  const council = useLoad(() => db.councils.get(user.councilId), [user.councilId]);
-  const [text, setText] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
-
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    setBusy(true);
-    setMessage(null);
-    try {
-      await db.feedback.submit(user.memberId, text);
-      setText('');
-      setMessage({ tone: 'info', text: 'Thank you. Your feedback was sent to the platform administrators.' });
-      onSent();
-    } catch (err) {
-      setMessage({ tone: 'error', text: describeError(err) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <Panel title="Submit System Feedback or Bug Report" className="border-2 border-navy">
-      <form onSubmit={(e) => void submit(e)} className="flex flex-col gap-4">
-        {member.error || council.error ? <Notice tone="error">{member.error ?? council.error}</Notice> : null}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <ReadOnly label="Full name" value={`${user.firstName} ${user.lastName}`} />
-          <ReadOnly label="Council" value={council.data ? councilLabel(council.data) : ''} />
-          <ReadOnly label="Phone" value={member.data ? formatPhone(member.data.Phone) : ''} />
-          <ReadOnly label="Email" value={member.data?.Email ?? user.username} />
-        </div>
-        <p className="text-xs text-muted">These details are sent with your report so we can follow up. Change them in My Profile (your name, top right).</p>
-        <Field label="What happened, or what would help?" hint={`${text.length} of ${FEEDBACK_MAX_LENGTH} characters`}>
-          {(id) => (
-            <Textarea
-              id={id}
-              rows={7}
-              value={text}
-              maxLength={FEEDBACK_MAX_LENGTH}
-              placeholder="Describe the problem or suggestion: the screen you were on, what you did, and what you expected to happen."
-              onChange={(e) => setText(e.target.value)}
-              required
-            />
-          )}
-        </Field>
-        {message ? (
-          <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
-            {message.text}
-          </Notice>
-        ) : null}
-        <div>
-          <Button type="submit" disabled={busy || text.trim() === ''}>
-            {busy ? 'Sending…' : 'Send feedback'}
-          </Button>
-        </div>
-      </form>
-    </Panel>
-  );
-}
-
-/** Super Admins only; the driver refuses anyone else (SUPER_ADMIN_REQUIRED), so it is never rendered for them. */
-function FeedbackInbox({ version }: { version: number }) {
-  const user = useUser();
-  const inbox = useLoad(() => db.feedback.listInbox(user.memberId), [user.memberId, version]);
-  const rows = inbox.data ?? [];
-  return (
-    <Panel title={`Feedback inbox (${rows.length})`} actions={<Pill tone="navy">Super Admin</Pill>}>
-      {inbox.error ? <Notice tone="error">{inbox.error}</Notice> : null}
-      {inbox.data && rows.length === 0 ? <Empty>No feedback has been submitted yet.</Empty> : null}
-      {rows.length > 0 ? (
-        <div className="max-h-[32rem] overflow-y-auto">
-          <Table caption="Feedback and bug reports, newest first" head={['Submitted (UTC)', 'Member', 'Council', 'Phone', 'Email', 'Feedback']}>
-            {rows.map((r) => (
-              <tr key={r.feedback.id} className="align-top">
-                <Td className="whitespace-nowrap">{r.feedback.SubmittedAt}</Td>
-                <Td className="whitespace-nowrap font-bold">
-                  {r.firstName} {r.lastName}
-                </Td>
-                <Td>{r.councilNumber}</Td>
-                <Td className="whitespace-nowrap">{formatPhone(r.phone)}</Td>
-                <Td>{r.email}</Td>
-                <Td className="whitespace-pre-wrap">{r.feedback.FeedbackText}</Td>
-              </tr>
-            ))}
-          </Table>
-        </div>
-      ) : null}
-    </Panel>
-  );
-}
-
 export default function HelpPage() {
-  const user = useUser();
   const timings = useCouncilTimings();
-  const [sent, setSent] = useState(0);
   const [query, setQuery] = useState('');
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const searching = words.length > 0;
@@ -504,8 +392,6 @@ export default function HelpPage() {
             </div>
           </section>
         ))}
-        <FeedbackForm onSent={() => setSent((n) => n + 1)} />
-        {isSuperAdmin(user) ? <FeedbackInbox version={sent} /> : null}
       </div>
     </>
   );

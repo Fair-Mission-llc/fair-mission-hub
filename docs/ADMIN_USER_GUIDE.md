@@ -1200,13 +1200,15 @@ A council can use its own Drive private key instead of the server key. A council
 
 > **Prerequisite (who can do this):** You must have Super Admin privileges.
 
-**Goal:** Read members' feedback and bug reports.
+**Goal:** Read the notes and bug reports that council Admins send.
 
-**Start point:** Sidebar → Answers → **Online Help Center** → **Feedback inbox**.
+**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. The platform owner also reads the notes on the **Super Admin Desk** (25.6).
 
 **Steps:**
-1. Scroll below **Submit System Feedback or Bug Report**.
-2. Read each report. The newest report shows first.
+1. Scroll below **Send a Note to the Platform Owner**.
+2. Read each note. The newest note shows first.
+
+The Online Help Center has no feedback form since Sprint 8O. Section 25.4 explains the change.
 
 <!-- KEEP_IMAGE: online help center capture -->
 ![Online Help Center with the Feedback inbox (/help)](../generated/dashboard_visual_catalog/help.png)
@@ -1218,6 +1220,7 @@ A council can use its own Drive private key instead of the server key. A council
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The inbox is missing. | Only Super Admins see the inbox. | Ask a Super Admin. |
+| The inbox is not on the Online Help Center. | The inbox moved to **Administrative Feedback Loops** in Sprint 8O. | Open Sidebar → System Settings → **Administrative Feedback Loops**. |
 
 ### 9.2 Publish a standard operating procedure
 
@@ -3545,6 +3548,123 @@ Four figures show at the top of the panel: **Events awaiting the count**, **Logg
 | **Close cash audit & lock** is unavailable. | The count is empty, or the variance needs a reason. | Enter the count and the reason. |
 | An event is not on the panel. | The event has no cash donations. | No count is needed. |
 | The session still shows **Session open**. | No phone concluded the session. | Close the audit. The closure concludes the session. |
+
+## 25. Account ownership, parish-held revenue, feedback loops and the Super Admin Desk
+
+### 25.1 Concept: who owns a payment account
+
+Each payment method that a council turns on pays into one account. A card reader, a Venmo page, a Zelle profile and a parish giving portal are examples.
+The **Account owner** column on **Enabled donation methods** records who owns that account.
+
+| Account owner | Meaning |
+| --- | --- |
+| **Council account** | The money lands in the council's own account. The council's books record the money as revenue. |
+| **Parish account** | The money lands in the parish's account. The parish already holds the money. |
+| **Third-party account** | The money lands in the account of a vendor or a partner charity. |
+
+The portal does not guess the owner. A new payment method starts with no owner. The editor does not save until you choose one.
+Methods that were set up before Sprint 8O read as **Council account**.
+
+### 25.2 Set the account owner of a payment method
+
+> **Who can do this:** council Admins, the council's Financial Secretary and Treasurer, and Super Admins.
+
+**Goal:** Record who owns the account that each payment method pays into.
+
+**Start point:** Sidebar → System Settings → **Council Lookups** → **Enabled donation methods**.
+
+**Steps:**
+1. Find the payment method. To add a method, select **Add donation method**.
+2. In **Account owner**, select **Council account**, **Parish account** or **Third-party account**.
+3. Select **Save changes**.
+
+**Expected result:** The message **Saved … donation method rows.** shows. The owner shows on the row.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Save changes** is unavailable and a red message says *"Choose who owns the account each payment method pays into (Council, Parish or Third party) before you save."* | A changed row shows **Choose…** in **Account owner**. | Choose the owner on each row with a red border. |
+| A parish fundraiser shows no parish-held revenue. | The parish's giving method is set to **Council account**. | Set the method to **Parish account**. |
+
+### 25.3 Settle a parish split when the parish already holds the money
+
+> **Who can do this:** the council's Treasurer and Super Admins. Other general ledger readers see the console.
+
+**Goal:** Settle the parish share without a check for revenue that the parish already holds.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **⛪ Parish Fundraiser Revenue Split Console**.
+
+An electronic donation given through a **Parish account** method is revenue held by the parish. The council never receives the money.
+The console subtracts that money from the parish share first. A check covers only the rest.
+The batch coder (24.5) never lists these donations. The council's books therefore never post the money twice.
+
+**Steps:**
+1. Find the event row. Read **Held by parish** and **Check to request**.
+2. Read the **Revenue Held by Parish Settlement Notice** under the row.
+3. Select **[ ⛪ Log Parish-Held Settlement Credit ]**.
+4. If **Check to request** is more than $0.00, select **[ 📋 Issue Church Disbursement Request ]**. The Financial Secretary pays the check (23.5).
+
+**Expected result:** The message **Tracking credit #… logged** shows. The request list shows the credit as **Held by parish · no check**. The general ledger does not change.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The notice says the parish holds more than its share. | The parish-owned donations are larger than the parish share. | Collect the difference from the parish outside the portal. |
+| The button is unavailable. | The share is fully settled, or the split is off. | Check the split in Council Wide Settings (23.3). |
+
+### 25.4 Concept: the Administrative Feedback Loops
+
+Members no longer send feedback from the Online Help Center. A member brings a problem to the council's Admin through the Communications Hub.
+The council's Admin sends a note to the platform owner from **Administrative Feedback Loops**.
+Only sessions with Admin clearance or higher see the page. A member, an officer without Admin rights and a phone user do not see the page.
+
+### 25.5 Send a note to the platform owner
+
+> **Who can do this:** council Admins and Super Admins. Other members do not see this page.
+
+**Goal:** Report a problem or ask for a change to the platform.
+
+**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Send a Note to the Platform Owner**.
+
+**Steps:**
+1. Check your name, council, phone and email. Change these details in **My Profile**.
+2. Describe the problem in **What happened, or what would help?** Use up to 2,000 characters.
+3. Select **Send note**.
+
+**Expected result:** The message *"Thank you. Your note was sent to the platform owner."* shows.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The page is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin to send the note. |
+
+### 25.6 Use the Super Admin Desk
+
+> **Who can do this:** the platform owner only. The tab shows only for the owner's own Super Admin sign-in. Other Super Admins do not see the tab.
+
+**Goal:** Read Admin notes, approve council licenses and switch council modules from one desk.
+
+**Start point:** **Active Desks** row → **Super Admin Desk**.
+
+The desk has three folders across the top:
+
+| Folder | What it does |
+| --- | --- |
+| **[ 📥 Feedback Communication Center ]** | Shows the notes that council Admins send, newest first. |
+| **[ 🔑 Council Access Request Approval Queue ]** | Shows the councils that ask to join the platform. Each pending request has an **Approve** button. |
+| **[ 🛠️ System Feature Flag Control Panel ]** | Shows each council's modules. A checkbox switches a module on or off at once. |
+
+**Steps:**
+1. Select a folder.
+2. Read the notes, or select **Approve** on a request, or select a module checkbox.
+
+**Expected result:** The folder opens under the folder row. The browser remembers the last folder you opened.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **Super Admin Desk** tab is missing. | You signed in with another account, or you view the portal as another member. | Sign in with the platform owner's account. Stop the view-as session. |
+| A module switch has no effect on a council. | The council's members must reload the portal. | Ask the members to reload the page. |
 
 ## Appendix: QR code files
 

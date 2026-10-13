@@ -202,10 +202,10 @@ describe('council lookup save planning', () => {
 
   it('keys enabled donation methods by method id', () => {
     const methods = [{ id: 7, CouncilID: OWN, DonationMethodID: 1, DonationMethodURL: null }];
-    expect(() => planCouncilLookupSave('CouncilDonationMethod', OWN, methods, [{ DonationMethodID: 1 }])).toThrow(/used twice/);
-    expect(planCouncilLookupSave('CouncilDonationMethod', OWN, methods, [{ DonationMethodID: 3, DonationMethodURL: ' ' }]).inserts).toEqual([
-      { DonationMethodID: 3, DonationMethodURL: null },
-    ]);
+    expect(() => planCouncilLookupSave('CouncilDonationMethod', OWN, methods, [{ DonationMethodID: 1, account_owner_entity: 'COUNCIL' }])).toThrow(/used twice/);
+    expect(
+      planCouncilLookupSave('CouncilDonationMethod', OWN, methods, [{ DonationMethodID: 3, DonationMethodURL: ' ', account_owner_entity: 'PARISH' }]).inserts,
+    ).toEqual([{ DonationMethodID: 3, DonationMethodURL: null, account_owner_entity: 'PARISH' }]);
   });
 });
 
@@ -312,14 +312,14 @@ describe.each(drivers)('$name driver: council-specific lookups', (d) => {
 
     const enabled = await db.lookups.listCouncilSpecific(MEMBER.admin, OWN, 'CouncilDonationMethod');
     await expectRule(
-      db.lookups.saveCouncilSpecific(MEMBER.admin, OWN, 'CouncilDonationMethod', [{ DonationMethodID: enabled[0].DonationMethodID }]),
+      db.lookups.saveCouncilSpecific(MEMBER.admin, OWN, 'CouncilDonationMethod', [{ DonationMethodID: enabled[0].DonationMethodID, account_owner_entity: 'COUNCIL' }]),
       'INVALID_INPUT',
     );
-    await expectRule(db.lookups.saveCouncilSpecific(MEMBER.superAdmin, OTHER, 'CouncilDonationMethod', [{ DonationMethodID: 999 }]), 'INVALID_INPUT');
+    await expectRule(db.lookups.saveCouncilSpecific(MEMBER.superAdmin, OTHER, 'CouncilDonationMethod', [{ DonationMethodID: 999, account_owner_entity: 'COUNCIL' }]), 'INVALID_INPUT');
     const other = await db.lookups.saveCouncilSpecific(MEMBER.superAdmin, OTHER, 'CouncilDonationMethod', [
-      { DonationMethodID: enabled[0].DonationMethodID, DonationMethodURL: 'https://example.org/qr.png' },
+      { DonationMethodID: enabled[0].DonationMethodID, DonationMethodURL: 'https://example.org/qr.png', account_owner_entity: 'THIRD_PARTY' },
     ]);
-    expect(other).toEqual([expect.objectContaining({ CouncilID: OTHER, DonationMethodURL: 'https://example.org/qr.png' })]);
+    expect(other).toEqual([expect.objectContaining({ CouncilID: OTHER, DonationMethodURL: 'https://example.org/qr.png', account_owner_entity: 'THIRD_PARTY' })]);
   });
 
   it('lists every donation method, enabled or not, for the enable-a-method picker', async () => {

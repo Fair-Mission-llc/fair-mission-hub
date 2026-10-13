@@ -59,12 +59,13 @@ import {
 import { addDays } from './planning';
 import { isShiftFull, visibleFeed } from './presentation';
 import { canOpenHistorianDesk, canOpenRecorderDesk } from './recorder-historian';
+import { isPlatformOwner, SUPER_ADMIN_DESK_TITLE } from './super-admin-desk';
 import type { TenantType } from './tenant';
 import type { NotificationLog } from './types';
 
-type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
+type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[]; username?: string };
 
-export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'oversight' | 'member';
+export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'oversight' | 'member' | 'super-admin';
 
 export interface DashboardTab {
   id: DashboardTabId;
@@ -83,6 +84,8 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'historian', label: 'Historian Desk', anchor: 'historian' },
   { id: 'oversight', label: 'Oversight Desk', anchor: 'oversight' },
   { id: 'member', label: 'Member Desk', anchor: 'member' },
+  // Sprint 8O: the platform owner's own cockpit (super-admin-desk.ts isPlatformOwner), drawn last and apart.
+  { id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE, anchor: 'super-admin' },
 ];
 
 /**
@@ -114,6 +117,7 @@ export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
     historian: canOpenHistorianDesk(u, councilId),
     oversight: canOpenOversightDesk(u, councilId),
     member: true,
+    'super-admin': isPlatformOwner(u),
   };
   return DASHBOARD_TABS.filter((t) => cleared[t.id]);
 }

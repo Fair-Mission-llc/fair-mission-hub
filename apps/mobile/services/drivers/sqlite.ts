@@ -112,6 +112,7 @@ import {
   assertMayManageCouncilLookups,
   assertMayMarkNoShow,
   assertMayReadFeedback,
+  assertMaySubmitFeedback,
   assertMayReadLessonsRegistry,
   assertMayCreateMember,
   assertMayEditMemberExtensions,
@@ -578,6 +579,9 @@ import {
 import {
   assertCollectionOpen,
   assertDonationNotCoded,
+  accountOwnersByMethod,
+  isParishHeldDonation,
+  type AccountOwnerEntity,
   buildBatchCodingQueue,
   buildCashAuditBoard,
   CASH_OVER_SHORT_ACCOUNT_NAME,
@@ -895,7 +899,7 @@ const DB_NAME = 'kofc.db';
  *     (verified_cash_amount, cash_discrepancy_reason, the Over/Short Reconciliation Line's transaction) and the Donation
  *     batch coding stamp (revenue_gl_account_id, coding_batch_id, coded_by_member_id, coded_at) (Sprint 8N).
  */
-const SCHEMA_VERSION = 84;
+const SCHEMA_VERSION = 85;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -7297,11 +7301,27 @@ export class SqliteDataService implements DataService {
         await this.assertCouncilsExist(db, [councilId]);
         const view = await this.parishSplitConsole(db, councilId);
         const plan = planChurchDisbursementRequest(view.settings, view.events, eventId, councilId);
+        // Sprint 8O: the parish-held tracking credit is settled at once - no check, no ledger posting.
+        const now = toTimestamp(this.now());
+        const held = plan.settlement_method === 'PARISH_HELD';
         requestId = (
           await db.runAsync(
-            `INSERT INTO [ParishDisbursementRequest] ([council_id], [event_id], [gross_collections], [split_percentage], [amount], [gl_account_id], [status], [requested_by_member_id], [requested_at])
-             VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)`,
-            [councilId, plan.event_id, plan.gross_collections, plan.split_percentage, plan.amount, plan.gl_account_id, actorId, toTimestamp(this.now())],
+            `INSERT INTO [ParishDisbursementRequest] ([council_id], [event_id], [gross_collections], [split_percentage], [amount], [gl_account_id], [status], [requested_by_member_id], [requested_at], [paid_by_member_id], [paid_at], [settlement_method])
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              councilId,
+              plan.event_id,
+              plan.gross_collections,
+              plan.split_percentage,
+              plan.amount,
+              plan.gl_account_id,
+              held ? 'PAID' : 'PENDING',
+              actorId,
+              now,
+              held ? actorId : null,
+              held ? now : null,
+              plan.settlement_method,
+            ],
           )
         ).lastInsertRowId;
       });
@@ -7622,6 +7642,7 @@ export class SqliteDataService implements DataService {
     );
     const methods = await db.getAllAsync<{ id: number; DonationMethod: string }>('SELECT [id], [DonationMethod] FROM [DonationMethod]');
     const kinds = new Map(methods.map((m) => [m.id, donationMethodKind(m.DonationMethod)]));
+    const owners = await this.accountOwners(db, councilId);
     const donations = await db.getAllAsync<{ EventID: number; DonationAmount: number; DonationMethodID: number }>(
       'SELECT d.[EventID], d.[DonationAmount], d.[DonationMethodID] FROM [Donation] d JOIN [EventCouncils] ec ON ec.[EventID] = d.[EventID] AND ec.[CouncilID] = d.[CouncilID] WHERE d.[CouncilID] = ?',
       [councilId],
@@ -7632,7 +7653,12 @@ export class SqliteDataService implements DataService {
       council ?? {},
       await this.glAccounts(db, councilId),
       events,
-      donations.map((d) => ({ EventID: d.EventID, DonationAmount: d.DonationAmount, isItem: kinds.get(d.DonationMethodID) === 'item' })),
+      donations.map((d) => ({
+        EventID: d.EventID,
+        DonationAmount: d.DonationAmount,
+        isItem: kinds.get(d.DonationMethodID) === 'item',
+        parishHeld: isParishHeldDonation(kinds.get(d.DonationMethodID) ?? 'other', owners.get(d.DonationMethodID)),
+      })),
       await db.getAllAsync<ParishDisbursementRequest>('SELECT * FROM [ParishDisbursementRequest] WHERE [council_id] = ?', [councilId]),
       new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
     );
@@ -7643,8 +7669,14 @@ export class SqliteDataService implements DataService {
     return (await this.parishSplitConsole(db, row.council_id)).requests.find((d) => d.request.id === requestId)!;
   }
 
+  /** Sprint 8O: the account owner of each payment method the council enabled, keyed by DonationMethodID. */
+  private async accountOwners(db: SQLite.SQLiteDatabase, councilId: number): Promise<Map<number, AccountOwnerEntity>> {
+    return accountOwnersByMethod(await db.getAllAsync<CouncilDonationMethod>('SELECT * FROM [CouncilDonationMethod] WHERE [CouncilID] = ?', [councilId]), councilId);
+  }
+
   /** Sprint 8N: the council's donations as the batch coder sees them. */
   private async batchCodingRows(db: SQLite.SQLiteDatabase, councilId: number): Promise<BatchCodingRow[]> {
+    const owners = await this.accountOwners(db, councilId);
     const rows = await db.getAllAsync<Donation & { methodName: string | null; eventName: string | null }>(
       `SELECT d.*, m.[DonationMethod] AS methodName, e.[EventName] AS eventName FROM [Donation] d
          LEFT JOIN [DonationMethod] m ON m.[id] = d.[DonationMethodID]
@@ -7659,6 +7691,7 @@ export class SqliteDataService implements DataService {
         methodName: name,
         kind: donationMethodKind(name),
         eventName: donation.EventID == null ? null : (eventName ?? `Event ${donation.EventID}`),
+        accountOwner: owners.get(donation.DonationMethodID),
       };
     });
   }
@@ -8212,6 +8245,7 @@ export class SqliteDataService implements DataService {
       const clean = cleanFeedbackText(text);
       const db = await this.ready();
       await this.requireMember(db, memberId);
+      assertMaySubmitFeedback(await this.memberWriteActor(db, memberId));
       const res = await db.runAsync('INSERT INTO [SystemFeedback] ([MemberID], [SubmittedAt], [FeedbackText]) VALUES (?, ?, ?)', [
         memberId,
         toTimestamp(this.now()),

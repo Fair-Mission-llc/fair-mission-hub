@@ -891,6 +891,19 @@ export function noShowReasonFor(noShow: boolean, reasonId: unknown, knownReasonI
 /** Longest SystemFeedback.FeedbackText (VARCHAR(2000)). */
 export const FEEDBACK_MAX_LENGTH = 2000;
 
+/**
+ * feedback.submit (Sprint 8O): the Administrative Feedback Loops are an Admin channel - only an Active Admin or Super Admin
+ * may send a note to the platform owner (ADMIN_REQUIRED). Members and officers without Admin keys no longer see a form.
+ */
+export function assertMaySubmitFeedback(actor: MemberWriteActor): void {
+  if (hasAdminRights(actor)) return;
+  throw new SecurityPrivilegeError(
+    'ADMIN_REQUIRED',
+    `Only an active Admin or Super Admin can send administrative feedback; member ${actor.memberId} is ${describeActor(actor)}.`,
+    { actorId: actor.memberId, actorType: actor.memberType ?? null },
+  );
+}
+
 /** feedback.listInbox: the feedback inbox is read only by Active Super Admins. */
 export function assertMayReadFeedback(actor: MemberWriteActor): void {
   if (hasSuperAdminRights(actor)) return;

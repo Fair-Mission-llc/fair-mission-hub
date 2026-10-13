@@ -8,8 +8,12 @@
 //    the GL line for the Financial Secretary.
 //  - ChurchDisbursementQueue (Financial Secretary Desk): the pending requests; the Financial Secretary types the check
 //    number and clicks Record Payment Made, which posts the debit to the GL line and the credit to cash.
+// Sprint 8O: an event with Revenue Held by Parish (electronic donations through PARISH-owned payment methods) shows the
+// Revenue Held by Parish Settlement Notice under its row instead of the check-cutting steps, and its button becomes
+// '[ ⛪ Log Parish-Held Settlement Credit ]': the defensive tracking credit, settled at once with no check and no posting.
+// Only what the parish does not already hold goes on to the Financial Secretary as a check request.
 import Link from 'next/link';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import {
   canEditCouncilWideSettings,
   canIssueChurchDisbursement,
@@ -17,7 +21,11 @@ import {
   CHURCH_DISBURSEMENT_QUEUE_TITLE,
   describeError,
   ISSUE_CHURCH_DISBURSEMENT_LABEL,
+  LOG_PARISH_HELD_CREDIT_LABEL,
+  PARISH_HELD_NOTICE_TITLE,
+  parishHeldNoticeText,
   PARISH_SPLIT_CONSOLE_TITLE,
+  settlementMethodOf,
   PARISH_SPLIT_SETTINGS_TITLE,
   parishSplitGateMessage,
   RECORD_CHURCH_PAYMENT_LABEL,
@@ -152,7 +160,15 @@ function RequestRows({ rows }: { rows: readonly ParishDisbursementDetail[] }) {
           </Td>
           <Td>{d.glAccountName}</Td>
           <Td>{d.requestedByName}</Td>
-          <Td>{d.request.status === 'PAID' ? <Pill tone="navy">Paid · check {d.request.check_number}</Pill> : <Pill tone="gold">Pending</Pill>}</Td>
+          <Td>
+            {settlementMethodOf(d.request) === 'PARISH_HELD' ? (
+              <Pill tone="outline">Held by parish · no check</Pill>
+            ) : d.request.status === 'PAID' ? (
+              <Pill tone="navy">Paid · check {d.request.check_number}</Pill>
+            ) : (
+              <Pill tone="gold">Pending</Pill>
+            )}
+          </Td>
         </tr>
       ))}
     </Table>
@@ -173,7 +189,13 @@ export function ParishSplitConsoleCard({ user, councilId }: { user: SessionUser;
     setMessage(null);
     try {
       const d = await db.finance.issueChurchDisbursementRequest(user.memberId, councilId, eventId);
-      setMessage({ tone: 'info', text: `Church Disbursement Request #${d.request.id} for ${formatMoney(d.request.amount)} is on the Financial Secretary Desk.` });
+      setMessage({
+        tone: 'info',
+        text:
+          settlementMethodOf(d.request) === 'PARISH_HELD'
+            ? `Tracking credit #${d.request.id} logged: the parish already holds ${formatMoney(d.request.amount)} of ${d.eventName}'s share, so no check is cut and nothing is posted.`
+            : `Church Disbursement Request #${d.request.id} for ${formatMoney(d.request.amount)} is on the Financial Secretary Desk.`,
+      });
       await view.reload();
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
@@ -214,22 +236,39 @@ export function ParishSplitConsoleCard({ user, councilId }: { user: SessionUser;
           {data.events.length === 0 ? (
             <Empty>No event has collections to split yet.</Empty>
           ) : (
-            <Table caption="Each event's live collections and the parish share" head={['Event', 'Collections', 'Parish share', 'Already requested', 'To request', '']}>
+            <Table
+              caption="Each event's live collections and the parish share"
+              head={['Event', 'Collections', 'Held by parish', 'Parish share', 'Already settled', 'Check to request', '']}
+            >
               {data.events.map((r) => (
-                <tr key={r.eventId}>
-                  <Td>{r.eventName}</Td>
-                  <Td>{formatMoney(r.grossCollections)}</Td>
-                  <Td>{formatMoney(r.share)}</Td>
-                  <Td>{formatMoney(r.alreadyRequested)}</Td>
-                  <Td className="font-bold">{formatMoney(r.available)}</Td>
-                  <Td>
-                    {mayIssue ? (
-                      <Button size="sm" variant="gold" disabled={!on || r.available <= 0 || busy !== null} onClick={() => void issue(r.eventId)}>
-                        {busy === r.eventId ? 'Issuing…' : ISSUE_CHURCH_DISBURSEMENT_LABEL}
-                      </Button>
-                    ) : null}
-                  </Td>
-                </tr>
+                <Fragment key={r.eventId}>
+                  <tr>
+                    <Td>{r.eventName}</Td>
+                    <Td>{formatMoney(r.grossCollections)}</Td>
+                    <Td>{r.parishHeldCollections > 0 ? formatMoney(r.parishHeldCollections) : '–'}</Td>
+                    <Td>{formatMoney(r.share)}</Td>
+                    <Td>{formatMoney(r.alreadyRequested)}</Td>
+                    <Td className="font-bold">{formatMoney(r.checkDue)}</Td>
+                    <Td>
+                      {mayIssue ? (
+                        <Button size="sm" variant="gold" disabled={!on || r.nextSettlement === null || busy !== null} onClick={() => void issue(r.eventId)}>
+                          {busy === r.eventId ? 'Logging…' : r.nextSettlement === 'PARISH_HELD' ? LOG_PARISH_HELD_CREDIT_LABEL : ISSUE_CHURCH_DISBURSEMENT_LABEL}
+                        </Button>
+                      ) : null}
+                    </Td>
+                  </tr>
+                  {r.parishHeldCollections > 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-3 pb-3">
+                        {/* Sprint 8O: the check-cutting steps are bypassed for what the parish already holds. */}
+                        <div role="note" aria-label={PARISH_HELD_NOTICE_TITLE} className="rounded border-2 border-gold bg-gold/10 px-3 py-2 text-sm">
+                          <p className="font-bold text-navy">⛪ {PARISH_HELD_NOTICE_TITLE}</p>
+                          <p>{parishHeldNoticeText(r)}</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
               ))}
             </Table>
           )}

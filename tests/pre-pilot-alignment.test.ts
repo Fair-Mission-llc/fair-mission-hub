@@ -139,8 +139,11 @@ describe('Feature Flags Control Center', () => {
   it('draws every flag for every council and saves through councils.setFeatureFlags', () => {
     const page = read('apps/web/app/feature-flags/page.tsx');
     expect(page).toContain('<RequireArea area="feature-flags">');
-    expect(page).toContain('FEATURE_FLAG_NAMES.map');
-    expect(page).toContain('db.councils.setFeatureFlags');
+    // Sprint 8O: the grid moved to a shared component, also drawn on the Super Admin Desk.
+    expect(page).toContain('<FeatureFlagControlPanel />');
+    const grid = read('apps/web/components/FeatureFlagParts.tsx');
+    expect(grid).toContain('FEATURE_FLAG_NAMES.map');
+    expect(grid).toContain('db.councils.setFeatureFlags');
   });
 });
 

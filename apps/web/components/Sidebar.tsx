@@ -141,6 +141,12 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Find any member of any council and view the portal as them',
     restrictedTo: 'Super Admins',
   },
+  'system-settings/feedback': {
+    href: '/system-settings/feedback',
+    label: 'Administrative Feedback Loops',
+    hint: 'Send a note or bug report to the platform owner',
+    restrictedTo: 'council Admins and Super Admins',
+  },
   'navigation-guide': {
     href: '/navigation-guide',
     label: 'Navigation Guide',
@@ -164,7 +170,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: "Search past officers' signed operating notes by tag and year",
     restrictedTo: 'council officers, Admins and Super Admins',
   },
-  help: { href: '/help', label: 'Online Help Center', hint: 'Searchable answers from the user manuals, and feedback' },
+  help: { href: '/help', label: 'Online Help Center', hint: 'Searchable answers from the user manuals' },
   'governance/bylaws': { href: '/governance/bylaws', label: 'Constitutional Bylaws', hint: "The council's own bylaws, article by article" },
   'governance/advisor': {
     href: '/governance/advisor',

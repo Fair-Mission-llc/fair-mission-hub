@@ -14,8 +14,12 @@
 //      Reconciliation Line against the council's 'Cash Over/Short' ledger line; the phone's Donation rows are never
 //      touched. The collection moves to RECONCILED, which nothing leaves.
 // The Treasurer's closure also concludes a session no phone concluded, so the audit never waits on a device.
+// Sprint 8O: an electronic donation given through a PARISH-owned payment method (account-ownership.ts) is Revenue Held by
+// Parish - the money never reached the council - so the coder neither offers nor codes it (no double posting); the
+// Parish Fundraiser Revenue Split Console settles it against the parish share instead.
 // Drivers load rows, call these helpers, then only store.
 // =========================================================================
+import type { AccountOwnerEntity } from './account-ownership';
 import type { DonationMethodKind } from './contract';
 import { cleanJournalDate, compareGLAccounts, type CleanJournalLine } from './finance';
 import { assertMoney, assertText, BusinessRuleError, toIsoDate } from './rules';
@@ -37,6 +41,13 @@ export const CASH_OVER_SHORT_ACCOUNT_TYPE: GLAccount['AccountType'] = 'Expense';
 
 /** The donation method kinds the batch coder treats as electronic money. */
 export const ELECTRONIC_DONATION_KINDS: readonly DonationMethodKind[] = ['card', 'qr'];
+
+/**
+ * Sprint 8O: an electronic donation (card or QR code) given through a payment method whose account the parish owns. The
+ * parish already holds that money, so the council's books never record it as revenue.
+ */
+export const isParishHeldDonation = (kind: DonationMethodKind, owner: AccountOwnerEntity | null | undefined): boolean =>
+  ELECTRONIC_DONATION_KINDS.includes(kind) && owner === 'PARISH';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 const cents = (n: number) => Math.round(n * 100);
@@ -118,6 +129,8 @@ export interface BatchCodingRow {
   methodName: string;
   kind: DonationMethodKind;
   eventName: string | null;
+  /** Sprint 8O: who owns the account the method pays into; absent reads as the council's own. */
+  accountOwner?: AccountOwnerEntity;
 }
 
 /** finance.getBatchCodingQueue's answer. */
@@ -131,14 +144,21 @@ export interface BatchCodingQueue {
   depositAccount: GLAccount | null;
 }
 
-/** A donation is waiting for the coder when it was given by card or QR code and carries no coding stamp. */
-export const isUncodedElectronic = (donation: Pick<Donation, 'coding_batch_id' | 'revenue_gl_account_id'>, kind: DonationMethodKind): boolean =>
-  ELECTRONIC_DONATION_KINDS.includes(kind) && donation.coding_batch_id == null && donation.revenue_gl_account_id == null;
+/**
+ * A donation is waiting for the coder when it was given by card or QR code and carries no coding stamp. Sprint 8O: never
+ * when the parish owns the method's account (isParishHeldDonation).
+ */
+export const isUncodedElectronic = (
+  donation: Pick<Donation, 'coding_batch_id' | 'revenue_gl_account_id'>,
+  kind: DonationMethodKind,
+  owner?: AccountOwnerEntity | null,
+): boolean =>
+  ELECTRONIC_DONATION_KINDS.includes(kind) && !isParishHeldDonation(kind, owner) && donation.coding_batch_id == null && donation.revenue_gl_account_id == null;
 
 /** finance.getBatchCodingQueue from the council's donations (with their method kinds and names) and chart of accounts. */
 export function buildBatchCodingQueue(councilId: number, rows: readonly BatchCodingRow[], accounts: readonly GLAccount[]): BatchCodingQueue {
   const waiting = rows
-    .filter((r) => r.donation.CouncilID === councilId && isUncodedElectronic(r.donation, r.kind))
+    .filter((r) => r.donation.CouncilID === councilId && isUncodedElectronic(r.donation, r.kind, r.accountOwner))
     .sort((a, b) => a.donation.DonationDate.localeCompare(b.donation.DonationDate) || a.donation.id - b.donation.id);
   const { revenue, deposit } = concludedRevenueAccounts(accounts, councilId);
   return {
@@ -196,6 +216,12 @@ export function planBatchCoding(
     assertDonationNotCoded(row.donation, 'code it again');
     if (!ELECTRONIC_DONATION_KINDS.includes(row.kind)) {
       throw invalid(`Donation ${id} was given by ${row.methodName}; the batch coder codes only card and QR-code gifts.`, { donationId: id, kind: row.kind });
+    }
+    if (isParishHeldDonation(row.kind, row.accountOwner)) {
+      throw invalid(
+        `Donation ${id} was given by ${row.methodName}, which pays into the parish's account: the parish holds that revenue, so it is settled on the Parish Fundraiser Revenue Split Console, never coded to the council's books.`,
+        { donationId: id, accountOwner: row.accountOwner },
+      );
     }
     picked.push(row);
   }

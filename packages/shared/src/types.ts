@@ -664,6 +664,8 @@ export interface CouncilDonationMethod {
   CouncilID: number;
   DonationMethodID: number;
   DonationMethodURL?: string | null;
+  /** Sprint 8O: who owns the account the method pays into (account-ownership.ts); 'COUNCIL' by default. */
+  account_owner_entity?: 'COUNCIL' | 'PARISH' | 'THIRD_PARTY';
 }
 
 export interface Donation {
@@ -1469,4 +1471,9 @@ export interface ParishDisbursementRequest {
   paid_at?: string | null; // DATETIME
   check_number?: string | null; // VARCHAR(50)
   transaction_id?: string | null; // VARCHAR(36): the JournalEntry.TransactionID of the payment
+  /** Sprint 8O: 'CHECK' (DEFAULT) or 'PARISH_HELD', the tracking credit for revenue the parish already holds. */
+  settlement_method?: ParishSettlementMethod;
 }
+
+/** Sprint 8O: how a Church Disbursement Request settles - a check, or revenue the parish already holds. */
+export type ParishSettlementMethod = 'CHECK' | 'PARISH_HELD';
