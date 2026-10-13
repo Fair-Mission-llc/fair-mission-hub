@@ -195,7 +195,7 @@ describe('asset record rules', () => {
   });
 
   it('redirects from the authorization desk to the pre-filled asset form', () => {
-    const desk = read('apps/web/app/expenses/authorize/page.tsx');
+    const desk = read('apps/web/components/modules/ApprovedExpenseSigning.tsx');
     expect(desk).toContain('getAssetRecordForExpense');
     expect(desk).toMatch(/router\.push\(`\$\{assetFormPath\(asset\.id\)\}&from=approval`\)/);
     const form = read('apps/web/app/expenses/assets/page.tsx');

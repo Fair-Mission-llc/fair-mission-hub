@@ -62,6 +62,18 @@
       transform: scale(1);
     }
   }
+  /* Sprint 8P Stage 2: the Alert Boundary Accent - a desk drawer handle whose work waits on the reader's own signature
+     glows red (only with motion-safe:; the red border stays without motion). */
+  --animate-alert-boundary: alert-boundary 1600ms ease-in-out infinite;
+  @keyframes alert-boundary {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgb(200 16 46 / 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgb(200 16 46 / 0);
+    }
+  }
   --animate-slide-progress: slide-progress 5000ms linear;
   @keyframes slide-progress {
     from {

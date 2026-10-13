@@ -230,9 +230,31 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The biometric button does not show. | You created your password on another phone, or before biometric sign-in existed. | Sign in with your password. |
+| The biometric button does not show. | You created your password on another phone, or before biometric sign-in existed. | Sign in with your password, with the **[ 🔘 Enable FaceID / Biometric Login ]** switch on (2.4.1). |
 | *"The biometric check did not pass."* | The phone did not recognize your face or finger. | Try again, or sign in with your password. |
 | *"Face ID or fingerprint is not available on this phone right now."* | The phone has no enrolled face or finger. | Sign in with your password. |
+
+### 2.4.1 Turn on Face ID sign-in from the password screen
+
+> **Who can do this:** a member who has a password, on a phone with Face ID or a fingerprint enrolled.
+
+**Goal:** Turn on Face ID or fingerprint sign-in on this phone.
+
+**Start point:** Phone app → the **Welcome back** screen.
+
+**Steps:**
+1. Type your password.
+2. Tap the **[ 🔘 Enable FaceID / Biometric Login ]** switch. The switch turns dark.
+3. Tap **Sign in**.
+4. Look at the phone, or touch the fingerprint sensor.
+
+**Expected result:** The **Home** tab opens. The next time, the sign-in screen shows **🔑 Sign In with FaceID / Biometrics** (2.4).
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The switch does not show. | The phone has no enrolled face or finger, or biometric sign-in is already on for you. | Enroll a face or finger in the phone settings. Or use the biometric button (2.4). |
+| You signed in, but the biometric button does not show the next time. | The scan did not pass, or you tapped **Use password**. | Sign in with your password again, with the switch on. |
 
 ### 2.5 Sign in to the web portal
 

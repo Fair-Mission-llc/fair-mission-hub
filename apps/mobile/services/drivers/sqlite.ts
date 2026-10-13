@@ -905,8 +905,10 @@ const DB_NAME = 'kofc.db';
  *     Extension).
  * 87: no table change - the portal header's global search bar, the understated '[ 🔑 Request Access ]' sign-in link
  *     on the web and the phone, and the larger, page-scrolling Home tiles (Sprint 8P Stage 1); phones rebuild in step.
+ * 88: no table change - the password prompt's '[ 🔘 Enable FaceID / Biometric Login ]' toggle and the Grand Knight and
+ *     Financial Secretary Desks' slide-out action drawers (Sprint 8P Stage 2); phones rebuild in step.
  */
-const SCHEMA_VERSION = 87;
+const SCHEMA_VERSION = 88;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

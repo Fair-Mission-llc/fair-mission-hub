@@ -66,6 +66,14 @@ export async function findCouncilAdminContact(db: DataService, councilNumber: nu
   };
 }
 
+/** The label of the phone password prompt's biometric toggle (Sprint 8P Stage 2). */
+export const BIOMETRIC_TOGGLE_LABEL = '[ 🔘 Enable FaceID / Biometric Login ]';
+
+export interface SubmitPasswordOptions {
+  /** Sprint 8P Stage 2: on the password prompt, enroll this phone's biometric key after the sign-in (one scan first). */
+  enableBiometric?: boolean;
+}
+
 export interface OnboardingDeps {
   db: DataService;
   sessions: SessionStore;
@@ -119,7 +127,7 @@ export class OnboardingController {
    * expired code is shown on the screen and nothing is registered).
    * On `signIn`: checks the password against the stored hash.
    */
-  async submitPassword(password: string, confirmation?: string, setupCode?: string): Promise<OnboardingState> {
+  async submitPassword(password: string, confirmation?: string, setupCode?: string, options: SubmitPasswordOptions = {}): Promise<OnboardingState> {
     const current = this.state;
     if (current.screen === 'createPassword') {
       if (password !== confirmation) return this.set({ ...current, error: 'The two passwords do not match.' });
@@ -140,9 +148,18 @@ export class OnboardingController {
     }
     if (current.screen === 'signIn') {
       const user = await this.deps.db.auth.signIn(current.email, password);
-      return user ? this.finish(user) : this.set({ ...current, error: 'Incorrect password. Please try again.' });
+      if (!user) return this.set({ ...current, error: 'Incorrect password. Please try again.' });
+      // Sprint 8P Stage 2: the biometric toggle was on - one scan, then this phone keeps a key. A refused scan or a
+      // keystore failure never blocks the password sign-in.
+      if (options.enableBiometric) await this.deps.biometric?.enrollAfterScan(user, current.email).catch(() => false);
+      return this.finish(user);
     }
     return current;
+  }
+
+  /** Sprint 8P Stage 2: whether this phone can scan a face or finger, which shows the biometric toggle. */
+  biometricAvailable(): Promise<boolean> {
+    return this.deps.biometric ? this.deps.biometric.available() : Promise.resolve(false);
   }
 
   /** The email whose biometric key this phone holds (and can scan for), or null: shows or hides the biometric button. */

@@ -47,6 +47,12 @@
 // Disbursement Requests card (ChurchDisbursementQueue), where the check is recorded.
 // Sprint 8N: the Treasurer Desk opens with the Cash Box Audit Closure Panel (its variance metrics above the fold) and the
 // High-Volume Batch Transaction Coder, which codes many un-coded electronic donations to one Revenue line at once.
+// Sprint 8P Stage 2 - Zero-Traverse Action Drawers: the Grand Knight and Financial Secretary Desks are desk blotters of
+// slide-out drawers (DeskDrawers.tsx, desk-drawers.ts). Every module of the two desks - the Sprint 8L folders among them -
+// opens as a drawer over the desk, and the signing drawers (Approved Expenses, Payment Requests) carry the Alert
+// Boundary Accent while a sheet waits on the reader's own signature. The page bodies of /expenses/authorize,
+// /expenses/audit, /expenses/queue, /donations, /elections and /system-settings/knowledge-archive moved to
+// components/modules so the drawers mount the same code.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -58,6 +64,10 @@ import {
   COMMUNITY_PRAYER_CARD_TITLE,
   councilWideSettings,
   deskModulesFor,
+  deskDrawersFor,
+  DESK_ALERT_POLL_MS,
+  fsPaymentRequestAlert,
+  gkSignatureAlert,
   describePrayerCount,
   PRAYING_HANDS_LABEL,
   type DashboardTabId,
@@ -72,8 +82,6 @@ import {
   MINUTES_TEXT_MAX_LENGTH,
   minutesCountdownLabel,
   minutesDeskRows,
-  canLendCouncilAssets,
-  canRespondToAffiliation,
   canLogConcludedRevenue,
   LOANER_LIBRARY_HREF,
   canOpenExpenseAuditDesk,
@@ -106,6 +114,14 @@ import {
   type SessionUser,
 } from '@kofc/shared';
 import { BankStatementMatchWindow, BudgetVsActualsModule, DeskModule, DeskModuleShelf, MotionsLedgerModule } from '@/components/DeskModules';
+import { DeskBlotter } from '@/components/DeskDrawers';
+import { AuthorizationDesk as ApprovedExpenseSigning } from '@/components/modules/ApprovedExpenseSigning';
+import { DonationsWorkspace as DonationRecords } from '@/components/modules/DonationRecords';
+import { NominationsDesk as ElectionTracker } from '@/components/modules/ElectionTracker';
+import { AuditQueue as ExpenseRoutingTrack } from '@/components/modules/ExpenseRoutingTrack';
+import { KnowledgeArchive } from '@/components/modules/KnowledgeArchive';
+import { AuditDesk as PaymentRequestDesk } from '@/components/modules/PaymentRequestDesk';
+import { FraternalPlanningWorkflow } from '@/components/PlanningWorkflowParts';
 import { ExpenseStatusPill, HonorVoucherBadge } from '@/components/ExpenseParts';
 import { CharityQueue as CharityCheckConsole } from '@/components/modules/CharityCheckConsole';
 import { VettingDesk as CharityVettingBoard } from '@/components/modules/CharityVettingBoard';
@@ -127,7 +143,7 @@ import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td
 import { DeskLink, DeskRow } from '@/components/WorkspaceTabs';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { photoName, photoSrc } from '@/lib/media';
-import { useFeatureFlags, useSession } from '@/lib/session';
+import { useFeatureFlags, useSession, useTenantType } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 import { archiveMeetingPhoto, localFileLink } from '@/services/drive-vault-transport';
@@ -493,112 +509,177 @@ function DeskModulesFor({ user, desk, render }: { user: SessionUser; desk: Dashb
   );
 }
 
-/** The Grand Knight Desk: the Voucher Release queue - sheets signed by the Financial Secretary and coded by the Treasurer. */
+/** Re-reads a desk's signature queue every DESK_ALERT_POLL_MS, so the Alert Boundary Accent lights while the desk is open. */
+function usePolling(reload: () => Promise<unknown>) {
+  useEffect(() => {
+    const timer = window.setInterval(() => void reload(), DESK_ALERT_POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [reload]);
+}
+
+/** The Planning & Budgeting Workflow drawer: the council's planning banner and goals (FraternalPlanningWorkflow). */
+function PlanningBudgetingDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const council = useLoad(() => db.councils.get(councilId), [councilId]);
+  return (
+    <>
+      {council.error ? <Notice tone="error">{council.error}</Notice> : null}
+      {council.data ? <FraternalPlanningWorkflow key={council.data.id} user={user} council={council.data} /> : council.loading ? <p className="text-sm">Loading…</p> : null}
+      <p className="text-sm">
+        The final budget vote stays on the{' '}
+        <Link href="/budget" className="font-bold underline">
+          Annual Budget Planner
+        </Link>
+        .
+      </p>
+    </>
+  );
+}
+
+/** The Shared Loaner Library drawer: the lending desk (LoanerLibraryManager) and the way to the brother councils' items. */
+function LoanerLibraryDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
+  return (
+    <>
+      <LoanerLibraryManager user={user} councilId={councilId} />
+      <p className="text-xs">
+        <Link href={LOANER_LIBRARY_HREF} className="font-bold underline">
+          Open the shared inventory directory
+        </Link>{' '}
+        to see what brother councils lend.
+      </p>
+    </>
+  );
+}
+
+/** The Excel Roster Imports drawer on the Financial Secretary Desk. */
+function RosterImportsDrawer() {
+  return (
+    <>
+      <ul className="flex flex-col gap-3 text-sm">
+        <li>
+          <span className="font-bold">1. Build the roster.</span>{' '}
+          <a className="font-bold underline" href="/templates/roster_import_template.xlsx" download>
+            Download the Excel roster template
+          </a>
+          , fill it in, then save the Roster sheet as CSV.
+        </li>
+        <li>
+          <span className="font-bold">2. Import it.</span> Load the CSV on the{' '}
+          <Link href="/supreme-sync" className="font-bold underline">
+            Supreme roster sync
+          </Link>{' '}
+          card. New members get the welcome email and a one-time setup code.
+        </li>
+      </ul>
+      <p className="text-xs text-muted">
+        Looking for the inactivity sweep? It is on{' '}
+        <Link href="/system-settings/council-settings" className="font-bold underline">
+          System Settings: Council Wide Settings
+        </Link>
+        , for the council&apos;s Admins.
+      </p>
+    </>
+  );
+}
+
+/**
+ * The Grand Knight Desk (shared by the Deputy Grand Knight). Sprint 8P Stage 2: a desk blotter of slide-out drawers
+ * (desk-drawers.ts DESK_DRAWERS) - Approved Expenses (counter-sign and release in place, with the Alert Boundary Accent
+ * while a sheet waits on the reader's signature), the Charitable Grant Requests Vetting Board, the Planning & Budgeting
+ * Workflow, the Council Election Tracker, the Shared Loaner Library, Affiliation Invites, Connected Councils, the
+ * Constitutional Advisor Panels and the Operations Knowledge Archive.
+ */
 export function GrandKnightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const flags = useFeatureFlags();
+  const tenantType = useTenantType();
   const queue = useLoad(() => db.expenses.listAuthorizationQueue(user.memberId, councilId), [user.memberId, councilId]);
+  usePolling(queue.reload);
   const rows = queue.data ?? [];
+  const alert = gkSignatureAlert(user, rows);
   return (
     <div className="flex flex-col gap-4">
-      <DeskModulesFor
-        user={user}
+      {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
+      <DeskBlotter
         desk="grand-knight"
-        render={(rowId) => (rowId === 'module-vetting-board' ? <CharityVettingBoard /> : rowId === 'module-advisor' ? <ConstitutionalAdvisor /> : <ConnectedCouncils />)}
+        drawers={deskDrawersFor(user, 'grand-knight', councilId, flags, tenantType)}
+        status={(spec) => (spec.id === 'approved-expenses' ? { count: queue.data ? rows.length : null, alert } : undefined)}
+        onClosed={() => void queue.reload()}
+        render={(spec) => {
+          switch (spec.id) {
+            case 'approved-expenses':
+              return <ApprovedExpenseSigning />;
+            case 'vetting-board':
+              return <CharityVettingBoard />;
+            case 'planning-budgeting':
+              return <PlanningBudgetingDrawer user={user} councilId={councilId} />;
+            case 'election-tracker':
+              return <ElectionTracker />;
+            case 'loaner-library':
+              return <LoanerLibraryDrawer user={user} councilId={councilId} />;
+            case 'affiliation-invites':
+              return <IncomingAffiliationInvites user={user} councilId={councilId} />;
+            case 'connected-councils':
+              return <ConnectedCouncils />;
+            case 'advisor':
+              return <ConstitutionalAdvisor />;
+            default:
+              return <KnowledgeArchive />;
+          }
+        }}
       />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <DeskCount label="Approved expenses waiting for release" count={queue.data ? rows.length : null} href="/expenses/authorize" cta="Open the Grand Knight Authorization Desk" />
-        <DeskCount label="Released approved expenses" href="/expenses/disbursements" cta="Open the Payments Made desk" />
-      </div>
-      <DeskRow id={DESK_FOCUS_TARGETS.vouchers.rowId} label="Approved Expense Release queue">
-        <Panel title={`Approved Expense Release queue (${rows.length})`}>
-          {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
-          {queue.data ? (
-            <SheetQueue
-              caption="Sheets waiting for the Grand Knight's final release"
-              rows={rows}
-              href="/expenses/authorize"
-              cta="Release approved expenses on the full desk"
-              signerColumn={(d) => (
-                <>
-                  FS: {d.financialSecretaryName || '–'}
-                  <br />
-                  Treasurer: {d.treasurerName || '–'}
-                </>
-              )}
-            />
-          ) : null}
-        </Panel>
-      </DeskRow>
-      {/* Sprints 8G/8H: affiliation invites waiting for the Grand Knight's (or Deputy's) Accept. */}
-      {canRespondToAffiliation(user, councilId) ? (
-        <DeskRow id="grand-knight-affiliations" label="Affiliation Invites">
-          <IncomingAffiliationInvites user={user} councilId={councilId} />
-          <p className="mt-2 text-xs">Open the Connected Councils folder at the top of this desk to invite nearby councils.</p>
-        </DeskRow>
-      ) : null}
-      {/* Sprint 8F: the Cross-Council Loaner Library's lending desk, for the Grand Knight and Deputy Grand Knight. */}
-      {canLendCouncilAssets(user, councilId) ? (
-        <DeskRow id="grand-knight-loaner-library" label="Cross-Council Loaner Library">
-          <LoanerLibraryManager user={user} councilId={councilId} />
-          <p className="mt-2 text-xs">
-            <Link href={LOANER_LIBRARY_HREF} className="font-bold underline">
-              Open the shared inventory directory
-            </Link>{' '}
-            to see what brother councils lend.
-          </p>
-        </DeskRow>
-      ) : null}
     </div>
   );
 }
 
 /**
- * The Financial Secretary Desk: the written-order queue and the Excel roster import. Sprint 8A moved the inactivity sweep
- * to System Settings > Council Wide Settings.
+ * The Financial Secretary Desk. Sprint 8P Stage 2: a desk blotter of slide-out drawers - Payment Requests (verify and
+ * sign in place, with the Alert Boundary Accent while a sheet waits on the reader's signature), the Expense Report (ER)
+ * Routing Track, Charitable Donation Records, Church Disbursement Requests, the Charity Check Issuance Console, the
+ * Semiannual Audit Form 1295 Center, Excel Roster Imports and the Operations Knowledge Archive. Sprint 8A moved the
+ * inactivity sweep to System Settings > Council Wide Settings.
  */
 export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const flags = useFeatureFlags();
+  const tenantType = useTenantType();
   const queue = useLoad(() => db.expenses.listCouncilQueue(user.memberId, councilId), [user.memberId, councilId]);
-  const rows = (queue.data ?? []).filter((d) => awaitsWrittenOrder(d.report));
+  usePolling(queue.reload);
+  const all = queue.data ?? [];
+  const waiting = all.filter((d) => awaitsWrittenOrder(d.report));
+  const alert = fsPaymentRequestAlert(user, all);
   return (
     <div className="flex flex-col gap-4">
-      <DeskModulesFor user={user} desk="financial-secretary" render={(rowId) => (rowId === 'module-form-1295' ? <TrusteeAuditDesk /> : <CharityCheckConsole />)} />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <DeskCount label="Sheets waiting for your payment request" count={queue.data ? rows.length : null} href="/expenses/audit" cta="Open the Financial Secretary Audit Desk" />
-        <DeskCount label="All sheets in leadership's queue" count={queue.data ? queue.data.length : null} href="/expenses/queue" cta="Open the auditing queue" />
-      </div>
-      <DeskRow id={DESK_FOCUS_TARGETS.orders.rowId} label="Payment-request queue">
-        <Panel title={`Payment-request queue (${rows.length})`}>
-          {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
-          {queue.data ? <SheetQueue caption="Sheets waiting for the Financial Secretary's payment request" rows={rows} href="/expenses/audit" cta="Verify & sign on the full desk" /> : null}
-        </Panel>
-      </DeskRow>
-      <DeskRow id="financial-secretary-church-disbursements" label="Church Disbursement Requests">
-        <ChurchDisbursementQueue user={user} councilId={councilId} />
-      </DeskRow>
-      <Panel title="Excel roster imports">
-        <ul className="flex flex-col gap-3 text-sm">
-          <li>
-            <span className="font-bold">1. Build the roster.</span>{' '}
-            <a className="font-bold underline" href="/templates/roster_import_template.xlsx" download>
-              Download the Excel roster template
-            </a>
-            , fill it in, then save the Roster sheet as CSV.
-          </li>
-          <li>
-            <span className="font-bold">2. Import it.</span> Load the CSV on the{' '}
-            <Link href="/supreme-sync" className="font-bold underline">
-              Supreme roster sync
-            </Link>{' '}
-            card. New members get the welcome email and a one-time setup code.
-          </li>
-        </ul>
-        <p className="mt-3 text-xs text-muted">
-          Looking for the inactivity sweep? It is on{' '}
-          <Link href="/system-settings/council-settings" className="font-bold underline">
-            System Settings: Council Wide Settings
-          </Link>
-          , for the council&apos;s Admins.
-        </p>
-      </Panel>
+      {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
+      <DeskBlotter
+        desk="financial-secretary"
+        drawers={deskDrawersFor(user, 'financial-secretary', councilId, flags, tenantType)}
+        status={(spec) =>
+          spec.id === 'payment-requests'
+            ? { count: queue.data ? waiting.length : null, alert }
+            : spec.id === 'er-routing-track'
+              ? { count: queue.data ? all.length : null }
+              : undefined
+        }
+        onClosed={() => void queue.reload()}
+        render={(spec) => {
+          switch (spec.id) {
+            case 'payment-requests':
+              return <PaymentRequestDesk />;
+            case 'er-routing-track':
+              return <ExpenseRoutingTrack />;
+            case 'donation-records':
+              return <DonationRecords />;
+            case 'church-disbursements':
+              return <ChurchDisbursementQueue user={user} councilId={councilId} />;
+            case 'charity-checks':
+              return <CharityCheckConsole />;
+            case 'form-1295':
+              return <TrusteeAuditDesk />;
+            case 'roster-imports':
+              return <RosterImportsDrawer />;
+            default:
+              return <KnowledgeArchive />;
+          }
+        }}
+      />
     </div>
   );
 }

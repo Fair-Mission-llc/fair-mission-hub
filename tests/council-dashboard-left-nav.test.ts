@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  DESK_DRAWERS,
   canAppointOfficers,
   canEditLiveAgenda,
   canManageAgendaTemplates,
@@ -219,7 +220,9 @@ describe('the left navigation cleanup', () => {
     expect(portalAreas(admin)).toContain('expenses/queue');
     expect(portalSidebar(admin).flatMap((g) => g.entries.map((e) => e.item as string))).not.toContain('expenses/queue');
     expect(navigationGuide(admin).groups.flatMap((g) => g.entries.map((e) => e.item as string))).not.toContain('expenses/queue');
-    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('href="/expenses/queue"');
+    // Sprint 8P Stage 2: the Financial Secretary Desk opens it in place as the ER Routing Track drawer.
+    expect(DESK_DRAWERS.find((d) => d.id === 'er-routing-track')).toMatchObject({ desk: 'financial-secretary', area: 'expenses/queue' });
+    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<ExpenseRoutingTrack />');
   });
 
   it('locks the Inbound Council Mail Center card and its badge to global Super Admins', () => {
@@ -245,7 +248,15 @@ describe('the click-through desk badges', () => {
 
   it('draws every row target on its desk and passes it through the badge link', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    for (const key of Object.keys(DESK_FOCUS_TARGETS)) expect(desks).toContain(`<DeskRow id={DESK_FOCUS_TARGETS.${key}.rowId}`);
+    // Sprint 8P Stage 2: the GK and FS targets are drawer handles (desk-drawers.ts), whose rows the blotter draws.
+    const drawerRows = new Set(DESK_DRAWERS.map((d) => d.rowId));
+    for (const [key, target] of Object.entries(DESK_FOCUS_TARGETS)) {
+      if (drawerRows.has(target.rowId)) continue;
+      expect(desks).toContain(`<DeskRow id={DESK_FOCUS_TARGETS.${key}.rowId}`);
+    }
+    expect(drawerRows).toContain(DESK_FOCUS_TARGETS.vouchers.rowId);
+    expect(drawerRows).toContain(DESK_FOCUS_TARGETS.orders.rowId);
+    expect(read('apps/web/components/DeskDrawers.tsx')).toContain('<DeskRow id={spec.rowId}');
     expect(desks).toContain('rowId={DESK_FOCUS_TARGETS[b.key].rowId}');
     const tabs = read('apps/web/components/WorkspaceTabs.tsx');
     expect(tabs).toContain('if (rowId) focusDeskRow(rowId);');

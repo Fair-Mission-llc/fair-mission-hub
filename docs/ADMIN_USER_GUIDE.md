@@ -2550,14 +2550,14 @@ The **Bible Verse of the Day**, the **Liturgical Feast Day Tracker** and the **�
 
 ### 19.3 Concept: the desks
 
-A desk summarizes the work of one seat. A desk links to its full desk page. You sign on the full desk page. The desks never sign, code or release a sheet.
+A desk summarizes the work of one seat. On the **Treasurer Desk**, you sign on the full desk page. On the **Grand Knight Desk** and the **Financial Secretary Desk**, you sign inside a drawer on the desk (section 19.3.2).
 
 The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | Three module folders (section 19.3.1). The **Approved Expense Release queue**: sheets that carry the FS order and the Treasurer's coding. A link to the disbursement vault. For the GK, the DGK and Super Admins, the **Cross-Council Loaner Library** controls (section 20.3). | **Open the Grand Knight Authorization Desk** link on the desk |
-| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | Two module folders. The **Payment-request queue**, the count of all sheets in the leadership queue, and the **Excel roster imports** card. | **Open the Financial Secretary Audit Desk** link on the desk |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 19.3.2), with **Approved Expenses** first. | None. You work inside the drawers. |
+| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 19.3.2), with **Payment Requests** first. | None. You work inside the drawers. |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | Two module folders. The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | **Open the Treasurer Ledger Audit Desk** link on the desk |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | One module folder. The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | One module folder. The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | None. The desk is the full page. |
@@ -2566,7 +2566,7 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 
 ### 19.3.1 Concept: module folders on the desks
 
-Each desk starts with its module folders. A folder is a closed bar with a 📁 icon, the module name and one line about the module. Select the bar to open the folder. The full module opens inside the desk. Select the bar again to close the folder.
+The **Treasurer Desk**, the **Recorder Desk** and the **Historian Desk** start with their module folders. The **Grand Knight Desk** and the **Financial Secretary Desk** show the same modules as drawers (section 19.3.2). A folder is a closed bar with a 📁 icon, the module name and one line about the module. Select the bar to open the folder. The full module opens inside the desk. Select the bar again to close the folder.
 
 A folder shows only to a reader who may open the module. A reader who may not open a module does not see its folder. The module's own page also stays at its web address. The **Open ... as a full page** link at the bottom of an open folder opens that page.
 
@@ -2582,7 +2582,50 @@ A folder shows only to a reader who may open the module. A reader who may not op
 | **Recorder Desk** | **Council Resolutions and Motions Ledger** | Every motion on the council's meetings of this fraternal year, with its meeting, presenter, source and result. |
 | **Historian Desk** | **Google Drive Media Gallery Sync Board** | Upload and tag photos, build Smart Albums and play the slideshow. |
 
-The Deputy Grand Knight (DGK) gets the same **Grand Knight Desk** folders as the GK.
+The Deputy Grand Knight (DGK) gets the same **Grand Knight Desk** drawers as the GK.
+
+### 19.3.2 Concept: action drawers and the alert boundary
+
+The **Grand Knight Desk** and the **Financial Secretary Desk** are desk blotters. A desk blotter is a grid of drawer tiles. Each tile shows a module name, one line about the module and, for a queue, the number of sheets that wait.
+
+Select a tile. The drawer slides out from the right side of the screen, over the desk. The full module works inside the drawer. You sign, verify and look up records in the drawer. You do not go to another page.
+
+To close a drawer, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the drawer. You can also select **Close**, select the dimmed desk, or push **Esc**.
+
+**Alert boundary:** a tile with a thick red border and a red glow has work that waits for your own signature. The tile also shows *"🔴 Waiting for your signature"*. The desk checks the queue again every 30 seconds.
+
+| Desk | Tile with the alert boundary | The red border shows when |
+| --- | --- | --- |
+| **Grand Knight Desk** | **Approved Expenses** | A sheet in the release queue waits for your final release, and you may sign it. A sheet that you submitted, ordered or coded does not light the border. |
+| **Financial Secretary Desk** | **Payment Requests** | A sheet waits for its payment request, and you may sign it. Your own sheet does not light the border. |
+
+The drawers on each desk:
+
+| Desk | Drawer | What you do in the drawer |
+| --- | --- | --- |
+| **Grand Knight Desk** | **Approved Expenses** | Select **✍️ Final Release for Payment** on each sheet. |
+| **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 4). |
+| **Grand Knight Desk** | **Planning & Budgeting Workflow** | Read the planning steps. Set the year's goals. Mark the goals and the budget reviewed (section 21). |
+| **Grand Knight Desk** | **Council Election Tracker** | Read each officer seat and its nominations. |
+| **Grand Knight Desk** | **Shared Loaner Library** | List, lend and check in council assets (section 20.3). |
+| **Grand Knight Desk** | **Affiliation Invites** | Accept or decline invites from nearby councils. |
+| **Grand Knight Desk** | **Connected Councils** | Invite nearby councils (section 21). |
+| **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. |
+| **Grand Knight Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 22). |
+| **Financial Secretary Desk** | **Payment Requests** | Select **📝 Verify & Sign Expense** on each sheet. |
+| **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
+| **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
+| **Financial Secretary Desk** | **Church Disbursement Requests** | Record the check for the parish share (section 23). |
+| **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
+| **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Open the Supreme roster sync. |
+| **Financial Secretary Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 22). |
+
+A tile shows only to a reader who may open its module. An Admin who does not hold the seat reads the drawers but cannot sign.
+
+**Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **[ 🔀 Back to Desk Blotter ]** bar shows under the tab row. Select the bar to go back to your desk.
+
+A status badge on the **Oversight Desk** for these two desks opens the matching drawer.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -2657,50 +2700,55 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | A folder in section 19.3.1 is not on your desk. | Your role may not open that module, or the council switched the module off. | Ask the seat holder or a Super Admin. |
 | The **Bank Statement Match-Window** shows a notice and no upload box. | Only the FS, the Treasurer and Super Admins can match bank statements. | Ask the Treasurer to run the match. |
 | You want the module on a larger screen. | The desk has less width than the full page. | Select **Open ... as a full page** at the bottom of the folder. |
+| Your desk shows tiles, not folders. | The **Grand Knight Desk** and the **Financial Secretary Desk** use drawers. | Select a tile to open its drawer (section 19.3.2). |
 
 ### 19.5 Release approved expenses from the Grand Knight Desk
 
 > **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Super Admins sign. The council's Admins read the desk.
 > **Warning:** the final release sets the sheet to **Approved** and sends the sheet to payment. You cannot undo the release.
 
-**Goal:** Find the sheets that wait for the final release, and release them.
+**Goal:** Find the sheets that wait for the final release, and release them without leaving the desk.
 
 **Start point:** **Active Desks** row → **Grand Knight Desk**.
 
 **Steps:**
 1. Select the **Grand Knight Desk** tab.
-2. Read the **Approved expenses waiting for release** count.
-3. Read the **Approved Expense Release queue** grid. The **Signed so far** column names the FS and the Treasurer.
-4. Select **Release approved expenses on the full desk**. The **GK Expense Authorize** page opens.
-5. Select **✍️ Final Release for Payment** on each sheet. You cannot undo the release.
+2. Find the **Approved Expenses** tile. A red glowing border means that a sheet waits for your signature.
+3. Select the **Approved Expenses** tile. The drawer slides out.
+4. Read each sheet. Select **✍️ Final Release for Payment** on each sheet. You cannot undo the release.
+5. Select **[ 🔀 Back to Desk Blotter ]**.
 
-**Expected result:** The released sheets leave the queue. The count on the **Grand Knight Desk** drops when you open the tab again.
+**Expected result:** Each released sheet shows *"✓ Released to the Treasurer"*. When you close the drawer, the count on the tile drops. The red border goes off when no sheet waits for you.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The **Grand Knight Desk** tab does not show. | You do not hold the Grand Knight or Deputy Grand Knight seat on this council, and you are not an Admin. | Use the **Home** tab. Ask the Grand Knight to release the sheets. |
-| A sheet shows no release button on the full desk. | You submitted, ordered or coded that sheet (the collusion guard). | Ask a Super Admin to release the sheet. |
+| A sheet shows no release button in the drawer. | You submitted, ordered or coded that sheet (the collusion guard). | Ask a Super Admin to release the sheet. |
+| The asset form opened after a release. | The sheet is a long-term asset. | Complete the asset form. Then select **[ 🔀 Back to Desk Blotter ]** under the tab row. |
+| The tile has a red border, but the drawer shows no button you can use. | The queue changed after the last check. | Close the drawer. The desk checks the queue again. |
 
 ### 19.6 Work the Financial Secretary Desk and the roster imports
 
 > **Who can do this:** the council's Financial Secretary and Super Admins sign orders. Only the council's Admins and Super Admins import the roster.
 > **Warning:** the roster import sends a welcome email to each new member. You cannot recall an email.
 
-**Goal:** Sign the waiting expense orders, and keep the roster current.
+**Goal:** Sign the waiting expense orders without leaving the desk, and keep the roster current.
 
 **Start point:** **Active Desks** row → **Financial Secretary Desk**.
 
 **Steps:**
 1. Select the **Financial Secretary Desk** tab.
-2. Read the **Sheets waiting for your payment request** count.
-3. Select **Verify & sign on the full desk**. The **FS Expense Audit** page opens.
-4. Select **📝 Verify & Sign Expense** on each sheet. Return to the dashboard.
-5. In the **Excel roster imports** card, select **Download the Excel roster template**.
-6. Fill in the template. Save the **Roster** sheet as CSV.
-7. Select **Supreme roster sync**. Load the CSV file on that page. Each new member gets a welcome email.
+2. Find the **Payment Requests** tile. A red glowing border means that a sheet waits for your signature.
+3. Select the **Payment Requests** tile. The drawer slides out.
+4. Select **📝 Verify & Sign Expense** on each sheet.
+5. Select **[ 🔀 Back to Desk Blotter ]**.
+6. To follow a sheet, select the **Expense Report (ER) Routing Track** tile. To check a donation, select the **Charitable Donation Records** tile.
+7. Select the **Excel Roster Imports** tile. Select **Download the Excel roster template**.
+8. Fill in the template. Save the **Roster** sheet as CSV.
+9. Select **Supreme roster sync**. Load the CSV file on that page. Each new member gets a welcome email.
 
-**Expected result:** The signed sheets move to the Treasurer. The new members show in the roster.
+**Expected result:** The signed sheets move to the Treasurer. The count on the **Payment Requests** tile drops when you close the drawer. The new members show in the roster.
 
 **Common problems:**
 | Problem | Cause | Fix |

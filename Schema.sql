@@ -3732,3 +3732,16 @@ GO
 -- '[ 🔑 Request Access ]' link on the web and the phone. The Home cards are larger, grow with their content and the
 -- page scrolls in the browser (the Sprint 8A one-screen rule is retired). The phone database version moves to 87.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8P Stage 2: GRAND KNIGHT AND FINANCIAL SECRETARY ZERO-TRAVERSE DRAWERS (schema version 88)
+--
+-- No table changes. The Grand Knight and Financial Secretary Desks become desk blotters of slide-out action drawers
+-- (desk-drawers.ts DESK_DRAWERS): Approved Expenses, the Vetting Board, Planning & Budgeting, the Council Election
+-- Tracker, the Shared Loaner Library, Affiliation Invites, Connected Councils, the Constitutional Advisor and the
+-- Operations Knowledge Archive on the first; Payment Requests, the ER Routing Track, Charitable Donation Records, Church
+-- Disbursement Requests, the Charity Check Issuance Console, the Form 1295 Center, Excel Roster Imports and the archive on
+-- the second. The signing drawers carry the Alert Boundary Accent while a sheet waits on the reader's own signature. The
+-- phone password prompt gains '[ 🔘 Enable FaceID / Biometric Login ]': one scan after a password sign-in mints the
+-- device key. The phone database version moves to 88.
+-- =========================================================================

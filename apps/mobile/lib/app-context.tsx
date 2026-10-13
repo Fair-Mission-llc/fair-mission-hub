@@ -21,7 +21,7 @@ import {
 import { LayoutModeProvider } from '@/lib/layout-mode';
 import { configureAlertDisplay, registerForPushAlerts, unregisterPushAlerts } from '@/lib/push-registration';
 import { db } from '@/services/db';
-import { getConfiguredCouncilNumber, OnboardingController, type OnboardingState } from '@/services/onboarding';
+import { getConfiguredCouncilNumber, OnboardingController, type OnboardingState, type SubmitPasswordOptions } from '@/services/onboarding';
 import { biometricLogin } from '@/services/biometric-login';
 import { sessionStore } from '@/services/session';
 
@@ -50,9 +50,11 @@ interface AppContextValue {
   /** Saves the member's Large Text Layout Mode choice on their record and redraws the app in that layout. */
   setLargeText(on: boolean): Promise<void>;
   submitEmail(email: string): Promise<void>;
-  submitPassword(password: string, confirmation?: string, setupCode?: string): Promise<void>;
+  submitPassword(password: string, confirmation?: string, setupCode?: string, options?: SubmitPasswordOptions): Promise<void>;
   /** Sprint 6D: the email this phone's biometric key belongs to, or null when the biometric button is hidden. */
   biometricEmail: string | null;
+  /** Sprint 8P Stage 2: the phone can scan a face or finger, so the password prompt offers the biometric toggle. */
+  biometricAvailable: boolean;
   submitBiometric(): Promise<void>;
   /** Sprint 6B Security: the self-service password reset (OnboardingController). */
   startPasswordReset(): void;
@@ -162,7 +164,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const submitEmail = useCallback(async (email: string) => setOnboarding(await controller.submitEmail(email)), [controller]);
   const submitPassword = useCallback(
-    async (password: string, confirmation?: string, setupCode?: string) => setOnboarding(await controller.submitPassword(password, confirmation, setupCode)),
+    async (password: string, confirmation?: string, setupCode?: string, options?: SubmitPasswordOptions) =>
+      setOnboarding(await controller.submitPassword(password, confirmation, setupCode, options)),
     [controller],
   );
   const startPasswordReset = useCallback(() => setOnboarding(controller.startPasswordReset()), [controller]);
@@ -174,10 +177,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const restart = useCallback(() => setOnboarding(controller.restart()), [controller]);
   const [biometricEmail, setBiometricEmail] = useState<string | null>(null);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
   const promptScreen = onboarding.screen === 'enterEmail' || onboarding.screen === 'signIn';
   useEffect(() => {
     let live = true;
     if (promptScreen) void controller.biometricEmail().then((email) => live && setBiometricEmail(email), () => undefined);
+    if (promptScreen) void controller.biometricAvailable().then((ok) => live && setBiometricAvailable(ok), () => undefined);
     return () => {
       live = false;
     };
@@ -205,6 +210,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       submitEmail,
       submitPassword,
       biometricEmail,
+      biometricAvailable,
       submitBiometric,
       startPasswordReset,
       submitResetEmail,
@@ -227,6 +233,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       submitEmail,
       submitPassword,
       biometricEmail,
+      biometricAvailable,
       submitBiometric,
       startPasswordReset,
       submitResetEmail,

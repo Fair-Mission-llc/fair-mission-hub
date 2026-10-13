@@ -50,6 +50,23 @@ export class BiometricLogin {
     return record;
   }
 
+  /** True when the phone has biometric hardware with a face or finger enrolled (Sprint 8P Stage 2: shows the toggle). */
+  available(): Promise<boolean> {
+    return this.scanner.available().catch(() => false);
+  }
+
+  /**
+   * Sprint 8P Stage 2: '[ 🔘 Enable FaceID / Biometric Login ]' on the password prompt. After a password sign-in the
+   * member proves the face or finger once, then the phone mints its key; false (and no key) when the scan is refused or
+   * the phone cannot scan.
+   */
+  async enrollAfterScan(user: SessionUser, email: string): Promise<boolean> {
+    if (!(await this.available())) return false;
+    if (!(await this.scanner.scan('Turn on FaceID / Biometric Login').catch(() => false))) return false;
+    await this.enroll(user, email);
+    return true;
+  }
+
   /** The email the stored key belongs to, when the phone holds one and can scan; null hides the button. */
   async enrolledEmail(): Promise<string | null> {
     const record = await this.read();

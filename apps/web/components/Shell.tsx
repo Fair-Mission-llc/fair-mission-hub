@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { ACCESS_REQUEST_LINK_LABEL, councilLabel, countUnreadMessages, describeError, isFraternalTenant, portalAreas, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
 import { AlertBell } from '@/components/AlertBell';
+import { BackToDeskBlotterAnchor } from '@/components/DeskDrawers';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { MemberAvatar } from '@/components/MemberAvatar';
 import { AccessRequestForm, RemoteAssistButton, ViewAsBanner } from '@/components/PlatformAccessParts';
@@ -479,6 +480,8 @@ function Frame({ children }: { children: ReactNode }) {
       {/* Sprint 7J Extension 2: Home and the reader's Officer Desks, on every page for those who may open /dashboard. */}
       {featuresLoaded && portalAreas(user, features, tenantType).includes('dashboard') ? <WorkspaceTabs user={user} /> : null}
       <ViewAsBanner />
+      {/* Sprint 8P Stage 2: the way back after a desk drawer had to open another page. */}
+      <BackToDeskBlotterAnchor />
       <div className="flex flex-1">
         <Sidebar user={user} pathname={pathname} features={features} tenant={tenantType} />
         {/* Sprint 6A: pages wait for the council's feature flags, so a switched-off module never flashes into view. */}

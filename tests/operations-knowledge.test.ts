@@ -211,9 +211,11 @@ describe('the vault and archive screens', () => {
 
   it('serves the read-only archive under System Settings', () => {
     const page = read('apps/web/app/system-settings/knowledge-archive/page.tsx');
-    expect(page).not.toContain('setCouncilId');
     expect(page).toContain('area="system-settings/knowledge-archive"');
-    expect(page).toContain('KnowledgeArchiveGrid');
+    // Sprint 8P Stage 2: the body moved to a module so the GK and FS desk drawers mount it too.
+    const archive = read('apps/web/components/modules/KnowledgeArchive.tsx');
+    expect(archive).not.toContain('setCouncilId');
+    expect(archive).toContain('KnowledgeArchiveGrid');
     const parts = read('apps/web/components/KnowledgeVaultParts.tsx');
     expect(parts).toContain('filterOperationsKnowledge');
     expect(parts.slice(parts.indexOf('export function KnowledgeArchiveGrid'))).not.toContain('addOperationsKnowledge');

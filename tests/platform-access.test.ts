@@ -312,7 +312,7 @@ describe('Schema 67: check donations', () => {
     expect(phone).toContain('<Field label="CHECK NUMBER (REQUIRED)">');
     expect(phone).toContain("if (isCheck && checkNumber.trim() === '') return setError('Enter the check number printed on the check.');");
     expect(phone).toContain('CheckNumber: v.checkNumber,');
-    expect(read('apps/web/app/donations/page.tsx')).toContain('<Field label="Check number">');
+    expect(read('apps/web/components/modules/DonationRecords.tsx')).toContain('<Field label="Check number">');
   });
 });
 

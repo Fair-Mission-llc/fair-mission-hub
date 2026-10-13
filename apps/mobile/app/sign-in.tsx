@@ -4,15 +4,18 @@
 // (PasswordInput); "Forgot Password?" runs forgotPassword -> resetCode -> newPassword -> signedIn.
 // Sprint 6D: once this phone holds a biometric key (minted with the setup code), the email and password prompts lead
 // with "Sign In with FaceID / Biometrics", which skips the password.
+// Sprint 8P Stage 2: the password prompt carries '[ 🔘 Enable FaceID / Biometric Login ]' (ToggleSwitch) on a phone that can
+// scan and holds no key for the member yet; with it on, a password sign-in asks for one scan and then mints the key.
 // Sprint 7F: the access request link (Sprint 8P Stage 1: the understated '[ 🔑 Request Access ]') under the first prompt opens a short form for a council that is not
 // on the platform yet (accessRequests.submit; the notice goes to ACCESS_REQUEST_NOTIFY_EMAIL).
 import { useState } from 'react';
 import { ACCESS_REQUEST_LINK_LABEL, ACCESS_REQUEST_NOTIFY_EMAIL } from '@kofc/shared';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { BrandMark } from '@/components/BrandHeader';
-import { AppInput, AppText, Button, Card, Field, Notice, PasswordInput } from '@/components/ui';
+import { AppInput, AppText, Button, Card, Field, Notice, PasswordInput, ToggleSwitch } from '@/components/ui';
 import { useApp } from '@/lib/app-context';
 import { describeError } from '@/lib/use-async';
+import { BIOMETRIC_TOGGLE_LABEL } from '@/services/onboarding';
 import { useTheme } from '@/lib/layout-mode';
 import { db } from '@/services/db';
 
@@ -112,7 +115,7 @@ function BiometricSignIn({ email, busy, onPress }: { email: string | null; busy:
 
 export default function SignInScreen() {
   const { color, space } = useTheme();
-  const { onboarding, biometricEmail, submitBiometric, submitEmail, submitPassword, startPasswordReset, submitResetEmail, submitResetCode, submitNewPassword, restart } = useApp();
+  const { onboarding, biometricEmail, biometricAvailable, submitBiometric, submitEmail, submitPassword, startPasswordReset, submitResetEmail, submitResetCode, submitNewPassword, restart } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -120,6 +123,7 @@ export default function SignInScreen() {
   const [resetEmail, setResetEmail] = useState<string | null>(null);
   const [resetCode, setResetCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [enableBiometric, setEnableBiometric] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [registering, setRegistering] = useState(false);
 
@@ -218,7 +222,16 @@ export default function SignInScreen() {
               <Field label="PASSWORD">
                 <PasswordInput value={password} onChangeText={setPassword} textContentType="password" />
               </Field>
-              <Button title="Sign in" busy={busy} disabled={!password} onPress={() => void run(() => submitPassword(password))} />
+              {/* Sprint 8P Stage 2: a phone that can scan, and holds no key for this member yet, offers the biometric toggle. */}
+              {biometricAvailable && biometricEmail?.toLowerCase() !== state.email.toLowerCase() ? (
+                <ToggleSwitch
+                  label={BIOMETRIC_TOGGLE_LABEL}
+                  hint="After you sign in, scan your face or finger once. Next time, sign in without your password."
+                  value={enableBiometric}
+                  onChange={setEnableBiometric}
+                />
+              ) : null}
+              <Button title="Sign in" busy={busy} disabled={!password} onPress={() => void run(() => submitPassword(password, undefined, undefined, { enableBiometric }))} />
               <ForgotLink onPress={startPasswordReset} />
             </>
           ) : null}

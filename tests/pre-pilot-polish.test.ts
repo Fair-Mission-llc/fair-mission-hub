@@ -87,7 +87,7 @@ describe('navigation wording', () => {
     expect(sidebar).toContain("label: 'Donations History'");
     expect(sidebar).not.toMatch(/label: 'Bulletins'|Recorded Donations History/);
     expect(read('apps/web/app/resources/bulletins/page.tsx')).toContain('<PageTitle>Council Artifacts</PageTitle>');
-    const donations = read('apps/web/app/donations/page.tsx');
+    const donations = read('apps/web/components/modules/DonationRecords.tsx');
     expect(donations).toContain('✓ Automatically Logged to Treasury Ledger');
     expect(donations).not.toMatch(/Ledger synced from donations/i);
   });
@@ -95,7 +95,7 @@ describe('navigation wording', () => {
 
 describe('donations history and debug buttons', () => {
   it('marks the chosen event with a thick gold border and scrolls its drill-down into view', () => {
-    const page = read('apps/web/app/donations/page.tsx');
+    const page = read('apps/web/components/modules/DonationRecords.tsx');
     expect(page).toContain("'border-[6px] border-gold");
     expect(page).toContain('scrollIntoView(');
     expect(page).toContain('prefers-reduced-motion: reduce');
