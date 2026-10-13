@@ -579,7 +579,8 @@ import {
 import {
   assertCollectionOpen,
   assertDonationNotCoded,
-  accountOwnersByMethod,
+  accountOwnerEntityOf,
+  donationAccountOwner,
   isParishHeldDonation,
   type AccountOwnerEntity,
   buildBatchCodingQueue,
@@ -898,8 +899,12 @@ const DB_NAME = 'kofc.db';
  * 84: Event.collection_status (OPEN / CONCLUDED / RECONCILED) with its conclusion and cash box audit stamps
  *     (verified_cash_amount, cash_discrepancy_reason, the Over/Short Reconciliation Line's transaction) and the Donation
  *     batch coding stamp (revenue_gl_account_id, coding_batch_id, coded_by_member_id, coded_at) (Sprint 8N).
+ * 85: CouncilDonationMethod.account_owner_entity (COUNCIL / PARISH / THIRD_PARTY) and
+ *     ParishDisbursementRequest.settlement_method (CHECK / PARISH_HELD) (Sprint 8O).
+ * 86: Donation.historical_account_owner_entity, the owner snapshot stamped when a donation is recorded (Sprint 8O
+ *     Extension).
  */
-const SCHEMA_VERSION = 85;
+const SCHEMA_VERSION = 86;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -2823,11 +2828,14 @@ export class SqliteDataService implements DataService {
         await this.requireMember(db, actorId);
         await this.assertDonationReferences(db, clean);
         await this.assertDonationCollectionOpen(db, clean.EventID, 'log another donation for it');
+        // Sprint 8O Extension: the method's account owner right now, frozen on the donation.
+        const owner = await this.methodOwnerNow(db, clean.CouncilID, clean.DonationMethodID);
         await this.withFundsSync(db, [clean.EventID], async () => {
           const res = await db.runAsync(
             `INSERT INTO [Donation] ([CouncilID], [DonationDate], [DonationMethodID], [DonationTypeID], [Donor],
-                                     [DonationDesciption], [EventID], [DonationAmount], [DonationPhotoURL], [RecordedBy], [CheckNumber])
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                     [DonationDesciption], [EventID], [DonationAmount], [DonationPhotoURL], [RecordedBy], [CheckNumber],
+                                     [historical_account_owner_entity])
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               clean.CouncilID,
               clean.DonationDate,
@@ -2840,6 +2848,7 @@ export class SqliteDataService implements DataService {
               clean.DonationPhotoURL ?? null,
               actorId,
               clean.CheckNumber ?? null,
+              owner,
             ],
           );
           id = res.lastInsertRowId;
@@ -2862,11 +2871,14 @@ export class SqliteDataService implements DataService {
           assertMayChangeDonation(actor, existing, await this.eventOwnerOf(db, clean.EventID), `move donation ${id} to another event`);
         }
         await this.assertDonationReferences(db, clean);
+        // Sprint 8O Extension: only a move to another payment method takes a new owner snapshot.
+        const owner = clean.DonationMethodID !== existing.DonationMethodID ? await this.methodOwnerNow(db, clean.CouncilID, clean.DonationMethodID) : null;
         await this.withFundsSync(db, [existing.EventID, clean.EventID], async () => {
           await db.runAsync(`UPDATE [Donation] SET ${DONATION_EDITABLE_COLUMNS.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
             ...DONATION_EDITABLE_COLUMNS.map((c) => (clean[c] ?? null) as Bind),
             id,
           ]);
+          if (owner) await db.runAsync('UPDATE [Donation] SET [historical_account_owner_entity] = ? WHERE [id] = ?', [owner, id]);
         });
       });
       return this.requireDonation(db, id);
@@ -7642,9 +7654,8 @@ export class SqliteDataService implements DataService {
     );
     const methods = await db.getAllAsync<{ id: number; DonationMethod: string }>('SELECT [id], [DonationMethod] FROM [DonationMethod]');
     const kinds = new Map(methods.map((m) => [m.id, donationMethodKind(m.DonationMethod)]));
-    const owners = await this.accountOwners(db, councilId);
-    const donations = await db.getAllAsync<{ EventID: number; DonationAmount: number; DonationMethodID: number }>(
-      'SELECT d.[EventID], d.[DonationAmount], d.[DonationMethodID] FROM [Donation] d JOIN [EventCouncils] ec ON ec.[EventID] = d.[EventID] AND ec.[CouncilID] = d.[CouncilID] WHERE d.[CouncilID] = ?',
+    const donations = await db.getAllAsync<{ EventID: number; DonationAmount: number; DonationMethodID: number; historical_account_owner_entity: string | null }>(
+      'SELECT d.[EventID], d.[DonationAmount], d.[DonationMethodID], d.[historical_account_owner_entity] FROM [Donation] d JOIN [EventCouncils] ec ON ec.[EventID] = d.[EventID] AND ec.[CouncilID] = d.[CouncilID] WHERE d.[CouncilID] = ?',
       [councilId],
     );
     const members = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string }>('SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member]');
@@ -7657,7 +7668,7 @@ export class SqliteDataService implements DataService {
         EventID: d.EventID,
         DonationAmount: d.DonationAmount,
         isItem: kinds.get(d.DonationMethodID) === 'item',
-        parishHeld: isParishHeldDonation(kinds.get(d.DonationMethodID) ?? 'other', owners.get(d.DonationMethodID)),
+        parishHeld: isParishHeldDonation(kinds.get(d.DonationMethodID) ?? 'other', donationAccountOwner(d)),
       })),
       await db.getAllAsync<ParishDisbursementRequest>('SELECT * FROM [ParishDisbursementRequest] WHERE [council_id] = ?', [councilId]),
       new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
@@ -7669,14 +7680,18 @@ export class SqliteDataService implements DataService {
     return (await this.parishSplitConsole(db, row.council_id)).requests.find((d) => d.request.id === requestId)!;
   }
 
-  /** Sprint 8O: the account owner of each payment method the council enabled, keyed by DonationMethodID. */
-  private async accountOwners(db: SQLite.SQLiteDatabase, councilId: number): Promise<Map<number, AccountOwnerEntity>> {
-    return accountOwnersByMethod(await db.getAllAsync<CouncilDonationMethod>('SELECT * FROM [CouncilDonationMethod] WHERE [CouncilID] = ?', [councilId]), councilId);
+  /** Sprint 8O Extension: the account owner of a council's payment method at this moment (COUNCIL when not enabled). */
+  private async methodOwnerNow(db: SQLite.SQLiteDatabase, councilId: number, methodId: number): Promise<AccountOwnerEntity> {
+    return accountOwnerEntityOf(
+      await db.getFirstAsync<{ account_owner_entity: string | null }>('SELECT [account_owner_entity] FROM [CouncilDonationMethod] WHERE [CouncilID] = ? AND [DonationMethodID] = ?', [
+        councilId,
+        methodId,
+      ]),
+    );
   }
 
   /** Sprint 8N: the council's donations as the batch coder sees them. */
   private async batchCodingRows(db: SQLite.SQLiteDatabase, councilId: number): Promise<BatchCodingRow[]> {
-    const owners = await this.accountOwners(db, councilId);
     const rows = await db.getAllAsync<Donation & { methodName: string | null; eventName: string | null }>(
       `SELECT d.*, m.[DonationMethod] AS methodName, e.[EventName] AS eventName FROM [Donation] d
          LEFT JOIN [DonationMethod] m ON m.[id] = d.[DonationMethodID]
@@ -7691,7 +7706,7 @@ export class SqliteDataService implements DataService {
         methodName: name,
         kind: donationMethodKind(name),
         eventName: donation.EventID == null ? null : (eventName ?? `Event ${donation.EventID}`),
-        accountOwner: owners.get(donation.DonationMethodID),
+        accountOwner: donationAccountOwner(donation),
       };
     });
   }

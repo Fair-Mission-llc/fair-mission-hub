@@ -21,10 +21,10 @@ export const SUPER_ADMIN_DESK_TITLE = 'Super Admin Desk';
 
 /**
  * The platform owner's personal sign-in names (Credential usernames, compared without case). The desk mounts only for
- * these accounts. The seeded owner account is testsuperadmin@kofc.org; replace or extend the list with the owner's own
- * production sign-in before go-live.
+ * these accounts, and only while the account is a Super Admin. The seeded owner account is testsuperadmin@kofc.org;
+ * Sprint 8O Extension adds the developer's own local sign-in, 'tim'.
  */
-export const PLATFORM_OWNER_USERNAMES: readonly string[] = ['testsuperadmin@kofc.org'];
+export const PLATFORM_OWNER_USERNAMES: readonly string[] = ['testsuperadmin@kofc.org', 'tim'];
 
 /** True only for the platform owner's own session: an Active Super Admin signed in with an owner username. */
 export function isPlatformOwner(

@@ -128,6 +128,25 @@ describe.each(drivers)('$name driver: account ownership splits', (d) => {
   }
   const signIn = async (db: DataService, user: string) => (await db.auth.signIn(`${user}@stmarys.org`, PASSWORD))!.memberId;
 
+  /** Records a Venmo gift for the parking event; it takes the owner snapshot of the moment (Sprint 8O Extension). */
+  async function giveByVenmo(db: DataService, memberId: number, amount: number) {
+    const methods = await db.donations.listMethods(OWN);
+    const venmo = methods.find((o) => o.method.DonationMethod === 'Venmo')!.method.id;
+    const typeId = (await db.donations.listTypes(OWN))[0]!.id;
+    return db.donations.record(memberId, { CouncilID: OWN, EventID: PARKING_EVENT, DonationMethodID: venmo, DonationTypeID: typeId, DonationAmount: amount });
+  }
+
+  /** Sets the council's Venmo profile's owner, as the payment method editor saves it. */
+  async function setVenmoOwner(db: DataService, actorId: number, owner: 'COUNCIL' | 'PARISH') {
+    const methods = await db.donations.listMethods(OWN);
+    const venmo = methods.find((o) => o.method.DonationMethod === 'Venmo')!;
+    const links = await db.lookups.listCouncilSpecific(actorId, OWN, 'CouncilDonationMethod');
+    const link = links.find((l) => l.DonationMethodID === venmo.method.id)!;
+    await db.lookups.saveCouncilSpecific(actorId, OWN, 'CouncilDonationMethod', [
+      { id: link.id, DonationMethodID: link.DonationMethodID, DonationMethodURL: link.DonationMethodURL ?? null, account_owner_entity: owner },
+    ]);
+  }
+
   /** Marks the council's Venmo profile as the parish's account, as the payment method editor saves it. */
   async function venmoToParish(db: DataService, actorId: number) {
     const methods = await db.donations.listMethods(OWN);
@@ -162,10 +181,13 @@ describe.each(drivers)('$name driver: account ownership splits', (d) => {
     const [gk, treasurer, fs] = await Promise.all(['gk_user', 'treasurer_user', 'fs_user'].map((u) => signIn(db, u)));
     await venmoToParish(db, treasurer);
     await db.councils.setParishSplitSettings(gk, OWN, { enabled: true, glLineId: PARISH_LINE, percentage: 50 });
+    // Sprint 8O Extension: the seeded $150 Venmo was recorded while Venmo was the council's, and keeps that snapshot;
+    // only the $150 Venmo given after the switch is held by the parish.
+    expect((await giveByVenmo(db, treasurer, 150)).historical_account_owner_entity).toBe('PARISH');
 
-    // The seeded first weekend: $250 cash + $150 Venmo, and the Venmo is now the parish's own account.
+    // The seeded first weekend ($250 cash + $150 Venmo) plus the new $150 Venmo.
     const row = (await db.finance.getParishSplitConsole(treasurer, OWN)).events.find((r) => r.eventId === PARKING_EVENT)!;
-    expect(row).toMatchObject({ grossCollections: 400, share: 200, parishHeldCollections: 150, parishHeldCreditAvailable: 150, checkDue: 50, nextSettlement: 'PARISH_HELD' });
+    expect(row).toMatchObject({ grossCollections: 550, share: 275, parishHeldCollections: 150, parishHeldCreditAvailable: 150, checkDue: 125, nextSettlement: 'PARISH_HELD' });
 
     const postings = (await db.finance.listLedgerTransactions(fs, OWN)).length;
     const credit = await db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT);
@@ -175,7 +197,7 @@ describe.each(drivers)('$name driver: account ownership splits', (d) => {
     await expectRule(db.finance.recordChurchDisbursementPayment(fs, credit.request.id, { CheckNumber: '1404' }), 'ILLEGAL_STATE_TRANSITION');
 
     const check = await db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT);
-    expect(check.request).toMatchObject({ settlement_method: 'CHECK', status: 'PENDING', amount: 50 });
+    expect(check.request).toMatchObject({ settlement_method: 'CHECK', status: 'PENDING', amount: 125 });
     await expectRule(db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT), 'INVALID_INPUT');
   });
 
@@ -183,17 +205,43 @@ describe.each(drivers)('$name driver: account ownership splits', (d) => {
     const db = await makePilot();
     const treasurer = await signIn(db, 'treasurer_user');
     const before = await db.finance.getBatchCodingQueue(treasurer, OWN);
-    const venmoId = await venmoToParish(db, treasurer);
-    const venmoRows = before.rows.filter((r) => r.donation.DonationMethodID === venmoId);
-    expect(venmoRows.length).toBeGreaterThan(0);
+    await venmoToParish(db, treasurer);
+    const held = await giveByVenmo(db, treasurer, 40);
 
+    // The Venmo gifts recorded before the switch keep their COUNCIL snapshot and stay in the coder.
     const after = await db.finance.getBatchCodingQueue(treasurer, OWN);
-    expect(after.rows.some((r) => r.donation.DonationMethodID === venmoId)).toBe(false);
-    expect(after.rows.length).toBe(before.rows.length - venmoRows.length);
-    await expectRule(
-      db.finance.batchCodeDonations(treasurer, OWN, { donationIds: [venmoRows[0]!.donation.id], revenueAccountId: after.revenueAccounts[0]!.id }),
-      'INVALID_INPUT',
-    );
+    expect(after.rows.map((r) => r.donation.id)).toEqual(before.rows.map((r) => r.donation.id));
+    await expectRule(db.finance.batchCodeDonations(treasurer, OWN, { donationIds: [held.id], revenueAccountId: after.revenueAccounts[0]!.id }), 'INVALID_INPUT');
+  });
+
+  it('freezes the owner snapshot when the donation is recorded, so a later lookup change never rewrites it', async () => {
+    const db = await makePilot();
+    const [gk, treasurer] = await Promise.all(['gk_user', 'treasurer_user'].map((u) => signIn(db, u)));
+    await db.councils.setParishSplitSettings(gk, OWN, { enabled: true, glLineId: PARISH_LINE, percentage: 50 });
+    const asCouncil = await giveByVenmo(db, treasurer, 10);
+    expect(asCouncil.historical_account_owner_entity).toBe('COUNCIL');
+    await setVenmoOwner(db, treasurer, 'PARISH');
+    const asParish = await giveByVenmo(db, treasurer, 20);
+    expect(asParish.historical_account_owner_entity).toBe('PARISH');
+    const held = async () => (await db.finance.getParishSplitConsole(treasurer, OWN)).events.find((r) => r.eventId === PARKING_EVENT)!.parishHeldCollections;
+    expect(await held()).toBe(20);
+
+    // Turning the method back to the council changes neither stored snapshot nor the reconciliation.
+    await setVenmoOwner(db, treasurer, 'COUNCIL');
+    expect(await held()).toBe(20);
+    const history = await db.donations.listHistory(OWN, PARKING_EVENT);
+    const owners = new Map(history.entries.map((r) => [r.donation.id, r.donation.historical_account_owner_entity]));
+    expect(owners.get(asCouncil.id)).toBe('COUNCIL');
+    expect(owners.get(asParish.id)).toBe('PARISH');
+
+    // An edit that keeps the method keeps the snapshot; a move to another method stamps that method's owner now.
+    const kept = await db.donations.update(treasurer, asParish.id, { DonationAmount: 25 });
+    expect(kept.historical_account_owner_entity).toBe('PARISH');
+    const zelle = (await db.donations.listMethods(OWN)).find((o) => o.method.DonationMethod === 'Zelle')!.method.id;
+    const moved = await db.donations.update(treasurer, asParish.id, { DonationMethodID: zelle });
+    expect(moved.historical_account_owner_entity).toBe('COUNCIL');
+    // The owner is never taken from the caller.
+    await expectRule(db.donations.update(treasurer, asCouncil.id, { historical_account_owner_entity: 'PARISH' } as never), 'INVALID_INPUT');
   });
 });
 
@@ -228,6 +276,11 @@ describe('Super Admin Desk', () => {
 
   it("mounts only for the platform owner's own Super Admin session", () => {
     expect(isPlatformOwner(owner)).toBe(true);
+    // Sprint 8O Extension: the developer's own local sign-in, while it is a Super Admin.
+    expect(PLATFORM_OWNER_USERNAMES).toContain('tim');
+    expect(isPlatformOwner({ ...owner, username: 'tim' })).toBe(true);
+    expect(isPlatformOwner({ ...owner, username: 'tim', memberType: 'Admin' })).toBe(false);
+    expect(isPlatformOwner({ ...owner, username: 'timothy' })).toBe(false);
     expect(isPlatformOwner({ ...owner, username: owner.username.toUpperCase() })).toBe(true);
     expect(isPlatformOwner({ ...owner, username: 'another.super@kofc.org' })).toBe(false);
     expect(isPlatformOwner({ ...owner, memberType: 'Admin' })).toBe(false);
@@ -251,8 +304,10 @@ describe('Super Admin Desk', () => {
 });
 
 describe('Sprint 8O: schema 85 and the split console', () => {
-  it('bumps the phone database to 85 and records the release', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[5-9]|9\d);/);
+  it('bumps the phone database to 86 and records both releases', () => {
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[6-9]|9\d);/);
+    expect(read('Schema.sql')).toContain('(schema version 86)');
+    expect(read('Schema.sql')).toContain("ALTER TABLE [Donation] ADD [historical_account_owner_entity] VARCHAR(20) NOT NULL DEFAULT 'COUNCIL'");
     const schema = read('Schema.sql');
     expect(schema).toContain('(schema version 85)');
     expect(schema).toContain("ALTER TABLE [CouncilDonationMethod] ADD [account_owner_entity] VARCHAR(20) NOT NULL DEFAULT 'COUNCIL'");

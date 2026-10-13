@@ -576,8 +576,10 @@ import {
 import {
   assertCollectionOpen,
   assertDonationNotCoded,
-  accountOwnersByMethod,
+  accountOwnerEntityOf,
+  donationAccountOwner,
   isParishHeldDonation,
+  type AccountOwnerEntity,
   buildBatchCodingQueue,
   buildCashAuditBoard,
   CASH_OVER_SHORT_ACCOUNT_NAME,
@@ -2440,7 +2442,13 @@ export class MemoryDataService implements DataService {
         this.requireMember(s, actorId);
         this.assertDonationReferences(s, clean);
         this.assertDonationCollectionOpen(s, clean.EventID, 'log another donation for it');
-        return this.withFundsSync(s, [clean.EventID], () => ({ ...s.insert('Donation', { ...clean, RecordedBy: actorId }) }) as unknown as Donation);
+        // Sprint 8O Extension: the method's account owner right now, frozen on the donation.
+        const historical_account_owner_entity = this.methodOwnerNow(s, clean.CouncilID, clean.DonationMethodID);
+        return this.withFundsSync(
+          s,
+          [clean.EventID],
+          () => ({ ...s.insert('Donation', { ...clean, RecordedBy: actorId, historical_account_owner_entity }) }) as unknown as Donation,
+        );
       });
     },
 
@@ -2459,8 +2467,11 @@ export class MemoryDataService implements DataService {
           assertMayChangeDonation(actor, existing, this.eventOwnerOf(s, clean.EventID), `move donation ${id} to another event`);
         }
         this.assertDonationReferences(s, clean);
+        // Sprint 8O Extension: only a move to another payment method takes a new owner snapshot.
+        const restamp =
+          clean.DonationMethodID !== existing.DonationMethodID ? { historical_account_owner_entity: this.methodOwnerNow(s, clean.CouncilID, clean.DonationMethodID) } : {};
         return this.withFundsSync(s, [existing.EventID, clean.EventID], () => {
-          Object.assign(row, clean);
+          Object.assign(row, clean, restamp);
           return { ...row } as unknown as Donation;
         });
       });
@@ -6465,7 +6476,6 @@ export class MemoryDataService implements DataService {
     const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;
     const eventIds = new Set(s.rows('EventCouncils').filter((ec) => ec.CouncilID === councilId).map((ec) => ec.EventID as number));
     const kinds = new Map(s.rows('DonationMethod').map((m) => [m.id, donationMethodKind(m.DonationMethod as string)]));
-    const owners = accountOwnersByMethod(s.rows('CouncilDonationMethod') as unknown as CouncilDonationMethod[], councilId);
     return buildParishSplitConsole(
       councilId,
       council,
@@ -6478,7 +6488,7 @@ export class MemoryDataService implements DataService {
           EventID: d.EventID as number,
           DonationAmount: d.DonationAmount as number,
           isItem: kinds.get(d.DonationMethodID) === 'item',
-          parishHeld: isParishHeldDonation(kinds.get(d.DonationMethodID) ?? 'other', owners.get(d.DonationMethodID as number)),
+          parishHeld: isParishHeldDonation(kinds.get(d.DonationMethodID) ?? 'other', donationAccountOwner(d as unknown as Donation)),
         })),
       s.rows('ParishDisbursementRequest').filter((r) => r.council_id === councilId) as unknown as ParishDisbursementRequest[],
       new Map(s.rows('Member').map((m) => [m.id as number, `${m.MemberFirstName as string} ${m.MemberLastName as string}`])),
@@ -6490,11 +6500,15 @@ export class MemoryDataService implements DataService {
     return this.parishSplitConsole(s, row.council_id as number).requests.find((d) => d.request.id === requestId)!;
   }
 
+  /** Sprint 8O Extension: the account owner of a council's payment method at this moment (COUNCIL when not enabled). */
+  private methodOwnerNow(s: MemoryStore, councilId: number, methodId: number): AccountOwnerEntity {
+    return accountOwnerEntityOf(s.rows('CouncilDonationMethod').find((l) => l.CouncilID === councilId && l.DonationMethodID === methodId) as never);
+  }
+
   /** Sprint 8N: the council's donations as the batch coder sees them. */
   private batchCodingRows(s: MemoryStore, councilId: number): BatchCodingRow[] {
     const methods = new Map(s.rows('DonationMethod').map((m) => [m.id as number, m.DonationMethod as string]));
     const events = new Map(s.rows('Event').map((e) => [e.id as number, e.EventName as string]));
-    const owners = accountOwnersByMethod(s.rows('CouncilDonationMethod') as unknown as CouncilDonationMethod[], councilId);
     return s
       .rows('Donation')
       .filter((d) => d.CouncilID === councilId)
@@ -6505,7 +6519,7 @@ export class MemoryDataService implements DataService {
           methodName,
           kind: donationMethodKind(methodName),
           eventName: d.EventID == null ? null : (events.get(d.EventID as number) ?? `Event ${d.EventID as number}`),
-          accountOwner: owners.get(d.DonationMethodID as number),
+          accountOwner: donationAccountOwner(d as unknown as Donation),
         };
       });
   }

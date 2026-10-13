@@ -3706,3 +3706,19 @@ ALTER TABLE [CouncilDonationMethod] ADD [account_owner_entity] VARCHAR(20) NOT N
 GO
 ALTER TABLE [ParishDisbursementRequest] ADD [settlement_method] VARCHAR(20) NOT NULL DEFAULT 'CHECK' CONSTRAINT [CK_ParishDisbursementRequest_settlement_method] CHECK ([settlement_method] IN ('CHECK', 'PARISH_HELD'));
 GO
+
+-- =========================================================================
+-- Sprint 8O Extension: IMMUTABLE ACCOUNT OWNERSHIP SNAPSHOTS (schema version 86)
+--
+-- Donation gains historical_account_owner_entity: the account owner (account-ownership.ts) of the donation's payment
+-- method at the moment the donation was recorded - 'COUNCIL' (DEFAULT), 'PARISH' or 'THIRD_PARTY'. The drivers copy it
+-- from CouncilDonationMethod.account_owner_entity inside the same transaction that writes the donation (the phone's
+-- intake and the web's donation forms both go through donations.record). Changing a method's owner later never rewrites
+-- it, so the Parish Fundraiser Revenue Split Console and the batch coder - which read this stamp, not the live lookup -
+-- keep reconciling past events the way the money actually moved. Only an edit that moves the donation to another
+-- payment method stamps it again, with that method's owner at the moment of the edit. Rows recorded before Sprint 8O
+-- read as 'COUNCIL', the owner every method had then.
+-- The phone database version moves to 86.
+-- =========================================================================
+ALTER TABLE [Donation] ADD [historical_account_owner_entity] VARCHAR(20) NOT NULL DEFAULT 'COUNCIL' CONSTRAINT [CK_Donation_historical_account_owner_entity] CHECK ([historical_account_owner_entity] IN ('COUNCIL', 'PARISH', 'THIRD_PARTY'));
+GO

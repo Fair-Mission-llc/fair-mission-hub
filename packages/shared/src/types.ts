@@ -686,6 +686,8 @@ export interface Donation {
   coding_batch_id?: string | null;       // VARCHAR(36): the batch posting's JournalEntry.TransactionID
   coded_by_member_id?: number | null;    // Member: the Treasurer
   coded_at?: string | null;              // DATETIME
+  /** Sprint 8O Extension: the payment method's account owner when the donation was recorded (never rewritten). */
+  historical_account_owner_entity?: 'COUNCIL' | 'PARISH' | 'THIRD_PARTY';
 }
 
 export interface Skill {

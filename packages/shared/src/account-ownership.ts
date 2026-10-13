@@ -10,6 +10,10 @@
 // The owner feeds the Parish Fundraiser Revenue Split Console (parish-split.ts): an electronic donation given through a
 // PARISH-owned method is Revenue Held by Parish, settled against the parish share with no check, and the batch coder
 // (cash-audit.ts) leaves it out so it never reaches the council's books.
+//
+// Sprint 8O Extension (schema 86): each donation keeps a permanent snapshot of its method's owner, stamped by the drivers
+// in the same transaction that records it (Donation.historical_account_owner_entity, donationAccountOwner). The split
+// console and the batch coder read that snapshot, so changing a method's owner affects only donations recorded after.
 // =========================================================================
 import { BusinessRuleError } from './rules';
 
@@ -54,6 +58,13 @@ export function cleanAccountOwnerEntity(value: unknown): AccountOwnerEntity {
 /** The front-end gate over the editor's rows: the message to show while any row's owner is blank, else null. */
 export const accountOwnerGateMessage = (owners: readonly (string | null | undefined)[]): string | null =>
   owners.every(isAccountOwnerEntity) ? null : ACCOUNT_OWNER_REQUIRED_TEXT;
+
+/**
+ * Sprint 8O Extension (schema 86): the owner a donation was recorded under - its Donation.historical_account_owner_entity
+ * snapshot, never the method's live owner, so a later change to the payment method cannot rewrite a past reconciliation.
+ */
+export const donationAccountOwner = (donation: { historical_account_owner_entity?: string | null }): AccountOwnerEntity =>
+  accountOwnerEntityOf({ account_owner_entity: donation.historical_account_owner_entity });
 
 /** The owner of each payment method a council enabled, keyed by DonationMethodID (methods it never enabled are absent). */
 export function accountOwnersByMethod(

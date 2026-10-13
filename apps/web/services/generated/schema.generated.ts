@@ -2608,6 +2608,21 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "historical_account_owner_entity",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "COUNCIL"
+        },
+        "allowed": [
+          "COUNCIL",
+          "PARISH",
+          "THIRD_PARTY"
+        ]
       }
     ],
     "foreignKeys": [

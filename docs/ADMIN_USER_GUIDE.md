@@ -3565,6 +3565,11 @@ The **Account owner** column on **Enabled donation methods** records who owns th
 The portal does not guess the owner. A new payment method starts with no owner. The editor does not save until you choose one.
 Methods that were set up before Sprint 8O read as **Council account**.
 
+Each donation keeps the owner that its payment method had at the moment the donation was recorded.
+A later change to the owner does not change past donations. The change applies only to donations recorded after the change.
+Past parish splits and batch coding therefore stay the same when you correct a payment method.
+An edit that moves a donation to a different payment method takes that method's owner at the moment of the edit.
+
 ### 25.2 Set the account owner of a payment method
 
 > **Who can do this:** council Admins, the council's Financial Secretary and Treasurer, and Super Admins.
@@ -3584,7 +3589,8 @@ Methods that were set up before Sprint 8O read as **Council account**.
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | **Save changes** is unavailable and a red message says *"Choose who owns the account each payment method pays into (Council, Parish or Third party) before you save."* | A changed row shows **Choose…** in **Account owner**. | Choose the owner on each row with a red border. |
-| A parish fundraiser shows no parish-held revenue. | The parish's giving method is set to **Council account**. | Set the method to **Parish account**. |
+| A parish fundraiser shows no parish-held revenue. | The parish's giving method was set to **Council account** when the donations were recorded. | Set the method to **Parish account** before the next event. Past donations keep their recorded owner. |
+| You changed the owner, but past events did not change. | Each donation keeps the owner it was recorded under. | No fix is needed. Only new donations use the new owner. |
 
 ### 25.3 Settle a parish split when the parish already holds the money
 
