@@ -40,16 +40,16 @@ describe('dashboard tabs by seat (pure)', () => {
   it('lists Home first and the Member Desk last', () => {
     // Sprint 8C: the Reports Desk merged into Home.
     // Sprint 8O Extension: the platform owner's Super Admin Desk is drawn second, right after Home.
-    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'super-admin', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'oversight', 'member']);
+    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'super-admin', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'member']);
   });
 
   it('gives each officer only their own desk', () => {
     // Sprint 8C: the Deputy Grand Knight shares the Grand Knight Desk, and every officer reads the Oversight Desk's audit.
-    expect(ids(member({ roles: ['Grand Knight'] }))).toEqual(['home', 'grand-knight', 'oversight', 'member']);
-    expect(ids(member({ roles: ['Deputy Grand Knight'] }))).toEqual(['home', 'grand-knight', 'oversight', 'member']);
-    expect(ids(member({ roles: ['Financial Secretary'] }))).toEqual(['home', 'financial-secretary', 'oversight', 'member']);
-    expect(ids(member({ roles: ['Treasurer'] }))).toEqual(['home', 'treasurer', 'oversight', 'member']);
-    expect(ids(member({ roles: ['Recorder'] }))).toEqual(['home', 'recorder', 'oversight', 'member']);
+    expect(ids(member({ roles: ['Grand Knight'] }))).toEqual(['home', 'grand-knight', 'member']);
+    expect(ids(member({ roles: ['Deputy Grand Knight'] }))).toEqual(['home', 'grand-knight', 'member']);
+    expect(ids(member({ roles: ['Financial Secretary'] }))).toEqual(['home', 'financial-secretary', 'member']);
+    expect(ids(member({ roles: ['Treasurer'] }))).toEqual(['home', 'treasurer', 'member']);
+    expect(ids(member({ roles: ['Recorder'] }))).toEqual(['home', 'recorder', 'member']);
   });
 
   it("clears a seat only on the officer's own council", () => {
@@ -220,13 +220,13 @@ describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
     const summary = read('apps/web/app/executive-dashboard/page.tsx');
     expect(summary).toContain('<RoadmapRibbon');
     expect(summary).toContain('<Scorecards s={s} compact />');
-    expect(page).toContain("shown === 'oversight' ? (");
-    expect(page).toContain('<OversightDesk user={user} councilId={scope.councilId} />');
+    // Sprint 8P Stage 3: the Oversight Desk and its badge strip are gone; each queue is a drawer count on its own desk.
+    expect(page).not.toContain("shown === 'oversight'");
+    expect(page).not.toContain('<OversightDesk');
     expect(page).not.toContain("shown === 'reports'");
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toContain("'Approved Expenses Awaiting Payment'");
-    expect(desks).toContain("'Flagged Hours Entries'");
-    expect(desks).toContain('[ {b.icon} {text} ]');
+    expect(desks).not.toContain('function DeskStatusBadges');
+    expect(desks).not.toContain('<DeskStatusBadges');
     expect(desks).toContain('<QuarantineDesk actorId={user.memberId} councilId={councilId} />');
     expect(read('apps/web/components/RoadmapParts.tsx')).toContain('export function RoadmapRibbon');
   });

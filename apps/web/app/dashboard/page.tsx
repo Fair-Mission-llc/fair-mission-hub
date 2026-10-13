@@ -71,6 +71,9 @@
 // wide screens with the faith cards), grow with their content instead of scrolling inside themselves, and the page
 // scrolls in the browser. The desks' inner scroll lists (Shifts awaiting hours, the business calendar, the oral history
 // recordings) also open out onto the page.
+// Sprint 8P Stage 3: every officer desk is a desk blotter of slide-out drawers, and the Oversight Desk tab is dissolved -
+// its Flagged Hours Review, Shifts Awaiting Hours and Inbound Council Mail Center are Grand Knight Desk drawers, and the
+// Shifts Awaiting Hours audit is also back on the Executive Dashboard page for every executive-audit reader.
 import { dashboardTabsFor, isFraternalTenant } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import {
@@ -79,7 +82,6 @@ import {
   HistorianDesk,
   HomeWidgets,
   MemberDesk,
-  OversightDesk,
   RecorderDesk,
   TreasurerDesk,
 } from '@/components/DashboardDesks';
@@ -124,8 +126,6 @@ function Dashboard() {
           <RecorderDesk user={user} councilId={scope.councilId} />
         ) : shown === 'historian' ? (
           <HistorianDesk user={user} councilId={scope.councilId} />
-        ) : shown === 'oversight' ? (
-          <OversightDesk user={user} councilId={scope.councilId} />
         ) : shown === 'super-admin' ? (
           <SuperAdminDesk user={user} />
         ) : (

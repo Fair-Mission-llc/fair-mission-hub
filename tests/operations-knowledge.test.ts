@@ -1,4 +1,4 @@
-// Sprint 8I (schema version 79): the Global Operations Knowledge Vault on the Oversight Desk and its read-only
+// Sprint 8I (schema version 79): the Operations Knowledge Archive on the Oversight Desk and its read-only
 // Operations Knowledge Archive under System Settings.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -153,7 +153,7 @@ describe('the vault rules (pure)', () => {
   });
 });
 
-describe.each(drivers)('the operations knowledge vault in the $name driver', (d) => {
+describe.each(drivers)('the Operations Knowledge Archive in the $name driver', (d) => {
   it('appends signed entries and lists them newest first', async () => {
     const db = await d.make(); // 2026-09-20 12:00
     // The seeded Super Admin holds the Grand Knight seat; the Council Admin is the Financial Secretary.
@@ -200,10 +200,10 @@ describe.each(drivers)('the operations knowledge vault in the $name driver', (d)
 describe('the vault and archive screens', () => {
   it('puts the vault card on the Oversight Desk for its writers', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toContain('OperationsKnowledgeVault');
+    expect(desks).toContain('OperationsKnowledgeArchiveEntryForm');
     expect(desks).toContain('canWriteOperationsKnowledge(user, councilId)');
-    const parts = read('apps/web/components/KnowledgeVaultParts.tsx');
-    expect(parts).toContain('Global Operations Knowledge Vault');
+    const parts = read('apps/web/components/KnowledgeArchiveParts.tsx');
+    expect(parts).toContain('Operations Knowledge Archive');
     expect(parts).toContain('addOperationsKnowledge');
     expect(parts).toContain('<Markdown');
     expect(parts).toContain('data-surface="navy"');
@@ -216,7 +216,7 @@ describe('the vault and archive screens', () => {
     const archive = read('apps/web/components/modules/KnowledgeArchive.tsx');
     expect(archive).not.toContain('setCouncilId');
     expect(archive).toContain('KnowledgeArchiveGrid');
-    const parts = read('apps/web/components/KnowledgeVaultParts.tsx');
+    const parts = read('apps/web/components/KnowledgeArchiveParts.tsx');
     expect(parts).toContain('filterOperationsKnowledge');
     expect(parts.slice(parts.indexOf('export function KnowledgeArchiveGrid'))).not.toContain('addOperationsKnowledge');
     expect(read('apps/web/components/Sidebar.tsx')).toContain("'system-settings/knowledge-archive'");
@@ -224,7 +224,7 @@ describe('the vault and archive screens', () => {
 
   it('documents the sprint in the admin guide', () => {
     const guide = read('docs/ADMIN_USER_GUIDE.md');
-    expect(guide).toContain('Global Operations Knowledge Vault');
+    expect(guide).toContain('Operations Knowledge Archive');
     expect(guide).toContain('Operations Knowledge Archive');
   });
 });

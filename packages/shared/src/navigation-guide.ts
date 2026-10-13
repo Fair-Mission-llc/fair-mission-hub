@@ -120,7 +120,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'system-settings/knowledge-archive': {
     member:
-      "Shows the signed operating notes your council's leaders saved in the Global Operations Knowledge Vault. Filter by tag and fraternal year, or type words to search. Read-only.",
+      "Shows the signed operating notes your council's leaders saved in the Operations Knowledge Archive. Filter by tag and fraternal year, or type words to search. Read-only.",
   },
   members: { member: "Keeps the council's member roster: member types, roles and skills." },
   'supreme-sync': { member: 'Checks and files the Supreme Council reports (Forms 1728 and 1295) and syncs the roster.' },

@@ -1089,10 +1089,10 @@ The bilateral handshake between two councils of the same State (council-affiliat
 Rules. Draft May 1-31, Review June 1-30, Lock July 1, final vote through July 10. From July 1 every CouncilGoals write for the year rejects COUNCIL_GOALS_LOCKED with no override. After July 10 the budget vote rejects BUDGET_VOTE_DEADLINE_PASSED unless an Active Super Admin passes superAdminOverride.
 New methods. councils.setLoanerLibraryEnabled, councils.listAffiliationDirectory, councils.requestAffiliation, councils.respondToAffiliation, reports.markCouncilGoalsReviewed, budget.markBudgetYearReviewed.
 ________________________________________
-# 41. Global Operations Knowledge Vault (Sprint 8I)
+# 41. Operations Knowledge Archive (Sprint 8I)
 Schema version 79; the phone database version moves to 79.
 [CouncilOperationsKnowledge]
-A council's long-term operating notes, so a new chairman inherits what the last one learned (operations-knowledge.ts). history.addOperationsKnowledge appends an entry from the Oversight Desk's Global Operations Knowledge Vault card (the council's Active Admins, Grand Knight and Deputy Grand Knight, or any Active Super Admin: assertMayWriteOperationsKnowledge). history.listOperationsKnowledge feeds the read-only Operations Knowledge Archive under System Settings (/system-settings/knowledge-archive; the council's Active officers and Admins, or any Active Super Admin: assertMayReadOperationsKnowledge). Entries are append-only: no method edits or deletes one.
+A council's long-term operating notes, so a new chairman inherits what the last one learned (operations-knowledge.ts). history.addOperationsKnowledge appends an entry from the entry form in the Operations Knowledge Archive drawer of the Grand Knight Desk (the Oversight Desk's card until Sprint 8P Stage 3) (the council's Active Admins, Grand Knight and Deputy Grand Knight, or any Active Super Admin: assertMayWriteOperationsKnowledge). history.listOperationsKnowledge feeds the read-only Operations Knowledge Archive under System Settings (/system-settings/knowledge-archive; the council's Active officers and Admins, or any Active Super Admin: assertMayReadOperationsKnowledge). Entries are append-only: no method edits or deletes one.
 •	entry_id (INT, NOT NULL) — Primary Key. Auto-incrementing identifier.
 •	council_id (INT, NOT NULL) — Foreign Key references Council(id).
 •	category_tag (VARCHAR(20), NOT NULL) — RECRUITING, TREASURY, CLERGY, COMPLIANCE, DEVOTIONAL or LOGISTICS. Rules layer, no CHECK (cleanOperationsKnowledgeEntry: INVALID_INPUT).

@@ -1,6 +1,7 @@
 'use client';
-// The Global Operations Knowledge Vault (Sprint 8I, operations-knowledge.ts). OperationsKnowledgeVault is the Oversight
-// Desk's high-contrast card: the council's Admins, Grand Knight and Deputy Grand Knight pick one of the six governance
+// The Operations Knowledge Archive (Sprint 8I, operations-knowledge.ts). OperationsKnowledgeArchiveEntryForm is the
+// high-contrast entry form at the top of the Operations Knowledge Archive drawer (Grand Knight and Financial Secretary
+// Desks; Sprint 8P Stage 3 - it was the Oversight Desk's vault card): the council's Admins, Grand Knight and Deputy Grand Knight pick one of the six governance
 // tags, write a note in light markdown (Write / Preview) and save it; the driver stamps the signature and the date.
 // KnowledgeArchiveGrid is the read-only archive under System Settings: every entry of the council, filtered by tag,
 // fraternal year and text, so a new chairman reads what the last ones learned.
@@ -91,10 +92,10 @@ export function CharterAdvisoryPanel({ review }: { review: CharterReview }) {
 }
 
 /**
- * The Oversight Desk's vault card (canWriteOperationsKnowledge): a tag picker, a markdown editor with preview, the
+ * The archive's entry form (canWriteOperationsKnowledge), at the top of the Operations Knowledge Archive drawer: a tag picker, a markdown editor with preview, the
  * live content guard and Charter Advisory Warning Panel, and the council's three latest entries under it.
  */
-export function OperationsKnowledgeVault({ user, councilId }: { user: SessionUser; councilId: number }) {
+export function OperationsKnowledgeArchiveEntryForm({ user, councilId }: { user: SessionUser; councilId: number }) {
   const entries = useLoad(() => db.history.listOperationsKnowledge(user.memberId), [user.memberId]);
   const [tag, setTag] = useState<OperationsKnowledgeCategory>('RECRUITING');
   const [text, setText] = useState('');
@@ -122,9 +123,9 @@ export function OperationsKnowledgeVault({ user, councilId }: { user: SessionUse
 
   const latest = (entries.data ?? []).filter((e) => e.council_id === councilId).slice(0, 3);
   return (
-    <section aria-label="Global Operations Knowledge Vault" data-surface="navy" className="flex flex-col gap-3 rounded border-4 border-gold bg-navy p-4 text-white">
+    <section aria-label="Operations Knowledge Archive: new entry" data-surface="navy" className="flex flex-col gap-3 rounded border-4 border-gold bg-navy p-4 text-white">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-gold pb-2">
-        <h2 className="font-serif text-xl font-bold">🗝️ Global Operations Knowledge Vault</h2>
+        <h2 className="font-serif text-xl font-bold">🗝️ Operations Knowledge Archive · New Entry</h2>
         <Link href={KNOWLEDGE_ARCHIVE_HREF} className="text-sm font-bold text-gold underline">
           Open the archive
         </Link>
@@ -272,7 +273,7 @@ export function KnowledgeArchiveGrid({ user }: { user: SessionUser }) {
       </div>
       {entries.error ? <Notice tone="error">{entries.error}</Notice> : null}
       {!entries.data && !entries.error ? <p className="text-sm text-muted">Opening the archive…</p> : null}
-      {entries.data && all.length === 0 ? <Empty>No entries yet. The Grand Knight, Deputy Grand Knight and Admins write them on the Oversight Desk.</Empty> : null}
+      {entries.data && all.length === 0 ? <Empty>No entries yet. The Grand Knight, Deputy Grand Knight and Admins write them in the Operations Knowledge Archive drawer of the Grand Knight Desk.</Empty> : null}
       {entries.data && all.length > 0 && rows.length === 0 ? <Empty>No entry matches these filters.</Empty> : null}
       {rows.length > 0 ? (
         <>

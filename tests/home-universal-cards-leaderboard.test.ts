@@ -153,12 +153,11 @@ describe('Home holds only the universal cards', () => {
     for (const gone of ['DeskStatusBadges', 'RoadmapRibbon', 'ExecutiveSummary', 'overflow-y-auto']) expect(code).not.toContain(gone);
   });
 
-  it('leads the Oversight Desk with the desk status badges', () => {
+  it('retires the desk status badge strip with the Oversight Desk (Sprint 8P Stage 3)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    const oversight = desks.slice(desks.indexOf('export function OversightDesk('), desks.indexOf('// ---- desk status badges'));
-    expect(oversight.indexOf('<DeskStatusBadges user={user} councilId={councilId} />')).toBeGreaterThan(-1);
-    expect(oversight.indexOf('<DeskStatusBadges')).toBeLessThan(oversight.indexOf('<InboundMailCenter'));
-    expect(desks.match(/<DeskStatusBadges /g)).toHaveLength(1);
+    expect(desks).not.toContain('function DeskStatusBadges');
+    expect(desks).not.toContain('<DeskStatusBadges');
+    expect(desks).not.toContain('export function OversightDesk(');
   });
 });
 
@@ -199,7 +198,8 @@ describe('the guides', () => {
     const admin = read('docs/ADMIN_USER_GUIDE.md');
     expect(admin).toContain('**Home** holds seven large cards, and nothing else.');
     expect(admin).toContain('| **Top 5 Fraternal Volunteers** |');
-    expect(admin).toContain('The status badges at the top of the **Oversight Desk**:');
+    // Sprint 8P Stage 3: the badge strip and the Oversight Desk are gone.
+    expect(admin).toContain('The portal has no status badge strip and no **Oversight Desk**.');
     expect(admin).toContain('### 19.13 Read the Executive Dashboard page');
     expect(admin).toContain('`/executive-dashboard`');
     expect(admin).not.toContain('**Executive Summary** frame');

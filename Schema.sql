@@ -3745,3 +3745,16 @@ GO
 -- phone password prompt gains '[ 🔘 Enable FaceID / Biometric Login ]': one scan after a password sign-in mints the
 -- device key. The phone database version moves to 88.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8P Stage 3: UNIVERSAL DESK DRAWERS AND OVERSIGHT DISSOLUTION (schema version 89)
+--
+-- No table changes. The Treasurer, Recorder and Historian Desks become desk blotters of slide-out drawers too: the
+-- Treasurer's Ledger Line Coder, Expense Report (ER) Settlement and Charitable Contribution Matches carry their own
+-- alerts beside the Planning & Budgeting Workflow; the Recorder's featured Historical Meeting Minutes Archive spans the
+-- top row; the Historian's Fraternal Diary Entry Logs reader leads the desk. The standalone Oversight Desk tab is
+-- dissolved: its Flagged Hours Review, Shifts Awaiting Hours and Inbound Council Mail Center are Grand Knight Desk
+-- drawers, and the desk status badges give way to each drawer's own count and alert. CouncilOperationsKnowledge is named
+-- the Operations Knowledge Archive everywhere. The Member Desk's two shift trackers sit side by side at the top. The
+-- phone database version moves to 89.
+-- =========================================================================

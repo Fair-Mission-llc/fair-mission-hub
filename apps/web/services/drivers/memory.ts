@@ -6656,7 +6656,7 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       return s.transaction(() => {
         const actor = this.memberWriteActor(s, actorId);
-        assertMayWriteOperationsKnowledge(actor, councilId, `write in the operations knowledge vault of council ${councilId}`);
+        assertMayWriteOperationsKnowledge(actor, councilId, `write in the Operations Knowledge Archive of council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
         const member = this.requireMember(s, actorId);
         const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;

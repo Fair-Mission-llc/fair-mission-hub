@@ -33,8 +33,8 @@
 // Sprints 8G/8H: the Grand Knight Desk also answers the council's incoming affiliation invites
 // (IncomingAffiliationInvites): Accept makes the pair ACTIVE and unlocks loaner library sharing between the councils.
 //
-// Sprint 8I: the Oversight Desk carries the high-contrast Global Operations Knowledge Vault card for the council's Admins,
-// Grand Knight and Deputy Grand Knight (OperationsKnowledgeVault, canWriteOperationsKnowledge): a governance tag, a
+// Sprint 8I: the Oversight Desk carries the high-contrast Operations Knowledge Archive card for the council's Admins,
+// Grand Knight and Deputy Grand Knight (OperationsKnowledgeArchiveEntryForm, canWriteOperationsKnowledge): a governance tag, a
 // markdown note and an automatic signature stamp. The read-only archive is under System Settings.
 // Sprint 8L - Omnipresent Officer Desks: each desk opens with its module folders (DeskModuleShelf, DESK_MODULES): the
 // Grand Knight Desk carries the Charitable Grant Requests Vetting Board, the Constitutional Advisor Panels and Connected
@@ -53,6 +53,14 @@
 // Boundary Accent while a sheet waits on the reader's own signature. The page bodies of /expenses/authorize,
 // /expenses/audit, /expenses/queue, /donations, /elections and /system-settings/knowledge-archive moved to
 // components/modules so the drawers mount the same code.
+// Sprint 8P Stage 3 - Universal Desk Drawers: the Treasurer, Recorder and Historian Desks are blotters too (no <details>
+// folders remain). The Treasurer gets the Ledger Line Coder, Expense Report (ER) Settlement and Charitable Contribution
+// Matches drawers with their own alerts beside the Planning & Budgeting Workflow; the Recorder's blotter is led by the
+// featured Historical Meeting Minutes Archive; the Historian's by the Fraternal Diary Entry Logs reader. The Oversight
+// Desk is dissolved: the Flagged Hours Review, Shifts Awaiting Hours and the Inbound Council Mail Center are Grand Knight
+// Desk drawers that light while they hold work, the desk status badges are gone (each drawer carries its own count), and
+// the Operations Knowledge Archive drawer holds the entry form for its writers. The Member Desk puts its two shift
+// trackers side by side at the top and keeps plain panels.
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -60,17 +68,21 @@ import {
   awaitsWrittenOrder,
   buildReminderStream,
   bulletinMonthOf,
-  canOpenRecorderDesk,
   COMMUNITY_PRAYER_CARD_TITLE,
   councilWideSettings,
-  deskModulesFor,
   deskDrawersFor,
   DESK_ALERT_POLL_MS,
+  diaryLogRows,
+  erSettlementAlert,
   fsPaymentRequestAlert,
   gkSignatureAlert,
+  minutesArchiveRows,
+  payableSheets,
+  treasurerCodingAlert,
+  canDisburseCharity,
+  type DeskDrawerId,
   describePrayerCount,
   PRAYING_HANDS_LABEL,
-  type DashboardTabId,
   type PrayerIntentionDetail,
   describeError,
   driveFileViewUrl,
@@ -82,24 +94,19 @@ import {
   MINUTES_TEXT_MAX_LENGTH,
   minutesCountdownLabel,
   minutesDeskRows,
-  canLogConcludedRevenue,
   LOANER_LIBRARY_HREF,
   canOpenExpenseAuditDesk,
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
-  canReviewVolunteerQuarantine,
   canWriteOperationsKnowledge,
-  canViewExecutiveAudits,
   dailyVerse,
   DESK_FOCUS_TARGETS,
   LEADERBOARD_SIZE,
   hoursReminderCadence,
   hoursRemindersDue,
-  isSuperAdmin,
   MEMBER_DESK_OPEN_SHIFT_DAYS,
   memberDeskOpenShifts,
   signupWindow,
-  type DeskBadgeKey,
   feastDayTracker,
   FEAST_TRACKER_DAYS,
   formatShiftWhen,
@@ -113,16 +120,18 @@ import {
   type MinutesCountdown,
   type SessionUser,
 } from '@kofc/shared';
-import { BankStatementMatchWindow, BudgetVsActualsModule, DeskModule, DeskModuleShelf, MotionsLedgerModule } from '@/components/DeskModules';
+import { BankStatementMatchWindow, BudgetVsActualsModule, MotionsLedgerModule } from '@/components/DeskModules';
 import { DeskBlotter } from '@/components/DeskDrawers';
 import { AuthorizationDesk as ApprovedExpenseSigning } from '@/components/modules/ApprovedExpenseSigning';
+import { DisbursementLedger as ExpenseSettlement } from '@/components/modules/ExpenseSettlement';
+import { TreasurerDesk as LedgerLineCoder } from '@/components/modules/LedgerLineCoder';
 import { DonationsWorkspace as DonationRecords } from '@/components/modules/DonationRecords';
 import { NominationsDesk as ElectionTracker } from '@/components/modules/ElectionTracker';
 import { AuditQueue as ExpenseRoutingTrack } from '@/components/modules/ExpenseRoutingTrack';
 import { KnowledgeArchive } from '@/components/modules/KnowledgeArchive';
 import { AuditDesk as PaymentRequestDesk } from '@/components/modules/PaymentRequestDesk';
 import { FraternalPlanningWorkflow } from '@/components/PlanningWorkflowParts';
-import { ExpenseStatusPill, HonorVoucherBadge } from '@/components/ExpenseParts';
+import { ExpenseStatusPill } from '@/components/ExpenseParts';
 import { CharityQueue as CharityCheckConsole } from '@/components/modules/CharityCheckConsole';
 import { VettingDesk as CharityVettingBoard } from '@/components/modules/CharityVettingBoard';
 import { Affiliations as ConnectedCouncils } from '@/components/modules/ConnectedCouncils';
@@ -131,7 +140,7 @@ import { PhotoGallery } from '@/components/modules/PhotoGallery';
 import { AuditDesk as TrusteeAuditDesk } from '@/components/modules/TrusteeAuditDesk';
 import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
 import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
-import { OperationsKnowledgeVault } from '@/components/KnowledgeVaultParts';
+import { OperationsKnowledgeArchiveEntryForm } from '@/components/KnowledgeArchiveParts';
 import { ChurchDisbursementQueue, ParishSplitConsoleCard } from '@/components/ParishSplitParts';
 import { BatchTransactionCoder, CashBoxAuditPanel } from '@/components/CashAuditParts';
 import { TrackingSteps } from '@/components/IntakeParts';
@@ -140,7 +149,7 @@ import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
 import { InboundMailCenter, readAccessRequests } from '@/components/PlatformAccessParts';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
-import { DeskLink, DeskRow } from '@/components/WorkspaceTabs';
+import { DeskRow } from '@/components/WorkspaceTabs';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { photoName, photoSrc } from '@/lib/media';
 import { useFeatureFlags, useSession, useTenantType } from '@/lib/session';
@@ -149,7 +158,12 @@ import { db } from '@/services/db';
 import { archiveMeetingPhoto, localFileLink } from '@/services/drive-vault-transport';
 
 /** How far ahead the Member Desk lists the member's own shifts. */
+/** One row of the Recorder's business calendar: a meeting with its minutes countdown. */
+type MinutesRow = MinutesCountdown & { meeting: Meeting };
+
 const MEMBER_DESK_SHIFT_DAYS = 30;
+/** How far back the Historical Meeting Minutes Archive reads the council's meetings. */
+const MINUTES_ARCHIVE_FROM = '1900-01-01';
 /** How many rows a desk grid shows before pointing to the full desk. */
 const DESK_ROWS = 6;
 
@@ -181,54 +195,6 @@ const shortTime = (hms: string | null) => {
   const [h, m] = hms.split(':').map(Number);
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
 };
-
-/** A desk tile: a big count (none for a plain link tile) over a label, gold-topped like the dashboard's stat tiles, linking to the full desk. */
-function DeskCount({ label, count, href, cta }: { label: string; count?: number | null; href: string; cta: string }) {
-  return (
-    <section aria-label={label} className="flex flex-col gap-1 rounded border-2 border-navy border-t-8 border-t-gold bg-white px-4 py-3">
-      <h3 className="text-sm font-bold">{label}</h3>
-      {count === undefined ? null : <p className={cx('text-4xl font-bold leading-tight', count ? 'text-brand-red' : 'text-navy')}>{count ?? '…'}</p>}
-      <Link href={href} className="text-sm font-bold text-navy underline">
-        {cta}
-      </Link>
-    </section>
-  );
-}
-
-/** A queue of expense sheets in a compact grid, oldest first, with the full desk one click away. */
-function SheetQueue({ caption, rows, href, cta, signerColumn }: { caption: string; rows: readonly ExpenseReportDetail[]; href: string; cta: string; signerColumn?: (d: ExpenseReportDetail) => ReactNode }) {
-  if (rows.length === 0) return <Empty>Nothing waits here. Every sheet has moved on.</Empty>;
-  return (
-    <>
-      <Table caption={caption} head={['Sheet', 'Submitted by', 'Amount', ...(signerColumn ? ['Signed so far'] : []), 'Status']}>
-        {rows.slice(0, DESK_ROWS).map((d) => (
-          <tr key={d.report.id}>
-            <Td className="font-bold">#{d.report.id}</Td>
-            <Td>
-              {formatPersonName(d.submitterFirstName, d.submitterLastName)}
-              {d.honorVoucher ? (
-                <span className="block">
-                  <HonorVoucherBadge detail={d} />
-                </span>
-              ) : null}
-            </Td>
-            <Td className="text-right">{formatMoney(d.total)}</Td>
-            {signerColumn ? <Td className="text-xs">{signerColumn(d)}</Td> : null}
-            <Td>
-              <ExpenseStatusPill report={d.report} />
-            </Td>
-          </tr>
-        ))}
-      </Table>
-      <p className="mt-2 text-sm">
-        {rows.length > DESK_ROWS ? `${rows.length - DESK_ROWS} more waiting. ` : ''}
-        <Link href={href} className="font-bold underline">
-          {cta}
-        </Link>
-      </p>
-    </>
-  );
-}
 
 // ---- Home -------------------------------------------------------------------------------------------
 
@@ -496,26 +462,22 @@ export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; c
 
 // ---- the Officer Desks --------------------------------------------------------------------------------
 
-/** The module folders of one desk (Sprint 8L), each rendering its module from `render`. */
-function DeskModulesFor({ user, desk, render }: { user: SessionUser; desk: DashboardTabId; render: (rowId: string) => ReactNode }) {
-  return (
-    <DeskModuleShelf>
-      {deskModulesFor(desk).map((spec) => (
-        <DeskModule key={spec.rowId} user={user} spec={spec}>
-          {render(spec.rowId)}
-        </DeskModule>
-      ))}
-    </DeskModuleShelf>
-  );
-}
-
-/** Re-reads a desk's signature queue every DESK_ALERT_POLL_MS, so the Alert Boundary Accent lights while the desk is open. */
+/** Re-reads a desk's queues every DESK_ALERT_POLL_MS, so the Alert Boundary Accent lights while the desk is open. */
 function usePolling(reload: () => Promise<unknown>) {
   useEffect(() => {
     const timer = window.setInterval(() => void reload(), DESK_ALERT_POLL_MS);
     return () => window.clearInterval(timer);
   }, [reload]);
 }
+
+/** A count read that must never fail the whole desk: a refused or failed read is simply no count. */
+const settled = async <T,>(read: () => Promise<T>): Promise<T | null> => {
+  try {
+    return await read();
+  } catch {
+    return null;
+  }
+};
 
 /** The Planning & Budgeting Workflow drawer: the council's planning banner and goals (FraternalPlanningWorkflow). */
 function PlanningBudgetingDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
@@ -582,31 +544,100 @@ function RosterImportsDrawer() {
 }
 
 /**
+ * The Operations Knowledge Archive drawer (Sprint 8P Stage 3): the entry form for its writers (the council's Admins,
+ * Grand Knight and Deputy Grand Knight, and Super Admins - canWriteOperationsKnowledge) over the read-only archive.
+ */
+function KnowledgeArchiveDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
+  return (
+    <>
+      {canWriteOperationsKnowledge(user, councilId) ? <OperationsKnowledgeArchiveEntryForm user={user} councilId={councilId} /> : null}
+      <KnowledgeArchive />
+    </>
+  );
+}
+
+/** The Flagged Hours Review drawer: the Volunteer Time Quarantine Desk while the council's flag is on. */
+function FlaggedHoursDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const flags = useFeatureFlags();
+  return flags.feature_volunteer_quarantine ? (
+    <QuarantineDesk actorId={user.memberId} councilId={councilId} />
+  ) : (
+    <Notice tone="info">The Flagged Hours Review is switched off for this council (Feature Flags), so no time entry is held for review.</Notice>
+  );
+}
+
+/**
  * The Grand Knight Desk (shared by the Deputy Grand Knight). Sprint 8P Stage 2: a desk blotter of slide-out drawers
  * (desk-drawers.ts DESK_DRAWERS) - Approved Expenses (counter-sign and release in place, with the Alert Boundary Accent
  * while a sheet waits on the reader's signature), the Charitable Grant Requests Vetting Board, the Planning & Budgeting
  * Workflow, the Council Election Tracker, the Shared Loaner Library, Affiliation Invites, Connected Councils, the
- * Constitutional Advisor Panels and the Operations Knowledge Archive.
+ * Constitutional Advisor Panels and the Operations Knowledge Archive. Sprint 8P Stage 3: the dissolved Oversight Desk's
+ * audits join it - the Flagged Hours Review (lit while an entry is held), Shifts Awaiting Hours (lit while one is
+ * overdue) and, for Super Admins, the Inbound Council Mail Center (lit while a request is pending).
  */
 export function GrandKnightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
   const tenantType = useTenantType();
+  const drawers = deskDrawersFor(user, 'grand-knight', councilId, flags, tenantType);
+  const has = (id: DeskDrawerId) => drawers.some((d) => d.id === id);
+  const reviewHeld = has('flagged-hours') && flags.feature_volunteer_quarantine;
+  const readsHours = has('shifts-awaiting-hours');
+  const readsMail = has('access-requests');
   const queue = useLoad(() => db.expenses.listAuthorizationQueue(user.memberId, councilId), [user.memberId, councilId]);
+  const audits = useLoad(async () => {
+    const [held, awaiting, council, requests] = await Promise.all([
+      reviewHeld ? settled(() => db.volunteerQuarantine.listPending(user.memberId, councilId)) : null,
+      readsHours ? settled(() => db.reports.listShiftsAwaitingHours(councilId)) : null,
+      readsHours ? settled(() => db.councils.get(councilId)) : null,
+      readsMail ? settled(() => readAccessRequests()) : null,
+    ]);
+    const delay = hoursReminderCadence(council).delayDays;
+    const open = (awaiting ?? []).filter((r) => !r.closed);
+    return {
+      held: held ? held.length : null,
+      hours: awaiting ? open.length : null,
+      overdue: open.filter((r) => r.daysSinceShift >= delay).length,
+      requests: requests ? requests.filter((r) => r.status === 'PENDING').length : null,
+    };
+  }, [user.memberId, councilId, reviewHeld, readsHours, readsMail]);
   usePolling(queue.reload);
+  usePolling(audits.reload);
   const rows = queue.data ?? [];
-  const alert = gkSignatureAlert(user, rows);
+  const a = audits.data;
   return (
     <div className="flex flex-col gap-4">
       {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
       <DeskBlotter
         desk="grand-knight"
-        drawers={deskDrawersFor(user, 'grand-knight', councilId, flags, tenantType)}
-        status={(spec) => (spec.id === 'approved-expenses' ? { count: queue.data ? rows.length : null, alert } : undefined)}
-        onClosed={() => void queue.reload()}
+        drawers={drawers}
+        status={(spec) => {
+          switch (spec.id) {
+            case 'approved-expenses':
+              return { count: queue.data ? rows.length : null, alert: gkSignatureAlert(user, rows) };
+            case 'flagged-hours':
+              return { count: a?.held ?? null, alert: (a?.held ?? 0) > 0, alertText: 'Time entries held for your review' };
+            case 'shifts-awaiting-hours':
+              return { count: a?.hours ?? null, alert: (a?.overdue ?? 0) > 0, alertText: `${a?.overdue ?? 0} past the first reminder` };
+            case 'access-requests':
+              return { count: a?.requests ?? null, alert: (a?.requests ?? 0) > 0, alertText: 'Access requests to review' };
+            default:
+              return undefined;
+          }
+        }}
+        onClosed={() => {
+          void queue.reload();
+          void audits.reload();
+        }}
         render={(spec) => {
           switch (spec.id) {
             case 'approved-expenses':
               return <ApprovedExpenseSigning />;
+            case 'flagged-hours':
+              return <FlaggedHoursDrawer user={user} councilId={councilId} />;
+            case 'shifts-awaiting-hours':
+              return <AwaitingHours councilId={councilId} />;
+            case 'access-requests':
+              return <InboundMailCenter />;
             case 'vetting-board':
               return <CharityVettingBoard />;
             case 'planning-budgeting':
@@ -622,7 +653,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
             case 'advisor':
               return <ConstitutionalAdvisor />;
             default:
-              return <KnowledgeArchive />;
+              return <KnowledgeArchiveDrawer user={user} councilId={councilId} />;
           }
         }}
       />
@@ -676,7 +707,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
             case 'roster-imports':
               return <RosterImportsDrawer />;
             default:
-              return <KnowledgeArchive />;
+              return <KnowledgeArchiveDrawer user={user} councilId={councilId} />;
           }
         }}
       />
@@ -684,55 +715,81 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
   );
 }
 
-/** The Treasurer Desk: the Ledger Line Coder queue - written orders waiting for a budget line and a ledger account. */
+/**
+ * The Treasurer Desk. Sprint 8P Stage 3: a desk blotter of slide-out drawers - the Ledger Line Coder (lit while a signed
+ * sheet waits for the reader's coding), Expense Report (ER) Settlement (lit while a fully signed sheet waits for the
+ * reader's check), Charitable Contribution Matches (lit while a charity request or gift waits for its check), the
+ * Planning & Budgeting Workflow, the Cash Box Audit Closure Panel, the High-Volume Batch Transaction Coder, the Annual
+ * Budget vs Actuals Ledger Grid, the Bank Statement Match-Window and the Parish Fundraiser Revenue Split Console.
+ */
 export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
-  const queue = useLoad(() => db.expenses.listTreasurerQueue(user.memberId, councilId), [user.memberId, councilId]);
-  const rows = queue.data ?? [];
+  const flags = useFeatureFlags();
+  const tenantType = useTenantType();
+  const drawers = deskDrawersFor(user, 'treasurer', councilId, flags, tenantType);
+  const pays = drawers.some((d) => d.id === 'er-settlement');
+  const matches = drawers.some((d) => d.id === 'charity-matches') && canDisburseCharity(user, councilId);
+  const coding = useLoad(() => db.expenses.listTreasurerQueue(user.memberId, councilId), [user.memberId, councilId]);
+  const money = useLoad(async () => {
+    const [sheets, proposals, funded] = await Promise.all([
+      pays ? settled(() => db.expenses.listCouncilQueue(user.memberId, councilId)) : null,
+      matches ? settled(() => db.charities.listCouncilProposals(user.memberId, councilId)) : null,
+      matches ? settled(() => db.charities.listApprovedFundingQueue(user.memberId, councilId)) : null,
+    ]);
+    return {
+      sheets,
+      charity: proposals || funded ? (proposals ?? []).filter((d) => d.proposal.Status === 'Pending').length + (funded ?? []).length : null,
+    };
+  }, [user.memberId, councilId, pays, matches]);
+  usePolling(coding.reload);
+  usePolling(money.reload);
+  const codingRows = coding.data ?? [];
+  const sheets = money.data?.sheets ?? null;
+  const charity = money.data?.charity ?? null;
   return (
     <div className="flex flex-col gap-4">
-      <DeskRow id="treasurer-cash-box-audit" label="Cash Box Audit Closure Panel">
-        <CashBoxAuditPanel user={user} councilId={councilId} />
-      </DeskRow>
-      <DeskRow id="treasurer-batch-coder" label="High-Volume Batch Transaction Coder">
-        <BatchTransactionCoder user={user} councilId={councilId} />
-      </DeskRow>
-      <DeskModulesFor
-        user={user}
+      {coding.error ? <Notice tone="error">{coding.error}</Notice> : null}
+      <DeskBlotter
         desk="treasurer"
-        render={(rowId) =>
-          rowId === 'module-budget-vs-actuals' ? <BudgetVsActualsModule user={user} councilId={councilId} /> : <BankStatementMatchWindow user={user} councilId={councilId} />
-        }
+        drawers={drawers}
+        status={(spec) => {
+          switch (spec.id) {
+            case 'ledger-coder':
+              return { count: coding.data ? codingRows.length : null, alert: treasurerCodingAlert(user, codingRows) };
+            case 'er-settlement':
+              return { count: sheets ? payableSheets(sheets).length : null, alert: sheets ? erSettlementAlert(user, sheets) : false, alertText: 'Fully signed sheets waiting for your check' };
+            case 'charity-matches':
+              return { count: charity, alert: (charity ?? 0) > 0, alertText: 'Charity requests waiting for a check' };
+            default:
+              return undefined;
+          }
+        }}
+        onClosed={() => {
+          void coding.reload();
+          void money.reload();
+        }}
+        render={(spec) => {
+          switch (spec.id) {
+            case 'ledger-coder':
+              return <LedgerLineCoder />;
+            case 'er-settlement':
+              return <ExpenseSettlement />;
+            case 'charity-matches':
+              return <CharityCheckConsole />;
+            case 'planning-budgeting':
+              return <PlanningBudgetingDrawer user={user} councilId={councilId} />;
+            case 'cash-box-audit':
+              return <CashBoxAuditPanel user={user} councilId={councilId} />;
+            case 'batch-coder':
+              return <BatchTransactionCoder user={user} councilId={councilId} />;
+            case 'budget-vs-actuals':
+              return <BudgetVsActualsModule user={user} councilId={councilId} />;
+            case 'bank-match':
+              return <BankStatementMatchWindow user={user} councilId={councilId} />;
+            default:
+              return <ParishSplitConsoleCard user={user} councilId={councilId} />;
+          }
+        }}
       />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <DeskCount label="Sheets waiting for ledger coding" count={queue.data ? rows.length : null} href="/finance/treasurer-desk" cta="Open the Treasurer Ledger Audit Desk" />
-        <DeskCount label="General ledger" href="/finance/ledger" cta="Open the general ledger" />
-      </div>
-      <DeskRow id={DESK_FOCUS_TARGETS.coding.rowId} label="Ledger Line Coder queue">
-        <Panel title={`Ledger Line Coder queue (${rows.length})`}>
-          {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
-          {queue.data ? (
-            <SheetQueue
-              caption="Sheets waiting for the Treasurer's budget line and ledger account"
-              rows={rows}
-              href="/finance/treasurer-desk"
-              cta="Categorize & lock on the full desk"
-              signerColumn={(d) => <>FS: {d.financialSecretaryName || '–'}</>}
-            />
-          ) : null}
-          {canLogConcludedRevenue(user, councilId) ? (
-            <p className="mt-2 text-sm">
-              Event over?{' '}
-              <Link href="/finance/treasurer-desk" className="font-bold underline">
-                Log its concluded revenue
-              </Link>{' '}
-              on the full desk.
-            </p>
-          ) : null}
-        </Panel>
-      </DeskRow>
-      <DeskRow id="treasurer-parish-split" label="Parish Fundraiser Revenue Split Console">
-        <ParishSplitConsoleCard user={user} councilId={councilId} />
-      </DeskRow>
     </div>
   );
 }
@@ -772,7 +829,7 @@ function useOpenShiftSignup(user: SessionUser) {
 function OpenShiftsCard({ user }: { user: SessionUser }) {
   const { rows, ready, error, busy, message, clearMessage, signUp } = useOpenShiftSignup(user);
   return (
-    <Panel title={`[ 🚗 Open Shifts Needing Volunteers ] (${rows.length})`}>
+    <Panel className="h-full" title={`[ 🚗 Open Shifts Needing Volunteers ] (${rows.length})`}>
       {error ? <Notice tone="error">{error}</Notice> : null}
       {ready && rows.length === 0 ? <Empty>Every shift in the next {MEMBER_DESK_OPEN_SHIFT_DAYS} days has its volunteers.</Empty> : null}
       {rows.length > 0 ? (
@@ -842,6 +899,9 @@ function MyCharityRequestsCard({ user }: { user: SessionUser }) {
 /**
  * The Member Desk: the reader's own expense sheets and their shifts in the coming weeks. Sprint 8C adds the open shifts
  * needing volunteers and, while the council's charity proposals are on, the member's own charity requests.
+ * Sprint 8P Stage 3: the twin shift trackers - '🚗 Open Shifts Needing Volunteers' and 'My shifts' - sit side by side in
+ * the desk's top row, the same height, with the charity requests and expense sheets under them. This desk keeps plain
+ * panels: no drawers, so a volunteer sees their shifts at once.
  */
 export function MemberDesk({ user }: { user: SessionUser }) {
   const flags = useFeatureFlags();
@@ -851,62 +911,67 @@ export function MemberDesk({ user }: { user: SessionUser }) {
   const shifts = useLoad(() => db.events.listMemberShifts(user.memberId, { fromDate: today, toDate: through }), [user.memberId, today, through]);
   const open = (sheets.data ?? []).filter((d) => d.report.Status !== 'Reimbursed');
   return (
-    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
-      <OpenShiftsCard user={user} />
-      {flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}
-      <DeskRow id={DESK_FOCUS_TARGETS.mine.rowId} label="My open expense sheets">
-        <Panel title={`My open expense sheets (${open.length})`}>
-          {sheets.error ? <Notice tone="error">{sheets.error}</Notice> : null}
-          {sheets.data && open.length === 0 ? <Empty>You have no open expense sheet.</Empty> : null}
-          {open.length > 0 ? (
-            <Table caption="Your expense sheets not yet paid" head={['Sheet', 'Amount', 'Status']}>
-              {open.slice(0, DESK_ROWS).map((d) => (
-                <tr key={d.report.id}>
-                  <Td className="font-bold">#{d.report.id}</Td>
-                  <Td className="text-right">{formatMoney(d.total)}</Td>
-                  <Td>
-                    <ExpenseStatusPill report={d.report} />
-                  </Td>
+    <div className="flex flex-col gap-4">
+      <div role="group" aria-label="Shift trackers" className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
+        <OpenShiftsCard user={user} />
+        <Panel className="h-full" title={`My shifts: next ${MEMBER_DESK_SHIFT_DAYS} days (${shifts.data?.length ?? 0})`}>
+          {shifts.error ? <Notice tone="error">{shifts.error}</Notice> : null}
+          {shifts.data && shifts.data.length === 0 ? <Empty>You are not signed up for a shift in the next {MEMBER_DESK_SHIFT_DAYS} days.</Empty> : null}
+          {shifts.data && shifts.data.length > 0 ? (
+            <Table caption="Your coming shifts" head={['When', 'Event', 'Shift']}>
+              {shifts.data.slice(0, DESK_ROWS).map((s) => (
+                <tr key={s.signup.id}>
+                  <Td className="whitespace-nowrap">{formatShiftWhen(s.shift)}</Td>
+                  <Td>{s.event.EventName}</Td>
+                  <Td>{s.shift.ShiftName}</Td>
                 </tr>
               ))}
             </Table>
           ) : null}
           <p className="mt-2 text-sm">
-            <Link href="/expenses" className="font-bold underline">
-              Open my expenses
+            <Link href="/member-center" className="font-bold underline">
+              Open the Council Dashboard
             </Link>
           </p>
         </Panel>
-      </DeskRow>
-      <Panel title={`My shifts: next ${MEMBER_DESK_SHIFT_DAYS} days (${shifts.data?.length ?? 0})`}>
-        {shifts.error ? <Notice tone="error">{shifts.error}</Notice> : null}
-        {shifts.data && shifts.data.length === 0 ? <Empty>You are not signed up for a shift in the next {MEMBER_DESK_SHIFT_DAYS} days.</Empty> : null}
-        {shifts.data && shifts.data.length > 0 ? (
-          <Table caption="Your coming shifts" head={['When', 'Event', 'Shift']}>
-            {shifts.data.slice(0, DESK_ROWS).map((s) => (
-              <tr key={s.signup.id}>
-                <Td className="whitespace-nowrap">{formatShiftWhen(s.shift)}</Td>
-                <Td>{s.event.EventName}</Td>
-                <Td>{s.shift.ShiftName}</Td>
-              </tr>
-            ))}
-          </Table>
-        ) : null}
-        <p className="mt-2 text-sm">
-          <Link href="/member-center" className="font-bold underline">
-            Open the Council Dashboard
-          </Link>
-        </p>
-      </Panel>
+      </div>
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+        {flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}
+        <DeskRow id={DESK_FOCUS_TARGETS.mine.rowId} label="My open expense sheets">
+          <Panel title={`My open expense sheets (${open.length})`}>
+            {sheets.error ? <Notice tone="error">{sheets.error}</Notice> : null}
+            {sheets.data && open.length === 0 ? <Empty>You have no open expense sheet.</Empty> : null}
+            {open.length > 0 ? (
+              <Table caption="Your expense sheets not yet paid" head={['Sheet', 'Amount', 'Status']}>
+                {open.slice(0, DESK_ROWS).map((d) => (
+                  <tr key={d.report.id}>
+                    <Td className="font-bold">#{d.report.id}</Td>
+                    <Td className="text-right">{formatMoney(d.total)}</Td>
+                    <Td>
+                      <ExpenseStatusPill report={d.report} />
+                    </Td>
+                  </tr>
+                ))}
+              </Table>
+            ) : null}
+            <p className="mt-2 text-sm">
+              <Link href="/expenses" className="font-bold underline">
+                Open my expenses
+              </Link>
+            </p>
+          </Panel>
+        </DeskRow>
+      </div>
     </div>
   );
 }
 
 /**
  * Past signups still waiting for hours (reports.listShiftsAwaitingHours), flagged once the council's first reminder is
- * due. On the Reports Desk until Sprint 8C, which consolidated it onto the Oversight Desk.
+ * due. On the Reports Desk until Sprint 8C and the Oversight Desk until Sprint 8P Stage 3, which made it a Grand Knight
+ * Desk drawer and put it back on the Executive Dashboard page for every executive-audit reader.
  */
-function AwaitingHours({ councilId }: { councilId: number }) {
+export function AwaitingHours({ councilId }: { councilId: number }) {
   const awaiting = useLoad(() => db.reports.listShiftsAwaitingHours(councilId), [councilId]);
   // Sprint 7E: the council's own reminder delay, cadence and logging window.
   const council = useLoad(() => db.councils.get(councilId), [councilId]).data;
@@ -959,126 +1024,6 @@ function AwaitingHours({ councilId }: { councilId: number }) {
         after that, until the {windowDays}-day logging window closes. Council Wide Settings sets these numbers.
       </p>
     </Panel>
-  );
-}
-
-/**
- * The Oversight Desk (Sprint 8A): the Volunteer Time Quarantine Desk for its reviewers (canReviewVolunteerQuarantine) while
- * the council's feature_volunteer_quarantine flag is on, and the Inbound Council Mail Center for global Super Admins only.
- * Sprint 8C: the Shifts Awaiting Hours audit consolidates here for every executive-audit reader (canViewExecutiveAudits).
- * Sprint 8D/8E: the desk status badges, moved off Home, lead the desk.
- * Sprint 8I: the Global Operations Knowledge Vault card for the council's Admins, Grand Knight and Deputy Grand Knight.
- */
-export function OversightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
-  const flags = useFeatureFlags();
-  const reviewer = canReviewVolunteerQuarantine(user, councilId);
-  return (
-    <div className="flex flex-col gap-4">
-      <DeskStatusBadges user={user} councilId={councilId} />
-      {/* Sprint 8C: the council mail center is locked to global Super Admins - never a council's own Admins or officers. */}
-      {isSuperAdmin(user) ? (
-        <DeskRow id={DESK_FOCUS_TARGETS.access.rowId} label="Inbound Council Mail Center">
-          <InboundMailCenter />
-        </DeskRow>
-      ) : null}
-      {reviewer ? (
-        <DeskRow id={DESK_FOCUS_TARGETS.quarantine.rowId} label="Flagged Hours Review Desk">
-          {flags.feature_volunteer_quarantine ? (
-            <QuarantineDesk actorId={user.memberId} councilId={councilId} />
-          ) : (
-            <Notice tone="info">The Flagged Hours Review is switched off for this council (Feature Flags), so no time entry is held for review.</Notice>
-          )}
-        </DeskRow>
-      ) : null}
-      {canViewExecutiveAudits(user, councilId) ? (
-        <DeskRow id={DESK_FOCUS_TARGETS.hours.rowId} label="Shifts awaiting hours">
-          <AwaitingHours councilId={councilId} />
-        </DeskRow>
-      ) : null}
-      {canWriteOperationsKnowledge(user, councilId) ? (
-        <DeskRow id="desk-row-knowledge-vault" label="Global Operations Knowledge Vault">
-          <OperationsKnowledgeVault user={user} councilId={councilId} />
-        </DeskRow>
-      ) : null}
-    </div>
-  );
-}
-
-// ---- desk status badges ------------------------------------------------------------------------------
-
-interface DeskBadge {
-  key: DeskBadgeKey;
-  icon: string;
-  /** The wording after the count, for one and for many. */
-  one: string;
-  many: string;
-  count: number;
-}
-
-const BADGE_ORDER: DeskBadgeKey[] = ['vouchers', 'orders', 'coding', 'minutes', 'quarantine', 'access', 'hours', 'mine'];
-
-/**
- * The desk status badges (Sprint 8A on Home; Sprint 8D/8E at the top of the Oversight Desk): one compact badge per queue the reader is cleared for - '[ 📋 3 Vouchers
- * Pending ]' - each opening its Active Desk. A badge with work waiting is filled; an empty queue stays an outline.
- * Sprint 8C: each badge is a click-through anchor to the workspace row it counts (DESK_FOCUS_TARGETS); the hours badge opens
- * the Oversight Desk, and the access-request badge is a global Super Admin's only.
- */
-export function DeskStatusBadges({ user, councilId }: { user: SessionUser; councilId: number }) {
-  const flags = useFeatureFlags();
-  const badges = useLoad(async () => {
-    const out: DeskBadge[] = [];
-    const reads: Promise<unknown>[] = [];
-    const add = (key: DeskBadgeKey, icon: string, one: string, many: string, count: () => Promise<number>) =>
-      reads.push(count().then((n) => out.push({ key, icon, one, many, count: n })));
-    if (canOpenExpenseAuthorizeDesk(user, councilId))
-      add('vouchers', '📋', 'Approved Expense Awaiting Payment', 'Approved Expenses Awaiting Payment', async () => (await db.expenses.listAuthorizationQueue(user.memberId, councilId)).length);
-    if (canOpenExpenseAuditDesk(user, councilId))
-      add('orders', '✍️', 'Payment Request Waiting', 'Payment Requests Waiting', async () =>
-        (await db.expenses.listCouncilQueue(user.memberId, councilId)).filter((d) => awaitsWrittenOrder(d.report)).length,
-      );
-    if (canOpenTreasurerDesk(user, councilId))
-      add('coding', '🏷️', 'Sheet to Code', 'Sheets to Code', async () => (await db.expenses.listTreasurerQueue(user.memberId, councilId)).length);
-    if (canOpenRecorderDesk(user, councilId))
-      add('minutes', '📝', 'Minutes Due', 'Minutes Due', async () => {
-        const today = toIsoDate(new Date());
-        const [council, meetings] = await Promise.all([db.councils.get(councilId), db.meetings.listUpcoming(councilId, { fromDate: addDays(today, -MINUTES_DESK_PAST_DAYS) })]);
-        return minutesDeskRows(meetings, today, councilWideSettings(council).meeting_minutes_due_days).filter((r) => r.state === 'open' || r.state === 'overdue').length;
-      });
-    if (flags.feature_volunteer_quarantine && canReviewVolunteerQuarantine(user, councilId))
-      add('quarantine', '⚠️', 'Flagged Hours Entry', 'Flagged Hours Entries', async () => (await db.volunteerQuarantine.listPending(user.memberId, councilId)).length);
-    if (isSuperAdmin(user))
-      add('access', '📨', 'Access Request', 'Access Requests', async () => (await readAccessRequests()).filter((r) => r.status === 'PENDING').length);
-    if (canViewExecutiveAudits(user, councilId))
-      add('hours', '⏳', 'Shift Awaiting Hours', 'Shifts Awaiting Hours', async () => (await db.reports.listShiftsAwaitingHours(councilId)).filter((r) => !r.closed).length);
-    add('mine', '💼', 'Open Sheet of Mine', 'Open Sheets of Mine', async () =>
-      (await db.expenses.listUserReports(user.memberId)).filter((d) => d.report.Status !== 'Reimbursed').length,
-    );
-    // A failed read drops only its own badge.
-    await Promise.allSettled(reads);
-    return out.sort((a, b) => BADGE_ORDER.indexOf(a.key) - BADGE_ORDER.indexOf(b.key));
-  }, [user, councilId, flags.feature_volunteer_quarantine]);
-  const rows = badges.data ?? [];
-  return (
-    <nav aria-label="Desk status" className="flex flex-wrap items-center gap-2">
-      {!badges.data ? <span className="text-sm text-muted">Counting the desks…</span> : null}
-      {rows.map((b) => {
-        const text = `${b.count} ${b.count === 1 ? b.one : b.many}`;
-        return (
-          <DeskLink
-            key={b.key}
-            anchor={DESK_FOCUS_TARGETS[b.key].anchor}
-            rowId={DESK_FOCUS_TARGETS[b.key].rowId}
-            label={`${text}: open the desk`}
-            className={cx(
-              'whitespace-nowrap rounded border-2 px-3 py-1 text-sm font-bold',
-              b.count === 0 ? 'border-navy bg-white text-navy' : b.key === 'quarantine' ? 'border-brand-red bg-brand-red text-white' : 'border-navy bg-gold text-navy',
-            )}
-          >
-            [ {b.icon} {text} ]
-          </DeskLink>
-        );
-      })}
-    </nav>
   );
 }
 
@@ -1237,67 +1182,171 @@ function MinutesEditor({ user, meeting, countdown, onSaved }: { user: SessionUse
 }
 
 /**
+ * The Historical Meeting Minutes Archive drawer (Sprint 8P Stage 3): every past meeting with minutes to read
+ * (minutesArchiveRows - published text or an uploaded minutes file), newest first, a search box, and the chosen meeting's
+ * minutes in the reader, so the Recorder reviews the last session before opening the next.
+ */
+function MinutesArchive({ councilId }: { councilId: number }) {
+  const today = toIsoDate(new Date());
+  const meetings = useLoad(() => db.meetings.listUpcoming(councilId, { fromDate: MINUTES_ARCHIVE_FROM }), [councilId]);
+  const [query, setQuery] = useState('');
+  const rows = minutesArchiveRows(meetings.data ?? [], today, query);
+  const [chosen, setChosen] = useState<number | null>(null);
+  const current = rows.find((m) => m.id === chosen) ?? rows[0] ?? null;
+  const fileLink = current ? current.GoogleDriveMinutesURL?.trim() || current.MinutesURL?.trim() || '' : '';
+  return (
+    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[20rem_minmax(0,1fr)]">
+      <div className="flex flex-col gap-2">
+        <Field label="Search the minutes">{(id) => <Input id={id} type="search" value={query} placeholder="e.g. budget, March, motion" onChange={(e) => setQuery(e.target.value)} />}</Field>
+        {meetings.error ? <Notice tone="error">{meetings.error}</Notice> : null}
+        {meetings.data && rows.length === 0 ? <Empty>{query ? `No minutes match “${query}”.` : 'No meeting has published minutes yet.'}</Empty> : null}
+        <ul aria-label="Meetings with minutes, newest first" className="flex flex-col gap-1">
+          {rows.map((m) => (
+            <li key={m.id}>
+              <button
+                type="button"
+                onClick={() => setChosen(m.id)}
+                aria-current={current?.id === m.id ? 'true' : undefined}
+                className={cx(
+                  'flex w-full flex-col rounded border-l-4 px-2 py-1.5 text-left text-sm ring-1 ring-line',
+                  current?.id === m.id ? 'border-gold bg-gold/20 font-bold' : 'border-navy bg-white hover:bg-gold/10',
+                )}
+              >
+                <span className="truncate">{m['Meeting Name']}</span>
+                <span className="text-xs text-muted">{shortDay(String(m.Date).slice(0, 10))}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <Panel title={current ? `${current['Meeting Name']} · ${shortDay(String(current.Date).slice(0, 10))}` : 'Minutes'}>
+        {!current ? <Empty>Pick a meeting to read its minutes.</Empty> : null}
+        {current?.minutes_published_at && current.minutes_text?.trim() ? <Markdown source={current.minutes_text} idPrefix={`archive-${current.id}`} /> : null}
+        {current && fileLink ? (
+          <p className="mt-3 text-sm">
+            <a href={isDriveFileId(fileLink) ? driveFileViewUrl(fileLink) : fileLink} target="_blank" rel="noreferrer" className="font-bold underline">
+              Open the minutes file
+            </a>
+          </p>
+        ) : null}
+      </Panel>
+    </div>
+  );
+}
+
+/** The Start Live Meeting Sequence drawer: pick a meeting of the business calendar, then launch it (LiveMeetingLaunch). */
+function LiveMeetingDrawer({ user, rows }: { user: SessionUser; rows: readonly MinutesRow[] }) {
+  const [chosen, setChosen] = useState<number | null>(null);
+  const current = rows.find((r) => r.meeting.id === chosen) ?? rows[0] ?? null;
+  if (!current) return <Empty>No meeting in the last {MINUTES_DESK_PAST_DAYS} days or the next {MINUTES_DESK_AHEAD_DAYS}.</Empty>;
+  return (
+    <div className="flex flex-col gap-3">
+      <Field label="Meeting">
+        {(id) => (
+          <Select id={id} value={String(current.meeting.id)} onChange={(e) => setChosen(Number(e.target.value))}>
+            {rows.map((r) => (
+              <option key={r.meeting.id} value={r.meeting.id}>
+                {r.meeting['Meeting Name']} · {shortDay(r.heldOn)}
+              </option>
+            ))}
+          </Select>
+        )}
+      </Field>
+      <LiveMeetingLaunch user={user} meeting={current.meeting} />
+    </div>
+  );
+}
+
+/** The Meeting Minutes Entry Desk drawer: the business calendar with each meeting's countdown beside the editor. */
+function MinutesEntryDrawer({ user, rows, dueDays, onSaved }: { user: SessionUser; rows: readonly MinutesRow[]; dueDays: number | null; onSaved: () => void }) {
+  const [chosen, setChosen] = useState<number | null>(null);
+  const current = rows.find((r) => r.meeting.id === chosen) ?? rows[0] ?? null;
+  const waiting = rows.filter((r) => r.state === 'open' || r.state === 'overdue').length;
+  return (
+    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
+      <Panel title={`Business calendar (${waiting} awaiting minutes)`}>
+        {rows.length === 0 ? <Empty>No meeting in the last {MINUTES_DESK_PAST_DAYS} days or the next {MINUTES_DESK_AHEAD_DAYS}.</Empty> : null}
+        <ul aria-label="Meetings and their minutes" className="flex flex-col gap-1">
+          {rows.map((r) => (
+            <li key={r.meeting.id}>
+              <button
+                type="button"
+                onClick={() => setChosen(r.meeting.id)}
+                aria-current={current?.meeting.id === r.meeting.id ? 'true' : undefined}
+                className={cx(
+                  'flex w-full items-center justify-between gap-2 rounded border-l-4 px-2 py-1.5 text-left text-sm ring-1 ring-line',
+                  r.state === 'overdue' ? 'border-brand-red' : r.state === 'open' ? 'border-gold' : 'border-line',
+                  current?.meeting.id === r.meeting.id ? 'bg-gold/20 font-bold' : 'bg-white hover:bg-gold/10',
+                )}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate">{r.meeting['Meeting Name']}</span>
+                  <span className="text-xs text-muted">{shortDay(r.heldOn)}</span>
+                </span>
+                <Pill tone={countdownTone(r)}>{minutesCountdownLabel(r)}</Pill>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-xs text-muted">Minutes are due {dueDays ?? '…'} days after each meeting (Council Wide Settings).</p>
+      </Panel>
+      <Panel title="Meeting Minutes Entry Desk">
+        {current ? <MinutesEditor user={user} meeting={current.meeting} countdown={current} onSaved={onSaved} /> : <Empty>Pick a meeting from the business calendar to write its minutes.</Empty>}
+      </Panel>
+    </div>
+  );
+}
+
+/**
  * The Recorder Desk (Sprint 8B): the council's business calendar with each meeting's minutes countdown (the meeting's last
  * day plus Council.meeting_minutes_due_days), the Meeting Minutes Entry Desk for the chosen meeting, and the Start Live
  * Meeting Sequence launch with the 4-digit PIN bypass. For the Recorder, the council's Admins and Super Admins.
+ * Sprint 8P Stage 3: a desk blotter of drawers, led by the featured Historical Meeting Minutes Archive across the top row
+ * for the session-opening review; the Meeting Minutes Entry Desk lights while minutes are due or overdue.
  */
 export function RecorderDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const flags = useFeatureFlags();
+  const tenantType = useTenantType();
   const today = toIsoDate(new Date());
   const from = addDays(today, -MINUTES_DESK_PAST_DAYS);
   const data = useLoad(async () => {
     const [council, meetings] = await Promise.all([db.councils.get(councilId), db.meetings.listUpcoming(councilId, { fromDate: from })]);
     return { dueDays: councilWideSettings(council).meeting_minutes_due_days, meetings };
   }, [councilId, from]);
+  usePolling(data.reload);
   const rows = data.data ? minutesDeskRows(data.data.meetings, today, data.data.dueDays) : [];
-  const [chosen, setChosen] = useState<number | null>(null);
-  const current = rows.find((r) => r.meeting.id === chosen) ?? rows[0] ?? null;
-  const waiting = rows.filter((r) => r.state === 'open' || r.state === 'overdue').length;
+  const waiting = rows.filter((r) => r.state === 'open' || r.state === 'overdue');
+  const overdue = waiting.filter((r) => r.state === 'overdue').length;
 
   return (
     <div className="flex flex-col gap-4">
-      <DeskModulesFor user={user} desk="recorder" render={() => <MotionsLedgerModule councilId={councilId} />} />
       {data.error ? <Notice tone="error">{data.error}</Notice> : null}
-      {current ? <LiveMeetingLaunch user={user} meeting={current.meeting} /> : null}
-      <DeskRow id={DESK_FOCUS_TARGETS.minutes.rowId} label="Business calendar and minutes">
-        <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[24rem_minmax(0,1fr)]">
-          <Panel title={`Business calendar (${waiting} awaiting minutes)`}>
-            {data.data && rows.length === 0 ? <Empty>No meeting in the last {MINUTES_DESK_PAST_DAYS} days or the next {MINUTES_DESK_AHEAD_DAYS}.</Empty> : null}
-            {!data.data && !data.error ? <p className="text-sm text-muted">Reading the calendar…</p> : null}
-            <ul aria-label="Meetings and their minutes" className="flex flex-col gap-1">
-              {rows.map((r) => (
-                <li key={r.meeting.id}>
-                  <button
-                    type="button"
-                    onClick={() => setChosen(r.meeting.id)}
-                    aria-current={current?.meeting.id === r.meeting.id ? 'true' : undefined}
-                    className={cx(
-                      'flex w-full items-center justify-between gap-2 rounded border-l-4 px-2 py-1.5 text-left text-sm ring-1 ring-line',
-                      r.state === 'overdue' ? 'border-brand-red' : r.state === 'open' ? 'border-gold' : 'border-line',
-                      current?.meeting.id === r.meeting.id ? 'bg-gold/20 font-bold' : 'bg-white hover:bg-gold/10',
-                    )}
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate">{r.meeting['Meeting Name']}</span>
-                      <span className="text-xs text-muted">{shortDay(r.heldOn)}</span>
-                    </span>
-                    <Pill tone={countdownTone(r)}>{minutesCountdownLabel(r)}</Pill>
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2 text-xs text-muted">
-              Minutes are due {data.data ? data.data.dueDays : '…'} days after each meeting (Council Wide Settings).
-            </p>
-          </Panel>
-          <Panel title="Meeting Minutes Entry Desk">
-            {current ? (
-              <MinutesEditor user={user} meeting={current.meeting} countdown={current} onSaved={() => void data.reload()} />
-            ) : (
-              <Empty>Pick a meeting from the business calendar to write its minutes.</Empty>
-            )}
-          </Panel>
-        </div>
-      </DeskRow>
+      <DeskBlotter
+        desk="recorder"
+        drawers={deskDrawersFor(user, 'recorder', councilId, flags, tenantType)}
+        status={(spec) =>
+          spec.id === 'minutes-entry'
+            ? {
+                count: data.data ? waiting.length : null,
+                alert: waiting.length > 0,
+                alertText: overdue > 0 ? `${overdue} meeting${overdue === 1 ? '' : 's'} past the minutes deadline` : 'Minutes due',
+              }
+            : undefined
+        }
+        onClosed={() => void data.reload()}
+        render={(spec) => {
+          switch (spec.id) {
+            case 'minutes-archive':
+              return <MinutesArchive councilId={councilId} />;
+            case 'minutes-entry':
+              return <MinutesEntryDrawer user={user} rows={rows} dueDays={data.data?.dueDays ?? null} onSaved={() => void data.reload()} />;
+            case 'live-meeting':
+              return <LiveMeetingDrawer user={user} rows={rows} />;
+            default:
+              return <MotionsLedgerModule councilId={councilId} />;
+          }
+        }}
+      />
     </div>
   );
 }
@@ -1484,21 +1533,86 @@ function OralHistories({ user, councilId }: { user: SessionUser; councilId: numb
 }
 
 /**
+ * The Fraternal Diary Entry Logs drawer (Sprint 8P Stage 3): every diary entry of the council's Team Legacy matrix
+ * (diaryLogRows), newest first, narrowed by fraternal year and by words, read in place. Read-only: members write their
+ * own entry on the Team Legacy page, one a day.
+ */
+function DiaryLogs({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const matrix = useLoad(() => db.history.getLegacyMatrix(user.memberId, councilId), [user.memberId, councilId]);
+  const [year, setYear] = useState('');
+  const [query, setQuery] = useState('');
+  const years = matrix.data?.years ?? [];
+  const rows = diaryLogRows(years, year, query);
+  const href = (ref: string) => (isDriveFileId(ref) ? driveFileViewUrl(ref) : ref.split('#')[0]);
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[14rem_minmax(0,1fr)]">
+        <Field label="Fraternal year">
+          {(id) => (
+            <Select id={id} value={year} onChange={(e) => setYear(e.target.value)}>
+              <option value="">Every year</option>
+              {years.map((y) => (
+                <option key={y.fraternalYear} value={y.fraternalYear}>
+                  {y.fraternalYear}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label="Search the diary">{(id) => <Input id={id} type="search" value={query} placeholder="e.g. a name, a word, 2026-03" onChange={(e) => setQuery(e.target.value)} />}</Field>
+      </div>
+      {matrix.error ? <Notice tone="error">{matrix.error}</Notice> : null}
+      {matrix.data && rows.length === 0 ? <Empty>{query || year ? 'No diary entry matches.' : 'No member has written a diary entry yet.'}</Empty> : null}
+      <p className="text-xs text-muted" aria-live="polite">
+        {matrix.data ? `${rows.length} entr${rows.length === 1 ? 'y' : 'ies'}` : 'Reading the diary…'}
+      </p>
+      <ol aria-label="Diary entries, newest first" className="flex flex-col divide-y divide-line">
+        {rows.map((d) => (
+          <li key={d.entry.id} className="py-2">
+            <p className="text-sm">
+              <span className="font-bold">{formatPersonName(d.authorFirstName, d.authorLastName)}</span> · {shortDay(d.entry.entry_date)} ·{' '}
+              <span className="text-muted">{d.entry.fraternal_year}</span>
+            </p>
+            <p className="mt-1 whitespace-pre-wrap">{d.entry.diary_text}</p>
+            {d.entry.audio_asset_url ? (
+              <a href={href(d.entry.audio_asset_url)} target="_blank" rel="noreferrer" className="text-sm font-bold underline">
+                Listen to the recording
+              </a>
+            ) : null}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/**
  * The Historian Desk (Sprint 8B): the Digital Fraternal Annals Scrapbook - monthly text bulletins, meeting photos filed
  * under Media / Meeting_Photos and the oral-history recordings. For the Council Historian, the council's Admins and Super
- * Admins.
+ * Admins. Sprint 8P Stage 3: a desk blotter of drawers - the Fraternal Diary Entry Logs reader, Monthly Newsletters,
+ * Meeting Photos, Oral History Recordings and the Google Drive Media Gallery Sync Board.
  */
 export function HistorianDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const flags = useFeatureFlags();
+  const tenantType = useTenantType();
   return (
-    <div className="flex flex-col gap-4">
-      <DeskModulesFor user={user} desk="historian" render={() => <PhotoGallery />} />
-      <Panel title="Digital Fraternal Annals Scrapbook">
-        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
-          <MonthlyBulletins user={user} councilId={councilId} />
-          <MeetingPhotos user={user} councilId={councilId} />
-          <OralHistories user={user} councilId={councilId} />
-        </div>
-      </Panel>
-    </div>
+    <DeskBlotter
+      desk="historian"
+      drawers={deskDrawersFor(user, 'historian', councilId, flags, tenantType)}
+      render={(spec) => {
+        switch (spec.id) {
+          case 'diary-logs':
+            return <DiaryLogs user={user} councilId={councilId} />;
+          case 'bulletins':
+            return <MonthlyBulletins user={user} councilId={councilId} />;
+          case 'meeting-photos':
+            return <MeetingPhotos user={user} councilId={councilId} />;
+          case 'oral-histories':
+            return <OralHistories user={user} councilId={councilId} />;
+          default:
+            return <PhotoGallery />;
+        }
+      }}
+    />
   );
 }

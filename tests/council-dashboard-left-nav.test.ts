@@ -5,13 +5,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   DESK_DRAWERS,
+  deskDrawersFor,
   canAppointOfficers,
   canEditLiveAgenda,
   canManageAgendaTemplates,
   canManageCouncilCadence,
   canOpenCouncilLookups,
   canOpenExpenseAuthorizeDesk,
-  canOpenOversightDesk,
   canReviewVolunteerQuarantine,
   DASHBOARD_TABS,
   dashboardTabsFor,
@@ -124,7 +124,8 @@ describe('the Reports Desk merged into Home', () => {
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<ExecutiveSummary');
     const summary = page.slice(page.indexOf('function ExecutiveSummary('));
     for (const part of ['<Scorecards s={s} compact />', '<EngagementCards', '<BudgetTracking', '<MissionTracking', 'title="Financial ledger"', '<NoShowAudit']) expect(summary).toContain(part);
-    expect(page).not.toContain('<AwaitingHours');
+    // Sprint 8P Stage 3: the Shifts Awaiting Hours audit is back here for every executive-audit reader.
+    expect(page).toContain('<AwaitingHours councilId={councilId} />');
     expect(page).not.toContain("shown === 'reports'");
   });
 
@@ -155,7 +156,7 @@ describe("the Deputy Grand Knight's full parity with the Grand Knight", () => {
       expect(canEditLiveAgenda(u, { CouncilID: OWN })).toBe(true);
       expect(canReviewVolunteerQuarantine(u, OWN)).toBe(true);
       expect(portalAreas(u)).toEqual(expect.arrayContaining(['expenses/authorize', 'meetings/cadence', 'elections/appointments', 'council-lookups']));
-      expect(dashboardTabsFor(u, OWN).map((t) => t.id)).toEqual(['home', 'grand-knight', 'oversight', 'member']);
+      expect(dashboardTabsFor(u, OWN).map((t) => t.id)).toEqual(['home', 'grand-knight', 'member']);
     }
     // Parity stops at the council line.
     expect(canOpenExpenseAuthorizeDesk(seat({ roles: ['Deputy Grand Knight'], councilId: OTHER }), OWN)).toBe(false);
@@ -225,10 +226,11 @@ describe('the left navigation cleanup', () => {
     expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<ExpenseRoutingTrack />');
   });
 
-  it('locks the Inbound Council Mail Center card and its badge to global Super Admins', () => {
-    const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toContain('{isSuperAdmin(user) ? (');
-    expect(desks).toMatch(/if \(isSuperAdmin\(user\)\)\s+add\('access'/);
+  it('locks the Inbound Council Mail Center drawer to global Super Admins', () => {
+    // Sprint 8P Stage 3: a Grand Knight Desk drawer gated 'super-admin'.
+    expect(DESK_DRAWERS.find((d) => d.id === 'access-requests')).toMatchObject({ desk: 'grand-knight', gate: 'super-admin' });
+    expect(deskDrawersFor(seat({ memberType: 'Admin' }), 'grand-knight', OWN).map((d) => d.id)).not.toContain('access-requests');
+    expect(deskDrawersFor(seat({ memberType: 'Super Admin' }), 'grand-knight', OWN).map((d) => d.id)).toContain('access-requests');
   });
 });
 
@@ -240,9 +242,10 @@ describe('the click-through desk badges', () => {
       expect(target.rowId).toMatch(/^desk-row-/);
     }
     expect(DESK_FOCUS_TARGETS.vouchers.anchor).toBe('grand-knight');
-    expect(DESK_FOCUS_TARGETS.quarantine.anchor).toBe('oversight');
-    // Sprint 8C: shifts awaiting hours consolidate onto the Oversight Desk.
-    expect(DESK_FOCUS_TARGETS.hours.anchor).toBe('oversight');
+    // Sprint 8P Stage 3: the Oversight Desk is dissolved; its audits are Grand Knight Desk drawers.
+    expect(DESK_FOCUS_TARGETS.quarantine.anchor).toBe('grand-knight');
+    expect(DESK_FOCUS_TARGETS.hours.anchor).toBe('grand-knight');
+    expect(DESK_FOCUS_TARGETS.access.anchor).toBe('grand-knight');
     expect(new Set(Object.values(DESK_FOCUS_TARGETS).map((t) => t.rowId)).size).toBe(Object.keys(DESK_FOCUS_TARGETS).length);
   });
 
@@ -257,21 +260,20 @@ describe('the click-through desk badges', () => {
     expect(drawerRows).toContain(DESK_FOCUS_TARGETS.vouchers.rowId);
     expect(drawerRows).toContain(DESK_FOCUS_TARGETS.orders.rowId);
     expect(read('apps/web/components/DeskDrawers.tsx')).toContain('<DeskRow id={spec.rowId}');
-    expect(desks).toContain('rowId={DESK_FOCUS_TARGETS[b.key].rowId}');
     const tabs = read('apps/web/components/WorkspaceTabs.tsx');
     expect(tabs).toContain('if (rowId) focusDeskRow(rowId);');
     expect(tabs).toContain('row.scrollIntoView(');
   });
 
-  it('opens the Oversight Desk to every executive-audit reader, the quarantine staying with its reviewers', () => {
-    expect(canOpenOversightDesk(seat({ roles: ['Treasurer'] }), OWN)).toBe(true);
+  it('dissolves the Oversight Desk into Grand Knight Desk drawers, the quarantine staying with its reviewers (Sprint 8P Stage 3)', () => {
+    expect(DASHBOARD_TABS.map((t) => t.id as string)).not.toContain('oversight');
+    const gkDrawers = deskDrawersFor(seat({ roles: ['Grand Knight'] }), 'grand-knight', OWN).map((d) => d.id);
+    expect(gkDrawers).toEqual(expect.arrayContaining(['flagged-hours', 'shifts-awaiting-hours']));
+    expect(gkDrawers).not.toContain('access-requests');
     expect(canReviewVolunteerQuarantine(seat({ roles: ['Treasurer'] }), OWN)).toBe(false);
-    expect(canOpenOversightDesk(seat(), OWN)).toBe(false);
-    expect(canOpenOversightDesk(seat({ roles: ['Treasurer'] }), OTHER)).toBe(false);
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    const oversight = desks.slice(desks.indexOf('export function OversightDesk('));
-    expect(oversight).toContain('<AwaitingHours councilId={councilId} />');
-    expect(oversight).toContain('{reviewer ? (');
+    expect(desks).toContain('<AwaitingHours councilId={councilId} />');
+    expect(desks).toContain('<FlaggedHoursDrawer user={user} councilId={councilId} />');
   });
 });
 

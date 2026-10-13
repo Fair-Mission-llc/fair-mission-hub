@@ -1437,10 +1437,10 @@ export interface VolunteerQuarantine {
   cleared_time_id?: number | null;
 }
 
-/** Sprint 8I: the six governance tags of the Global Operations Knowledge Vault. */
+/** Sprint 8I: the six governance tags of the Operations Knowledge Archive. */
 export type OperationsKnowledgeCategory = 'RECRUITING' | 'TREASURY' | 'CLERGY' | 'COMPLIANCE' | 'DEVOTIONAL' | 'LOGISTICS';
 
-/** Sprint 8I: one signed, append-only entry in a council's Global Operations Knowledge Vault (operations-knowledge.ts). */
+/** Sprint 8I: one signed, append-only entry in a council's Operations Knowledge Archive (operations-knowledge.ts). */
 export interface CouncilOperationsKnowledge {
   entry_id: number;
   council_id: number; // Council

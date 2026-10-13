@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   ACCESS_REQUEST_LINK_LABEL,
+  DESK_DRAWERS,
   ACCESS_REQUEST_NOTIFY_EMAIL,
   accessRequestEmail,
   assertAccessRequestTransition,
@@ -443,10 +444,10 @@ describe('sign-in gates and the mail center', () => {
     expect(read('apps/mobile/app/sign-in.tsx')).toContain('db.accessRequests.submit(draft)');
   });
 
-  it('shows the Inbound Council Mail Center to global Super Admins only, on the dashboard Oversight Desk (Sprints 8A, 8C)', () => {
+  it('shows the Inbound Council Mail Center to global Super Admins only, as a Grand Knight Desk drawer (Sprint 8P Stage 3)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toMatch(/\{isSuperAdmin\(user\) \? \(\s*<DeskRow id=\{DESK_FOCUS_TARGETS\.access\.rowId\} label="Inbound Council Mail Center">\s*<InboundMailCenter \/>/);
-    expect(desks).toContain("if (isSuperAdmin(user))\n      add('access'");
+    expect(desks).toContain("case 'access-requests':\n              return <InboundMailCenter />;");
+    expect(DESK_DRAWERS.find((d) => d.id === 'access-requests')?.gate).toBe('super-admin');
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<InboundMailCenter />');
     expect(read('apps/web/components/PlatformAccessParts.tsx')).not.toMatch(/bg-black/);
   });

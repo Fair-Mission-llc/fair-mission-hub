@@ -32,7 +32,7 @@
 19. [The Active Desks dashboard](#19-the-active-desks-dashboard)
 20. [The Cross-Council Loaner Library and the colour-coded calendar](#20-the-cross-council-loaner-library-and-the-colour-coded-calendar)
 21. [Planning workflows and bilateral council affiliations](#21-planning-workflows-and-bilateral-council-affiliations)
-22. [The Global Operations Knowledge Vault and its archive](#22-the-global-operations-knowledge-vault-and-its-archive)
+22. [The Operations Knowledge Archive](#22-the-operations-knowledge-archive)
 23. [Parish fundraiser splits](#23-parish-fundraiser-splits)
 24. [Batch coding and cash box audits](#24-batch-coding-and-cash-box-audits)
 25. [Appendix: QR code files](#appendix-qr-code-files)
@@ -184,7 +184,7 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
 | `feature_council_history` | **Council history** | Council history (Team Legacy) | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
-| `feature_volunteer_quarantine` | **Flagged hours review** | The **Flagged Hours Review Desk** on the **Oversight Desk** of the dashboard. Members' hours also stop going to review (section 15). | None |
+| `feature_volunteer_quarantine` | **Flagged hours review** | The **Flagged Hours Review** drawer on the **Grand Knight Desk** of the dashboard. Members' hours also stop going to review (section 15). | None |
 
 The flags follow four rules.
 
@@ -1557,7 +1557,7 @@ The platform sends no message when an expense report changes status. The member 
 | --- | --- | --- | --- |
 | A shift starts in 24 hours | A reminder email with a calendar file | Every volunteer on the shift | The event's shift roster |
 | A meeting starts in 24 hours | A reminder email with a calendar file and the agenda | Every invitee | **Meeting Center** |
-| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Active Desks** row → **Oversight Desk** → **Shifts awaiting hours** |
+| Day 5 after a shift with no hours (the council can change the day, section 16.3) | A text reminder | The volunteer | **Active Desks** row → **Grand Knight Desk** → **Shifts Awaiting Hours** drawer, or the **Executive Dashboard** page |
 | Every 7 days after that (the council can change the days, section 16.3) | A follow-up text, until the shift is older than the logging window (90 days by default) | The volunteer | Same panel. The row shows **Closed** when the window ends. |
 | An officer sends an urgent alert | A phone push alert and a bell entry, kept 6 months | Members with the chosen skills or shifts | **Council Messages & Alerts** → **Dispatch High-Priority Push Notification Alert** |
 | A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on **Affiliated Roster** or **Supreme Council Sync** |
@@ -1849,7 +1849,7 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 
 **Goal:** Decide each held entry, so that true hours count and false hours never count.
 
-**Start point:** **Active Desks** row → **Oversight Desk** → **🚨 Flagged Hours Review Desk**. At the top of the **Oversight Desk**, the **[ ⚠️ 2 Flagged Hours Entries ]** badge scrolls to the same list.
+**Start point:** **Active Desks** row → **Grand Knight Desk** → **Flagged Hours Review** drawer. The tile has a red border while an entry waits for review.
 
 **Steps:**
 1. Read the count of pending entries in the desk header.
@@ -2055,7 +2055,7 @@ A council that is not on the platform can ask for access from the sign-in page. 
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
-The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests in the **Inbound Council Mail Center** card on the **Oversight Desk** of the dashboard.
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests in the **Inbound Council Mail Center** drawer on the **Grand Knight Desk** of the dashboard.
 
 Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
 
@@ -2073,7 +2073,7 @@ Approving a request marks the request as reviewed. Approving does not create the
 
 **Goal:** Mark a council's access request as reviewed.
 
-**Start point:** **Active Desks** row → **Oversight Desk** → **Inbound Council Mail Center**. At the top of the **Oversight Desk**, the **📨 Access Requests** badge scrolls to the same card.
+**Start point:** **Active Desks** row → **Grand Knight Desk** → **Inbound Council Mail Center** drawer. The tile has a red border while a request is pending.
 
 **Steps:**
 1. Read the council name, the city, the state and the contact email of the request.
@@ -2527,30 +2527,15 @@ Every module that a seat works in is a folder at the top of that seat's desk (se
 
 The **Top 5 Fraternal Volunteers** card counts only the current month. The card starts empty on the first day of each month. Members with equal hours share a place. The **Top 5 Volunteers Leaderboard** on the **Executive Dashboard** and the **Council Dashboard** counts all hours ever logged.
 
-**Home** has no status badges, roadmap ribbon or **Executive Summary**. The status badges are at the top of the **Oversight Desk** (section 19.3). The roadmap ribbon and the **Executive Summary** are on the **Executive Dashboard** page (section 19.13).
+**Home** has no status badges, roadmap ribbon or **Executive Summary**. The roadmap ribbon and the **Executive Summary** are on the **Executive Dashboard** page (section 19.13).
 
-The status badges at the top of the **Oversight Desk**:
-
-| Badge | Desk it opens | Who sees the badge |
-| --- | --- | --- |
-| **[ 📋 3 Approved Expenses Awaiting Payment ]** | **Grand Knight Desk** → **Approved Expense Release queue** | The Grand Knight (GK), the Deputy Grand Knight (DGK), the council's Admins and Super Admins |
-| **[ ✍️ 2 Payment Requests Waiting ]** | **Financial Secretary Desk** → **Payment-request queue** | The Financial Secretary (FS), the council's Admins and Super Admins |
-| **[ 🏷️ 1 Sheet to Code ]** | **Treasurer Desk** → **Ledger Line Coder queue** | The Treasurer, the council's Admins and Super Admins |
-| **[ 📝 2 Minutes Due ]** | **Recorder Desk** → **Business calendar** | The Recorder, the council's Admins and Super Admins |
-| **[ ⚠️ 2 Flagged Hours Entries ]** | **Oversight Desk** → **Flagged Hours Review Desk** | The GK, the DGK, the council's Admins and Super Admins, while **Flagged hours review** is on |
-| **[ 📨 1 Access Request ]** | **Oversight Desk** → **Inbound Council Mail Center** | Super Admins only. A council Admin never sees the badge. |
-| **[ ⏳ 4 Shifts Awaiting Hours ]** | **Oversight Desk** → **Shifts awaiting hours** | The council's officers and Admins, and Super Admins |
-| **[ 💼 2 Open Sheets of Mine ]** | **Member Desk** → **My open expense sheets** | Every reader of the dashboard |
-
-A badge with work waiting is filled with gold. The flagged hours badge is red. A badge with a count of 0 is white.
-
-Each badge is a link. Select a badge. The desk of the badge opens, and the matching list scrolls into view. A gold ring shows around the list for 2 seconds.
+The portal has no status badge strip and no **Oversight Desk**. Each queue shows its count on its own drawer tile, and a tile with work for you has a red border (section 19.3.2).
 
 The **Bible Verse of the Day**, the **Liturgical Feast Day Tracker** and the **📿 Community Prayer Request List** show only while the council's **Faith Center** module is on. A white-label organization does not see the three faith cards. **Home** then shows the other four cards.
 
 ### 19.3 Concept: the desks
 
-A desk summarizes the work of one seat. On the **Treasurer Desk**, you sign on the full desk page. On the **Grand Knight Desk** and the **Financial Secretary Desk**, you sign inside a drawer on the desk (section 19.3.2).
+A desk holds the work of one seat. Every officer desk is a desk blotter of drawers (section 19.3.2). You sign, code and pay inside a drawer on the desk. The **Member Desk** has no drawers.
 
 The portal shows a desk tab only to a reader who may do the desk's work.
 
@@ -2558,19 +2543,18 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 | --- | --- | --- | --- |
 | **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 19.3.2), with **Approved Expenses** first. | None. You work inside the drawers. |
 | **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 19.3.2), with **Payment Requests** first. | None. You work inside the drawers. |
-| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | Two module folders. The **Ledger Line Coder queue**: sheets that wait for a budget line and a ledger account. A link to the general ledger. | **Open the Treasurer Ledger Audit Desk** link on the desk |
-| **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | One module folder. The **🚀 Start Live Meeting Sequence** button with the meeting PIN, the **Business calendar** with the minutes countdown of each meeting, and the **Meeting Minutes Entry Desk**. | None. The desk is the full page. |
-| **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | One module folder. The **Digital Fraternal Annals Scrapbook**: monthly newsletters, meeting photos and oral history recordings. | None. The desk is the full page. |
-| **Oversight Desk** | The council's officers and Admins, and Super Admins | The status badges of every queue you may work, then the **Shifts awaiting hours** audit. The GK, the DGK, the council's Admins and Super Admins also get the **🚨 Flagged Hours Review Desk** (section 15). Only Super Admins get the **Inbound Council Mail Center** (section 17). | None. The desk is the full page. |
-| **Member Desk** | Every reader of the dashboard | **[ 🚗 Open Shifts Needing Volunteers ]**, **[ 📥 My Charity Requests ]**, **My open expense sheets** and **My shifts: next 30 days**. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
+| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches** first. | None. You work inside the drawers. |
+| **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** across the top row. | None. You work inside the drawers. |
+| **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The desk blotter, with the **Fraternal Diary Entry Logs** first. | None. You work inside the drawers. |
+| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
-### 19.3.1 Concept: module folders on the desks
+### 19.3.1 Concept: the advanced modules on the desks
 
-The **Treasurer Desk**, the **Recorder Desk** and the **Historian Desk** start with their module folders. The **Grand Knight Desk** and the **Financial Secretary Desk** show the same modules as drawers (section 19.3.2). A folder is a closed bar with a 📁 icon, the module name and one line about the module. Select the bar to open the folder. The full module opens inside the desk. Select the bar again to close the folder.
+The desks no longer use module folders. Each advanced module below is a drawer on its desk (section 19.3.2). The module's own page also stays at its web address.
 
-A folder shows only to a reader who may open the module. A reader who may not open a module does not see its folder. The module's own page also stays at its web address. The **Open ... as a full page** link at the bottom of an open folder opens that page.
+A drawer shows only to a reader who may open the module. A reader who may not open a module does not see its drawer.
 
-| Desk | Module folder | What the module does |
+| Desk | Module drawer | What the module does |
 | --- | --- | --- |
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 4). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. Officers only. |
@@ -2586,24 +2570,34 @@ The Deputy Grand Knight (DGK) gets the same **Grand Knight Desk** drawers as the
 
 ### 19.3.2 Concept: action drawers and the alert boundary
 
-The **Grand Knight Desk** and the **Financial Secretary Desk** are desk blotters. A desk blotter is a grid of drawer tiles. Each tile shows a module name, one line about the module and, for a queue, the number of sheets that wait.
+Every officer desk is a desk blotter: the **Grand Knight Desk**, the **Financial Secretary Desk**, the **Treasurer Desk**, the **Recorder Desk** and the **Historian Desk**. A desk blotter is a grid of drawer tiles. Each tile shows a module name, one line about the module and, for a queue, the number of sheets that wait.
 
 Select a tile. The drawer slides out from the right side of the screen, over the desk. The full module works inside the drawer. You sign, verify and look up records in the drawer. You do not go to another page.
 
 To close a drawer, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the drawer. You can also select **Close**, select the dimmed desk, or push **Esc**.
 
-**Alert boundary:** a tile with a thick red border and a red glow has work that waits for your own signature. The tile also shows *"🔴 Waiting for your signature"*. The desk checks the queue again every 30 seconds.
+**Alert boundary:** a tile with a thick red border and a red glow has work that waits for you. The tile also shows a red line that names the work, for example *"🔴 Waiting for your signature"*. The desk checks the queues again every 30 seconds.
 
 | Desk | Tile with the alert boundary | The red border shows when |
 | --- | --- | --- |
 | **Grand Knight Desk** | **Approved Expenses** | A sheet in the release queue waits for your final release, and you may sign it. A sheet that you submitted, ordered or coded does not light the border. |
 | **Financial Secretary Desk** | **Payment Requests** | A sheet waits for its payment request, and you may sign it. Your own sheet does not light the border. |
+| **Grand Knight Desk** | **Flagged Hours Review** | A time entry is held for review (section 15). |
+| **Grand Knight Desk** | **Shifts Awaiting Hours** | A volunteer is past the first hours reminder and has not logged time. |
+| **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: an access request is pending (section 17). |
+| **Treasurer Desk** | **Ledger Line Coder** | A signed sheet waits for your budget line and ledger account, and you may code it. |
+| **Treasurer Desk** | **Expense Report (ER) Settlement** | A fully signed sheet waits for your check, and you may pay it. Your own sheet does not light the border. |
+| **Treasurer Desk** | **Charitable Contribution Matches** | A charity request or gift waits for its check. |
+| **Recorder Desk** | **Meeting Minutes Entry Desk** | The minutes of a meeting are due or overdue. The red line counts the overdue meetings. |
 
 The drawers on each desk:
 
 | Desk | Drawer | What you do in the drawer |
 | --- | --- | --- |
 | **Grand Knight Desk** | **Approved Expenses** | Select **✍️ Final Release for Payment** on each sheet. |
+| **Grand Knight Desk** | **Flagged Hours Review** | Approve or reject the held time entries (section 15). |
+| **Grand Knight Desk** | **Shifts Awaiting Hours** | Read the volunteers who served but have not logged time, with their phone numbers. |
+| **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: approve council access requests (section 17). |
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 4). |
 | **Grand Knight Desk** | **Planning & Budgeting Workflow** | Read the planning steps. Set the year's goals. Mark the goals and the budget reviewed (section 21). |
 | **Grand Knight Desk** | **Council Election Tracker** | Read each officer seat and its nominations. |
@@ -2611,7 +2605,7 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Affiliation Invites** | Accept or decline invites from nearby councils. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils (section 21). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. |
-| **Grand Knight Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 22). |
+| **Grand Knight Desk** | **Operations Knowledge Archive** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 22). |
 | **Financial Secretary Desk** | **Payment Requests** | Select **📝 Verify & Sign Expense** on each sheet. |
 | **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
@@ -2620,12 +2614,30 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Open the Supreme roster sync. |
 | **Financial Secretary Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 22). |
+| **Treasurer Desk** | **Ledger Line Coder** | Pick the budget line and the ledger account. Select **🏷️ Categorize & Lock Expense**. Log concluded revenue. |
+| **Treasurer Desk** | **Expense Report (ER) Settlement** | Pay fully signed sheets by check. |
+| **Treasurer Desk** | **Charitable Contribution Matches** | Match approved charity requests and gifts to their checks, and pay them. |
+| **Treasurer Desk** | **Planning & Budgeting Workflow** | Read the planning steps. Mark the budget reviewed (section 21). |
+| **Treasurer Desk** | **Cash Box Audit Closure Panel** | Count each concluded event's cash box and log any variance (section 24). |
+| **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 24). |
+| **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | Read budgeted against actual spend and the variance analyzer. |
+| **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. |
+| **Treasurer Desk** | **Parish Fundraiser Revenue Split Console** | Issue the parish share of fundraiser revenue (section 23). |
+| **Recorder Desk** | **Historical Meeting Minutes Archive** | Read the published minutes of every past meeting before you open a session (section 19.10.1). This drawer spans the top row of the desk. |
+| **Recorder Desk** | **Meeting Minutes Entry Desk** | Write, save and publish the minutes (section 19.10). |
+| **Recorder Desk** | **Start Live Meeting Sequence** | Start the live console and read the PIN (section 19.11). |
+| **Recorder Desk** | **Council Resolutions and Motions Ledger** | Read every motion of this fraternal year and its result. |
+| **Historian Desk** | **Fraternal Diary Entry Logs** | Read the council's diary entries by year, author or word (section 19.12.1). |
+| **Historian Desk** | **Monthly Newsletters** | Write one newsletter a month (section 19.12). |
+| **Historian Desk** | **Meeting Photos** | File each meeting's photo to Google Drive (section 19.12). |
+| **Historian Desk** | **Oral History Recordings** | Listen to testimonials and record your own (section 19.12). |
+| **Historian Desk** | **Google Drive Media Gallery Sync Board** | Upload and tag photos, build Smart Albums and play the slideshow. |
 
 A tile shows only to a reader who may open its module. An Admin who does not hold the seat reads the drawers but cannot sign.
 
 **Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **[ 🔀 Back to Desk Blotter ]** bar shows under the tab row. Select the bar to go back to your desk.
 
-A status badge on the **Oversight Desk** for these two desks opens the matching drawer.
+**The Oversight Desk is gone.** Its three audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review**, **Shifts Awaiting Hours** and, for Super Admins, the **Inbound Council Mail Center**. The **Shifts awaiting hours** audit is also on the **Executive Dashboard** page for every officer (section 19.13). A saved `/dashboard#oversight` address opens your first tab.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -2641,7 +2653,6 @@ Each tab has its own web address. The address is the dashboard address with the 
 | **Treasurer Desk** | `/dashboard#treasurer` |
 | **Recorder Desk** | `/dashboard#recorder` |
 | **Historian Desk** | `/dashboard#historian` |
-| **Oversight Desk** | `/dashboard#oversight` |
 | **Member Desk** | `/dashboard#member` |
 
 Save a desk address as a browser bookmark to open the desk directly. The browser also remembers the last tab you opened. The dashboard opens on that tab the next time. A tab you cannot open falls back to your first tab. For most readers, the first tab is **Home**.
@@ -2661,8 +2672,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 4. Read the **Open Volunteer Shifts** card. Select **Sign up** beside a shift to take that shift.
 5. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
 6. Read the **📿 Community Prayer Request List** card. Select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
-7. To see the status badges, select the **Oversight Desk** tab.
-8. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
+7. To see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
 
 **Expected result:** **Home** shows the seven cards. Scroll the page to see the lower cards. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow. After **Sign up**, the card shows *"You are signed up for ..."* and the shift leaves the list.
 
@@ -2670,16 +2680,15 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The verse, the feast tracker and the prayer list do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
-| The status badges are not on **Home**. | The badges moved to the top of the **Oversight Desk**. | Select the **Oversight Desk** tab. |
-| A badge you expect does not show. | Your seat does not clear that desk, or the module is off. | Ask the officer who holds the seat. |
+| You look for the status badges. | The badges are gone. Each desk tile shows its own count and alert. | Select your desk tab (section 19.3.2). |
 | *"No member has logged hours this month yet."* | No active member of the council logged hours in the current month. | No action. The card fills when members log hours. |
 | *"Every shift in the next 30 days has its volunteers."* | No shift in the next 30 days is short of volunteers. | No action. |
 | *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
 
-### 19.4.1 Open a module folder on your desk
+### 19.4.1 Open a drawer on your desk
 
-> **Who can do this:** the seat holder of the desk, the council's Admins and Super Admins. A folder shows only when your role may open its module.
+> **Who can do this:** the seat holder of the desk, the council's Admins and Super Admins. A drawer shows only when your role may open its module.
 
 **Goal:** Work in an advanced module without leaving your desk.
 
@@ -2687,20 +2696,19 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 **Steps:**
 1. Select your desk tab.
-2. Find the module folders at the top of the desk.
-3. Select the bar of the module folder. The folder opens and the module loads inside the desk.
+2. Find the tile of the module. A tile with a red border has work for you.
+3. Select the tile. The drawer slides out from the right.
 4. Do the work in the module.
-5. Select the bar again to close the folder.
+5. Select **[ 🔀 Back to Desk Blotter ]**.
 
-**Expected result:** The module works inside the desk the same as on its own page.
+**Expected result:** The module works inside the drawer the same as on its own page.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| A folder in section 19.3.1 is not on your desk. | Your role may not open that module, or the council switched the module off. | Ask the seat holder or a Super Admin. |
+| A drawer in section 19.3.2 is not on your desk. | Your role may not open that module, or the council switched the module off. | Ask the seat holder or a Super Admin. |
 | The **Bank Statement Match-Window** shows a notice and no upload box. | Only the FS, the Treasurer and Super Admins can match bank statements. | Ask the Treasurer to run the match. |
-| You want the module on a larger screen. | The desk has less width than the full page. | Select **Open ... as a full page** at the bottom of the folder. |
-| Your desk shows tiles, not folders. | The **Grand Knight Desk** and the **Financial Secretary Desk** use drawers. | Select a tile to open its drawer (section 19.3.2). |
+| You want the module on a larger screen. | The drawer is narrower than the full page. | Open the module's page from the sidebar. |
 
 ### 19.5 Release approved expenses from the Grand Knight Desk
 
@@ -2760,25 +2768,28 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 > **Who can do this:** the council's Treasurer and Super Admins code sheets. The council's Admins read the desk.
 
-**Goal:** Find the sheets that wait for a budget line and a ledger account, and code them.
+**Goal:** Code the waiting sheets and pay the fully signed sheets without leaving the desk.
 
 **Start point:** **Active Desks** row → **Treasurer Desk**.
 
 **Steps:**
 1. Select the **Treasurer Desk** tab.
-2. Read the **Sheets waiting for ledger coding** count.
-3. Read the **Ledger Line Coder queue** grid. The **Signed so far** column names the FS who ordered each sheet.
-4. Select **Categorize & lock on the full desk**. The **Treasurer Ledger Audit Desk** opens.
-5. Pick the budget line and the ledger account for each sheet.
-6. Select **🏷️ Categorize & Lock Expense**. The sheet goes to the Grand Knight.
+2. Select the **Ledger Line Coder** tile. A red border means that a sheet waits for your coding.
+3. Pick the budget line and the ledger account for each sheet.
+4. Select **🏷️ Categorize & Lock Expense**. The sheet goes to the Grand Knight.
+5. Select **[ 🔀 Back to Desk Blotter ]**.
+6. Select the **Expense Report (ER) Settlement** tile. A red border means that a fully signed sheet waits for your check.
+7. Select the sheets, type the check number and the payout date, and issue the check.
+8. To pay a charity request, select the **Charitable Contribution Matches** tile.
 
-**Expected result:** The coded sheets leave the queue. The sheets show on the **Grand Knight Desk**.
+**Expected result:** The coded sheets leave the coding queue and show on the **Grand Knight Desk**. The paid sheets show **Reimbursed**. The counts on the tiles drop when you close each drawer.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The **Treasurer Desk** tab does not show. | You do not hold the Treasurer seat on this council, and you are not an Admin. | Ask the Treasurer to code the sheets. |
-| **Log its concluded revenue** does not show. | Only the Treasurer and Super Admins log concluded revenue. | Ask the Treasurer to log the revenue. |
+| **Log its concluded revenue** does not show in the **Ledger Line Coder** drawer. | Only the Treasurer and Super Admins log concluded revenue. | Ask the Treasurer to log the revenue. |
+| A sheet shows no pay control in **Expense Report (ER) Settlement**. | You submitted that sheet. | Ask the Financial Secretary to pay the sheet. |
 
 ### 19.8 Check your own work on the Member Desk
 
@@ -2789,13 +2800,13 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 **Start point:** **Active Desks** row → **Member Desk**.
 
 **Steps:**
-1. Select the **Member Desk** tab.
-2. Read **[ 🚗 Open Shifts Needing Volunteers ]**. The card lists the shifts in the next 30 days that still need volunteers, such as the parish parking lot shifts.
+1. Select the **Member Desk** tab. The two shift trackers are side by side at the top of the desk.
+2. Read **[ 🚗 Open Shifts Needing Volunteers ]** on the left. The card lists the shifts in the next 30 days that still need volunteers, such as the parish parking lot shifts.
 3. Select **Sign up** on a shift to take a place. The shift leaves the card.
-4. Read **[ 📥 My Charity Requests ]**. The tracking steps show the stage of each request that you carry.
-5. Read **My open expense sheets**. The status pill shows the stage of each sheet.
-6. Select **Open my expenses** to edit a draft or submit a sheet.
-7. Read **My shifts: next 30 days**.
+4. Read **My shifts: next 30 days** on the right.
+5. Read **[ 📥 My Charity Requests ]** under the shift trackers. The tracking steps show the stage of each request that you carry.
+6. Read **My open expense sheets**. The status pill shows the stage of each sheet.
+7. Select **Open my expenses** to edit a draft or submit a sheet.
 8. Select **Open the Council Dashboard** for the council's service record and your own impact card.
 
 **Expected result:** The desk lists the open shifts, your charity requests, each unpaid sheet and each coming shift.
@@ -2832,7 +2843,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 **Start point:** **Active Desks** row → **Recorder Desk**.
 
 **Steps:**
-1. Select the **Recorder Desk** tab.
+1. Select the **Recorder Desk** tab. Select the **Meeting Minutes Entry Desk** tile. A red border means that minutes are due.
 2. Select a meeting in the **Business calendar**. Overdue meetings are at the top.
 3. In **Meeting Minutes Entry Desk**, type the minutes. Start a heading with `#`. Start a bullet with `-`.
 4. Select **Preview** to read the minutes as members see them. Select **Write** to go back.
@@ -2849,6 +2860,30 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 | You published the wrong meeting. | You selected another meeting in the list. | Select **Withdraw to draft**. The minutes go back to a draft. |
 | The **Recorder Desk** tab does not show. | You do not hold the Recorder seat on this council, and you are not an Admin. | Ask the Grand Knight to check your seat. |
 
+### 19.10.1 Read the Historical Meeting Minutes Archive
+
+> **Who can do this:** the council's Recorder, the council's Admins and Super Admins.
+
+**Goal:** Read the minutes of earlier meetings before you open a session.
+
+**Start point:** **Active Desks** row → **Recorder Desk** → **Historical Meeting Minutes Archive** (the wide tile at the top of the desk).
+
+**Steps:**
+1. Select the **Recorder Desk** tab.
+2. Select the **⭐ Historical Meeting Minutes Archive** tile. The drawer slides out.
+3. Optional: type words in **Search the minutes**, for example `budget` or a month.
+4. Select a meeting in the list. The newest meeting is first.
+5. Read the minutes in the reader. If the meeting has a minutes file, select **Open the minutes file**.
+6. Select **[ 🔀 Back to Desk Blotter ]**.
+
+**Expected result:** The reader shows the published minutes of the meeting that you selected.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"No meeting has published minutes yet."* | No past meeting has published minutes or a minutes file. | Publish the minutes of a meeting (section 19.10). |
+| A meeting with draft minutes does not show. | The archive shows only published minutes. | Publish the minutes (section 19.10). |
+
 ### 19.11 Start the live meeting from the Recorder Desk
 
 > **Who can do this:** the council's Recorder, the council's Admins and Super Admins.
@@ -2859,7 +2894,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 **Start point:** **Active Desks** row → **Recorder Desk**.
 
 **Steps:**
-1. Select the meeting in the **Business calendar**.
+1. Select the **Start Live Meeting Sequence** tile. Select the meeting in the **Meeting** list.
 2. Select **[ 🚀 Start Live Meeting Sequence ]**. The quorum count locks. You cannot change the locked count.
 3. Read the 4-digit **Meeting PIN bypass** in the navy box.
 4. Read the PIN aloud. Members whose phones cannot check in by location type the PIN.
@@ -2883,7 +2918,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 
 **Steps:**
 1. Select the **Historian Desk** tab.
-2. In **📰 Monthly newsletters**, select the **Month**.
+2. Select the **Monthly Newsletters** tile. In **📰 Monthly newsletters**, select the **Month**.
 3. Type the newsletter text. Select **Save newsletter**.
 4. To open an earlier newsletter, select its month button under the text box.
 5. In **📷 Parish event and meeting photos**, select the **Meeting**.
@@ -2899,6 +2934,30 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 | *"The Drive vault is off, so the photo is kept in this browser only."* | The council's Google Drive is not connected. | Ask a Super Admin to connect Google Drive (section 10.8). |
 | The recorder does not show. | You recorded your one testimonial before. | No action. Each member records one testimonial. |
 | One month shows only one newsletter. | The council keeps one newsletter for each month. | Change the text and select **Save newsletter**. The new text replaces the old text. |
+
+### 19.12.1 Read the Fraternal Diary Entry Logs
+
+> **Who can do this:** the council's Council Historian, the council's Admins and Super Admins.
+
+**Goal:** Read the council's diary entries without leaving the desk.
+
+**Start point:** **Active Desks** row → **Historian Desk** → **Fraternal Diary Entry Logs**.
+
+**Steps:**
+1. Select the **Historian Desk** tab.
+2. Select the **Fraternal Diary Entry Logs** tile. The drawer slides out.
+3. Optional: select a **Fraternal year**.
+4. Optional: type a name or a word in **Search the diary**.
+5. Read the entries. The newest entry is first. Select **Listen to the recording** to play an oral history.
+6. Select **[ 🔀 Back to Desk Blotter ]**.
+
+**Expected result:** The drawer lists the matching entries and their number.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"No diary entry matches."* | No entry has your words in the year you picked. | Select **Every year**, or type fewer words. |
+| You cannot add an entry here. | The diary logs are read-only. | Write your entry on the **Team Legacy** page. |
 
 ### 19.13 Read the Executive Dashboard page
 
@@ -2924,7 +2983,7 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The **Executive Dashboard** link does not show. | You do not hold an officer seat or the Council Historian role, and you are not an Admin. | Ask a council Admin. |
-| The **Shifts awaiting hours** audit is not on the page. | The audit is on the **Oversight Desk**. | Select the **Oversight Desk** tab. |
+| The **Shifts awaiting hours** audit is not on the page. | Only the council's officers and Admins, and Super Admins, read the audit. | Ask an officer. |
 | The budget gauges do not show. | Your seat does not review the budget. | Ask the Grand Knight or the Financial Secretary. |
 
 ### 19.14 Concept: the Annual Council Goals Progress Center
@@ -3262,11 +3321,11 @@ Your members always see your own council's items. A brother council's item shows
 | --- | --- | --- |
 | An affiliated council's items do not show. | The other council has sharing off. | Ask the other council's GK to switch sharing on. |
 
-## 22. The Global Operations Knowledge Vault and its archive
+## 22. The Operations Knowledge Archive
 
-### 22.1 Concept: the Global Operations Knowledge Vault
+### 22.1 Concept: the Operations Knowledge Archive
 
-Officers change every year. The **Global Operations Knowledge Vault** keeps what each leader learned, so the next chairman does not start over.
+Officers change every year. The **Operations Knowledge Archive** keeps what each leader learned, so the next chairman does not start over.
 
 Each entry is one note under one governance tag:
 
@@ -3299,7 +3358,7 @@ The **Filter by My Home Council Only** box hides the entries of other councils. 
 
 ### 22.1.2 Concept: the content guard and the Charter Advisory Warning
 
-The archive is read by officers of every council. For this reason, the vault checks each entry two times: while you type, and again when you save.
+The archive is read by officers of every council. For this reason, the archive checks each entry two times: while you type, and again when you save.
 
 **The content guard** refuses an entry that contains foul language, hateful language or partisan political words. The red message names the kind of language. It does not repeat the word.
 
@@ -3316,14 +3375,14 @@ The panel does not quote section numbers of the Charter, Constitution and Laws o
 
 The gate looks for words and phrases. It does not understand meaning. A rule can match a note that only warns against the act, for example "Do not endorse a candidate for mayor". Reword the note, for example "The council stays out of election campaigns".
 
-### 22.2 Write a vault entry
+### 22.2 Write an archive entry
 
 > **Who can do this:** the GK, the DGK, the council's Admins and Super Admins. Other members do not see this card.
 > **Warning:** you cannot edit or delete an entry after you save it.
 
 **Goal:** Save a signed note for the leaders who come after you.
 
-**Start point:** Active Desks → **Oversight Desk** → **Global Operations Knowledge Vault**.
+**Start point:** Active Desks → **Grand Knight Desk** → **Operations Knowledge Archive** drawer → **🗝️ Operations Knowledge Archive · New Entry**.
 
 **Steps:**
 1. Select a tag in **Governance tag**.
@@ -3341,7 +3400,7 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 | **Save signed entry** is grey and the panel says **SAVING IS BLOCKED**. | The text matches a severe Charter rule. | Change the words the panel names. |
 | A red message says the entry contains foul, hateful or partisan language. | The content guard found a blocked word. | Remove the word or reword the note. |
 | The save fails with "crosses the Order's non-partisan or non-profit boundaries". | The portal checked the text again at save. | Change the text and save again. |
-| The vault card does not show. | You are not the GK, the DGK or an Admin. | Ask the GK to write the entry. |
+| The **New Entry** form does not show in the drawer. | You are not the GK, the DGK or an Admin. | Ask the GK to write the entry. |
 | The note is cut off. | An entry holds at most 8,000 characters. | Split the note into two entries. |
 
 ### 22.3 Search the Operations Knowledge Archive
@@ -3367,7 +3426,7 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 | The grid says **No entry matches these filters.** | No entry has all the selected filters. | Select **Every tag** or **Every year**, or clear **Search**. |
 | Entries from other councils show. | The archive shows every council. | Select **Filter by My Home Council Only**. |
 | Your council's entries do not show. | The search words or filters exclude them. | Clear **Search**, and select **Every tag** and **Every year**. |
-| You cannot add an entry here. | The archive is read-only. | Write entries on the **Oversight Desk**. |
+| You cannot add an entry here. | This page is read-only. | Write entries in the **Operations Knowledge Archive** drawer of the **Grand Knight Desk** (section 22.2). |
 
 ---
 

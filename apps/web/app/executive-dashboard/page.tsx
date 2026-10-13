@@ -11,7 +11,8 @@
 // (reports.missionAreaFootprint) and the budget tracking gauges of the chosen month's fraternal year
 // (budget.getBudgetProgress), flagged from 85%. Every reader gets the Annual Fraternal Roadmap with the Three-Signature
 // Expense Flow tree (RoadmapParts) and, under the month, the no-show audit of the trailing NO_SHOW_AUDIT_MONTHS
-// (reports.listNoShowsAudit). The Shifts Awaiting Hours audit is on the Oversight Desk.
+// (reports.listNoShowsAudit) and the Shifts Awaiting Hours audit (Sprint 8P Stage 3: back from the dissolved Oversight
+// Desk; the Grand Knight Desk also carries it as a drawer).
 //
 // History: the Executive Summary was /dashboard's whole page until Sprint 7J, the lower half of Home in Sprint 7J, the
 // Reports Desk in Sprint 8A and Home's self-scrolling frame in Sprint 8C. Sprint 8D/8E gave Home back to the universal
@@ -36,6 +37,7 @@ import {
 } from '@kofc/shared';
 import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetParts';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
+import { AwaitingHours } from '@/components/DashboardDesks';
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
 import { FraternalRoadmap, RoadmapRibbon } from '@/components/RoadmapParts';
@@ -347,7 +349,7 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
         <div className="mt-6 flex flex-col gap-4">
           <h2 className="font-serif text-xl font-bold">Executive audits</h2>
           <NoShowAudit councilId={councilId} />
-          <p className="text-xs text-muted">The Shifts Awaiting Hours audit is on the Oversight Desk.</p>
+          <AwaitingHours councilId={councilId} />
         </div>
       ) : null}
     </section>

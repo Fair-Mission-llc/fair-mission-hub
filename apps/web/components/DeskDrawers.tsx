@@ -6,6 +6,9 @@
 // prefers-reduced-motion). Each drawer ends with '[ 🔀 Back to Desk Blotter ]'. While a drawer is open this browser
 // remembers its desk (DESK_RETURN_STORAGE_KEY), so a module that must open another page (the asset form after a long-term
 // asset is released) leaves BackToDeskBlotterAnchor in the portal frame to come straight back.
+// Sprint 8P Stage 3: every officer desk uses the blotter. A featured drawer (the Recorder's Historical Meeting Minutes
+// Archive) spans the top row, and an alert can name its own warning (alertText) - an overdue audit, a held time entry -
+// instead of the signature wording.
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type FocusEvent, type ReactNode } from 'react';
 import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, type DeskDrawerSpec } from '@kofc/shared';
@@ -16,6 +19,8 @@ import { DeskLink, DeskRow } from '@/components/WorkspaceTabs';
 export interface DeskDrawerStatus {
   count?: number | null;
   alert?: boolean;
+  /** The warning the lit accent reads (default ALERT_BOUNDARY_LABEL, the signature wording). */
+  alertText?: string;
 }
 
 interface DeskReturn {
@@ -45,26 +50,32 @@ function readDeskReturn(): DeskReturn | null {
 /** One closed drawer on the blotter: a large button with the module's name, its one-line summary and its status. */
 function DeskDrawerHandle({ spec, status, onOpen }: { spec: DeskDrawerSpec; status?: DeskDrawerStatus; onOpen: () => void }) {
   const alert = !!status?.alert;
+  const alertText = status?.alertText ?? ALERT_BOUNDARY_LABEL;
   return (
     <button
       type="button"
       onClick={onOpen}
       aria-haspopup="dialog"
       data-alert-boundary={alert ? 'true' : undefined}
-      aria-label={`${spec.title}${status?.count != null ? `, ${status.count} waiting` : ''}${alert ? `, ${ALERT_BOUNDARY_LABEL}` : ''}. Open the drawer.`}
+      data-featured={spec.featured ? 'true' : undefined}
+      aria-label={`${spec.title}${status?.count != null ? `, ${status.count} waiting` : ''}${alert ? `, ${alertText}` : ''}. Open the drawer.`}
       className={cx(
         'flex h-full w-full flex-col gap-2 rounded bg-white px-4 py-3 text-left text-navy hover:bg-gold/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
+        spec.featured && 'bg-gold/10 py-5',
         alert ? 'border-4 border-brand-red motion-safe:animate-alert-boundary' : 'border-2 border-navy border-t-8 border-t-gold',
       )}
     >
       <span className="flex items-start justify-between gap-3">
-        <span className="font-serif text-lg font-bold leading-tight">{spec.title}</span>
+        <span className={cx('font-serif font-bold leading-tight', spec.featured ? 'text-2xl' : 'text-lg')}>
+          {spec.featured ? <span aria-hidden="true">⭐ </span> : null}
+          {spec.title}
+        </span>
         {status?.count != null ? (
           <span className={cx('rounded px-2 py-0.5 text-lg font-bold', status.count > 0 ? 'bg-brand-red text-white' : 'bg-line text-navy')}>{status.count}</span>
         ) : null}
       </span>
       <span className="text-sm">{spec.summary}</span>
-      {alert ? <span className="text-sm font-bold text-brand-red">🔴 {ALERT_BOUNDARY_LABEL}</span> : null}
+      {alert ? <span className="text-sm font-bold text-brand-red">🔴 {alertText}</span> : null}
       <span className="mt-auto text-sm font-bold underline">Open drawer ▸</span>
     </button>
   );
@@ -145,7 +156,7 @@ export function DeskBlotter({
     <>
       <div role="group" aria-label={`${deskTitle} blotter`} data-desk={desk} className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {drawers.map((spec) => (
-          <div key={spec.rowId} onFocus={onRowFocus(spec)}>
+          <div key={spec.rowId} onFocus={onRowFocus(spec)} className={cx(spec.featured && 'md:col-span-2 xl:col-span-3')}>
             <DeskRow id={spec.rowId} label={spec.title}>
               <DeskDrawerHandle spec={spec} status={status?.(spec)} onOpen={() => openDrawer(spec)} />
             </DeskRow>

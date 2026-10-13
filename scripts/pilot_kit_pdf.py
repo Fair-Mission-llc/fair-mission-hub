@@ -7,7 +7,7 @@ rate, and the group phase is six flows ending with Flow 6, the Parish Fundraiser
 
 Sprint 8L: the kit is one 60-minute session - a strict 30-minute Individual Desk Coordinate Phase (the individual
 scripts) and a 30-minute Synchronized Group Workflow (the group script). Every step starts from the Active Desks row
-and its module folders, never the sidebar. The members set up the phone's Donate tab by hand (nothing is pre-selected
+and the drawer tiles of each desk (Sprint 8P), never the sidebar. The members set up the phone's Donate tab by hand (nothing is pre-selected
 or pre-filled). Member Beta's pages print in large type (Persona.large_print).
 
     py scripts/pilot_kit_pdf.py                 writes all five PDFs under docs/
@@ -110,7 +110,8 @@ class Flow:
 
 SIGN_IN_WEB = 'Web portal sign-in page'
 SIGN_IN_PHONE = 'Phone app sign-in screen'
-# Sprint 8L: every web step starts from the Active Desks row (the folder tabs over every portal page).
+# Sprint 8L: every web step starts from the Active Desks row (the folder tabs over every portal page). Sprint 8P: each
+# module is a drawer tile on its desk; the Oversight Desk is gone (its Flagged Hours Review is a Grand Knight Desk drawer).
 DESKS = 'Active Desks'
 
 PERSONAS: tuple[Persona, ...] = (
@@ -123,21 +124,21 @@ PERSONAS: tuple[Persona, ...] = (
         day_in_life=(
             'It is the week after the first weekend of the Parish Parking Event. The Grand Knight gives the final release '
             'on expense reports before the council pays them, keeps watch over the charity requests in vetting, and checks '
-            'a point of order before the October meeting. Everything he needs is a folder at the top of the Grand Knight '
+            'a point of order before the October meeting. Everything he needs is a drawer on the Grand Knight '
             'Desk; he never leaves the Active Desks row.'
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as gk_user@stmarys.org with the pilot password on the facilitator\'s board.',
-                 'The Active Desks row opens on Home. Its tabs include Grand Knight Desk and Oversight Desk.'),
-            Step(f'{DESKS} > Grand Knight Desk', 'Read the Approved Expense Release queue.',
+                 'The Active Desks row opens on Home. Its tabs include Grand Knight Desk.'),
+            Step(f'{DESKS} > Grand Knight Desk > Approved Expenses', 'Click the Approved Expenses tile (it has a red border) and read the sheets in the drawer.',
                  'Reports 19 (Historian User, Aaron Brothers, $89.99) and 23 (Member Alpha, Fred Meyer, $41.85) carry the payment request and the Treasurer\'s coding.'),
-            Step(f'{DESKS} > Grand Knight Desk > Open the Grand Knight Authorization Desk', 'Click Final Release for Payment on report 19.',
+            Step(f'{DESKS} > Grand Knight Desk > Approved Expenses', 'Click Final Release for Payment on report 19, then click [ 🔀 Back to Desk Blotter ].',
                  'The row reads "Released to the Treasurer". Report 19 is Approved and waits for the Treasurer\'s check.'),
-            Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board', 'Click the folder to open it and read the Triage queue.',
+            Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board', 'Click the tile to open the drawer and read the Triage queue.',
                  'Seven requests: four Submitted (including Northeast Portland Senior Meals and Cathedral Coat Closet), two Claimed by Trustee and one Advanced. Fold it away again.'),
-            Step(f'{DESKS} > Grand Knight Desk > Constitutional Advisor Panels', 'Open the folder, type "How much notice does a motion need?" and click Ask.',
-                 'The answer names its Source Authority. Fold the folder away.'),
-            Step(f'{DESKS} > Grand Knight Desk > Connected Councils', 'Open the folder and read the nearby councils.',
+            Step(f'{DESKS} > Grand Knight Desk > Constitutional Advisor Panels', 'Open the drawer, type "How much notice does a motion need?" and click Ask.',
+                 'The answer names its Source Authority. Click [ 🔀 Back to Desk Blotter ].'),
+            Step(f'{DESKS} > Grand Knight Desk > Connected Councils', 'Open the drawer and read the nearby councils.',
                  'St. Anthony Council is an active affiliate; Holy Redeemer\'s invite waits for your answer under Affiliation Invites.'),
             Step(f'{DESKS} > Home', 'Read the 📿 Community Prayer Request List card and tap [ 🙏 Praying Hands ] on Member Beta\'s intention.',
                  'The card lists five open intentions. The count on Beta\'s intention goes up by one and the button greys out for today.'),
@@ -157,17 +158,17 @@ PERSONAS: tuple[Persona, ...] = (
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as fs_user@stmarys.org with the pilot password.', 'The Active Desks row shows the Financial Secretary Desk tab.'),
-            Step(f'{DESKS} > Financial Secretary Desk', 'Read the Payment-request queue.',
+            Step(f'{DESKS} > Financial Secretary Desk > Payment Requests', 'Click the Payment Requests tile (it has a red border) and read the sheets in the drawer.',
                  'Reports 14 (Member Alpha, Home Depot, $84.97), 15 (Member Beta, Office Depot, $32.48), 20 (Member Alpha, Costco, $27.60) and 21 (Member Beta, Staples, $54.15) wait for the payment request.'),
-            Step(f'{DESKS} > Financial Secretary Desk > Open the Financial Secretary Audit Desk', 'Click Verify & Sign Expense on report 14, then on report 20.',
+            Step(f'{DESKS} > Financial Secretary Desk > Payment Requests', 'Click Verify & Sign Expense on report 14, then on report 20. Click [ 🔀 Back to Desk Blotter ].',
                  'Each row reads "Payment request issued" and moves to the Treasurer Desk.'),
             Step(f'{DESKS} > Financial Secretary Desk > Open the auditing queue', 'Find report 15. Type "Please add the receipt photo" in Reason for returning (required), then click Return to member.',
                  'Report 15 goes back to Member Beta as a Draft with your reason. Its signatures are cleared.'),
-            Step(f'{DESKS} > Financial Secretary Desk > Semiannual Audit Form 1295 Center', 'Open the folder and choose the July-December 2026 period.',
-                 'The Trustee Audit Desk opens in the folder with its five steps; step 5 offers the Form 1295 report as a DRAFT until the Trustees sign.'),
-            Step(f'{DESKS} > Financial Secretary Desk > Charity Check Issuance Console', 'Open the folder and read Approved requests awaiting payment.',
+            Step(f'{DESKS} > Financial Secretary Desk > Semiannual Audit Form 1295 Center', 'Open the drawer and choose the July-December 2026 period.',
+                 'The Trustee Audit Desk opens in the drawer with its five steps; step 5 offers the Form 1295 report as a DRAFT until the Trustees sign.'),
+            Step(f'{DESKS} > Financial Secretary Desk > Charity Check Issuance Console', 'Open the drawer and read Approved requests awaiting payment.',
                  'The panel is empty until the council votes a grant at its Monthly meeting.'),
-            Step(f'{DESKS} > Financial Secretary Desk', 'Find the ⛪ Church Disbursement Requests card.',
+            Step(f'{DESKS} > Financial Secretary Desk > Church Disbursement Requests', 'Open the Church Disbursement Requests drawer.',
                  'No request is waiting yet. The Treasurer\'s parish split request reaches this card in group Flow 6, where you pay it.'),
         ),
     ),
@@ -186,17 +187,17 @@ PERSONAS: tuple[Persona, ...] = (
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as treasurer_user@stmarys.org with the pilot password.', 'The Active Desks row shows the Treasurer Desk tab.'),
-            Step(f'{DESKS} > Treasurer Desk > Annual Budget vs Actuals Ledger Grid', 'Open the folder. Read Budgeted vs. Current Actual Spend for each concluded event and meeting.',
+            Step(f'{DESKS} > Treasurer Desk > Annual Budget vs Actuals Ledger Grid', 'Open the drawer. Read Budgeted vs. Current Actual Spend for each concluded event and meeting.',
                  'Each row shows its budgeted amount, the actual spend and the variance for fraternal year 2026-2027.'),
             Step(f'{DESKS} > Treasurer Desk > Annual Budget vs Actuals Ledger Grid', 'In the 📊 Budget Allocation & YOY Variance Analyzer, find Miscellaneous Others and Monthly Council Meetings. Write the room left on each line in Notes.',
-                 'The analyzer lists each approved line against 2025-2026, with the total against the spending ceiling. Fold the folder away.'),
-            Step(f'{DESKS} > Treasurer Desk', 'Read the Ledger Line Coder queue.',
+                 'The analyzer lists each approved line against 2025-2026, with the total against the spending ceiling. Click [ 🔀 Back to Desk Blotter ].'),
+            Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'Click the Ledger Line Coder tile (it has a red border) and read the sheets in the drawer.',
                  'Reports 17 (Member Alpha, FedEx Office, $118.50), 18 (Member Beta, Safeway, $54.75) and 22 (Historian User, Walgreens, $63.40) carry FS User\'s payment request.'),
-            Step(f'{DESKS} > Treasurer Desk > Open the Treasurer Ledger Audit Desk', 'On report 17 choose Miscellaneous Others in Assign Ledger Budget Line Item and Event Operational Costs in Assign General Ledger Account, then click Categorize & Lock Expense. Code report 18 to Monthly Council Meetings and Council Operational Costs the same way.',
+            Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'On report 17 choose Miscellaneous Others in Assign Ledger Budget Line Item and Event Operational Costs in Assign General Ledger Account, then click Categorize & Lock Expense. Code report 18 to Monthly Council Meetings and Council Operational Costs the same way.',
                  'Both rows read "Coded to the ledger" and move to the Grand Knight Desk.'),
-            Step(f'{DESKS} > Treasurer Desk > Bank Statement Match-Window', 'Open the folder and choose any bank statement CSV the facilitator gives you. Click Run electronic audit.',
+            Step(f'{DESKS} > Treasurer Desk > Bank Statement Match-Window', 'Open the drawer and choose any bank statement CSV the facilitator gives you. Click Run electronic audit.',
                  'The window reports how many statement rows matched the ledger and lists the unmatched ones.'),
-            Step(f'{DESKS} > Treasurer Desk > Open the Payments Made desk (Bulk Check Payments Made)', 'Report 16 (Historian User, Michaels, $46.20) is already in the queue: the Grand Knight released it on October 8. Select it, type check number 1201 and click Record Payment Made by Check.',
+            Step(f'{DESKS} > Treasurer Desk > Expense Report (ER) Settlement', 'Report 16 (Historian User, Michaels, $46.20) is already in the queue: the Grand Knight released it on October 8. Select it, type check number 1201 and click Record Payment Made by Check.',
                  'Report 16 is Reimbursed and check 1201 appears in the payments-made history. You did not wait for anyone.'),
         ),
         chapter_title='Chapter 2 - The Parish Revenue Split Console',
@@ -230,14 +231,14 @@ PERSONAS: tuple[Persona, ...] = (
             'rejected one never does.'
         ),
         steps=(
-            Step(SIGN_IN_WEB, 'Sign in as dgk_user@stmarys.org with the pilot password.', 'The Active Desks row shows the Grand Knight Desk and the Oversight Desk.'),
-            Step(f'{DESKS} > Oversight Desk', 'Find the Flagged Hours Review Desk and read both entries.',
+            Step(SIGN_IN_WEB, 'Sign in as dgk_user@stmarys.org with the pilot password.', 'The Active Desks row shows the Grand Knight Desk.'),
+            Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review', 'Click the Flagged Hours Review tile (it has a red border) and read both entries.',
                  'Member Alpha: 6.5 hours on Parish Parking Event - Lot attendants - Saturday, note "Stayed to restripe the overflow lot". Member Beta: 6 hours of Ushering, note "Ushered all three Sunday Masses".'),
-            Step(f'{DESKS} > Oversight Desk', 'On Member Beta\'s entry click Approve & Add to Time Log.',
+            Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review', 'On Member Beta\'s entry click Approve & Add to Time Log.',
                  'The entry leaves the desk. Beta\'s 6 hours now count in the Council Dashboard and on the Executive Dashboard.'),
-            Step(f'{DESKS} > Oversight Desk', 'On Member Alpha\'s entry click Reject & Remove. Tell Alpha to report the 4 scheduled hours again.',
+            Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review', 'On Member Alpha\'s entry click Reject & Remove. Tell Alpha to report the 4 scheduled hours again.',
                  'The entry leaves the desk and its hours never count. Alpha can log the Saturday shift again from the phone Report tab.'),
-            Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board', 'Open the folder and read the pooled requests. Do not claim one in this phase.',
+            Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board', 'Open the drawer and read the pooled requests. Do not claim one in this phase.',
                  'The Deputy Grand Knight sees the same board as the Grand Knight and may claim requests.'),
         ),
     ),
@@ -254,11 +255,11 @@ PERSONAS: tuple[Persona, ...] = (
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as historian_user@stmarys.org with the pilot password.', 'The Active Desks row shows the Historian Desk tab.'),
-            Step(f'{DESKS} > Historian Desk > Google Drive Media Gallery Sync Board', 'Open the folder. Under Upload Photos choose Past event and the Parish Parking Event, add one photo and upload it.',
+            Step(f'{DESKS} > Historian Desk > Google Drive Media Gallery Sync Board', 'Open the drawer. Under Upload Photos choose Past event and the Parish Parking Event, add one photo and upload it.',
                  'The photo appears in the gallery mosaic under the Parish Parking Event.'),
             Step(f'{DESKS} > Historian Desk > Google Drive Media Gallery Sync Board', 'Under Find photos pick the Parish Parking Event, then save the selection as a Smart Album named "Parking 2026".',
-                 'The album is listed under Smart Albums. Fold the folder away.'),
-            Step(f'{DESKS} > Historian Desk', 'Under the Digital Fraternal Annals Scrapbook, write two sentences about the first parking weekend as this month\'s bulletin and save it.',
+                 'The album is listed under Smart Albums. Click [ 🔀 Back to Desk Blotter ].'),
+            Step(f'{DESKS} > Historian Desk > Monthly Newsletters', 'In the Monthly Newsletters drawer, write two sentences about the first parking weekend as this month\'s bulletin and save it.',
                  'The bulletin is saved for October 2026.'),
             Step(f'{DESKS} > Member Desk', 'Read the status of reports 16, 19 and 22.',
                  'Report 16 is Approved: all three officers signed it and it waits for the Treasurer\'s check. 19 waits for the Grand Knight\'s release; 22 waits for the Treasurer\'s coding.'),
@@ -334,12 +335,12 @@ GROUP_FLOWS: tuple[Flow, ...] = (
         steps=(
             Step(f'{DESKS} > Member Desk > Open my expenses', 'Click New expense report. Under Spent for choose Events and the Parish Parking Event. Add a line dated today: Ace Hardware, $18.40, "Zip ties and sign stakes". Click + Add receipt, attach a photo and click Submit for approval.',
                  'The report is Submitted. Write its number in the Notes field.', who='Member Alpha'),
-            Step(f'{DESKS} > Financial Secretary Desk > Open the Financial Secretary Audit Desk (on the wireless display)', 'Click Verify & Sign Expense on Member Alpha\'s new report.',
+            Step(f'{DESKS} > Financial Secretary Desk > Payment Requests (on the wireless display)', 'Click Verify & Sign Expense on Member Alpha\'s new report.',
                  'The row reads "Payment request issued" and moves to the Treasurer Desk.', who='FS User'),
-            Step(f'{DESKS} > Treasurer Desk > Open the Treasurer Ledger Audit Desk', 'Choose Miscellaneous Others and Event Operational Costs, then click Categorize & Lock Expense.',
+            Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'Choose Miscellaneous Others and Event Operational Costs, then click Categorize & Lock Expense.',
                  'The row reads "Coded to the ledger" and moves to the Grand Knight Desk.', who='Treasurer User'),
-            Step(f'{DESKS} > Grand Knight Desk > Open the Grand Knight Authorization Desk', 'Click Final Release for Payment on the report.', 'The report is Approved and released to the Treasurer.', who='GK User'),
-            Step(f'{DESKS} > Treasurer Desk > Open the Payments Made desk', 'Pay the report with check number 1401 (Record Payment Made by Check).',
+            Step(f'{DESKS} > Grand Knight Desk > Approved Expenses', 'Click Final Release for Payment on the report.', 'The report is Approved and released to the Treasurer.', who='GK User'),
+            Step(f'{DESKS} > Treasurer Desk > Expense Report (ER) Settlement', 'Pay the report with check number 1401 (Record Payment Made by Check).',
                  'The report is Reimbursed; Member Alpha sees the check number on his Member Desk.', who='Treasurer User'),
         ),
     ),
@@ -354,7 +355,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
         steps=(
             Step('Phone > Report tab', 'Under Which shift? choose Lot attendants - Sunday (October 11). Under How long? enter 7 hours. Tap Save time.',
                  'The phone says the hours were sent to leadership review before they count.', who='Member Alpha'),
-            Step(f'{DESKS} > Oversight Desk (on the wireless display)', 'Open the Flagged Hours Review Desk and click Reject & Remove on Member Alpha\'s new 7-hour entry.',
+            Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review (on the wireless display)', 'Open the Flagged Hours Review drawer and click Reject & Remove on Member Alpha\'s new 7-hour entry.',
                  'The entry leaves the desk; its 7 hours never count.', who='DGK User'),
             Step('Phone > Report tab', 'Report the Sunday shift again with 4 hours and tap Save time.', 'The hours save directly.', who='Member Alpha'),
         ),
@@ -374,7 +375,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
                  'The report goes back to Beta as a Draft with the reason.', who='FS User'),
             Step(f'{DESKS} > Member Desk > Open my expenses', 'Open the returned report, read the reason, click + Add receipt, attach a photo and submit it again.',
                  'The report is Submitted again and returns to the Financial Secretary Desk.', who='Member Beta'),
-            Step(f'{DESKS} > Financial Secretary Desk > Open the Financial Secretary Audit Desk', 'Click Verify & Sign Expense on Beta\'s report.',
+            Step(f'{DESKS} > Financial Secretary Desk > Payment Requests', 'Click Verify & Sign Expense on Beta\'s report.',
                  'The row reads "Payment request issued" and moves to the Treasurer Desk.', who='FS User'),
         ),
     ),
@@ -402,7 +403,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
             'thread until the vetter is satisfied.'
         ),
         steps=(
-            Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board (on the wireless display)', 'Open the folder, find Cathedral Neighbors Food Bank in the Triage queue and click Claim & Audit.',
+            Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board (on the wireless display)', 'Open the drawer, find Cathedral Neighbors Food Bank in the Triage queue and click Claim & Audit.',
                  'The request is Claimed by Trustee with FS User as its vetter.', who='FS User at the GK laptop'),
             Step(f'{DESKS} > Member Desk > Propose or follow a charity grant', 'Find Cathedral Neighbors Food Bank in your requests.', 'It is at the Vetting step. The vetter\'s questions reach you here, under Request More Info.', who='Member Alpha'),
             Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board', 'Open the vetting drawer, choose Request More Info and ask: "How many of the 30 families are in our parish?"',
@@ -448,7 +449,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
 INDIVIDUAL_PHASE_MINUTES = 30
 GROUP_PHASE_MINUTES = 30
 SESSION_TIMELINE: tuple[tuple[str, int, str], ...] = (
-    ('0:00 - 0:30', INDIVIDUAL_PHASE_MINUTES, 'Individual Desk Coordinate Phase: every persona signs in and works his own script (INDIVIDUAL_PILOT_SCRIPTS.pdf) through his Active Desk folders; no step waits for another persona'),
+    ('0:00 - 0:30', INDIVIDUAL_PHASE_MINUTES, 'Individual Desk Coordinate Phase: every persona signs in and works his own script (INDIVIDUAL_PILOT_SCRIPTS.pdf) through his Active Desk drawers; no step waits for another persona'),
     ('0:30 - 1:00', GROUP_PHASE_MINUTES, 'Synchronized Group Workflow: the six live flows of GROUP_CROSS_DESK_SCRIPT.pdf, played together on the wireless display, ending with the parish settlement'),
 )
 
@@ -471,7 +472,7 @@ FACILITATOR_PREP: tuple[str, ...] = (
 FEEDBACK_RATINGS: tuple[str, ...] = (
     'The steps were easy to follow.',
     'The screens used words I understand.',
-    'I found every module in a folder on my Active Desk or on the phone tabs.',
+    'I found every module in a drawer on my Active Desk or on the phone tabs.',
     'The expected results matched what I saw.',
     'The approval steps match how our council handles money today.',
     'I would use this platform for my office or my volunteering.',
@@ -768,8 +769,8 @@ def build_group(output: Path, generated: str) -> None:
                         'is created during the session: the members file new expense reports, report new hours, take new '
                         "charity request and settle the parish's share of the parking fundraiser, and the room watches each one arrive on the officer's desk on "
                         "the wireless display. The facilitator reads each flow's context aloud; the persona named in bold at "
-                        'each step takes the keyboard. Every web step starts from the Active Desks row; a module is a folder at '
-                        'the top of its desk.', st['body']),
+                        'each step takes the keyboard. Every web step starts from the Active Desks row; a module is a drawer tile '
+                        'on its desk.', st['body']),
               Spacer(1, 8),
               Paragraph('Facilitator preparation (before the attendees arrive)', st['h2'])]
     story += [Paragraph(f'{i}. {escape(item)}', st['body']) for i, item in enumerate(FACILITATOR_PREP, start=1)]
@@ -907,7 +908,7 @@ def poster_financial(output: Path, generated: str) -> None:
          'Assign the budget line and the general ledger account, then Categorize & Lock Expense.'),
         ('4', 'Final release', 'Grand Knight', 'Active Desks > Grand Knight Desk',
          'Final Release for Payment. The report is Approved and released to the Treasurer.'),
-        ('5', 'Pay by check', 'Financial Secretary or Treasurer', 'Active Desks > Treasurer Desk > Open the Payments Made desk',
+        ('5', 'Pay by check', 'Financial Secretary or Treasurer', 'Active Desks > Treasurer Desk > Expense Report (ER) Settlement',
          'Type the check number and Record Payment Made by Check. Status: Reimbursed.'),
     ]
     for i, (n, title, who, screen, detail) in enumerate(stages):
@@ -933,7 +934,7 @@ def poster_financial(output: Path, generated: str) -> None:
         "Parish split: the Treasurer requests the parish's share; the FS pays it by check.",
     ], GOLD)
     note_panel(c, side_x, side_y, side_w, None, 'Charity grants going out', [
-        'After the council votes a grant, it waits in the Charity Check Issuance Console folder on the Financial Secretary Desk.',
+        'After the council votes a grant, it waits in the Charity Check Issuance Console drawer on the Financial Secretary Desk.',
         'FS or Treasurer: Pay approved request, one check for the approved amount.',
         "The grant's budget line is charged; the Shepherd cannot pay it.",
     ], NAVY)

@@ -57,9 +57,9 @@ describe('module folders on the Active Desks', () => {
     expect(desks).toContain('<MotionsLedgerModule');
     expect(desks).toContain('db.prayers.getBoard(user.memberId, councilId)');
     expect(COMMUNITY_PRAYER_CARD_TITLE).toBe('📿 Community Prayer Request List');
-    const modules = read('apps/web/components/DeskModules.tsx');
-    expect(modules).toContain('portalAreas(user, features, tenantType).includes(spec.area)');
-    expect(modules).toContain('EmbeddedModuleContext.Provider');
+    // Sprint 8P Stage 3: the folders became drawers; the drawer gate and the embedded context moved with them.
+    expect(read('packages/shared/src/desk-drawers.ts')).toContain('if (spec.area && !areas.has(spec.area)) return false;');
+    expect(read('apps/web/components/DeskDrawers.tsx')).toContain('EmbeddedModuleContext.Provider');
     // The moved pages keep their own guards and render the shared module.
     expect(read('apps/web/app/charities/queue/page.tsx')).toContain("from '@/components/modules/CharityCheckConsole'");
     expect(read('apps/web/app/gallery/page.tsx')).toContain('<RequireArea area="gallery">');
@@ -68,7 +68,7 @@ describe('module folders on the Active Desks', () => {
   it('sends nobody to the sidebar from the desks', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks).not.toMatch(/(click|select|open)[^.\n]{0,40}sidebar/i);
-    expect(read('docs/ADMIN_USER_GUIDE.md')).toContain('### 19.3.1 Concept: module folders on the desks');
+    expect(read('docs/ADMIN_USER_GUIDE.md')).toContain('### 19.3.1 Concept: the advanced modules on the desks');
   });
 });
 

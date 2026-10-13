@@ -1,9 +1,9 @@
 // =========================================================================
-// THE GLOBAL OPERATIONS KNOWLEDGE VAULT (Sprint 8I, schema version 79)
+// THE OPERATIONS KNOWLEDGE ARCHIVE (Sprint 8I, schema version 79; one name since Sprint 8P Stage 3)
 //
 // A council's long-term operating notes (CouncilOperationsKnowledge), so a new chairman inherits what the last one
 // learned. Each entry is filed under one of six governance tags and carries an automatic signature stamp.
-//   - Writing   the Oversight Desk's Global Operations Knowledge Vault card: the council's Active Admins, Grand Knight
+//   - Writing   the entry form in the Operations Knowledge Archive drawer of the Grand Knight Desk: the council's Active Admins, Grand Knight
 //               and Deputy Grand Knight, and any Active Super Admin (assertMayWriteOperationsKnowledge). Entries are
 //               append-only: there is no edit or delete, so the record a chair leaves stays as written.
 //   - Reading   System Settings > Operations Knowledge Archive (/system-settings/knowledge-archive), read-only: every
@@ -92,7 +92,7 @@ export function assertMayReadOperationsKnowledge(actor: MemberWriteActor, action
   );
 }
 
-/** The portal's twin of assertMayWriteOperationsKnowledge: the vault card on the Oversight Desk. */
+/** The portal's twin of assertMayWriteOperationsKnowledge: the entry form in the Operations Knowledge Archive drawer. */
 export const canWriteOperationsKnowledge = (u: Actor, councilId: number): boolean =>
   isSuperAdmin(u) || (u.councilId === councilId && (isAdmin(u) || holdsGrandKnightSeat(u)));
 

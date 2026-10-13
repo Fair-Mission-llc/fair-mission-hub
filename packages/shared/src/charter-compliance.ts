@@ -1,7 +1,7 @@
 // =========================================================================
 // THE KofC CHARTER COMPLIANCE GATE (Sprint 8J, schema version 80)
 //
-// A two-stage check the Oversight Desk's Global Operations Knowledge Vault runs on every draft as the officer types, and
+// A two-stage check the Operations Knowledge Archive's entry form runs on every draft as the officer types, and
 // the drivers run again before an entry is stored (cleanOperationsKnowledgeEntry):
 //   - ADVISORY  the Charter Advisory Warning Panel shows the rule and its authority; the entry may still be saved.
 //   - SEVERE    the panel turns red and the save button is disabled; a driver refuses CHARTER_VIOLATION_BLOCKED.

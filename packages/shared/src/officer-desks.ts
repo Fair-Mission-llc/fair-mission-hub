@@ -37,6 +37,11 @@
 // status badges move to the top of the Oversight Desk. The Executive Summary leaves Home for its own page,
 // /executive-dashboard (EXECUTIVE_DASHBOARD_HREF), the sidebar's Executive Dashboard link.
 //
+// Sprint 8P Stage 3 (schema version 89): every officer desk is a desk blotter of slide-out drawers (desk-drawers.ts). The
+// standalone Oversight Desk tab is dissolved: its Flagged Hours Review, Shifts Awaiting Hours and Inbound Council Mail
+// Center are Grand Knight Desk drawers, the desk status badges are each desk's own drawer counts and alerts, and the
+// Operations Knowledge Archive drawer takes the entry form for its writers.
+//
 // Sprint 8L (schema version 82): Omnipresent Officer Desks. Every advanced module a seat works in is mounted as a folder
 // at the top of its Active Desk (DESK_MODULES), so the desks never send anyone to the sidebar for it. Each folder is
 // cleared by the module's own portal area, exactly as its full page is. Home gains a seventh universal card, the
@@ -51,8 +56,6 @@ import {
   canOpenExpenseAuditDesk,
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
-  canReviewVolunteerQuarantine,
-  canViewExecutiveAudits,
   isAdmin,
   portalAreas,
 } from './permissions';
@@ -65,7 +68,8 @@ import type { NotificationLog } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[]; username?: string };
 
-export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'oversight' | 'member' | 'super-admin';
+// Sprint 8P Stage 3: the standalone Oversight Desk tab is dissolved; its audits are drawers on the Grand Knight Desk.
+export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'member' | 'super-admin';
 
 export interface DashboardTab {
   id: DashboardTabId;
@@ -85,7 +89,6 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'treasurer', label: 'Treasurer Desk', anchor: 'treasurer' },
   { id: 'recorder', label: 'Recorder Desk', anchor: 'recorder' },
   { id: 'historian', label: 'Historian Desk', anchor: 'historian' },
-  { id: 'oversight', label: 'Oversight Desk', anchor: 'oversight' },
   { id: 'member', label: 'Member Desk', anchor: 'member' },
 ];
 
@@ -94,14 +97,6 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
  * Historian Desk only (and their own Member Desk), never Home's council figures.
  */
 export const isHistorianDeskOnly = (u: Actor): boolean => !isAdmin(u) && !u.isOfficer && canOpenHistorianDesk(u, u.councilId);
-
-/**
- * The Oversight Desk (Sprint 8C): the Volunteer Time Quarantine's reviewers (canReviewVolunteerQuarantine) and every
- * executive-audit reader (canViewExecutiveAudits), who find the Shifts Awaiting Hours audit there. The quarantine queue
- * and the Inbound Council Mail Center keep their own gates inside the desk.
- */
-export const canOpenOversightDesk = (u: Actor, councilId: number): boolean =>
-  canReviewVolunteerQuarantine(u, councilId) || canViewExecutiveAudits(u, councilId);
 
 /**
  * The tabs this reader gets on the council's dashboard: Home and Member always (Home not for a Historian-only reader),
@@ -116,7 +111,6 @@ export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
     treasurer: canOpenTreasurerDesk(u, councilId),
     recorder: canOpenRecorderDesk(u, councilId),
     historian: canOpenHistorianDesk(u, councilId),
-    oversight: canOpenOversightDesk(u, councilId),
     member: true,
     'super-admin': isPlatformOwner(u),
   };
@@ -185,7 +179,8 @@ export const deskModulesFor = (desk: DashboardTabId): DeskModuleSpec[] => DESK_M
 
 /**
  * A desk status badge's queue (Sprint 8A badges; Sprint 8C names the desk row each one opens). Sprint 8D/8E: the badges
- * sit at the top of the Oversight Desk, no longer on Home.
+ * sat at the top of the Oversight Desk. Sprint 8P Stage 3: the badge strip is gone - each queue is now the count and the
+ * Alert Boundary Accent on its own desk drawer (desk-drawers.ts), and DESK_FOCUS_TARGETS names those drawers' rows.
  */
 export type DeskBadgeKey = 'vouchers' | 'orders' | 'coding' | 'minutes' | 'quarantine' | 'access' | 'hours' | 'mine';
 
@@ -198,9 +193,10 @@ export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; 
   orders: { anchor: 'financial-secretary', rowId: 'desk-row-written-orders' },
   coding: { anchor: 'treasurer', rowId: 'desk-row-ledger-coding' },
   minutes: { anchor: 'recorder', rowId: 'desk-row-minutes' },
-  quarantine: { anchor: 'oversight', rowId: 'desk-row-quarantine' },
-  access: { anchor: 'oversight', rowId: 'desk-row-mail-center' },
-  hours: { anchor: 'oversight', rowId: 'desk-row-awaiting-hours' },
+  // Sprint 8P Stage 3: the Oversight Desk is dissolved; its three audits are drawers on the Grand Knight Desk.
+  quarantine: { anchor: 'grand-knight', rowId: 'desk-row-quarantine' },
+  access: { anchor: 'grand-knight', rowId: 'desk-row-mail-center' },
+  hours: { anchor: 'grand-knight', rowId: 'desk-row-awaiting-hours' },
   mine: { anchor: 'member', rowId: 'desk-row-my-sheets' },
 };
 

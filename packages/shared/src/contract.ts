@@ -4237,7 +4237,7 @@ export interface DataService {
      */
     saveHistorianBulletin(actorId: number, councilId: number, month: string, body: string): Promise<CouncilHistorianBulletin>;
     /**
-     * Sprint 8I, the Global Operations Knowledge Vault's archive (CouncilOperationsKnowledge), newest first. Read-only.
+     * Sprint 8I, the Operations Knowledge Archive's archive (CouncilOperationsKnowledge), newest first. Read-only.
      * Sprint 8J: every council's entries (the multi-tenant archive), each carrying origin_council_stamp, which is filled
      * from the Council table for a row saved without one. Any Active officer or Admin of any council, and any Active
      * Super Admin (assertMayReadOperationsKnowledge: ADMIN_REQUIRED). Callers narrow to one council by council_id.

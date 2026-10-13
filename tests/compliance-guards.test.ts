@@ -193,14 +193,14 @@ describe.each(drivers)('the cross-council archive in the $name driver', (d) => {
 
 describe('the Sprint 8J screens and manual', () => {
   it('puts the home-council toggle and the council badge on the archive', () => {
-    const parts = read('apps/web/components/KnowledgeVaultParts.tsx');
+    const parts = read('apps/web/components/KnowledgeArchiveParts.tsx');
     expect(parts).toContain('Filter by My Home Council Only');
     expect(parts).toContain('homeCouncilId: homeOnly ? user.councilId : null');
     expect(parts).toContain('<CouncilStampBadge');
   });
 
   it('runs the Charter gate in the vault editor and disables saving on a SEVERE rule', () => {
-    const parts = read('apps/web/components/KnowledgeVaultParts.tsx');
+    const parts = read('apps/web/components/KnowledgeArchiveParts.tsx');
     expect(parts).toContain('reviewCharterCompliance(text)');
     expect(parts).toContain('<CharterAdvisoryPanel review={review} />');
     expect(parts).toContain('review.blocksSave || contentProblem !== null');

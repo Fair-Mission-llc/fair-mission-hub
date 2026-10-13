@@ -292,7 +292,7 @@ export const canOpenAffiliationsDesk = (u: Actor): boolean => isAdmin(u) || hold
 /**
  * The Operations Knowledge Archive (Sprint 8I, /system-settings/knowledge-archive), mirroring
  * assertMayReadOperationsKnowledge for the viewer's own council: its officers and Admins, and any Super Admin (who picks
- * the council). Writing stays on the Oversight Desk's vault card (canWriteOperationsKnowledge).
+ * the council). Writing stays with the archive drawer's entry form (canWriteOperationsKnowledge).
  */
 export const canOpenKnowledgeArchive = (u: Actor): boolean => canOpenOfficerTools(u);
 
