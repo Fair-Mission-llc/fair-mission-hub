@@ -306,10 +306,11 @@ describe('Schema 67: check donations', () => {
     expect(() => assertDonationFitsMethod('qr', { DonationDesciption: null })).not.toThrow();
   });
 
-  it('asks for the check number on the web form; the phone offers no Check tile (Sprint 8M Core)', () => {
+  it('asks for the check number on the phone and web forms', () => {
     const phone = read('apps/mobile/app/(app)/donate.tsx');
-    expect(phone).not.toContain('CHECK NUMBER (REQUIRED)');
-    expect(phone).toContain('phoneDonationOptions(methods)');
+    expect(phone).toContain('<Field label="CHECK NUMBER (REQUIRED)">');
+    expect(phone).toContain("if (isCheck && checkNumber.trim() === '') return setError('Enter the check number printed on the check.');");
+    expect(phone).toContain('CheckNumber: v.checkNumber,');
     expect(read('apps/web/app/donations/page.tsx')).toContain('<Field label="Check number">');
   });
 });

@@ -1109,7 +1109,7 @@ Schema version 83; the phone database version moves to 83.
 [Council] (three new columns, edited on System Settings > Council Wide Settings: councils.setParishSplitSettings, the Council Wide Settings editors)
 •	parish_split_enabled (INT, NOT NULL, DEFAULT 0) — 1 switches the parish split on.
 •	parish_split_percentage (DECIMAL(5,2), NOT NULL, DEFAULT 50.00) — The parish's share of a fundraiser's collections, 0.01 to 100.00.
-•	parish_split_gl_line_id (INT, NULL) — Foreign Key references GLAccount(id). The Expense line (not a virtual goal) the share is charged to. Required while the split is on: the page will not save without it and the drivers refuse PARISH_SPLIT_GL_LINE_REQUIRED.
+•	parish_split_gl_line_id (INT, NULL) — Foreign Key references GLAccount(id). The Revenue or Expense line (not a virtual goal) the share is charged to (Revenue since Sprint 8M Extension: a contra-revenue debit). Required while the split is on: the page will not save without it and the drivers refuse PARISH_SPLIT_GL_LINE_REQUIRED.
 [ParishDisbursementRequest]
 A Church Disbursement Request (parish-split.ts): the parish's share of one event's live collections, issued by the Treasurer from the Parish Fundraiser Revenue Split Console on the Treasurer Desk (finance.issueChurchDisbursementRequest; the council's Treasurer or a Super Admin) and paid by the Financial Secretary from the Financial Secretary Desk (finance.recordChurchDisbursementPayment; the council's Financial Secretary or a Super Admin, never the officer who issued it).
 •	id (INT, NOT NULL) — Primary Key. Auto-incrementing identifier.

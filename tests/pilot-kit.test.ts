@@ -78,7 +78,9 @@ describe.each(drivers)('$name driver: the Conference Room Pilot personas', (d) =
     const [gk, fs, treasurer, dgk] = await Promise.all(['gk_user', 'fs_user', 'treasurer_user', 'dgk_user'].map((u) => id(`${u}@stmarys.org`)));
 
     const fsDesk = (await db.expenses.listCouncilQueue(fs, OWN)).filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id);
-    expect(fsDesk).toEqual(expect.arrayContaining([14, 15, 16]));
+    expect(fsDesk).toEqual(expect.arrayContaining([14, 15, 20, 21]));
+    // Sprint 8M Extension: report 16 is fully signed and waits for the Treasurer's check on boot.
+    expect(fsDesk).not.toContain(16);
     expect((await db.expenses.listTreasurerQueue(treasurer, OWN)).map((q) => q.report.id)).toEqual(expect.arrayContaining([17, 18]));
     expect((await db.expenses.listAuthorizationQueue(gk, OWN)).map((q) => q.report.id)).toEqual([19, 23]);
 
@@ -138,11 +140,30 @@ describe.each(drivers)('$name driver: the pilot scripts hold true', (d) => {
     expect(mine.find((r) => r.report.id === 14)?.report.Status).toBe('Reimbursed');
   });
 
-  it('the GK script: report 19 is released and the Treasurer pays it', async () => {
+  it('the GK script: report 19 is released', async () => {
     const db = await makePilot();
     const who = await ids(db);
     expect((await db.expenses.grandKnightAuthorizeOrder(who.gk_user!, 19)).report.Status).toBe('Approved');
-    await db.expenses.recordDisbursement(who.treasurer_user!, OWN, [19], { CheckNumber: '1201', PayoutDate: '2026-10-12' });
+  });
+
+  it('the Treasurer script: report 16 is paid with check 1201 and nothing waits on the Grand Knight (Sprint 8M Extension)', async () => {
+    const db = await makePilot();
+    const who = await ids(db);
+    await db.expenses.recordDisbursement(who.treasurer_user!, OWN, [16], { CheckNumber: '1201', PayoutDate: '2026-10-12' });
+    const historian = (await db.auth.signIn('historian_user@stmarys.org', PASSWORD))!.memberId;
+    expect((await db.expenses.listUserReports(historian)).find((r) => r.report.id === 16)?.report.Status).toBe('Reimbursed');
+  });
+
+  it("the Treasurer's chapter 2 and group Flow 6: $400.00 at 50% is a $200.00 request, paid with check 1404", async () => {
+    const db = await makePilot();
+    const who = await ids(db);
+    await db.councils.setParishSplitSettings(who.treasurer_user!, OWN, { enabled: true, percentage: 50, glLineId: 16 });
+    const row = (await db.finance.getParishSplitConsole(who.treasurer_user!, OWN)).events.find((r) => r.eventName === 'Parish Parking Event')!;
+    expect(row).toMatchObject({ grossCollections: 400, share: 200, alreadyRequested: 0, available: 200 });
+    const issued = await db.finance.issueChurchDisbursementRequest(who.treasurer_user!, OWN, row.eventId);
+    expect(issued.request).toMatchObject({ id: 1, amount: 200, status: 'PENDING' });
+    const paid = await db.finance.recordChurchDisbursementPayment(who.fs_user!, issued.request.id, { CheckNumber: '1404' });
+    expect(paid).toMatchObject({ glAccountName: 'Parish Fundraiser Share', request: { status: 'PAID', check_number: '1404' } });
   });
 
   it('the FS script returns report 15, and Flow 2 refuses an own report', async () => {
@@ -283,9 +304,12 @@ describe('pilot kit PDFs', () => {
     // Sprint 8L: the charity flow now plays the whole sequence - submission, vetting, the floor debate and hand vote on the
     // Live Meeting Console, and the check.
     expect(group).not.toMatch(/Mtgs tab|check in|report 1[4-9]|report 2[0-3]/i);
-    expect(group).toContain('Record Hand Ballot Tally');
-    expect(group).toContain('Pay approved request');
+    // Sprint 8M Extension: Flow 5 is the live vetting only (claim, Request More Info both ways, Place on next agenda);
+    // the floor vote and the grant's check happen at the real Monthly meeting, after the session.
+    expect(group).not.toContain('Record Hand Ballot Tally');
     expect(group).toContain('Propose or follow a charity grant');
+    expect(group).toContain('Claim & Audit');
+    expect(group).toContain('Request More Info');
     expect(group).toContain('Place on next agenda');
     // Sprint 7I Extension 2: the individual scripts leave the meeting console out too.
     expect(kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'))).not.toMatch(/Live Meeting Console|welcome line/i);
@@ -331,7 +355,7 @@ describe('Sprint 8L pilot kit', () => {
   it('has the members set up the Donate tab by hand and Member Alpha log the cash box drop last', () => {
     expect(personas).toContain('Nothing is pre-selected');
     expect(personas).toContain('tap the Venmo tile yourself');
-    expect(personas).toContain('type 10.00 in STANDARD RATE');
+    expect(personas).toContain('type 25.00 in STANDARD RATE');
     const alpha = personas.slice(personas.indexOf("key='alpha'"), personas.indexOf("key='beta'"));
     const last = alpha.slice(alpha.lastIndexOf('Step('));
     expect(last).toContain('cash box drop');
@@ -344,6 +368,48 @@ describe('Sprint 8L pilot kit', () => {
     const beta = personas.slice(personas.indexOf("key='beta'"));
     expect(beta).toContain('large_print=True');
     expect(kit).toMatch(/LARGE_PRINT_SCALE = 1\.\d+/);
-    expect(kit).toContain('styles(LARGE_PRINT_SCALE) if p.large_print else st');
+    expect(kit).toContain('styles(LARGE_PRINT_SCALE, LARGE_PRINT_SPACING) if p.large_print else st');
+    expect(kit).toMatch(/LARGE_PRINT_SPACING = 1\.\d+/);
+  });
+});
+
+// Sprint 8M Extension: independent individual scripts, no check logging on the volunteers' phones, and the six-flow
+// group phase that ends with the parish settlement.
+describe('Sprint 8M Extension pilot kit', () => {
+  const kit = read('scripts/pilot_kit_pdf.py');
+  const personas = kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'));
+  const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('# The 60-minute session'));
+  const persona = (key: string, next: string) => personas.slice(personas.indexOf(`key='${key}'`), next ? personas.indexOf(`key='${next}'`) : undefined);
+
+  it("frees the Treasurer's script from the Grand Knight and adds the Parish Revenue Split Console chapter", () => {
+    const treasurer = persona('treasurer', 'dgk');
+    expect(treasurer).toContain('Report 16');
+    expect(treasurer).toContain('check number 1201');
+    expect(treasurer).not.toMatch(/After the Grand Knight releases|report 19/);
+    expect(treasurer).toContain("chapter_title='Chapter 2 - The Parish Revenue Split Console'");
+    expect(treasurer).toContain('[ 📋 Issue Church Disbursement Request ]');
+    expect(treasurer).toContain('$400.00 x 50%');
+  });
+
+  it('keeps check logging off both volunteer scripts: Venmo at $25.00, then Alpha\'s $180 cash box drop', () => {
+    for (const [key, next] of [['alpha', 'beta'], ['beta', '']] as const) {
+      const steps = persona(key, next);
+      expect(steps, key).not.toMatch(/Check tile|CHECK NUMBER|by check/i);
+      expect(steps, key).toContain('Venmo tile yourself');
+      expect(steps, key).toContain('25.00');
+    }
+    const alpha = persona('alpha', 'beta');
+    expect(alpha.slice(alpha.lastIndexOf('Step('))).toContain('type 180.00 in AMOUNT');
+  });
+
+  it('plays six flows: no phone parking collections, Flow 5 vetting only, Flow 6 the parish settlement with check 1404', () => {
+    const titles = [...group.matchAll(/title='(Flow \d) - ([^']+)'/g)].map((m) => `${m[1]} - ${m[2]}`);
+    expect(titles.map((t) => t.slice(0, 6))).toEqual(['Flow 1', 'Flow 2', 'Flow 3', 'Flow 4', 'Flow 5', 'Flow 6']);
+    expect(titles[4]).toMatch(/vetting/i);
+    expect(titles[5]).toBe('Flow 6 - Parish Fundraiser Revenue Settlement');
+    expect(group).not.toMatch(/Donate tab|Start accepting/);
+    const flow6 = group.slice(group.indexOf("key='parish'"));
+    expect(flow6).toContain('[ 📋 Issue Church Disbursement Request ]');
+    expect(flow6).toContain('Type 1404 in Check number and click Record Payment Made');
   });
 });

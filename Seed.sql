@@ -867,7 +867,7 @@ GO
 -- each can log time after a shift and take check donations at the gate while the event is under way.
 INSERT INTO [Event] ([EventName], [EventDescription], [OwnerID], [StartDate], [EndDate], [Location], [CategoryID], [FundsRaised-Cash], [FundsRaised-Electronic], [Highlights], [PlannedNumberAttendees], [ActualNumberAttendees], [IsAnnual], [IsMultiDay], [MissionAreaID])
 VALUES
-('Parish Parking Event', 'Cathedral parking lot fundraiser during the weekend Masses', 28, '2026-10-10', '2026-10-31', 'St. Mary''s Cathedral Parking Lot', 5, 0.00, 0.00, NULL, 150, 0, 0, 1, 3);
+('Parish Parking Event', 'Cathedral parking lot fundraiser during the weekend Masses', 28, '2026-10-10', '2026-10-31', 'St. Mary''s Cathedral Parking Lot', 5, 250.00, 150.00, NULL, 150, 0, 0, 1, 3);
 GO
 INSERT INTO [EventCouncils] ([EventID], [CouncilID])
 VALUES
@@ -892,17 +892,20 @@ VALUES
 (14, 33, 0), (14, 34, 0);
 GO
 
--- Six expense sheets in the approval pipeline (ExpenseReport 14-19): 14-16 wait for the FS persona's written order,
+-- Six expense sheets in the approval pipeline (ExpenseReport 14-19): 14-15 wait for the FS persona's written order,
 -- 17-18 carry it and wait for the Treasurer persona's ledger coding, and 19 is coded (budget line 25 Miscellaneous
 -- Others, GLAccount 13 Council Operational Costs) and waits for the GK persona's counter-signature.
-INSERT INTO [ExpenseReport] ([CouncilID], [SubmitterMemberID], [Status], [LinkedEventID], [FinancialSecretaryMemberID], [FinancialSecretaryApprovedAt], [TreasurerMemberID], [TreasurerReviewedAt], [budget_line_id], [general_ledger_account_id])
+-- Sprint 8M Extension: 16 (the Historian's archival sleeves) is an older, fully signed sheet - order, coding and the
+-- GK persona's release - so it is Approved and waits in the Treasurer's Payments Made desk on boot. The Treasurer's
+-- individual script pays it with no step waiting on the Grand Knight.
+INSERT INTO [ExpenseReport] ([CouncilID], [SubmitterMemberID], [Status], [LinkedEventID], [FinancialSecretaryMemberID], [FinancialSecretaryApprovedAt], [TreasurerMemberID], [TreasurerReviewedAt], [budget_line_id], [general_ledger_account_id], [GrandKnightMemberID], [GrandKnightApprovedAt])
 VALUES
-(1, 33, 'Submitted', 9, NULL, NULL, NULL, NULL, NULL, NULL),
-(1, 34, 'Submitted', 9, NULL, NULL, NULL, NULL, NULL, NULL),
-(1, 32, 'Submitted', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(1, 33, 'Submitted', 9, 29, '2026-10-09 18:00:00', NULL, NULL, NULL, NULL),
-(1, 34, 'Submitted', NULL, 29, '2026-10-09 18:10:00', NULL, NULL, NULL, NULL),
-(1, 32, 'Submitted', NULL, 29, '2026-10-07 17:30:00', 30, '2026-10-08 19:00:00', 25, 13);
+(1, 33, 'Submitted', 9, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 34, 'Submitted', 9, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 32, 'Approved', NULL, 29, '2026-10-06 18:30:00', 30, '2026-10-07 19:15:00', 25, 13, 28, '2026-10-08 20:00:00'),
+(1, 33, 'Submitted', 9, 29, '2026-10-09 18:00:00', NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 34, 'Submitted', NULL, 29, '2026-10-09 18:10:00', NULL, NULL, NULL, NULL, NULL, NULL),
+(1, 32, 'Submitted', NULL, 29, '2026-10-07 17:30:00', 30, '2026-10-08 19:00:00', 25, 13, NULL, NULL);
 GO
 INSERT INTO [ExpenseLineItem] ([ExpenseReportID], [DateOfExpense], [Amount], [VendorName], [ExpenseDescription])
 VALUES
@@ -1028,9 +1031,19 @@ VALUES
 GO
 
 -- Sprint 8M Core (schema 83): the general ledger line St. Mary's charges the parish's share of a fundraiser to
--- (GLAccount 16, an Expense account). The parish split itself stays off (Council.parish_split_enabled = 0) until an
--- officer switches it on under Council Wide Settings and picks this line.
+-- (GLAccount 16). Sprint 8M Extension: a Revenue line - the parish's share is taken back out of the fundraiser's
+-- revenue (a contra-revenue debit). The parish split itself stays off (Council.parish_split_enabled = 0) until an
+-- officer switches it on under Council Wide Settings and picks this line; the Treasurer's pilot script does.
 INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [ParentAccountID], [IsVirtualGoal], [TargetGoalAmount])
 VALUES
-(1, 'Parish Fundraiser Share', 'Expense', NULL, 0, 0.00);
+(1, 'Parish Fundraiser Share', 'Revenue', NULL, 0, 0.00);
+GO
+
+-- Sprint 8M Extension: the first parking weekend's collections for the Parish Parking Event (Event 9), recorded by
+-- the two member personas: the Saturday cash box and the Sunday Venmo gifts ($400.00, matching the event's
+-- FundsRaised-Cash 250.00 and FundsRaised-Electronic 150.00). DonationMethodID 1 Cash, 3 Venmo; DonationTypeID 1 Parking.
+INSERT INTO [Donation] ([CouncilID], [DonationDate], [DonationMethodID], [DonationTypeID], [Donor], [DonationDesciption], [EventID], [DonationAmount], [RecordedBy])
+VALUES
+(1, '2026-10-10', 1, 1, NULL, 'Cash box drop - first Saturday', 9, 250.00, 33),
+(1, '2026-10-11', 3, 1, NULL, 'Venmo parking gifts - first Sunday', 9, 150.00, 34);
 GO

@@ -10,7 +10,6 @@ import {
   parishShare,
   parishSplitGateMessage,
   parishSplitSettings,
-  phoneDonationOptions,
   PHONE_STANDARD_RATE_HINT,
   type DataService,
   type GLAccount,
@@ -25,7 +24,7 @@ const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
 const PASSWORD = 'dev-pass-secure-9912';
 const OWN = 1;
 const PARKING_EVENT = 9;
-const PARISH_LINE = 16; // Parish Fundraiser Share (Expense), presentation seed
+const PARISH_LINE = 16; // Parish Fundraiser Share (Revenue since Sprint 8M Extension), presentation seed
 const PILOT_DAY = new Date(2026, 9, 12, 19, 0, 0);
 
 const account = (id: number, AccountType: GLAccount['AccountType'], IsVirtualGoal = 0, CouncilID = OWN): GLAccount => ({
@@ -62,8 +61,11 @@ describe('parish split rules', () => {
     expect(() => cleanParishSplitSettings({ glLineId: null }, on, accounts, OWN)).toThrow(expect.objectContaining({ code: 'PARISH_SPLIT_GL_LINE_REQUIRED' }));
   });
 
-  it('takes only an expense line of the council and a percentage from 0.01 to 100', () => {
-    for (const glLineId of [1, 7, 40, 99]) {
+  it('takes a revenue or expense line of the council and a percentage from 0.01 to 100', () => {
+    // Sprint 8M Extension: a Revenue line (7) is accepted, as is an Expense line (13).
+    expect(cleanParishSplitSettings({ glLineId: 7 }, off, accounts, OWN).parish_split_gl_line_id).toBe(7);
+    expect(cleanParishSplitSettings({ glLineId: 13 }, off, accounts, OWN).parish_split_gl_line_id).toBe(13);
+    for (const glLineId of [1, 40, 99]) {
       expect(() => cleanParishSplitSettings({ glLineId }, off, accounts, OWN), String(glLineId)).toThrow(expect.objectContaining({ code: 'INVALID_INPUT' }));
     }
     for (const percentage of [0, -5, 100.01, 33.333, Number.NaN]) {
@@ -158,12 +160,13 @@ describe.each(drivers)('$name driver: the parish split engine', (d) => {
     await db.councils.setParishSplitSettings(gk, OWN, { enabled: true, glLineId: PARISH_LINE });
 
     const row = (await db.finance.getParishSplitConsole(treasurer, OWN)).events.find((r) => r.eventId === PARKING_EVENT)!;
-    expect(row).toMatchObject({ grossCollections: 205, share: 102.5, alreadyRequested: 0, available: 102.5 });
+    // The seeded first weekend ($400.00) plus Venmo $25 and the $180 cash drop; the $60 of items is left out.
+    expect(row).toMatchObject({ grossCollections: 605, share: 302.5, alreadyRequested: 0, available: 302.5 });
 
     await expectRule(db.finance.issueChurchDisbursementRequest(fs, OWN, PARKING_EVENT), 'TREASURER_REQUIRED');
     const issued = await db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT);
     expect(issued).toMatchObject({ eventName: 'Parish Parking Event', glAccountName: 'Parish Fundraiser Share', requestedByName: 'Treasurer User' });
-    expect(issued.request).toMatchObject({ status: 'PENDING', amount: 102.5, gross_collections: 205, split_percentage: 50, gl_account_id: PARISH_LINE });
+    expect(issued.request).toMatchObject({ status: 'PENDING', amount: 302.5, gross_collections: 605, split_percentage: 50, gl_account_id: PARISH_LINE });
     // The whole share is requested, so a second request is refused until more is collected.
     await expectRule(db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT), 'INVALID_INPUT');
     // Nothing is posted until the check is recorded.
@@ -180,7 +183,7 @@ describe.each(drivers)('$name driver: the parish split engine', (d) => {
     expect(postings).toBeTruthy();
     const after = await db.finance.getAccountLedger(fs, PARISH_LINE);
     expect(after.rows.length - before.rows.length).toBe(1);
-    expect(after.rows.find((e) => e.entry.CheckNumber === '1404')?.entry.DebitAmount).toBe(102.5);
+    expect(after.rows.find((e) => e.entry.CheckNumber === '1404')?.entry.DebitAmount).toBe(302.5);
 
     // More collections later: only the new share is requested.
     const typeId = (await db.donations.listTypes(OWN))[0]!.id;
@@ -200,7 +203,7 @@ describe.each(drivers)('$name driver: the parish split engine', (d) => {
   });
 });
 
-describe('Sprint 8M Core: schema 83 and the phone Donate tab', () => {
+describe('Sprint 8M: schema 83 and the phone Donate tab', () => {
   it('bumps the phone database to 83 and records the release', () => {
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 83;');
     const schema = read('Schema.sql');
@@ -210,13 +213,11 @@ describe('Sprint 8M Core: schema 83 and the phone Donate tab', () => {
     expect(schema).toContain('ALTER TABLE [Council] ADD [parish_split_gl_line_id] INT NULL;');
   });
 
-  it('offers no Check tile on the phone and hints a $25.00 standard rate', () => {
-    const options = [{ kind: 'cash' as const }, { kind: 'check' as const }, { kind: 'qr' as const }];
-    expect(phoneDonationOptions(options).map((o) => o.kind)).toEqual(['cash', 'qr']);
+  it('keeps the Check tile on the phone (Sprint 8M Extension) and hints a $25.00 standard rate', () => {
     expect(PHONE_STANDARD_RATE_HINT).toBe(25);
     const donate = read('apps/mobile/app/(app)/donate.tsx');
-    expect(donate).toContain('phoneDonationOptions(methods)');
-    expect(donate).not.toMatch(/CHECK NUMBER|checkNumber/);
+    expect(donate).not.toContain('phoneDonationOptions');
+    expect(donate).toContain('<Field label="CHECK NUMBER (REQUIRED)">');
     expect(donate).toContain('EVENT DESCRIPTION (OPTIONAL)');
     expect(donate).not.toContain('e.g. 10.00');
   });

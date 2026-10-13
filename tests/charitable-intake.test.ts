@@ -265,9 +265,9 @@ describe.each(drivers)('$name driver: presentation data', (d) => {
     // Sprint 5Z-4: one sheet awaiting the written order and one in the Treasurer's vault. Sprint 6Q: the ordered sheet
     // now waits on the Treasurer Ledger Audit Desk. Phase 7I: the pilot sheets add three for the written order (14-16), two
     // for the Treasurer (17-18) and one coded sheet for the Grand Knight (19). Sprint 8L: four September sheets add two
-    // for the written order (20-21), one for the Treasurer (22) and one for the Grand Knight (23).
+    // for the written order (20-21), one for the Treasurer (22) and one for the Grand Knight (23). Sprint 8M Extension: 16 is fully signed and waits for the Treasurer's check.
     const expenseQueue = await db.expenses.listCouncilQueue(MEMBER.admin, OWN);
-    expect(expenseQueue.filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id)).toEqual([11, 14, 15, 16, 20, 21]);
+    expect(expenseQueue.filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id)).toEqual([11, 14, 15, 20, 21]);
     expect((await db.expenses.listTreasurerQueue(MEMBER.superAdmin, OWN)).map((q) => [q.report.id, q.financialSecretaryName])).toEqual([
       [12, 'Council Admin'],
       [17, 'FS User'],
@@ -275,7 +275,7 @@ describe.each(drivers)('$name driver: presentation data', (d) => {
       [22, 'FS User'],
     ]);
     expect((await db.expenses.listAuthorizationQueue(MEMBER.superAdmin, OWN)).map((q) => q.report.id)).toEqual([19, 23]);
-    expect(expenseQueue.filter((q) => isPayableExpenseReport(q.report)).map((q) => q.report.id)).toEqual([13]);
+    expect(expenseQueue.filter((q) => isPayableExpenseReport(q.report)).map((q) => q.report.id)).toEqual([13, 16]); // Sprint 8M Extension: 16 waits for the Treasurer's check
     expect(d.count(db, 'CharitableDisbursementLedger')).toBe(8);
 
     const trustee = await db.auth.signIn('francis.byrne@kofc15295.org', 'dev-pass-secure-9912');
@@ -424,7 +424,7 @@ describe.each(drivers)('$name driver: Faith-in-Action presentation data (Sprint 
     await db.init();
     const footprint = await db.reports.missionAreaFootprint(MEMBER.admin, OWN, '2026-2027');
     expect(footprint.areas.map((a) => [a.missionAreaName, a.donations, a.serviceHours, a.events])).toEqual([
-      ['Community', 1530.5, 39.25, 3], // Phase 7I: plus the Parish Parking Event, no donations or hours yet
+      ['Community', 1930.5, 39.25, 3], // Phase 7I: plus the Parish Parking Event; Sprint 8M Extension: its $400.00 first weekend
       ['Faith', 275, 12.5, 2],
       ['Family', 1690, 39, 2],
       ['Life', 1265.25, 34.25, 2],

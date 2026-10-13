@@ -192,14 +192,7 @@ export function assertMayRunEventIntake(actor: MemberWriteActor, eventId: number
   );
 }
 
-// ---- Sprint 8M Core: the phone's Donate tab ------------------------------------------------------------------------
-
-/** Donation kinds the phone never offers (Sprint 8M Core): paper checks are logged on the web portal, not at the gate. */
-export const PHONE_HIDDEN_DONATION_KINDS: readonly DonationMethodKind[] = ['check'];
-
-/** The council's donation options the phone shows as tiles: every enabled method except the hidden kinds. */
-export const phoneDonationOptions = <T extends Pick<CouncilDonationOption, 'kind'>>(options: readonly T[]): T[] =>
-  options.filter((o) => !PHONE_HIDDEN_DONATION_KINDS.includes(o.kind));
+// ---- Sprint 8M: the phone's Donate tab ----------------------------------------------------------------------------
 
 /** The standard rate the phone's setup card suggests as its placeholder hint; the member still types it by hand. */
 export const PHONE_STANDARD_RATE_HINT = 25;

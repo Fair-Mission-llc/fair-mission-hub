@@ -1060,8 +1060,8 @@ The **Start accepting donations** card is the phone's setup drawer. The phone ch
 1. Tap **Start accepting for an event**.
 2. Choose the event in **EVENT**.
 3. Choose the type in **DONATION TYPE**, for example **Parking**.
-4. Optional: type the standard rate in **STANDARD RATE (OPTIONAL)**, for example `10.00` for the parking rate.
-5. Optional: fill in **DEFAULT DESCRIPTION (OPTIONAL)**.
+4. Optional: type the standard rate in **STANDARD RATE (OPTIONAL)**, for example `25.00` for the parking rate.
+5. Optional: fill in **EVENT DESCRIPTION (OPTIONAL)**.
 6. Tap **Start**.
 
 **Expected result:** A gold **ACCEPTING DONATIONS** card shows the event, the count and the total. The **Session setup** line shows the rate and the type you chose.
@@ -1087,7 +1087,7 @@ The phone does not pick a method or fill in an amount. You tap the method and ty
 1. Tap the tile for the donor's method, for example **Venmo**.
 2. For a QR method: turn the phone to the donor. Wait for the donor's payment confirmation.
 3. For a QR method: check the amount. Tap **Continue**.
-4. Type the amount in **AMOUNT**, for example `10.00`.
+4. Type the amount in **AMOUNT**, for example `25.00`.
 5. Choose the **DONATION TYPE**.
 6. Optional: fill in **DONOR NAME (OPTIONAL)** and **DESCRIPTION (OPTIONAL)**.
 7. Tap **Record donation**. The gift saves at once.
@@ -1202,7 +1202,7 @@ The phone does not pick a method or fill in an amount. You tap the method and ty
 1. Count the cash in the cash box.
 2. Under **How is the donor giving?** tap **Cash**.
 3. Type the total in **AMOUNT**, for example `180.00`.
-4. Type a note in **DESCRIPTION (OPTIONAL)**, for example `Cash box drop - Saturday lot, 18 cars at $10.00`.
+4. Type a note in **DESCRIPTION (OPTIONAL)**, for example `Cash box drop - Saturday lot`.
 5. Tap **Record donation**.
 
 **Expected result:** One cash donation with the full total shows under **Recorded for this event**.

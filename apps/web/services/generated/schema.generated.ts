@@ -12147,8 +12147,8 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "EndDate": "2026-10-31",
         "Location": "St. Mary's Cathedral Parking Lot",
         "CategoryID": 5,
-        "FundsRaised-Cash": 0,
-        "FundsRaised-Electronic": 0,
+        "FundsRaised-Cash": 250,
+        "FundsRaised-Electronic": 150,
         "Highlights": null,
         "PlannedNumberAttendees": 150,
         "ActualNumberAttendees": 0,
@@ -12310,7 +12310,9 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "TreasurerMemberID": null,
         "TreasurerReviewedAt": null,
         "budget_line_id": null,
-        "general_ledger_account_id": null
+        "general_ledger_account_id": null,
+        "GrandKnightMemberID": null,
+        "GrandKnightApprovedAt": null
       },
       {
         "CouncilID": 1,
@@ -12322,19 +12324,23 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "TreasurerMemberID": null,
         "TreasurerReviewedAt": null,
         "budget_line_id": null,
-        "general_ledger_account_id": null
+        "general_ledger_account_id": null,
+        "GrandKnightMemberID": null,
+        "GrandKnightApprovedAt": null
       },
       {
         "CouncilID": 1,
         "SubmitterMemberID": 32,
-        "Status": "Submitted",
+        "Status": "Approved",
         "LinkedEventID": null,
-        "FinancialSecretaryMemberID": null,
-        "FinancialSecretaryApprovedAt": null,
-        "TreasurerMemberID": null,
-        "TreasurerReviewedAt": null,
-        "budget_line_id": null,
-        "general_ledger_account_id": null
+        "FinancialSecretaryMemberID": 29,
+        "FinancialSecretaryApprovedAt": "2026-10-06 18:30:00",
+        "TreasurerMemberID": 30,
+        "TreasurerReviewedAt": "2026-10-07 19:15:00",
+        "budget_line_id": 25,
+        "general_ledger_account_id": 13,
+        "GrandKnightMemberID": 28,
+        "GrandKnightApprovedAt": "2026-10-08 20:00:00"
       },
       {
         "CouncilID": 1,
@@ -12346,7 +12352,9 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "TreasurerMemberID": null,
         "TreasurerReviewedAt": null,
         "budget_line_id": null,
-        "general_ledger_account_id": null
+        "general_ledger_account_id": null,
+        "GrandKnightMemberID": null,
+        "GrandKnightApprovedAt": null
       },
       {
         "CouncilID": 1,
@@ -12358,7 +12366,9 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "TreasurerMemberID": null,
         "TreasurerReviewedAt": null,
         "budget_line_id": null,
-        "general_ledger_account_id": null
+        "general_ledger_account_id": null,
+        "GrandKnightMemberID": null,
+        "GrandKnightApprovedAt": null
       },
       {
         "CouncilID": 1,
@@ -12370,7 +12380,9 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "TreasurerMemberID": 30,
         "TreasurerReviewedAt": "2026-10-08 19:00:00",
         "budget_line_id": 25,
-        "general_ledger_account_id": 13
+        "general_ledger_account_id": 13,
+        "GrandKnightMemberID": null,
+        "GrandKnightApprovedAt": null
       }
     ]
   },
@@ -12896,10 +12908,37 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
       {
         "CouncilID": 1,
         "AccountName": "Parish Fundraiser Share",
-        "AccountType": "Expense",
+        "AccountType": "Revenue",
         "ParentAccountID": null,
         "IsVirtualGoal": 0,
         "TargetGoalAmount": 0
+      }
+    ]
+  },
+  {
+    "table": "Donation",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "DonationDate": "2026-10-10",
+        "DonationMethodID": 1,
+        "DonationTypeID": 1,
+        "Donor": null,
+        "DonationDesciption": "Cash box drop - first Saturday",
+        "EventID": 9,
+        "DonationAmount": 250,
+        "RecordedBy": 33
+      },
+      {
+        "CouncilID": 1,
+        "DonationDate": "2026-10-11",
+        "DonationMethodID": 3,
+        "DonationTypeID": 1,
+        "Donor": null,
+        "DonationDesciption": "Venmo parking gifts - first Sunday",
+        "EventID": 9,
+        "DonationAmount": 150,
+        "RecordedBy": 34
       }
     ]
   }

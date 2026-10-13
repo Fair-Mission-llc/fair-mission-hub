@@ -6,7 +6,7 @@
 // Council Wide Settings editors (councils.setParishSplitSettings):
 //   - parish_split_enabled (DEFAULT 0) switches the engine on;
 //   - parish_split_percentage (DEFAULT 50.00) is the parish's share, from 0.01 to 100.00;
-//   - parish_split_gl_line_id is the general ledger line (an Expense account of the council, not a virtual goal) the
+//   - parish_split_gl_line_id is the general ledger line (a Revenue or Expense account of the council) the
 //     share is charged to. The split cannot be on without one: the page will not save, and the drivers refuse
 //     PARISH_SPLIT_GL_LINE_REQUIRED.
 // The Parish Fundraiser Revenue Split Console on the Treasurer Desk (finance.getParishSplitConsole) totals each event's
@@ -61,9 +61,13 @@ export function parishSplitSettings(council: Partial<Pick<Council, keyof ParishS
   };
 }
 
-/** A GL line the parish share may be charged to: an Expense account that is not a virtual goal. */
+/**
+ * A GL line the parish share may be charged to: a Revenue account (Sprint 8M Extension - the share is taken back out of the
+ * fundraiser's revenue, a contra-revenue debit) or an Expense account, never a virtual goal.
+ */
+export const PARISH_SPLIT_LINE_TYPES: readonly GLAccount['AccountType'][] = ['Revenue', 'Expense'];
 export const isParishSplitLine = (account: Pick<GLAccount, 'AccountType' | 'IsVirtualGoal'>): boolean =>
-  account.AccountType === 'Expense' && account.IsVirtualGoal !== 1;
+  PARISH_SPLIT_LINE_TYPES.includes(account.AccountType) && account.IsVirtualGoal !== 1;
 
 /** The council's GL lines the settings card offers, in chart order. */
 export const parishSplitLineOptions = (accounts: readonly GLAccount[], councilId: number): GLAccount[] =>
@@ -113,7 +117,7 @@ export function cleanParishSplitSettings(input: unknown, current: ParishSplitSet
     else {
       const line = parishSplitLineOptions(accounts, councilId).find((a) => a.id === id);
       if (!line) {
-        throw invalid(`Ledger account ${JSON.stringify(id)} is not an expense line of council ${councilId}, so the parish share cannot be charged to it.`, {
+        throw invalid(`Ledger account ${JSON.stringify(id)} is not a revenue or expense line of council ${councilId}, so the parish share cannot be charged to it.`, {
           field: 'parish_split_gl_line_id',
         });
       }

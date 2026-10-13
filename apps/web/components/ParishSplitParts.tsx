@@ -8,8 +8,10 @@
 //    the GL line for the Financial Secretary.
 //  - ChurchDisbursementQueue (Financial Secretary Desk): the pending requests; the Financial Secretary types the check
 //    number and clicks Record Payment Made, which posts the debit to the GL line and the credit to cash.
+import Link from 'next/link';
 import { useState } from 'react';
 import {
+  canEditCouncilWideSettings,
   canIssueChurchDisbursement,
   canPayChurchDisbursement,
   CHURCH_DISBURSEMENT_QUEUE_TITLE,
@@ -114,7 +116,7 @@ function ParishSplitSettingsForm({
         <Field label="Parish share (%)" hint="From 0.01 to 100. Default 50.">
           {(id) => <Input id={id} inputMode="decimal" value={percentage} onChange={(e) => setPercentage(e.target.value)} disabled={busy} />}
         </Field>
-        <Field label="General ledger line for the parish share" hint="An expense line of your council's chart of accounts.">
+        <Field label="General ledger line for the parish share" hint="A revenue or expense line of your council's chart of accounts.">
           {(id) => (
             <Select id={id} value={lineId ?? ''} onChange={(e) => setLineId(e.target.value === '' ? null : Number(e.target.value))} disabled={busy}>
               <option value="">Choose the GL line</option>
@@ -199,7 +201,14 @@ export function ParishSplitConsoleCard({ user, councilId }: { user: SessionUser;
                 <strong>{data.glLine?.AccountName}</strong>.
               </>
             ) : (
-              <>The parish split is off. An officer switches it on and picks its GL line under System Settings: Council Wide Settings.</>
+              <>
+                The parish split is off. An officer switches it on and picks its GL line under System Settings: Council Wide Settings.{' '}
+                {canEditCouncilWideSettings(user) ? (
+                  <Link href="/system-settings/council-settings" className="font-bold underline">
+                    Switch it on in Council Wide Settings
+                  </Link>
+                ) : null}
+              </>
             )}
           </p>
           {data.events.length === 0 ? (

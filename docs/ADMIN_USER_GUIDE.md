@@ -33,7 +33,8 @@
 20. [The Cross-Council Loaner Library and the colour-coded calendar](#20-the-cross-council-loaner-library-and-the-colour-coded-calendar)
 21. [Planning workflows and bilateral council affiliations](#21-planning-workflows-and-bilateral-council-affiliations)
 22. [The Global Operations Knowledge Vault and its archive](#22-the-global-operations-knowledge-vault-and-its-archive)
-23. [Appendix: QR code files](#appendix-qr-code-files)
+23. [Parish fundraiser splits](#23-parish-fundraiser-splits)
+24. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -3318,6 +3319,105 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 | You cannot add an entry here. | The archive is read-only. | Write entries on the **Oversight Desk**. |
 
 ---
+
+## 23. Parish fundraiser splits
+
+### 23.1 Concept: the parish fundraiser split
+
+Some fundraisers use parish property, for example the cathedral parking lot. The council then owes the parish a share of the money collected. The parish split calculates that share and pays it by check.
+
+Each council sets its own split on **Council Wide Settings** → **Parish Fundraiser Split**:
+
+| Setting | What it does | Default |
+| --- | --- | --- |
+| **The parish split is on** / **off** | Switches the split on or off. | Off |
+| **Parish share (%)** | The parish's percentage of each event's collections, from 0.01 to 100. | 50 |
+| **General ledger line for the parish share** | The ledger line that the payment to the parish is charged to. The line is a revenue line or an expense line. | None |
+
+The split cannot be on without a ledger line. When the switch is on and no line is chosen, the card shows a red message and **Save parish split** stays unavailable.
+
+A revenue line takes the parish share back out of the fundraiser's revenue. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for this purpose.
+
+### 23.2 Concept: the Church Disbursement Request
+
+The split moves in two signatures:
+
+| Step | Who | Where | What happens |
+| --- | --- | --- | --- |
+| 1 | Treasurer | **Treasurer Desk** → **⛪ Parish Fundraiser Revenue Split Console** | The Treasurer issues a **Church Disbursement Request** for the parish share. The request is **Pending**. The ledger does not change yet. |
+| 2 | Financial Secretary (FS) | **Financial Secretary Desk** → **⛪ Church Disbursement Requests** | The FS enters the check number and records the payment. The request is **Paid**. |
+
+The console counts each event's money donations. Physical items do not count. The **To request** amount is the parish share less the shares already requested for the event. New collections at a later date make a new amount available.
+
+When the FS records the payment, the ledger gets one posting. The posting is a debit to the split's ledger line and a credit to the council's first cash account. Both lines carry the check number.
+
+The officer who issues a request cannot also pay the request.
+
+### 23.3 Set up the parish split
+
+> **Who can do this:** the council's officers, the council's Admins and Super Admins.
+
+**Goal:** Switch the parish split on with a percentage and a ledger line.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
+
+**Steps:**
+1. Select the switch. The switch shows **The parish split is on**.
+2. Enter the percentage in **Parish share (%)**, for example `50`.
+3. Select the line in **General ledger line for the parish share**.
+4. Select **Save parish split**.
+
+**Expected result:** The message **Saved for council … The split is on.** shows. The Treasurer's console names the line and the percentage.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A red message shows and **Save parish split** is unavailable. | The split is on, but no ledger line is chosen. | Select a line in **General ledger line for the parish share**. |
+| The line you want is not in the list. | Only revenue lines and expense lines of your council show. | Ask the Treasurer to add the line to the chart of accounts. |
+
+### 23.4 Issue a Church Disbursement Request
+
+> **Who can do this:** the council's Treasurer and Super Admins. The council's Admins and officers read the console.
+
+**Goal:** Send the parish share of an event's collections to the Financial Secretary for payment.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **⛪ Parish Fundraiser Revenue Split Console**.
+
+**Steps:**
+1. Find the event row.
+2. Check the calculation: **Collections** × the parish percentage = **Parish share**.
+3. Read **To request**. This amount is the share less **Already requested**.
+4. Select **[ 📋 Issue Church Disbursement Request ]** on the row.
+
+**Expected result:** The message **Church Disbursement Request #… for $… is on the Financial Secretary Desk.** shows. The request is listed as **Pending**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The button is unavailable. | The split is off, or **To request** is $0.00. | Set up the split (23.3), or wait for new collections. |
+| An event does not show. | The event has no money donations yet. | Record the donations first. |
+
+### 23.5 Pay a Church Disbursement Request
+
+> **Who can do this:** the council's Financial Secretary and Super Admins. The officer who issued the request cannot pay the request.
+> **Warning:** Recording the payment posts money to the general ledger. You cannot undo the payment.
+
+**Goal:** Record the check that pays the parish share.
+
+**Start point:** **Active Desks** row → **Financial Secretary Desk** → **⛪ Church Disbursement Requests**.
+
+**Steps:**
+1. Find the request. Check the event, the amount, the ledger line and the issuer.
+2. Write the check to the parish.
+3. Enter the check number in **Check number**.
+4. Select **Record Payment Made**. You cannot undo the payment.
+
+**Expected result:** The message **Check … for $… is recorded against …** shows. The request leaves the card. The Treasurer's console shows **Paid · check …**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Record Payment Made** is unavailable. | The check number is empty, or you issued the request. | Enter the check number, or ask another finance officer to pay. |
 
 ## Appendix: QR code files
 
