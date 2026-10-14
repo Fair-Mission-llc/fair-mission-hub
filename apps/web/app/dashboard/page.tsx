@@ -90,6 +90,7 @@ import {
   RecorderDesk,
   TreasurerDesk,
 } from '@/components/DashboardDesks';
+import { HomeScrollCue } from '@/components/HomeScrollCue';
 import { SuperAdminDesk } from '@/components/SuperAdminDesk';
 import { useDashboardTab } from '@/components/WorkspaceTabs';
 import { PageTitle } from '@/components/ui';
@@ -97,11 +98,17 @@ import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 
 /**
  * The Home desk (Sprint 8A, Sprint 8D/8E): only the universal cards (Sprint 8P Stage 1: large tiles, the page scrolls). All the work sits one
- * click away on its Active Desk, and the Executive Summary on the Executive Dashboard page.
+ * click away on its Active Desk, and the Executive Summary on the Executive Dashboard page. Sprint 8S Extension: the
+ * HomeScrollCue line sits on the bottom edge of the first screen and fades on the first downward scroll.
  */
 function HomeDesk({ councilId, faithOn }: { councilId: number; faithOn: boolean }) {
   const user = useUser();
-  return <HomeWidgets user={user} councilId={councilId} faithOn={faithOn} />;
+  return (
+    <>
+      <HomeWidgets user={user} councilId={councilId} faithOn={faithOn} />
+      <HomeScrollCue />
+    </>
+  );
 }
 
 function Dashboard() {

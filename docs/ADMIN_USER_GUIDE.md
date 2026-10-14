@@ -35,7 +35,10 @@
 22. [The Operations Knowledge Archive](#22-the-operations-knowledge-archive)
 23. [Parish fundraiser splits](#23-parish-fundraiser-splits)
 24. [Batch coding and cash box audits](#24-batch-coding-and-cash-box-audits)
-25. [Appendix: QR code files](#appendix-qr-code-files)
+25. [Account ownership, parish-held revenue, feedback loops and the Super Admin Desk](#25-account-ownership-parish-held-revenue-feedback-loops-and-the-super-admin-desk)
+26. [The global search bar](#26-the-global-search-bar)
+27. [The Navigation Guide screen](#27-the-navigation-guide-screen)
+28. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -378,7 +381,7 @@ The navy header of the phone holds the **envelope** (messages) and **your name**
 
 The **Navigation Guide** link is at the top of the sidebar, above the seven pillars. Every member sees the link.
 
-The **Navigation Guide** page is a collapsible map in the same order as this part: the sidebar categories, your desks, your time limits and the phone tabs. Only the **📍 Overview** block is open. Select a block title to open it.
+The **Navigation Guide** page is a collapsible map in the same order as this part: the sidebar categories, your desks, your time limits and the phone tabs. Only the **📍 Overview** block is open. Select a block title to open it. Chapter 27 explains the screen in full.
 
 The page reads your member type and your officer roles. The page then lists only the links and desks that you can open. The depth of the map follows your role.
 
@@ -2825,7 +2828,7 @@ Every signed-in member sees the row. A plain member gets **Home** and **Member D
 
 A Council Historian without an officer seat and without Admin rights gets **Home**, **Historian Desk** and **Member Desk**. This Historian also gets the **Executive Dashboard** link in the sidebar (section 19.13).
 
-After you sign in, the portal opens on the **Home** tab. This is true for every member, officer, Admin and Super Admin. The four tabs of the Volunteer Check-In & Service Center are on the **Member Actions Hub** (sidebar **Member Actions Hub**). They are not on the **Member Desk** tab.
+After you sign in, the portal opens on the **Home** tab. This is true for every member, officer, Admin and Super Admin. When more cards are below the first screen, the line **Scroll down for more council info ↓** shows at the bottom edge. The line fades away when you start to scroll down. The four tabs of the Volunteer Check-In & Service Center are on the **Member Actions Hub** (sidebar **Member Actions Hub**). They are not on the **Member Desk** tab.
 
 Every module that a seat works in is a folder at the top of that seat's desk (section 19.3.1). You do not use the sidebar to find these modules. The **Leadership Auditing Queue** page opens from the **Financial Secretary Desk**.
 
@@ -4160,6 +4163,91 @@ Each kind shows at most 5 results.
 | Only the two help results show. | No page, event or member name starts with your words. | Try fewer or different words. Or select a help result. |
 | No member results show. | Your role cannot open the **Affiliated Roster**. | No action. Ask a council Admin to find the member. |
 | A page you expect does not show. | Your role cannot open the page, or the council's module is off. | Ask a council Admin. |
+
+## 27. The Navigation Guide screen
+
+The **Navigation Guide** is a screen that explains your own sidebar. Use it when you do not know where a page is, or what a link does. This chapter explains how the screen works. Section 2.8 is the short tutorial.
+
+### 27.1 Concept: where the Navigation Guide is
+
+The **Navigation Guide** link is at the top of the sidebar, above the seven pillars. Every signed-in member sees the link. The screen opens at `/navigation-guide`.
+
+The screen is built again each time it opens. It reads three things:
+
+- Your member type: Member, Admin or Super Admin.
+- Your officer roles, for example Grand Knight or Treasurer.
+- The modules that your council has switched on (section 3).
+
+The screen then lists only the links and desks that you can open. A page that your role cannot open is not on the screen. A module that your council switched off is not on the screen.
+
+### 27.2 Concept: the guide changes with your role
+
+The screen has two depths: **Summary** and **Full**. Your role sets the depth. You cannot change the depth yourself.
+
+| You sign in as | Depth | What each link shows | What each desk shows |
+| --- | --- | --- | --- |
+| Member (a plain volunteer) | Summary | One short sentence | One short sentence. No drawers. |
+| Council Officer | Full | The leader sentence and the sidebar pillar of the link, for example *sidebar: Finances* | The sentence and a list of every drawer of the desk |
+| Council Admin | Full | The leader sentence and the sidebar pillar | The sentence and every drawer of each desk that you hold |
+| Super Admin | Full | The leader sentence and the sidebar pillar, for every page | The sentence and every drawer, including the **Super Admin Desk** folders for the platform owner |
+
+The first line of the screen tells you your depth. For example, *You are signed in as: Council Officer (Grand Knight)*. Under it, the overview says *You see the full map* or *You see a short summary*.
+
+**Example:** A plain member opens **🗂️ Your desks** and reads one sentence about the **Member Desk**. The Grand Knight opens the same block and also reads each drawer of the **Grand Knight Desk**, such as **Approved Expenses** and **Council Election Tracker**.
+
+### 27.3 Concept: every category group starts closed
+
+The screen opens with all of its category groups closed. Only the **📍 Overview** block is open. The overview tells you who you are signed in as and explains the menus in the top bar.
+
+The closed groups show only their titles and the number of links in each. You can read all of the titles on one screen, so you can find the right group fast. Select a title to open a group. Select the title again to close the group.
+
+The screen does not remember which groups you opened. Each visit starts closed again.
+
+### 27.4 Concept: the sidebar-first order
+
+The screen follows the sidebar first, then the rest of the portal. The groups are in this order:
+
+1. **📍 Overview**: who you are and the top bar menus. Open on arrival.
+2. **The sidebar categories**: **🏠 Dashboard**, **📅 Calendars**, **👥 Rosters**, **✅ Vetting**, **📒 Ledgers**, **🗄️ Archives** and **⚙️ Settings, planning and help**. A category with no link for you is left out.
+3. **🗂️ Your desks**: the tabs of your **Active Desks** row.
+4. **⏱️ Your time limits**: the time windows and reminder days in force for you now, read from your council's settings.
+5. **📱 Phone app tabs**: the phone tabs that your council has switched on.
+
+The screen has three levels:
+
+| Level | What it is | Example |
+| --- | --- | --- |
+| 1. Group | A closed block with a title and the number of its links | **📒 Ledgers** |
+| 2. Link or desk | A page name that you can select, with its sentence | **General Ledger Spreadsheet** · *sidebar: Finances* |
+| 3. Drawer | A drawer of a desk, listed under the desk (full depth only) | **Approved Expenses** under **Grand Knight Desk** |
+
+Select a link name to open that page. Select a desk name to open that desk tab on the **Active Desks** row.
+
+### 27.5 Find a page with the Navigation Guide
+
+> **Who can do this:** every signed-in member.
+
+**Goal:** Find a page or a desk drawer that you cannot locate in the sidebar.
+
+**Start point:** Sidebar → **Navigation Guide** (at the top, above the pillars).
+
+**Steps:**
+1. Select **Navigation Guide**. All of the category groups are closed. Only **📍 Overview** is open.
+2. Read the first line. The line shows your role and your depth.
+3. Scan the group titles. Select the group that matches your task, for example **📒 Ledgers** for money records.
+4. Read the sentence under each link. Officers also read the sidebar pillar of each link.
+5. Select the link name. The page opens.
+6. To find a drawer, open **🗂️ Your desks**. Officers, Admins and Super Admins read every drawer under each desk. Select the desk name to open the desk.
+
+**Expected result:** The page or desk opens. The sidebar marks the page as the open page.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A desk shows no drawers. | You signed in as a plain member, so the guide shows the summary depth. | No action. Drawers show only for officers, Admins and Super Admins. |
+| A group that you opened is closed again. | The screen starts with every category group closed on each visit. | Select the group title again. |
+| A page that a colleague uses is not on the screen. | Your role cannot open the page. | Ask a council Admin about your role. |
+| A whole module is missing. | Your council switched the module off (section 3). | Ask a Super Admin to switch the module on. |
 
 ## Appendix: QR code files
 

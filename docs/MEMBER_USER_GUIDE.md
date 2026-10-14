@@ -88,7 +88,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 <details open>
 <summary>📍 Overview — read this first</summary>
 
-- Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **[ 🙏 Praying Hands ]** on the prayer list to pray for an intention.
+- Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **[ 🙏 Praying Hands ]** on the prayer list to pray for an intention. When more cards are below the first screen, the line **Scroll down for more council info ↓** shows at the bottom. The line fades away when you start to scroll down.
 - Your volunteer check-in is on the **Member Actions Hub**. Select **Member Actions Hub** in the sidebar to open it. The page has four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. Your shift trackers, charity requests and sheets are on the **Member Desk** tab.
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
@@ -169,6 +169,21 @@ The header at the top right of the portal has four controls.
 <!-- KEEP_IMAGE: member dashboard setup placeholder -->
 ![Member Dashboard Setup (placeholder)](../generated/mobile_app_catalog/member_dashboard_setup.png)
 <!-- /KEEP_IMAGE -->
+
+### 1.5 The Navigation Guide
+
+The **Navigation Guide** explains each link in your sidebar. Use it when you cannot find a page.
+
+- **Where:** select **Navigation Guide** at the top of the sidebar, above the pillars.
+- **What you see:** one short sentence for each page and desk that you can open. Officers see more: the sidebar pillar of each link and every drawer of their desks. You see only the pages that your role can open.
+- **How it opens:** all of the category groups are closed. Only **📍 Overview** is open. Select a group title, for example **📅 Calendars**, to open it. Select the title again to close it.
+- **The order:** the overview, then the sidebar categories, then **🗂️ Your desks**, **⏱️ Your time limits** and **📱 Phone app tabs**.
+
+**To find a page:**
+1. Select **Navigation Guide** in the sidebar.
+2. Select the group title that matches your task.
+3. Read the sentence under each link.
+4. Select the link name. The page opens.
 
 ---
 

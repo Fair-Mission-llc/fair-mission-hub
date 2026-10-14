@@ -143,3 +143,22 @@
     color: var(--color-white);
   }
 }
+
+/*
+ * Sprint 8S Extension: the Home tab's 'Scroll down for more council info ↓' cue (components/HomeScrollCue.tsx). It fades
+ * to transparent the moment data-hidden turns true - on the first downward wheel or trackpad turn - and does not move.
+ */
+@layer components {
+  .home-scroll-cue {
+    opacity: 1;
+    transition: opacity 250ms ease-out;
+  }
+  .home-scroll-cue[data-hidden='true'] {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .home-scroll-cue {
+      transition: none;
+    }
+  }
+}
