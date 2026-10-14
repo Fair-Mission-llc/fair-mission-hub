@@ -38,6 +38,7 @@ export type NavigationMapCategoryId = (typeof NAVIGATION_MAP_CATEGORIES)[number]
 /** The category of every sidebar link (the Record type keeps it complete). */
 export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCategoryId> = {
   home: 'dashboard',
+  'member-actions': 'dashboard',
   dashboard: 'dashboard',
   'member-center': 'dashboard',
   'finance/dashboard': 'dashboard',
@@ -96,14 +97,14 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
 
 /** One sentence per Active Desks tab. */
 export const DESK_TAB_SUMMARIES: Record<DashboardTabId, string> = {
-  home: "The council's newsletters, the day's verse and feast, today's agenda and the month's Top 5 volunteers. Information only.",
+  home: "The council's newsletters, the day's verse and feast, your reminders, today's agenda, the prayer list and the month's Top 5 volunteers. Read only.",
   'super-admin': "The platform owner's cockpit: feedback, council access requests and the module switches.",
   'grand-knight': 'Approve and release expenses, review flagged hours, vet charity grants and lead planning and elections.',
   'financial-secretary': 'Issue payment requests, track expense reports, record charity donations and import the roster.',
   treasurer: 'Code sheets to the ledger, settle expense reports, close cash boxes and reconcile the bank.',
   recorder: 'Write and publish the minutes, start the live meeting and keep the motions ledger.',
   historian: 'Keep the diary logs, the monthly newsletters, the meeting photos and the oral histories.',
-  member: 'Your volunteer work: open shifts and your own shifts side by side, your sheets, reminders and the Volunteer Check-In & Service Center.',
+  member: "Your volunteer work: open shifts and your own shifts side by side, your sheets and the Volunteer Check-In & Service Center. The sidebar's [ 🙋 Member Actions ] link opens it.",
 };
 
 /** One sentence per phone tab, and the phone route each one is (features.ts MobileTab). */

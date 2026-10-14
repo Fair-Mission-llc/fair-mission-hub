@@ -3793,3 +3793,13 @@ GO
 -- shift trackers. The user guides and the Navigation Guide page open with collapsible, role-customized maps of the left
 -- navigation, then the desks, the timed settings and the phone tabs. The phone database version moves to 91.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8S: SIDEBAR RESTORATION AND READ-ONLY HOME CARDS (schema version 92)
+--
+-- No table changes. The left sidebar's Faith In Action pillar carries '[ 🙋 Member Actions ]' again (the 'member-actions'
+-- portal area, every member): it opens the Member Desk tab of /dashboard (/dashboard#member), where the twin shift
+-- trackers and the Volunteer Check-In & Service Center live. The Live Actionable Reminders and the Community Prayer
+-- Request List are back on Home as read-only cards: no buttons and no links into the desks. The phone database version
+-- moves to 92.
+-- =========================================================================

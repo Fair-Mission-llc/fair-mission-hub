@@ -135,4 +135,4 @@ export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed
  * The platform's database schema version, shown under System Information. It moves with the phone database's
  * SCHEMA_VERSION (apps/mobile/services/drivers/sqlite.ts) and the Schema.sql sprint headers.
  */
-export const PLATFORM_SCHEMA_VERSION = 91;
+export const PLATFORM_SCHEMA_VERSION = 92;

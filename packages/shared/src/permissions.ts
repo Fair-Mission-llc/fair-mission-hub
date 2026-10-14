@@ -29,6 +29,7 @@ type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOffi
  */
 export type PortalArea =
   | 'home'
+  | 'member-actions'
   | 'calendar'
   | 'gallery'
   | 'lookups'
@@ -90,8 +91,13 @@ export type PortalArea =
   | 'profile';
 
 /** Areas served from a route other than `/${area}`: the budget center lives at /budget (Sprint 5Y-2). */
-// Sprint 8R: 'home' is the universal Home tab of /dashboard, every signed-in member's landing page.
-export const PORTAL_AREA_ROUTES: Partial<Record<PortalArea, string>> = { 'financials/budget': '/budget', home: '/dashboard' };
+// Sprint 8R: 'home' is the universal Home tab of /dashboard, every signed-in member's landing page. Sprint 8S:
+// 'member-actions' is the sidebar's '[ 🙋 Member Actions ]' link, which opens the Member Desk tab of the same page.
+export const PORTAL_AREA_ROUTES: Partial<Record<PortalArea, string>> = {
+  'financials/budget': '/budget',
+  home: '/dashboard',
+  'member-actions': '/dashboard#member',
+};
 
 /** The route of a portal area. */
 export const portalAreaHref = (area: PortalArea): string => PORTAL_AREA_ROUTES[area] ?? `/${area}`;
@@ -672,7 +678,8 @@ export const canDesignateBudgetDirector = (u: Actor, member: Pick<Member, 'Counc
 export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, tenant: TenantType = DEFAULT_TENANT_TYPE): PortalArea[] {
   // Sprint 8R: every signed-in member opens Home (/dashboard), which holds the volunteer tools the Member Actions page
   // used to; Admins and Super Admins volunteer too. Then the shared views.
-  const areas: PortalArea[] = ['home', 'calendar', 'gallery'];
+  // Sprint 8S: '[ 🙋 Member Actions ]' (the Member Desk tab, /dashboard#member) is back in every member's sidebar.
+  const areas: PortalArea[] = ['home', 'member-actions', 'calendar', 'gallery'];
   if (canMaintainLookups(u)) areas.push('lookups');
   if (canMaintainCouncils(u)) areas.push('councils');
   if (canOpenFeatureFlagsControlCenter(u)) areas.push('feature-flags');
@@ -775,7 +782,7 @@ export interface PortalNavGroup {
  */
 export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
-  { id: 'faith', label: 'Faith In Action', items: ['activities', 'home', 'events', 'calendar', 'faith-center'] },
+  { id: 'faith', label: 'Faith In Action', items: ['activities', 'home', 'member-actions', 'events', 'calendar', 'faith-center'] },
   {
     id: 'finances',
     label: 'Finances',

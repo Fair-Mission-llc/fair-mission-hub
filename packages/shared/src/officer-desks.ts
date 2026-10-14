@@ -139,14 +139,22 @@ export const EXECUTIVE_DASHBOARD_HREF = '/executive-dashboard';
  * Sprint 8R Corrected: Home is purely informational - council-wide feeds with no workflow button. The Live Actionable
  * Reminders, the Open Volunteer Shifts sign-ups and the Community Prayer Request List (Praying Hands) moved to the
  * Member Desk with the Volunteer Check-In & Service Center (MEMBER_DESK_SECTIONS).
+ * Sprint 8S: the reminders and the prayer list are back on Home as read-only cards - no buttons and no links into the
+ * desks; the sign-ups and the Praying Hands stay on the Member Desk and the Faith Center.
  */
 export const HOME_UNIVERSAL_CARDS = [
   'Latest Council Newsletters & Bulletins',
   'Bible Verse of the Day',
+  'Live Actionable Reminders',
   'Liturgical Feast Day Tracker',
   "Today's Event Agenda",
   'Top 5 Fraternal Volunteers',
+  'Community Prayer Request List',
 ] as const;
+
+/** Sprint 8S: the sidebar link that opens the Member Desk tab (the 'member-actions' portal area). */
+export const MEMBER_ACTIONS_NAV_LABEL = '[ 🙋 Member Actions ]';
+export const MEMBER_ACTIONS_HREF = '/dashboard#member';
 
 /** The Member Desk's sections, in display order (Sprint 8R Corrected); the first two share the top row at equal height. */
 export const MEMBER_DESK_SECTIONS = [
@@ -154,8 +162,6 @@ export const MEMBER_DESK_SECTIONS = [
   'My shifts',
   '📥 My Charity Requests',
   'My open expense sheets',
-  'Live Actionable Reminders',
-  'Community Prayer Request List',
   '🙋 Volunteer Check-In & Service Center',
 ] as const;
 

@@ -919,8 +919,11 @@ const DB_NAME = 'kofc.db';
  * 91: no table change - every signed-in member lands on the web portal's informational Home tab, the Member Actions
  *     page becomes the Member Desk's Volunteer Check-In & Service Center, and the guides and the Navigation Guide lead
  *     with collapsible, role-customized left-navigation maps (Sprint 8R and its correction); phones rebuild in step.
+ * 92: no table change - the sidebar's '[ 🙋 Member Actions ]' link (the 'member-actions' area) opens the web portal's
+ *     Member Desk tab again, and the reminders and the prayer list are read-only cards on Home (Sprint 8S); phones
+ *     rebuild in step.
  */
-const SCHEMA_VERSION = 91;
+const SCHEMA_VERSION = 92;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

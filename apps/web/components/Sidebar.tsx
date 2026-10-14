@@ -12,6 +12,7 @@
 // to the Home landing deck (EXECUTIVE_DASHBOARD_HOME_HREF), even on /dashboard itself.
 // Sprint 8D/8E: Executive Dashboard is a plain link again, to the Executive Summary's own page (EXECUTIVE_DASHBOARD_HREF).
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
   canOpenArchiveVault,
   EXECUTIVE_DASHBOARD_HREF,
@@ -39,7 +40,8 @@ export interface NavEntry {
  * and keeps its entry for the pages that link to it.
  */
 export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue', NavEntry> = {
-  home: { href: '/dashboard', label: 'Home', hint: 'Newsletters, my shifts, sign-ups, roster, hours and the Home cards' },
+  home: { href: '/dashboard#home', label: 'Home', hint: 'Newsletters, feast days, reminders, prayers and the honor board (read only)' },
+  'member-actions': { href: '/dashboard#member', label: '[ 🙋 Member Actions ]', hint: 'My Member Desk: shifts, sign-ups, roster, hours' },
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },
@@ -239,7 +241,29 @@ function ExternalNavLink({ href, label, hint }: Omit<ExternalNavEntry, 'visible'
   );
 }
 
-const isCurrent = (pathname: string, item: PortalNavItem | 'navigation-guide'): boolean => pathname === NAV[item].href.split('#')[0];
+/**
+ * Whether a link is the open page. Sprint 8S: Home and '[ 🙋 Member Actions ]' share /dashboard, so a link with an anchor
+ * is current only while the URL carries that anchor (Home also with no anchor at all).
+ */
+const isCurrent = (pathname: string, item: PortalNavItem | 'navigation-guide', hash = ''): boolean => {
+  const [path, anchor] = NAV[item].href.split('#');
+  if (pathname !== path) return false;
+  if (!anchor) return true;
+  const open = hash.replace(/^#/, '');
+  return open === anchor || (anchor === 'home' && open === '');
+};
+
+/** The URL anchor, kept current as the dashboard tabs change it. */
+function useHash(): string {
+  const [hash, setHash] = useState('');
+  useEffect(() => {
+    const read = () => setHash(window.location.hash);
+    read();
+    window.addEventListener('hashchange', read);
+    return () => window.removeEventListener('hashchange', read);
+  }, []);
+  return hash;
+}
 
 const navLinkClass = (current: boolean) =>
   cx('flex items-center gap-2 border-l-8 py-1.5 pl-6 pr-3 text-sm', current ? 'border-gold bg-white font-bold text-navy' : 'border-transparent hover:underline');
@@ -258,6 +282,7 @@ function NavLink({ item, current, tenant }: { item: PortalNavItem | 'navigation-
 
 export function Sidebar({ user, pathname, features, tenant }: { user: SessionUser; pathname: string; features: FeatureFlags; tenant: TenantType }) {
   const groups = portalSidebar(user, features, tenant);
+  const hash = useHash();
   return (
     <nav data-surface="navy" aria-label="Portal sections" className="w-64 shrink-0 bg-navy py-3 text-white">
       {/* Sprint 7C Extension: every member's Navigation Guide, pinned above the pillars. */}
@@ -273,7 +298,7 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
             </h2>
             <ul aria-labelledby={headingId} className="flex flex-col">
               {group.entries.map(({ item }) => (
-                <NavLink key={item} item={item} current={isCurrent(pathname, item)} tenant={tenant} />
+                <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
               ))}
               {(EXTERNAL_NAV[group.id] ?? [])
                 .filter((link) => !link.visible || link.visible(user))

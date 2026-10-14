@@ -88,8 +88,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 <details open>
 <summary>📍 Overview — read this first</summary>
 
-- After you sign in, the portal opens on **Home**. **Home** shows council information only: the newsletters, the feast days, today's agenda and the Top 5 volunteers.
-- Your own work is on the **Member Desk** tab: the shift trackers, sign-ups, reminders and the **🙋 Volunteer Check-In & Service Center** with the roster and your hours.
+- After you sign in, the portal opens on **Home**. **Home** is read only: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list.
+- Your own work is on the **Member Desk**. Select **[ 🙋 Member Actions ]** in the sidebar to open it: the shift trackers, sign-ups and the **🙋 Volunteer Check-In & Service Center** with the roster and your hours.
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
@@ -101,8 +101,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Home** | Faith In Action | Information only: the newsletters, the feast days, today's agenda and the Top 5 volunteers |
-| **Member Desk** | Active Desks row | Your shifts, sign-ups, reminders, the roster and your hours |
+| **Home** | Faith In Action | Read only: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list |
+| **[ 🙋 Member Actions ]** | Faith In Action | Opens the **Member Desk**: your shifts, sign-ups, the roster and your hours |
 | **Council Dashboard** | Performance | Your impact and the council's engagement |
 
 </details>
@@ -122,7 +122,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Member Desk** → **Fraternal roster** tab | Active Desks row | The phone and email of active brothers |
+| **[ 🙋 Member Actions ]** → **Fraternal roster** tab | Faith In Action | The phone and email of active brothers |
 | **Council Officer Nominations** | Governance | Nominations for elected offices |
 
 </details>
@@ -132,7 +132,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Member Desk** → **Hour ledger** tab | Active Desks row | Your logged service hours |
+| **[ 🙋 Member Actions ]** → **Hour ledger** tab | Faith In Action | Your logged service hours |
 | **My Expense Reports** | Finances | Your expense reports and their status |
 | **Propose Charity Grant** | Finances | The charity proposal form |
 | **Annual Budget Projections** | Finances | The council's annual budget |
@@ -454,7 +454,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 
 **Goal:** Put your name on a shift that still needs volunteers.
 
-**Start point:** **Active Desks** row → **Member Desk** → **🙋 Volunteer Check-In & Service Center** → **Registration desk** tab.
+**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Registration desk** tab.
 
 **Steps:**
 1. Optional: choose a council in **Council**. The default is **All: my council and sister councils**.
@@ -478,7 +478,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 
 **Goal:** See the shifts that you signed up for.
 
-**Start point:** Phone app → **Home** → **My shifts**. Web portal → **Member Desk** → **🙋 Volunteer Check-In & Service Center** → **My active shifts**.
+**Start point:** Phone app → **Home** → **My shifts**. Web portal → Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **My active shifts**.
 
 **Steps:**
 1. Open the start point.
@@ -713,7 +713,7 @@ Time that you saved earlier today stays saved.
 
 **Goal:** Log shift or activity time from a computer.
 
-**Start point:** **Active Desks** row → **Member Desk** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** tab.
+**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** tab.
 
 **Steps:**
 1. For a shift: go to **Report time on a shift**. Choose the shift in **Shift I worked**.
@@ -736,7 +736,7 @@ Time that you saved earlier today stays saved.
 
 **Goal:** Check which shifts still need hours.
 
-**Start point:** **Active Desks** row → **Member Desk** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** → **My shift history**.
+**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** → **My shift history**.
 
 **Steps:**
 1. Read the status of each past shift.
@@ -1415,7 +1415,7 @@ The Trustees ask the Shepherd for a status report 6 months after the filing date
 
 **Goal:** Contact another member.
 
-**Start point:** **Active Desks** row → **Member Desk** → **🙋 Volunteer Check-In & Service Center** → **Fraternal roster** tab.
+**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Fraternal roster** tab.
 
 **Steps:**
 1. Enter a name or a member number in **Search by name or number**.

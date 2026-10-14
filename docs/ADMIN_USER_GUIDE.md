@@ -101,8 +101,8 @@ This part maps every link of the left navigation, then the **Active Desks** tabs
 <details open>
 <summary>📍 Overview — read this first</summary>
 
-- **Everyone lands on Home.** After you sign in, the portal opens on the **Home** tab of the **Active Desks** row. This is true for every member, officer, Admin and Super Admin. **Home** shows information only: newsletters, the feast days, today's agenda and the honor board (section 19.2).
-- **Your volunteer work is on the Member Desk.** The shift trackers, sign-ups, reminders and the **🙋 Volunteer Check-In & Service Center** are on the **Member Desk** tab (section 19.8).
+- **Everyone lands on Home.** After you sign in, the portal opens on the **Home** tab of the **Active Desks** row. This is true for every member, officer, Admin and Super Admin. **Home** is read only: newsletters, the feast days, your reminders, today's agenda, the honor board and the prayer list (section 19.2).
+- **Your volunteer work is on the Member Desk.** Select **[ 🙋 Member Actions ]** in the **Faith In Action** pillar, or the **Member Desk** tab. The desk holds the shift trackers, the sign-ups and the **🙋 Volunteer Check-In & Service Center** (section 19.8).
 - **The Navigation Guide follows your role.** A member reads a short summary of each page that the member can open. Officers, Admins and Super Admins read the full map (section 2.7).
 - **The sidebar shows only your links.** A link that your role cannot open does not show. The sidebar never shows a locked or greyed-out link. A pillar with no allowed links does not show.
 - **Seven pillars, always open.** The sidebar groups its links into seven pillars: **Governance**, **Faith In Action**, **Finances**, **Performance**, **Resources**, **Answers** and **System Settings**. Section 2.3 lists the links of each pillar.
@@ -122,7 +122,8 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Home** | Faith In Action | Every member | Information only: the newsletters feed, the verse, the feast days, today's agenda and the Top 5 honor board | 19.2 |
+| **Home** | Faith In Action | Every member | Read only: the newsletters feed, the verse, your reminders, the feast days, today's agenda, the Top 5 honor board and the prayer list | 19.2 |
+| **[ 🙋 Member Actions ]** | Faith In Action | Every member | Opens the **Member Desk** tab: the shift trackers, sign-ups and the **🙋 Volunteer Check-In & Service Center** | 19.8 |
 | **Executive Dashboard** | Performance | Officers, Admins, the Council Historian | The roadmap ribbon and the **Executive Summary** | 19.13 |
 | **Council Dashboard** | Performance | Every member | The council's engagement, the leaderboards and the membership history | 14.1 |
 | **Financial Dashboard** | Finances | General ledger readers | The council's money at a glance | 6.6 |
@@ -307,7 +308,7 @@ The categories group the links by the work you do. A link can sit in a different
 | Pillar | Links, in sidebar order |
 | --- | --- |
 | **Governance** | Live Meeting Console, Annual Cadence Manager, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
-| **Faith In Action** | Standalone Activities, Home, Event Planner, Visual Master Calendar, Faith Center |
+| **Faith In Action** | Standalone Activities, Home, [ 🙋 Member Actions ], Event Planner, Visual Master Calendar, Faith Center |
 | **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Trustee Audit Desk, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Projections |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
 | **Resources** | Fraternal Photo Gallery, Council Artifacts, Marketing Factory, Cross-Council Loaner Library |
@@ -325,7 +326,7 @@ The **System Settings** pillar had the name **Setup** in earlier versions of the
 
 | Tab | Who gets the tab | Drawers or sections | Section |
 | --- | --- | --- | --- |
-| **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Liturgical Feast Day Tracker, Today's Event Agenda, Top 5 Fraternal Volunteers. No workflow buttons. | 19.2 |
+| **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, Today's Event Agenda, Top 5 Fraternal Volunteers, Community Prayer Request List. Read only: no buttons and no links into the desks. | 19.2 |
 | **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 25 |
 | **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Inbound Council Mail Center, Charitable Grant Requests Vetting Board, Planning & Budgeting Workflow, Council Election Tracker, Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels | 19.5 |
 | **Financial Secretary Desk** | The FS, Admins, Super Admins | Payment Requests, Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, Charity Check Issuance Console, Excel Roster Imports | 19.6 |
@@ -383,7 +384,7 @@ The page reads your member type and your officer roles. The page then lists only
 
 | You sign in as | Depth | The guide shows |
 | --- | --- | --- |
-| Member | Summary | One short sentence for each page that you can open, for example **Home**, **Visual Master Calendar** and the **Member Desk**. No leadership, finance desk or settings page. |
+| Member | Summary | One short sentence for each page that you can open, for example **Home**, **[ 🙋 Member Actions ]**, **Visual Master Calendar** and the **Member Desk**. No leadership, finance desk or settings page. |
 | Council Officer | Full | The member pages and the desks of your office, with the sidebar pillar of each link and every drawer of each desk. For example **GK Expense Authorize** and the **Grand Knight Desk** drawers for the Grand Knight. |
 | Council Admin | Full | The member pages and the leadership, finance and settings pages of your council, with every drawer of each desk. |
 | Super Admin | Full | Every page, including **Global System Parameters**, and the **Super Admin Desk** for the platform owner. |
@@ -2830,17 +2831,19 @@ Every module that a seat works in is a folder at the top of that seat's desk (se
 
 ### 19.2 Concept: the Home desk
 
-**Home** holds five large cards, and nothing else. **Home** is for council information only and has no workflow buttons. The newsletters card leads across the full width. The other cards show two across on a laptop screen, and three across on a very wide screen. Each card grows to show its full list. Scroll the page to see the lower cards.
+**Home** holds seven large cards, and nothing else. **Home** is read only: no card has a button or a link into a desk. The newsletters card leads across the full width. The other cards show two across on a laptop screen, and three across on a very wide screen. Each card grows to show its full list. Scroll the page to see the lower cards.
 
-Your own work - the shift sign-ups, the reminders, the **[ 🙏 Praying Hands ]** and the **🙋 Volunteer Check-In & Service Center** - is on the **Member Desk** (section 19.8).
+Your own work - the shift sign-ups and the **🙋 Volunteer Check-In & Service Center** - is on the **Member Desk** (section 19.8). Select **[ 🙋 Member Actions ]** in the sidebar to open it. To pray for an intention or add one, open the **Faith Center** page.
 
 | Card on Home | What the card shows |
 | --- | --- |
 | **[ 📰 Latest Council Newsletters & Bulletins ]** | The council's newest newsletters from the Council Historian, up to 3, newest first, across the full width of **Home**. The newest newsletter shows in full. Select another headline to read it. The card shows only when the council has a saved newsletter. |
 | **Bible Verse of the Day** | One verse for the day, from the NABRE. |
+| **Live Actionable Reminders** | Your own unread alerts and the sheets that wait for your signature, as plain text. A red edge is urgent. The card refreshes every minute. Act on a reminder from your desk tab or the alert bell. |
 | **Liturgical Feast Day Tracker** | Today's feast day and the feasts of the coming days. A holy day of obligation is marked. |
 | **Today's Event Agenda** | The council's events and meetings for today, with the time and the place. |
 | **Top 5 Fraternal Volunteers** | A navy card with a gold edge. The 5 active members of the council with the most hours logged at council events and activities in the current month, with their hours. |
+| **📿 Community Prayer Request List** | The council's open prayer intentions, newest first. Each intention shows who asked, how many brothers prayed, and *you prayed today* when you did. The card has no button. Pray and add intentions on the **Faith Center** page. |
 
 The **Top 5 Fraternal Volunteers** card counts only the current month. The card starts empty on the first day of each month. Members with equal hours share a place. The **Top 5 Volunteers Leaderboard** on the **Executive Dashboard** and the **Council Dashboard** counts all hours ever logged.
 
@@ -2848,7 +2851,7 @@ The **Top 5 Fraternal Volunteers** card counts only the current month. The card 
 
 The portal has no status badge strip and no **Oversight Desk**. Each queue shows its count on its own drawer tile, and a tile with work for you has a red border (section 19.3.2).
 
-The **Bible Verse of the Day** and the **Liturgical Feast Day Tracker** show only while the council's **Faith Center** module is on. A white-label organization does not see the two faith cards. **Home** then shows the other three cards.
+The **Bible Verse of the Day**, the **Liturgical Feast Day Tracker** and the **📿 Community Prayer Request List** show only while the council's **Faith Center** module is on. A white-label organization does not see the three faith cards. **Home** then shows the other four cards.
 
 ### 19.3 Concept: the desks
 
@@ -2978,7 +2981,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 > **Who can do this:** every signed-in member.
 
-**Goal:** Read the council's newsletters, the day's verse and feast, today's agenda and the month's top volunteers.
+**Goal:** Read the council's newsletters, the day's verse and feast, your reminders, today's agenda, the month's top volunteers and the prayer list.
 
 **Start point:** **Active Desks** row → **Home**.
 
@@ -2986,20 +2989,24 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 1. Select the **Home** tab. The portal opens on **Home** after you sign in.
 2. Read the **[ 📰 Latest Council Newsletters & Bulletins ]** card at the top. Select an older headline to open that newsletter.
 3. Read the **Bible Verse of the Day** and the **Liturgical Feast Day Tracker**.
-4. Read **Today's Event Agenda**. Select an event name to open the council calendar.
-5. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
-6. To sign up, log hours, read your reminders or pray for an intention, select the **Member Desk** tab (section 19.8).
-7. Officers and Admins: to see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
+4. Read **Live Actionable Reminders**. To act on a reminder, open your desk tab or the alert bell.
+5. Read **Today's Event Agenda**. Select an event name to open the council calendar.
+6. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
+7. Read the **📿 Community Prayer Request List**. To pray for an intention, open the **Faith Center** page.
+8. To sign up or log hours, select **[ 🙋 Member Actions ]** in the sidebar (section 19.8).
+9. Officers and Admins: to see the **Executive Summary**, select **Executive Dashboard** in the sidebar.
 
-**Expected result:** **Home** shows the five cards. Scroll the page to see the lower cards. **Home** has no sign-up, signature or prayer button.
+**Expected result:** **Home** shows the seven cards. Scroll the page to see the lower cards. **Home** has no sign-up, signature or prayer button, and no reminder link.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The verse and the feast tracker do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
+| The verse, the feast tracker and the prayer list do not show. | The council's **Faith Center** module is off, or the organization is white-label. | Ask a Super Admin to turn on **Faith Center** on the **Feature Flags** page. |
 | You look for the status badges. | The badges are gone. Each desk tile shows its own count and alert. | Select your desk tab (section 19.3.2). |
 | *"No member has logged hours this month yet."* | No active member of the council logged hours in the current month. | No action. The card fills when members log hours. |
-| You look for **Sign up**, the reminders or the prayer list. | These moved to the **Member Desk**. | Select the **Member Desk** tab (section 19.8). |
+| You look for **Sign up**. | Sign-ups are on the **Member Desk**. | Select **[ 🙋 Member Actions ]** in the sidebar (section 19.8). |
+| A reminder has no link. | **Home** is read only. | Open your desk tab or the alert bell. |
+| *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
 | *"No event or meeting today."* | The council calendar has nothing on today's date. | Open the council calendar to see coming events. |
 | The newsletter card does not show. | The council has no saved newsletter for this month or an earlier month. | Ask the Council Historian to write one (section 19.12). |
 
@@ -3112,12 +3119,12 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 
 > **Who can do this:** every signed-in member.
 
-**Goal:** Do your volunteer work: sign up for shifts, see your own shifts, sheets and charity requests, read your reminders, pray for an intention and log your hours.
+**Goal:** Do your volunteer work: sign up for shifts, see your own shifts, sheets and charity requests, and log your hours.
 
-**Start point:** **Active Desks** row → **Member Desk**.
+**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]**. Or: **Active Desks** row → **Member Desk**.
 
 **Steps:**
-1. Select the **Member Desk** tab. The two shift trackers are side by side at the top of the desk.
+1. Select **[ 🙋 Member Actions ]** in the sidebar. The **Member Desk** tab opens. The two shift trackers are side by side at the top of the desk.
 2. Read **[ 🚗 Open Shifts Needing Volunteers ]** on the left. The card lists the shifts in the next 30 days that still need volunteers, such as the parish parking lot shifts.
 3. Select **Sign up** on a shift to take a place. The shift leaves the card.
 4. Read **My shifts: next 30 days** on the right.
@@ -3125,11 +3132,9 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 6. Read **My open expense sheets**. The status pill shows the stage of each sheet.
 7. Select **Open my expenses** to edit a draft or submit a sheet.
 8. Select **Open the Council Dashboard** for the council's service record and your own impact card.
-9. Read **Live Actionable Reminders**. Select a reminder link to open its full desk page.
-10. Faith Center councils: in **📿 Community Prayer Request List**, select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
-11. At the foot of the desk, use the **🙋 Volunteer Check-In & Service Center**: select **My active shifts**, **Registration desk**, **Fraternal roster** or **Hour ledger**.
+9. At the foot of the desk, use the **🙋 Volunteer Check-In & Service Center**: select **My active shifts**, **Registration desk**, **Fraternal roster** or **Hour ledger**.
 
-**Expected result:** The desk lists the open shifts, your charity requests, each unpaid sheet and each coming shift. After **[ 🙏 Praying Hands ]**, the count goes up by 1 and the button is grey until tomorrow.
+**Expected result:** The desk lists the open shifts, your charity requests, each unpaid sheet and each coming shift. In the sidebar, **[ 🙋 Member Actions ]** is marked as the open page.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -3138,7 +3143,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 | A shift after 30 days does not show. | The desk lists the next 30 days only. | Open the council calendar. |
 | **[ 📥 My Charity Requests ]** does not show. | The council's charity proposals module is off. | Ask a Super Admin to turn on the module on the **Feature Flags** page. |
 | **Sign up** shows an error. | The shift is full, or the shift overlaps another of your shifts. | Pick another shift. |
-| *"You are all caught up. Nothing needs your action."* | No sheet waits for your signature, and you have no unread alert. | No action. |
+| You look for the reminders or the prayer list. | They are read-only cards on **Home**. | Select **Home**. |
 
 ### 19.9 Concept: the minutes countdown
 

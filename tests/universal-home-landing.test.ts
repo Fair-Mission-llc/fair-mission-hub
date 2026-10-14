@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ALL_FEATURES_ON,
+  MEMBER_ACTIONS_HREF,
+  MEMBER_ACTIONS_NAV_LABEL,
   dashboardTabsFor,
   HOME_UNIVERSAL_CARDS,
   MEMBER_DESK_SECTIONS,
@@ -46,8 +48,8 @@ function detailsBlocks(markdown: string): { open: boolean; summary: string }[] {
 describe('schema version 91', () => {
   it('moves the phone database to 91 with no table change', () => {
     expect(read('Schema.sql')).toContain('(schema version 91)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 91;');
-    expect(PLATFORM_SCHEMA_VERSION).toBe(91);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[1-9]);/);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(91);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 91 | 8R |');
   });
 });
@@ -78,7 +80,7 @@ describe('the universal Home landing', () => {
 });
 
 describe('Member Actions folded into Home', () => {
-  it('deletes the route and leaves no link to it', () => {
+  it('deletes the route and leaves no link to it (Sprint 8S: the sidebar item opens the Member Desk tab)', () => {
     expect(existsSync(join(__dirname, '..', 'apps/web/app/member-actions'))).toBe(false);
     for (const file of [
       'apps/web/components/Sidebar.tsx',
@@ -89,7 +91,7 @@ describe('Member Actions folded into Home', () => {
       'packages/shared/src/permissions.ts',
       'packages/shared/src/navigation-guide.ts',
     ]) {
-      expect(read(file), file).not.toMatch(/['"`]\/?member-actions['"`]/);
+      expect(read(file), file).not.toMatch(/['"`]\/member-actions['"`]/);
     }
   });
 
@@ -101,7 +103,6 @@ describe('Member Actions folded into Home', () => {
     expect(trackers).toBeGreaterThan(-1);
     expect(memberDesk.indexOf('<OpenShiftsCard user={user} />')).toBeGreaterThan(trackers);
     expect(memberDesk.indexOf('<VolunteerCenter />')).toBeGreaterThan(memberDesk.indexOf('<OpenShiftsCard user={user} />'));
-    expect(memberDesk.indexOf('<ReminderStream user={user}')).toBeGreaterThan(trackers);
     const vc = read('apps/web/components/VolunteerCenter.tsx');
     expect(vc).toContain("export const VOLUNTEER_CENTER_ID = 'volunteer-center';");
     for (const tab of ['My active shifts', 'Registration desk', 'Fraternal roster', 'Hour ledger']) expect(vc).toContain(`label: '${tab}'`);
@@ -158,9 +159,8 @@ describe('the purely informational Home (Sprint 8R Corrected)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     const rendered = [...grid.matchAll(/<([A-Z]\w+) /g)].map((m) => m[1]);
-    expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard']);
-    expect(HOME_UNIVERSAL_CARDS).toEqual(['Latest Council Newsletters & Bulletins', 'Bible Verse of the Day', 'Liturgical Feast Day Tracker', "Today's Event Agenda", 'Top 5 Fraternal Volunteers']);
-    for (const card of ['VerseOfTheDay', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard']) {
+    expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard', 'CommunityPrayerCard']);
+    for (const card of ['VerseOfTheDay', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard', 'ReminderStream', 'CommunityPrayerCard']) {
       const start = desks.indexOf(`function ${card}(`);
       const body = desks.slice(start, desks.indexOf('\n}\n', start));
       expect(body, card).not.toMatch(/<Button|onClick=/);
@@ -176,7 +176,8 @@ describe('the purely informational Home (Sprint 8R Corrected)', () => {
     const top = memberDesk.slice(memberDesk.indexOf('aria-label="Shift trackers"'), memberDesk.indexOf('</div>'));
     expect(top).toContain('<OpenShiftsCard user={user} />');
     expect(top).toContain('<Panel className="h-full" title={`My shifts: next');
-    expect(memberDesk).toContain('<CommunityPrayerCard user={user} councilId={user.councilId} />');
+    expect(memberDesk).not.toContain('<CommunityPrayerCard');
+    expect(memberDesk).not.toContain('<ReminderStream');
     expect(dashboardTabsFor(plain, 1).map((t) => t.id)).toEqual(['home', 'member']);
   });
 });
@@ -228,5 +229,44 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
     expect(page.indexOf('map.categories.map(')).toBeLessThan(page.indexOf('id="desks"'));
     expect(page.indexOf('id="desks"')).toBeLessThan(page.indexOf('id="timings"'));
     expect(page.indexOf('id="timings"')).toBeLessThan(page.indexOf('id="phone"'));
+  });
+});
+
+// ---- Sprint 8S ---------------------------------------------------------------------------------------------
+
+describe('Sprint 8S: the Member Actions sidebar link and the read-only Home cards', () => {
+  it('moves the phone database to 92', () => {
+    expect(read('Schema.sql')).toContain('(schema version 92)');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 92;');
+    expect(PLATFORM_SCHEMA_VERSION).toBe(92);
+    expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 92 | 8S |');
+  });
+
+  it("gives every member '[ 🙋 Member Actions ]' right after Home, opening the Member Desk tab", () => {
+    expect(MEMBER_ACTIONS_NAV_LABEL).toBe('[ 🙋 Member Actions ]');
+    expect(MEMBER_ACTIONS_HREF).toBe('/dashboard#member');
+    expect(portalAreaHref('member-actions')).toBe(MEMBER_ACTIONS_HREF);
+    for (const u of READERS) {
+      const faith = portalSidebar(u).find((g) => g.id === 'faith')!.entries.map((e) => e.item as string);
+      expect(faith.indexOf('member-actions')).toBe(faith.indexOf('home') + 1);
+    }
+    const sidebar = read('apps/web/components/Sidebar.tsx');
+    expect(sidebar).toContain("'member-actions': { href: '/dashboard#member', label: '[ 🙋 Member Actions ]'");
+    expect(sidebar).toContain("home: { href: '/dashboard#home', label: 'Home'");
+    expect(dashboardTabsFor(plain, 1).map((t) => t.anchor)).toContain('member');
+    expect(NAVIGATION_ITEM_CATEGORY['member-actions']).toBe('dashboard');
+    expect(navigationGuideMap(plain).categories[0].entries.map((e) => e.item)).toEqual(expect.arrayContaining(['home', 'member-actions']));
+  });
+
+  it('strips links and buttons from the Home reminders and prayer cards', () => {
+    const desks = read('apps/web/components/DashboardDesks.tsx');
+    for (const card of ['ReminderStream', 'CommunityPrayerCard']) {
+      const start = desks.indexOf(`function ${card}(`);
+      const body = desks.slice(start, desks.indexOf('\n}\n', start));
+      expect(body, card).not.toMatch(/<Link|<Button|onClick=|db\.prayers\.pray/);
+      expect(body, card).toContain('Read only.');
+    }
+    expect(desks).not.toContain('function PrayerRequestRow(');
+    expect(MEMBER_DESK_SECTIONS).not.toContain('Live Actionable Reminders');
   });
 });

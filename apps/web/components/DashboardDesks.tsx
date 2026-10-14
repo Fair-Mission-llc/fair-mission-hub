@@ -67,7 +67,6 @@ import {
   addDays,
   awaitsWrittenOrder,
   buildReminderStream,
-  isFraternalTenant,
   bulletinMonthOf,
   COMMUNITY_PRAYER_CARD_TITLE,
   councilWideSettings,
@@ -83,7 +82,6 @@ import {
   canDisburseCharity,
   type DeskDrawerId,
   describePrayerCount,
-  PRAYING_HANDS_LABEL,
   type PrayerIntentionDetail,
   describeError,
   driveFileViewUrl,
@@ -246,6 +244,10 @@ function FeastDayTracker({ today }: { today: string }) {
   );
 }
 
+/**
+ * The Live Actionable Reminders card on Home. Sprint 8S: read only - each reminder is plain text, with no link into a
+ * desk; the reader acts from the desk tab or the alert bell.
+ */
 function ReminderStream({ user, councilId }: { user: SessionUser; councilId: number }) {
   const { alertsVersion } = useSession();
   const stream = useLoad(async () => {
@@ -271,13 +273,13 @@ function ReminderStream({ user, councilId }: { user: SessionUser; councilId: num
         <ul className="flex flex-col gap-1.5" aria-label="Actionable reminders">
           {rows.map((r) => (
             <li key={r.key} className={cx('rounded border-l-4 bg-white px-2 py-1 ring-1 ring-line', r.priority === 'High' ? 'border-brand-red' : r.priority === 'Medium' ? 'border-gold' : 'border-line')}>
-              <p className="font-bold">{r.href ? <Link href={r.href} className="underline">{r.title}</Link> : r.title}</p>
+              <p className="font-bold">{r.title}</p>
               <p className="text-sm">{r.detail}</p>
             </li>
           ))}
         </ul>
       ) : null}
-      <p className="mt-2 text-xs text-muted">Refreshes every minute. The alert bell keeps the full six-month log.</p>
+      <p className="mt-2 text-xs text-muted">Read only. Refreshes every minute. Act on a reminder from your desk tab; the alert bell keeps the full six-month log.</p>
     </HomeCard>
   );
 }
@@ -349,70 +351,39 @@ function TopVolunteersCard({ user, councilId }: { user: SessionUser; councilId: 
  * The Home tab's card grid (Sprint 8D/8E: the universal cards, HOME_UNIVERSAL_CARDS, and nothing else). Sprint 8P Stage
  * 1: wide tiles - two across, three across on very wide screens with the faith cards - that grow with their content. The verse and the feast tracker come only with the Faith Center and a fraternal tenant.
  */
-/** One intention on the Home prayer card: its text, who asked, and the one-tap Praying Hands counter. */
-function PrayerRequestRow({ user, item }: { user: SessionUser; item: PrayerIntentionDetail }) {
-  const [count, setCount] = useState(item.prayerCount);
-  const [prayed, setPrayed] = useState(item.prayedByMeToday);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const pray = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const tally = await db.prayers.pray(user.memberId, item.intention.id);
-      setCount(tally.prayerCount);
-      setPrayed(tally.prayedByMeToday);
-    } catch (err) {
-      setError(describeError(err));
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <li className="border-t border-line py-1.5 first:border-t-0 first:pt-0">
-      <p>{item.intention.intention_text}</p>
-      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-        <span className="text-muted">
-          {formatPersonName(item.authorFirstName, item.authorLastName)} · {describePrayerCount(count)}
-        </span>
-        <Button size="sm" variant={prayed ? 'secondary' : 'gold'} disabled={busy || prayed} aria-pressed={prayed} onClick={() => void pray()}>
-          {PRAYING_HANDS_LABEL}
-        </Button>
-      </div>
-      {error ? <p className="text-xs text-brand-red">{error}</p> : null}
-    </li>
-  );
-}
-
-/** The '📿 Community Prayer Request List' card on Home (Sprint 8L): the council's open prayer intentions (prayers.getBoard). */
+/**
+ * The '📿 Community Prayer Request List' card on Home (Sprint 8L): the council's open prayer intentions (prayers.getBoard).
+ * Sprint 8S: read only - each intention, who asked and how many brothers prayed, with no Praying Hands button and no
+ * link; members pray and post intentions on the Faith Center page.
+ */
 function CommunityPrayerCard({ user, councilId }: { user: SessionUser; councilId: number }) {
   const board = useLoad(() => db.prayers.getBoard(user.memberId, councilId), [user.memberId, councilId]);
   const rows = board.data?.intentions ?? [];
   return (
-    <HomeCard
-      title={COMMUNITY_PRAYER_CARD_TITLE}
-      actions={
-        <Link href="/faith-center" className="text-xs font-bold underline">
-          Add an intention
-        </Link>
-      }
-    >
+    <HomeCard title={COMMUNITY_PRAYER_CARD_TITLE}>
       {board.error ? <Notice tone="error">{board.error}</Notice> : null}
-      {board.data && rows.length === 0 ? <Empty>No open prayer intentions. Add one from the Faith Center.</Empty> : null}
+      {board.data && rows.length === 0 ? <Empty>No open prayer intentions.</Empty> : null}
       <ul aria-label="Open prayer intentions">
         {rows.map((item) => (
-          <PrayerRequestRow key={item.intention.id} user={user} item={item} />
+          <li key={item.intention.id} className="border-t border-line py-1.5 first:border-t-0 first:pt-0">
+            <p>{item.intention.intention_text}</p>
+            <p className="mt-1 text-xs text-muted">
+              {formatPersonName(item.authorFirstName, item.authorLastName)} · {describePrayerCount(item.prayerCount)}
+              {item.prayedByMeToday ? ' · you prayed today' : ''}
+            </p>
+          </li>
         ))}
       </ul>
+      <p className="mt-2 text-xs text-muted">Read only. Pray for an intention or add one on the Faith Center page.</p>
     </HomeCard>
   );
 }
 
 /**
- * Sprint 8R Corrected: Home is purely informational - council-wide feeds only, with no workflow button: the newsletters
- * feed, the verse and the feast tracker (with the Faith Center), today's agenda and the month's Top 5 Fraternal
- * Volunteers honor board. The reminders, the shift sign-ups, the prayer card's Praying Hands and the Volunteer Check-In
- * & Service Center live on the Member Desk.
+ * Sprint 8R Corrected: Home is purely informational, with no workflow button: the newsletters feed, the verse and the
+ * feast tracker (with the Faith Center), today's agenda and the month's Top 5 Fraternal Volunteers honor board. Sprint
+ * 8S: the reminders and the prayer list are back as read-only cards (no buttons, no links into the desks). The shift
+ * sign-ups and the Volunteer Check-In & Service Center live on the Member Desk.
  */
 export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; councilId: number; faithOn: boolean }) {
   const today = toIsoDate(new Date());
@@ -420,9 +391,11 @@ export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; c
     <div className={cx('grid grid-cols-1 gap-6 lg:grid-cols-2', faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2')}>
       <LatestBulletinsFeed memberId={user.memberId} councilId={councilId} className="col-span-full" />
       {faithOn ? <VerseOfTheDay today={today} /> : null}
+      <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
       <TodaysAgenda councilId={councilId} today={today} />
       <TopVolunteersCard user={user} councilId={councilId} />
+      {faithOn ? <CommunityPrayerCard user={user} councilId={councilId} /> : null}
     </div>
   );
 }
@@ -870,12 +843,12 @@ function MyCharityRequestsCard({ user }: { user: SessionUser }) {
  */
 /**
  * The Member Desk: every member's volunteer tracking. The two shift trackers sit side by side, equal height, across the
- * top row; then the charity and expense cards, the reminders and (with the Faith Center) the prayer card; then the
- * Volunteer Check-In & Service Center (Sprint 8R Corrected: moved here from Home, which stays informational).
+ * top row; then the charity and expense cards; then the Volunteer Check-In & Service Center (Sprint 8R Corrected: moved
+ * here from Home, which stays informational). Sprint 8S: the sidebar's '[ 🙋 Member Actions ]' link opens this tab; the
+ * reminders and the prayer list went back to Home as read-only cards.
  */
 export function MemberDesk({ user }: { user: SessionUser }) {
   const flags = useFeatureFlags();
-  const faithOn = flags.feature_faith_center && isFraternalTenant(useTenantType());
   const today = toIsoDate(new Date());
   const through = toIsoDate(new Date(Date.now() + MEMBER_DESK_SHIFT_DAYS * 86_400_000));
   const sheets = useLoad(() => db.expenses.listUserReports(user.memberId), [user.memberId]);
@@ -932,10 +905,6 @@ export function MemberDesk({ user }: { user: SessionUser }) {
             </p>
           </Panel>
         </DeskRow>
-      </div>
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        <ReminderStream user={user} councilId={user.councilId} />
-        {faithOn ? <CommunityPrayerCard user={user} councilId={user.councilId} /> : null}
       </div>
       <VolunteerCenter />
     </div>
