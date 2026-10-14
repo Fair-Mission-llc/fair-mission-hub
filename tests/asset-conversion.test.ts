@@ -128,7 +128,7 @@ describe('schema 43: ExpenseReport.is_long_term_asset and CouncilAssetsInventory
     ]);
     expect(TABLES.CouncilAssetsInventory.columns.find((c) => c.name === 'current_status')).toMatchObject({ default: { kind: 'literal', value: 'ACTIVE' } });
     expect(TABLES.ExpenseReport.columns.find((c) => c.name === 'is_long_term_asset')).toMatchObject({ notNull: true, default: { kind: 'literal', value: 0 } });
-    expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('CREATE TABLE [CouncilAssetsInventory]');
+    expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('CREATE TABLE IF NOT EXISTS [CouncilAssetsInventory]');
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[3-9]|[5-9]\d);/);
     expect(read('data_dictionary.md')).toContain('[CouncilAssetsInventory]');
   });

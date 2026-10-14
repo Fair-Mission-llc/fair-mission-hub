@@ -65,7 +65,7 @@ describe('schema version 79', () => {
       expect(schema).toContain(col);
     }
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (79|8\d|9\d);/);
-    expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('CREATE TABLE [CouncilOperationsKnowledge]');
+    expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('CREATE TABLE IF NOT EXISTS [CouncilOperationsKnowledge]');
     expect(read('Seed.sql')).toContain('INSERT INTO [CouncilOperationsKnowledge]');
   });
 

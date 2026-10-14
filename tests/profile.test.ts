@@ -12,7 +12,7 @@ describe('profile photo and biography columns', () => {
   });
 
   it('are in the generated SQLite Member table', () => {
-    const member = SCHEMA_STATEMENTS.find((s) => s.startsWith('CREATE TABLE [Member] ('))!;
+    const member = SCHEMA_STATEMENTS.find((s) => s.startsWith('CREATE TABLE IF NOT EXISTS [Member] ('))!;
     expect(member).toContain('[ProfilePhotoURL] TEXT');
     expect(member).toContain('[Biography] TEXT');
   });

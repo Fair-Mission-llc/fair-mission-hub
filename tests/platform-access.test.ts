@@ -103,7 +103,7 @@ describe('Schema 66', () => {
     expect(TABLES.JournalEntry.columns.map((c) => c.name)).not.toContain('payment_method');
     expect(TABLES.JournalEntry.columns.find((c) => c.name === 'payment_method_id')).toMatchObject({ kind: 'int', notNull: false });
     expect(TABLES.JournalEntry.foreignKeys).toContainEqual({ column: 'payment_method_id', refTable: 'DonationMethod', refColumn: 'id' });
-    const phone = SCHEMA_STATEMENTS.find((s) => s.startsWith('CREATE TABLE [JournalEntry]'))!;
+    const phone = SCHEMA_STATEMENTS.find((s) => s.startsWith('CREATE TABLE IF NOT EXISTS [JournalEntry]'))!;
     expect(phone).toContain('[payment_method_id] INTEGER');
     expect(phone).toContain('FOREIGN KEY ([payment_method_id]) REFERENCES [DonationMethod]([id])');
     expect(phone).not.toContain('CHECK');

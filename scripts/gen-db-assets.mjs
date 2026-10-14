@@ -255,7 +255,7 @@ function sqliteCreateTable(name, t) {
   const identityPk = t.columns.some((c) => c.identity);
   if (!identityPk) lines.push(`  PRIMARY KEY (${t.pk.map((c) => `[${c}]`).join(', ')})`);
   for (const fk of t.fks) lines.push(`  FOREIGN KEY ([${fk.column}]) REFERENCES [${fk.refTable}]([${fk.refColumn}])`);
-  return `CREATE TABLE [${name}] (\n${lines.join(',\n')}\n);`;
+  return `CREATE TABLE IF NOT EXISTS [${name}] (\n${lines.join(',\n')}\n);`;
 }
 
 function sqliteSchemaStatements({ tables, indexes, views }) {
@@ -263,7 +263,7 @@ function sqliteSchemaStatements({ tables, indexes, views }) {
   for (const [name, t] of tables) out.push(sqliteCreateTable(name, t));
   for (const ix of indexes) {
     const filter = ix.notNullColumn ? ` WHERE [${ix.notNullColumn}] IS NOT NULL` : '';
-    out.push(`CREATE ${ix.unique ? 'UNIQUE ' : ''}INDEX [${ix.name}] ON [${ix.table}] (${ix.columns})${filter};`);
+    out.push(`CREATE ${ix.unique ? 'UNIQUE ' : ''}INDEX IF NOT EXISTS [${ix.name}] ON [${ix.table}] (${ix.columns})${filter};`);
   }
   for (const v of views) {
     out.push(`DROP VIEW IF EXISTS [${v.name}];`);
