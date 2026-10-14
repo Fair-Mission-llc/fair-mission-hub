@@ -97,7 +97,7 @@ describe('the seat desks (pure)', () => {
   it('opens /dashboard to the Historian, and the lookup page to Super Admins only', () => {
     const historian = seat({ roles: [COUNCIL_HISTORIAN_ROLE] });
     expect(portalAreas(historian)).toContain('dashboard');
-    expect(landingRouteFor(historian)).toBe('/dashboard');
+    expect(landingRouteFor(historian)).toBe('/dashboard#home');
     expect(portalAreas(seat())).not.toContain('dashboard');
     expect(canOpenImpersonationLookup(seat({ memberType: 'Super Admin' }))).toBe(true);
     expect(canOpenImpersonationLookup(seat({ memberType: 'Admin' }))).toBe(false);

@@ -88,8 +88,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 <details open>
 <summary>📍 Overview — read this first</summary>
 
-- After you sign in, the portal opens on **Home**. **Home** is read only: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list.
-- Your own work is on the **Member Desk**. Select **[ 🙋 Member Actions ]** in the sidebar to open it: the shift trackers, sign-ups and the **🙋 Volunteer Check-In & Service Center** with the roster and your hours.
+- Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **[ 🙏 Praying Hands ]** on the prayer list to pray for an intention.
+- Your own work is on the **Member Actions** page. Select **[ 🙋 Member Actions ]** in the sidebar to open it: the shift trackers, sign-ups, your charity requests and sheets, and the **🙋 Volunteer Check-In & Service Center** with the roster and your hours.
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
@@ -101,8 +101,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Home** | Faith In Action | Read only: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list |
-| **[ 🙋 Member Actions ]** | Faith In Action | Opens the **Member Desk**: your shifts, sign-ups, the roster and your hours |
+| **Home** | Faith In Action | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **[ 🙏 Praying Hands ]** |
+| **[ 🙋 Member Actions ]** | Faith In Action | Its own page: your shifts, sign-ups, charity requests, sheets, the roster and your hours |
 | **Council Dashboard** | Performance | Your impact and the council's engagement |
 
 </details>

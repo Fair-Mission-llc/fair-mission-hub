@@ -3803,3 +3803,14 @@ GO
 -- Request List are back on Home as read-only cards: no buttons and no links into the desks. The phone database version
 -- moves to 92.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8S Corrected: STANDALONE MEMBER ACTIONS, FORCED HOME LOGINS AND HOME PRAYER BUTTONS (schema version 93)
+--
+-- No table changes. The sidebar's '[ 🙋 Member Actions ]' opens its own page again, /member-actions, which mounts the
+-- Member Desk's volunteer grids: the open-shift and my-shift trackers side by side at equal height, the charity
+-- requests, the open expense sheets and the Volunteer Check-In & Service Center. Every sign-in, the portal root and a
+-- view-as session land on /dashboard#home (HOME_LANDING_ROUTE), whatever dashboard tab the browser remembers. The Home
+-- Community Prayer Request List carries the '[ 🙏 Praying Hands ]' button again; the reminders stay read only. The
+-- phone database version moves to 93.
+-- =========================================================================

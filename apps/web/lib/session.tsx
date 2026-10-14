@@ -2,12 +2,14 @@
 // Signed-in member and startup state for the admin portal.
 // The memory driver lives in the browser tab (see services/db.ts), so a reload starts a fresh seeded
 // database and asks for sign-in again. That is the mock; the remote driver will hold real sessions.
+import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ALL_FEATURES_ON,
   councilFeatureFlags,
   councilTenantType,
   DEFAULT_TENANT_TYPE,
+  HOME_LANDING_ROUTE,
   impersonationCouncilContext,
   registerCouncilGates,
   type Council,
@@ -85,14 +87,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = useCallback(async (username: string, password: string) => {
-    const found = await db.auth.signIn(username.trim(), password);
-    // Sprint 6Z-Engine-Upgrade: the server checks the same credentials and sets its own session cookie, which its Drive
-    // vault, Supreme and email routes require. A member it does not know (added in this tab) simply gets no cookie.
-    if (found) await openServerSession(username.trim(), password);
-    setUser(found);
-    return found !== null;
-  }, []);
+  const router = useRouter();
+  const signIn = useCallback(
+    async (username: string, password: string) => {
+      const found = await db.auth.signIn(username.trim(), password);
+      // Sprint 6Z-Engine-Upgrade: the server checks the same credentials and sets its own session cookie, which its Drive
+      // vault, Supreme and email routes require. A member it does not know (added in this tab) simply gets no cookie.
+      if (found) await openServerSession(username.trim(), password);
+      setUser(found);
+      // Sprint 8S Corrected: every sign-in lands on the informational Home tab (/dashboard#home), never on the page or the
+      // dashboard tab this browser had open before.
+      if (found) router.replace(HOME_LANDING_ROUTE);
+      return found !== null;
+    },
+    [router],
+  );
   const [impersonator, setImpersonator] = useState<SessionUser | null>(null);
   const [viewAsCouncil, setViewAsCouncil] = useState<{ label: string; crossCouncil: boolean } | null>(null);
   const [loadedFeatures, setLoadedFeatures] = useState<{ councilId: number; flags: FeatureFlags; tenantType: TenantType } | null>(null);

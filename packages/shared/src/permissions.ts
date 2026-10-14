@@ -91,12 +91,11 @@ export type PortalArea =
   | 'profile';
 
 /** Areas served from a route other than `/${area}`: the budget center lives at /budget (Sprint 5Y-2). */
-// Sprint 8R: 'home' is the universal Home tab of /dashboard, every signed-in member's landing page. Sprint 8S:
-// 'member-actions' is the sidebar's '[ 🙋 Member Actions ]' link, which opens the Member Desk tab of the same page.
+// Sprint 8R: 'home' is the universal Home tab of /dashboard, every signed-in member's landing page. Sprint 8S Corrected:
+// 'member-actions' is its own page again, /member-actions (the default route), so it needs no entry here.
 export const PORTAL_AREA_ROUTES: Partial<Record<PortalArea, string>> = {
   'financials/budget': '/budget',
   home: '/dashboard',
-  'member-actions': '/dashboard#member',
 };
 
 /** The route of a portal area. */
@@ -678,7 +677,7 @@ export const canDesignateBudgetDirector = (u: Actor, member: Pick<Member, 'Counc
 export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, tenant: TenantType = DEFAULT_TENANT_TYPE): PortalArea[] {
   // Sprint 8R: every signed-in member opens Home (/dashboard), which holds the volunteer tools the Member Actions page
   // used to; Admins and Super Admins volunteer too. Then the shared views.
-  // Sprint 8S: '[ 🙋 Member Actions ]' (the Member Desk tab, /dashboard#member) is back in every member's sidebar.
+  // Sprint 8S: '[ 🙋 Member Actions ]' is back in every member's sidebar; Sprint 8S Corrected: as its own page, /member-actions.
   const areas: PortalArea[] = ['home', 'member-actions', 'calendar', 'gallery'];
   if (canMaintainLookups(u)) areas.push('lookups');
   if (canMaintainCouncils(u)) areas.push('councils');

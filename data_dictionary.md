@@ -1186,3 +1186,7 @@ ________________________________________
 Schema version 92; no table change; the phone database version moves to 92.
 Rules. The portal area 'member-actions' is back for every member as the sidebar's '[ 🙋 Member Actions ]' link (MEMBER_ACTIONS_NAV_LABEL), right after Home in the Faith In Action pillar; it has no page of its own and routes to the Member Desk tab, /dashboard#member (PORTAL_AREA_ROUTES, MEMBER_ACTIONS_HREF). The Live Actionable Reminders and the Community Prayer Request List are back on Home (HOME_UNIVERSAL_CARDS) as read-only cards: no buttons and no links into the desks. Praying and posting intentions stay on the Faith Center page.
 ________________________________________
+# 49. Standalone Member Actions, Forced Home Logins and the Home Praying Hands (Sprint 8S Corrected)
+Schema version 93; no table change; the phone database version moves to 93.
+Rules. The 'member-actions' portal area is its own page again, /member-actions (MEMBER_ACTIONS_HREF), mounting the Member Desk's volunteer grids; the Member Desk tab of /dashboard shows the same grids. HOME_LANDING_ROUTE is /dashboard#home: the portal root, every successful sign-in (SessionProvider.signIn) and a view-as session land there, and the URL anchor wins over the dashboard tab the browser remembers. The Home Community Prayer Request List calls prayers.pray from its '[ 🙏 Praying Hands ]' button (once a day per member and intention); the Live Actionable Reminders stay read only.
+________________________________________

@@ -203,12 +203,12 @@ describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
     expect(tabs).toContain('border-t-[6px] border-t-gold');
   });
 
-  it('sends officers, Admins and (Sprint 8R) plain members to /dashboard', () => {
+  it('sends officers, Admins and (Sprint 8R) plain members to /dashboard#home (Sprint 8S Corrected: the anchor forces Home)', () => {
     const plain = { memberId: 1, councilId: 1, memberType: 'Member' as const, isOfficer: false };
-    expect(landingRouteFor(plain)).toBe('/dashboard');
-    expect(landingRouteFor({ ...plain, isOfficer: true, roles: ['Recorder'] })).toBe('/dashboard');
-    expect(landingRouteFor({ ...plain, memberType: 'Admin' })).toBe('/dashboard');
-    expect(landingRouteFor({ ...plain, memberType: 'Super Admin' })).toBe('/dashboard');
+    expect(landingRouteFor(plain)).toBe('/dashboard#home');
+    expect(landingRouteFor({ ...plain, isOfficer: true, roles: ['Recorder'] })).toBe('/dashboard#home');
+    expect(landingRouteFor({ ...plain, memberType: 'Admin' })).toBe('/dashboard#home');
+    expect(landingRouteFor({ ...plain, memberType: 'Super Admin' })).toBe('/dashboard#home');
   });
 
   it('keeps queues and forms off Home: only the universal widgets, with the badges and the summary elsewhere', () => {

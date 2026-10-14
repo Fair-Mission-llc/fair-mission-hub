@@ -139,8 +139,9 @@ export const EXECUTIVE_DASHBOARD_HREF = '/executive-dashboard';
  * Sprint 8R Corrected: Home is purely informational - council-wide feeds with no workflow button. The Live Actionable
  * Reminders, the Open Volunteer Shifts sign-ups and the Community Prayer Request List (Praying Hands) moved to the
  * Member Desk with the Volunteer Check-In & Service Center (MEMBER_DESK_SECTIONS).
- * Sprint 8S: the reminders and the prayer list are back on Home as read-only cards - no buttons and no links into the
- * desks; the sign-ups and the Praying Hands stay on the Member Desk and the Faith Center.
+ * Sprint 8S: the reminders and the prayer list are back on Home - the reminders read only, with no links into the
+ * desks. Sprint 8S Corrected: the prayer list carries the '[ 🙏 Praying Hands ]' button again; the shift sign-ups stay
+ * on the Member Actions page.
  */
 export const HOME_UNIVERSAL_CARDS = [
   'Latest Council Newsletters & Bulletins',
@@ -152,9 +153,12 @@ export const HOME_UNIVERSAL_CARDS = [
   'Community Prayer Request List',
 ] as const;
 
-/** Sprint 8S: the sidebar link that opens the Member Desk tab (the 'member-actions' portal area). */
+/**
+ * Sprint 8S: the sidebar link of the 'member-actions' portal area. Sprint 8S Corrected: it opens the standalone Member
+ * Actions page again (/member-actions), which mounts the Member Desk's volunteer grids, instead of a dashboard tab.
+ */
 export const MEMBER_ACTIONS_NAV_LABEL = '[ 🙋 Member Actions ]';
-export const MEMBER_ACTIONS_HREF = '/dashboard#member';
+export const MEMBER_ACTIONS_HREF = '/member-actions';
 
 /** The Member Desk's sections, in display order (Sprint 8R Corrected); the first two share the top row at equal height. */
 export const MEMBER_DESK_SECTIONS = [
@@ -219,8 +223,11 @@ export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; 
   mine: { anchor: 'member', rowId: 'desk-row-my-sheets' },
 };
 
-/** Sprint 8R: every signed-in member's landing page - the universal Home tab of the Active Desks. */
-export const HOME_LANDING_ROUTE = '/dashboard';
+/**
+ * Sprint 8R: every signed-in member's landing page - the universal Home tab of the Active Desks. Sprint 8S Corrected:
+ * the '#home' anchor is part of the route, so a sign-in always opens Home and never the tab this browser opened last.
+ */
+export const HOME_LANDING_ROUTE = '/dashboard#home';
 
 /** The title of the Member Desk's volunteer section (components/VolunteerCenter.tsx), which replaced the Member Actions page. */
 export const VOLUNTEER_CENTER_TITLE = '🙋 Volunteer Check-In & Service Center';

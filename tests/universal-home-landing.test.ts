@@ -56,9 +56,9 @@ describe('schema version 91', () => {
 
 describe('the universal Home landing', () => {
   it('lands every reader on Home and gives every reader the Home tab first', () => {
-    expect(HOME_LANDING_ROUTE).toBe('/dashboard');
+    expect(HOME_LANDING_ROUTE).toBe('/dashboard#home');
     for (const u of READERS) {
-      expect(landingRouteFor(u)).toBe('/dashboard');
+      expect(landingRouteFor(u)).toBe('/dashboard#home');
       expect(portalAreas(u)[0]).toBe('home');
       expect(dashboardTabsFor(u, 1)[0].id).toBe('home');
     }
@@ -80,19 +80,14 @@ describe('the universal Home landing', () => {
 });
 
 describe('Member Actions folded into Home', () => {
-  it('deletes the route and leaves no link to it (Sprint 8S: the sidebar item opens the Member Desk tab)', () => {
-    expect(existsSync(join(__dirname, '..', 'apps/web/app/member-actions'))).toBe(false);
-    for (const file of [
-      'apps/web/components/Sidebar.tsx',
-      'apps/web/components/DashboardDesks.tsx',
-      'apps/web/app/calendar/page.tsx',
-      'apps/web/app/members/page.tsx',
-      'apps/web/app/system-settings/impersonate/page.tsx',
-      'packages/shared/src/permissions.ts',
-      'packages/shared/src/navigation-guide.ts',
-    ]) {
-      expect(read(file), file).not.toMatch(/['"`]\/member-actions['"`]/);
-    }
+  it('restores the standalone /member-actions page (Sprint 8S Corrected) on the Member Desk grids', () => {
+    const page = read('apps/web/app/member-actions/page.tsx');
+    expect(page).toContain('<RequireArea area="member-actions">');
+    expect(page).toContain('<MemberDesk user={user} />');
+    expect(page).toContain('<PageTitle>{MEMBER_ACTIONS_NAV_LABEL}</PageTitle>');
+    expect(read('apps/web/app/calendar/page.tsx')).toContain('<Link href="/member-actions"');
+    // A view-as session opens on Home with the anchor, like a sign-in.
+    for (const file of ['apps/web/app/members/page.tsx', 'apps/web/app/system-settings/impersonate/page.tsx']) expect(read(file)).toContain("router.push('/dashboard#home')");
   });
 
   it('puts the Volunteer Center on the Member Desk, under the twin shift trackers (Sprint 8R Corrected)', () => {
@@ -160,6 +155,7 @@ describe('the purely informational Home (Sprint 8R Corrected)', () => {
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     const rendered = [...grid.matchAll(/<([A-Z]\w+) /g)].map((m) => m[1]);
     expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard', 'CommunityPrayerCard']);
+    // Sprint 8S Corrected: the prayer card's Praying Hands (in PrayerRequestRow) is the one button on Home.
     for (const card of ['VerseOfTheDay', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard', 'ReminderStream', 'CommunityPrayerCard']) {
       const start = desks.indexOf(`function ${card}(`);
       const body = desks.slice(start, desks.indexOf('\n}\n', start));
@@ -237,36 +233,61 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
 describe('Sprint 8S: the Member Actions sidebar link and the read-only Home cards', () => {
   it('moves the phone database to 92', () => {
     expect(read('Schema.sql')).toContain('(schema version 92)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 92;');
-    expect(PLATFORM_SCHEMA_VERSION).toBe(92);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[2-9]);/);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(92);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 92 | 8S |');
   });
 
-  it("gives every member '[ 🙋 Member Actions ]' right after Home, opening the Member Desk tab", () => {
+  it("gives every member '[ 🙋 Member Actions ]' right after Home (Sprint 8S Corrected: its own page)", () => {
     expect(MEMBER_ACTIONS_NAV_LABEL).toBe('[ 🙋 Member Actions ]');
-    expect(MEMBER_ACTIONS_HREF).toBe('/dashboard#member');
+    expect(MEMBER_ACTIONS_HREF).toBe('/member-actions');
     expect(portalAreaHref('member-actions')).toBe(MEMBER_ACTIONS_HREF);
     for (const u of READERS) {
       const faith = portalSidebar(u).find((g) => g.id === 'faith')!.entries.map((e) => e.item as string);
       expect(faith.indexOf('member-actions')).toBe(faith.indexOf('home') + 1);
     }
     const sidebar = read('apps/web/components/Sidebar.tsx');
-    expect(sidebar).toContain("'member-actions': { href: '/dashboard#member', label: '[ 🙋 Member Actions ]'");
+    expect(sidebar).toContain("'member-actions': { href: '/member-actions', label: '[ 🙋 Member Actions ]'");
     expect(sidebar).toContain("home: { href: '/dashboard#home', label: 'Home'");
     expect(dashboardTabsFor(plain, 1).map((t) => t.anchor)).toContain('member');
     expect(NAVIGATION_ITEM_CATEGORY['member-actions']).toBe('dashboard');
     expect(navigationGuideMap(plain).categories[0].entries.map((e) => e.item)).toEqual(expect.arrayContaining(['home', 'member-actions']));
   });
 
-  it('strips links and buttons from the Home reminders and prayer cards', () => {
+  it('keeps the Home reminders read only and gives the prayer card only its Praying Hands (Sprint 8S Corrected)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    for (const card of ['ReminderStream', 'CommunityPrayerCard']) {
+    const block = (card: string) => {
       const start = desks.indexOf(`function ${card}(`);
-      const body = desks.slice(start, desks.indexOf('\n}\n', start));
-      expect(body, card).not.toMatch(/<Link|<Button|onClick=|db\.prayers\.pray/);
-      expect(body, card).toContain('Read only.');
-    }
-    expect(desks).not.toContain('function PrayerRequestRow(');
+      return desks.slice(start, desks.indexOf('\n}\n', start));
+    };
+    expect(block('ReminderStream')).not.toMatch(/<Link|<Button|onClick=/);
+    expect(block('ReminderStream')).toContain('Read only.');
+    expect(block('CommunityPrayerCard')).not.toMatch(/<Link/);
+    expect(block('CommunityPrayerCard')).toContain('<PrayerRequestRow key={item.intention.id} user={user} item={item} />');
+    const row = block('PrayerRequestRow');
+    expect(row).toContain('db.prayers.pray(user.memberId, item.intention.id)');
+    expect(row).toContain('{PRAYING_HANDS_LABEL}');
+    expect(row).not.toMatch(/<Link/);
     expect(MEMBER_DESK_SECTIONS).not.toContain('Live Actionable Reminders');
+  });
+});
+
+// ---- Sprint 8S Corrected -----------------------------------------------------------------------------------
+
+describe('Sprint 8S Corrected: forced Home logins', () => {
+  it('moves the phone database to 93', () => {
+    expect(read('Schema.sql')).toContain('(schema version 93)');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 93;');
+    expect(PLATFORM_SCHEMA_VERSION).toBe(93);
+    expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 93 | 8S Corrected |');
+  });
+
+  it('lands every sign-in on /dashboard#home, whatever tab the browser remembers', () => {
+    const session = read('apps/web/lib/session.tsx');
+    expect(session).toContain('if (found) router.replace(HOME_LANDING_ROUTE);');
+    expect(read('apps/web/app/page.tsx')).toContain('redirect(landingRouteFor(user, features, tenantType))');
+    // The URL anchor wins over the remembered tab.
+    expect(read('apps/web/components/WorkspaceTabs.tsx')).toContain('window.location.hash || readLastTab()');
+    expect(dashboardTabsFor(plain, 1)[0].anchor).toBe(HOME_LANDING_ROUTE.split('#')[1]);
   });
 });

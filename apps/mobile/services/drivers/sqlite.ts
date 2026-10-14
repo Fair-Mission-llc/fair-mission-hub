@@ -922,8 +922,11 @@ const DB_NAME = 'kofc.db';
  * 92: no table change - the sidebar's '[ 🙋 Member Actions ]' link (the 'member-actions' area) opens the web portal's
  *     Member Desk tab again, and the reminders and the prayer list are read-only cards on Home (Sprint 8S); phones
  *     rebuild in step.
+ * 93: no table change - the web portal's standalone Member Actions page returns (/member-actions), every sign-in lands
+ *     on /dashboard#home, and the Home prayer list carries the Praying Hands button again (Sprint 8S Corrected); phones
+ *     rebuild in step.
  */
-const SCHEMA_VERSION = 92;
+const SCHEMA_VERSION = 93;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
