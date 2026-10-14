@@ -3835,3 +3835,27 @@ GO
 -- Tracker is now '[ 🗳️ Council Election Workflow ]', in the Planning & Budgeting Workflow's step layout. The phone
 -- database version moves to 95.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8S Revision 3: OUTGOING CHARITY COMPLIANCE PIPELINE AND THE OLD BUSINESS ENGINE (schema version 96)
+--
+-- The Charitable Donation Workflow drawers of the Financial Secretary, Treasurer and Grand Knight Desks track the
+-- council's money going OUT to charities: [ 📋 Member Charity Request ] > [ ✍️ FS/GK Compliance Endorsement ] >
+-- [ ⛪ Treasurer Check Settlement ] (charity-pipeline.ts). CharitableRequest gains the endorsement: who endorsed the
+-- voted-approved request for payment (the council's Financial Secretary, Grand Knight or Deputy Grand Knight, or a
+-- Super Admin; never its Knight Shepherd) and when. charities.payApprovedRequest refuses an unendorsed request and the
+-- officer who endorsed it. No backfill: a request approved before schema 96 waits for its endorsement.
+--
+-- No column for the Old Business engine (old-business.ts): the open '- [ ]' lines of last month's published
+-- Meeting.minutes_text are read live, listed on Home and written into the next meeting's minutes draft at launch.
+-- The phone database version moves to 96.
+-- =========================================================================
+ALTER TABLE [CharitableRequest] ADD [compliance_endorsed_by_member_id] INTEGER NULL;
+GO
+ALTER TABLE [CharitableRequest] ADD [compliance_endorsed_at] DATETIME NULL;
+GO
+ALTER TABLE [CharitableRequest]
+ADD FOREIGN KEY([compliance_endorsed_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO

@@ -5,7 +5,6 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  buildDonationWorkflow,
   buildElectionWorkflow,
   buildExpenseWorkflow,
   CHARITABLE_DONATION_WORKFLOW_TITLE,
@@ -13,7 +12,6 @@ import {
   COUNCIL_SETTINGS_BUCKETS,
   DESK_DRAWERS,
   deskDrawersFor,
-  donationWorkflowAlert,
   electionPhaseOf,
   erWorkflowAlert,
   EXPENSE_REPORT_WORKFLOW_TITLE,
@@ -65,10 +63,10 @@ describe('1. Council Wide Settings: two accordions, no text spill', () => {
     expect(read('apps/web/components/ui.tsx')).toContain('flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2');
   });
 
-  it('moves the phone database to 95', () => {
+  it('moved the phone database to 95 (96 since Sprint 8S Revision 3)', () => {
     expect(read('Schema.sql')).toContain('(schema version 95)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 95;');
-    expect(PLATFORM_SCHEMA_VERSION).toBe(95);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[5-9]|\d{3});/);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(95);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 95 | 8S Revision 2 |');
   });
 });
@@ -110,31 +108,15 @@ describe('2. the ER and donation workflow drawers on both finance desks', () => 
     expect(erWorkflowAlert(TREASURER, 'treasurer', [NEEDS_GK])).toBe(false);
   });
 
-  it('walks a gift from recording to coding to the cash box close', () => {
-    const t = buildDonationWorkflow('treasurer', { uncoded: 3, openCashBoxes: 1 });
-    expect(t.steps.map((s) => [s.key, s.state, s.yours])).toEqual([
-      ['record', 'done', false],
-      ['code', 'current', true],
-      ['close', 'upcoming', true],
-    ]);
-    expect(t.waiting).toBe(4);
-    expect(buildDonationWorkflow('treasurer', { uncoded: 0, openCashBoxes: 0 }).headline).toBe('Every gift is coded and every cash box is closed.');
-    const fs = buildDonationWorkflow('financial-secretary', { uncoded: null, openCashBoxes: null });
-    expect(fs.steps[0]).toMatchObject({ key: 'record', state: 'current', yours: true });
-    expect(fs.waiting).toBeNull();
-    expect(donationWorkflowAlert(TREASURER, OWN, 'treasurer', 4)).toBe(true);
-    expect(donationWorkflowAlert(TREASURER, OWN, 'treasurer', 0)).toBe(false);
-    expect(donationWorkflowAlert(FS, OWN, 'financial-secretary', 4)).toBe(false);
-  });
-
   it('works each step in place on both desks', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks).toContain('<ExpenseReportWorkflow desk="financial-secretary"');
     expect(desks).toContain('<ExpenseReportWorkflow desk="treasurer"');
-    expect(desks).toContain('<CharitableDonationWorkflow desk="financial-secretary"');
-    expect(desks).toContain('<CharitableDonationWorkflow desk="treasurer"');
+    // Sprint 8S Revision 3: the donation drawer became the outgoing charity pipeline (tests/outgoing-charity-old-business.test.ts).
+    expect(desks).toContain("useCharityPipeline(user, councilId, 'financial-secretary'");
+    expect(desks).toContain("useCharityPipeline(user, councilId, 'treasurer'");
     const parts = read('apps/web/components/FinanceWorkflowParts.tsx');
-    for (const mounted of ['<PaymentRequestDesk />', '<LedgerLineCoder />', '<ExpenseSettlement />', '<ExpenseRoutingTrack />', '<DonationRecords />', '<BatchTransactionCoder ', '<CashBoxAuditPanel ']) {
+    for (const mounted of ['<PaymentRequestDesk />', '<LedgerLineCoder />', '<ExpenseSettlement />', '<ExpenseRoutingTrack />', '<CharityCheckConsole />']) {
       expect(parts).toContain(mounted);
     }
   });

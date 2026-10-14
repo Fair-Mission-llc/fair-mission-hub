@@ -108,7 +108,7 @@ describe('Home holds only the universal cards', () => {
       'Bible Verse of the Day',
       'Live Actionable Reminders',
       'Liturgical Feast Day Tracker',
-      "Today's Event Agenda",
+      'Upcoming Event Agenda',
       'Top 5 Fraternal Volunteers',
       'Community Prayer Request List',
     ]);
@@ -118,7 +118,7 @@ describe('Home holds only the universal cards', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     const rendered = [...grid.matchAll(/<([A-Z]\w+) /g)].map((m) => m[1]);
-    expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard', 'CommunityPrayerCard']);
+    expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'UpcomingEventAgenda', 'TopVolunteersCard', 'CommunityPrayerCard']);
     // Sprint 8P Stage 1: wide tiles - two across, three across on very wide screens with the faith cards.
     expect(grid).toContain("faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2'");
     expect(desks).toContain('title={`Top ${LEADERBOARD_SIZE} Fraternal Volunteers`}');

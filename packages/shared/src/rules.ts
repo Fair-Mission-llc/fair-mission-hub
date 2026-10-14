@@ -151,7 +151,11 @@ export type BusinessRuleCode =
   | 'PARISH_SPLIT_GL_LINE_REQUIRED'
   | 'PARISH_SPLIT_DISABLED'
   | 'COLLECTION_SESSION_CONCLUDED'
-  | 'DONATION_ALREADY_CODED';
+  | 'DONATION_ALREADY_CODED'
+  | 'CHARITY_ENDORSER_REQUIRED'
+  | 'SELF_ENDORSEMENT_BLOCKED'
+  | 'CHARITY_ENDORSEMENT_REQUIRED'
+  | 'ENDORSER_PAYOUT_BLOCKED';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {
@@ -186,7 +190,8 @@ export class SecurityPrivilegeError extends BusinessRuleError {
       | 'TREASURER_REQUIRED'
       | 'PRAYER_INTENTION_CLOSER_REQUIRED'
       | 'RECORDER_REQUIRED'
-      | 'HISTORIAN_REQUIRED',
+      | 'HISTORIAN_REQUIRED'
+      | 'CHARITY_ENDORSER_REQUIRED',
     message: string,
     details: Record<string, unknown> = {},
   ) {

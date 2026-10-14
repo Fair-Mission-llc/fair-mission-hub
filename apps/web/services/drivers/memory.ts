@@ -244,6 +244,13 @@ import {
   buildCharitableRequestDetails,
   CHARITABLE_REQUEST_FORM_COLUMNS,
   assertRequestPayable,
+  assertRequestEndorsable,
+  assertRequestEndorsedForPayment,
+  assertMayEndorseCharityRequest,
+  endorsementColumns,
+  oldBusinessItems,
+  withOldBusiness,
+  MINUTES_TEXT_MAX_LENGTH,
   charitableRequestNotFound,
   charityFromRequest,
   cleanRequestCheck,
@@ -4422,7 +4429,22 @@ export class MemoryDataService implements DataService {
       assertMayKeepMinutes(this.memberWriteActor(s, actorId), councilId, `start the live sequence of meeting ${meetingId}`);
       const state = await this.meetings.startLiveAssemblyConsole(actorId, meetingId);
       const { pinToken } = meetingGeofenceOf(this.requireRecord(s, 'Council', councilId) as unknown as Council);
-      return { state, pinToken, pinIsDefault: pinToken === DEFAULT_MEETING_PIN_TOKEN };
+      // Sprint 8S Revision 3: carry last month's unresolved minutes items into this meeting's draft as open checkboxes.
+      const meeting = this.requireMeetingRow(s, meetingId) as unknown as Meeting;
+      const oldBusiness = oldBusinessItems(s.rows('Meeting') as unknown as Meeting[], councilId, String(meeting.Date).slice(0, 10));
+      const draft = meeting.minutes_published_at ? null : withOldBusiness(meeting.minutes_text, oldBusiness, MINUTES_TEXT_MAX_LENGTH);
+      if (draft !== null) {
+        s.transaction(() => {
+          this.requireMeetingRow(s, meetingId).minutes_text = draft;
+        });
+      }
+      const minutesText = ((this.requireMeetingRow(s, meetingId) as unknown as Meeting).minutes_text ?? '') as string;
+      return { state, pinToken, pinIsDefault: pinToken === DEFAULT_MEETING_PIN_TOKEN, oldBusiness, minutesText };
+    },
+
+    listOldBusiness: async (councilId, asOfDate) => {
+      const s = await this.ready();
+      return oldBusinessItems(s.rows('Meeting') as unknown as Meeting[], councilId, assertIsoDate(asOfDate, 'Old business date'));
     },
 
     getMeetingAgenda: async (actorId, meetingId) => {
@@ -5470,6 +5492,7 @@ export class MemoryDataService implements DataService {
         const councilId = request.CouncilID as number;
         assertMayDisburseCharity(this.memberWriteActor(s, actorId), councilId, `pay charitable request ${requestId}`);
         assertRequestPayable(request as unknown as CharitableRequest, actorId);
+        assertRequestEndorsedForPayment(request as unknown as CharitableRequest, actorId);
         assertCheckNumberUnused(check.CheckNumber, councilId, this.councilCheckNumbers(s, councilId));
 
         let charity: Row;
@@ -5509,6 +5532,18 @@ export class MemoryDataService implements DataService {
           charity: { ...charity } as unknown as GlobalCharityRegistry,
           charityRegistered,
         };
+      });
+    },
+
+    endorseApprovedRequest: async (actorId, requestId) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        const request = s.rows('CharitableRequest').find((r) => r.id === requestId);
+        if (!request) throw charitableRequestNotFound(requestId);
+        assertMayEndorseCharityRequest(this.memberWriteActor(s, actorId), request.CouncilID as number, `endorse charitable request ${requestId} for payment`);
+        assertRequestEndorsable(request as unknown as CharitableRequest, actorId);
+        Object.assign(request, endorsementColumns(actorId, toTimestamp(this.now())));
+        return { ...request } as unknown as CharitableRequest;
       });
     },
 

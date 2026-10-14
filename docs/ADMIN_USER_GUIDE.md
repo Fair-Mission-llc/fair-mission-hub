@@ -329,10 +329,10 @@ The **System Settings** pillar had the name **Setup** in earlier versions of the
 
 | Tab | Who gets the tab | Drawers or sections | Section |
 | --- | --- | --- | --- |
-| **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, Today's Event Agenda, Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 19.2 |
+| **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, [ 📅 Upcoming Event Agenda ], Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 19.2 |
 | **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 25 |
-| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Inbound Council Mail Center, Charitable Grant Requests Vetting Board, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ], Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels | 19.5 |
-| **Financial Secretary Desk** | The FS, Admins, Super Admins | Payment Requests, Expense Report (ER) Workflow, Charitable Donation Workflow, Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, Charity Check Issuance Console, Excel Roster Imports | 19.6 |
+| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Inbound Council Mail Center, Charitable Grant Requests Vetting Board, Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ], Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels | 19.5 |
+| **Financial Secretary Desk** | The FS, Admins, Super Admins | Payment Requests, Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants), Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, Charity Check Issuance Console, Excel Roster Imports | 19.6 |
 | **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window, Parish Fundraiser Revenue Split Console | 19.7 |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger | 19.10 |
 | **Historian Desk** | The Council Historian, Admins, Super Admins | Fraternal Diary Entry Logs, Monthly Newsletters, Meeting Photos, Oral History Recordings, Google Drive Media Gallery Sync Board | 19.12 |
@@ -1041,17 +1041,41 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 | **Place on next agenda** is refused. | No Monthly meeting is at least 10 days away. | Schedule the meeting. |
 | The desk is missing. | The council switched off **Charity proposals**. | Ask a Super Admin. |
 
-### 6.9 Pay an approved charity grant
+### 6.8.1 Endorse an approved charity grant for payment
 
-> **Prerequisite (who can do this):** You must be the council's Financial Secretary or Treasurer, or a Super Admin.
-> **Warning:** the check is permanent money out of the council's books.
+> **Who can do this:** the council's Financial Secretary (FS), Grand Knight (GK) or Deputy Grand Knight (DGK), or a Super Admin. The Knight Shepherd of the request cannot endorse it.
+> **Warning:** you cannot undo an endorsement. The officer who endorses a request cannot also write its check.
 
-**Goal:** Pay a grant that the council approved.
+**Goal:** Clear a grant that the council approved for its check. This is the **[ ✍️ FS/GK Compliance Endorsement ]** step.
 
-**Start point:** **Active Desks** → **Financial Secretary Desk** → **Charity Check Issuance Console** folder. The Treasurer uses Sidebar → Finances → **Charity Payments Made Ledger**.
+**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **Charitable Donation Workflow**.
 
 **Steps:**
-1. Find the request in **Approved requests awaiting payment**.
+1. Select the **Charitable Donation Workflow** tile. A red border means that an approved request waits for your endorsement.
+2. Find the request under **[ ✍️ FS/GK Compliance Endorsement ]**.
+3. Check the organization and the approved amount.
+4. Select **✍️ Endorse for payment**. You cannot undo the endorsement.
+
+**Expected result:** The request moves to **[ ⛪ Treasurer Check Settlement ]**. The Treasurer sees it in the **Charity Check Issuance Console** with its endorsement date.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The request shows "You shepherd this request". | You are the Knight Shepherd of the request. | Ask another FS, GK or DGK to endorse it. |
+| The endorse button does not show. | You are not the FS, GK or DGK of this council. | Ask one of these officers to endorse it. |
+| The request is not in the endorsement step. | The council has not passed the motion yet. | Wait for the vote (section 6.8). |
+
+### 6.9 Pay an approved charity grant
+
+> **Prerequisite (who can do this):** You must be the council's Financial Secretary or Treasurer, or a Super Admin. You cannot pay a request that you endorsed or that you shepherd.
+> **Warning:** the check is permanent money out of the council's books.
+
+**Goal:** Pay a grant that the council approved and an FS or GK endorsed. This is the **[ ⛪ Treasurer Check Settlement ]** step.
+
+**Start point:** **Active Desks** → **Treasurer Desk** → **Charitable Donation Workflow** → **[ ⛪ Treasurer Check Settlement ]**. The same console is in the **Charity Check Issuance Console** drawer and on Sidebar → Finances → **Charity Payments Made Ledger**.
+
+**Steps:**
+1. Find the request in **Approved requests awaiting payment**. A request without its endorsement shows **Waiting for the FS/GK compliance endorsement** and has no pay button (section 6.8.1).
 2. Click **Pay approved request**.
 3. Type the **Check number**. Check the **Payout date**.
 4. Choose the **Charity type (if not registered yet)**. The portal uses it only when the organization is not in the Global Charities Registry.
@@ -1070,6 +1094,8 @@ The check is always for the amount the council approved. The Knight Shepherd of 
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The request is missing. | The council has not passed the motion. | Check the motion in the meeting. |
+| The request shows **Waiting for the FS/GK compliance endorsement**. | No FS, GK or DGK has endorsed it. | Ask one of them to endorse it (section 6.8.1). |
+| The request shows "You endorsed this request". | The officer who endorses a request cannot pay it. | Ask another finance officer to write the check. |
 | The check is refused with "already recorded check". | The council used that check number before. | Type the next unused check number. |
 | The check is refused with "choose its charity type". | The organization is not in the registry yet. | Choose the **Charity type (if not registered yet)**. |
 
@@ -2848,7 +2874,7 @@ Every sign-in opens **Home**. The portal goes to `/dashboard#home`, so the tab t
 | **Bible Verse of the Day** | One verse for the day, from the NABRE. |
 | **Live Actionable Reminders** | Your own unread alerts and the sheets that wait for your signature, as plain text. A red edge is urgent. The card refreshes every minute. Act on a reminder from your desk tab or the alert bell. |
 | **Liturgical Feast Day Tracker** | Today's feast day and the feasts of the coming days. A holy day of obligation is marked. |
-| **Today's Event Agenda** | The council's events and meetings for today, with the time and the place. |
+| **[ 📅 Upcoming Event Agenda ]** | The council's events and meetings for the next 7 days, with the day, the time and the place. Under them, **Council priorities · Old Business**: the open items of last month's published minutes, read only (section 19.10.2). |
 | **Top 5 Fraternal Volunteers** | A navy card with a gold edge. The 5 active members of the council with the most hours logged at council events and activities in the current month, with their hours. |
 | **📿 Community Prayer Request List** | The council's open prayer intentions, newest first. Each intention shows who asked and how many brothers prayed. Select **[ 🙏 Praying Hands ]** to pray for an intention. You can pray once a day for each intention; the button is then grey until tomorrow. Add an intention on the **Faith Center** page. |
 
@@ -2917,7 +2943,8 @@ To close a drawer, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the
 | **Treasurer Desk** | **Charitable Contribution Matches** | A charity request or gift waits for its check. |
 | **Financial Secretary Desk** | **Expense Report (ER) Workflow** | A sheet waits for its payment request, and you may sign it. |
 | **Treasurer Desk** | **Expense Report (ER) Workflow** | A sheet waits for your coding or your check, and you may act on it. |
-| **Treasurer Desk** | **Charitable Donation Workflow** | An electronic gift waits for its Revenue line, or an event cash box waits to be closed. |
+| **Financial Secretary Desk** and **Grand Knight Desk** | **Charitable Donation Workflow** | An approved charity request waits for your endorsement, and you are not its Knight Shepherd. |
+| **Treasurer Desk** | **Charitable Donation Workflow** | An endorsed charity request waits for your check, and you did not endorse or shepherd it. |
 | **Recorder Desk** | **Meeting Minutes Entry Desk** | The minutes of a meeting are due or overdue. The red line counts the overdue meetings. |
 
 The drawers on each desk:
@@ -2929,6 +2956,7 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Shifts Awaiting Hours** | Read the volunteers who served but have not logged time, with their phone numbers. |
 | **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: approve council access requests (section 17). |
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 4). |
+| **Grand Knight Desk** | **Charitable Donation Workflow** | Follow outgoing charity grants. Endorse approved requests in place (section 6.8.1). |
 | **Grand Knight Desk** | **Planning & Budgeting Workflow** | Read the planning steps. Set the year's goals. Mark the goals and the budget reviewed (section 21). |
 | **Grand Knight Desk** | **[ 🗳️ Council Election Workflow ]** | Read the four election steps and the progress wheels. Nominate a brother Knight for an open office (section 19.3.3). |
 | **Grand Knight Desk** | **Shared Loaner Library** | List, lend and check in council assets (section 20.3). |
@@ -2938,7 +2966,7 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Operations Knowledge Archive** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 22). |
 | **Financial Secretary Desk** | **Payment Requests** | Select **📝 Verify & Sign Expense** on each sheet. |
 | **Financial Secretary Desk** | **Expense Report (ER) Workflow** | Read where each sheet waits. Sign the payment requests in place (section 19.3.3). |
-| **Financial Secretary Desk** | **Charitable Donation Workflow** | Read the three donation steps. Record each gift in place (section 19.3.3). |
+| **Financial Secretary Desk** | **Charitable Donation Workflow** | Follow outgoing charity grants. Endorse approved requests in place (section 6.8.1). |
 | **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
 | **Financial Secretary Desk** | **Church Disbursement Requests** | Record the check for the parish share (section 23). |
@@ -2950,7 +2978,7 @@ The drawers on each desk:
 | **Treasurer Desk** | **Expense Report (ER) Settlement** | Pay fully signed sheets by check. |
 | **Treasurer Desk** | **Charitable Contribution Matches** | Match approved charity requests and gifts to their checks, and pay them. |
 | **Treasurer Desk** | **Expense Report (ER) Workflow** | Read where each sheet waits. Code the sheets and pay them by check in place (section 19.3.3). |
-| **Treasurer Desk** | **Charitable Donation Workflow** | Code the electronic gifts to a Revenue line. Close each event cash box (section 19.3.3). |
+| **Treasurer Desk** | **Charitable Donation Workflow** | Follow outgoing charity grants. Pay endorsed requests by check in the console, in place (section 6.9). |
 | **Treasurer Desk** | **Planning & Budgeting Workflow** | Read the planning steps. Mark the budget reviewed (section 21). |
 | **Treasurer Desk** | **Cash Box Audit Closure Panel** | Count each concluded event's cash box and log any variance (section 24). |
 | **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 24). |
@@ -3003,7 +3031,7 @@ Three drawers show a whole workflow in one place. Each workflow drawer uses the 
 | Drawer | Desks | Steps | What you do in the drawer |
 | --- | --- | --- | --- |
 | **Expense Report (ER) Workflow** | **Financial Secretary Desk** and **Treasurer Desk** | 1. **Payment request** (FS). 2. **Ledger coding** (Treasurer). 3. **GK approval** (Grand Knight). 4. **Check issued** (Treasurer). | The Financial Secretary signs payment requests. The Treasurer codes sheets and pays them by check. Both read **Every open sheet** under the steps. |
-| **Charitable Donation Workflow** | **Financial Secretary Desk** and **Treasurer Desk** | 1. **Record the gift** (FS). 2. **Code to revenue** (Treasurer). 3. **Close the cash box** (Treasurer). | The Financial Secretary records each gift. The Treasurer codes the card and QR gifts and closes each event cash box. |
+| **Charitable Donation Workflow** | **Financial Secretary Desk**, **Treasurer Desk** and **Grand Knight Desk** | 1. **[ 📋 Member Charity Request ]** (Knight Shepherd, vetters, council vote). 2. **[ ✍️ FS/GK Compliance Endorsement ]** (FS, GK or DGK). 3. **[ ⛪ Treasurer Check Settlement ]** (Treasurer). | The drawer follows money going out to charities. The FS, GK and DGK endorse approved requests. The Treasurer pays endorsed requests in the **Charity Check Issuance Console**, mounted in the drawer. Gifts coming in stay on the batch coder and cash box drawers. |
 | **[ 🗳️ Council Election Workflow ]** | **Grand Knight Desk** | 1. **Open the ballot** (before May 1). 2. **Nominations** (May 1 - 31). 3. **Election** (June). 4. **New term** (July 1). | Read the wheels **Offices on the ballot** and **Offices with a nominee**. Nominate a brother Knight while nominations are open. Admins select **Set the ballot**. |
 
 The **Expense Report (ER) Workflow** and **Charitable Donation Workflow** drawers use the same modules as the single-step drawers. A signature in a workflow drawer is the same signature as in **Payment Requests**, **Ledger Line Coder** or **Expense Report (ER) Settlement**.
@@ -3023,7 +3051,7 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 2. Read the **[ 📰 Latest Council Newsletters & Bulletins ]** card at the top. Select an older headline to open that newsletter.
 3. Read the **Bible Verse of the Day** and the **Liturgical Feast Day Tracker**.
 4. Read **Live Actionable Reminders**. To act on a reminder, open your desk tab or the alert bell.
-5. Read **Today's Event Agenda**. Select an event name to open the council calendar.
+5. Read **[ 📅 Upcoming Event Agenda ]** and its **Council priorities · Old Business**. Select an event name to open the council calendar.
 6. Read the **Top 5 Fraternal Volunteers** card for the month's top volunteers and their hours.
 7. Read the **📿 Community Prayer Request List**. Select **[ 🙏 Praying Hands ]** beside an intention to pray for it today.
 8. To sign up or log hours, select **Member Actions Hub** in the sidebar (section 19.8).
@@ -3109,7 +3137,7 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 3. Select the **Payment Requests** tile. The drawer slides out.
 4. Select **📝 Verify & Sign Expense** on each sheet.
 5. Select **[ 🔀 Back to Desk Blotter ]**.
-6. To follow a sheet, select the **Expense Report (ER) Workflow** tile or the **Expense Report (ER) Routing Track** tile. To record a donation, select the **Charitable Donation Workflow** tile or the **Charitable Donation Records** tile.
+6. To follow a sheet, select the **Expense Report (ER) Workflow** tile or the **Expense Report (ER) Routing Track** tile. To record a donation, select the **Charitable Donation Records** tile. To endorse an approved charity grant, select the **Charitable Donation Workflow** tile (section 6.8.1).
 7. Select the **Excel Roster Imports** tile. Select **Download the Excel roster template**.
 8. Fill in the template. Save the **Roster** sheet as CSV.
 9. Select **Supreme roster sync**. Load the CSV file on that page. Each new member gets a welcome email.
@@ -3139,7 +3167,7 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 6. Select the **Expense Report (ER) Settlement** tile. A red border means that a fully signed sheet waits for your check.
 7. Select the sheets, type the check number and the payout date, and issue the check.
 8. To pay a charity request, select the **Charitable Contribution Matches** tile.
-9. To code electronic gifts or close a cash box, select the **Charitable Donation Workflow** tile.
+9. To pay an endorsed charity grant, select the **Charitable Donation Workflow** tile (section 6.9).
 
 **Expected result:** The coded sheets leave the coding queue and show on the **Grand Knight Desk**. The paid sheets show **Reimbursed**. The counts on the tiles drop when you close each drawer.
 
@@ -3246,6 +3274,16 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 | *"No meeting has published minutes yet."* | No past meeting has published minutes or a minutes file. | Publish the minutes of a meeting (section 19.10). |
 | A meeting with draft minutes does not show. | The archive shows only published minutes. | Publish the minutes (section 19.10). |
 
+### 19.10.2 Concept: the automated Old Business
+
+The council's unfinished projects carry from one month to the next with no copy and paste.
+
+- An open item is a line in the published minutes written as an open tick box: `- [ ] Seal the teak furniture`. A ticked line, `- [x] ...`, is resolved.
+- The open items of all meetings held in the previous calendar month count. Unpublished drafts do not count. The same text counts once.
+- The **[ 📅 Upcoming Event Agenda ]** card on Home lists the open items under **Council priorities · Old Business**. Nobody can change them on Home.
+- **[ 🚀 Start Live Meeting Sequence ]** writes the open items at the top of the new meeting's minutes draft, under **Old Business (carried from last month)**. The launch writes them once. The launch never changes published minutes.
+- The **Meeting Minutes Entry Desk** shows every tick-box line of the minutes as a tick box above the text. An item that stays open in the published minutes carries again the next month.
+
 ### 19.11 Start the live meeting from the Recorder Desk
 
 > **Who can do this:** the council's Recorder, the council's Admins and Super Admins.
@@ -3260,15 +3298,19 @@ The due date is the meeting's last day plus the **Days after a meeting that the 
 2. Select **[ 🚀 Start Live Meeting Sequence ]**. The quorum count locks. You cannot change the locked count.
 3. Read the 4-digit **Meeting PIN bypass** in the navy box.
 4. Read the PIN aloud. Members whose phones cannot check in by location type the PIN.
-5. Select **Open the Live Meeting Console →** to run the agenda.
+5. Read **Old Business carried from last month**. Each open item of last month's published minutes is a tick box. The items are already in this meeting's minutes draft.
+6. Tick each item that the council resolves during the session. Select **Save ticks to the minutes draft**.
+7. Select **Open the Live Meeting Console →** to run the agenda.
 
-**Expected result:** The navy box shows the PIN and the locked quorum base. The meeting shows **● Live now**.
+**Expected result:** The navy box shows the PIN and the locked quorum base. The meeting shows **● Live now**. The minutes draft starts with **Old Business (carried from last month)** and one tick box for each open item.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The box says the PIN is still the factory PIN 0000. | Nobody changed the council's PIN. | Ask the Grand Knight to set a new PIN (section 18.5). |
 | The meeting was already live. | Someone started the meeting before you. | No action. The first quorum count stays. |
+| No old business is carried in. | Last month's minutes are not published, or every item in them is ticked. | Publish last month's minutes. Write open items as `- [ ] item`. |
+| The tick boxes do not show. | This meeting's minutes are already published. | Edit the published minutes in the **Meeting Minutes Entry Desk**. |
 
 ### 19.12 Keep the Digital Fraternal Annals Scrapbook
 

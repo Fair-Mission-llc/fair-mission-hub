@@ -246,6 +246,14 @@ import {
   CHARITABLE_REQUEST_FORM_COLUMNS,
   CHARITABLE_TRIAGE_COLUMNS,
   assertRequestPayable,
+  assertRequestEndorsable,
+  assertRequestEndorsedForPayment,
+  assertMayEndorseCharityRequest,
+  endorsementColumns,
+  oldBusinessItems,
+  withOldBusiness,
+  MINUTES_TEXT_MAX_LENGTH,
+  type OldBusinessItem,
   charitableRequestNotFound,
   charityFromRequest,
   cleanRequestCheck,
@@ -933,8 +941,11 @@ const DB_NAME = 'kofc.db';
  * 95: no table change - Council Wide Settings is strictly its two accordions with no text spill, the Financial Secretary
  *     and Treasurer Desks gain the Expense Report (ER) Workflow and Charitable Donation Workflow drawers, and the Grand
  *     Knight's election drawer becomes '[ 🗳️ Council Election Workflow ]' (Sprint 8S Revision 2); phones rebuild in step.
+ * 96: CharitableRequest.compliance_endorsed_by_member_id and compliance_endorsed_at - the FS/GK Compliance Endorsement
+ *     step of the outgoing charity pipeline, now required before a check pays an approved request; the Old Business
+ *     engine reads last month's published minutes (Sprint 8S Revision 3).
  */
-const SCHEMA_VERSION = 95;
+const SCHEMA_VERSION = 96;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -5198,7 +5209,17 @@ export class SqliteDataService implements DataService {
       assertMayKeepMinutes(await this.memberWriteActor(db, actorId), meeting.CouncilID, `start the live sequence of meeting ${meetingId}`);
       const state = await this.meetings.startLiveAssemblyConsole(actorId, meetingId);
       const { pinToken } = meetingGeofenceOf((await this.requireRecord(db, 'Council', meeting.CouncilID)) as unknown as Council);
-      return { state, pinToken, pinIsDefault: pinToken === DEFAULT_MEETING_PIN_TOKEN };
+      // Sprint 8S Revision 3: carry last month's unresolved minutes items into this meeting's draft as open checkboxes.
+      const oldBusiness = await this.oldBusinessFor(db, meeting.CouncilID, String(meeting.Date).slice(0, 10));
+      const current = await this.requireMeetingRow(db, meetingId);
+      const draft = current.minutes_published_at ? null : withOldBusiness(current.minutes_text, oldBusiness, MINUTES_TEXT_MAX_LENGTH);
+      if (draft !== null) await db.runAsync('UPDATE [Meeting] SET [minutes_text] = ? WHERE [id] = ?', [draft, meetingId]);
+      return { state, pinToken, pinIsDefault: pinToken === DEFAULT_MEETING_PIN_TOKEN, oldBusiness, minutesText: draft ?? current.minutes_text ?? '' };
+    },
+
+    listOldBusiness: async (councilId, asOfDate) => {
+      const db = await this.ready();
+      return this.oldBusinessFor(db, councilId, assertIsoDate(asOfDate, 'Old business date'));
     },
 
     launchSecretSmartphoneBallot: async (actorId, proposedMotionId) => {
@@ -5487,6 +5508,12 @@ export class SqliteDataService implements DataService {
   }
 
   /** A meeting row; an unknown id rejects MEETING_NOT_FOUND. */
+  /** Sprint 8S Revision 3: the unresolved items of the council's published minutes from the month before `asOfDate`. */
+  private async oldBusinessFor(db: SQLite.SQLiteDatabase, councilId: number, asOfDate: string): Promise<OldBusinessItem[]> {
+    const rows = await db.getAllAsync<Meeting>('SELECT * FROM [Meeting] WHERE [CouncilID] = ? AND [minutes_published_at] IS NOT NULL', [councilId]);
+    return oldBusinessItems(rows, councilId, asOfDate);
+  }
+
   private async requireMeetingRow(db: SQLite.SQLiteDatabase, meetingId: number): Promise<Meeting> {
     const row = await db.getFirstAsync<Meeting>('SELECT * FROM [Meeting] WHERE [id] = ?', [meetingId]);
     if (!row) throw new BusinessRuleError('MEETING_NOT_FOUND', `No meeting with id ${meetingId}.`, { meetingId });
@@ -6524,6 +6551,7 @@ export class SqliteDataService implements DataService {
         const councilId = request.CouncilID;
         assertMayDisburseCharity(await this.memberWriteActor(db, actorId), councilId, `pay charitable request ${requestId}`);
         assertRequestPayable(request, actorId);
+        assertRequestEndorsedForPayment(request, actorId);
         assertCheckNumberUnused(check.CheckNumber, councilId, await this.councilCheckNumbers(db, councilId));
 
         if (check.CharityID !== null) {
@@ -6555,6 +6583,23 @@ export class SqliteDataService implements DataService {
         charity: await this.requireCharity(db, charityId),
         charityRegistered,
       };
+    },
+
+    endorseApprovedRequest: async (actorId, requestId) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const request = await db.getFirstAsync<CharitableRequest>('SELECT * FROM [CharitableRequest] WHERE [id] = ?', [requestId]);
+        if (!request) throw charitableRequestNotFound(requestId);
+        assertMayEndorseCharityRequest(await this.memberWriteActor(db, actorId), request.CouncilID, `endorse charitable request ${requestId} for payment`);
+        assertRequestEndorsable(request, actorId);
+        const cols = endorsementColumns(actorId, toTimestamp(this.now()));
+        await db.runAsync('UPDATE [CharitableRequest] SET [compliance_endorsed_by_member_id] = ?, [compliance_endorsed_at] = ? WHERE [id] = ?', [
+          cols.compliance_endorsed_by_member_id ?? null,
+          cols.compliance_endorsed_at ?? null,
+          requestId,
+        ]);
+      });
+      return (await db.getFirstAsync<CharitableRequest>('SELECT * FROM [CharitableRequest] WHERE [id] = ?', [requestId]))!;
     },
 
     listCharitableRequestsQueue: async (actorId, councilId) => {

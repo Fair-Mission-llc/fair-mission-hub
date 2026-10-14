@@ -13,6 +13,12 @@
 // (charities.listApprovedFundingQueue). "Pay approved request" takes the check number, payout date and notes, and the
 // charity type for an organization not in the registry yet; charities.payApprovedRequest writes the check for the
 // approved amount, links the charity and sets the request's PaymentOrderId, which charges its budget line.
+//
+// Sprint 8S Revision 3: this console is the [ ⛪ Treasurer Check Settlement ] step of the outgoing Charitable Donation
+// Workflow (charity-pipeline.ts). An approved request offers its check only once the Financial Secretary, Grand Knight or
+// Deputy Grand Knight has endorsed it, and never to the officer who endorsed it or to its Knight Shepherd; otherwise the
+// row says what it waits for (chargeableBlock). The drivers enforce the same (CHARITY_ENDORSEMENT_REQUIRED,
+// ENDORSER_PAYOUT_BLOCKED, SELF_PAYOUT_BLOCKED).
 import { useEffect, useState } from 'react';
 import {
   canDisburseCharity,
@@ -24,6 +30,7 @@ import {
   CHECK_NUMBER_MAX_LENGTH,
   describeError,
   DISBURSEMENT_NOTES_MAX_LENGTH,
+  isEndorsed,
   REJECTION_REASON_MAX_LENGTH,
   toIsoDate,
   type CharitableRequest,
@@ -337,6 +344,14 @@ function ProposalCard({
   );
 }
 
+/** Why this reader may not pay an approved request yet, or null when the check may be written now. */
+function chargeableBlock(request: CharitableRequest, memberId: number): string | null {
+  if (!isEndorsed(request)) return 'Waiting for the FS/GK compliance endorsement.';
+  if (request.compliance_endorsed_by_member_id === memberId) return 'You endorsed this request, so another finance officer issues its check.';
+  if (request.ShepherdMemberID === memberId) return 'You shepherd this request, so another finance officer issues its check.';
+  return null;
+}
+
 /** One voted-approved request and its check fields (Sprint 7I Extension). */
 function ApprovedRequestRow({ request, onPaid }: { request: CharitableRequest; onPaid: (text: string) => Promise<void> }) {
   const user = useUser();
@@ -375,9 +390,14 @@ function ApprovedRequestRow({ request, onPaid }: { request: CharitableRequest; o
           <p className="font-bold">
             #{request.id} · {request.OrganizationName}
           </p>
-          <p className="text-sm text-muted">Approved by the council&apos;s vote · {formatMoney(request.AmountApproved)}</p>
+          <p className="text-sm text-muted">
+            Approved by the council&apos;s vote · {formatMoney(request.AmountApproved)}
+            {isEndorsed(request) ? ` · endorsed ${String(request.compliance_endorsed_at ?? '').slice(0, 10)}` : ''}
+          </p>
         </div>
-        {!open ? (
+        {chargeableBlock(request, user.memberId) ? (
+          <Pill tone="outline">{chargeableBlock(request, user.memberId)}</Pill>
+        ) : !open ? (
           <Button variant="gold" onClick={() => setOpen(true)}>
             Pay approved request
           </Button>

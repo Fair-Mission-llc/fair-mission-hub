@@ -76,7 +76,9 @@ import {
   deskDrawersFor,
   DESK_ALERT_POLL_MS,
   diaryLogRows,
-  donationWorkflowAlert,
+  buildCharityPipeline,
+  charityPipelineAlert,
+  type CharityPipelineDesk,
   erSettlementAlert,
   erWorkflowAlert,
   fsPaymentRequestAlert,
@@ -120,7 +122,11 @@ import {
   formatShiftWhen,
   HOLY_DAY_BADGE,
   NABRE_NOTICE,
-  todaysAgenda,
+  upcomingAgenda,
+  minutesCheckboxes,
+  setMinutesCheckbox,
+  UPCOMING_AGENDA_DAYS,
+  UPCOMING_EVENT_AGENDA_TITLE,
   toIsoDate,
   type ExpenseReportDetail,
   type LiveMeetingLaunch as LiveMeetingLaunchResult,
@@ -135,7 +141,7 @@ import { DisbursementLedger as ExpenseSettlement } from '@/components/modules/Ex
 import { TreasurerDesk as LedgerLineCoder } from '@/components/modules/LedgerLineCoder';
 import { DonationsWorkspace as DonationRecords } from '@/components/modules/DonationRecords';
 import { CouncilElectionWorkflow } from '@/components/modules/ElectionWorkflow';
-import { CharitableDonationWorkflow, ExpenseReportWorkflow } from '@/components/FinanceWorkflowParts';
+import { CharityPipelineWorkflow, ExpenseReportWorkflow } from '@/components/FinanceWorkflowParts';
 import { AuditQueue as ExpenseRoutingTrack } from '@/components/modules/ExpenseRoutingTrack';
 import { KnowledgeArchive } from '@/components/modules/KnowledgeArchive';
 import { AuditDesk as PaymentRequestDesk } from '@/components/modules/PaymentRequestDesk';
@@ -289,18 +295,31 @@ function ReminderStream({ user, councilId }: { user: SessionUser; councilId: num
   );
 }
 
-function TodaysAgenda({ councilId, today }: { councilId: number; today: string }) {
-  const entries = useLoad(() => db.events.listCalendarRange(councilId, today, today), [councilId, today]);
-  const rows = todaysAgenda(entries.data ?? [], today);
+/**
+ * Sprint 8S Revision 3, '[ 📅 Upcoming Event Agenda ]' (Today's Event Agenda until then): the council's events and
+ * meetings over the next UPCOMING_AGENDA_DAYS days, and under them the automated Old Business - the open checkbox items
+ * of last month's published minutes (meetings.listOldBusiness), read only, as the council's standing priorities.
+ */
+function UpcomingEventAgenda({ councilId, today }: { councilId: number; today: string }) {
+  const lastDay = addDays(today, UPCOMING_AGENDA_DAYS - 1);
+  const entries = useLoad(() => db.events.listCalendarRange(councilId, today, lastDay), [councilId, today, lastDay]);
+  const priorities = useLoad(() => db.meetings.listOldBusiness(councilId, today), [councilId, today]);
+  const rows = upcomingAgenda(entries.data ?? [], today, lastDay);
+  const items = priorities.data ?? [];
   return (
-    <HomeCard title="Today's Event Agenda">
+    <HomeCard title={UPCOMING_EVENT_AGENDA_TITLE}>
       {entries.error ? <Notice tone="error">{entries.error}</Notice> : null}
-      {entries.data && rows.length === 0 ? <Empty>No event or meeting today. The council calendar shows what is coming.</Empty> : null}
+      {entries.data && rows.length === 0 ? <Empty>No event or meeting in the next {UPCOMING_AGENDA_DAYS} days. The council calendar shows what is coming.</Empty> : null}
       {rows.length > 0 ? (
-        <Table caption="Today's events and meetings" head={['Time', 'What', 'Where']}>
+        <Table caption={`Events and meetings in the next ${UPCOMING_AGENDA_DAYS} days`} head={['When', 'What', 'Where']}>
           {rows.map((e) => (
             <tr key={`${e.kind}-${e.id}`}>
-              <Td className="whitespace-nowrap font-bold">{e.kind === 'meeting' ? shortTime(e.startTime) : e.startDate === e.endDate ? 'All day' : `Through ${shortDay(e.endDate)}`}</Td>
+              <Td className="whitespace-nowrap font-bold">
+                {shortDay(e.startDate < today ? today : e.startDate)}
+                <span className="block text-xs font-normal">
+                  {e.kind === 'meeting' ? shortTime(e.startTime) : e.startDate === e.endDate ? 'All day' : `Through ${shortDay(e.endDate)}`}
+                </span>
+              </Td>
               <Td>
                 <Link href="/calendar" className="font-bold underline">
                   {e.title}
@@ -312,7 +331,29 @@ function TodaysAgenda({ councilId, today }: { councilId: number; today: string }
           ))}
         </Table>
       ) : null}
-      <p className="mt-1 text-xs text-muted">{formatFullDate(today)}</p>
+      <section aria-label="Council priorities from last month's minutes" className="mt-3 border-t-2 border-gold pt-2">
+        <h3 className="text-sm font-bold uppercase tracking-wide">Council priorities · Old Business</h3>
+        {priorities.error ? <Notice tone="error">{priorities.error}</Notice> : null}
+        {priorities.data && items.length === 0 ? <p className="text-sm text-muted">Last month&apos;s minutes leave no open item.</p> : null}
+        {items.length > 0 ? (
+          <ul className="mt-1 flex flex-col gap-1 text-sm" aria-label="Unresolved items, read only">
+            {items.map((i) => (
+              <li key={`${i.meetingId}-${i.text}`} className="flex gap-2">
+                <span aria-hidden="true">☐</span>
+                <span>
+                  {i.text}
+                  <span className="block text-xs text-muted">
+                    {i.meetingName} · {shortDay(i.meetingDate)}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
+      <p className="mt-1 text-xs text-muted">
+        {formatFullDate(today)} – {formatFullDate(lastDay)}
+      </p>
     </HomeCard>
   );
 }
@@ -429,7 +470,7 @@ export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; c
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
       {faithOn ? <FeastDayTracker today={today} /> : null}
-      <TodaysAgenda councilId={councilId} today={today} />
+      <UpcomingEventAgenda councilId={councilId} today={today} />
       <TopVolunteersCard user={user} councilId={councilId} />
       {faithOn ? <CommunityPrayerCard user={user} councilId={councilId} /> : null}
     </div>
@@ -454,6 +495,26 @@ const settled = async <T,>(read: () => Promise<T>): Promise<T | null> => {
     return null;
   }
 };
+
+/**
+ * Sprint 8S Revision 3: the council's charity requests for the outgoing Charitable Donation Workflow drawer, polled with
+ * the desk, and that drawer's handle status (the requests waiting on the reader's own step, and its accent).
+ */
+function useCharityPipeline(user: SessionUser, councilId: number, desk: CharityPipelineDesk, enabled: boolean) {
+  const requests = useLoad(
+    () => (enabled ? db.charities.listCharitableRequestsQueue(user.memberId, councilId) : Promise.resolve(null)),
+    [user.memberId, councilId, enabled],
+  );
+  usePolling(requests.reload);
+  const rows = requests.data ?? null;
+  const status = {
+    count: buildCharityPipeline(desk, rows).waiting,
+    alert: rows ? charityPipelineAlert(user, desk, councilId, rows) : false,
+    alertText: desk === 'treasurer' ? 'Endorsed charity requests waiting for your check' : 'Approved charity requests waiting for your endorsement',
+  };
+  const drawer = <CharityPipelineWorkflow desk={desk} user={user} councilId={councilId} requests={rows} error={requests.error} onChanged={requests.reload} />;
+  return { status, drawer, reload: requests.reload };
+}
 
 /** The Planning & Budgeting Workflow drawer: the council's planning banner and goals (FraternalPlanningWorkflow). */
 function PlanningBudgetingDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
@@ -559,6 +620,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   const reviewHeld = has('flagged-hours') && flags.feature_volunteer_quarantine;
   const readsHours = has('shifts-awaiting-hours');
   const readsMail = has('access-requests');
+  const charity = useCharityPipeline(user, councilId, 'grand-knight', has('donation-workflow'));
   const queue = useLoad(() => db.expenses.listAuthorizationQueue(user.memberId, councilId), [user.memberId, councilId]);
   const audits = useLoad(async () => {
     const [held, awaiting, council, requests] = await Promise.all([
@@ -596,6 +658,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return { count: a?.hours ?? null, alert: (a?.overdue ?? 0) > 0, alertText: `${a?.overdue ?? 0} past the first reminder` };
             case 'access-requests':
               return { count: a?.requests ?? null, alert: (a?.requests ?? 0) > 0, alertText: 'Access requests to review' };
+            case 'donation-workflow':
+              return charity.status;
             default:
               return undefined;
           }
@@ -603,6 +667,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
         onClosed={() => {
           void queue.reload();
           void audits.reload();
+          void charity.reload();
         }}
         render={(spec) => {
           switch (spec.id) {
@@ -616,6 +681,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return <InboundMailCenter />;
             case 'vetting-board':
               return <CharityVettingBoard />;
+            case 'donation-workflow':
+              return charity.drawer;
             case 'planning-budgeting':
               return <PlanningBudgetingDrawer user={user} councilId={councilId} />;
             case 'election-workflow':
@@ -648,28 +715,35 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
 export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
   const tenantType = useTenantType();
+  const drawers = deskDrawersFor(user, 'financial-secretary', councilId, flags, tenantType);
   const queue = useLoad(() => db.expenses.listCouncilQueue(user.memberId, councilId), [user.memberId, councilId]);
   usePolling(queue.reload);
   const all = queue.data ?? [];
   const waiting = all.filter((d) => awaitsWrittenOrder(d.report));
   const alert = fsPaymentRequestAlert(user, all);
   const erWaiting = waiting.length;
+  const charity = useCharityPipeline(user, councilId, 'financial-secretary', drawers.some((d) => d.id === 'donation-workflow'));
   return (
     <div className="flex flex-col gap-4">
       {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
       <DeskBlotter
         desk="financial-secretary"
-        drawers={deskDrawersFor(user, 'financial-secretary', councilId, flags, tenantType)}
+        drawers={drawers}
         status={(spec) =>
           spec.id === 'payment-requests'
             ? { count: queue.data ? waiting.length : null, alert }
             : spec.id === 'er-workflow'
               ? { count: queue.data ? erWaiting : null, alert: erWorkflowAlert(user, 'financial-secretary', all), alertText: 'Payment requests waiting for your signature' }
-              : spec.id === 'er-routing-track'
-                ? { count: queue.data ? all.length : null }
-                : undefined
+              : spec.id === 'donation-workflow'
+                ? charity.status
+                : spec.id === 'er-routing-track'
+                  ? { count: queue.data ? all.length : null }
+                  : undefined
         }
-        onClosed={() => void queue.reload()}
+        onClosed={() => {
+          void queue.reload();
+          void charity.reload();
+        }}
         render={(spec) => {
           switch (spec.id) {
             case 'payment-requests':
@@ -677,7 +751,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
             case 'er-workflow':
               return <ExpenseReportWorkflow desk="financial-secretary" user={user} queue={queue.data ?? null} />;
             case 'donation-workflow':
-              return <CharitableDonationWorkflow desk="financial-secretary" user={user} councilId={councilId} uncoded={null} openCashBoxes={null} />;
+              return charity.drawer;
             case 'er-routing-track':
               return <ExpenseRoutingTrack />;
             case 'donation-records':
@@ -706,7 +780,8 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
  * Planning & Budgeting Workflow, the Cash Box Audit Closure Panel, the High-Volume Batch Transaction Coder, the Annual
  * Budget vs Actuals Ledger Grid, the Bank Statement Match-Window and the Parish Fundraiser Revenue Split Console.
  * Sprint 8S Revision 2: the Expense Report (ER) Workflow (lit while a sheet waits for the reader's coding or check) and
- * the Charitable Donation Workflow (lit while gifts wait to be coded or cash boxes to be closed) follow the three money drawers.
+ * the Charitable Donation Workflow follow the three money drawers. Sprint 8S Revision 3: the Charitable Donation Workflow
+ * tracks outgoing charity checks and lights while an endorsed request waits for the reader's check.
  */
 export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
@@ -714,31 +789,24 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
   const drawers = deskDrawersFor(user, 'treasurer', councilId, flags, tenantType);
   const pays = drawers.some((d) => d.id === 'er-settlement' || d.id === 'er-workflow');
   const matches = drawers.some((d) => d.id === 'charity-matches') && canDisburseCharity(user, councilId);
-  const gifts = drawers.some((d) => d.id === 'donation-workflow');
+  const charityPipeline = useCharityPipeline(user, councilId, 'treasurer', drawers.some((d) => d.id === 'donation-workflow'));
   const coding = useLoad(() => db.expenses.listTreasurerQueue(user.memberId, councilId), [user.memberId, councilId]);
   const money = useLoad(async () => {
-    const [sheets, proposals, funded, batch, boxes] = await Promise.all([
+    const [sheets, proposals, funded] = await Promise.all([
       pays ? settled(() => db.expenses.listCouncilQueue(user.memberId, councilId)) : null,
       matches ? settled(() => db.charities.listCouncilProposals(user.memberId, councilId)) : null,
       matches ? settled(() => db.charities.listApprovedFundingQueue(user.memberId, councilId)) : null,
-      gifts ? settled(() => db.finance.getBatchCodingQueue(user.memberId, councilId)) : null,
-      gifts ? settled(() => db.finance.getCashAuditBoard(user.memberId, councilId)) : null,
     ]);
     return {
       sheets,
       charity: proposals || funded ? (proposals ?? []).filter((d) => d.proposal.Status === 'Pending').length + (funded ?? []).length : null,
-      uncoded: batch ? batch.rows.length : null,
-      openCashBoxes: boxes ? boxes.rows.filter((r) => r.collectionStatus !== 'RECONCILED').length : null,
     };
-  }, [user.memberId, councilId, pays, matches, gifts]);
+  }, [user.memberId, councilId, pays, matches]);
   usePolling(coding.reload);
   usePolling(money.reload);
   const codingRows = coding.data ?? [];
   const sheets = money.data?.sheets ?? null;
   const charity = money.data?.charity ?? null;
-  const uncoded = money.data?.uncoded ?? null;
-  const openCashBoxes = money.data?.openCashBoxes ?? null;
-  const giftsWaiting = uncoded === null && openCashBoxes === null ? null : (uncoded ?? 0) + (openCashBoxes ?? 0);
   const erOwn = sheets ? sheets.filter((d) => awaitsTreasurerCoding(d.report) || isPayableExpenseReport(d.report)).length : null;
   return (
     <div className="flex flex-col gap-4">
@@ -757,7 +825,7 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
             case 'er-workflow':
               return { count: erOwn, alert: sheets ? erWorkflowAlert(user, 'treasurer', sheets) : false, alertText: 'Sheets waiting for your coding or check' };
             case 'donation-workflow':
-              return { count: giftsWaiting, alert: donationWorkflowAlert(user, councilId, 'treasurer', giftsWaiting), alertText: 'Gifts to code or cash boxes to close' };
+              return charityPipeline.status;
             default:
               return undefined;
           }
@@ -765,6 +833,7 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
         onClosed={() => {
           void coding.reload();
           void money.reload();
+          void charityPipeline.reload();
         }}
         render={(spec) => {
           switch (spec.id) {
@@ -777,7 +846,7 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
             case 'er-workflow':
               return <ExpenseReportWorkflow desk="treasurer" user={user} queue={sheets} />;
             case 'donation-workflow':
-              return <CharitableDonationWorkflow desk="treasurer" user={user} councilId={councilId} uncoded={uncoded} openCashBoxes={openCashBoxes} />;
+              return charityPipeline.drawer;
             case 'planning-budgeting':
               return <PlanningBudgetingDrawer user={user} councilId={councilId} />;
             case 'cash-box-audit':
@@ -1040,8 +1109,74 @@ export function AwaitingHours({ councilId }: { councilId: number }) {
 const countdownTone = (c: MinutesCountdown) => (c.state === 'overdue' ? 'red' : c.state === 'open' ? 'gold' : c.state === 'published' ? 'navy' : 'outline');
 
 /**
+ * Sprint 8S Revision 3: the checkbox lines of a minutes text ('- [ ] ...' / '- [x] ...') as tick boxes. Ticking one
+ * rewrites that line of the text (setMinutesCheckbox); nothing else in the text changes.
+ */
+function MinutesChecklist({ text, onChange, label }: { text: string; onChange: (next: string) => void; label: string }) {
+  const boxes = minutesCheckboxes(text);
+  if (boxes.length === 0) return null;
+  return (
+    <fieldset className="rounded border-2 border-gold bg-gold/10 px-3 py-2">
+      <legend className="px-1 text-sm font-bold">{label}</legend>
+      <ul className="flex flex-col gap-1">
+        {boxes.map((b) => (
+          <li key={b.line}>
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" className="mt-0.5 h-4 w-4" checked={b.done} onChange={(e) => onChange(setMinutesCheckbox(text, b.line, e.target.checked))} />
+              <span className={b.done ? 'line-through' : undefined}>{b.text}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+    </fieldset>
+  );
+}
+
+/**
+ * The old business the launch carried into the meeting's minutes draft, as tick boxes the Recorder works during the
+ * session, saved back to the draft (saveMeetingMinutes, never published from here).
+ */
+function CarriedOldBusiness({ user, meetingId, launch }: { user: SessionUser; meetingId: number; launch: LiveMeetingLaunchResult }) {
+  const [text, setText] = useState(launch.minutesText);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+  const dirty = text !== launch.minutesText;
+  const save = async () => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      await db.meetings.saveMeetingMinutes(user.memberId, meetingId, { text, publish: false });
+      setMessage({ tone: 'info', text: 'Saved to the minutes draft.' });
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (launch.oldBusiness.length === 0) return <p className="text-sm text-muted">Last month&apos;s minutes leave no open item, so no old business was carried in.</p>;
+  return (
+    <div className="flex flex-col gap-2">
+      <MinutesChecklist text={text} onChange={setText} label={`Old Business carried from last month (${launch.oldBusiness.length})`} />
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="gold" disabled={busy || !dirty} onClick={() => void save()}>
+          {busy ? 'Saving…' : 'Save ticks to the minutes draft'}
+        </Button>
+        <span className="text-xs text-muted">The items are already in this meeting&apos;s minutes draft. Open items carry again next month.</span>
+      </div>
+      {message ? (
+        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+          {message.text}
+        </Notice>
+      ) : null}
+    </div>
+  );
+}
+
+/**
  * The Start Live Meeting Sequence control: starts the live console for the chosen meeting (meetings.launchLiveMeeting)
- * and shows the council's 4-digit PIN in large type, for members outside the check-in circle.
+ * and shows the council's 4-digit PIN in large type, for members outside the check-in circle. Sprint 8S Revision 3:
+ * the launch also writes last month's unresolved minutes items into this meeting's minutes draft, shown here as tick
+ * boxes (CarriedOldBusiness).
  */
 function LiveMeetingLaunch({ user, meeting }: { user: SessionUser; meeting: Meeting }) {
   const [launch, setLaunch] = useState<LiveMeetingLaunchResult | null>(null);
@@ -1101,6 +1236,7 @@ function LiveMeetingLaunch({ user, meeting }: { user: SessionUser; meeting: Meet
           </div>
         </div>
       ) : null}
+      {launch && !launch.state.meeting.minutes_published_at ? <CarriedOldBusiness key={meeting.id} user={user} meetingId={meeting.id} launch={launch} /> : null}
     </section>
   );
 }
@@ -1147,6 +1283,7 @@ function MinutesEditor({ user, meeting, countdown, onSaved }: { user: SessionUse
           </Button>
         </div>
       </div>
+      {preview ? null : <MinutesChecklist text={text} onChange={setText} label="Checklist items in these minutes" />}
       {preview ? (
         <div className="max-h-72 min-h-40 overflow-y-auto rounded border-2 border-line px-3 py-2">
           {text.trim() ? <Markdown source={text} idPrefix={`minutes-${meeting.id}`} /> : <p className="text-sm text-muted">Nothing written yet.</p>}

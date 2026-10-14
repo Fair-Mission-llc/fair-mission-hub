@@ -120,6 +120,7 @@ import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, Devot
 import type { QuarantineDeskEntry, QuarantinedHours } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
 import type { BulletinLayoutInput, LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
+import type { OldBusinessItem } from './old-business';
 import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeofenceChanges } from './geofence';
 import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './council-goals';
@@ -3431,9 +3432,18 @@ export interface DataService {
      * Sprint 8B, the Recorder Desk's Start Live Meeting Sequence: startLiveAssemblyConsole for the meeting, then the
      * council's 4-digit check-in PIN (Council.meeting_pin_token) for the chair to read out. Same keepers as
      * saveMeetingMinutes (RECORDER_REQUIRED, COUNCIL_ACCESS_DENIED); MEETING_NOT_FOUND for an unknown meeting. A meeting
-     * already live keeps its locked quorum count.
+     * already live keeps its locked quorum count. Sprint 8S Revision 3: the launch also reads the unresolved items of
+     * last month's published minutes (oldBusinessItems for the meeting's date) and, while this meeting's minutes are
+     * unpublished and hold no Old Business block, writes them at the top of its minutes draft as open checkboxes
+     * (withOldBusiness). The result carries the items and the draft.
      */
     launchLiveMeeting(actorId: number, meetingId: number): Promise<LiveMeetingLaunch>;
+    /**
+     * Sprint 8S Revision 3, the automated Old Business engine: the open checkbox items ('- [ ] ...') of the council's
+     * published minutes from the calendar month before `asOfDate` (YYYY-MM-DD), oldest meeting first, each text once.
+     * Published minutes are council reading, like listUpcoming, so no actor is needed.
+     */
+    listOldBusiness(councilId: number, asOfDate: string): Promise<OldBusinessItem[]>;
     /**
      * Sprint 6B: the meeting's St. Mary's agenda (MeetingAgendaView), readable like the live state by any Active member
      * of its council or an Active Super Admin (COUNCIL_ACCESS_DENIED). Speakers are resolved now: a named member, else
@@ -3780,6 +3790,15 @@ export interface DataService {
      * registered, and INVALID_DATE for a malformed payout date.
      */
     payApprovedRequest(actorId: number, requestId: number, checkDetails: CharitableRequestCheckDetails): Promise<CharitableRequestPayment>;
+    /**
+     * Sprint 8S Revision 3, the [ ✍️ FS/GK Compliance Endorsement ] step: endorses a voted-approved, unpaid request for
+     * payment (compliance_endorsed_by_member_id = actorId, compliance_endorsed_at = now). The council's Active Financial
+     * Secretary, Grand Knight or Deputy Grand Knight, or an Active Super Admin (CHARITY_ENDORSER_REQUIRED,
+     * COUNCIL_ACCESS_DENIED). Rejects RECORD_NOT_FOUND, REQUEST_STATUS_CONFLICT unless approved, unpaid and not yet
+     * endorsed, and SELF_ENDORSEMENT_BLOCKED for the request's own Knight Shepherd. Since schema 96 payApprovedRequest
+     * refuses an unendorsed request (CHARITY_ENDORSEMENT_REQUIRED) and its endorser (ENDORSER_PAYOUT_BLOCKED).
+     */
+    endorseApprovedRequest(actorId: number, requestId: number): Promise<CharitableRequest>;
     // ---- request threads and the expense link (Sprint 6H) ----
     /**
      * The council's vetted requests a member may link an expense sheet to (ExpenseReport.charity_request_id): RequestStatus

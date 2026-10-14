@@ -26,7 +26,10 @@ const form = (over: Partial<NewCharitableRequest> = {}): NewCharitableRequest =>
   ...over,
 });
 
-/** Filed by `shepherdId`, vetted by the Financial Secretary (Admin 2), put on the agenda and voted `result`. */
+/**
+ * Filed by `shepherdId`, vetted by the Financial Secretary (Admin 2), put on the agenda and voted `result`. Sprint 8S
+ * Revision 3: a passed request is then endorsed for payment by the Super Admin, so Admin 2 may write its check.
+ */
 async function votedRequest(db: DataService, result: 'Passed' | 'Failed', shepherdId: number = MEMBER.member, over: Partial<NewCharitableRequest> = {}): Promise<number> {
   const { request } = await db.charities.submitCharitableRequest(shepherdId, form(over));
   const vetter = shepherdId === MEMBER.admin ? MEMBER.superAdmin : MEMBER.admin;
@@ -35,6 +38,7 @@ async function votedRequest(db: DataService, result: 'Passed' | 'Failed', shephe
   await db.meetings.populateAnnualCadence(MEMBER.superAdmin, OWN, CADENCE, '2026-2027');
   const { motion } = await db.charities.routeRequestToNextEligibleAgenda(MEMBER.superAdmin, request.id);
   await db.meetings.finalizeProposedMotionVote(MEMBER.superAdmin, motion.id, result);
+  if (result === 'Passed' && shepherdId !== MEMBER.superAdmin) await db.charities.endorseApprovedRequest(MEMBER.superAdmin, request.id);
   return request.id;
 }
 

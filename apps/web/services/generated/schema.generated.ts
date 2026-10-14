@@ -4766,6 +4766,20 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "compliance_endorsed_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "compliance_endorsed_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -4812,6 +4826,11 @@ export const TABLES: Record<string, TableMeta> = {
       {
         "column": "TargetBudgetLineID",
         "refTable": "CouncilBudgetForecast",
+        "refColumn": "id"
+      },
+      {
+        "column": "compliance_endorsed_by_member_id",
+        "refTable": "Member",
         "refColumn": "id"
       }
     ],
@@ -13169,6 +13188,30 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "EventID": 9,
         "DonationAmount": 150,
         "RecordedBy": 34
+      }
+    ]
+  },
+  {
+    "table": "Meeting",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "Meeting Name": "September Business Meeting",
+        "Meeting Description": "St. Mary's Cathedral monthly business meeting",
+        "Date": "2026-09-15",
+        "Time Start": "19:30:00",
+        "Time End": "21:00:00",
+        "Location": "St. Mary's Cathedral",
+        "Agenda": "",
+        "MinutesURL": "",
+        "MeetingType": 1,
+        "OwnerID": 19,
+        "IsMultiDay": 0,
+        "MeetingTypeID": 1,
+        "IsLiveInProgress": 0,
+        "LiveQuorumRosterCount": null,
+        "minutes_text": "# Call to order\n- Opened at 7:30 PM by the Grand Knight; 24 members present.\n\n# Reports\n- The Treasurer reported the picnic closed with a surplus.\n\n# Projects\n- [x] Order replacement banners for the parish picnic\n- [ ] Seal the teak furniture on the parish patio before the rains\n- [ ] Organize the council storage room in the parish hall basement\n\n# Adjournment\n- Closed at 8:55 PM with a prayer for deceased members.",
+        "minutes_published_at": "2026-09-18 20:00:00"
       }
     ]
   }

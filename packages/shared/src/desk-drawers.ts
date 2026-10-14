@@ -16,8 +16,11 @@
 // Sprint 8S Revision 2 (desk-workflows.ts): the Financial Secretary and Treasurer Desks each carry the Expense Report (ER)
 // Workflow and Charitable Donation Workflow drawers, lit while work waits on the reader's own step, and the Grand
 // Knight's Council Election Tracker is now '[ 🗳️ Council Election Workflow ]' (id 'election-workflow').
+// Sprint 8S Revision 3: the Charitable Donation Workflow tracks OUTGOING charity checks (charity-pipeline.ts) and also
+// sits on the Grand Knight Desk, for the GK and DGK's compliance endorsement (gate 'charity-endorsement').
 import type { DiaryEntryDetail, ExpenseReportDetail, LegacyYear, SessionUser } from './contract';
 import type { Meeting } from './types';
+import { canEndorseCharityRequest } from './charity-pipeline';
 import { CHARITABLE_DONATION_WORKFLOW_TITLE, COUNCIL_ELECTION_WORKFLOW_TITLE, EXPENSE_REPORT_WORKFLOW_TITLE, type FinanceWorkflowDesk } from './desk-workflows';
 import { canRespondToAffiliation } from './council-affiliations';
 import { canSetCouncilGoals } from './council-goals';
@@ -27,7 +30,6 @@ import { canLendCouncilAssets } from './loaner-library';
 import { DESK_FOCUS_TARGETS, type DashboardTabId } from './officer-desks';
 import {
   canManageBudgetForecast,
-  canBatchCodeDonations,
   canPayExpenseReport,
   canReviewVolunteerQuarantine,
   canViewExecutiveAudits,
@@ -54,7 +56,7 @@ export const DESK_RETURN_STORAGE_KEY = 'kofc.deskReturn';
 export const OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE = 'Operations Knowledge Archive';
 
 /** Who sees a drawer besides its portal area (when it has one). */
-export type DeskDrawerGate = 'loaner-library' | 'planning' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'always';
+export type DeskDrawerGate = 'loaner-library' | 'planning' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'charity-endorsement' | 'always';
 
 /** The desks built as blotters: every officer desk. Home, the Member Desk and the Super Admin Desk are not. */
 export type DrawerDeskId = Extract<DashboardTabId, 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian'>;
@@ -118,6 +120,8 @@ export interface DeskDrawerSpec {
 }
 
 const ARCHIVE = OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE;
+/** Sprint 8S Revision 3: the Charitable Donation Workflow follows money going OUT to charities. */
+const CHARITY_PIPELINE_SUMMARY = 'Charity request › FS/GK endorsement › Treasurer check';
 const ARCHIVE_SUMMARY = "Search every council's signed operating notes";
 
 /** Every drawer on the officer desks, in display order per desk (Sprints 8P Stage 2 and Stage 3). */
@@ -128,6 +132,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'shifts-awaiting-hours', title: 'Shifts Awaiting Hours', summary: 'Volunteers who served but have not logged time', gate: 'executive-audits', rowId: DESK_FOCUS_TARGETS.hours.rowId, alerts: true },
   { desk: 'grand-knight', id: 'access-requests', title: 'Inbound Council Mail Center', summary: 'Access requests from councils not yet on the platform', gate: 'super-admin', rowId: DESK_FOCUS_TARGETS.access.rowId, alerts: true },
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
+  { desk: 'grand-knight', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-donation-workflow', alerts: true },
   { desk: 'grand-knight', id: 'planning-budgeting', title: 'Planning & Budgeting Workflow', summary: 'Goals, the June review, the July 1 lock and the budget vote', gate: 'planning', rowId: 'drawer-planning-budgeting' },
   { desk: 'grand-knight', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: 'The ballot, May nominations, the June vote and the July 1 term', area: 'elections', rowId: 'drawer-election-workflow' },
   { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
@@ -138,7 +143,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   // ---- Financial Secretary Desk
   { desk: 'financial-secretary', id: 'payment-requests', title: 'Payment Requests', summary: 'Verify and sign the written order on each sheet', area: 'expenses/audit', rowId: DESK_FOCUS_TARGETS.orders.rowId, alerts: true },
   { desk: 'financial-secretary', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: 'Every signature step of a sheet, worked in place', area: 'expenses/queue', rowId: 'drawer-fs-er-workflow', alerts: true },
-  { desk: 'financial-secretary', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: 'Record, code and close the council’s gifts', area: 'donations', rowId: 'drawer-fs-donation-workflow', alerts: true },
+  { desk: 'financial-secretary', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-fs-donation-workflow', alerts: true },
   { desk: 'financial-secretary', id: 'er-routing-track', title: 'Expense Report (ER) Routing Track', summary: 'Every open sheet and the signature it waits for', area: 'expenses/queue', rowId: 'drawer-er-routing-track' },
   { desk: 'financial-secretary', id: 'donation-records', title: 'Charitable Donation Records', summary: 'Record, check and correct council donations', area: 'donations', rowId: 'drawer-donation-records' },
   { desk: 'financial-secretary', id: 'church-disbursements', title: 'Church Disbursement Requests', summary: "Record the check for the parish's share", gate: 'always', rowId: 'financial-secretary-church-disbursements' },
@@ -151,7 +156,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'treasurer', id: 'er-settlement', title: 'Expense Report (ER) Settlement', summary: 'Pay fully signed sheets by check', area: 'expenses/disbursements', rowId: 'drawer-er-settlement', alerts: true },
   { desk: 'treasurer', id: 'charity-matches', title: 'Charitable Contribution Matches', summary: 'Match approved charity requests and gifts to their checks', area: 'charities/queue', rowId: 'drawer-charity-matches', alerts: true },
   { desk: 'treasurer', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: 'Every signature step of a sheet, worked in place', area: 'expenses/queue', rowId: 'drawer-treasurer-er-workflow', alerts: true },
-  { desk: 'treasurer', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: 'Record, code and close the council’s gifts', area: 'donations', rowId: 'drawer-treasurer-donation-workflow', alerts: true },
+  { desk: 'treasurer', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-treasurer-donation-workflow', alerts: true },
   { desk: 'treasurer', id: 'planning-budgeting', title: 'Planning & Budgeting Workflow', summary: 'Goals, the June review, the July 1 lock and the budget vote', gate: 'planning', rowId: 'drawer-treasurer-planning-budgeting' },
   { desk: 'treasurer', id: 'cash-box-audit', title: 'Cash Box Audit Closure Panel', summary: 'Count each concluded event’s cash box and log any variance', gate: 'always', rowId: 'treasurer-cash-box-audit' },
   { desk: 'treasurer', id: 'batch-coder', title: 'High-Volume Batch Transaction Coder', summary: 'Code many electronic donations to one Revenue line', gate: 'always', rowId: 'treasurer-batch-coder' },
@@ -186,6 +191,8 @@ function clearedBy(u: Actor, spec: DeskDrawerSpec, councilId: number, areas: Rea
       return canViewExecutiveAudits(u, councilId);
     case 'super-admin':
       return isSuperAdmin(u);
+    case 'charity-endorsement':
+      return canEndorseCharityRequest(u, councilId);
     default:
       return true;
   }
@@ -226,12 +233,6 @@ export const erWorkflowAlert = (u: Actor, desk: FinanceWorkflowDesk, queue: read
     ? fsPaymentRequestAlert(u, queue)
     : treasurerCodingAlert(u, queue.filter((d) => awaitsTreasurerCoding(d.report))) || erSettlementAlert(u, queue);
 
-/**
- * Sprint 8S Revision 2, the Charitable Donation Workflow accent: only the Treasurer's steps wait on a person (gifts to
- * code, cash boxes to close), so it lights on the Treasurer Desk for a reader who may code them. Recording never waits.
- */
-export const donationWorkflowAlert = (u: Actor, councilId: number, desk: FinanceWorkflowDesk, waiting: number | null): boolean =>
-  desk === 'treasurer' && (waiting ?? 0) > 0 && canBatchCodeDonations(u, councilId);
 
 // ---- the Recorder's Historical Meeting Minutes Archive and the Historian's Fraternal Diary Entry Logs (Stage 3) ----
 

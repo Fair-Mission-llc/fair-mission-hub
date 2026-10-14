@@ -1050,3 +1050,30 @@ VALUES
 (1, '2026-10-10', 1, 1, NULL, 'Cash box drop - first Saturday', 9, 250.00, 33),
 (1, '2026-10-11', 3, 1, NULL, 'Venmo parking gifts - first Sunday', 9, 150.00, 34);
 GO
+
+-- Sprint 8S Revision 3 (schema 96): the September business meeting (Meeting 2) with published minutes. Its two open
+-- checkbox items - the teak furniture and the storage room - are the Old Business the engine carries: Home lists them as
+-- council priorities, and launching the October meeting writes them into its minutes draft as open checkboxes. The
+-- ticked banner item is resolved and stays behind.
+INSERT INTO [Meeting] (
+    [CouncilID], [Meeting Name], [Meeting Description], [Date], [Time Start], [Time End], [Location], [Agenda],
+    [MinutesURL], [MeetingType], [OwnerID], [IsMultiDay], [MeetingTypeID], [IsLiveInProgress], [LiveQuorumRosterCount],
+    [minutes_text], [minutes_published_at]
+)
+VALUES
+(1, 'September Business Meeting', 'St. Mary''s Cathedral monthly business meeting', '2026-09-15', '19:30:00', '21:00:00', 'St. Mary''s Cathedral',
+ '', '', 1, 19, 0, 1, 0, NULL,
+ '# Call to order
+- Opened at 7:30 PM by the Grand Knight; 24 members present.
+
+# Reports
+- The Treasurer reported the picnic closed with a surplus.
+
+# Projects
+- [x] Order replacement banners for the parish picnic
+- [ ] Seal the teak furniture on the parish patio before the rains
+- [ ] Organize the council storage room in the parish hall basement
+
+# Adjournment
+- Closed at 8:55 PM with a prayer for deceased members.', '2026-09-18 20:00:00');
+GO

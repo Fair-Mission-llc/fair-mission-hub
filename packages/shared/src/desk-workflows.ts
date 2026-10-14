@@ -9,9 +9,10 @@
 //                                     the FS payment request, the Treasurer's ledger coding, the GK counter-signature
 //                                     and the check - each step counting the council's sheets that wait on it. The
 //                                     reader's own steps are marked; the drawer mounts the in-place action modules.
-//   Charitable Donation Workflow      the same two desks. A gift is recorded (FS), its electronic gifts are coded to a
-//                                     Revenue line (Treasurer, batch coder) and each event's cash box is counted and
-//                                     closed (Treasurer, cash box audit).
+//   Charitable Donation Workflow      the same two desks and, since Sprint 8S Revision 3, the Grand Knight Desk. It
+//                                     tracks OUTGOING charity money (charity-pipeline.ts): Member Charity Request ->
+//                                     FS/GK Compliance Endorsement -> Treasurer Check Settlement. (In Revision 2 it
+//                                     tracked incoming gifts; those stay on the batch coder and cash box drawers.)
 //   Council Election Workflow         Grand Knight Desk. The ballot (before May 1), nominations (May), the election
 //                                     (June) and the new term (July 1), over the nominations grid.
 //
@@ -88,50 +89,6 @@ export function buildExpenseWorkflow(desk: FinanceWorkflowDesk, queue: readonly 
         : current >= 0
           ? `Nothing waits on you. ${counts[current]} sheet${counts[current] === 1 ? '' : 's'} wait${counts[current] === 1 ? 's' : ''} at ${steps[current].label} (${steps[current].when}).`
           : 'Every sheet is paid. Nothing waits in the expense workflow.';
-  return { steps, waiting, headline };
-}
-
-// ---- the Charitable Donation Workflow ------------------------------------------------------------------------------
-
-export type DonationWorkflowStepKey = 'record' | 'code' | 'close';
-
-export const DONATION_WORKFLOW_DESK_STEPS: Record<FinanceWorkflowDesk, readonly DonationWorkflowStepKey[]> = {
-  'financial-secretary': ['record'],
-  treasurer: ['code', 'close'],
-};
-
-/**
- * The Charitable Donation Workflow for one desk. `uncoded` is the batch coder's queue length and `openCashBoxes` the
- * events whose cash box is not yet closed (null when the reader cannot read them). Recording has no queue: it is
- * always open, so it is the Financial Secretary's current step whenever nothing else waits.
- */
-export function buildDonationWorkflow(
-  desk: FinanceWorkflowDesk,
-  input: { uncoded: number | null; openCashBoxes: number | null },
-): { steps: WorkflowStep[]; waiting: number | null; headline: string } {
-  const own = DONATION_WORKFLOW_DESK_STEPS[desk];
-  const counts: Record<DonationWorkflowStepKey, number | null> = { record: null, code: input.uncoded, close: input.openCashBoxes };
-  const order: DonationWorkflowStepKey[] = ['record', 'code', 'close'];
-  const current = order.find((k) => own.includes(k) && (counts[k] ?? 0) > 0) ?? order.find((k) => k !== 'record' && (counts[k] ?? 0) > 0) ?? 'record';
-  const steps: WorkflowStep[] = [
-    { key: 'record', label: 'Record the gift', when: 'Financial Secretary', detail: 'Log each donation with its payment method and amount.', state: 'upcoming', count: null },
-    { key: 'code', label: 'Code to revenue', when: 'Treasurer', detail: 'Code the card and QR gifts to a Revenue line in one posting.', state: 'upcoming', count: input.uncoded },
-    { key: 'close', label: 'Close the cash box', when: 'Treasurer', detail: 'Count each event’s cash box and lock its collection.', state: 'upcoming', count: input.openCashBoxes },
-  ].map((s): WorkflowStep => ({
-    ...s,
-    yours: own.includes(s.key as DonationWorkflowStepKey),
-    // Recording has no queue: once a later step is current, the gifts before it count as recorded.
-    state: s.key === current ? 'current' : s.count === 0 || s.key === 'record' ? 'done' : 'upcoming',
-  }));
-  const waiting = desk === 'treasurer' ? (input.uncoded === null && input.openCashBoxes === null ? null : (input.uncoded ?? 0) + (input.openCashBoxes ?? 0)) : null;
-  const headline =
-    desk === 'treasurer'
-      ? waiting
-        ? `${input.uncoded ?? 0} electronic gift${input.uncoded === 1 ? '' : 's'} to code and ${input.openCashBoxes ?? 0} cash box${input.openCashBoxes === 1 ? '' : 'es'} to close.`
-        : waiting === 0
-          ? 'Every gift is coded and every cash box is closed.'
-          : 'Loading the donation queues…'
-      : 'Record each gift as it arrives. The Treasurer codes the electronic gifts and closes each cash box.';
   return { steps, waiting, headline };
 }
 

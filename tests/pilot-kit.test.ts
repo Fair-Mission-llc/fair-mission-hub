@@ -268,6 +268,9 @@ describe.each(drivers)('$name driver: the live group flows hold true', (d) => {
 
     // After the session: the council votes, and the Treasurer pays the approved request.
     await db.meetings.finalizeProposedMotionVote(gk, motion.id, 'Passed');
+    // Sprint 8S Revision 3: the Grand Knight's compliance endorsement comes before the Treasurer's check.
+    await expectRule(db.charities.payApprovedRequest(treasurer, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' }), 'CHARITY_ENDORSEMENT_REQUIRED');
+    await db.charities.endorseApprovedRequest(gk, request.id);
     await expectRule(db.charities.payApprovedRequest(alpha, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' }), 'FINANCE_OFFICER_REQUIRED');
     const paid = await db.charities.payApprovedRequest(treasurer, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' });
     expect(paid.disbursement.Amount).toBe(350);

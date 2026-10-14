@@ -415,8 +415,9 @@ GROUP_FLOWS: tuple[Flow, ...] = (
                  'A notice reads "Request #... is a Proposed Motion for" the soonest Monthly meeting at least 10 days away, with its date.', who='FS User'),
         ),
         after=(
-            'The council debates and votes on the request at that Monthly meeting. If it passes, the Financial Secretary pays '
-            'it from the Charity Check Issuance Console on his desk; the Shepherd never writes the check himself.'
+            'The council debates and votes on the request at that Monthly meeting. If it passes, the Grand Knight or Financial '
+            'Secretary endorses it in the Charitable Donation Workflow drawer, and the Treasurer pays it from the Charity Check '
+            'Issuance Console; neither the Shepherd nor the endorser writes the check.'
         ),
     ),
     Flow(
@@ -934,8 +935,8 @@ def poster_financial(output: Path, generated: str) -> None:
         "Parish split: the Treasurer requests the parish's share; the FS pays it by check.",
     ], GOLD)
     note_panel(c, side_x, side_y, side_w, None, 'Charity grants going out', [
-        'After the council votes a grant, it waits in the Charity Check Issuance Console drawer on the Financial Secretary Desk.',
-        'FS or Treasurer: Pay approved request, one check for the approved amount.',
+        'After the council votes a grant, the FS or GK endorses it in the Charitable Donation Workflow drawer.',
+        'Treasurer (or FS, if he did not endorse it): Pay approved request, one check for the approved amount.',
         "The grant's budget line is charged; the Shepherd cannot pay it.",
     ], NAVY)
     c.showPage()
@@ -962,8 +963,8 @@ def poster_charity(output: Path, generated: str) -> None:
          'Place on next agenda puts it on the soonest Monthly meeting at least 10 days away, as a proposed motion.'),
         ('5', 'Council vote', 'The members at the meeting', 'Governance > Live Meeting Console',
          'Secret smartphone ballot, or the Recorder\'s hand tally. Decided Passed, Failed or Tabled.'),
-        ('6', 'Pay the grant', 'Financial Secretary or Treasurer - never the Shepherd', 'Active Desks > Financial Secretary Desk > Charity Check Issuance Console',
-         'Pay approved request: one check for the approved amount, listed against the charity and charged to the budget line.'),
+        ('6', 'Endorse and pay', 'FS or GK endorses; another finance officer pays - never the Shepherd', 'Active Desks > Treasurer Desk > Charitable Donation Workflow',
+         'FS/GK Compliance Endorsement, then Pay approved request: one check for the approved amount, charged to the budget line.'),
         ('7', 'Follow up', 'The Trustees', 'Six months after filing',
          'The Trustees are prompted for a status report on what the grant did.'),
     ]

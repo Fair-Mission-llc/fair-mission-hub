@@ -141,14 +141,15 @@ export const EXECUTIVE_DASHBOARD_HREF = '/executive-dashboard';
  * Member Desk with the Volunteer Check-In & Service Center (MEMBER_DESK_SECTIONS).
  * Sprint 8S: the reminders and the prayer list are back on Home - the reminders read only, with no links into the
  * desks. Sprint 8S Corrected: the prayer list carries the '[ 🙏 Praying Hands ]' button again; the shift sign-ups stay
- * on the Member Actions page.
+ * on the Member Actions page. Sprint 8S Revision 3: Today's Event Agenda became the Upcoming Event Agenda (the next 7
+ * days, with last month's unresolved minutes items as read-only council priorities - old-business.ts).
  */
 export const HOME_UNIVERSAL_CARDS = [
   'Latest Council Newsletters & Bulletins',
   'Bible Verse of the Day',
   'Live Actionable Reminders',
   'Liturgical Feast Day Tracker',
-  "Today's Event Agenda",
+  'Upcoming Event Agenda',
   'Top 5 Fraternal Volunteers',
   'Community Prayer Request List',
 ] as const;
@@ -337,6 +338,17 @@ export function feastDayTracker(today: string, days: number = FEAST_TRACKER_DAYS
 // ---- today's event agenda ----------------------------------------------------------------------------
 
 /** The calendar entries that fall on `today` (multi-day events included), timed meetings by start time after all-day events. */
+/**
+ * Sprint 8S Revision 3, the '[ 📅 Upcoming Event Agenda ]' card: the calendar entries overlapping the `days` days from
+ * `today` (today included; multi-day events included), by start day, then start time and title.
+ */
+export function upcomingAgenda(entries: readonly CalendarEntry[], today: string, lastDay: string): CalendarEntry[] {
+  return entries
+    .filter((e) => e.startDate <= lastDay && e.endDate >= today)
+    .slice()
+    .sort((a, b) => a.startDate.localeCompare(b.startDate) || (a.startTime ?? '').localeCompare(b.startTime ?? '') || a.title.localeCompare(b.title) || a.id - b.id);
+}
+
 export function todaysAgenda(entries: readonly CalendarEntry[], today: string): CalendarEntry[] {
   return entries
     .filter((e) => e.startDate <= today && e.endDate >= today)

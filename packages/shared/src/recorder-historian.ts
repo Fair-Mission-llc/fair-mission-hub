@@ -23,6 +23,7 @@ import { addDays } from './planning';
 import { councilLabel, sortCouncils } from './presentation';
 import { BusinessRuleError, describeActor, hasAdminRights, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 import { councilTenantType, type TenantType } from './tenant';
+import type { OldBusinessItem } from './old-business';
 import type { BulletinBodyFormat, Council, CouncilHistorianBulletin, Meeting } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType'> & { roles?: readonly string[] };
@@ -178,6 +179,12 @@ export interface LiveMeetingLaunch {
   pinToken: string;
   /** True while the PIN is still the factory '0000': the Grand Knight should change it. */
   pinIsDefault: boolean;
+  /**
+   * Sprint 8S Revision 3: the unresolved items of last month's published minutes (old-business.ts oldBusinessItems for
+   * the meeting's date), and the meeting's minutes draft after the launch wrote them in as open checkboxes.
+   */
+  oldBusiness: OldBusinessItem[];
+  minutesText: string;
 }
 
 // ---- the historian's monthly bulletins ------------------------------------------------------------------

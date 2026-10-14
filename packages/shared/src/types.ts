@@ -1143,6 +1143,9 @@ export interface CharitableRequest {
   PaymentOrderId?: number | null; // the CharitableDisbursementLedger check that paid it
   MissionAreaID?: number | null; // Sprint 5Z-2: CouncilMissionArea of the same council, chosen on the intake form
   TargetBudgetLineID?: number | null; // Sprint 5Z-2: the CouncilBudgetForecast line the vetter would pay it from
+  /** Sprint 8S Revision 3 (schema 96): the FS, GK or DGK who endorsed the approved request for payment (charity-pipeline.ts). */
+  compliance_endorsed_by_member_id?: number | null;
+  compliance_endorsed_at?: string | null; // DATETIME, 'YYYY-MM-DD HH:MM:SS' UTC
 }
 
 /**

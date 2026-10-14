@@ -162,9 +162,9 @@ describe('the purely informational Home (Sprint 8R Corrected)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const grid = desks.slice(desks.indexOf('export function HomeWidgets('), desks.indexOf('// ---- the Officer Desks'));
     const rendered = [...grid.matchAll(/<([A-Z]\w+) /g)].map((m) => m[1]);
-    expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard', 'CommunityPrayerCard']);
+    expect(rendered).toEqual(['LatestBulletinsFeed', 'VerseOfTheDay', 'ReminderStream', 'FeastDayTracker', 'UpcomingEventAgenda', 'TopVolunteersCard', 'CommunityPrayerCard']);
     // Sprint 8S Corrected: the prayer card's Praying Hands (in PrayerRequestRow) is the one button on Home.
-    for (const card of ['VerseOfTheDay', 'FeastDayTracker', 'TodaysAgenda', 'TopVolunteersCard', 'ReminderStream', 'CommunityPrayerCard']) {
+    for (const card of ['VerseOfTheDay', 'FeastDayTracker', 'UpcomingEventAgenda', 'TopVolunteersCard', 'ReminderStream', 'CommunityPrayerCard']) {
       const start = desks.indexOf(`function ${card}(`);
       const body = desks.slice(start, desks.indexOf('\n}\n', start));
       expect(body, card).not.toMatch(/<Button|onClick=/);
