@@ -300,8 +300,8 @@ describe.each(drivers)('$name driver: the Old Business engine', (d) => {
 
 describe('3. schema 96 and the seed', () => {
   it('moves the phone database to 96 and adds the endorsement columns', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(96);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 96;');
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(96);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain(' * 96: CharitableRequest.compliance_endorsed_by_member_id');
     const schema = read('Schema.sql');
     expect(schema).toContain('(schema version 96)');
     expect(schema).toContain('ALTER TABLE [CharitableRequest] ADD [compliance_endorsed_by_member_id] INTEGER NULL;');

@@ -1900,7 +1900,7 @@ Cash, budgets and the general ledger stay on the **Executive Dashboard** and the
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A volunteer is missing from the month. | The volunteer did not log hours yet. | Ask the volunteer to log the hours. Hours close after the logging window, 90 days by default. |
-| The devotions card shows 0. | No member logged devotions on the phone. | Tell members about **My devotions** on the phone Home screen. |
+| The devotions card shows 0. | No member logged devotions on the phone. | Tell members about the **[ 📖 Daily Devotional Drawer ]** on the phone Home screen. |
 
 ### 14.3 Concept: personal impact and the canonization shield
 
@@ -1923,7 +1923,7 @@ The shield has four levels. A member reaches a level when both the hours and the
 
 - The default thresholds are 100 hours and 10 events.
 - Devotions do not change the shield. The shield counts logged service only.
-- The member logs devotions on the phone: Home → **My devotions** → **Log devotions**. Only the member sees the member's own tally.
+- The member logs devotions on the phone: Home → **[ 📖 Daily Devotional Drawer ]** → **Log devotions**. Only the member sees the member's own tally.
 
 ### 14.4 Set the canonization shield thresholds
 
@@ -4011,7 +4011,8 @@ Four figures show at the top of the panel: **Events awaiting the count**, **Logg
 1. Record the last donation, for example the cash box drop.
 2. Tap **[ 🛑 Conclude Event Session & Lock Logs ]**.
 3. Read the warning.
-4. Tap **Yes, conclude & lock**. You cannot undo this.
+4. Put your thumb on the gold circle at the left of **Slide to Conclude & Lock**.
+5. Drag the circle to the right end of the bar. Then let go. You cannot undo this.
 
 **Expected result:** The message **… is concluded and its logs are locked. The Treasurer can now count the cash box.** shows. The phone leaves the session. The event is no longer in the **EVENT** list of **Start accepting donations**.
 
@@ -4019,6 +4020,7 @@ Four figures show at the top of the panel: **Events awaiting the count**, **Logg
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | You tapped the button by mistake. | The warning card is open. | Tap **Cancel**. |
+| The circle springs back. Nothing happens. | You let go before the right end of the bar. | Drag the circle all the way to the right end. |
 | A donation is refused with "collection session is concluded". | Another phone concluded the session. | Record the gift as a standalone donation and tell the Treasurer. |
 
 ### 24.5 Code electronic donations in a batch

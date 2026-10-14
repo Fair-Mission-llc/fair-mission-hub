@@ -6,19 +6,24 @@
 //
 // The shield shows the member's level - Servant of God, Venerable, Blessed or Saint - measured only on their logged
 // service (volunteer hours and distinct events) against the council's thresholds, with a gold bar toward Saint and what
-// the next level still needs. Like the rest of the Faith Center it is a Knights of Columbus extension: for a white-label
+// the next level still needs. Sprint 8S Revision 4: the section is the closed '[ 📖 Daily Devotional Drawer ]'
+// (mobile-home.ts), and today's NABRE verse (dailyVerse) heads it, so the scripture shares the drawer with the tally. Like the rest of the Faith Center it is a Knights of Columbus extension: for a white-label
 // tenant the section draws nothing.
 import { useState } from 'react';
 import { View } from 'react-native';
 import {
   CANONIZATION_LEVELS,
+  DAILY_DEVOTIONAL_DRAWER_LABEL,
+  dailyVerse,
   DEVOTIONAL_ENTRY_MAX,
   describeError,
   isFraternalTenant,
+  NABRE_NOTICE,
+  toIsoDate,
   type CanonizationRank,
   type DevotionalEntry,
 } from '@kofc/shared';
-import { AppInput, AppText, Button, Card, Field, Notice, Section } from '@/components/ui';
+import { AppInput, AppText, Button, Card, Drawer, Field, Notice } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/app-context';
 import { useLoad } from '@/lib/use-async';
 import { useTheme } from '@/lib/layout-mode';
@@ -86,7 +91,7 @@ const FIELDS: { key: keyof DevotionalEntry; label: string }[] = [
 
 /** Home's devotional section. `version` changes on pull-to-refresh so the tally reloads with the screen. */
 export function DevotionalTracker({ version }: { version: number }) {
-  const { space } = useTheme();
+  const { color, space } = useTheme();
   const user = useUser();
   const fraternal = isFraternalTenant(useTenantType());
   const progress = useLoad(async () => (fraternal ? db.devotionals.getProgress(user.memberId) : null), [user.memberId, fraternal, version]);
@@ -114,8 +119,19 @@ export function DevotionalTracker({ version }: { version: number }) {
   };
 
   const p = progress.data;
+  const verse = dailyVerse(toIsoDate(new Date()));
   return (
-    <Section title="My devotions">
+    <Drawer label={DAILY_DEVOTIONAL_DRAWER_LABEL} summary={verse.reference}>
+      <Card accent={color.gold}>
+        <AppText variant="label" tone="muted">
+          📖 TODAY&apos;S SCRIPTURE
+        </AppText>
+        <AppText variant="title">“{verse.text}”</AppText>
+        <AppText variant="label">{verse.reference} (NABRE)</AppText>
+        <AppText variant="small" tone="muted">
+          {NABRE_NOTICE}
+        </AppText>
+      </Card>
       {progress.error ? <Notice tone="error" message={progress.error} /> : null}
       {p ? <CanonizationShield rank={p.rank} /> : null}
       <Card>
@@ -146,6 +162,6 @@ export function DevotionalTracker({ version }: { version: number }) {
           </AppText>
         </View>
       </Card>
-    </Section>
+    </Drawer>
   );
 }

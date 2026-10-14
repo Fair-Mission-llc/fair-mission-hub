@@ -3859,3 +3859,15 @@ ADD FOREIGN KEY([compliance_endorsed_by_member_id])
 REFERENCES [Member]([id])
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO
+
+-- =========================================================================
+-- Sprint 8S Revision 4: PHONE SESSION UNLOCK AND THE COMPRESSED PHONE HOME (schema version 97)
+--
+-- No table changes. Signing in (password or biometric sign-in) unlocks the whole phone app: no button inside a
+-- session asks for Face ID, a fingerprint or a passcode again. The Report Hours pocket gate is removed; every tap on an
+-- activity tile queues 15 minutes and the member drags 'Slide to Log Hours' to save them. The Donate screen's
+-- Conclude & Lock confirmation is a 'Slide to Conclude & Lock' swipe (SwipeToConfirm). Phone Home draws
+-- 'My Active Shifts' first and folds the prayer intentions into '[ 📿 Active Spiritual Intentions Drawer ]' and
+-- today's verse with the devotional tally into '[ 📖 Daily Devotional Drawer ]' (mobile-home.ts).
+-- The phone database version moves to 97.
+-- =========================================================================

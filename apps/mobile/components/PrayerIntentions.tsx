@@ -2,6 +2,8 @@
 // the council's open intentions, newest first, each with its '[ 🙏 Praying Hands ]' button and solidarity count, and a
 // box to post a new one. A tap counts once per member per intention per day (prayers.pray); after it the button reads
 // as prayed until tomorrow. The author, officers, Admins and Super Admins may close an intention.
+// Sprint 8S Revision 4: the list folds into the closed '[ 📿 Active Spiritual Intentions Drawer ]' (mobile-home.ts), whose
+// summary counts the open intentions, so Home opens tight.
 // The same list is on the web portal's Faith Center page. Like the rest of the Faith Center it is a Knights of Columbus
 // extension: for a white-label tenant the section draws nothing.
 import { useState } from 'react';
@@ -12,9 +14,10 @@ import {
   isFraternalTenant,
   platformSettings,
   PRAYING_HANDS_LABEL,
+  SPIRITUAL_INTENTIONS_DRAWER_LABEL,
   type PrayerIntentionDetail,
 } from '@kofc/shared';
-import { AppInput, AppText, Button, Card, EmptyState, Notice, Section } from '@/components/ui';
+import { AppInput, AppText, Button, Card, Drawer, EmptyState, Notice } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/app-context';
 import { useLoad } from '@/lib/use-async';
 import { useTheme } from '@/lib/layout-mode';
@@ -105,8 +108,9 @@ export function PrayerIntentions({ version }: { version: number }) {
   };
 
   const b = board.data;
+  const open = b?.intentions.length ?? 0;
   return (
-    <Section title="Council Prayer Intentions">
+    <Drawer label={SPIRITUAL_INTENTIONS_DRAWER_LABEL} summary={b ? `${open} open council intention${open === 1 ? '' : 's'}` : undefined}>
       {board.error ? <Notice tone="error" message={board.error} /> : null}
       <View style={{ gap: space.sm }}>
         <AppInput
@@ -128,6 +132,6 @@ export function PrayerIntentions({ version }: { version: number }) {
           b.intentions.map((item) => <IntentionCard key={`${item.intention.id}-${item.prayerCount}`} item={item} onChanged={board.reload} />)
         )
       ) : null}
-    </Section>
+    </Drawer>
   );
 }

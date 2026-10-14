@@ -8,10 +8,12 @@
 // Sprint 6L Extension 3: the Council Prayer Intentions List with its Praying Hands counters follows the greeting.
 // Sprint 7A: then My devotions - the member's devotional tally and canonization shield (DevotionalTracker).
 // Sprint 7A Extension: a card opens the Council Dashboard (member-center.tsx).
+// Sprint 8S Revision 4 (MOBILE_HOME_SECTIONS): My Active Shifts moves to the very top of the feed, above the feast day
+// banner and the greeting, and the prayer intentions and devotions fold into two closed drawers.
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { canAttachAssetPhoto, isUrgent, toIsoDate, withoutEndedShifts } from '@kofc/shared';
+import { canAttachAssetPhoto, isUrgent, MY_ACTIVE_SHIFTS_TITLE, toIsoDate, withoutEndedShifts } from '@kofc/shared';
 import { LiturgicalBanner } from '@/components/FaithCenter';
 import { DevotionalTracker } from '@/components/DevotionalTracker';
 import { PrayerIntentions } from '@/components/PrayerIntentions';
@@ -54,6 +56,22 @@ export default function DashboardScreen() {
         setPrayerVersion((v) => v + 1);
         void Promise.all([state.reload(), refreshFeatures()]);
       }}>
+      {state.error ? <Notice tone="error" message={state.error} /> : null}
+      {/* Sprint 8S Revision 4: the volunteer's next shifts come first, before anything else on Home. */}
+      {shiftsOn ? (
+        <Section title={MY_ACTIVE_SHIFTS_TITLE}>
+          {!data ? (
+            state.loading ? <Loading /> : null
+          ) : myShifts.length === 0 ? (
+            <EmptyState message="You are not signed up for any upcoming shifts. Open the Signup Desk to volunteer." />
+          ) : (
+            myShifts.map(({ shift, event }) => {
+              const urgent = isUrgent(shift.ShiftDate, data.today);
+              return <ShiftCard key={shift.id} shift={shift} event={event} look={urgent ? 'urgent' : 'normal'} badges={urgent ? <UrgentTag /> : undefined} />;
+            })
+          )}
+        </Section>
+      ) : null}
       {faithOn ? <LiturgicalBanner /> : null}
       <View>
         <AppText variant="heading" accessibilityRole="header">
@@ -72,24 +90,10 @@ export default function DashboardScreen() {
         </Card>
       </Section>
 
-      {state.error ? <Notice tone="error" message={state.error} /> : null}
-      {!data && state.loading ? <Loading /> : null}
+      {!shiftsOn && !data && state.loading ? <Loading /> : null}
 
       {data ? (
         <>
-          {shiftsOn ? (
-            <Section title="My shifts">
-              {myShifts.length === 0 ? (
-                <EmptyState message="You are not signed up for any upcoming shifts. Open the Signup Desk to volunteer." />
-              ) : (
-                myShifts.map(({ shift, event }) => {
-                  const urgent = isUrgent(shift.ShiftDate, data.today);
-                  return <ShiftCard key={shift.id} shift={shift} event={event} look={urgent ? 'urgent' : 'normal'} badges={urgent ? <UrgentTag /> : undefined} />;
-                })
-              )}
-            </Section>
-          ) : null}
-
           {expensesOn ? (
             <Section title="Expense reports">
               <Card accent={data.expenseSummary.returned > 0 ? color.red : color.navy}>

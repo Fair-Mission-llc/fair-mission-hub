@@ -944,8 +944,11 @@ const DB_NAME = 'kofc.db';
  * 96: CharitableRequest.compliance_endorsed_by_member_id and compliance_endorsed_at - the FS/GK Compliance Endorsement
  *     step of the outgoing charity pipeline, now required before a check pays an approved request; the Old Business
  *     engine reads last month's published minutes (Sprint 8S Revision 3).
+ * 97: no table change - signing in unlocks the whole app: the Report Hours pocket gate (Face ID on each tap) is gone,
+ *     taps queue for the Slide to Log Hours bar, and Conclude & Lock is a swipe (SwipeToConfirm); phone Home puts My
+ *     Active Shifts first and folds prayers and devotions into two drawers (Sprint 8S Revision 4).
  */
-const SCHEMA_VERSION = 96;
+const SCHEMA_VERSION = 97;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

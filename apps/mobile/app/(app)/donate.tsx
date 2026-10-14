@@ -25,7 +25,7 @@
 // Sprint 5Z-Final-Polish: the start card is a single bold heading, and the event dropdown offers only events at the
 // gate, under way or starting within the council's shift_signup_lock_hours (isEventAtGate; Sprint 7H, was a fixed 2 hours).
 // Sprint 8N: the pinned-event card ends with '[ 🛑 Conclude Event Session & Lock Logs ]' (events.concludeCollectionSession).
-// After a second tap to confirm, the event's collection is CONCLUDED for every phone: the gate intake closes, no more
+// After the member drags Slide to Conclude & Lock (SwipeToConfirm, Sprint 8S Revision 4), the event's collection is CONCLUDED for every phone: the gate intake closes, no more
 // donations are logged or changed for it, and the Treasurer's Cash Box Audit Closure Panel shows it ready for the count.
 // The event dropdown leaves out concluded events.
 import { useEffect, useState } from 'react';
@@ -50,6 +50,7 @@ import { DonationQr } from '@/components/DonationQr';
 import { GateIntakeOverlay, IntakeSessionSwitch } from '@/components/GateIntake';
 import { Dropdown } from '@/components/Dropdown';
 import { ReceiptScanTile, VERIFICATION_PHOTO_TITLE } from '@/components/ReceiptScanTile';
+import { SwipeToConfirm } from '@/components/SwipeToConfirm';
 import { AppInput, AppText, Button, Card, EmptyState, Field, Loading, Notice, Pill, Screen, Section } from '@/components/ui';
 import { FeatureGate } from '@/components/FeatureGate';
 import { useUser } from '@/lib/app-context';
@@ -462,10 +463,9 @@ function DonateScreenBody() {
                     This locks the donation logs for every phone. Nobody can add or change a donation for this event after this. The Treasurer counts the cash box
                     next.
                   </AppText>
-                  <View style={{ flexDirection: 'row', gap: space.md }}>
-                    <Button title="Cancel" variant="secondary" style={{ flex: 1 }} disabled={concluding} onPress={() => setConfirmConclude(false)} />
-                    <Button title="Yes, conclude & lock" variant="danger" style={{ flex: 2 }} busy={concluding} onPress={() => void conclude()} />
-                  </View>
+                  {/* Sprint 8S Revision 4: a swipe, not a second tap, so a pocket brush cannot lock the logs. */}
+                  <SwipeToConfirm title="Slide to Conclude & Lock" disabled={concluding} onConfirm={() => void conclude()} />
+                  <Button title="Cancel" variant="secondary" disabled={concluding} onPress={() => setConfirmConclude(false)} />
                 </Card>
               ) : (
                 <Button title={CONCLUDE_EVENT_SESSION_LABEL} variant="danger" onPress={() => setConfirmConclude(true)} />

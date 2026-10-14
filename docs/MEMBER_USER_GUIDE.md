@@ -67,7 +67,7 @@ The phone app has five tabs at the bottom of the screen. A gold bar marks the op
 
 | Tab | Use the tab to |
 | --- | --- |
-| **Home** | See your upcoming shifts and your expense report summary. |
+| **Home** | See your upcoming shifts first. Under them: the prayer and devotion drawers and your expense report summary. |
 | **Mtgs** | Answer meeting invitations and read meeting agendas. |
 | **Signup** | Find shifts in the next 30 days and sign up. |
 | **Report** | Log hours for a council activity or for a shift. |
@@ -454,7 +454,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 ![Phone: signing up for an open shift (placeholder)](../generated/mobile_app_catalog/shift_signup.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The shift card shows **YOU'RE SIGNED UP**. The shift also shows under **My shifts** on the **Home** tab.
+**Expected result:** The shift card shows **YOU'RE SIGNED UP**. The shift also shows under **My Active Shifts** on the **Home** tab.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -493,7 +493,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 
 **Goal:** See the shifts that you signed up for.
 
-**Start point:** Phone app → **Home** → **My shifts**. Web portal → Sidebar → Faith In Action → **Member Actions Hub** → **My active shifts**.
+**Start point:** Phone app → **Home** → **My Active Shifts**. Web portal → Sidebar → Faith In Action → **Member Actions Hub** → **My active shifts**.
 
 **Steps:**
 1. Open the start point.
@@ -507,13 +507,13 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 ![Report Absence (placeholder)](../generated/mobile_app_catalog/report_absence.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** A shift within 48 hours shows in red. The phone shows **WITHIN 2 DAYS**. The web shows **Within 48 hours**.
+**Expected result:** **My Active Shifts** is the first section on the phone **Home** tab. A shift within 48 hours shows in red. The phone shows **WITHIN 2 DAYS**. The web shows **Within 48 hours**.
 Other shifts show **Scheduled** on the web.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| A shift left **My shifts**. | The phone hides a shift when the shift ends. The phone also hides a shift marked as a no-show. | Check **My shift history** in the web **Hour ledger**. |
+| A shift left **My Active Shifts**. | The phone hides a shift when the shift ends. The phone also hides a shift marked as a no-show. | Check **My shift history** in the web **Hour ledger**. |
 | You cannot work a shift. | The phone app has no absence button. | Tell the event owner. The event owner finds a replacement. |
 
 ---
@@ -557,23 +557,19 @@ Each tile shows a gold status line.
 ![Phone: Rapid-Tap grid of navy 15-minute activity tiles (placeholder)](../generated/mobile_app_catalog/log_hours_grid.png)
 <!-- /KEEP_IMAGE -->
 
-### Concept: the safety gates
+### Concept: the slide bar
 
-A phone in a pocket can touch the screen by accident. A safety gate stops an accidental touch from logging time.
-The phone picks one gate for you. You do not choose the gate.
+A phone in a pocket can touch the screen by accident. The slide bar stops an accidental touch from logging time.
 
-| Gate | When the phone uses the gate | How a tap is saved |
-| --- | --- | --- |
-| **Biometric gate** | The phone has Face ID or a fingerprint enrolled. | You confirm the tap with your face or finger. The tap saves at once. |
-| **Slide gate** | The phone has no Face ID or fingerprint enrolled. | The tap goes into a queue. You drag **Slide to Log Hours** to save the queue. |
+- A tap on a tile does not save time. The tap goes into a queue.
+- The platform saves the queue only when you drag **Slide to Log Hours** to the right end of the bar.
+- A touch in a pocket cannot drag the bar to the end. The bar springs back and saves nothing.
 
-The muted line under **Tap an activity: 15 minutes per tap** tells you which gate is on.
+The phone does not ask for Face ID, a fingerprint or a passcode when you tap a tile. Your sign-in unlocks the whole app.
+You prove who you are one time, when you sign in (2.4).
 
-- Biometric gate: *"Each tap is confirmed with Face ID or your fingerprint, so a phone in a pocket cannot log time."*
-- Slide gate: *"Taps wait in a queue. When you are done, drag the Slide to Log Hours bar at the bottom to save them."*
-
-One good scan covers your taps for the next 60 seconds. A burst of taps needs one scan only.
-The phone never asks for a passcode instead of a scan.
+The muted line under **Tap an activity: 15 minutes per tap** reads:
+*"Taps wait in a queue. When you are done, drag the Slide to Log Hours bar at the bottom to save them."*
 
 ### Concept: time windows
 
@@ -598,22 +594,22 @@ You get a text reminder when you signed up for a shift and logged no hours.
 
 The numbers are the defaults. Your council can change them. The **Navigation Guide** shows your council's numbers.
 
-### 4.1 Log activity time with the biometric gate
+### 4.1 Queue activity taps
 
-> **Who can do this:** any active member on a phone with Face ID or a fingerprint enrolled.
-> **Warning:** each confirmed tap saves 15 minutes at once. The phone does not ask again.
+> **Who can do this:** any active member who is signed in on the phone.
+> **Warning:** queued taps are not saved until you slide. Do not close the app with taps in the queue.
 
-**Goal:** Log today's time on a council activity, 15 minutes per tap.
+**Goal:** Add today's time on a council activity to the queue, 15 minutes per tap.
 
 **Start point:** Phone app → **Report** tab → **Activities** sub-tab.
 
 **Steps:**
 1. Find the activity tile under **Tap an activity: 15 minutes per tap**.
 2. Count your time in 15-minute steps. For example, 1 hour is 4 taps.
-3. Tap the tile one time. The prompt **Confirm it is you to log hours** opens.
-4. Look at the phone, or touch the fingerprint sensor. The tap saves at once.
-5. Tap the tile again for each more 15 minutes. Within 60 seconds, the phone does not scan again.
-6. Read the tile status line. Check that the total is correct.
+3. Tap the tile one time for each 15 minutes.
+4. Read the message *"Queued +15 min · activity name. Slide below to log."*
+5. Read the tile status line. Check that the queued total is correct.
+6. Save the queue with the slide bar (4.2).
 
 <!-- KEEP_IMAGE: log time picker placeholder -->
 ![Log Time Picker (placeholder)](../generated/mobile_app_catalog/log_time_picker.png)
@@ -624,44 +620,39 @@ The numbers are the defaults. Your council can change them. The **Navigation Gui
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: pocket gate biometric scan placeholder -->
-![Phone: Face ID prompt that confirms a tap (placeholder)](../generated/mobile_app_catalog/pocket_gate_faceid.png)
+![Phone: Face ID prompt, now shown at sign-in only (placeholder)](../generated/mobile_app_catalog/pocket_gate_faceid.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** A message shows the new total, for example *"+15 min · Parish Maintenance (1 h 15 m today)"*.
-The tile status line shows today's total, for example **1 H 15 M TODAY**.
+**Expected result:** Each tile that you tapped shows a **+*n* M QUEUED** status line.
+The slide bar opens at the bottom of the screen with the queue total, for example **1 h queued**.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| *"Not logged: Face ID or fingerprint was not confirmed."* | The scan failed, or you tapped **Cancel**. The platform saved nothing. | Tap the tile again. |
-| You tapped too many times. | Each confirmed tap saved 15 minutes. | Ask your council Admin to correct the entry. |
-| The tiles start to queue taps. | The phone lost its Face ID or fingerprint setup. The phone switched to the slide gate. | Save the queue with the slide bar (4.2). |
+| You tapped too many times. | Each tap adds 15 minutes to the queue. | Tap **Clear** (4.3). Then tap again. |
 | *"Your council has no activities yet. An admin can add them."* | The council has no activity list. | Ask your council Admin to add activities. |
 | You need to log a past date. | The phone logs today only. | Use the web **Hour ledger** (4.5). |
 
-### 4.2 Log activity time with the slide gate
+### 4.2 Save queued taps with the slide bar
 
-> **Who can do this:** any active member on a phone without Face ID or a fingerprint enrolled.
-> **Warning:** queued taps are not saved until you slide. Do not close the app with taps in the queue.
+> **Who can do this:** any active member with taps in the queue.
+> **Warning:** the slide saves every queued tap at once. Only your council Admin can correct saved time.
 
 **Goal:** Save a group of queued activity taps in one action.
 
-**Start point:** Phone app → **Report** tab → **Activities** sub-tab.
+**Start point:** Phone app → **Report** tab → **Activities** sub-tab → the slide bar at the bottom.
 
 **Steps:**
-1. Find the activity tile under **Tap an activity: 15 minutes per tap**.
-2. Tap the tile one time for each 15 minutes. Each tap goes into the queue.
-3. Read the message *"Queued +15 min · activity name. Slide below to log."*
-4. Check the queue total above the slide bar, for example **1 h queued**.
-5. Put your thumb on the gold circle at the left of **Slide to Log Hours**.
-6. Drag the circle to the right end of the bar. Then let go.
+1. Check the queue total above the slide bar, for example **1 h queued**.
+2. Put your thumb on the gold circle at the left of **Slide to Log Hours**.
+3. Drag the circle to the right end of the bar. Then let go. The platform saves the queue.
 
 <!-- KEEP_IMAGE: slide to commit bar placeholder -->
 ![Phone: Slide to Log Hours bar with queued total (placeholder)](../generated/mobile_app_catalog/slide_to_commit_bar.png)
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** A message shows *"Logged 1 h for today."* The slide bar closes.
-The tile status line shows the new total for today.
+The tile status line shows the new total for today, for example **1 H 15 M TODAY**.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1558,6 +1549,38 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | The card does not show. | The council has no saved newsletter yet. | No action. The card shows when the Council Historian saves a newsletter. |
 | You look for the card on the phone. | The newsletter card is in the web portal only. | Open the web portal. |
 
+### Concept: the phone prayer and devotion drawers
+
+The phone **Home** tab keeps the first screen short. Two drawers sit under the greeting. Both drawers are closed when **Home** opens.
+
+| Drawer | What the drawer holds | Closed drawer shows |
+| --- | --- | --- |
+| **[ 📿 Active Spiritual Intentions Drawer ]** | The council's open prayer intentions, **[ 🙏 Praying Hands ]** and the box to post an intention | The number of open intentions |
+| **[ 📖 Daily Devotional Drawer ]** | Today's Bible verse (NABRE), your devotional tally and your shield | Today's verse reference |
+
+The drawers show only when your council uses the Faith Center.
+
+### 9.9 Open a prayer or devotion drawer on the phone
+
+> **Who can do this:** any member of a council that uses the Faith Center.
+
+**Goal:** Read the prayer intentions, or log your devotions, from the phone **Home** tab.
+
+**Start point:** Phone app → **Home** → under the greeting.
+
+**Steps:**
+1. Tap **[ 📿 Active Spiritual Intentions Drawer ]** or **[ 📖 Daily Devotional Drawer ]**. The drawer opens.
+2. Use the drawer. For example, tap **[ 🙏 Praying Hands ]** or tap **Log devotions**.
+3. Tap the drawer name again to close the drawer.
+
+**Expected result:** The open drawer shows its list or its form under the drawer name. The arrow at the right points down.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The drawers do not show. | Your council does not use the Faith Center. | Ask your council Admin. |
+| A drawer is closed again after you leave **Home**. | Each drawer closes when **Home** opens again. | Tap the drawer name again. |
+
 ---
 
 ## 10. Troubleshooting reference
@@ -1570,8 +1593,7 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 | *"Incorrect password. Please try again."* | The password is wrong. | Reset the password (2.6). |
 | No biometric button | You set the password on another phone. | Sign in with your password. |
 | A tab is missing on the phone | Your council switched off the module. | Ask your council Admin. |
-| *"Not logged: Face ID or fingerprint was not confirmed."* | The scan failed or was cancelled. | Tap the activity tile again (4.1). |
-| Taps say **QUEUED** | The phone uses the slide gate. | Drag **Slide to Log Hours** to the right end (4.2). |
+| Taps say **QUEUED** | Taps wait for the slide bar. The platform has not saved the taps yet. | Drag **Slide to Log Hours** to the right end (4.2). |
 | The slide circle springs back | You let go too early. | Drag the circle all the way to the right end. |
 | **🔒 Reporting locked** on a shift | The 30-day phone window is closed. | Use the web **Hour ledger** within 90 days. |
 | Hours refused as an invalid step | The value is not a 15-minute step. | Use :00, :15, :30 or :45. |
@@ -1612,7 +1634,7 @@ The platform sends no message about expense reports. Read the status tag (sectio
 
 | When | What you get | Where to check |
 | --- | --- | --- |
-| 24 hours before your shift | A reminder email with a calendar file | **Home** → **My shifts** |
+| 24 hours before your shift | A reminder email with a calendar file | **Home** → **My Active Shifts** |
 | 24 hours before your meeting | A reminder email with a calendar file and the agenda | **Mtgs** → **My Invites** |
 | 5 days after a shift with no hours | A text reminder | **Report** tab, or the web **Hour ledger** |
 | Every 7 days after that | A follow-up text, until the shift is older than the logging window (90 days by default) | Same as above |

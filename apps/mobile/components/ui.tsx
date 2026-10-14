@@ -264,6 +264,48 @@ export function Section({ title, right, children }: { title: string; right?: Rea
   );
 }
 
+/**
+ * Sprint 8S Revision 4: a collapsible drawer for Home. Closed it is one gold-edged row - the label, a short summary and
+ * a chevron - so the phone's first screen stays tight; a tap opens the body beneath.
+ */
+export function Drawer({ label, summary, defaultOpen = false, children }: { label: string; summary?: string; defaultOpen?: boolean; children: ReactNode }) {
+  const { color, space, radius, border, touchTarget } = useTheme();
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <View style={{ gap: space.sm }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={summary ? `${label}. ${summary}` : label}
+        onPress={() => setOpen((o) => !o)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: space.sm,
+          minHeight: touchTarget,
+          paddingHorizontal: space.md,
+          paddingVertical: space.sm,
+          borderWidth: border(2),
+          borderColor: color.gold,
+          borderRadius: radius.md,
+          backgroundColor: color.white,
+        }}
+      >
+        <View style={{ flex: 1, gap: 2 }}>
+          <AppText variant="title">{label}</AppText>
+          {summary ? (
+            <AppText variant="small" tone="muted">
+              {summary}
+            </AppText>
+          ) : null}
+        </View>
+        <AppText variant="title">{open ? '▾' : '▸'}</AppText>
+      </Pressable>
+      {open ? children : null}
+    </View>
+  );
+}
+
 export function EmptyState({ message }: { message: string }) {
   const styles = useStyles();
   return (

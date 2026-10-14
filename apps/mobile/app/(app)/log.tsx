@@ -2,8 +2,9 @@
 //   - Activities (the default): a high-contrast grid with one button per council activity. Each tap logs 15 minutes
 //     for today at once (activityTime.addQuarterHour), and another tap on the same button grows that day's entry by
 //     15 minutes more; a toast flashes the new total. Taps queue, so rapid taps never race each other's transaction.
-//     Sprint 6A patch: bigger tiles, and a pocket gate (lib/pocket-gate.ts) - a tap logs only after Face ID or a
-//     fingerprint passes; on a phone without biometrics, taps wait until the member drags Slide to Log Hours.
+//     Sprint 6A patch: bigger tiles. Sprint 8S Revision 4: signing in unlocks the whole app, so a tap no longer asks
+//     for Face ID or a fingerprint (lib/pocket-gate.ts is gone). Every tap waits in a queue and the member drags the
+//     Slide to Log Hours bar (components/SwipeToConfirm.tsx) to save them, so a pocket brush logs nothing.
 //   - A shift I worked (only while the council keeps flag_complex_shifts on): pick a shift (back to the council's logging
 //     window, Council.volunteer_logging_window_days since Sprint 7E), then
 //     step the time in 15-minute steps and save. A shift with no hours logged yet starts at its own length
@@ -14,7 +15,7 @@
 // Sprint 6C: in the large text layout (useTheme) the tiles fill the width one per row and stand at least 140 points
 // tall, black with a thick gold edge and large white type; the slide bar's thumb and every button grow to match.
 import { useEffect, useRef, useState } from 'react';
-import { Animated, PanResponder, Pressable, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 import {
   eventExpenseSpan,
   expenseWindowLockMessage,
@@ -29,9 +30,9 @@ import {
   toIsoDate,
   type Activities,
 } from '@kofc/shared';
+import { SwipeToConfirm } from '@/components/SwipeToConfirm';
 import { AppInput, AppText, Button, Card, EmptyState, Field, Loading, Notice, Screen, Section } from '@/components/ui';
 import { useFeatureFlags, useUser } from '@/lib/app-context';
-import { confirmTap, pocketGateMode, type PocketGateMode } from '@/lib/pocket-gate';
 import { useTheme } from '@/lib/layout-mode';
 import { describeError, useLoad } from '@/lib/use-async';
 import { db } from '@/services/db';
@@ -153,44 +154,12 @@ function ActivityTile({ activity, today, queued, onPress }: { activity: Activiti
   );
 }
 
-/** The thumb of the slide bar, and how close to the end (in points) a release still counts as a full slide. */
-const THUMB = 64;
-const SLIDE_SLACK = 12;
-
 /**
- * Slide to Log Hours: a navy bar with a gold thumb, pinned to the foot of the screen. Dragging the thumb to the far end
- * commits the queued taps; letting go early springs it back and logs nothing. Screen readers activate it directly.
+ * Slide to Log Hours: a white footer pinned to the foot of the screen with the queued total, Clear, and the swipe bar.
+ * Dragging the thumb to the far end commits the queued taps; letting go early springs it back and logs nothing.
  */
 function SlideToLog({ label, onConfirm, onClear }: { label: string; onConfirm: () => void; onClear: () => void }) {
-  const { color, radius, space, touchTarget, large } = useTheme();
-  // Large text layout: the thumb is a full touchTarget circle, black with a gold ring.
-  const thumb = large ? touchTarget : THUMB;
-  const [width, setWidth] = useState(0);
-  const x = useRef(new Animated.Value(0)).current;
-  const travel = Math.max(0, width - thumb - 2 * space.xs);
-  const travelRef = useRef(travel);
-  travelRef.current = travel;
-  const confirmRef = useRef(onConfirm);
-  confirmRef.current = onConfirm;
-  const responder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderMove: (_, g) => x.setValue(Math.min(travelRef.current, Math.max(0, g.dx))),
-      onPanResponderRelease: (_, g) => {
-        if (travelRef.current > 0 && g.dx >= travelRef.current - SLIDE_SLACK) {
-          Animated.timing(x, { toValue: travelRef.current, duration: 80, useNativeDriver: false }).start(() => {
-            confirmRef.current();
-            x.setValue(0);
-          });
-        } else {
-          Animated.spring(x, { toValue: 0, useNativeDriver: false }).start();
-        }
-      },
-    }),
-  ).current;
-
+  const { color, space, large } = useTheme();
   return (
     <View
       style={{
@@ -208,54 +177,13 @@ function SlideToLog({ label, onConfirm, onClear }: { label: string; onConfirm: (
         </AppText>
         <Button title="Clear" variant="secondary" onPress={onClear} />
       </View>
-      <View
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel={`Slide to log hours. ${label}`}
-        accessibilityActions={[{ name: 'activate', label: 'Log the queued hours' }]}
-        onAccessibilityAction={(e) => e.nativeEvent.actionName === 'activate' && onConfirm()}
-        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-        style={{
-          height: thumb + 2 * space.xs,
-          borderRadius: radius.pill,
-          backgroundColor: color.navy,
-          borderWidth: large ? 4 : 3,
-          borderColor: color.gold,
-          justifyContent: 'center',
-        }}
-      >
-        <AppText
-          variant="title"
-          tone="white"
-          style={{ position: 'absolute', left: large ? thumb + space.sm : 0, right: 0, textAlign: 'center', fontSize: 19 }}
-        >
-          Slide to Log Hours
-        </AppText>
-        <Animated.View
-          {...responder.panHandlers}
-          style={{
-            position: 'absolute',
-            left: space.xs - 3,
-            width: thumb,
-            height: thumb,
-            borderRadius: thumb / 2,
-            backgroundColor: large ? color.navy : color.gold,
-            borderWidth: large ? 6 : 0,
-            borderColor: color.gold,
-            alignItems: 'center',
-            justifyContent: 'center',
-            transform: [{ translateX: x }],
-          }}
-        >
-          <AppText style={{ color: color.navy, fontSize: 28, lineHeight: 32, fontWeight: '700' }}>›</AppText>
-        </Animated.View>
-      </View>
+      <SwipeToConfirm title="Slide to Log Hours" accessibilityLabel={`Slide to log hours. ${label}`} onConfirm={onConfirm} />
     </View>
   );
 }
 
 /**
- * The rapid-tap tracker behind the grid: today's totals, the pocket gate and the taps queued for the slide bar.
+ * The rapid-tap tracker behind the grid: today's totals and the taps queued for the slide bar.
  * Every save goes through one queue, so taps and slides never race each other's transaction.
  */
 function useActivityTracker(onToast: (toast: Toast) => void) {
@@ -281,15 +209,6 @@ function useActivityTracker(onToast: (toast: Toast) => void) {
     setTotals(running.current);
   }, [state.data]);
 
-  const [gate, setGate] = useState<PocketGateMode | null>(null);
-  useEffect(() => {
-    let live = true;
-    void pocketGateMode().then((m) => live && setGate(m));
-    return () => {
-      live = false;
-    };
-  }, []);
-
   // Taps waiting for the slide bar: quarter hours per activity.
   const [queued, setQueued] = useState<ReadonlyMap<number, number>>(new Map());
   const queuedRef = useRef(new Map<number, number>());
@@ -313,24 +232,8 @@ function useActivityTracker(onToast: (toast: Toast) => void) {
     return total;
   };
 
-  const tap = (activity: Activities) => {
-    if (gate === 'slider') return enqueue(activity);
-    saves.current = saves.current.then(async () => {
-      const check = await confirmTap();
-      if (check === 'unavailable') {
-        setGate('slider');
-        return enqueue(activity);
-      }
-      if (check === 'refused') return onToast({ tone: 'error', text: 'Not logged: Face ID or fingerprint was not confirmed.' });
-      try {
-        const total = await saveQuarter(activity.id);
-        if (total === null) onToast({ tone: 'info', text: `+15 min · ${activity.ActivityName} sent to leadership review (over the daily limit)` });
-        else onToast({ tone: 'info', text: `+15 min · ${activity.ActivityName} (${formatHours(total)} today)` });
-      } catch (err) {
-        onToast({ tone: 'error', text: describeError(err) });
-      }
-    });
-  };
+  // Sprint 8S Revision 4: no scan inside a session - a tap only queues, and the slide bar saves.
+  const tap = enqueue;
 
   const commitQueued = () => {
     const batch = queuedRef.current;
@@ -364,15 +267,15 @@ function useActivityTracker(onToast: (toast: Toast) => void) {
   };
 
   const queuedQuarters = [...queued.values()].reduce((sum, n) => sum + n, 0);
-  return { state, totals, queued, queuedQuarters, gate, tap, commitQueued, clearQueued: () => setQueue(new Map()) };
+  return { state, totals, queued, queuedQuarters, tap, commitQueued, clearQueued: () => setQueue(new Map()) };
 }
 
 type Tracker = ReturnType<typeof useActivityTracker>;
 
-/** The rapid-tap grid: one tap, 15 minutes against the activity for today, once the pocket gate lets it through. */
+/** The rapid-tap grid: one tap queues 15 minutes against the activity for today; the slide bar saves them. */
 function ActivityGrid({ tracker }: { tracker: Tracker }) {
   const { space } = useTheme();
-  const { state, totals, queued, gate, tap } = tracker;
+  const { state, totals, queued, tap } = tracker;
   const { data } = state;
   return (
     <>
@@ -380,11 +283,7 @@ function ActivityGrid({ tracker }: { tracker: Tracker }) {
       {!data && state.loading ? <Loading /> : null}
       {data ? (
         <Section title="Tap an activity: 15 minutes per tap">
-          <AppText tone="muted">
-            {gate === 'slider'
-              ? 'Taps wait in a queue. When you are done, drag the Slide to Log Hours bar at the bottom to save them.'
-              : 'Each tap is confirmed with Face ID or your fingerprint, so a phone in a pocket cannot log time.'}
-          </AppText>
+          <AppText tone="muted">Taps wait in a queue. When you are done, drag the Slide to Log Hours bar at the bottom to save them.</AppText>
           {data.activities.length === 0 ? (
             <EmptyState message="Your council has no activities yet. An admin can add them." />
           ) : (
