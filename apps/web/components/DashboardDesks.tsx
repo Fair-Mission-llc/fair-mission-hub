@@ -148,7 +148,6 @@ import { OperationsKnowledgeArchiveEntryForm } from '@/components/KnowledgeArchi
 import { ChurchDisbursementQueue, ParishSplitConsoleCard } from '@/components/ParishSplitParts';
 import { BatchTransactionCoder, CashBoxAuditPanel } from '@/components/CashAuditParts';
 import { BulletinBody, LatestBulletinsFeed } from '@/components/BulletinParts';
-import { VolunteerCenter } from '@/components/VolunteerCenter';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
@@ -415,7 +414,7 @@ function CommunityPrayerCard({ user, councilId }: { user: SessionUser; councilId
  * feast tracker (with the Faith Center), today's agenda and the month's Top 5 Fraternal Volunteers honor board. Sprint
  * 8S: the reminders and the prayer list are back - the reminders read only, with no links into the desks. Sprint 8S
  * Corrected: the prayer list's '[ 🙏 Praying Hands ]' is the one button on Home. The shift sign-ups and the Volunteer
- * Check-In & Service Center live on the Member Actions page (and the Member Desk tab).
+ * Check-In & Service Center live on the Member Actions Hub (the Member Desk keeps the shift trackers).
  */
 export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; councilId: number; faithOn: boolean }) {
   const today = toIsoDate(new Date());
@@ -877,8 +876,8 @@ function MyCharityRequestsCard({ user }: { user: SessionUser }) {
  * The Member Desk: every member's volunteer tracking. The two shift trackers sit side by side, equal height, across the
  * top row; then the charity and expense cards; then the Volunteer Check-In & Service Center (Sprint 8R Corrected: moved
  * here from Home, which stays informational). Sprint 8S: the reminders and the prayer list went back to Home. Sprint 8S
- * Corrected: the standalone Member Actions page (/member-actions, the sidebar's '[ 🙋 Member Actions ]') mounts this
- * same component.
+ * Corrected: the standalone Member Actions page mounted this same component. Sprint 8S Revision: the Volunteer Check-In &
+ * Service Center left this desk - it lives only on the Member Actions Hub (/member-actions) - so no card repeats.
  */
 export function MemberDesk({ user }: { user: SessionUser }) {
   const flags = useFeatureFlags();
@@ -939,7 +938,6 @@ export function MemberDesk({ user }: { user: SessionUser }) {
           </Panel>
         </DeskRow>
       </div>
-      <VolunteerCenter />
     </div>
   );
 }

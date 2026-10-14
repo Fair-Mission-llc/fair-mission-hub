@@ -3814,3 +3814,13 @@ GO
 -- Community Prayer Request List carries the '[ 🙏 Praying Hands ]' button again; the reminders stay read only. The
 -- phone database version moves to 93.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8S Revision: MEMBER ACTIONS HUB, PLAIN EXPENSE TAGS AND PHONE SCHEMA GUARD (schema version 94)
+--
+-- No table changes. The sidebar link reads 'Member Actions Hub' (no emoji) and /member-actions shows only the four-tab
+-- Volunteer Check-In & Service Center under the heading '[ 🙋 Member Actions Hub ]'; the Member Desk drops its copy.
+-- The expense chips 'Order Issued' and 'Ledger Coded' read 'RECORDED BY FS' and 'CODED BY TREASURER'. Council Wide
+-- Settings renders only its two accordions. The phone database version moves to 94, and a phone whose tables differ
+-- from the generated column list (e.g. a Donation table without revenue_gl_account_id) backs up, wipes and rebuilds.
+-- =========================================================================

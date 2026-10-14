@@ -104,7 +104,7 @@ export const DESK_TAB_SUMMARIES: Record<DashboardTabId, string> = {
   treasurer: 'Code sheets to the ledger, settle expense reports, close cash boxes and reconcile the bank.',
   recorder: 'Write and publish the minutes, start the live meeting and keep the motions ledger.',
   historian: 'Keep the diary logs, the monthly newsletters, the meeting photos and the oral histories.',
-  member: "Your volunteer work: open shifts and your own shifts side by side, your sheets and the Volunteer Check-In & Service Center - the same grids as the sidebar's [ 🙋 Member Actions ] page.",
+  member: 'Your volunteer work: open shifts and your own shifts side by side, your charity requests and your open sheets. The Volunteer Check-In & Service Center is on the Member Actions Hub.',
 };
 
 /** One sentence per phone tab, and the phone route each one is (features.ts MobileTab). */

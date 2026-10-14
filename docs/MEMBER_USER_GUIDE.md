@@ -89,7 +89,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 <summary>📍 Overview — read this first</summary>
 
 - Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **[ 🙏 Praying Hands ]** on the prayer list to pray for an intention.
-- Your own work is on the **Member Actions** page. Select **[ 🙋 Member Actions ]** in the sidebar to open it: the shift trackers, sign-ups, your charity requests and sheets, and the **🙋 Volunteer Check-In & Service Center** with the roster and your hours.
+- Your volunteer check-in is on the **Member Actions Hub**. Select **Member Actions Hub** in the sidebar to open it. The page has four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. Your shift trackers, charity requests and sheets are on the **Member Desk** tab.
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
@@ -102,7 +102,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 | Link | Pillar | What it holds |
 | --- | --- | --- |
 | **Home** | Faith In Action | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **[ 🙏 Praying Hands ]** |
-| **[ 🙋 Member Actions ]** | Faith In Action | Its own page: your shifts, sign-ups, charity requests, sheets, the roster and your hours |
+| **Member Actions Hub** | Faith In Action | Its own page: your active shifts, sign-ups, the roster and your hours |
 | **Council Dashboard** | Performance | Your impact and the council's engagement |
 
 </details>
@@ -122,7 +122,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **[ 🙋 Member Actions ]** → **Fraternal roster** tab | Faith In Action | The phone and email of active brothers |
+| **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | The phone and email of active brothers |
 | **Council Officer Nominations** | Governance | Nominations for elected offices |
 
 </details>
@@ -132,7 +132,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **[ 🙋 Member Actions ]** → **Hour ledger** tab | Faith In Action | Your logged service hours |
+| **Member Actions Hub** → **Hour ledger** tab | Faith In Action | Your logged service hours |
 | **My Expense Reports** | Finances | Your expense reports and their status |
 | **Propose Charity Grant** | Finances | The charity proposal form |
 | **Annual Budget Projections** | Finances | The council's annual budget |
@@ -154,7 +154,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 </details>
 
 <!-- KEEP_IMAGE: member actions hub placeholder -->
-![Volunteer Check-In & Service Center on the Member Desk (placeholder)](../generated/mobile_app_catalog/member_actions_hub.png)
+![Volunteer Check-In & Service Center on the Member Actions Hub (placeholder)](../generated/mobile_app_catalog/member_actions_hub.png)
 <!-- /KEEP_IMAGE -->
 
 The sidebar shows only the pages that your role can open. Officer desks that your role cannot open do not show.
@@ -454,7 +454,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 
 **Goal:** Put your name on a shift that still needs volunteers.
 
-**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Registration desk** tab.
+**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Registration desk** tab.
 
 **Steps:**
 1. Optional: choose a council in **Council**. The default is **All: my council and sister councils**.
@@ -478,7 +478,7 @@ A full shift still takes extra volunteers. An extra volunteer is an honorary vol
 
 **Goal:** See the shifts that you signed up for.
 
-**Start point:** Phone app → **Home** → **My shifts**. Web portal → Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **My active shifts**.
+**Start point:** Phone app → **Home** → **My shifts**. Web portal → Sidebar → Faith In Action → **Member Actions Hub** → **My active shifts**.
 
 **Steps:**
 1. Open the start point.
@@ -713,7 +713,7 @@ Time that you saved earlier today stays saved.
 
 **Goal:** Log shift or activity time from a computer.
 
-**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** tab.
+**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Hour ledger** tab.
 
 **Steps:**
 1. For a shift: go to **Report time on a shift**. Choose the shift in **Shift I worked**.
@@ -736,7 +736,7 @@ Time that you saved earlier today stays saved.
 
 **Goal:** Check which shifts still need hours.
 
-**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Hour ledger** → **My shift history**.
+**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Hour ledger** → **My shift history**.
 
 **Steps:**
 1. Read the status of each past shift.
@@ -1002,7 +1002,8 @@ Two officers sign the report. Then the council pays you by check.
 | --- | --- |
 | **Draft** | You saved the report. You did not submit the report. |
 | **Submitted** | The report waits for the Financial Secretary. |
-| **Order Issued** | The Financial Secretary signed a payment request. The report waits for the Grand Knight. |
+| **RECORDED BY FS** | The Financial Secretary signed a payment request. The report waits for the Treasurer. |
+| **CODED BY TREASURER** | The Treasurer coded the report to a budget line. The report waits for the Grand Knight. |
 | **Approved** | The Grand Knight signed. The report waits for payment. |
 | **Reimbursed** | The Financial Secretary or the Treasurer recorded your check. |
 | **Returned** (red) | Leadership sent the report back. The reason shows on the report. |
@@ -1415,7 +1416,7 @@ The Trustees ask the Shepherd for a status report 6 months after the filing date
 
 **Goal:** Contact another member.
 
-**Start point:** Sidebar → Faith In Action → **[ 🙋 Member Actions ]** → **🙋 Volunteer Check-In & Service Center** → **Fraternal roster** tab.
+**Start point:** Sidebar → Faith In Action → **Member Actions Hub** → **Fraternal roster** tab.
 
 **Steps:**
 1. Enter a name or a member number in **Search by name or number**.

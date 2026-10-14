@@ -155,18 +155,23 @@ export const HOME_UNIVERSAL_CARDS = [
 
 /**
  * Sprint 8S: the sidebar link of the 'member-actions' portal area. Sprint 8S Corrected: it opens the standalone Member
- * Actions page again (/member-actions), which mounts the Member Desk's volunteer grids, instead of a dashboard tab.
+ * Actions page again (/member-actions). Sprint 8S Revision: the link reads plain 'Member Actions Hub' (no emoji), and the
+ * page shows only the four-tab Volunteer Check-In & Service Center under one master heading.
  */
-export const MEMBER_ACTIONS_NAV_LABEL = '[ 🙋 Member Actions ]';
+export const MEMBER_ACTIONS_NAV_LABEL = 'Member Actions Hub';
+export const MEMBER_ACTIONS_HUB_HEADING = '[ 🙋 Member Actions Hub ]';
 export const MEMBER_ACTIONS_HREF = '/member-actions';
 
-/** The Member Desk's sections, in display order (Sprint 8R Corrected); the first two share the top row at equal height. */
+/**
+ * The Member Desk's sections, in display order (Sprint 8R Corrected); the first two share the top row at equal height.
+ * Sprint 8S Revision: the Volunteer Check-In & Service Center left the desk for the Member Actions Hub, so it is no
+ * longer shown twice.
+ */
 export const MEMBER_DESK_SECTIONS = [
   '🚗 Open Shifts Needing Volunteers',
   'My shifts',
   '📥 My Charity Requests',
   'My open expense sheets',
-  '🙋 Volunteer Check-In & Service Center',
 ] as const;
 
 /** The Home card over the council's open prayer intentions (Sprint 8L). */
@@ -229,7 +234,7 @@ export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; 
  */
 export const HOME_LANDING_ROUTE = '/dashboard#home';
 
-/** The title of the Member Desk's volunteer section (components/VolunteerCenter.tsx), which replaced the Member Actions page. */
+/** The title of the volunteer section (components/VolunteerCenter.tsx); since Sprint 8S Revision only on the Member Actions Hub. */
 export const VOLUNTEER_CENTER_TITLE = '🙋 Volunteer Check-In & Service Center';
 
 /**

@@ -656,10 +656,15 @@ export function expenseReferenceLabel(report: Partial<ExpenseReferenceColumns>, 
   return 'General council expense';
 }
 
+/** Plain-English status chips for a submitted sheet the Financial Secretary signed, then the Treasurer coded. */
+export const EXPENSE_RECORDED_BY_FS_LABEL = 'RECORDED BY FS';
+export const EXPENSE_CODED_BY_TREASURER_LABEL = 'CODED BY TREASURER';
+
 /**
  * Status chip on both platforms. A draft leadership sent back reads 'Returned' in red until it is resubmitted; a
- * submitted sheet carrying the Financial Secretary's written order reads 'Order Issued' (Sprint 5Z-4), and once the
- * Treasurer has coded it, 'Ledger Coded' (Sprint 6Q).
+ * submitted sheet carrying the Financial Secretary's written order reads 'RECORDED BY FS' (Sprint 5Z-4), and once the
+ * Treasurer has coded it, 'CODED BY TREASURER' (Sprint 6Q). Sprint 8S Revision: these replace the jargon tags Order
+ * Issued and Ledger Coded; the Grand Knight's approval still reads 'Approved'.
  */
 export function expenseStatusBadge(
   report: Pick<ExpenseReport, 'Status' | 'RejectionReason' | 'FinancialSecretaryMemberID'> & Partial<Pick<ExpenseReport, 'TreasurerMemberID'>>,
@@ -668,8 +673,8 @@ export function expenseStatusBadge(
   tone: 'outline' | 'gold' | 'navy' | 'redOutline';
 } {
   if (report.Status === 'Draft' && report.RejectionReason) return { label: 'Returned', tone: 'redOutline' };
-  if (report.Status === 'Submitted' && report.TreasurerMemberID != null) return { label: 'Ledger Coded', tone: 'gold' };
-  if (report.Status === 'Submitted' && report.FinancialSecretaryMemberID != null) return { label: 'Order Issued', tone: 'gold' };
+  if (report.Status === 'Submitted' && report.TreasurerMemberID != null) return { label: EXPENSE_CODED_BY_TREASURER_LABEL, tone: 'gold' };
+  if (report.Status === 'Submitted' && report.FinancialSecretaryMemberID != null) return { label: EXPENSE_RECORDED_BY_FS_LABEL, tone: 'gold' };
   const tone = { Draft: 'outline', Submitted: 'gold', Approved: 'navy', Reimbursed: 'navy' } as const;
   return { label: report.Status, tone: tone[report.Status] };
 }

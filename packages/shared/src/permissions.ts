@@ -677,7 +677,8 @@ export const canDesignateBudgetDirector = (u: Actor, member: Pick<Member, 'Counc
 export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, tenant: TenantType = DEFAULT_TENANT_TYPE): PortalArea[] {
   // Sprint 8R: every signed-in member opens Home (/dashboard), which holds the volunteer tools the Member Actions page
   // used to; Admins and Super Admins volunteer too. Then the shared views.
-  // Sprint 8S: '[ 🙋 Member Actions ]' is back in every member's sidebar; Sprint 8S Corrected: as its own page, /member-actions.
+  // Sprint 8S: the Member Actions link is back in every member's sidebar; Sprint 8S Corrected: as its own page, /member-actions
+  // (Sprint 8S Revision: the 'Member Actions Hub', holding only the Volunteer Check-In & Service Center).
   const areas: PortalArea[] = ['home', 'member-actions', 'calendar', 'gallery'];
   if (canMaintainLookups(u)) areas.push('lookups');
   if (canMaintainCouncils(u)) areas.push('councils');

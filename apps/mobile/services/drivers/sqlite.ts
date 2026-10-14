@@ -762,7 +762,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS } from '../generated/schema.sqlite';
+import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
   buildDevEvents,
@@ -925,8 +925,13 @@ const DB_NAME = 'kofc.db';
  * 93: no table change - the web portal's standalone Member Actions page returns (/member-actions), every sign-in lands
  *     on /dashboard#home, and the Home prayer list carries the Praying Hands button again (Sprint 8S Corrected); phones
  *     rebuild in step.
+ * 94: no table change - the web portal's Member Actions Hub shows only the Volunteer Check-In & Service Center, the
+ *     Member Desk drops its duplicate check-in panels, 'ORDER ISSUED' / 'LEDGER CODED' read 'APPROVED BY GK' /
+ *     'RECORDED BY FS', and System Settings splits into two accordions (Sprint 8S Revision). Phones now also rebuild when
+ *     any table's columns differ from TABLE_COLUMNS (a pre-84 Donation table without revenue_gl_account_id made the
+ *     seed INSERT throw), after copying the stale database to a timestamped backup file.
  */
-const SCHEMA_VERSION = 93;
+const SCHEMA_VERSION = 94;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1084,8 +1089,48 @@ export class SqliteDataService implements DataService {
     // Must be set per connection, and cannot be changed inside a transaction.
     await db.execAsync('PRAGMA foreign_keys = ON;');
     const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
-    if ((row?.user_version ?? 0) < SCHEMA_VERSION) await this.createAndSeed(db);
-    return db;
+    const version = row?.user_version ?? 0;
+    if (version === 0) {
+      await this.createAndSeed(db);
+      return db;
+    }
+    if (version >= SCHEMA_VERSION && (await this.columnsMatch(db))) return db;
+    // An older or structurally different database: CREATE TABLE IF NOT EXISTS would keep the stale tables and the seed
+    // INSERTs would throw on the missing columns. Back the file up, wipe it and rebuild from scratch.
+    await this.backupDatabase(db);
+    await db.closeAsync();
+    await SQLite.deleteDatabaseAsync(DB_NAME);
+    const fresh = await SQLite.openDatabaseAsync(DB_NAME);
+    await fresh.execAsync('PRAGMA foreign_keys = ON;');
+    await this.createAndSeed(fresh);
+    return fresh;
+  }
+
+  /** True when every generated table exists with exactly its Schema.sql columns (TABLE_COLUMNS). */
+  private async columnsMatch(db: SQLite.SQLiteDatabase): Promise<boolean> {
+    for (const [table, expected] of Object.entries(TABLE_COLUMNS)) {
+      const actual = (await db.getAllAsync<{ name: string }>(`PRAGMA table_info([${table}])`)).map((c) => c.name);
+      if (actual.length !== expected.length || expected.some((name) => !actual.includes(name))) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Copies the database to kofc.backup-<timestamp>.db beside it before a migration wipe. A failed backup is logged and
+   * the wipe still runs: the seed data is regenerated, and a stale schema would otherwise block every launch.
+   */
+  private async backupDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
+    const name = `kofc.backup-${this.now().toISOString().replace(/[:.]/g, '-')}.db`;
+    try {
+      const dest = await SQLite.openDatabaseAsync(name);
+      try {
+        await SQLite.backupDatabaseAsync({ sourceDatabase: db, destDatabase: dest });
+      } finally {
+        await dest.closeAsync();
+      }
+    } catch (err) {
+      console.error('[sqlite] backup before migration wipe failed:', err);
+    }
   }
 
   /** First launch: schema + Seed.sql + dev meetings, all-or-nothing. */

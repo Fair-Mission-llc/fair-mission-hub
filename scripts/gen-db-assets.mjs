@@ -341,10 +341,14 @@ const HEADER = `// =============================================================
 const tsArray = (name, doc, items) =>
   `/** ${doc} */\nexport const ${name}: readonly string[] = ${JSON.stringify(items, null, 2)};\n`;
 
-function renderMobile(statements, seedStatements, presentationStatements) {
+function renderMobile(statements, seedStatements, presentationStatements, tables) {
+  // Sprint 8S Revision: the column names each table must carry, so a phone can detect a database built before a column
+  // (e.g. Donation.revenue_gl_account_id, schema 84) and rebuild it instead of seeding into the stale table.
+  const columns = Object.fromEntries([...tables].map(([name, t]) => [name, t.columns.map((c) => c.name)]));
   return (
     HEADER + '\n' +
     tsArray('SCHEMA_STATEMENTS', 'SQLite DDL (tables, indexes, views) in dependency-safe order. Foreign keys are inline.', statements) + '\n' +
+    `/** Every table's column names, in Schema.sql order. The phone compares these to PRAGMA table_info on launch. */\nexport const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = ${JSON.stringify(columns, null, 2)};\n` + '\n' +
     tsArray('SEED_STATEMENTS', 'Lookup + baseline seed rows (Council 15295, credentials, members, roles). Run once on first launch.', seedStatements) + '\n' +
     tsArray('PRESENTATION_SEED_STATEMENTS', "Presentation rows from below Seed.sql's @presentation-data marker. Run right after SEED_STATEMENTS when requested.", presentationStatements)
   );
@@ -417,7 +421,7 @@ const seed = parseSeed(seedHalves.baseline, schema.tables);
 const presentation = parseSeed(seedHalves.presentation, schema.tables);
 
 const outputs = [
-  [OUT_MOBILE, renderMobile(sqliteSchemaStatements(schema), sqliteSeedStatements(seed), sqliteSeedStatements(presentation))],
+  [OUT_MOBILE, renderMobile(sqliteSchemaStatements(schema), sqliteSeedStatements(seed), sqliteSeedStatements(presentation), schema.tables)],
   [OUT_WEB, renderWeb(schema.tables, seed, presentation)],
 ];
 

@@ -911,7 +911,7 @@ describe('dual-approval desks and vault (pure, Sprint 5Z-4)', () => {
     expect(awaitsTreasurerCoding(report({ FinancialSecretaryMemberID: 2, TreasurerMemberID: 7 }))).toBe(false);
     expect(awaitsCounterSignature(report({ FinancialSecretaryMemberID: 2, TreasurerMemberID: 7 }))).toBe(true);
     expect(expenseStatusBadge({ Status: 'Submitted', RejectionReason: null, FinancialSecretaryMemberID: 2, TreasurerMemberID: 7 })).toEqual({
-      label: 'Ledger Coded',
+      label: 'CODED BY TREASURER',
       tone: 'gold',
     });
     expect(awaitsWrittenOrder(report({ Status: 'Draft' }))).toBe(false);
@@ -920,7 +920,7 @@ describe('dual-approval desks and vault (pure, Sprint 5Z-4)', () => {
     expect(isPayableExpenseReport(report({ Status: 'Approved' }))).toBe(false);
     expect(isPayableExpenseReport(report({ Status: 'Approved', FinancialSecretaryMemberID: 2 }))).toBe(false);
     expect(isPayableExpenseReport(report({ Status: 'Reimbursed', FinancialSecretaryMemberID: 2, GrandKnightMemberID: 1 }))).toBe(false);
-    expect(expenseStatusBadge({ Status: 'Submitted', RejectionReason: null, FinancialSecretaryMemberID: 2 })).toEqual({ label: 'Order Issued', tone: 'gold' });
+    expect(expenseStatusBadge({ Status: 'Submitted', RejectionReason: null, FinancialSecretaryMemberID: 2 })).toEqual({ label: 'RECORDED BY FS', tone: 'gold' });
     expect(expenseStatusBadge({ Status: 'Submitted', RejectionReason: null })).toEqual({ label: 'Submitted', tone: 'gold' });
   });
 

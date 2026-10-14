@@ -40,6 +40,9 @@
 // (FeatureDeploymentMatrix: a '🟢 DEPLOYED' or '⚪ AVAILABLE / OFF' badge per advanced capability and module, with the
 // Biometric Authentication switch). '📋 System Information' holds the read-only Council Instance Record, the reference
 // archives and the Custom User Guides.
+//
+// Sprint 8S Revision: the page canvas is exactly the two accordion groups. The Fraternal Planning & Budgeting Workflow
+// banner, which sat above them, now leads '🔧 Operational Configuration', so nothing renders outside the buckets.
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -177,8 +180,8 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
   };
   return (
     <>
-      <FraternalPlanningWorkflow key={council.id} user={user} council={council} />
       <SettingsBucket id="operational" defaultOpen>
+        <FraternalPlanningWorkflow key={council.id} user={user} council={council} />
         <p className="mb-4 text-base">
           Each card saves on its own. Click <strong>(i)</strong> beside a field to see where and how the number changes the portal. A field marked{' '}
           <strong>Not used yet</strong> is saved for a future feature and changes nothing today.

@@ -1,10 +1,8 @@
 'use client';
-// The Volunteer Check-In & Service Center (Sprint 8R): the volunteer side of the portal. Sprint 8R Corrected: it sits on
-// the Member Desk under the twin shift trackers (DashboardDesks.tsx MemberDesk), not on Home, which stays informational.
-// Sprint 8R first placed it on Home
-// (DashboardDesks.tsx HomeWidgets). It was the separate Member Actions page (/member-actions) until Sprint 8R deleted
-// that route; every signed-in member now lands on Home and finds it there. Admins and Super Admins are Brother Knights
-// who work shifts too, so every signed-in member gets the same four tabs:
+// The Volunteer Check-In & Service Center (Sprint 8R): the volunteer side of the portal. Sprint 8R placed it on Home,
+// Sprint 8R Corrected moved it to the Member Desk under the twin shift trackers, and Sprint 8S Revision gives it one home:
+// the Member Actions Hub (app/member-actions/page.tsx), where it is the only module on the canvas. Admins and Super
+// Admins are Brother Knights who work shifts too, so every signed-in member gets the same four tabs:
 //   - My active shifts: upcoming signups; a shift within URGENT_WITHIN_DAYS (48 hours) is shown in Secondary Red.
 //   - Registration desk: open shifts of my council and its sister councils that still need volunteers to reach
 //     MinNumberVolunteers. events.signupForShift adds the seat and increments NumberVolunteersSignedUp in one step,
@@ -534,10 +532,13 @@ function HourLedger() {
 /** The shift tabs, which flag_complex_shifts switches off (Sprint 6A). */
 const SHIFT_TABS: ReadonlySet<Tab> = new Set(['shifts', 'desk']);
 
-/** The section's id on the Member Desk (/dashboard#member). */
+/** The section's id on the Member Actions Hub (/member-actions). */
 export const VOLUNTEER_CENTER_ID = 'volunteer-center';
 
-/** The Volunteer Check-In & Service Center section of Home. */
+/**
+ * The Volunteer Check-In & Service Center. Sprint 8S Revision: the Member Actions Hub's page title is the single master
+ * heading, so the section's own title is kept for screen readers (aria-label) but not printed.
+ */
 export function VolunteerCenter({ className }: { className?: string }) {
   const { flag_complex_shifts: shiftsOn } = useFeatureFlags();
   const tabs = shiftsOn ? TABS : TABS.filter((t) => !SHIFT_TABS.has(t.id));
@@ -545,7 +546,6 @@ export function VolunteerCenter({ className }: { className?: string }) {
   const tab = tabs.some((t) => t.id === chosen) ? chosen : tabs[0].id;
   return (
     <section id={VOLUNTEER_CENTER_ID} aria-label={VOLUNTEER_CENTER_TITLE} className={cx('scroll-mt-4 rounded border-2 border-navy bg-white p-4', className)}>
-      <h2 className="mb-3 font-serif text-xl font-bold">{VOLUNTEER_CENTER_TITLE}</h2>
       <Tabs tabs={tabs} value={tab} onChange={setTab} label="Volunteer center" idPrefix="volunteer-center" />
       <div id="volunteer-center-panel" role="tabpanel" aria-labelledby={`volunteer-center-tab-${tab}`} className="pt-4">
         {tab === 'shifts' ? <ActiveShifts /> : tab === 'desk' ? <RegistrationDesk /> : tab === 'roster' ? <FraternalRoster /> : <HourLedger />}

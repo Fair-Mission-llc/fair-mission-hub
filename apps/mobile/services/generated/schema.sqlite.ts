@@ -202,6 +202,970 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE VIEW [view_CouncilSkills] AS\nSELECT\n  [Council].[CouncilNumber],\n  [Council].[CouncilName],\n  [Skill].[SkillName],\n  [SkillLevel].[SkillLevel],\n  [Member].[MemberLastName],\n  [Member].[MemberFirstName],\n  [Member].[Phone],\n  [Member].[Email]\nFROM [MemberSkill]\nINNER JOIN [Member] ON [MemberSkill].[MemberID] = [Member].[id]\nINNER JOIN [Skill] ON [MemberSkill].[SkillID] = [Skill].[id]\nINNER JOIN [SkillLevel] ON [MemberSkill].[SkillLevelID] = [SkillLevel].[id]\nINNER JOIN [Council] ON [Member].[CouncilID] = [Council].[id];"
 ];
 
+/** Every table's column names, in Schema.sql order. The phone compares these to PRAGMA table_info on launch. */
+export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
+  "Credentials": [
+    "id",
+    "Username",
+    "Password"
+  ],
+  "MemberStatus": [
+    "id",
+    "Status"
+  ],
+  "Degree": [
+    "id",
+    "Degree"
+  ],
+  "MemberType": [
+    "id",
+    "Type"
+  ],
+  "Role": [
+    "id",
+    "Role",
+    "Officer"
+  ],
+  "NoShowReason": [
+    "id",
+    "NoShowReasonCode",
+    "NoShowReasonDescription"
+  ],
+  "Category": [
+    "id",
+    "Category",
+    "CategoryDescription",
+    "SupremeMissionArea"
+  ],
+  "LessonsLearnedCategory": [
+    "id",
+    "LessonsLearnedCategory"
+  ],
+  "MeetingType": [
+    "id",
+    "Type",
+    "Description"
+  ],
+  "Council": [
+    "id",
+    "CouncilNumber",
+    "CouncilName",
+    "State",
+    "Phone",
+    "Email",
+    "flag_mobile_elections",
+    "flag_fundraising_inflow",
+    "flag_charity_proposals",
+    "flag_complex_shifts",
+    "flag_meeting_management",
+    "BylawsMarkdown",
+    "BylawsUpdatedAt",
+    "EmailProvider",
+    "SmtpHost",
+    "SmtpPort",
+    "SmtpUsername",
+    "tenant_type",
+    "base_dues_rate",
+    "ein_number",
+    "feature_expense_reporting",
+    "feature_faith_center",
+    "feature_constitutional_advisor",
+    "feature_council_bylaws",
+    "feature_council_history",
+    "feature_live_meeting_console",
+    "rank_threshold_hours",
+    "rank_threshold_events",
+    "feature_volunteer_quarantine",
+    "quarantine_max_daily_activities",
+    "quarantine_max_single_hours",
+    "max_shift_padding_hours",
+    "inactivity_threshold_days",
+    "er_submission_window_days",
+    "volunteer_logging_window_days",
+    "reminder_delay_days",
+    "reminder_cadence_days",
+    "expense_draft_expiry_days",
+    "charity_proposal_voting_days",
+    "shift_signup_lock_hours",
+    "officer_signature_reminder_days",
+    "meeting_minutes_due_days",
+    "special_election_notice_days",
+    "meeting_latitude",
+    "meeting_longitude",
+    "meeting_geofence_radius_meters",
+    "meeting_pin_token",
+    "is_loaner_library_enabled",
+    "district_number",
+    "parish_split_enabled",
+    "parish_split_percentage",
+    "parish_split_gl_line_id",
+    "biometric_login_enabled"
+  ],
+  "AffiliatedCouncils": [
+    "PrimaryCouncilID",
+    "AffiliatedCouncilID"
+  ],
+  "Parish": [
+    "id",
+    "Name",
+    "StreetAddress1",
+    "StreetAddress2",
+    "City",
+    "State",
+    "Phone",
+    "CouncilID"
+  ],
+  "Pastor": [
+    "id",
+    "FirstName",
+    "LastName",
+    "Phone",
+    "Email",
+    "ParishID"
+  ],
+  "Meeting": [
+    "id",
+    "CouncilID",
+    "Meeting Name",
+    "Meeting Description",
+    "Date",
+    "Time Start",
+    "Time End",
+    "Location",
+    "Agenda",
+    "MinutesURL",
+    "MeetingType",
+    "GoogleDriveMinutesURL",
+    "GoogleDriveFlyerURL",
+    "OwnerID",
+    "IsMultiDay",
+    "MeetingTypeID",
+    "EndDate",
+    "MissionAreaID",
+    "InviteReleaseDate",
+    "ActiveAgendaItemName",
+    "ActiveAgendaItemTimeRemaining",
+    "IsLiveInProgress",
+    "ActiveAgendaItemStartedAt",
+    "LiveQuorumRosterCount",
+    "ActiveAgendaLineKey",
+    "photo_url",
+    "minutes_text",
+    "minutes_published_at"
+  ],
+  "MeetingInvites": [
+    "id",
+    "MeetingID",
+    "MemberID",
+    "Attended",
+    "ResponseStatus"
+  ],
+  "Member": [
+    "id",
+    "CouncilID",
+    "MemberNumber",
+    "MemberFirstName",
+    "MemberLastName",
+    "Phone",
+    "StreetAddress1",
+    "StreetAddress2",
+    "City",
+    "State",
+    "ZipCode",
+    "Email",
+    "DateOfBirth",
+    "StatusID",
+    "DegreeID",
+    "MemberTypeID",
+    "CredentialID",
+    "WorkingStatusID",
+    "ProfilePhotoURL",
+    "Biography",
+    "ExpoPushToken",
+    "IsBudgetDirector",
+    "DateJoinedCouncil",
+    "flag_large_text_mode",
+    "flag_charter_member"
+  ],
+  "MemberRoles": [
+    "id",
+    "RoleID",
+    "MemberID"
+  ],
+  "Event": [
+    "id",
+    "EventName",
+    "EventDescription",
+    "OwnerID",
+    "StartDate",
+    "EndDate",
+    "Location",
+    "CategoryID",
+    "FundsRaised-Cash",
+    "FundsRaised-Electronic",
+    "Highlights",
+    "PlannedNumberAttendees",
+    "ActualNumberAttendees",
+    "PhotoGalleryURL",
+    "IsAnnual",
+    "IsMultiDay",
+    "MissionAreaID",
+    "IntakeSessionStatus",
+    "GoogleDriveFlyerFileID",
+    "collection_status",
+    "collection_concluded_at",
+    "collection_concluded_by_member_id",
+    "verified_cash_amount",
+    "cash_discrepancy_reason",
+    "cash_verified_by_member_id",
+    "cash_verified_at",
+    "cash_over_short_transaction_id"
+  ],
+  "EventCouncils": [
+    "id",
+    "EventID",
+    "CouncilID"
+  ],
+  "Shift": [
+    "id",
+    "ShiftName",
+    "ShiftDescription",
+    "ShiftDate",
+    "StartTime",
+    "EndTime",
+    "EventID",
+    "MinNumberVolunteers",
+    "NumberVolunteersSignedUp",
+    "IsAllHands"
+  ],
+  "EventSignup": [
+    "id",
+    "ShiftID",
+    "MemberID",
+    "NoShow",
+    "NoShowReasonID",
+    "SignupNotes"
+  ],
+  "EventTime": [
+    "id",
+    "ShiftID",
+    "MemberID",
+    "Hours",
+    "ShiftNotes"
+  ],
+  "LessonsLearned": [
+    "id",
+    "EventID",
+    "LeassonsLearnedCategoryID",
+    "LessonsLearnedDescription"
+  ],
+  "Activities": [
+    "id",
+    "ActivityName",
+    "ActivityDescription",
+    "CategoryID",
+    "CouncilID"
+  ],
+  "ActivityTime": [
+    "id",
+    "MemberID",
+    "ActivityID",
+    "ActivityDate",
+    "Hours",
+    "ActivityNotes"
+  ],
+  "DistributionLists": [
+    "id",
+    "ListName",
+    "CouncilID",
+    "CreatedBy",
+    "CreatedAt",
+    "IsCouncilWide"
+  ],
+  "DistributionListMembers": [
+    "ListID",
+    "MemberID"
+  ],
+  "ChatThreads": [
+    "id",
+    "CouncilID",
+    "IsGroupChat",
+    "CreatedAt"
+  ],
+  "Messages": [
+    "id",
+    "ThreadID",
+    "SenderID",
+    "ParentMessageID",
+    "MessageText",
+    "IsDraft",
+    "CreatedAt"
+  ],
+  "MessageAttachments": [
+    "id",
+    "MessageID",
+    "Filename",
+    "FileType",
+    "StorageURL",
+    "UploadedAt"
+  ],
+  "ReadReceipts": [
+    "id",
+    "MessageID",
+    "MemberID",
+    "ReadAt",
+    "IsFlagged"
+  ],
+  "WorkingStatus": [
+    "id",
+    "WorkingStatus"
+  ],
+  "Donation": [
+    "id",
+    "CouncilID",
+    "DonationDate",
+    "DonationMethodID",
+    "DonationTypeID",
+    "Donor",
+    "DonationDesciption",
+    "EventID",
+    "DonationAmount",
+    "DonationPhotoURL",
+    "RecordedBy",
+    "CheckNumber",
+    "revenue_gl_account_id",
+    "coding_batch_id",
+    "coded_by_member_id",
+    "coded_at",
+    "historical_account_owner_entity"
+  ],
+  "DonationMethod": [
+    "id",
+    "DonationMethod"
+  ],
+  "DonationType": [
+    "id",
+    "CouncilID",
+    "DonationType"
+  ],
+  "Skill": [
+    "id",
+    "SkillName"
+  ],
+  "SkillLevel": [
+    "id",
+    "SkillLevel"
+  ],
+  "MemberSkill": [
+    "id",
+    "SkillID",
+    "SkillLevelID",
+    "MemberID"
+  ],
+  "KOCTrainingClasses": [
+    "id",
+    "ClassName"
+  ],
+  "MemberTraining": [
+    "id",
+    "MemberID",
+    "TrainingClassID",
+    "YearTaken"
+  ],
+  "CouncilDonationMethod": [
+    "id",
+    "CouncilID",
+    "DonationMethodID",
+    "DonationMethodURL",
+    "account_owner_entity"
+  ],
+  "SystemFeedback": [
+    "id",
+    "MemberID",
+    "SubmittedAt",
+    "FeedbackText"
+  ],
+  "ExpenseDisbursement": [
+    "id",
+    "CouncilID",
+    "CheckNumber",
+    "PayoutDate",
+    "TotalAmount",
+    "Notes"
+  ],
+  "ExpenseReport": [
+    "id",
+    "CouncilID",
+    "SubmitterMemberID",
+    "Status",
+    "LinkedEventID",
+    "LinkedMeetingID",
+    "DisbursementID",
+    "RejectionReason",
+    "FinancialSecretaryMemberID",
+    "FinancialSecretaryApprovedAt",
+    "GrandKnightMemberID",
+    "GrandKnightApprovedAt",
+    "is_long_term_asset",
+    "budget_line_id",
+    "charity_request_id",
+    "TreasurerMemberID",
+    "TreasurerReviewedAt",
+    "general_ledger_account_id",
+    "LinkedActivityID",
+    "flag_missing_receipt",
+    "missing_receipt_reason"
+  ],
+  "ExpenseLineItem": [
+    "id",
+    "ExpenseReportID",
+    "DateOfExpense",
+    "Amount",
+    "VendorName",
+    "ReceiptPhotoURL",
+    "ExpenseDescription",
+    "is_personal_exclusion",
+    "receipt_id"
+  ],
+  "NotificationLog": [
+    "id",
+    "CouncilID",
+    "TargetMemberID",
+    "Title",
+    "MessageBody",
+    "Priority",
+    "SentAt",
+    "IsRead"
+  ],
+  "SupremeReportingSync": [
+    "id",
+    "CouncilID",
+    "FormType",
+    "SyncDate",
+    "SyncedByID",
+    "AlchemerSurveyID",
+    "Status"
+  ],
+  "CouncilElectionBallot": [
+    "CouncilID",
+    "RoleID",
+    "IsUpForElection",
+    "IsMidYearElection",
+    "NominationsCloseAt"
+  ],
+  "OfficerNominations": [
+    "id",
+    "CouncilID",
+    "OfficeRoleID",
+    "NomineeMemberID",
+    "NominatedByMemberID",
+    "NominatedAt",
+    "FraternalYear",
+    "IsEligible"
+  ],
+  "CouncilLeadershipHistory": [
+    "id",
+    "CouncilID",
+    "MemberID",
+    "RoleID",
+    "FraternalYear",
+    "StartDate",
+    "EndDate",
+    "ExitReason",
+    "AppointedByID"
+  ],
+  "GlobalCharityRegistry": [
+    "id",
+    "Name",
+    "Description",
+    "EIN",
+    "State",
+    "Phone",
+    "ContactName",
+    "ContactEmail",
+    "Address",
+    "ZipCode",
+    "IsCatholic",
+    "CharityType",
+    "IsAnnual"
+  ],
+  "CouncilCharityLink": [
+    "CouncilID",
+    "CharityID",
+    "ConnectedAt"
+  ],
+  "CharityDonationProposal": [
+    "id",
+    "CouncilID",
+    "SubmitterMemberID",
+    "ProposedCharityName",
+    "ProposedAmount",
+    "ExistingCharityID",
+    "Status",
+    "MeetingMinutesID",
+    "RejectionReason"
+  ],
+  "CharitableDisbursementLedger": [
+    "id",
+    "CouncilID",
+    "CharityID",
+    "Amount",
+    "CheckNumber",
+    "DisbursedByID",
+    "PayoutDate",
+    "Notes",
+    "ProposalID"
+  ],
+  "CouncilBudgetCategory": [
+    "id",
+    "CouncilID",
+    "CategoryName"
+  ],
+  "CouncilBudgetForecast": [
+    "id",
+    "CouncilID",
+    "FraternalYear",
+    "CategoryType",
+    "ReferenceSourceID",
+    "LineItemName",
+    "PrePopulatedAmount",
+    "ApprovedBudgetAmount",
+    "Notes",
+    "BudgetCategoryID",
+    "ProposedBudgetAmount",
+    "BudgetStatus",
+    "quantity",
+    "unit_cost",
+    "budget_version",
+    "universal_category",
+    "target_spending_ceiling",
+    "budget_status"
+  ],
+  "CouncilMeetingType": [
+    "id",
+    "CouncilID",
+    "TypeName"
+  ],
+  "CouncilAgendaTemplate": [
+    "id",
+    "CouncilID",
+    "MeetingTypeID",
+    "TemplateText"
+  ],
+  "CouncilRelationshipType": [
+    "id",
+    "CouncilID",
+    "RelationshipName"
+  ],
+  "CouncilMissionArea": [
+    "id",
+    "CouncilID",
+    "MissionAreaName"
+  ],
+  "CharitableRequest": [
+    "id",
+    "CouncilID",
+    "OrganizationName",
+    "ContactName",
+    "ContactPhone",
+    "ContactEmail",
+    "AmountRequested",
+    "RequestStatus",
+    "SubmittedAt",
+    "ShepherdMemberID",
+    "MailingAddress",
+    "RelationshipTypeID",
+    "Is501c3",
+    "EIN",
+    "Website",
+    "OrgMission",
+    "IsRecurring",
+    "FundsNeededBy",
+    "SpecificUse",
+    "TargetBeneficiary",
+    "AccountabilityPlan",
+    "RequestTier",
+    "VetterMemberID",
+    "VettingNotes",
+    "VettedDate",
+    "MoverMemberID",
+    "SeconderMemberID",
+    "VoteStatus",
+    "AmountApproved",
+    "PaymentOrderId",
+    "MissionAreaID",
+    "TargetBudgetLineID"
+  ],
+  "CouncilCadenceConfig": [
+    "id",
+    "CouncilID",
+    "MeetingTypeID",
+    "CadencePattern",
+    "DefaultStartTime",
+    "DefaultLocation",
+    "DefaultRecipientGroup"
+  ],
+  "ProposedMotion": [
+    "id",
+    "CouncilID",
+    "TargetMeetingID",
+    "SourceType",
+    "SourceRecordID",
+    "MotionText",
+    "PresenterMemberID",
+    "AllocatedMinutes",
+    "VoteResult",
+    "BallotOpenedAt"
+  ],
+  "GLAccount": [
+    "id",
+    "CouncilID",
+    "AccountName",
+    "AccountType",
+    "ParentAccountID",
+    "IsVirtualGoal",
+    "TargetGoalAmount"
+  ],
+  "JournalEntry": [
+    "id",
+    "CouncilID",
+    "GLAccountID",
+    "DateLogged",
+    "Description",
+    "DebitAmount",
+    "CreditAmount",
+    "LinkedEventID",
+    "LinkedMeetingID",
+    "IsBankReconciled",
+    "CheckNumber",
+    "TransactionID",
+    "LinkedActivityID",
+    "payment_method_id"
+  ],
+  "LiveAttendance": [
+    "id",
+    "CouncilID",
+    "MeetingID",
+    "MemberID",
+    "CheckedInAt",
+    "photo_url"
+  ],
+  "BallotVote": [
+    "id",
+    "CouncilID",
+    "ProposedMotionID",
+    "AnonymousBallotHash",
+    "VoteSelection",
+    "CastAt"
+  ],
+  "MeetingAgendaItem": [
+    "id",
+    "CouncilID",
+    "MeetingID",
+    "SectionKey",
+    "SortOrder",
+    "LineMarkdown",
+    "SpeakerRoleID",
+    "SpeakerMemberID",
+    "SpeakerLabel",
+    "ProposedMotionID",
+    "LinkedEventID",
+    "LastEditedByMemberID",
+    "LastEditedAt"
+  ],
+  "MotionHandTally": [
+    "id",
+    "CouncilID",
+    "ProposedMotionID",
+    "ApprovedCount",
+    "DeniedCount",
+    "RecordedByMemberID",
+    "RecordedAt",
+    "LinkedTransactionID"
+  ],
+  "MemberEnrollmentToken": [
+    "id",
+    "MemberID",
+    "TokenHash",
+    "CreatedAt",
+    "ExpiresAt",
+    "ConsumedAt"
+  ],
+  "PasswordResetToken": [
+    "id",
+    "MemberID",
+    "CodeHash",
+    "CreatedAt",
+    "ExpiresAt",
+    "ConsumedAt",
+    "FailedAttempts"
+  ],
+  "CouncilCredentialsVault": [
+    "id",
+    "council_id",
+    "credential_key",
+    "credential_value_encrypted",
+    "updated_at"
+  ],
+  "CouncilAssetsInventory": [
+    "id",
+    "council_id",
+    "asset_name",
+    "purchase_date",
+    "cost_basis",
+    "original_expense_id",
+    "current_status",
+    "notes",
+    "serial_number",
+    "storage_location",
+    "photo_url",
+    "is_loanable",
+    "loan_status",
+    "borrower_name",
+    "borrower_council",
+    "expected_return_date"
+  ],
+  "CharitableRequestThread": [
+    "id",
+    "request_id",
+    "thread_type",
+    "opened_by_member_id",
+    "opened_at"
+  ],
+  "CharitableRequestThreadMessage": [
+    "id",
+    "thread_id",
+    "author_member_id",
+    "posted_at",
+    "message_body"
+  ],
+  "CouncilHistoryAnnals": [
+    "id",
+    "council_id",
+    "fraternal_year",
+    "establishment_date",
+    "original_chaplain",
+    "charter_photo_url",
+    "collective_accomplishments",
+    "team_metrics_summary",
+    "updated_by_member_id",
+    "updated_at"
+  ],
+  "CouncilSpiritualDiary": [
+    "id",
+    "council_id",
+    "user_id",
+    "entry_date",
+    "fraternal_year",
+    "diary_text",
+    "audio_asset_url",
+    "created_at"
+  ],
+  "CouncilAudits": [
+    "id",
+    "council_id",
+    "audit_period",
+    "fiscal_year",
+    "execution_status",
+    "verified_by_trustees",
+    "cash_balance_beginning",
+    "cash_balance_ending",
+    "locked_at",
+    "created_at"
+  ],
+  "AuditVerifiedLines": [
+    "id",
+    "audit_id",
+    "journal_entry_id",
+    "verified_by_member_id",
+    "verified_at"
+  ],
+  "CouncilPrayerIntention": [
+    "id",
+    "council_id",
+    "author_member_id",
+    "intention_text",
+    "created_at",
+    "closed_at",
+    "closed_by_member_id"
+  ],
+  "CouncilPrayerIntentionPrayer": [
+    "id",
+    "intention_id",
+    "member_id",
+    "prayed_on",
+    "created_at"
+  ],
+  "CouncilInMemoriam": [
+    "id",
+    "council_id",
+    "member_id",
+    "photo_url",
+    "biography",
+    "past_councils",
+    "officer_seats_held",
+    "leadership_summary",
+    "compiled_at",
+    "updated_by_member_id",
+    "updated_at"
+  ],
+  "CouncilLeadershipSnapshot": [
+    "user_id",
+    "council_id",
+    "fraternal_year",
+    "roles_held",
+    "lock_reason",
+    "locked_at"
+  ],
+  "EventPlanningTime": [
+    "id",
+    "event_id",
+    "member_id",
+    "planning_date",
+    "hours",
+    "notes",
+    "logged_at"
+  ],
+  "CouncilMediaVault": [
+    "id",
+    "council_id",
+    "file_url",
+    "event_id",
+    "meeting_id",
+    "location_tag",
+    "calendar_year",
+    "uploaded_by_member_id",
+    "uploaded_at"
+  ],
+  "MediaSmartAlbums": [
+    "id",
+    "council_id",
+    "album_name",
+    "album_criteria_json",
+    "created_by_member_id",
+    "created_at"
+  ],
+  "ExpenseReceipts": [
+    "id",
+    "expense_id",
+    "merchant_name",
+    "gross_total",
+    "receipt_file_url"
+  ],
+  "MemberDevotionals": [
+    "user_id",
+    "rosaries_said",
+    "adorations_count",
+    "confessions_count"
+  ],
+  "MemberCouncilAffiliationLog": [
+    "id",
+    "user_id",
+    "council_id",
+    "membership_status",
+    "date_joined",
+    "date_exited"
+  ],
+  "VolunteerQuarantine": [
+    "id",
+    "council_id",
+    "user_id",
+    "activity_type",
+    "activity_id",
+    "activity_date",
+    "hours_reported",
+    "scheduled_hours",
+    "notes",
+    "date_logged",
+    "quarantine_reason",
+    "clearance_status",
+    "reviewed_by_member_id",
+    "reviewed_at",
+    "cleared_time_id"
+  ],
+  "PlatformSettings": [
+    "id",
+    "oral_history_max_seconds",
+    "diary_text_max_length",
+    "prayer_intention_max_length",
+    "cadence_invitation_horizon_days",
+    "user_session_expiry_hours",
+    "audit_log_retention_days"
+  ],
+  "CouncilAccessRequests": [
+    "id",
+    "council_name",
+    "contact_email",
+    "city",
+    "state",
+    "status",
+    "submitted_at",
+    "reviewed_by_id",
+    "reviewed_at"
+  ],
+  "CouncilHistorianBulletin": [
+    "id",
+    "council_id",
+    "bulletin_month",
+    "body",
+    "author_member_id",
+    "updated_at",
+    "headline",
+    "body_format"
+  ],
+  "CouncilGoals": [
+    "id",
+    "council_id",
+    "fraternal_year",
+    "fundraising_target",
+    "new_members_target",
+    "hours_target",
+    "rosaries_target",
+    "adorations_target",
+    "confessions_target",
+    "updated_by_member_id",
+    "updated_at",
+    "budget_status"
+  ],
+  "CouncilAffiliations": [
+    "id",
+    "requesting_council_id",
+    "target_council_id",
+    "status",
+    "date_established",
+    "requested_by_member_id",
+    "requested_at",
+    "responded_by_member_id",
+    "responded_at"
+  ],
+  "CouncilOperationsKnowledge": [
+    "entry_id",
+    "council_id",
+    "category_tag",
+    "entry_text",
+    "officer_signature",
+    "date_logged",
+    "origin_council_stamp"
+  ],
+  "ParishDisbursementRequest": [
+    "id",
+    "council_id",
+    "event_id",
+    "gross_collections",
+    "split_percentage",
+    "amount",
+    "gl_account_id",
+    "status",
+    "requested_by_member_id",
+    "requested_at",
+    "paid_by_member_id",
+    "paid_at",
+    "check_number",
+    "transaction_id",
+    "settlement_method"
+  ]
+};
+
 /** Lookup + baseline seed rows (Council 15295, credentials, members, roles). Run once on first launch. */
 export const SEED_STATEMENTS: readonly string[] = [
   "INSERT INTO [Category] ([Category], [CategoryDescription], [SupremeMissionArea]) VALUES\n('Fellowship', 'Social Knights events', 'Family'),\n('Service', 'Providing help to parish, parishioners or community', 'Community'),\n('Faith Building', 'Events focussed on increasing the faith or Knights and/or parishioners', 'Faith'),\n('Parish Community', 'Events that involve parishioners in getting to know each other better or contributing to the parish', 'Community'),\n('Fundraising', 'Generating income/donations for Knights council or parish', 'Community'),\n('Evangelization', 'Promoting Catholic faith to non-Catholics', 'Faith'),\n('Life', 'Events that protect and honor human life from conception to natural death', 'Life');",
