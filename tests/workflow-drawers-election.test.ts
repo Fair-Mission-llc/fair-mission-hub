@@ -1,0 +1,188 @@
+// Sprint 8S Revision 2 (schema version 95): Council Wide Settings held to its two accordions with no text spill, the
+// Expense Report (ER) and Charitable Donation Workflow drawers on the Financial Secretary and Treasurer Desks, and the
+// Grand Knight's '[ 🗳️ Council Election Workflow ]' in the Planning & Budgeting Workflow's step layout.
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import {
+  buildDonationWorkflow,
+  buildElectionWorkflow,
+  buildExpenseWorkflow,
+  CHARITABLE_DONATION_WORKFLOW_TITLE,
+  COUNCIL_ELECTION_WORKFLOW_TITLE,
+  COUNCIL_SETTINGS_BUCKETS,
+  DESK_DRAWERS,
+  deskDrawersFor,
+  donationWorkflowAlert,
+  electionPhaseOf,
+  erWorkflowAlert,
+  EXPENSE_REPORT_WORKFLOW_TITLE,
+  PLATFORM_SCHEMA_VERSION,
+  type BallotSeat,
+  type ExpenseReport,
+} from '@kofc/shared';
+
+const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
+const OWN = 1;
+const seat = (roles: string[], memberType: 'Member' | 'Admin' | 'Super Admin' = 'Member', memberId = 7) => ({ memberId, councilId: OWN, memberType, isOfficer: roles.length > 0, roles });
+const FS = seat(['Financial Secretary']);
+const TREASURER = seat(['Treasurer']);
+const GK = seat(['Grand Knight']);
+const ids = (u: ReturnType<typeof seat>, desk: Parameters<typeof deskDrawersFor>[1]) => deskDrawersFor(u, desk, OWN).map((d) => d.id);
+
+const sheet = (id: number, over: Partial<ExpenseReport> = {}) => ({
+  report: { id, CouncilID: OWN, SubmitterMemberID: 50, Status: 'Submitted', FinancialSecretaryMemberID: null, TreasurerMemberID: null, GrandKnightMemberID: null, ...over } as unknown as ExpenseReport,
+});
+const NEEDS_ORDER = sheet(1);
+const NEEDS_CODING = sheet(2, { FinancialSecretaryMemberID: 60 });
+const NEEDS_GK = sheet(3, { FinancialSecretaryMemberID: 60, TreasurerMemberID: 61 });
+const PAYABLE = sheet(4, { Status: 'Approved', FinancialSecretaryMemberID: 60, TreasurerMemberID: 61, GrandKnightMemberID: 62 });
+
+const ballotSeat = (roleId: number, roleName: string, over: { up?: 0 | 1; midYear?: 0 | 1; open?: boolean; nominees?: number } = {}): BallotSeat =>
+  ({
+    roleId,
+    roleName,
+    ballot: { CouncilID: OWN, RoleID: roleId, IsUpForElection: over.up ?? 1, IsMidYearElection: over.midYear ?? 0, NominationsCloseAt: null },
+    fraternalYear: '2027-2028',
+    nominationsOpen: over.open ?? false,
+    holder: null,
+    nominees: Array.from({ length: over.nominees ?? 0 }, (_, i) => ({ nomination: { id: i + 1 } })),
+  }) as unknown as BallotSeat;
+
+describe('1. Council Wide Settings: two accordions, no text spill', () => {
+  const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+  const parts = read('apps/web/components/FeatureDeploymentParts.tsx');
+
+  it('keeps exactly the two named accordion folders', () => {
+    expect(COUNCIL_SETTINGS_BUCKETS.map((b) => b.label)).toEqual(['🔧 Operational Configuration', '📋 System Information']);
+    expect(page.match(/<SettingsBucket id="[a-z]+"/g)).toEqual(['<SettingsBucket id="operational"', '<SettingsBucket id="information"']);
+  });
+
+  it('lets each bucket body shrink and wrap, and gives the matrix columns floor widths', () => {
+    expect(parts).toContain("SETTINGS_BUCKET_BODY_CLASS = 'min-w-0 break-words p-4'");
+    expect(parts).toContain('<div className={SETTINGS_BUCKET_BODY_CLASS}>{children}</div>');
+    expect(parts.match(/<Td className=\{FEATURE_MATRIX_COLUMN_CLASSES\[\d\]\}>/g)).toHaveLength(3);
+    expect(read('apps/web/components/ui.tsx')).toContain('flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2');
+  });
+
+  it('moves the phone database to 95', () => {
+    expect(read('Schema.sql')).toContain('(schema version 95)');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 95;');
+    expect(PLATFORM_SCHEMA_VERSION).toBe(95);
+    expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 95 | 8S Revision 2 |');
+  });
+});
+
+describe('2. the ER and donation workflow drawers on both finance desks', () => {
+  it('mounts both drawers on the Financial Secretary and Treasurer Desks, Treasurer money drawers still first', () => {
+    for (const desk of ['financial-secretary', 'treasurer'] as const) {
+      const titles = DESK_DRAWERS.filter((d) => d.desk === desk).map((d) => d.title);
+      expect(titles).toEqual(expect.arrayContaining([EXPENSE_REPORT_WORKFLOW_TITLE, CHARITABLE_DONATION_WORKFLOW_TITLE]));
+      expect(DESK_DRAWERS.filter((d) => d.desk === desk && d.id.endsWith('-workflow')).every((d) => d.alerts)).toBe(true);
+    }
+    expect(EXPENSE_REPORT_WORKFLOW_TITLE).toBe('Expense Report (ER) Workflow');
+    expect(CHARITABLE_DONATION_WORKFLOW_TITLE).toBe('Charitable Donation Workflow');
+    expect(ids(FS, 'financial-secretary')).toEqual(expect.arrayContaining(['er-workflow', 'donation-workflow']));
+    expect(ids(TREASURER, 'treasurer').slice(0, 5)).toEqual(['ledger-coder', 'er-settlement', 'charity-matches', 'er-workflow', 'donation-workflow']);
+    expect(ids(seat([]), 'treasurer')).not.toContain('er-workflow');
+  });
+
+  it('counts the sheets at each signature and puts the reader on their own step', () => {
+    const queue = [NEEDS_ORDER, NEEDS_CODING, NEEDS_CODING, NEEDS_GK, PAYABLE];
+    const fs = buildExpenseWorkflow('financial-secretary', queue);
+    expect(fs.steps.map((s) => s.count)).toEqual([1, 2, 1, 1]);
+    expect(fs.steps.map((s) => s.yours)).toEqual([true, false, false, false]);
+    expect(fs.steps[0].state).toBe('current');
+    expect(fs.waiting).toBe(1);
+    const t = buildExpenseWorkflow('treasurer', queue);
+    expect(t.steps[1].state).toBe('current');
+    expect(t.waiting).toBe(3);
+    const idle = buildExpenseWorkflow('financial-secretary', [NEEDS_GK]);
+    expect(idle.steps.map((s) => s.state)).toEqual(['done', 'done', 'current', 'done']);
+    expect(idle.headline).toContain('Nothing waits on you');
+    expect(buildExpenseWorkflow('treasurer', null).waiting).toBeNull();
+  });
+
+  it('lights the ER drawer by the desk signature rules', () => {
+    expect(erWorkflowAlert(FS, 'financial-secretary', [NEEDS_ORDER])).toBe(true);
+    expect(erWorkflowAlert(FS, 'financial-secretary', [NEEDS_CODING])).toBe(false);
+    expect(erWorkflowAlert(TREASURER, 'treasurer', [NEEDS_CODING])).toBe(true);
+    expect(erWorkflowAlert(TREASURER, 'treasurer', [NEEDS_GK])).toBe(false);
+  });
+
+  it('walks a gift from recording to coding to the cash box close', () => {
+    const t = buildDonationWorkflow('treasurer', { uncoded: 3, openCashBoxes: 1 });
+    expect(t.steps.map((s) => [s.key, s.state, s.yours])).toEqual([
+      ['record', 'done', false],
+      ['code', 'current', true],
+      ['close', 'upcoming', true],
+    ]);
+    expect(t.waiting).toBe(4);
+    expect(buildDonationWorkflow('treasurer', { uncoded: 0, openCashBoxes: 0 }).headline).toBe('Every gift is coded and every cash box is closed.');
+    const fs = buildDonationWorkflow('financial-secretary', { uncoded: null, openCashBoxes: null });
+    expect(fs.steps[0]).toMatchObject({ key: 'record', state: 'current', yours: true });
+    expect(fs.waiting).toBeNull();
+    expect(donationWorkflowAlert(TREASURER, OWN, 'treasurer', 4)).toBe(true);
+    expect(donationWorkflowAlert(TREASURER, OWN, 'treasurer', 0)).toBe(false);
+    expect(donationWorkflowAlert(FS, OWN, 'financial-secretary', 4)).toBe(false);
+  });
+
+  it('works each step in place on both desks', () => {
+    const desks = read('apps/web/components/DashboardDesks.tsx');
+    expect(desks).toContain('<ExpenseReportWorkflow desk="financial-secretary"');
+    expect(desks).toContain('<ExpenseReportWorkflow desk="treasurer"');
+    expect(desks).toContain('<CharitableDonationWorkflow desk="financial-secretary"');
+    expect(desks).toContain('<CharitableDonationWorkflow desk="treasurer"');
+    const parts = read('apps/web/components/FinanceWorkflowParts.tsx');
+    for (const mounted of ['<PaymentRequestDesk />', '<LedgerLineCoder />', '<ExpenseSettlement />', '<ExpenseRoutingTrack />', '<DonationRecords />', '<BatchTransactionCoder ', '<CashBoxAuditPanel ']) {
+      expect(parts).toContain(mounted);
+    }
+  });
+});
+
+describe('3. the Council Election Workflow', () => {
+  it('renames the Grand Knight drawer', () => {
+    expect(COUNCIL_ELECTION_WORKFLOW_TITLE).toBe('[ 🗳️ Council Election Workflow ]');
+    expect(DESK_DRAWERS.find((d) => d.id === 'election-workflow')).toMatchObject({ desk: 'grand-knight', title: COUNCIL_ELECTION_WORKFLOW_TITLE, area: 'elections' });
+    expect(DESK_DRAWERS.some((d) => (d.id as string) === 'election-tracker' || d.title === 'Council Election Tracker')).toBe(false);
+    expect(ids(GK, 'grand-knight')).toContain('election-workflow');
+    expect(existsSync(join(__dirname, '..', 'apps/web/components/modules/ElectionTracker.tsx'))).toBe(false);
+  });
+
+  it('steps through the ballot, May nominations, the June vote and the July 1 term', () => {
+    expect(['2027-03-01', '2027-05-10', '2027-06-10', '2027-07-02', '2027-10-01'].map((d) => electionPhaseOf(new Date(`${d}T12:00:00`)))).toEqual([
+      'BALLOT',
+      'NOMINATIONS',
+      'ELECTION',
+      'TERM',
+      'CLOSED',
+    ]);
+    const ballot = [ballotSeat(1, 'Grand Knight', { open: true, nominees: 2 }), ballotSeat(2, 'Deputy Grand Knight', { open: true }), ballotSeat(3, 'Warden', { up: 0 })];
+    const flow = buildElectionWorkflow({ today: new Date('2027-05-10T12:00:00'), electedSeats: 3, ballot });
+    expect(flow.steps.map((s) => [s.key, s.state])).toEqual([
+      ['BALLOT', 'done'],
+      ['NOMINATIONS', 'current'],
+      ['ELECTION', 'upcoming'],
+      ['TERM', 'upcoming'],
+    ]);
+    expect([flow.onBallot, flow.nominated]).toEqual([2, 1]);
+    expect(flow.headline).toBe('Nominations are open until May 31: 1 of 2 open offices have a nominee.');
+  });
+
+  it('leads with a mid-year election when one is open', () => {
+    const flow = buildElectionWorkflow({ today: new Date('2027-10-01T12:00:00'), electedSeats: 3, ballot: [ballotSeat(4, 'Recorder', { midYear: 1, open: true })] });
+    expect(flow.midYear.map((b) => b.roleName)).toEqual(['Recorder']);
+    expect(flow.headline).toMatch(/^Mid-year election open for Recorder\./);
+  });
+
+  it('draws the election and planning drawers with the same workflow parts', () => {
+    const election = read('apps/web/components/modules/ElectionWorkflow.tsx');
+    const planning = read('apps/web/components/PlanningWorkflowParts.tsx');
+    for (const part of ['<WorkflowActionBar', '<WorkflowStepRow', '<WorkflowWheels', 'stepsWheel(flow.steps)']) {
+      expect(election).toContain(part);
+      expect(planning).toContain(part);
+    }
+    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<CouncilElectionWorkflow />');
+    expect(read('apps/web/app/elections/page.tsx')).toContain('@/components/modules/ElectionWorkflow');
+  });
+});

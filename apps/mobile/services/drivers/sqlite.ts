@@ -930,8 +930,11 @@ const DB_NAME = 'kofc.db';
  *     'RECORDED BY FS', and System Settings splits into two accordions (Sprint 8S Revision). Phones now also rebuild when
  *     any table's columns differ from TABLE_COLUMNS (a pre-84 Donation table without revenue_gl_account_id made the
  *     seed INSERT throw), after copying the stale database to a timestamped backup file.
+ * 95: no table change - Council Wide Settings is strictly its two accordions with no text spill, the Financial Secretary
+ *     and Treasurer Desks gain the Expense Report (ER) Workflow and Charitable Donation Workflow drawers, and the Grand
+ *     Knight's election drawer becomes '[ 🗳️ Council Election Workflow ]' (Sprint 8S Revision 2); phones rebuild in step.
  */
-const SCHEMA_VERSION = 94;
+const SCHEMA_VERSION = 95;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {

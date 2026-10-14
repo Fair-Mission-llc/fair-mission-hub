@@ -1,7 +1,7 @@
 'use client';
-// /elections: the module itself lives in components/modules/ElectionTracker.tsx (Sprint 8P Stage 2) so the Active Desks mount the same code.
+// /elections: the module itself lives in components/modules/ElectionWorkflow.tsx (Sprint 8P Stage 2; ElectionTracker.tsx until Sprint 8S Revision 2) so the Active Desks mount the same code.
 import { RequireArea } from '@/components/CouncilScope';
-import { NominationsDesk } from '@/components/modules/ElectionTracker';
+import { NominationsDesk } from '@/components/modules/ElectionWorkflow';
 
 export default function ElectionsPage() {
   return (

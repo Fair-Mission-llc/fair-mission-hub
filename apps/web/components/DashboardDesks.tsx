@@ -65,7 +65,9 @@ import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   addDays,
+  awaitsTreasurerCoding,
   awaitsWrittenOrder,
+  isPayableExpenseReport,
   buildReminderStream,
   PRAYING_HANDS_LABEL,
   bulletinMonthOf,
@@ -74,7 +76,9 @@ import {
   deskDrawersFor,
   DESK_ALERT_POLL_MS,
   diaryLogRows,
+  donationWorkflowAlert,
   erSettlementAlert,
+  erWorkflowAlert,
   fsPaymentRequestAlert,
   gkSignatureAlert,
   minutesArchiveRows,
@@ -130,7 +134,8 @@ import { AuthorizationDesk as ApprovedExpenseSigning } from '@/components/module
 import { DisbursementLedger as ExpenseSettlement } from '@/components/modules/ExpenseSettlement';
 import { TreasurerDesk as LedgerLineCoder } from '@/components/modules/LedgerLineCoder';
 import { DonationsWorkspace as DonationRecords } from '@/components/modules/DonationRecords';
-import { NominationsDesk as ElectionTracker } from '@/components/modules/ElectionTracker';
+import { CouncilElectionWorkflow } from '@/components/modules/ElectionWorkflow';
+import { CharitableDonationWorkflow, ExpenseReportWorkflow } from '@/components/FinanceWorkflowParts';
 import { AuditQueue as ExpenseRoutingTrack } from '@/components/modules/ExpenseRoutingTrack';
 import { KnowledgeArchive } from '@/components/modules/KnowledgeArchive';
 import { AuditDesk as PaymentRequestDesk } from '@/components/modules/PaymentRequestDesk';
@@ -541,7 +546,7 @@ function FlaggedHoursDrawer({ user, councilId }: { user: SessionUser; councilId:
  * The Grand Knight Desk (shared by the Deputy Grand Knight). Sprint 8P Stage 2: a desk blotter of slide-out drawers
  * (desk-drawers.ts DESK_DRAWERS) - Approved Expenses (counter-sign and release in place, with the Alert Boundary Accent
  * while a sheet waits on the reader's signature), the Charitable Grant Requests Vetting Board, the Planning & Budgeting
- * Workflow, the Council Election Tracker, the Shared Loaner Library, Affiliation Invites, Connected Councils, the
+ * Workflow, the Council Election Workflow (the Council Election Tracker until Sprint 8S Revision 2), the Shared Loaner Library, Affiliation Invites, Connected Councils, the
  * Constitutional Advisor Panels and the Operations Knowledge Archive. Sprint 8P Stage 3: the dissolved Oversight Desk's
  * audits join it - the Flagged Hours Review (lit while an entry is held), Shifts Awaiting Hours (lit while one is
  * overdue) and, for Super Admins, the Inbound Council Mail Center (lit while a request is pending).
@@ -613,8 +618,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return <CharityVettingBoard />;
             case 'planning-budgeting':
               return <PlanningBudgetingDrawer user={user} councilId={councilId} />;
-            case 'election-tracker':
-              return <ElectionTracker />;
+            case 'election-workflow':
+              return <CouncilElectionWorkflow />;
             case 'loaner-library':
               return <LoanerLibraryDrawer user={user} councilId={councilId} />;
             case 'affiliation-invites':
@@ -637,7 +642,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
  * sign in place, with the Alert Boundary Accent while a sheet waits on the reader's signature), the Expense Report (ER)
  * Routing Track, Charitable Donation Records, Church Disbursement Requests, the Charity Check Issuance Console, the
  * Semiannual Audit Form 1295 Center, Excel Roster Imports and the Operations Knowledge Archive. Sprint 8A moved the
- * inactivity sweep to System Settings > Council Wide Settings.
+ * inactivity sweep to System Settings > Council Wide Settings. Sprint 8S Revision 2: the Expense Report (ER) Workflow
+ * (lit like Payment Requests) and the Charitable Donation Workflow drawers (FinanceWorkflowParts.tsx) follow Payment Requests.
  */
 export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
@@ -647,6 +653,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
   const all = queue.data ?? [];
   const waiting = all.filter((d) => awaitsWrittenOrder(d.report));
   const alert = fsPaymentRequestAlert(user, all);
+  const erWaiting = waiting.length;
   return (
     <div className="flex flex-col gap-4">
       {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
@@ -656,15 +663,21 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
         status={(spec) =>
           spec.id === 'payment-requests'
             ? { count: queue.data ? waiting.length : null, alert }
-            : spec.id === 'er-routing-track'
-              ? { count: queue.data ? all.length : null }
-              : undefined
+            : spec.id === 'er-workflow'
+              ? { count: queue.data ? erWaiting : null, alert: erWorkflowAlert(user, 'financial-secretary', all), alertText: 'Payment requests waiting for your signature' }
+              : spec.id === 'er-routing-track'
+                ? { count: queue.data ? all.length : null }
+                : undefined
         }
         onClosed={() => void queue.reload()}
         render={(spec) => {
           switch (spec.id) {
             case 'payment-requests':
               return <PaymentRequestDesk />;
+            case 'er-workflow':
+              return <ExpenseReportWorkflow desk="financial-secretary" user={user} queue={queue.data ?? null} />;
+            case 'donation-workflow':
+              return <CharitableDonationWorkflow desk="financial-secretary" user={user} councilId={councilId} uncoded={null} openCashBoxes={null} />;
             case 'er-routing-track':
               return <ExpenseRoutingTrack />;
             case 'donation-records':
@@ -692,30 +705,41 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
  * reader's check), Charitable Contribution Matches (lit while a charity request or gift waits for its check), the
  * Planning & Budgeting Workflow, the Cash Box Audit Closure Panel, the High-Volume Batch Transaction Coder, the Annual
  * Budget vs Actuals Ledger Grid, the Bank Statement Match-Window and the Parish Fundraiser Revenue Split Console.
+ * Sprint 8S Revision 2: the Expense Report (ER) Workflow (lit while a sheet waits for the reader's coding or check) and
+ * the Charitable Donation Workflow (lit while gifts wait to be coded or cash boxes to be closed) follow the three money drawers.
  */
 export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
   const tenantType = useTenantType();
   const drawers = deskDrawersFor(user, 'treasurer', councilId, flags, tenantType);
-  const pays = drawers.some((d) => d.id === 'er-settlement');
+  const pays = drawers.some((d) => d.id === 'er-settlement' || d.id === 'er-workflow');
   const matches = drawers.some((d) => d.id === 'charity-matches') && canDisburseCharity(user, councilId);
+  const gifts = drawers.some((d) => d.id === 'donation-workflow');
   const coding = useLoad(() => db.expenses.listTreasurerQueue(user.memberId, councilId), [user.memberId, councilId]);
   const money = useLoad(async () => {
-    const [sheets, proposals, funded] = await Promise.all([
+    const [sheets, proposals, funded, batch, boxes] = await Promise.all([
       pays ? settled(() => db.expenses.listCouncilQueue(user.memberId, councilId)) : null,
       matches ? settled(() => db.charities.listCouncilProposals(user.memberId, councilId)) : null,
       matches ? settled(() => db.charities.listApprovedFundingQueue(user.memberId, councilId)) : null,
+      gifts ? settled(() => db.finance.getBatchCodingQueue(user.memberId, councilId)) : null,
+      gifts ? settled(() => db.finance.getCashAuditBoard(user.memberId, councilId)) : null,
     ]);
     return {
       sheets,
       charity: proposals || funded ? (proposals ?? []).filter((d) => d.proposal.Status === 'Pending').length + (funded ?? []).length : null,
+      uncoded: batch ? batch.rows.length : null,
+      openCashBoxes: boxes ? boxes.rows.filter((r) => r.collectionStatus !== 'RECONCILED').length : null,
     };
-  }, [user.memberId, councilId, pays, matches]);
+  }, [user.memberId, councilId, pays, matches, gifts]);
   usePolling(coding.reload);
   usePolling(money.reload);
   const codingRows = coding.data ?? [];
   const sheets = money.data?.sheets ?? null;
   const charity = money.data?.charity ?? null;
+  const uncoded = money.data?.uncoded ?? null;
+  const openCashBoxes = money.data?.openCashBoxes ?? null;
+  const giftsWaiting = uncoded === null && openCashBoxes === null ? null : (uncoded ?? 0) + (openCashBoxes ?? 0);
+  const erOwn = sheets ? sheets.filter((d) => awaitsTreasurerCoding(d.report) || isPayableExpenseReport(d.report)).length : null;
   return (
     <div className="flex flex-col gap-4">
       {coding.error ? <Notice tone="error">{coding.error}</Notice> : null}
@@ -730,6 +754,10 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
               return { count: sheets ? payableSheets(sheets).length : null, alert: sheets ? erSettlementAlert(user, sheets) : false, alertText: 'Fully signed sheets waiting for your check' };
             case 'charity-matches':
               return { count: charity, alert: (charity ?? 0) > 0, alertText: 'Charity requests waiting for a check' };
+            case 'er-workflow':
+              return { count: erOwn, alert: sheets ? erWorkflowAlert(user, 'treasurer', sheets) : false, alertText: 'Sheets waiting for your coding or check' };
+            case 'donation-workflow':
+              return { count: giftsWaiting, alert: donationWorkflowAlert(user, councilId, 'treasurer', giftsWaiting), alertText: 'Gifts to code or cash boxes to close' };
             default:
               return undefined;
           }
@@ -746,6 +774,10 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
               return <ExpenseSettlement />;
             case 'charity-matches':
               return <CharityCheckConsole />;
+            case 'er-workflow':
+              return <ExpenseReportWorkflow desk="treasurer" user={user} queue={sheets} />;
+            case 'donation-workflow':
+              return <CharitableDonationWorkflow desk="treasurer" user={user} councilId={councilId} uncoded={uncoded} openCashBoxes={openCashBoxes} />;
             case 'planning-budgeting':
               return <PlanningBudgetingDrawer user={user} councilId={councilId} />;
             case 'cash-box-audit':

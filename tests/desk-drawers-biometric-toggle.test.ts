@@ -49,7 +49,7 @@ const sheet = (over: Partial<ExpenseReport> = {}) => ({
 describe('the drawer catalogue', () => {
   it('names every drawer the two desks were asked for', () => {
     expect(DESK_DRAWERS.filter((d) => d.desk === 'grand-knight').map((d) => d.title)).toEqual(
-      expect.arrayContaining(['Approved Expenses', 'Shared Loaner Library', 'Planning & Budgeting Workflow', 'Council Election Tracker', 'Operations Knowledge Archive']),
+      expect.arrayContaining(['Approved Expenses', 'Shared Loaner Library', 'Planning & Budgeting Workflow', '[ 🗳️ Council Election Workflow ]', 'Operations Knowledge Archive']),
     );
     expect(DESK_DRAWERS.filter((d) => d.desk === 'financial-secretary').map((d) => d.title)).toEqual(
       expect.arrayContaining(['Payment Requests', 'Expense Report (ER) Routing Track', 'Charitable Donation Records', 'Operations Knowledge Archive']),
@@ -65,7 +65,7 @@ describe('the drawer catalogue', () => {
 
   it("gives each seat only the drawers its role clears", () => {
     const gk = ids(GK, 'grand-knight');
-    expect(gk).toEqual(expect.arrayContaining(['approved-expenses', 'loaner-library', 'planning-budgeting', 'election-tracker', 'knowledge-archive', 'affiliation-invites']));
+    expect(gk).toEqual(expect.arrayContaining(['approved-expenses', 'loaner-library', 'planning-budgeting', 'election-workflow', 'knowledge-archive', 'affiliation-invites']));
     // Sprint 8C: the Deputy holds every Grand Knight grant.
     expect(ids(DGK, 'grand-knight')).toEqual(gk);
     expect(ids(FS, 'grand-knight')).not.toContain('approved-expenses');
@@ -111,7 +111,7 @@ describe('the desks mount their modules in place', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks).toContain('desk="grand-knight"');
     expect(desks).toContain('desk="financial-secretary"');
-    for (const mounted of ['<ApprovedExpenseSigning />', '<PaymentRequestDesk />', '<ExpenseRoutingTrack />', '<DonationRecords />', '<ElectionTracker />', '<KnowledgeArchive />']) {
+    for (const mounted of ['<ApprovedExpenseSigning />', '<PaymentRequestDesk />', '<ExpenseRoutingTrack />', '<DonationRecords />', '<CouncilElectionWorkflow />', '<KnowledgeArchive />']) {
       expect(desks).toContain(mounted);
     }
     expect(desks).not.toContain('Release approved expenses on the full desk');
@@ -124,7 +124,7 @@ describe('the desks mount their modules in place', () => {
       ['expenses/audit', 'PaymentRequestDesk'],
       ['expenses/queue', 'ExpenseRoutingTrack'],
       ['donations', 'DonationRecords'],
-      ['elections', 'ElectionTracker'],
+      ['elections', 'ElectionWorkflow'],
       ['system-settings/knowledge-archive', 'KnowledgeArchive'],
     ]) {
       const page = read(`apps/web/app/${route}/page.tsx`);

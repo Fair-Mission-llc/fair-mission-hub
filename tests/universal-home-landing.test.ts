@@ -214,7 +214,7 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
     expect(gk.depth).toBe('full');
     expect(gk.categories.flatMap((c) => c.entries).every((e) => typeof e.pillar === 'string')).toBe(true);
     const desk = gk.desks.find((d) => d.id === 'grand-knight')!;
-    expect(desk.sections).toEqual(expect.arrayContaining(['Approved Expenses', 'Council Election Tracker']));
+    expect(desk.sections).toEqual(expect.arrayContaining(['Approved Expenses', '[ 🗳️ Council Election Workflow ]']));
     expect(gk.desks.find((d) => d.id === 'member')!.sections).toEqual([...MEMBER_DESK_SECTIONS]);
     const sa = navigationGuideMap(superAdmin);
     expect(sa.depth).toBe('full');
@@ -303,10 +303,10 @@ describe('Sprint 8S Corrected: forced Home logins', () => {
 // ---- Sprint 8S Revision ------------------------------------------------------------------------------------
 
 describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the phone schema guard', () => {
-  it('moves the phone database to 94', () => {
+  it('moved the phone database to 94 (95 since Sprint 8S Revision 2)', () => {
     expect(read('Schema.sql')).toContain('(schema version 94)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 94;');
-    expect(PLATFORM_SCHEMA_VERSION).toBe(94);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[4-9]|\d{3});/);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(94);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 94 | 8S Revision |');
   });
 

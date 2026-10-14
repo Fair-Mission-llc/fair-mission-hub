@@ -176,8 +176,8 @@ export function Notice({ tone, children, onDismiss }: { tone: 'error' | 'info'; 
 export function Panel({ title, actions, children, className }: { title: string; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <section className={cx('rounded border border-line bg-white', className)}>
-      <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
-        <h2 className="font-serif text-lg font-bold">{title}</h2>
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2">
+        <h2 className="min-w-0 font-serif text-lg font-bold">{title}</h2>
         {actions}
       </header>
       <div className="p-4">{children}</div>

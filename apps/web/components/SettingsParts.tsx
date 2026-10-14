@@ -143,9 +143,9 @@ export function NumberSettingsForm<K extends string>({
           const r = rules[n];
           const id = `setting-${n}`;
           return (
-            <div key={n} className="flex flex-col gap-1">
+            <div key={n} className="flex min-w-0 flex-col gap-1">
               <span className="flex items-start gap-2">
-                <label htmlFor={id} className="text-sm font-bold">
+                <label htmlFor={id} className="min-w-0 text-sm font-bold">
                   {r.label}
                 </label>
                 <SettingInfoButton rule={r} />

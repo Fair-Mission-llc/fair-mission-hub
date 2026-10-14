@@ -6,10 +6,24 @@
 // Deputy Grand Knight or Grand Knight is still recorded, with a Supreme Council dispensation warning beside his name.
 // Outside every window the page shows only the placeholder notice; the drivers refuse late nominations
 // (NOMINATIONS_WINDOW_CLOSED) whatever the screen shows.
-import { useState } from 'react';
-import { describeError, formatTimestamp, GRAND_KNIGHT_ROLE, withNewMemberBadge, type BallotSeat, type OfficerSeat } from '@kofc/shared';
+//
+// Sprint 8S Revision 2: renamed from ElectionTracker.tsx. The Grand Knight Desk drawer mounts CouncilElectionWorkflow:
+// the same grid under the Planning & Budgeting Workflow's step-by-step layout (desk-workflows.ts buildElectionWorkflow).
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import {
+  buildElectionWorkflow,
+  describeError,
+  formatTimestamp,
+  GRAND_KNIGHT_ROLE,
+  canConfigureBallot,
+  withNewMemberBadge,
+  type BallotSeat,
+  type OfficerSeat,
+} from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { Button, cx, Field, Notice, PageTitle, Pill, Select } from '@/components/ui';
+import { stepsWheel, WorkflowActionBar, WorkflowStepRow, WorkflowWheels } from '@/components/WorkflowParts';
 import { formatPersonName } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -157,44 +171,23 @@ function WindowClosed() {
   );
 }
 
-export function NominationsDesk() {
-  const scope = useCouncilScope();
-  const councilId = scope.councilId;
-  const data = useLoad(async () => {
+type ElectionData = { seats: OfficerSeat[]; ballot: BallotSeat[] };
+
+/** The council's elected seats and their ballot rows, shared by the page and the Council Election Workflow drawer. */
+function useElectionData(councilId: number) {
+  return useLoad(async (): Promise<ElectionData> => {
     const [seats, ballot] = await Promise.all([db.elections.listOfficerSeats(councilId), db.elections.listBallotConfig(councilId)]);
     return { seats: seats.filter((s) => s.kind === 'elected'), ballot };
   }, [councilId]);
+}
+
+/** The nominations grid and form while a window is open, else the closed placeholder. */
+function NominationsBody({ councilId, data, onReload }: { councilId: number; data: ElectionData; onReload: () => Promise<unknown> }) {
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
-  const title = <PageTitle actions={<CouncilSelect scope={scope} />}>Officer Nominations Desk</PageTitle>;
-  if (data.error) {
-    return (
-      <>
-        {title}
-        <Notice tone="error">{data.error}</Notice>
-      </>
-    );
-  }
-  if (!data.data) {
-    return (
-      <>
-        {title}
-        <p className="text-sm text-muted">Loading the ballot…</p>
-      </>
-    );
-  }
-
-  const { seats, ballot } = data.data;
+  const { seats, ballot } = data;
   const openSeats = ballot.filter((b) => b.nominationsOpen);
-  if (openSeats.length === 0) {
-    return (
-      <>
-        {title}
-        <WindowClosed />
-      </>
-    );
-  }
+  if (openSeats.length === 0) return <WindowClosed />;
 
   const selected = openSeats.find((b) => b.roleId === selectedRoleId) ?? null;
   const midYear = openSeats.filter((b) => b.ballot.IsMidYearElection === 1);
@@ -202,7 +195,6 @@ export function NominationsDesk() {
 
   return (
     <>
-      {title}
       <div className="mb-4 flex flex-col gap-2">
         {regular.length ? (
           <p className="text-sm">
@@ -244,10 +236,61 @@ export function NominationsDesk() {
           seat={selected}
           onSaved={async (text) => {
             setMessage(text);
-            await data.reload();
+            await onReload();
           }}
         />
       ) : null}
     </>
+  );
+}
+
+/** The /elections page: the Officer Nominations Desk. */
+export function NominationsDesk() {
+  const scope = useCouncilScope();
+  const councilId = scope.councilId;
+  const data = useElectionData(councilId);
+  return (
+    <>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>Officer Nominations Desk</PageTitle>
+      {data.error ? <Notice tone="error">{data.error}</Notice> : null}
+      {!data.data && !data.error ? <p className="text-sm text-muted">Loading the ballot…</p> : null}
+      {data.data ? <NominationsBody councilId={councilId} data={data.data} onReload={data.reload} /> : null}
+    </>
+  );
+}
+
+/**
+ * Sprint 8S Revision 2: '[ 🗳️ Council Election Workflow ]' on the Grand Knight Desk, in the step-by-step layout of the
+ * Planning & Budgeting Workflow drawer (WorkflowParts.tsx): the highlighted action bar, the four steps (the ballot, May
+ * nominations, the June vote, the July 1 term - buildElectionWorkflow), the progress wheels, then the nominations grid.
+ */
+export function CouncilElectionWorkflow() {
+  const user = useUser();
+  const scope = useCouncilScope();
+  const councilId = scope.councilId;
+  const data = useElectionData(councilId);
+  const today = useMemo(() => new Date(), []);
+  if (data.error) return <Notice tone="error">{data.error}</Notice>;
+  if (!data.data) return <p className="text-sm text-muted">Loading the ballot…</p>;
+  const flow = buildElectionWorkflow({ today, electedSeats: data.data.seats.length, ballot: data.data.ballot });
+  return (
+    <div className="flex flex-col gap-4">
+      <WorkflowActionBar headline={flow.headline}>
+        {canConfigureBallot(user, councilId) ? (
+          <Link href="/council-lookups" className="rounded border-2 border-navy bg-white px-3 py-1 text-sm font-bold underline">
+            Set the ballot
+          </Link>
+        ) : null}
+      </WorkflowActionBar>
+      <WorkflowStepRow steps={flow.steps} label="Election steps" />
+      <WorkflowWheels
+        wheels={[
+          stepsWheel(flow.steps),
+          { label: 'Offices on the ballot', value: flow.onBallot, total: flow.electedSeats, caption: `${flow.onBallot} of ${flow.electedSeats} elected offices` },
+          { label: 'Offices with a nominee', value: flow.nominated, total: flow.onBallot, caption: `${flow.nominated} of ${flow.onBallot} open offices` },
+        ]}
+      />
+      <NominationsBody councilId={councilId} data={data.data} onReload={data.reload} />
+    </div>
   );
 }

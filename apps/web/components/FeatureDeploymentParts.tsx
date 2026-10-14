@@ -10,6 +10,10 @@
 //   SettingsLinkCards        the System Settings pages each bucket points to, as far as the reader may open them:
 //                            payment and account settings under Operational Configuration (OPERATIONAL_SETTINGS_PAGES),
 //                            the read-only archives and lookups under System Information (SYSTEM_REFERENCE_PAGES).
+//
+// Sprint 8S Revision 2: no vertical text spill. Each bucket's body may shrink (min-w-0) and wraps long words
+// (SETTINGS_BUCKET_BODY_CLASS), and the matrix gives its columns floors (FEATURE_MATRIX_COLUMN_CLASSES) so a narrow
+// screen scrolls the table sideways instead of stacking a column's text one word per line.
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import {
@@ -33,6 +37,11 @@ import { formatMoney } from '@/lib/format';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { db } from '@/services/db';
 
+/** The body of each accordion bucket: a column that may shrink and wraps long words instead of spilling them. */
+export const SETTINGS_BUCKET_BODY_CLASS = 'min-w-0 break-words p-4';
+/** The matrix's three columns: each keeps a floor width, so the table scrolls sideways rather than squeezing a column. */
+export const FEATURE_MATRIX_COLUMN_CLASSES = ['min-w-[16rem]', 'min-w-[11rem] whitespace-nowrap', 'min-w-[12rem]'] as const;
+
 /** One accordion bucket. */
 export function SettingsBucket({ id, defaultOpen = false, children }: { id: CouncilSettingsBucketId; defaultOpen?: boolean; children: ReactNode }) {
   const bucket = COUNCIL_SETTINGS_BUCKETS.find((b) => b.id === id)!;
@@ -42,12 +51,12 @@ export function SettingsBucket({ id, defaultOpen = false, children }: { id: Coun
         <span aria-hidden="true" className="w-4 shrink-0 text-xl transition-transform group-open:rotate-90">
           ›
         </span>
-        <span className="flex flex-col">
+        <span className="flex min-w-0 flex-col">
           <span className="font-serif text-xl font-bold">{bucket.label}</span>
           <span className="text-sm">{bucket.hint}</span>
         </span>
       </summary>
-      <div className="p-4">{children}</div>
+      <div className={SETTINGS_BUCKET_BODY_CLASS}>{children}</div>
     </details>
   );
 }
@@ -99,14 +108,14 @@ export function FeatureDeploymentMatrix({ council, onSaved }: { council: Council
         .filter((r) => r.group === g)
         .map((r) => (
           <tr key={r.id} className="border-t border-line align-top">
-            <Td>
+            <Td className={FEATURE_MATRIX_COLUMN_CLASSES[0]}>
               <span className="block font-bold">{r.label}</span>
               <span className="block text-xs text-muted">{r.description}</span>
             </Td>
-            <Td>
+            <Td className={FEATURE_MATRIX_COLUMN_CLASSES[1]}>
               <StatusBadge row={r} />
             </Td>
-            <Td>
+            <Td className={FEATURE_MATRIX_COLUMN_CLASSES[2]}>
               {r.id === 'biometric' && editable ? (
                 <Button variant="secondary" disabled={busy} onClick={() => void toggleBiometric(!r.deployed)}>
                   {r.deployed ? 'Turn off' : 'Turn on'}

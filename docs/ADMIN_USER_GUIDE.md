@@ -331,9 +331,9 @@ The **System Settings** pillar had the name **Setup** in earlier versions of the
 | --- | --- | --- | --- |
 | **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, Today's Event Agenda, Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 19.2 |
 | **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 25 |
-| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Inbound Council Mail Center, Charitable Grant Requests Vetting Board, Planning & Budgeting Workflow, Council Election Tracker, Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels | 19.5 |
-| **Financial Secretary Desk** | The FS, Admins, Super Admins | Payment Requests, Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, Charity Check Issuance Console, Excel Roster Imports | 19.6 |
-| **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Planning & Budgeting Workflow, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window, Parish Fundraiser Revenue Split Console | 19.7 |
+| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Inbound Council Mail Center, Charitable Grant Requests Vetting Board, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ], Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels | 19.5 |
+| **Financial Secretary Desk** | The FS, Admins, Super Admins | Payment Requests, Expense Report (ER) Workflow, Charitable Donation Workflow, Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, Charity Check Issuance Console, Excel Roster Imports | 19.6 |
+| **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window, Parish Fundraiser Revenue Split Console | 19.7 |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger | 19.10 |
 | **Historian Desk** | The Council Historian, Admins, Super Admins | Fraternal Diary Entry Logs, Monthly Newsletters, Meeting Photos, Oral History Recordings, Google Drive Media Gallery Sync Board | 19.12 |
 | **Member Desk** | Every member | **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts** side by side at the top, **[ 📥 My Charity Requests ]**, **My open expense sheets** | 19.8 |
@@ -2171,7 +2171,9 @@ The screenshot above shows the page before the cards were added. The fields and 
 
 ### 16.2.1 Concept: the two accordion buckets
 
-Under the **Annual Budget Planner** banner, **Council Wide Settings** has two accordion buckets. Each bucket has a navy bar with a gold edge. Select the bar to open or close the bucket.
+**Council Wide Settings** has exactly two accordion buckets and nothing outside them. The **Annual Budget Planner** banner leads **🔧 Operational Configuration**. Each bucket has a navy bar with a gold edge. Select the bar to open or close the bucket.
+
+The text in each bucket wraps inside the bucket. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
 | Bucket | Opens | What the bucket holds |
 | --- | --- | --- |
@@ -2913,6 +2915,9 @@ To close a drawer, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the
 | **Treasurer Desk** | **Ledger Line Coder** | A signed sheet waits for your budget line and ledger account, and you may code it. |
 | **Treasurer Desk** | **Expense Report (ER) Settlement** | A fully signed sheet waits for your check, and you may pay it. Your own sheet does not light the border. |
 | **Treasurer Desk** | **Charitable Contribution Matches** | A charity request or gift waits for its check. |
+| **Financial Secretary Desk** | **Expense Report (ER) Workflow** | A sheet waits for its payment request, and you may sign it. |
+| **Treasurer Desk** | **Expense Report (ER) Workflow** | A sheet waits for your coding or your check, and you may act on it. |
+| **Treasurer Desk** | **Charitable Donation Workflow** | An electronic gift waits for its Revenue line, or an event cash box waits to be closed. |
 | **Recorder Desk** | **Meeting Minutes Entry Desk** | The minutes of a meeting are due or overdue. The red line counts the overdue meetings. |
 
 The drawers on each desk:
@@ -2925,13 +2930,15 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: approve council access requests (section 17). |
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 4). |
 | **Grand Knight Desk** | **Planning & Budgeting Workflow** | Read the planning steps. Set the year's goals. Mark the goals and the budget reviewed (section 21). |
-| **Grand Knight Desk** | **Council Election Tracker** | Read each officer seat and its nominations. |
+| **Grand Knight Desk** | **[ 🗳️ Council Election Workflow ]** | Read the four election steps and the progress wheels. Nominate a brother Knight for an open office (section 19.3.3). |
 | **Grand Knight Desk** | **Shared Loaner Library** | List, lend and check in council assets (section 20.3). |
 | **Grand Knight Desk** | **Affiliation Invites** | Accept or decline invites from nearby councils. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils (section 21). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. |
 | **Grand Knight Desk** | **Operations Knowledge Archive** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 22). |
 | **Financial Secretary Desk** | **Payment Requests** | Select **📝 Verify & Sign Expense** on each sheet. |
+| **Financial Secretary Desk** | **Expense Report (ER) Workflow** | Read where each sheet waits. Sign the payment requests in place (section 19.3.3). |
+| **Financial Secretary Desk** | **Charitable Donation Workflow** | Read the three donation steps. Record each gift in place (section 19.3.3). |
 | **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
 | **Financial Secretary Desk** | **Church Disbursement Requests** | Record the check for the parish share (section 23). |
@@ -2942,6 +2949,8 @@ The drawers on each desk:
 | **Treasurer Desk** | **Ledger Line Coder** | Pick the budget line and the ledger account. Select **🏷️ Categorize & Lock Expense**. Log concluded revenue. |
 | **Treasurer Desk** | **Expense Report (ER) Settlement** | Pay fully signed sheets by check. |
 | **Treasurer Desk** | **Charitable Contribution Matches** | Match approved charity requests and gifts to their checks, and pay them. |
+| **Treasurer Desk** | **Expense Report (ER) Workflow** | Read where each sheet waits. Code the sheets and pay them by check in place (section 19.3.3). |
+| **Treasurer Desk** | **Charitable Donation Workflow** | Code the electronic gifts to a Revenue line. Close each event cash box (section 19.3.3). |
 | **Treasurer Desk** | **Planning & Budgeting Workflow** | Read the planning steps. Mark the budget reviewed (section 21). |
 | **Treasurer Desk** | **Cash Box Audit Closure Panel** | Count each concluded event's cash box and log any variance (section 24). |
 | **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 24). |
@@ -2981,6 +2990,25 @@ Each tab has its own web address. The address is the dashboard address with the 
 | **Member Desk** | `/dashboard#member` |
 
 Save a desk address as a browser bookmark to open the desk directly. The browser also remembers the last tab you opened. The dashboard opens on that tab the next time. A tab you cannot open falls back to your first tab. For most readers, the first tab is **Home**.
+
+### 19.3.3 Concept: the workflow drawers
+
+Three drawers show a whole workflow in one place. Each workflow drawer uses the layout of the **Planning & Budgeting Workflow** drawer:
+
+- A highlighted action bar at the top. One sentence tells you what happens now. The bar turns red when work waits on you.
+- A row of numbered steps. The current step has a gold border and the label **(now)**. A done step has a tick.
+- A step that you act on carries the tag **Your step**. A step with a queue shows the number of items waiting.
+- Progress wheels. Each wheel fills as its count comes closer to complete.
+
+| Drawer | Desks | Steps | What you do in the drawer |
+| --- | --- | --- | --- |
+| **Expense Report (ER) Workflow** | **Financial Secretary Desk** and **Treasurer Desk** | 1. **Payment request** (FS). 2. **Ledger coding** (Treasurer). 3. **GK approval** (Grand Knight). 4. **Check issued** (Treasurer). | The Financial Secretary signs payment requests. The Treasurer codes sheets and pays them by check. Both read **Every open sheet** under the steps. |
+| **Charitable Donation Workflow** | **Financial Secretary Desk** and **Treasurer Desk** | 1. **Record the gift** (FS). 2. **Code to revenue** (Treasurer). 3. **Close the cash box** (Treasurer). | The Financial Secretary records each gift. The Treasurer codes the card and QR gifts and closes each event cash box. |
+| **[ 🗳️ Council Election Workflow ]** | **Grand Knight Desk** | 1. **Open the ballot** (before May 1). 2. **Nominations** (May 1 - 31). 3. **Election** (June). 4. **New term** (July 1). | Read the wheels **Offices on the ballot** and **Offices with a nominee**. Nominate a brother Knight while nominations are open. Admins select **Set the ballot**. |
+
+The **Expense Report (ER) Workflow** and **Charitable Donation Workflow** drawers use the same modules as the single-step drawers. A signature in a workflow drawer is the same signature as in **Payment Requests**, **Ledger Line Coder** or **Expense Report (ER) Settlement**.
+
+The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Election Tracker** drawer. A mid-year election leads the action bar while its nominations are open.
 
 ### 19.4 Read the Home desk
 
@@ -3081,7 +3109,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 3. Select the **Payment Requests** tile. The drawer slides out.
 4. Select **📝 Verify & Sign Expense** on each sheet.
 5. Select **[ 🔀 Back to Desk Blotter ]**.
-6. To follow a sheet, select the **Expense Report (ER) Routing Track** tile. To check a donation, select the **Charitable Donation Records** tile.
+6. To follow a sheet, select the **Expense Report (ER) Workflow** tile or the **Expense Report (ER) Routing Track** tile. To record a donation, select the **Charitable Donation Workflow** tile or the **Charitable Donation Records** tile.
 7. Select the **Excel Roster Imports** tile. Select **Download the Excel roster template**.
 8. Fill in the template. Save the **Roster** sheet as CSV.
 9. Select **Supreme roster sync**. Load the CSV file on that page. Each new member gets a welcome email.
@@ -3111,6 +3139,7 @@ Save a desk address as a browser bookmark to open the desk directly. The browser
 6. Select the **Expense Report (ER) Settlement** tile. A red border means that a fully signed sheet waits for your check.
 7. Select the sheets, type the check number and the payout date, and issue the check.
 8. To pay a charity request, select the **Charitable Contribution Matches** tile.
+9. To code electronic gifts or close a cash box, select the **Charitable Donation Workflow** tile.
 
 **Expected result:** The coded sheets leave the coding queue and show on the **Grand Knight Desk**. The paid sheets show **Reimbursed**. The counts on the tiles drop when you close each drawer.
 
@@ -4193,7 +4222,7 @@ The screen has two depths: **Summary** and **Full**. Your role sets the depth. Y
 
 The first line of the screen tells you your depth. For example, *You are signed in as: Council Officer (Grand Knight)*. Under it, the overview says *You see the full map* or *You see a short summary*.
 
-**Example:** A plain member opens **🗂️ Your desks** and reads one sentence about the **Member Desk**. The Grand Knight opens the same block and also reads each drawer of the **Grand Knight Desk**, such as **Approved Expenses** and **Council Election Tracker**.
+**Example:** A plain member opens **🗂️ Your desks** and reads one sentence about the **Member Desk**. The Grand Knight opens the same block and also reads each drawer of the **Grand Knight Desk**, such as **Approved Expenses** and **[ 🗳️ Council Election Workflow ]**.
 
 ### 27.3 Concept: every category group starts closed
 

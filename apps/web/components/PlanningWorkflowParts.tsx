@@ -8,6 +8,10 @@
 // (COUNCIL_GOALS_LOCKED). "Mark goals reviewed" (reports.markCouncilGoalsReviewed) and "Mark budget reviewed"
 // (budget.markBudgetYearReviewed) record the June review; the vote itself stays on the budget page.
 //
+// Sprint 8S Revision 2: the banner is drawn with the shared workflow layout (WorkflowParts.tsx) - the highlighted action
+// bar, the step row and a progress wheel - the same layout as the Council Election Workflow and the finance desks'
+// Expense Report (ER) and Charitable Donation Workflows.
+//
 // LoanerLibrarySharingCard - the council's Cross-Council Loaner Library switch (Council.is_loaner_library_enabled).
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -28,45 +32,21 @@ import {
   type Council,
   type CouncilGoalTargets,
   type PlanningStatus,
-  type PlanningStep,
   type SessionUser,
 } from '@kofc/shared';
 import { GoalsForm } from '@/components/GoalsParts';
-import { Button, cx, Field, Notice, Panel, Pill, Select, Switch } from '@/components/ui';
+import { Button, Field, Notice, Panel, Pill, Select, Switch } from '@/components/ui';
+import { stepsWheel, WorkflowActionBar, WorkflowStepRow, WorkflowWheels } from '@/components/WorkflowParts';
 import { formatDecimalHours, formatFullDate, formatMoney } from '@/lib/format';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 const STATUS_TONE: Record<PlanningStatus, 'outline' | 'gold' | 'navy'> = { DRAFT: 'outline', REVIEWED: 'gold', LOCKED: 'navy' };
+/** How far a status has come, for its wheel: Draft 0, Reviewed 1, Locked 2 (of 2). */
+const PLANNING_STATUS_RANK: Record<PlanningStatus, number> = { DRAFT: 0, REVIEWED: 1, LOCKED: 2 };
 
 function StatusPill({ status }: { status: PlanningStatus }) {
   return <Pill tone={STATUS_TONE[status]}>{PLANNING_STATUS_LABELS[status]}</Pill>;
-}
-
-/** The four steps across the banner. */
-function StepRow({ steps }: { steps: readonly PlanningStep[] }) {
-  return (
-    <ol className="grid grid-cols-1 gap-2 sm:grid-cols-4" aria-label="Planning steps">
-      {steps.map((step, i) => (
-        <li
-          key={step.key}
-          aria-current={step.state === 'current' ? 'step' : undefined}
-          className={cx(
-            'rounded border-2 p-2',
-            step.state === 'current' ? 'border-gold bg-gold/10' : step.state === 'done' ? 'border-navy bg-white' : 'border-line bg-white',
-          )}
-        >
-          <p className="text-xs font-bold uppercase tracking-wide">
-            {step.state === 'done' ? '✓ ' : `${i + 1}. `}
-            {step.label}
-            {step.state === 'current' ? <span className="ml-1 text-navy">(now)</span> : null}
-          </p>
-          <p className="text-sm font-bold">{step.when}</p>
-          <p className="text-xs text-muted">{step.detail}</p>
-        </li>
-      ))}
-    </ol>
-  );
 }
 
 /** The year's six targets as read-only information blocks. */
@@ -159,10 +139,15 @@ export function FraternalPlanningWorkflow({ user, council }: { user: SessionUser
       }
     >
       <div className="flex flex-col gap-4">
-        <p className="text-base font-bold" role="status">
-          {flow.headline}
-        </p>
-        <StepRow steps={flow.steps} />
+        <WorkflowActionBar headline={flow.headline} />
+        <WorkflowStepRow steps={flow.steps} label="Planning steps" />
+        <WorkflowWheels
+          wheels={[
+            stepsWheel(flow.steps),
+            { label: 'Goals', value: PLANNING_STATUS_RANK[goalsStatus], total: 2, caption: PLANNING_STATUS_LABELS[goalsStatus] },
+            { label: 'Budget', value: PLANNING_STATUS_RANK[budgetStatus], total: 2, caption: PLANNING_STATUS_LABELS[budgetStatus] },
+          ]}
+        />
         {message ? (
           <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
             {message.text}

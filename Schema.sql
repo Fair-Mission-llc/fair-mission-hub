@@ -3824,3 +3824,14 @@ GO
 -- Settings renders only its two accordions. The phone database version moves to 94, and a phone whose tables differ
 -- from the generated column list (e.g. a Donation table without revenue_gl_account_id) backs up, wipes and rebuilds.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 8S Revision 2: WORKFLOW DRAWERS, ELECTION WORKFLOW AND SETTINGS ACCORDIONS (schema version 95)
+--
+-- No table changes. Council Wide Settings is rigidly its two accordions, '🔧 Operational Configuration' and
+-- '📋 System Information', whose bodies and matrix columns no longer squeeze text into a vertical spill. The Financial
+-- Secretary and Treasurer Desks each carry the 'Expense Report (ER) Workflow' and 'Charitable Donation Workflow' drawers
+-- (desk-workflows.ts), worked in place and lit while work waits on the reader. The Grand Knight Desk's Council Election
+-- Tracker is now '[ 🗳️ Council Election Workflow ]', in the Planning & Budgeting Workflow's step layout. The phone
+-- database version moves to 95.
+-- =========================================================================
