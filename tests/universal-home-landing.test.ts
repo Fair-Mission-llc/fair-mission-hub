@@ -327,13 +327,13 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
     }
   });
 
-  it('renders Council Wide Settings as only its two accordions', () => {
+  it('renders Council Wide Settings as only its filing cabinet (Sprint 8S Revision 10.1, was two accordions)', () => {
     const page = read('apps/web/app/system-settings/council-settings/page.tsx');
     const panels = page.slice(page.indexOf('function SettingsPanels('), page.indexOf('function CouncilWideSettings('));
-    const body = panels.slice(panels.indexOf('<>'), panels.lastIndexOf('</>'));
-    const topLevel = [...body.matchAll(/^ {6}<(\w+)/gm)].map((m) => m[1]);
-    expect(topLevel).toEqual(['SettingsBucket', 'SettingsBucket']);
-    expect(body.indexOf('<FraternalPlanningWorkflow')).toBeGreaterThan(body.indexOf('<SettingsBucket id="operational" defaultOpen>'));
+    const body = panels.slice(panels.indexOf('return ('));
+    const topLevel = [...body.matchAll(/^ {4}<(\w+)/gm)].map((m) => m[1]);
+    expect(topLevel).toEqual(['SettingsCabinet']);
+    expect(page).not.toContain('<SettingsBucket');
   });
 
   it('rebuilds a phone database whose columns drift from the generated schema, after a backup', () => {

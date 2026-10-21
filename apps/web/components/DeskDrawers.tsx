@@ -12,6 +12,8 @@
 // Sprint 8S Revision 7: the blotter is a split-view console - a 25% left filing spine of flat folder links (the Dynamic
 // Priority Float of lit folders on top, then the Inbound/Outbound cabinets on the Financial Secretary and Treasurer Desks)
 // beside a 75% Desk Blotter stage where the chosen folder's module opens in place, instead of an overlay drawer.
+// Sprint 8S Revision 10.1: clicking a folder snaps the window to the top (snapViewportToTop), smoothly unless the reader
+// prefers reduced motion, so the opened module is in full view.
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type FocusEvent, type ReactNode } from 'react';
 import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, deskSpineSections, type DeskDrawerSpec } from '@kofc/shared';
@@ -48,6 +50,12 @@ function readDeskReturn(): DeskReturn | null {
   } catch {
     return null;
   }
+}
+
+/** Scrolls the window to its very top: smoothly, or at once for a reader who prefers reduced motion. */
+export function snapViewportToTop() {
+  const reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: 0, left: 0, behavior: reduced ? 'auto' : 'smooth' });
 }
 
 /** One folder link on the left filing spine: the module's name and its status, flat (no nesting). */
@@ -177,7 +185,15 @@ export function DeskBlotter({
               {section.drawers.map((spec) => (
                 <li key={spec.rowId} onFocus={onRowFocus(spec)}>
                   <DeskRow id={spec.rowId} label={spec.title}>
-                    <SpineFolder spec={spec} status={status?.(spec)} selected={spec.rowId === openId} onOpen={() => openDrawer(spec)} />
+                    <SpineFolder
+                      spec={spec}
+                      status={status?.(spec)}
+                      selected={spec.rowId === openId}
+                      onOpen={() => {
+                        openDrawer(spec);
+                        snapViewportToTop();
+                      }}
+                    />
                   </DeskRow>
                 </li>
               ))}

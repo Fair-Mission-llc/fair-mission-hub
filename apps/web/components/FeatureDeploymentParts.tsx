@@ -1,21 +1,22 @@
 'use client';
-// Sprint 8Q: the two accordion buckets of Council Wide Settings and what sits in them.
-//   SettingsBucket           one high-visibility accordion (a <details> under a navy, gold-edged bar):
-//                            '🔧 Operational Configuration' opens on arrival, '📋 System Information' on a click.
+// Sprint 8Q: what sits on Council Wide Settings. Sprint 8S Revision 10.1: the page is a filing cabinet.
+//   SettingsCabinet          a 25% left rail of four flat text tabs (COUNCIL_SETTINGS_CABINET_TABS) beside a 75% canvas
+//                            that shows the chosen tab's cards. Every tab stays mounted (hidden when not chosen), so an
+//                            unsaved number survives a tab switch.
 //   FeatureDeploymentMatrix  the Council Feature Deployment Matrix (feature-deployment.ts councilFeatureDeployment): one
 //                            row per advanced capability and per council module, a '🟢 DEPLOYED' or '⚪ AVAILABLE / OFF'
 //                            badge and where its switch lives. The Biometric Authentication row carries its own switch
 //                            (councils.setBiometricLoginEnabled) for the page's editors.
-//   CouncilInstanceRecord    System Information: the council's record, read only, with the platform schema version.
-//   SettingsLinkCards        the System Settings pages each bucket points to, as far as the reader may open them:
-//                            payment and account settings under Operational Configuration (OPERATIONAL_SETTINGS_PAGES),
-//                            the read-only archives and lookups under System Information (SYSTEM_REFERENCE_PAGES).
+//   CouncilInstanceRecord    the council's record, read only, with the platform schema version (Standard Bank Accounts).
+//   SettingsLinkCards        the System Settings pages a tab points to, as far as the reader may open them: the payment
+//                            and account pages (BANK_ACCOUNT_SETTINGS_PAGES), the module and platform switches
+//                            (PLATFORM_SWITCH_PAGES) and the read-only archives and lookups (SYSTEM_REFERENCE_PAGES).
 //
-// Sprint 8S Revision 2: no vertical text spill. Each bucket's body may shrink (min-w-0) and wraps long words
-// (SETTINGS_BUCKET_BODY_CLASS), and the matrix gives its columns floors (FEATURE_MATRIX_COLUMN_CLASSES) so a narrow
+// Sprint 8S Revision 2: no vertical text spill. The canvas may shrink (min-w-0) and wraps long words
+// (SETTINGS_CABINET_CANVAS_CLASS), and the matrix gives its columns floors (FEATURE_MATRIX_COLUMN_CLASSES) so a narrow
 // screen scrolls the table sideways instead of stacking a column's text one word per line.
 import Link from 'next/link';
-import { useState, type ReactNode } from 'react';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import {
   canEditCouncilWideSettings,
   councilTenantType,
@@ -27,37 +28,72 @@ import {
   portalAreas,
   TENANT_VOCABULARY,
   type Council,
-  type CouncilSettingsBucketId,
+  type CouncilSettingsTabId,
   type FeatureDeploymentRow,
   type PortalArea,
-  COUNCIL_SETTINGS_BUCKETS,
+  COUNCIL_SETTINGS_CABINET_TABS,
 } from '@kofc/shared';
 import { Button, cx, Notice, Panel, Table, Td } from '@/components/ui';
 import { formatMoney } from '@/lib/format';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { db } from '@/services/db';
 
-/** The body of each accordion bucket: a column that may shrink and wraps long words instead of spilling them. */
-export const SETTINGS_BUCKET_BODY_CLASS = 'min-w-0 break-words p-4';
+/** The cabinet's right canvas: a column that may shrink and wraps long words instead of spilling them. */
+export const SETTINGS_CABINET_CANVAS_CLASS = 'min-w-0 break-words';
 /** The matrix's three columns: each keeps a floor width, so the table scrolls sideways rather than squeezing a column. */
 export const FEATURE_MATRIX_COLUMN_CLASSES = ['min-w-[16rem]', 'min-w-[11rem] whitespace-nowrap', 'min-w-[12rem]'] as const;
 
-/** One accordion bucket. */
-export function SettingsBucket({ id, defaultOpen = false, children }: { id: CouncilSettingsBucketId; defaultOpen?: boolean; children: ReactNode }) {
-  const bucket = COUNCIL_SETTINGS_BUCKETS.find((b) => b.id === id)!;
+/**
+ * The Council Wide Settings filing cabinet (Sprint 8S Revision 10.1): a 25% left rail of four flat text tabs beside a
+ * 75% canvas. Choosing a tab shows its cards on the canvas; the other tabs stay mounted but hidden. Up/Down arrows move
+ * between the tabs.
+ */
+export function SettingsCabinet({ panels }: { panels: Record<CouncilSettingsTabId, ReactNode> }) {
+  const [active, setActive] = useState<CouncilSettingsTabId>(COUNCIL_SETTINGS_CABINET_TABS[0].id);
+  const current = COUNCIL_SETTINGS_CABINET_TABS.find((t) => t.id === active)!;
+  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const i = COUNCIL_SETTINGS_CABINET_TABS.findIndex((t) => t.id === active);
+    const n = COUNCIL_SETTINGS_CABINET_TABS.length;
+    const next = COUNCIL_SETTINGS_CABINET_TABS[(i + (e.key === 'ArrowDown' ? 1 : n - 1)) % n].id;
+    setActive(next);
+    document.getElementById(`settings-tab-${next}`)?.focus();
+  };
   return (
-    <details open={defaultOpen} id={`settings-${id}`} className="group mb-6 rounded border-4 border-gold bg-white">
-      <summary className="flex cursor-pointer list-none items-center gap-3 bg-navy px-4 py-3 text-white" data-surface="navy">
-        <span aria-hidden="true" className="w-4 shrink-0 text-xl transition-transform group-open:rotate-90">
-          ›
-        </span>
-        <span className="flex min-w-0 flex-col">
-          <span className="font-serif text-xl font-bold">{bucket.label}</span>
-          <span className="text-sm">{bucket.hint}</span>
-        </span>
-      </summary>
-      <div className={SETTINGS_BUCKET_BODY_CLASS}>{children}</div>
-    </details>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_3fr]">
+      <div role="tablist" aria-orientation="vertical" aria-label="Council Wide Settings cabinet" onKeyDown={onKey} className="flex min-w-0 flex-col gap-2 self-start md:sticky md:top-4">
+        {COUNCIL_SETTINGS_CABINET_TABS.map((tab) => {
+          const selected = tab.id === active;
+          return (
+            <button
+              key={tab.id}
+              id={`settings-tab-${tab.id}`}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              aria-controls={`settings-panel-${tab.id}`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => setActive(tab.id)}
+              className={cx(
+                'w-full rounded border-2 border-navy bg-white px-3 py-2 text-left font-serif font-bold leading-tight text-navy hover:bg-gold/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
+                selected && 'border-l-8 border-l-gold bg-gold/30',
+              )}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+      <div className={SETTINGS_CABINET_CANVAS_CLASS}>
+        <p className="mb-2 text-sm text-muted">{current.hint}</p>
+        {COUNCIL_SETTINGS_CABINET_TABS.map((tab) => (
+          <section key={tab.id} id={`settings-panel-${tab.id}`} role="tabpanel" aria-labelledby={`settings-tab-${tab.id}`} hidden={tab.id !== active} className="min-w-0">
+            {panels[tab.id]}
+          </section>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -154,7 +190,7 @@ export function FeatureDeploymentMatrix({ council, onSaved }: { council: Council
   );
 }
 
-/** The council's record as System Information shows it, read only. */
+/** The council's record as the Standard Bank Accounts tab shows it, read only. */
 export function CouncilInstanceRecord({ council }: { council: Council }) {
   const tenant = councilTenantType(council);
   const facts: [string, ReactNode][] = [
@@ -189,15 +225,19 @@ interface SettingsPageLink {
   hint: string;
 }
 
-/** Operational Configuration: the pages that hold payment, account and module switches. */
-export const OPERATIONAL_SETTINGS_PAGES: readonly SettingsPageLink[] = [
+/** Standard Bank Accounts: the pages that hold payment methods, account owners and sealed keys. */
+export const BANK_ACCOUNT_SETTINGS_PAGES: readonly SettingsPageLink[] = [
   { area: 'council-lookups', href: '/council-lookups', label: 'Council Lookups', hint: "Payment methods and their account owners, and the council's email gateway." },
   { area: 'credentials-vault', href: '/credentials-vault', label: 'Credentials Vault', hint: 'The sealed keys for Drive, receipt reading and mail.' },
+];
+
+/** System Flags & Toggles: the pages that switch modules and platform-wide parameters (Super Admins). */
+export const PLATFORM_SWITCH_PAGES: readonly SettingsPageLink[] = [
   { area: 'feature-flags', href: '/feature-flags', label: 'Feature Flags Control Center', hint: "Switch each council's modules on or off (Super Admins)." },
   { area: 'system-settings/global-settings', href: '/system-settings/global-settings', label: 'Global System Parameters', hint: 'Dues, organization type and the platform limits (Super Admins).' },
 ];
 
-/** System Information: the read-only archives and lookups. */
+/** System Flags & Toggles: the read-only archives and lookups. */
 export const SYSTEM_REFERENCE_PAGES: readonly SettingsPageLink[] = [
   { area: 'system-settings/knowledge-archive', href: '/system-settings/knowledge-archive', label: 'Operations Knowledge Archive', hint: 'Every lesson the council has filed, by tag.' },
   { area: 'lookups', href: '/lookups', label: 'System Lookups', hint: 'The platform-wide lookup tables.' },

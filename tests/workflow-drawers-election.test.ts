@@ -9,7 +9,7 @@ import {
   buildExpenseWorkflow,
   CHARITABLE_DONATION_WORKFLOW_TITLE,
   COUNCIL_ELECTION_WORKFLOW_TITLE,
-  COUNCIL_SETTINGS_BUCKETS,
+  COUNCIL_SETTINGS_CABINET_TABS,
   DESK_DRAWERS,
   deskDrawersFor,
   electionPhaseOf,
@@ -51,14 +51,15 @@ describe('1. Council Wide Settings: two accordions, no text spill', () => {
   const page = read('apps/web/app/system-settings/council-settings/page.tsx');
   const parts = read('apps/web/components/FeatureDeploymentParts.tsx');
 
-  it('keeps exactly the two named accordion folders', () => {
-    expect(COUNCIL_SETTINGS_BUCKETS.map((b) => b.label)).toEqual(['🔧 Operational Configuration', '📋 System Information']);
-    expect(page.match(/<SettingsBucket id="[a-z]+"/g)).toEqual(['<SettingsBucket id="operational"', '<SettingsBucket id="information"']);
+  it('keeps exactly the four flat cabinet tabs (Sprint 8S Revision 10.1, was two accordions)', () => {
+    expect(COUNCIL_SETTINGS_CABINET_TABS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'Global Revenue Splits', 'User Access & Roster Control', 'System Flags & Toggles']);
+    expect(page.match(/^ {8}'[a-z-]+': \(/gm)).toEqual(["        'bank-accounts': (", "        'revenue-splits': (", "        'access-roster': (", "        'flags-toggles': ("]);
+    for (const t of COUNCIL_SETTINGS_CABINET_TABS) expect(t.label, t.id).not.toMatch(/[^\x20-\x7E]/);
   });
 
   it('lets each bucket body shrink and wrap, and gives the matrix columns floor widths', () => {
-    expect(parts).toContain("SETTINGS_BUCKET_BODY_CLASS = 'min-w-0 break-words p-4'");
-    expect(parts).toContain('<div className={SETTINGS_BUCKET_BODY_CLASS}>{children}</div>');
+    expect(parts).toContain("SETTINGS_CABINET_CANVAS_CLASS = 'min-w-0 break-words'");
+    expect(parts).toContain('<div className={SETTINGS_CABINET_CANVAS_CLASS}>');
     expect(parts.match(/<Td className=\{FEATURE_MATRIX_COLUMN_CLASSES\[\d\]\}>/g)).toHaveLength(3);
     expect(read('apps/web/components/ui.tsx')).toContain('flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2');
   });

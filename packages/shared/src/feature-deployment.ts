@@ -1,13 +1,16 @@
 // =========================================================================
 // THE COUNCIL FEATURE DEPLOYMENT MATRIX (Sprint 8Q, schema version 90)
 //
-// Council Wide Settings (/system-settings/council-settings) opens as two accordion buckets (COUNCIL_SETTINGS_BUCKETS):
-//   - 🔧 Operational Configuration  the cards that change how the council works - the timing and limit cards, meeting
-//                                   check-in, the inactivity sweep, rank benchmarks, loaner library sharing, the parish
-//                                   split, the biometric sign-in switch - and this matrix;
-//   - 📋 System Information         read-only facts about the council's instance - its record, the schema version and
-//                                   the reference pages (the Operations Knowledge Archive, System Lookups) - and the
+// Sprint 8S Revision 10.1: Council Wide Settings (/system-settings/council-settings) is a filing cabinet - a 25% left
+// rail of four flat text tabs (COUNCIL_SETTINGS_CABINET_TABS) beside a 75% canvas that shows the chosen tab's cards:
+//   - Standard Bank Accounts        the payment and account pages (Council Lookups, Credentials Vault) and the read-only
+//                                   Council Instance Record (EIN, dues, email gateway, schema version);
+//   - Global Revenue Splits         the parish split and the Annual Budget Planner banner;
+//   - User Access & Roster Control  meeting check-in, the inactivity sweep and the rank benchmarks;
+//   - System Flags & Toggles        the timing and limit cards, this matrix (with the biometric sign-in switch), loaner
+//                                   library sharing, the module and platform pages, the reference archives and the
 //                                   custom user guides.
+// (Sprint 8Q's two accordion buckets, Operational Configuration and System Information, are gone.)
 //
 // The matrix (councilFeatureDeployment) is one scannable row per advanced capability and per council module, each with
 // a '🟢 DEPLOYED' or '⚪ AVAILABLE / OFF' badge read from the council row itself, and where the switch lives. Nothing
@@ -19,12 +22,14 @@
 import { councilFeatureFlags, FEATURE_FLAG_LABELS, FEATURE_FLAG_NAMES, type FeatureFlagName } from './features';
 import type { Council } from './types';
 
-/** The two accordion buckets of Council Wide Settings, in display order. */
-export const COUNCIL_SETTINGS_BUCKETS = [
-  { id: 'operational', label: '🔧 Operational Configuration', hint: 'Switches, limits, payment and split settings, and which features are on for this council.' },
-  { id: 'information', label: '📋 System Information', hint: "Read-only facts about this council's instance, the reference archives and the printable guides." },
+/** The four flat tabs of the Council Wide Settings filing cabinet (Sprint 8S Revision 10.1), in rail order. */
+export const COUNCIL_SETTINGS_CABINET_TABS = [
+  { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: "Payment methods, account owners and sealed keys, and the council's record." },
+  { id: 'revenue-splits', label: 'Global Revenue Splits', hint: "The parish's share of fundraisers and the year's budget planning steps." },
+  { id: 'access-roster', label: 'User Access & Roster Control', hint: 'Meeting check-in, the inactivity sweep and the member rank benchmarks.' },
+  { id: 'flags-toggles', label: 'System Flags & Toggles', hint: 'Time limits and windows, which features are on, sharing switches and printable guides.' },
 ] as const;
-export type CouncilSettingsBucketId = (typeof COUNCIL_SETTINGS_BUCKETS)[number]['id'];
+export type CouncilSettingsTabId = (typeof COUNCIL_SETTINGS_CABINET_TABS)[number]['id'];
 
 /** The matrix section's title. */
 export const FEATURE_DEPLOYMENT_MATRIX_TITLE = 'Council Feature Deployment Matrix';
@@ -65,7 +70,8 @@ type DeploymentCouncil = Pick<
 >;
 
 const on = (value: number | null | undefined) => Number(value ?? 0) === 1;
-const THIS_PAGE = 'This page, Operational Configuration';
+/** Where on this page a capability's switch lives: the cabinet tab, then the card (Sprint 8S Revision 10.1). */
+const onTab = (id: CouncilSettingsTabId, card: string) => `This page, ${COUNCIL_SETTINGS_CABINET_TABS.find((t) => t.id === id)!.label} tab: ${card}`;
 
 /**
  * The matrix for one council: the advanced capabilities first (parish splits, the shared asset library, biometric sign-in,
@@ -79,7 +85,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Parametric Parish Splits',
       description: "Shares each fundraiser's collections with the parish at the council's saved percentage and GL line.",
       deployed: on(council.parish_split_enabled),
-      managedOn: `${THIS_PAGE}: Parish Fundraiser Split`,
+      managedOn: onTab('revenue-splits', 'Parish Fundraiser Split'),
     },
     {
       id: 'loaner-library',
@@ -87,7 +93,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Cross-Council Shared Asset Libraries',
       description: "Lends the council's listed assets to its connected councils in the Cross-Council Loaner Library.",
       deployed: on(council.is_loaner_library_enabled),
-      managedOn: `${THIS_PAGE}: Cross-Council Loaner Library Sharing`,
+      managedOn: onTab('flags-toggles', 'Cross-Council Loaner Library Sharing'),
     },
     {
       id: 'biometric',
@@ -95,7 +101,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Biometric Authentication',
       description: "Lets the council's members sign in on the phone app with FaceID or a fingerprint.",
       deployed: biometricLoginEnabled(council),
-      managedOn: `${THIS_PAGE}: the switch in this row`,
+      managedOn: onTab('flags-toggles', 'the switch in this row'),
     },
     {
       id: 'geofence',
@@ -103,7 +109,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Geofenced Meeting Check-In',
       description: 'Checks members in by GPS inside the meeting circle. Without a meeting point only the PIN works.',
       deployed: council.meeting_latitude != null && council.meeting_longitude != null,
-      managedOn: `${THIS_PAGE}: Meeting Check-In`,
+      managedOn: onTab('access-roster', 'Meeting Check-In'),
     },
     {
       id: 'email-gateway',

@@ -286,7 +286,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Who sees it | What it holds | Section |
 | --- | --- | --- | --- |
-| **Council Wide Settings** | Officers, Admins, Super Admins | 🔧 Operational Configuration and 📋 System Information | 16 |
+| **Council Wide Settings** | Officers, Admins, Super Admins | Four tabs: Standard Bank Accounts, Global Revenue Splits, User Access & Roster Control, System Flags & Toggles | 16 |
 | **Council Lookup Tables** | Admins, finance officers | Payment methods, lists and the email gateway | 10.7 |
 | **Credentials Vault** | Officers, Admins, Super Admins | Sealed keys for Drive, mail and receipt reading | 10.8 |
 | **Feature Flags Control Center** | Super Admins | The module switches of each council | 3 |
@@ -347,13 +347,13 @@ The **System Settings** pillar had the name **Setup** in earlier versions of the
 
 | Setting | Default | Where it is set | Who changes it | Section |
 | --- | --- | --- | --- | --- |
-| **Days after an event or meeting to submit expenses** | 30 days | **Council Wide Settings** → **Financial Submissions** | Officers, Admins, Super Admins | 16.3 |
-| **Days back a member may log volunteer time** | 90 days | **Council Wide Settings** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 16.3 |
-| **Hours before an event that gate donations open** | 2 hours | **Council Wide Settings** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 16.3 |
-| **Days after a meeting that the minutes are due** | 7 days | **Council Wide Settings** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 16.3 |
-| **Days without service before a member counts as inactive** | 365 days | **Council Wide Settings** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 14.9 |
-| **Days after a shift before the first hours reminder** | 5 days | **Council Wide Settings** → **Reminder Cadences** | Officers, Admins, Super Admins | 16.3 |
-| **Days between follow-up hours reminders** | 7 days | **Council Wide Settings** → **Reminder Cadences** | Officers, Admins, Super Admins | 16.3 |
+| **Days after an event or meeting to submit expenses** | 30 days | **Council Wide Settings** → **System Flags & Toggles** → **Financial Submissions** | Officers, Admins, Super Admins | 16.3 |
+| **Days back a member may log volunteer time** | 90 days | **Council Wide Settings** → **System Flags & Toggles** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 16.3 |
+| **Hours before an event that gate donations open** | 2 hours | **Council Wide Settings** → **System Flags & Toggles** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 16.3 |
+| **Days after a meeting that the minutes are due** | 7 days | **Council Wide Settings** → **System Flags & Toggles** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 16.3 |
+| **Days without service before a member counts as inactive** | 365 days | **Council Wide Settings** → **System Flags & Toggles** → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 14.9 |
+| **Days after a shift before the first hours reminder** | 5 days | **Council Wide Settings** → **System Flags & Toggles** → **Reminder Cadences** | Officers, Admins, Super Admins | 16.3 |
+| **Days between follow-up hours reminders** | 7 days | **Council Wide Settings** → **System Flags & Toggles** → **Reminder Cadences** | Officers, Admins, Super Admins | 16.3 |
 | Invitation lead time, sign-in length, record retention | See section 16.6 | **Global System Parameters** → **Platform Settings** | Super Admins | 16.6 |
 
 The settings marked **Not used yet** on the page are saved for future features (section 16.3). Your own **Navigation Guide** shows the numbers in force for your council now.
@@ -1933,7 +1933,7 @@ The shield has four levels. A member reaches a level when both the hours and the
 
 The thresholds are the Canonization Rank benchmarks. You change the benchmarks on **Council Wide Settings** only. Every other page shows the benchmarks as read-only text.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Canonization Rank Benchmarks** card.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **User Access & Roster Control** → **Canonization Rank Benchmarks** card.
 
 **Steps:**
 1. Find the **Canonization Rank Benchmarks** card under the **Roster Inactivity Sweep** card.
@@ -2040,7 +2040,7 @@ The platform keeps a history of every council that a member belongs to. The hist
 
 **Goal:** Mark members **Inactive** after more days without logged service than the council allows.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Roster Inactivity Sweep** card.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **User Access & Roster Control** → **Roster Inactivity Sweep** card.
 
 The **Roster Inactivity Sweep** card is the only place to run the check. The roster page and the **Financial Secretary Desk** do not show the button.
 
@@ -2195,18 +2195,22 @@ Some fields show a red **Not used yet** tag. The portal saves the number for a f
 
 The screenshot above shows the page before the cards were added. The fields and their labels are the same.
 
-### 16.2.1 Concept: the two accordion buckets
+### 16.2.1 Concept: the settings filing cabinet
 
-**Council Wide Settings** has exactly two accordion buckets and nothing outside them. The **Annual Budget Planner** banner leads **🔧 Operational Configuration**. Each bucket has a navy bar with a gold edge. Select the bar to open or close the bucket.
+**Council Wide Settings** is a filing cabinet. A rail of four tabs is on the left. The cards of the selected tab show on the right. The page opens on **Standard Bank Accounts**. Select a tab to show its cards. On a narrow screen, the tabs are above the cards.
 
-The text in each bucket wraps inside the bucket. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
+A number that you typed but did not save stays in its card when you select a different tab. Save each card before you leave the page.
 
-| Bucket | Opens | What the bucket holds |
-| --- | --- | --- |
-| **🔧 Operational Configuration** | Open when the page opens | The cards that change how the council works: **Financial Submissions**, **Volunteer & Meeting Operations**, **Reminder Cadences**, **Meeting Check-In**, **Roster Inactivity Sweep**, **Canonization Rank Benchmarks**, **Cross-Council Loaner Library Sharing** and **Parish Fundraiser Split**. Then the **Payment & Account Settings** links and the **Council Feature Deployment Matrix** (section 16.2.2). |
-| **📋 System Information** | Closed. Select the bar to open it. | Read-only facts: the **Council Instance Record**, the **Reference Archives** links and the **Custom User Guides** card. |
+| Tab | What the tab holds |
+| --- | --- |
+| **Standard Bank Accounts** | The **Payment & Account Settings** links and the read-only **Council Instance Record**. |
+| **Global Revenue Splits** | The **Parish Fundraiser Split** card and the **Annual Budget Planner** banner. |
+| **User Access & Roster Control** | The **Meeting Check-In**, **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. |
+| **System Flags & Toggles** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 16.3), the **Council Feature Deployment Matrix** (section 16.2.2), the **Cross-Council Loaner Library Sharing** card, the **Module & Platform Switches** links, the **Reference Archives** links and the **Custom User Guides** card. |
 
-The **Payment & Account Settings** links show only the pages that you may open: **Council Lookups** (payment methods and their account owners, and the email gateway), **Credentials Vault**, **Feature Flags Control Center** and **Global System Parameters**.
+The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
+
+The **Payment & Account Settings** links show only the pages that you may open: **Council Lookups** (payment methods and their account owners, and the email gateway) and **Credentials Vault**. The **Module & Platform Switches** links show **Feature Flags Control Center** and **Global System Parameters** to Super Admins.
 
 The **Council Instance Record** shows the council number and name, the organization type, the district, the EIN, the base dues rate, the email gateway, the date the bylaws were last saved and the database schema version. You cannot change these facts here. Each fact changes on its own page.
 
@@ -2214,7 +2218,7 @@ The **Reference Archives** links show only the pages that you may open: **Operat
 
 ### 16.2.2 Concept: the Council Feature Deployment Matrix
 
-The **Council Feature Deployment Matrix** is the last card in **🔧 Operational Configuration**. The matrix shows which advanced capabilities and modules are on for the council. Each row has a status badge.
+The **Council Feature Deployment Matrix** is on the **System Flags & Toggles** tab. The matrix shows which advanced capabilities and modules are on for the council. Each row has a status badge.
 
 | Badge | Meaning |
 | --- | --- |
@@ -2225,10 +2229,10 @@ The **Council Feature Deployment Matrix** is the last card in **🔧 Operational
 
 | Row | 🟢 DEPLOYED when | Where it is switched |
 | --- | --- | --- |
-| **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, on this page |
-| **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, on this page |
+| **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, on the **Global Revenue Splits** tab |
+| **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, on the **System Flags & Toggles** tab |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 16.4.1) |
-| **Geofenced Meeting Check-In** | The council has a meeting point. | **Meeting Check-In** card, on this page |
+| **Geofenced Meeting Check-In** | The council has a meeting point. | **Meeting Check-In** card, on the **User Access & Roster Control** tab |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Council Lookups** → **Email Gateway** |
 
 **Council modules** rows: one row for each of the twelve module switches (section 3). A Super Admin changes them on the **Feature Flags Control Center**.
@@ -2282,7 +2286,7 @@ The logging window also ends the hours reminders. A shift older than the window 
 
 **Steps:**
 1. Super Admins only: choose the council in **Council** at the top of the page.
-2. Make sure **🔧 Operational Configuration** is open. Find the card that holds the setting (section 16.3).
+2. Select the **System Flags & Toggles** tab. Find the card that holds the setting (section 16.3).
 3. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
 4. Enter the new number.
 5. Select the save button of the card, for example **Save Financial Submissions**.
@@ -2298,7 +2302,7 @@ The logging window also ends the hours reminders. A shift older than the window 
 | The message says the value must be "from" one number "to" another. | The value is outside the allowed range (section 16.3). | Enter a value inside the range. |
 | The message says "Nothing changed." | Every number in the card is the same as the saved value. | Change a number, then save. |
 | A field with **Not used yet** has no effect. | No feature reads the number yet. | No fix is needed. Keep the default. |
-| You cannot find the cards. | **🔧 Operational Configuration** is closed. | Select the **🔧 Operational Configuration** bar. |
+| You cannot find the cards. | A different tab is selected. | Select the tab that holds the card (section 16.2.1). |
 
 ### 16.4.1 Turn biometric sign-in on or off for the council
 
@@ -2306,7 +2310,7 @@ The logging window also ends the hours reminders. A shift older than the window 
 
 **Goal:** Allow or stop Face ID and fingerprint sign-in on the phones of the council's members.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **🔧 Operational Configuration** → **Council Feature Deployment Matrix**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **System Flags & Toggles** → **Council Feature Deployment Matrix**.
 
 **Steps:**
 1. Super Admins only: choose the council in **Council** at the top of the page.
@@ -2787,7 +2791,7 @@ When the location check fails, the phone asks for the 4-digit **meeting PIN**. T
 
 **Goal:** Set where the council meets, how close a phone must be, and the meeting PIN.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **📍 Meeting Check-In**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **User Access & Roster Control** → **📍 Meeting Check-In**.
 
 **Steps:**
 1. Find the meeting hall on a map. Copy its latitude and longitude in decimal degrees.
@@ -3602,7 +3606,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Save the targets of the next fraternal year and mark them reviewed before July 1.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Annual Budget Planner**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Global Revenue Splits** → **Annual Budget Planner**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**. The next year shows first.
@@ -3627,7 +3631,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record that leadership reviewed the drafted budget in June.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Annual Budget Planner** → **Annual budget**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Global Revenue Splits** → **Annual Budget Planner** → **Annual budget**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**.
@@ -3675,7 +3679,7 @@ A council Admin can send an invite but cannot accept one. Only the GK or the DGK
 
 The **Connected Councils** directory lists the other councils of your state. The nearest council shows first. The portal measures the distance between the meeting points of the councils. A council without a meeting point follows in district order. Councils of your own district show first.
 
-The GK sets the meeting point on **Council Wide Settings** → **Meeting Check-In**. A Super Admin enters the district number on the **Councils** page.
+The GK sets the meeting point on **Council Wide Settings** → **User Access & Roster Control** → **Meeting Check-In**. A Super Admin enters the district number on the **Councils** page.
 
 ### 21.6 Send an affiliation invite
 
@@ -3727,7 +3731,7 @@ Your members always see your own council's items. A brother council's item shows
 | Rule | Where to set it |
 | --- | --- |
 | The two councils are **Affiliated**. | **Connected Councils** |
-| Your council has sharing on. | **Council Wide Settings** → **Cross-Council Loaner Library Sharing** |
+| Your council has sharing on. | **Council Wide Settings** → **System Flags & Toggles** → **Cross-Council Loaner Library Sharing** |
 | The brother council has sharing on. | The brother council's **Council Wide Settings** |
 
 ### 21.9 Switch loaner library sharing on
@@ -3736,7 +3740,7 @@ Your members always see your own council's items. A brother council's item shows
 
 **Goal:** Share your council's items with affiliated councils, and see their items.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Cross-Council Loaner Library Sharing**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **System Flags & Toggles** → **Cross-Council Loaner Library Sharing**.
 
 **Steps:**
 1. Select the switch. The switch shows **Sharing is on**.
@@ -3863,7 +3867,7 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 
 Some fundraisers use parish property, for example the cathedral parking lot. The council then owes the parish a share of the money collected. The parish split calculates that share and pays it by check.
 
-Each council sets its own split on **Council Wide Settings** → **Parish Fundraiser Split**:
+Each council sets its own split on **Council Wide Settings** → **Global Revenue Splits** → **Parish Fundraiser Split**:
 
 | Setting | What it does | Default |
 | --- | --- | --- |
@@ -3896,7 +3900,7 @@ The officer who issues a request cannot also pay the request.
 
 **Goal:** Switch the parish split on with a percentage and a ledger line.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Global Revenue Splits** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
 
 **Steps:**
 1. Select the switch. The switch shows **The parish split is on**.

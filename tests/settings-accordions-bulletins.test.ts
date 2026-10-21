@@ -13,7 +13,7 @@ import {
   cleanBulletinLayout,
   cleanHistorianBulletin,
   COUNCIL_HISTORIAN_ROLE,
-  COUNCIL_SETTINGS_BUCKETS,
+  COUNCIL_SETTINGS_CABINET_TABS,
   councilFeatureDeployment,
   FEATURE_DEPLOYED_BADGE,
   FEATURE_FLAG_NAMES,
@@ -71,8 +71,8 @@ describe('the Honorary Expense lexicon', () => {
 });
 
 describe('the Council Feature Deployment Matrix (pure)', () => {
-  it('names the two accordion buckets', () => {
-    expect(COUNCIL_SETTINGS_BUCKETS.map((b) => b.label)).toEqual(['🔧 Operational Configuration', '📋 System Information']);
+  it('names the four cabinet tabs (Sprint 8S Revision 10.1)', () => {
+    expect(COUNCIL_SETTINGS_CABINET_TABS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'Global Revenue Splits', 'User Access & Roster Control', 'System Flags & Toggles']);
   });
 
   it('reads each capability from the council row, then lists every module', () => {
@@ -104,14 +104,29 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     expect(biometricLoginEnabled({ biometric_login_enabled: 0 })).toBe(false);
   });
 
-  it('puts the matrix in Operational Configuration and the read-only record in System Information', () => {
+  it('files every settings card in exactly one cabinet tab (Sprint 8S Revision 10.1)', () => {
     const page = read('apps/web/app/system-settings/council-settings/page.tsx');
-    const operational = page.slice(page.indexOf('<SettingsBucket id="operational" defaultOpen>'), page.indexOf('<SettingsBucket id="information">'));
-    const information = page.slice(page.indexOf('<SettingsBucket id="information">'));
-    for (const card of ['GroupedSettingsCards', 'MeetingCheckInCard', 'ParishSplitSettingsCard', 'LoanerLibrarySharingCard', 'FeatureDeploymentMatrix', 'OPERATIONAL_SETTINGS_PAGES']) {
-      expect(operational).toContain(card);
-    }
-    for (const card of ['CouncilInstanceRecord', 'SYSTEM_REFERENCE_PAGES', 'CustomGuidesCard']) expect(information).toContain(card);
+    const tab = (id: string, next?: string) => page.slice(page.indexOf(`'${id}': (`), next ? page.indexOf(`'${next}': (`) : page.indexOf('}}', page.indexOf(`'${id}': (`)));
+    const placement: Record<string, string[]> = {
+      'bank-accounts': ['BANK_ACCOUNT_SETTINGS_PAGES', 'CouncilInstanceRecord'],
+      'revenue-splits': ['ParishSplitSettingsCard', 'FraternalPlanningWorkflow'],
+      'access-roster': ['MeetingCheckInCard', 'InactivitySweepCard', 'RankThresholdsCard'],
+      'flags-toggles': ['GroupedSettingsCards', 'FeatureDeploymentMatrix', 'LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES', 'SYSTEM_REFERENCE_PAGES', 'CustomGuidesCard'],
+    };
+    const ids = Object.keys(placement);
+    ids.forEach((id, i) => {
+      for (const card of placement[id]!) expect(tab(id, ids[i + 1]), `${card} in ${id}`).toContain(card);
+    });
+    for (const card of Object.values(placement).flat()) expect(page.split(`<${card}`).length + page.split(`pages={${card}}`).length - 2, card).toBe(1);
+  });
+
+  it("names the cabinet tab in each capability's 'where it is switched' column", () => {
+    const rows = councilFeatureDeployment({ id: 1 } as Parameters<typeof councilFeatureDeployment>[0]).filter((r) => r.group === 'capability');
+    const where = Object.fromEntries(rows.map((r) => [r.id, r.managedOn]));
+    expect(where['parish-split']).toBe('This page, Global Revenue Splits tab: Parish Fundraiser Split');
+    expect(where['geofence']).toBe('This page, User Access & Roster Control tab: Meeting Check-In');
+    expect(where['biometric']).toBe('This page, System Flags & Toggles tab: the switch in this row');
+    expect(JSON.stringify(rows)).not.toContain('Operational Configuration');
   });
 });
 
