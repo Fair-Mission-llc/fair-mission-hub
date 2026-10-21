@@ -4,14 +4,18 @@
 // Sprint 7J Extension 2: under the header, the workspace tab row (WorkspaceTabs.tsx) of Home and the Officer Desks.
 // Sprint 8P Stage 1: the header row carries the global search bar (GlobalSearch.tsx) between the council name and the
 // Messaging menu, and the sign-in page's access request button became the understated '[ 🔑 Request Access ]' link.
+// Sprint 8S Revision 8: the boot sequence shows the launch splash (LaunchSplash: the emblem and the official app name,
+// held at least SPLASH_MIN_MS once per browser tab), and every sign-in view carries the About / Terms of Service /
+// Privacy Policy footer (LegalFooter.tsx). The development login hint is gone from the sign-in card.
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { ACCESS_REQUEST_LINK_LABEL, councilLabel, countUnreadMessages, describeError, isFraternalTenant, portalAreas, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
+import { ACCESS_REQUEST_LINK_LABEL, councilLabel, type LegalNoticeId, PLATFORM_APP_NAME, countUnreadMessages, describeError, isFraternalTenant, portalAreas, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
 import { AlertBell } from '@/components/AlertBell';
 import { BackToDeskBlotterAnchor } from '@/components/DeskDrawers';
 import { GlobalSearch } from '@/components/GlobalSearch';
+import { LegalFooter, LegalNoticePanel } from '@/components/LegalFooter';
 import { MemberAvatar } from '@/components/MemberAvatar';
 import { AccessRequestForm, RemoteAssistButton, ViewAsBanner } from '@/components/PlatformAccessParts';
 import { NAV, Sidebar } from '@/components/Sidebar';
@@ -360,7 +364,8 @@ function SignIn() {
   const [resetting, setResetting] = useState(false);
   // Sprint 7F: the Register Your Council form replaces the sign-in card while it is open.
   const [registering, setRegistering] = useState(false);
-  const devHint = (process.env.NEXT_PUBLIC_DATA_DRIVER ?? 'memory') === 'memory';
+  // Sprint 8S Revision 8: the footer's About, Terms of Service or Privacy Policy notice, shown in the card's place.
+  const [notice, setNotice] = useState<LegalNoticeId | null>(null);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -385,69 +390,79 @@ function SignIn() {
     </div>
   );
 
+  // The navy page every sign-in view shares, with the About / Terms of Service / Privacy Policy footer under the card.
+  const page = (card: ReactNode) => (
+    <div data-surface="navy" className="flex min-h-screen flex-col items-center justify-center bg-navy p-6">
+      {card}
+      <LegalFooter onOpen={setNotice} />
+    </div>
+  );
+
+  if (notice) {
+    return page(
+      <div className="flex w-full max-w-md flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
+        {brand}
+        <LegalNoticePanel id={notice} onClose={() => setNotice(null)} />
+      </div>,
+    );
+  }
+
   if (registering) {
-    return (
-      <div data-surface="navy" className="flex min-h-screen items-center justify-center bg-navy p-6">
-        <div className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
-          {brand}
-          <AccessRequestForm onCancel={() => setRegistering(false)} />
-        </div>
-      </div>
+    return page(
+      <div className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
+        {brand}
+        <AccessRequestForm onCancel={() => setRegistering(false)} />
+      </div>,
     );
   }
 
   if (resetting) {
-    return (
-      <div data-surface="navy" className="flex min-h-screen items-center justify-center bg-navy p-6">
-        <div className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
-          {brand}
-          <PasswordReset
-            initialEmail={username}
-            onCancel={() => setResetting(false)}
-            onDone={async (email, newPassword) => {
-              if (!(await signIn(email, newPassword))) throw new Error('Your password was changed, but signing in failed. Sign in with the new password.');
-            }}
-          />
-        </div>
-      </div>
+    return page(
+      <div className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
+        {brand}
+        <PasswordReset
+          initialEmail={username}
+          onCancel={() => setResetting(false)}
+          onDone={async (email, newPassword) => {
+            if (!(await signIn(email, newPassword))) throw new Error('Your password was changed, but signing in failed. Sign in with the new password.');
+          }}
+        />
+      </div>,
     );
   }
 
-  return (
-    <div data-surface="navy" className="flex min-h-screen items-center justify-center bg-navy p-6">
-      <form onSubmit={(e) => void submit(e)} className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
-        {brand}
-        {error ? <Notice tone="error">{error}</Notice> : null}
-        <Field label="Email">{(id) => <Input id={id} type="email" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required />}</Field>
-        <Field label="Password">
-          {(id) => <PasswordInput id={id} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />}
-        </Field>
-        <Button type="submit" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
-        </Button>
-        <button
-          type="button"
-          onClick={() => {
-            setError(null);
-            setResetting(true);
-          }}
-          className="self-center text-sm font-bold underline"
-        >
-          Forgot Password?
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setError(null);
-            setRegistering(true);
-          }}
-          className="self-center text-xs text-muted hover:text-navy hover:underline"
-        >
-          {ACCESS_REQUEST_LINK_LABEL}
-        </button>
-        {devHint ? <p className="text-xs text-muted">Development data: testadmin@kofc.org or testsuperadmin@kofc.org, password dev-pass-secure-9912.</p> : null}
-      </form>
-    </div>
+  return page(
+    <form onSubmit={(e) => void submit(e)} className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
+      {brand}
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      <Field label="Email">{(id) => <Input id={id} type="email" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required />}</Field>
+      <Field label="Password">
+        {(id) => <PasswordInput id={id} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />}
+      </Field>
+      <Button type="submit" disabled={busy}>
+        {busy ? 'Signing in…' : 'Sign in'}
+      </Button>
+      <button
+        type="button"
+        onClick={() => {
+          setError(null);
+          setResetting(true);
+        }}
+        className="self-center text-sm font-bold underline"
+      >
+        Forgot Password?
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setError(null);
+          setRegistering(true);
+        }}
+        className="self-center text-xs text-muted hover:text-navy hover:underline"
+      >
+        {ACCESS_REQUEST_LINK_LABEL}
+      </button>
+    </form>,
   );
 }
 
@@ -491,8 +506,46 @@ function Frame({ children }: { children: ReactNode }) {
   );
 }
 
+/** How long the launch splash stays up on a tab's first load, even when the session is ready sooner. */
+const SPLASH_MIN_MS = 1200;
+const SPLASH_SEEN_KEY = 'kofc.splashSeen';
+
+/** Sprint 8S Revision 8: the launch splash of the boot sequence - the emblem and the official app name on navy. */
+function LaunchSplash() {
+  return (
+    <div data-surface="navy" role="status" aria-live="polite" className="flex min-h-screen flex-col items-center justify-center gap-6 bg-navy p-6 text-center text-white">
+      <BrandMark size={128} />
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-bold uppercase tracking-[0.3em] text-gold">Knights of Columbus</p>
+        <h1 className="font-serif text-4xl font-bold leading-tight">{PLATFORM_APP_NAME}</h1>
+      </div>
+      <div className="h-1 w-48 overflow-hidden rounded bg-white/20" aria-hidden="true">
+        <div className="h-full w-full bg-gold motion-safe:animate-pulse" />
+      </div>
+      <p className="text-sm text-white/80">Opening your council&apos;s records…</p>
+    </div>
+  );
+}
+
 export function Shell({ children }: { children: ReactNode }) {
   const { user, ready, startupError } = useSession();
+  // The splash holds for SPLASH_MIN_MS on the tab's first load only; a reload in the same tab skips the wait.
+  const [splashDone, setSplashDone] = useState(false);
+  useEffect(() => {
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem(SPLASH_SEEN_KEY) === '1';
+      sessionStorage.setItem(SPLASH_SEEN_KEY, '1');
+    } catch {
+      // Storage blocked: hold the splash every time.
+    }
+    if (seen) {
+      setSplashDone(true);
+      return;
+    }
+    const timer = setTimeout(() => setSplashDone(true), SPLASH_MIN_MS);
+    return () => clearTimeout(timer);
+  }, []);
   if (startupError) {
     return (
       <div className="p-6">
@@ -500,12 +553,6 @@ export function Shell({ children }: { children: ReactNode }) {
       </div>
     );
   }
-  if (!ready) {
-    return (
-      <div data-surface="navy" className="flex min-h-screen items-center justify-center bg-navy text-white">
-        <p className="font-serif text-xl">Opening the portal…</p>
-      </div>
-    );
-  }
+  if (!ready || !splashDone) return <LaunchSplash />;
   return user ? <Frame>{children}</Frame> : <SignIn />;
 }

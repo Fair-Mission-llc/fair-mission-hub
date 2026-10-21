@@ -78,3 +78,4 @@ export * from './old-business';
 export * from './feature-deployment';
 export * from './navigation-map';
 export * from './mobile-home';
+export * from './legal-notices';

@@ -77,6 +77,16 @@ export const COUNCIL_GOAL_LABELS: Record<CouncilGoalKey, string> = {
 export const COUNCIL_GOAL_MAX = 10_000_000;
 
 /** No goals saved: every target 0 (a wheel with a 0 target shows "No target set"). */
+/**
+ * Sprint 8S Revision 8: the three Star Council objectives the Grand Knight Desk's '[ 📈 Council Goals & Targets ]'
+ * folder tracks, each read from its CouncilGoals target. Charitable Dollars is the year's funds raised.
+ */
+export const STAR_COUNCIL_OBJECTIVES: readonly { key: CouncilGoalKey; label: string; detail: string }[] = [
+  { key: 'new_members_target', label: 'Membership Intake', detail: 'Brothers who joined the council this fraternal year' },
+  { key: 'fundraising_target', label: 'Charitable Dollars', detail: 'Funds raised for charity this fraternal year' },
+  { key: 'hours_target', label: 'Volunteer Hours', detail: 'Service hours logged on shifts and activities' },
+];
+
 export const emptyCouncilGoalTargets = (): CouncilGoalTargets => ({
   fundraising_target: 0,
   new_members_target: 0,

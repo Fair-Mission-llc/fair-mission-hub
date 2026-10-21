@@ -23,12 +23,14 @@
 // top is the Dynamic Priority Float: every folder whose Alert Boundary Accent is lit floats there, red-bordered. The
 // high-density desks (Financial Secretary and Treasurer) then stack two cabinet blocks, '[ 📥 Inbound Operations ]' and
 // '[ 📤 Outbound Operations ]' (each drawer's `cabinet`); the leaner desks list their folders flat. No folder nests.
+// Sprint 8S Revision 8: the Grand Knight Desk gains the '[ 📈 Council Goals & Targets ]' folder (gate 'council-goals'):
+// the Star Council objectives - Membership Intake, Charitable Dollars and Volunteer Hours - against the year's targets.
 import type { DiaryEntryDetail, ExpenseReportDetail, LegacyYear, SessionUser } from './contract';
 import type { Meeting } from './types';
 import { canEndorseCharityRequest } from './charity-pipeline';
 import { CHARITABLE_DONATION_WORKFLOW_TITLE, COUNCIL_ELECTION_WORKFLOW_TITLE, EXPENSE_REPORT_WORKFLOW_TITLE, type FinanceWorkflowDesk } from './desk-workflows';
 import { canRespondToAffiliation } from './council-affiliations';
-import { canSetCouncilGoals } from './council-goals';
+import { canReadCouncilGoals, canSetCouncilGoals } from './council-goals';
 import { awaitsTreasurerCoding, awaitsWrittenOrder, isPayableExpenseReport } from './expenses';
 import type { FeatureFlags } from './features';
 import { canLendCouncilAssets } from './loaner-library';
@@ -57,11 +59,13 @@ export const ALERT_BOUNDARY_LABEL = 'Waiting for your signature';
 export const DESK_ALERT_POLL_MS = 30_000;
 /** The sessionStorage key that remembers the desk a drawer deep-traversed from. */
 export const DESK_RETURN_STORAGE_KEY = 'kofc.deskReturn';
+/** Sprint 8S Revision 8: the Grand Knight Desk folder of the Star Council objectives. */
+export const COUNCIL_GOALS_FOLDER_TITLE = '[ 📈 Council Goals & Targets ]';
 /** The one name of the operating-notes archive and its entry form, on every desk, page and guide (Sprint 8P Stage 3). */
 export const OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE = 'Operations Knowledge Archive';
 
 /** Who sees a drawer besides its portal area (when it has one). */
-export type DeskDrawerGate = 'loaner-library' | 'planning' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'charity-endorsement' | 'always';
+export type DeskDrawerGate = 'loaner-library' | 'planning' | 'council-goals' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'charity-endorsement' | 'always';
 
 /** The desks built as blotters: every officer desk. Home, the Member Desk and the Super Admin Desk are not. */
 export type DrawerDeskId = Extract<DashboardTabId, 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian'>;
@@ -77,6 +81,7 @@ export type DeskDrawerId =
   | 'affiliation-invites'
   | 'loaner-library'
   | 'planning-budgeting'
+  | 'council-goals'
   | 'election-workflow'
   | 'er-workflow'
   | 'donation-workflow'
@@ -180,6 +185,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'access-requests', title: 'Inbound Council Mail Center', summary: 'Access requests from councils not yet on the platform', gate: 'super-admin', rowId: DESK_FOCUS_TARGETS.access.rowId, alerts: true },
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
   { desk: 'grand-knight', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-donation-workflow', alerts: true },
+  { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },
   { desk: 'grand-knight', id: 'planning-budgeting', title: 'Planning & Budgeting Workflow', summary: 'Goals, the June review, the July 1 lock and the budget vote', gate: 'planning', rowId: 'drawer-planning-budgeting' },
   { desk: 'grand-knight', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: 'The ballot, May nominations, the June vote and the July 1 term', area: 'elections', rowId: 'drawer-election-workflow' },
   { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
@@ -230,6 +236,8 @@ function clearedBy(u: Actor, spec: DeskDrawerSpec, councilId: number, areas: Rea
       return canLendCouncilAssets(u, councilId);
     case 'planning':
       return canSetCouncilGoals(u, councilId) || canManageBudgetForecast(u, councilId);
+    case 'council-goals':
+      return canReadCouncilGoals(u, councilId);
     case 'affiliations':
       return canRespondToAffiliation(u, councilId);
     case 'quarantine':

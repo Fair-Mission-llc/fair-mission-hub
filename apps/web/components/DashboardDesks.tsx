@@ -109,6 +109,9 @@ import {
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
   canWriteOperationsKnowledge,
+  canSetCouncilGoals,
+  currentFraternalYear,
+  STAR_COUNCIL_OBJECTIVES,
   dailyVerse,
   DESK_FOCUS_TARGETS,
   LEADERBOARD_SIZE,
@@ -534,6 +537,69 @@ function PlanningBudgetingDrawer({ user, councilId }: { user: SessionUser; counc
   );
 }
 
+/**
+ * Sprint 8S Revision 8: the '[ 📈 Council Goals & Targets ]' folder - the Star Council objectives (Membership Intake,
+ * Charitable Dollars, Volunteer Hours) of the current fraternal year against the targets set in the Planning & Budgeting
+ * Workflow (reports.getCouncilGoals, the same figures as the Executive Dashboard's progress wheels).
+ */
+function CouncilGoalsDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
+  const year = currentFraternalYear(new Date());
+  const progress = useLoad(() => db.reports.getCouncilGoals(user.memberId, councilId, year), [user.memberId, councilId, year]);
+  const metrics = progress.data?.metrics ?? [];
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm">
+        Star Council objectives for fraternal year <span className="font-bold">{year}</span>. Each bar fills as the council&apos;s records reach the target.
+      </p>
+      {progress.error ? <Notice tone="error">{progress.error}</Notice> : null}
+      {progress.loading && !progress.data ? <p className="text-sm">Loading the council&apos;s goals…</p> : null}
+      {progress.data ? (
+        <ul className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+          {STAR_COUNCIL_OBJECTIVES.map((objective) => {
+            const m = metrics.find((x) => x.key === objective.key);
+            const actual = m?.actual ?? 0;
+            const target = m?.target ?? 0;
+            const share = m?.percent == null ? 0 : Math.min(m.percent, 100);
+            const show = (n: number) => (m?.unit === 'money' ? formatMoney(n) : m?.unit === 'hours' ? formatDecimalHours(n) : n.toLocaleString('en-US'));
+            return (
+              <li key={objective.key} className="flex flex-col gap-2 rounded border-2 border-navy border-t-8 border-t-gold bg-white p-3">
+                <h3 className="font-serif text-lg font-bold">{objective.label}</h3>
+                <p className="text-xs text-muted">{objective.detail}</p>
+                <p className="text-2xl font-bold">{show(actual)}</p>
+                <div
+                  role="progressbar"
+                  aria-label={`${objective.label} progress`}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={share}
+                  className="h-3 w-full overflow-hidden rounded bg-line"
+                >
+                  <div className={cx('h-full', share >= 100 ? 'bg-gold' : 'bg-navy')} style={{ width: `${share}%` }} />
+                </div>
+                <p className="text-sm">
+                  {target > 0 ? (
+                    <>
+                      <span className="font-bold">{m?.percent}%</span> of the {show(target)} target
+                    </>
+                  ) : (
+                    'No target set for this year'
+                  )}
+                </p>
+                {share >= 100 ? <Pill tone="gold">Goal reached</Pill> : null}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+      <p className="text-xs text-muted">
+        {canSetCouncilGoals(user, councilId)
+          ? 'Set or change the targets in the Planning & Budgeting Workflow folder, until the goals lock on July 1.'
+          : "The Grand Knight or Deputy Grand Knight sets the targets in the Planning & Budgeting Workflow folder."}
+      </p>
+    </div>
+  );
+}
+
 /** The Shared Loaner Library drawer: the lending desk (LoanerLibraryManager) and the way to the brother councils' items. */
 function LoanerLibraryDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
   return (
@@ -683,6 +749,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return <CharityVettingBoard />;
             case 'donation-workflow':
               return charity.drawer;
+            case 'council-goals':
+              return <CouncilGoalsDrawer user={user} councilId={councilId} />;
             case 'planning-budgeting':
               return <PlanningBudgetingDrawer user={user} councilId={councilId} />;
             case 'election-workflow':

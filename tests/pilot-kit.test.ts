@@ -325,19 +325,22 @@ describe('pilot kit PDFs', () => {
   });
 });
 
-// Sprint 8L: one 60-minute session (30 + 30), every web step from the Active Desks row, hand-set phones and large print.
+// Sprint 8L: every web step from the Active Desks row and large print. Sprint 8S Revision 8: one web-only session from a
+// 6:15 PM gavel in five phases (the 8L 30 + 30 split and the phone steps are gone).
 describe('Sprint 8L pilot kit', () => {
   const kit = read('scripts/pilot_kit_pdf.py');
   const personas = kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'));
   const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('FEEDBACK_RATINGS: tuple'));
 
-  it('splits the session into a 30-minute individual phase and a 30-minute group phase', () => {
-    expect(kit).toContain('INDIVIDUAL_PHASE_MINUTES = 30');
-    expect(kit).toContain('GROUP_PHASE_MINUTES = 30');
-    expect(kit).toContain('Individual Desk Coordinate Phase');
-    expect(kit).toContain('Synchronized Group Workflow');
+  it('anchors the session on the 6:15 PM gavel: Intro, Individual, Group, Exploration and Listening', () => {
+    expect(kit).toContain("GAVEL_TIME = '6:15 PM'");
+    for (const line of ['INTRO_MINUTES = 5', 'INDIVIDUAL_PHASE_MINUTES = 20', 'GROUP_PHASE_MINUTES = 40', 'EXPLORATION_MINUTES = 20', 'LISTENING_MINUTES = 20']) expect(kit).toContain(line);
+    const clocks = [...kit.matchAll(/\('(\d:\d\d - \d:\d\d PM)', (\w+_MINUTES)/g)].map((m) => m[1]);
+    expect(clocks).toEqual(['6:15 - 6:20 PM', '6:20 - 6:40 PM', '6:40 - 7:20 PM', '7:20 - 7:40 PM', '7:40 - 8:00 PM']);
+    for (const phase of ['Introduction', 'Individual Desk Coordinate Phase', 'Synchronized Group Workflow', 'Open Exploration', 'Listening Session']) expect(kit).toContain(phase);
     const minutes = [...group.matchAll(/minutes=(\d+)/g)].map((m) => Number(m[1]));
-    expect(minutes.reduce((a, b) => a + b, 0)).toBe(30);
+    expect(minutes.reduce((x, y) => x + y, 0)).toBe(40);
+    expect(kit).not.toMatch(/60-minute|30-minute/);
   });
 
   it('starts every web step from the Active Desks folders, never the sidebar', () => {
@@ -355,16 +358,17 @@ describe('Sprint 8L pilot kit', () => {
       expect(personas, folder).toContain(folder);
   });
 
-  it('has the members set up the Donate tab by hand and Member Alpha log the cash box drop, then conclude the session', () => {
-    expect(personas).toContain('Nothing is pre-selected');
-    expect(personas).toContain('tap the Venmo tile yourself');
-    expect(personas).toContain('type 25.00 in STANDARD RATE');
-    const alpha = personas.slice(personas.indexOf("key='alpha'"), personas.indexOf("key='beta'"));
-    const last = alpha.slice(alpha.lastIndexOf('Step('));
-    // Sprint 8N: the conclude step follows the cash box drop.
-    const drop = alpha.slice(alpha.lastIndexOf('Step(', alpha.lastIndexOf('Step(') - 1), alpha.lastIndexOf('Step('));
-    expect(drop).toContain('cash box drop');
-    expect(last).toContain('[ 🛑 Conclude Event Session & Lock Logs ]');
+  it('keeps every worksheet and poster web-only: no phone app, Expo Go or phone tabs (Sprint 8S Revision 8)', () => {
+    expect(kit).not.toMatch(/phones?|smartphone|Expo Go|Collect tab|Report tab|Donate tab|tap/i);
+    expect(kit).toContain("HOUR_LEDGER = 'Member Actions Hub > Hour ledger tab'");
+    for (const key of ['alpha', 'beta']) {
+      const steps = personas.slice(personas.indexOf(`key='${key}'`), key === 'alpha' ? personas.indexOf("key='beta'") : undefined);
+      expect(steps, key).toContain('Step(HOUR_LEDGER');
+      expect(steps, key).toContain("device='Laptop (web portal)");
+      expect(steps, key).not.toMatch(/Venmo|Record donation|Conclude Event Session/);
+    }
+    const flow2 = group.slice(group.indexOf("key='hours'"), group.indexOf("key='returned'"));
+    expect(flow2.match(/Step\(HOUR_LEDGER/g)).toHaveLength(2);
   });
 
   it("reviews the budget sheet on the Treasurer's script and prints Member Beta's pages in large type", () => {
@@ -384,7 +388,7 @@ describe('Sprint 8L pilot kit', () => {
 describe('Sprint 8M Extension pilot kit', () => {
   const kit = read('scripts/pilot_kit_pdf.py');
   const personas = kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'));
-  const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('# The 60-minute session'));
+  const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('# Sprint 8S Revision 8: the web-only Live Meeting session'));
   const persona = (key: string, next: string) => personas.slice(personas.indexOf(`key='${key}'`), next ? personas.indexOf(`key='${next}'`) : undefined);
 
   it("frees the Treasurer's script from the Grand Knight and adds the Parish Revenue Split Console chapter", () => {
@@ -397,16 +401,13 @@ describe('Sprint 8M Extension pilot kit', () => {
     expect(treasurer).toContain('$400.00 x 50%');
   });
 
-  it('keeps check logging off both volunteer scripts: Venmo at $25.00, then Alpha\'s $180 cash box drop', () => {
+  it('keeps check logging and donations off both volunteer scripts (web-only since Sprint 8S Revision 8)', () => {
     for (const [key, next] of [['alpha', 'beta'], ['beta', '']] as const) {
       const steps = persona(key, next);
-      expect(steps, key).not.toMatch(/Check tile|CHECK NUMBER|by check/i);
-      expect(steps, key).toContain('Venmo tile yourself');
-      expect(steps, key).toContain('25.00');
+      expect(steps, key).not.toMatch(/Check tile|CHECK NUMBER|by check|Venmo|Cash tile/i);
+      expect(steps, key).toContain('Save shift hours');
     }
-    const alpha = persona('alpha', 'beta');
-    // Sprint 8N: the $180 drop is the step before the session is concluded.
-    expect(alpha.slice(alpha.lastIndexOf('Step(', alpha.lastIndexOf('Step(') - 1), alpha.lastIndexOf('Step('))).toContain('type 180.00 in AMOUNT');
+    expect(persona('alpha', 'beta')).toContain('Dollar Tree, $12.00, chalk for lot lane markings');
   });
 
   it('plays six flows: no phone parking collections, Flow 5 vetting only, Flow 6 the parish settlement with check 1404', () => {

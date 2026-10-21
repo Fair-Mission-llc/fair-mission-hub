@@ -5,10 +5,12 @@ Sprint 8M Extension: no individual step waits for another persona (the Treasurer
 splits the parking collections on his own Parish Revenue Split Console), the members take Venmo and cash at a $25.00
 rate, and the group phase is six flows ending with Flow 6, the Parish Fundraiser Revenue Settlement (check 1404).
 
-Sprint 8L: the kit is one 60-minute session - a strict 30-minute Individual Desk Coordinate Phase (the individual
-scripts) and a 30-minute Synchronized Group Workflow (the group script). Every step starts from the Active Desks row
-and the folders on each desk's filing spine (Sprints 8P and 8S Revision 7), never the sidebar. The members set up the phone's Collect tab by hand (nothing is pre-selected
-or pre-filled). Member Beta's pages print in large type (Persona.large_print).
+Sprint 8S Revision 8: the kit is one web-only session anchored on a 6:15 PM gavel - Introduction (6:15-6:20), the
+Individual Desk Coordinate Phase (6:20-6:40, the individual scripts), the Synchronized Group Workflow (6:40-7:20, the
+group script), Open Exploration (7:20-7:40) and the Listening Session (7:40-8:00). Every persona works on a laptop in
+the web portal; no step needs any other device. Every web step starts from the Active Desks row and the folders on each
+desk's filing spine (Sprints 8P and 8S Revision 7); the members report their hours on the Member Actions Hub's Hour
+ledger tab. Member Beta's pages print in large type (Persona.large_print).
 
     py scripts/pilot_kit_pdf.py                 writes all five PDFs under docs/
     py scripts/compile_all_manuals.py           compiles the two user guides, then this kit
@@ -24,7 +26,7 @@ or pre-filled). Member Beta's pages print in large type (Persona.large_print).
     docs/POSTER_PERMISSIONS_MATRIX.pdf  11x17: which persona may do what
 
 The scripts walk through the pilot data in Seed.sql (the seven @stmarys.org personas, the Parish Parking Event,
-expense reports 14-23, charity requests 6-7, the first parking weekend's $400.00 and the two held time entries). Screen and button names are the portal's and the phone's own.
+expense reports 14-23, charity requests 6-7, the first parking weekend's $400.00 and the two held time entries). Screen and button names are the web portal's own.
 The PDFs are written to disk only; nothing is sent to a printer.
 """
 from __future__ import annotations
@@ -113,7 +115,8 @@ class Flow:
 
 
 SIGN_IN_WEB = 'Web portal sign-in page'
-SIGN_IN_PHONE = 'Phone app sign-in screen'
+# Sprint 8S Revision 8: the web home of a member's hour reports (the Volunteer Check-In & Service Center).
+HOUR_LEDGER = 'Member Actions Hub > Hour ledger tab'
 # Sprint 8L: every web step starts from the Active Desks row (the folder tabs over every portal page). Sprint 8P: each
 # module is a drawer on its desk (Sprint 8S Revision 7: a folder on the left filing spine, opened on the Desk Blotter); the Oversight Desk is gone (its Flagged Hours Review is a Grand Knight Desk drawer).
 DESKS = 'Active Desks'
@@ -144,7 +147,7 @@ PERSONAS: tuple[Persona, ...] = (
                  'The answer names its Source Authority. Click [ 🔀 Back to Desk Blotter ].'),
             Step(f'{DESKS} > Grand Knight Desk > Connected Councils', 'Open the drawer and read the nearby councils.',
                  'St. Anthony Council is an active affiliate; Holy Redeemer\'s invite waits for your answer under Affiliation Invites.'),
-            Step(f'{DESKS} > Home', 'Read the 📿 Community Prayer Request List card and tap [ 🙏 Praying Hands ] on Member Beta\'s intention.',
+            Step(f'{DESKS} > Home', 'Read the 📿 Community Prayer Request List card and click [ 🙏 Praying Hands ] on Member Beta\'s intention.',
                  'The card lists five open intentions. The count on Beta\'s intention goes up by one and the button greys out for today.'),
         ),
     ),
@@ -254,7 +257,7 @@ PERSONAS: tuple[Persona, ...] = (
             Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review', 'On Member Beta\'s entry click Approve & Add to Time Log.',
                  'The entry leaves the desk. Beta\'s 6 hours now count in the Council Dashboard and on the Executive Dashboard.'),
             Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review', 'On Member Alpha\'s entry click Reject & Remove. Tell Alpha to report the 4 scheduled hours again.',
-                 'The entry leaves the desk and its hours never count. Alpha can log the Saturday shift again from the phone Report tab.'),
+                 'The entry leaves the desk and its hours never count. Alpha can report the Saturday shift again on the Member Actions Hub\'s Hour ledger tab.'),
             Step(f'{DESKS} > Grand Knight Desk > Charitable Grant Requests Vetting Board', 'Open the drawer and read the pooled requests. Do not claim one in this phase.',
                  'The Deputy Grand Knight sees the same board as the Grand Knight and may claim requests.'),
         ),
@@ -293,28 +296,23 @@ PERSONAS: tuple[Persona, ...] = (
         title='Member Alpha',
         email='member_alpha@stmarys.org',
         seat='Member (Member Alpha)',
-        device='Phone app, then laptop',
+        device='Laptop (web portal)',
         day_in_life=(
-            'Member Alpha volunteers as a lot attendant on the parking weekends. Before the first car arrives he sets up '
-            'his phone by hand, exactly as he would at the gate: nothing on the Collect tab is chosen or typed for him. '
-            'Cars pay the $25.00 parking rate by Venmo or in cash, and at the end of the shift he records the cash box as '
-            'one consolidated drop. When the lot closes he concludes the session on his phone, which locks the logs so the '
-            'Treasurer can count the cash box against them.'
+            'Member Alpha volunteers as a lot attendant on the parking weekends. After his Sunday shift he reports his '
+            'hours in the web portal, files the receipt for the chalk he bought to mark the lot lanes, and follows the '
+            'report until the council pays him back. Nothing is filled in for him: he picks the shift and types the '
+            'hours himself.'
         ),
         steps=(
-            Step(SIGN_IN_PHONE, 'Sign in as member_alpha@stmarys.org with the pilot password.', 'The tab bar shows Home, Mtgs, Signup, Report and Donate.'),
-            Step('Phone > Report tab', 'Under Which shift? choose Lot attendants - Sunday (October 11). Under How long? enter 4 hours. Tap Save time.',
-                 'A message confirms the hours were saved to Lot attendants - Sunday.'),
-            Step('Phone > Collect tab > Start collecting for event', f'This card is your on-device configuration drawer. Nothing is pre-selected. Choose the {PILOT_EVENT} in EVENT and Parking in DONATION TYPE yourself, type 25.00 in STANDARD RATE (OPTIONAL), and tap Start.',
-                 'The ACCEPTING DONATIONS card shows the event and "Session setup: $25.00 · Parking".'),
-            Step('Phone > Collect tab', 'Under How is the donor giving? tap the Venmo tile yourself. Let the "donor" scan the full-screen code, then close it. The AMOUNT box is empty: type 25.00 by hand and tap Record donation.',
-                 'A message reads "Recorded $25.00 by Venmo for Parish Parking Event". Nothing was filled in for you.'),
-            Step('Web > Active Desks > Member Desk > Open my expenses', f'Sign in on the laptop. Click New expense report, link it to the {PILOT_EVENT}, add a line (Dollar Tree, $12.00, chalk for lot lane markings) and submit it.',
+            Step(SIGN_IN_WEB, 'Sign in as member_alpha@stmarys.org with the pilot password.', 'The Active Desks row opens on Home. Its tabs include Member Desk.'),
+            Step(HOUR_LEDGER, f'Click Member Actions Hub, then the Hour ledger tab. Under Report time on a shift, choose the {PILOT_EVENT}: Lot attendants - Sunday (October 11) in Shift I worked. Set Hours to 4 and Minutes to 0, then click Save shift hours.',
+                 'A notice reads "Shift hours saved." The shift is listed under My shift history with 4 hours.'),
+            Step(f'{DESKS} > Member Desk > Open my expenses', f'Click New expense report, link it to the {PILOT_EVENT}, add a line (Dollar Tree, $12.00, chalk for lot lane markings) and submit it.',
                  'The new report is Submitted and appears on the Financial Secretary Desk.'),
-            Step('Phone > Collect tab', 'The cash box drop. Count the cash box (use $180.00 for the pilot). Tap the Cash tile, type 180.00 in AMOUNT, type "Cash box drop - Saturday lot" in DESCRIPTION, and tap Record donation.',
-                 'One consolidated $180.00 cash donation is recorded for the event. The ACCEPTING DONATIONS card is still open.'),
-            Step('Phone > Collect tab > [ 🛑 Conclude Event Session & Lock Logs ]', f'Final step - close the gate. On the ACCEPTING DONATIONS card tap [ 🛑 Conclude Event Session & Lock Logs ]. Read the warning, then tap Yes, conclude & lock.',
-                 f'A message reads "{PILOT_EVENT} is concluded and its logs are locked. The Treasurer can now count the cash box." The phone leaves the intake session, the event is no longer offered under Start collecting for event, and nobody can add or change a donation for it. The collection is now ready for the Treasurer\'s cash box audit.'),
+            Step(f'{DESKS} > Member Desk', 'Find your new report under My open expense sheets and read its status.',
+                 'The report is Submitted and waits for the Financial Secretary\'s payment request, the first of its three signatures.'),
+            Step(f'{DESKS} > Home', 'Read the 📿 Community Prayer Request List card and click [ 🙏 Praying Hands ] on one intention.',
+                 'The count on that intention goes up by one and the button greys out for today.'),
         ),
     ),
     Persona(
@@ -322,24 +320,20 @@ PERSONAS: tuple[Persona, ...] = (
         title='Member Beta',
         email='member_beta@stmarys.org',
         seat='Member (Member Beta)',
-        device='Phone app (large text layout), then laptop',
+        device='Laptop (web portal), browser zoom as needed',
         large_print=True,
         day_in_life=(
-            'Member Beta is a senior brother whose eyesight is fading. His profile opens the phone in the large text '
-            'layout, and this handout is printed in large type. He works the parking shifts, ushers at Mass, and keeps an '
-            'eye on his own cash-box report. He sets up his phone by hand like everyone else.'
+            'Member Beta is a senior brother whose eyesight is fading, so this handout is printed in large type. He '
+            'enlarges the portal with his browser\'s zoom (Ctrl and +). He works the parking shifts, ushers at Mass, and '
+            'keeps an eye on his own expense report.'
         ),
         steps=(
-            Step(SIGN_IN_PHONE, 'Sign in as member_beta@stmarys.org with the pilot password.', 'The phone opens in the large text layout: big type and big buttons.'),
-            Step('Phone > Report tab', 'Under Which shift? choose Lot attendants - Saturday (October 10). Under How long? enter 4 hours. Tap Save time.',
-                 'A message confirms the hours were saved.'),
-            Step('Phone > Collect tab > Start collecting for event', f'Choose the {PILOT_EVENT} in EVENT and Parking in DONATION TYPE yourself. Type 25.00 in STANDARD RATE (OPTIONAL). Tap Start.',
-                 'The ACCEPTING DONATIONS card shows the event and "Session setup: $25.00 · Parking".'),
-            Step('Phone > Collect tab', 'Tap the Venmo tile yourself, close the code after the scan, type 25.00 in AMOUNT and tap Record donation.',
-                 'The $25.00 Venmo donation appears under Recorded for this event.'),
-            Step('Web > Active Desks > Member Desk > Open my expenses', 'Sign in on the laptop. Open report 15 (Office Depot, $32.48) and read its status.',
+            Step(SIGN_IN_WEB, 'Sign in as member_beta@stmarys.org with the pilot password. Press Ctrl and + until the text is easy to read.', 'The Active Desks row opens on Home in larger type.'),
+            Step(HOUR_LEDGER, f'Click Member Actions Hub, then the Hour ledger tab. Under Report time on a shift, choose the {PILOT_EVENT}: Lot attendants - Saturday (October 10). Set Hours to 4 and Minutes to 0, then click Save shift hours.',
+                 'A notice reads "Shift hours saved."'),
+            Step(f'{DESKS} > Member Desk > Open my expenses', 'Open report 15 (Office Depot, $32.48) and read its status.',
                  'Report 15 is Submitted and waits for the Financial Secretary\'s payment request.'),
-            Step('Web > Active Desks > Home', 'Find your own intention on the 📿 Community Prayer Request List card.',
+            Step(f'{DESKS} > Home', 'Find your own intention on the 📿 Community Prayer Request List card.',
                  'Your intention for your eyes is on the card with the number of brothers praying for it.'),
         ),
     ),
@@ -349,7 +343,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
     Flow(
         key='expense',
         title='Flow 1 - A new expense report, desk to desk',
-        minutes=7,
+        minutes=9,
         context=(
             'Member Alpha bought supplies for the Parish Parking Event this morning and files a brand-new report with its '
             'receipt while the room watches the officers\' desks on the wireless display. The council pays nothing until '
@@ -370,23 +364,23 @@ GROUP_FLOWS: tuple[Flow, ...] = (
     Flow(
         key='hours',
         title='Flow 2 - Volunteer time held for review',
-        minutes=4,
+        minutes=6,
         context=(
             'Service hours feed the council\'s Supreme reports, so the platform holds an entry that crosses the council\'s '
             'limits (more than 1.0 hour past a scheduled shift) until the Grand Knight or the Deputy Grand Knight decides it.'
         ),
         steps=(
-            Step('Phone > Report tab', 'Under Which shift? choose Lot attendants - Sunday (October 11). Under How long? enter 7 hours. Tap Save time.',
-                 'The phone says the hours were sent to leadership review before they count.', who='Member Alpha'),
+            Step(HOUR_LEDGER, 'Under Report time on a shift choose Lot attendants - Sunday (October 11) in Shift I worked. Set Hours to 7 and click Save shift hours.',
+                 'A notice says the 7 hours were sent to leadership review before they count toward his totals.', who='Member Alpha'),
             Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review (on the wireless display)', 'Open the Flagged Hours Review drawer and click Reject & Remove on Member Alpha\'s new 7-hour entry.',
                  'The entry leaves the desk; its 7 hours never count.', who='DGK User'),
-            Step('Phone > Report tab', 'Report the Sunday shift again with 4 hours and tap Save time.', 'The hours save directly.', who='Member Alpha'),
+            Step(HOUR_LEDGER, 'Report the Sunday shift again with 4 hours and click Save shift hours.', 'A notice reads "Shift hours saved." The hours count directly.', who='Member Alpha'),
         ),
     ),
     Flow(
         key='returned',
         title='Flow 3 - A report sent back and fixed',
-        minutes=4,
+        minutes=6,
         context=(
             'Member Beta bought donation receipt books but lost the register tape. The Financial Secretary may not sign a '
             'report he cannot check, so he sends it back with a reason; Beta fixes it and submits it again.'
@@ -405,7 +399,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
     Flow(
         key='proposal',
         title='Flow 4 - A charity grant is proposed',
-        minutes=3,
+        minutes=4,
         context=(
             'A food bank near the cathedral asked Member Alpha for help. He becomes its Knight Shepherd and files the '
             'request, which goes straight into the pooled vetting queue.'
@@ -418,7 +412,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
     Flow(
         key='vetting',
         title='Flow 5 - Live vetting: the assignment handshake and requests for information',
-        minutes=7,
+        minutes=9,
         context=(
             'The Financial Secretary vets the new request from the Grand Knight Desk\'s vetting board on the wireless '
             'display; he may, because he is not its Shepherd. Claiming the request is the assignment handshake: the board '
@@ -446,7 +440,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
     Flow(
         key='parish',
         title='Flow 6 - Parish Fundraiser Revenue Settlement',
-        minutes=5,
+        minutes=6,
         context=(
             'The last flow settles the parish\'s share of the parking fundraiser, live. The Treasurer works out the share '
             'on his Parish Fundraiser Revenue Split Console and issues a Church Disbursement Request; it lands at once on '
@@ -468,27 +462,35 @@ GROUP_FLOWS: tuple[Flow, ...] = (
     ),
 )
 
-# The 60-minute session: a strict 30-minute Individual Desk Coordinate Phase, then a 30-minute Synchronized Group
-# Workflow (the group flows' minutes add up to 30).
-INDIVIDUAL_PHASE_MINUTES = 30
-GROUP_PHASE_MINUTES = 30
+# Sprint 8S Revision 8: the web-only Live Meeting session, anchored on the 6:15 PM gavel. Five phases, back to back;
+# the group flows' minutes add up to GROUP_PHASE_MINUTES.
+GAVEL_TIME = '6:15 PM'
+INTRO_MINUTES = 5
+INDIVIDUAL_PHASE_MINUTES = 20
+GROUP_PHASE_MINUTES = 40
+EXPLORATION_MINUTES = 20
+LISTENING_MINUTES = 20
 SESSION_TIMELINE: tuple[tuple[str, int, str], ...] = (
-    ('0:00 - 0:30', INDIVIDUAL_PHASE_MINUTES, 'Individual Desk Coordinate Phase: every persona signs in and works his own script (INDIVIDUAL_PILOT_SCRIPTS.pdf) through his Active Desk drawers; no step waits for another persona'),
-    ('0:30 - 1:00', GROUP_PHASE_MINUTES, 'Synchronized Group Workflow: the six live flows of GROUP_CROSS_DESK_SCRIPT.pdf, played together on the wireless display, ending with the parish settlement'),
+    ('6:15 - 6:20 PM', INTRO_MINUTES, f'Introduction: the gavel strikes at {GAVEL_TIME}. The facilitator welcomes the room, hands out the scripts, and every persona signs in to the web portal on his laptop'),
+    ('6:20 - 6:40 PM', INDIVIDUAL_PHASE_MINUTES, 'Individual Desk Coordinate Phase: every persona works his own script (INDIVIDUAL_PILOT_SCRIPTS.pdf) through his Active Desk folders; no step waits for another persona'),
+    ('6:40 - 7:20 PM', GROUP_PHASE_MINUTES, 'Synchronized Group Workflow: the six live flows of GROUP_CROSS_DESK_SCRIPT.pdf, played together on the wireless display, ending with the parish settlement'),
+    ('7:20 - 7:40 PM', EXPLORATION_MINUTES, 'Open Exploration: each persona opens the other folders of his own desk and tries the work his office would do next month; the facilitator answers questions'),
+    ('7:40 - 8:00 PM', LISTENING_MINUTES, 'Listening Session: each persona fills in the Attendee Feedback Questionnaire, then the facilitator hears every persona in turn and writes down what he says'),
 )
+SESSION_MINUTES = sum(m for _, m, _ in SESSION_TIMELINE)
 
 # The group phase's timetable: (minutes, part).
 GROUP_TIMETABLE: tuple[tuple[int, str], ...] = tuple((f.minutes, f.title) for f in GROUP_FLOWS)
 
 # Done by the facilitator before the attendees arrive; not part of the timed phases.
 FACILITATOR_PREP: tuple[str, ...] = (
-    'Reload the web portal on every laptop so the pilot data is fresh, and clear the phone app\'s data on each phone. '
-    'Each browser keeps its own copy of the pilot data, so every laptop starts from the same seeded records.',
+    'Reload the web portal on every laptop so the pilot data is fresh. Each browser keeps its own copy of the pilot '
+    'data, so every laptop starts from the same seeded records.',
     'Mirror the FS User laptop to the wireless display; switch the mirror to the GK laptop for Flow 5\'s vetting board.',
     'As GK User on the display laptop, open Governance > Recurring Meetings and click Populate the year for 2026-2027 '
     'once. Flow 5 needs a Monthly meeting at least 10 days away to place the request on.',
-    f'Hold the session while the {PILOT_EVENT} is at the gate (October 10-31, 2026) so the members can take donations '
-    'in the individual phase.',
+    f'Hold the session while the {PILOT_EVENT} runs (October 10-31, 2026) so the members can report hours on its shifts. '
+    f'Be seated before {GAVEL_TIME}: the gavel opens the session on time.',
     'Have a small bank statement CSV ready for the Treasurer\'s Bank Statement Match-Window step.',
     'Hand Member Beta the large-print pages of the individual scripts.',
 )
@@ -496,7 +498,7 @@ FACILITATOR_PREP: tuple[str, ...] = (
 FEEDBACK_RATINGS: tuple[str, ...] = (
     'The steps were easy to follow.',
     'The screens used words I understand.',
-    'I found every module in a drawer on my Active Desk or on the phone tabs.',
+    'I found every module in a folder on my Active Desk or on the Member Actions Hub.',
     'The expected results matched what I saw.',
     'The approval steps match how our council handles money today.',
     'I would use this platform for my office or my volunteering.',
@@ -796,13 +798,13 @@ def cover(title: str, subtitle: str, st, generated: str) -> list:
         Paragraph('Pilot logins (the password is on the facilitator\'s board)', st['h2']),
         sign_in_card(st),
         Spacer(1, 12),
-        Paragraph('The 60-minute session', st['h2']),
+        Paragraph(f'The {SESSION_MINUTES}-minute session: the gavel strikes at {GAVEL_TIME}', st['h2']),
         session_timeline(st),
         Spacer(1, 8),
         Paragraph(f'The pilot data: the {PILOT_EVENT} (October 10-31, 2026, six Lot attendants shifts, $400.00 collected the first weekend), expense reports 14-23 '
                   'waiting on the officers\' desks, charity requests on the vetting board, three prayer intentions and two volunteer '
-                  'time entries held for review. Reloading the web portal restores it in the browser; on a phone, clear the app\'s '
-                  'data or reinstall it. Both phases run on the same load: the group flows create their own records.', st['small']),
+                  'time entries held for review. Reloading the web portal restores it in the browser. The individual and group phases '
+                  'run on the same load: the group flows create their own records.', st['small']),
         Spacer(1, 4),
         Paragraph(f'Compiled {generated}.', st['small']),
         PageBreak(),
@@ -810,11 +812,11 @@ def cover(title: str, subtitle: str, st, generated: str) -> list:
 
 
 def session_timeline(st) -> Table:
-    """The 60-minute session (Sprint 8L): the two 30-minute phases."""
+    """The web-only session (Sprint 8S Revision 8): five phases from the 6:15 PM gavel."""
     rows = [[Paragraph('<b>Clock</b>', st['body']), Paragraph('<b>Minutes</b>', st['body']), Paragraph('<b>Phase</b>', st['body'])]]
     rows += [[Paragraph(clock, st['body']), Paragraph(str(m), st['body']), Paragraph(escape(part), st['body'])] for clock, m, part in SESSION_TIMELINE]
     rows.append([Paragraph('', st['body']), Paragraph(f'<b>{sum(m for _, m, _ in SESSION_TIMELINE)}</b>', st['body']), Paragraph('<b>Total</b>', st['body'])])
-    t = Table(rows, colWidths=[80, 60, CONTENT_W - 140])
+    t = Table(rows, colWidths=[96, 56, CONTENT_W - 152])
     t.setStyle(TableStyle([
         ('LINEBELOW', (0, 0), (-1, 0), 1, NAVY), ('LINEABOVE', (0, -1), (-1, -1), 1, NAVY),
         ('ROWBACKGROUNDS', (0, 1), (-1, -2), [WHITE, PANEL]), ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -868,7 +870,7 @@ def build_group(output: Path, generated: str) -> None:
     st = styles()
     story = cover('Group Cross-Desk Script', f'The {GROUP_PHASE_MINUTES}-minute Synchronized Group Workflow: live records passed from desk to desk', st, generated)
     story += [Paragraph('Before you start', st['h1']),
-              Paragraph('Seat the seven personas around the table, each signed in on his own device. Every record in these flows '
+              Paragraph('Seat the seven personas around the table, each signed in to the web portal on his own laptop. Every record in these flows '
                         'is created during the session: the members file new expense reports, report new hours, take new '
                         "charity request and settle the parish's share of the parking fundraiser, and the room watches each one arrive on the officer's desk on "
                         "the wireless display. The facilitator reads each flow's context aloud; the persona named in bold at "
@@ -881,7 +883,7 @@ def build_group(output: Path, generated: str) -> None:
     for flow in GROUP_FLOWS:
         story.append(PageBreak())
         story += [Paragraph(f'{escape(flow.title)} <font size="11" color="#4A5568">&middot; {flow.minutes} minutes</font>', st['h1']),
-                  day_in_life_panel(flow.context, 'council at the table', "Every persona's own device; the officer's laptop on the wireless display", st), Spacer(1, 12)]
+                  day_in_life_panel(flow.context, 'council at the table', "Every persona's own laptop; the officer's laptop on the wireless display", st), Spacer(1, 12)]
         story += [step_block(f'group_{flow.key}', n, s, st) for n, s in enumerate(flow.steps, start=1)]
         if flow.after:
             story.append(day_in_life_panel(flow.after, '', 'Not played in this session', st, heading='After the session'))
@@ -1003,7 +1005,7 @@ def poster_financial(output: Path, generated: str) -> None:
     y = PH - 2.6 * inch
     h, gap = 148, 40
     stages = [
-        ('1', 'File the expense report', 'Any member', 'Active Desks > Member Desk > Open my expenses  |  phone Expenses',
+        ('1', 'File the expense report', 'Any member', 'Active Desks > Member Desk > Open my expenses',
          'New expense report: link the event or meeting, add each receipt line, submit. Status: Submitted.'),
         ('2', 'Payment request', 'Financial Secretary', 'Active Desks > Financial Secretary Desk',
          'Check the receipts and click Verify & Sign Expense. The first signature.'),
@@ -1031,7 +1033,7 @@ def poster_financial(output: Path, generated: str) -> None:
         'The report goes back to Draft and its signatures are cleared; the member fixes it and submits again.',
     ], NAVY)
     side_y -= 16 + note_panel(c, side_x, side_y, side_w, None, 'Money coming in', [
-        'Phone Collect tab: Start collecting for event, then Record donation (cash, card, or check with its CHECK NUMBER).',
+        'Financial Secretary Desk > Charitable Donation Records: Record donation (cash, card, or check with its check number).',
         'Officers see every gift in Finances > Donations History.',
         'FS and Treasurer post deposits and transfers in the General Ledger.',
         "Parish split: the Treasurer requests the parish's share; the FS pays it by check.",
@@ -1064,7 +1066,7 @@ def poster_charity(output: Path, generated: str) -> None:
         ('4', 'On the agenda', 'The vetting officer - the 10-day rule', 'Active Desks > Grand Knight Desk > Charitable Grant Requests Vetting Board',
          'Place on next agenda puts it on the soonest Monthly meeting at least 10 days away, as a proposed motion.'),
         ('5', 'Council vote', 'The members at the meeting', 'Governance > Live Meeting Console',
-         'Secret smartphone ballot, or the Recorder\'s hand tally. Decided Passed, Failed or Tabled.'),
+         'The Recorder\'s hand tally on the console. Decided Passed, Failed or Tabled.'),
         ('6', 'Endorse and pay', 'FS or GK endorses; another finance officer pays - never the Shepherd', 'Active Desks > Treasurer Desk > Charitable Donation Workflow',
          'FS/GK Compliance Endorsement, then Pay approved request: one check for the approved amount, charged to the budget line.'),
         ('7', 'Follow up', 'The Trustees', 'Six months after filing',
@@ -1096,7 +1098,6 @@ MATRIX_ROWS: tuple[tuple[str, str], ...] = (
     ('Read the general ledger and dashboards', '--YYYYY'),
     ('Review held volunteer time', '----YYY'),
     ('Log own volunteer hours', 'YYYYYYY'),
-    ('Record a donation at the gate (phone)', 'YYYYYYY'),
     ('Propose a charity grant', 'YYYYYYY'),
     ('Vet charity requests', '--YYYYY'),
     ('Run the Live Meeting Console', '--YYYYY'),
@@ -1115,7 +1116,7 @@ def poster_permissions(output: Path, generated: str) -> None:
     label_w = 300
     col_w = (PW - 2 * PM - label_w) / len(MATRIX_COLUMNS)
     top = PH - 2.6 * inch
-    head_h, row_h = 74, 36  # Sprint 8M Extension: 36 (was 40) so 19 rows fit above the notes
+    head_h, row_h = 74, 36  # Sprint 8M Extension: 36 (was 40) so the rows fit above the notes
     c.setFillColor(NAVY)
     c.rect(left, top - head_h, PW - 2 * PM, head_h, stroke=0, fill=1)
     c.setFillColor(WHITE)
