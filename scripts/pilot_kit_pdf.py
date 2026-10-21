@@ -22,8 +22,12 @@ is three seated flows on pre-seeded records: Flow 1 the expense pipeline gate by
 22, the GK releases 23, the Treasurer pays 13), Flow 2 the charity request (Alpha proposes; the DGK claims, questions and
 advances request 6) and Flow 3 the Flagged Hours Review gate (the DGK rejects Alpha's seeded 6.5-hour entry). The old
 Flow 6 is gone; the 50% parish split is pre-activated in Seed.sql, so the Treasurer's chapter only checks the arithmetic
-and issues the request. Member Beta starts collecting on Member Alpha's spoken "gate open" signal, and his phone's AMOUNT
-box opens filled with the session's $25.00 standard rate.
+and issues the request. The phone's AMOUNT box opens filled with the session's $25.00 standard rate.
+
+Sprint 8S Revision 10.2: the two phone tracks no longer overlap. Member Alpha alone sets up the Parish Parking Event
+session, records the gate gifts and the cash box drop and concludes the session. Member Beta starts no session and
+concludes nothing: he records one standalone gift (a $50.00 cash gift handed to him after Mass, type Unsolicited) from
+the Collect tab's payment tiles, which the phone saves with no event.
 
     py scripts/pilot_kit_pdf.py                 writes all five PDFs under docs/
     py scripts/compile_all_manuals.py           compiles the two user guides, then this kit
@@ -304,8 +308,8 @@ PERSONAS: tuple[Persona, ...] = (
         device='Phone app',
         day_in_life=(
             'Member Alpha volunteers as a lot attendant on the parking weekends. Before the first car arrives he opens the '
-            'gate: he sets the event, the donation type and the $25.00 standard rate on his phone, then tells Member Beta '
-            '"gate open" so Beta starts his own phone the same way. After that the AMOUNT box fills in with $25.00. '
+            'gate: he sets the event, the donation type and the $25.00 standard rate on his phone. He is the only one '
+            'who runs the gate session. After that the AMOUNT box fills in with $25.00. '
             'Cars pay the parking rate by Venmo or in cash, and at the end of the shift he records the cash box as '
             'one consolidated drop and concludes the session, which locks the logs so the Treasurer can count the cash box '
             'against them. Then he logs his planning time and files the receipt for the chalk he bought, all on his phone.'
@@ -313,12 +317,12 @@ PERSONAS: tuple[Persona, ...] = (
         steps=(
             Step(SIGN_IN_PHONE, 'Sign in as member_alpha@stmarys.org with the pilot password.', 'The tab bar shows Home, Mtgs, Signup, Report and Collect.'),
             Step('Phone > Collect tab > Start collecting for event', f'This card is your on-device configuration drawer. Nothing is pre-selected. Choose the {PILOT_EVENT} in EVENT and Parking in DONATION TYPE yourself, type 25.00 in STANDARD RATE (OPTIONAL), and tap Start.',
-                 'The ACCEPTING DONATIONS card shows the event and "Session setup: $25.00 · Parking". Say "Gate open: Parish Parking Event, Parking, 25 dollars" so Member Beta can start.'),
+                 'The ACCEPTING DONATIONS card shows the event and "Session setup: $25.00 · Parking".'),
             Step('Phone > Collect tab', 'Under How is the donor giving? tap the Venmo tile yourself. Let the "donor" scan the full-screen code, then close it. The AMOUNT box already shows 25.00 from your setup. Do not type. Tap Record donation.',
                  f'A message reads "Recorded $25.00 by Venmo for {PILOT_EVENT}". You typed nothing for this gift.'),
             Step('Phone > Collect tab', 'The cash box drop. Count the cash box (use $180.00 for the pilot). Tap the Cash tile, type 180.00 in AMOUNT, type "Cash box drop - Saturday lot" in DESCRIPTION, and tap Record donation.',
                  'One consolidated $180.00 cash donation is recorded for the event. The ACCEPTING DONATIONS card is still open.'),
-            Step('Phone > Collect tab > [ 🛑 Conclude Event Session & Lock Logs ]', 'Close the gate. On the ACCEPTING DONATIONS card tap [ 🛑 Conclude Event Session & Lock Logs ]. Read the warning, then tap Yes, conclude & lock.',
+            Step('Phone > Collect tab > [ 🛑 Conclude Event Session & Lock Logs ]', 'Close the gate. On the ACCEPTING DONATIONS card tap [ 🛑 Conclude Event Session & Lock Logs ]. Read the warning, then put your thumb on the gold circle and drag the Slide to Conclude & Lock bar to the right.',
                  f'A message reads "{PILOT_EVENT} is concluded and its logs are locked. The Treasurer can now count the cash box." The phone leaves the intake session and nobody can add or change a donation for the event.'),
             Step('Phone > Report tab', 'Under Tap an activity: 15 minutes per tap, tap the Planning tile four times (one hour). Drag the Slide to Log Hours bar at the bottom.',
                  'Each tap shows "Queued +15 min · Planning". After the slide a message reads "Logged 1 h for today."'),
@@ -336,15 +340,16 @@ PERSONAS: tuple[Persona, ...] = (
         day_in_life=(
             'Member Beta is a senior brother whose eyesight is fading. His profile opens the phone in the large text '
             'layout, and this handout is printed in large type. He works the parking shifts, ushers at Mass, and keeps an '
-            'eye on his own expense reports. At the gate he waits for Member Alpha to open it, then copies Alpha\'s setup on '
-            'his own phone.'
+            'eye on his own expense reports. Member Alpha runs the gate, so Beta never opens or closes a parking session. '
+            'After the 10:30 Mass a parishioner hands him $50.00 in cash for the council, and he records it on the spot '
+            'as a standalone gift: no event, no session, straight from the Collect tab.'
         ),
         steps=(
             Step(SIGN_IN_PHONE, 'Sign in as member_beta@stmarys.org with the pilot password.', 'The phone opens in the large text layout: big type and big buttons.'),
-            Step('Phone > Collect tab > Start collecting for event', f'Wait. Do nothing until Member Alpha says "Gate open". Then use his setup on your own phone: choose the {PILOT_EVENT} in EVENT and Parking in DONATION TYPE, type 25.00 in STANDARD RATE (OPTIONAL) and tap Start.',
-                 'The ACCEPTING DONATIONS card shows the event and "Session setup: $25.00 · Parking". Your phone keeps its own records; Alpha\'s phone does not change yours.'),
-            Step('Phone > Collect tab', 'Tap the Venmo tile yourself and close the code after the scan. The AMOUNT box already shows 25.00. Do not type. Tap Record donation.',
-                 'The $25.00 Venmo donation appears under Recorded for this event. You typed nothing for this gift.'),
+            Step('Phone > Collect tab', 'Do not tap Start collecting for event. This gift belongs to no event. Under How is the donor giving? tap the Cash tile.',
+                 'The Cash donation card opens. The AMOUNT box is empty because no session is running.'),
+            Step('Phone > Collect tab > Cash donation', 'Type 50.00 in AMOUNT. Choose Unsolicited in DONATION TYPE. Type "Rita Kowalski" in DONOR NAME (OPTIONAL) and "Gift handed to me after the 10:30 Mass" in DESCRIPTION (OPTIONAL). Tap Record donation.',
+                 'A message reads "Recorded $50.00 by Cash as a standalone donation. Thank the donor!" The card above still offers Start collecting for event; you started no session.'),
             Step('Phone > Report tab', 'Under Tap an activity: 15 minutes per tap, tap the Ushering tile eight times (two hours). Drag the Slide to Log Hours bar at the bottom.',
                  'A message reads "Logged 2 h for today."'),
             Step('Phone > Home > My expense reports', f'Tap New expense report. Under SPENT FOR choose Events and the {PILOT_EVENT}. Tap Scan Paper Receipt and photograph the receipt. Type Walgreens in VENDOR NAME, tap Today, type 6.49 in AMOUNT and "Batteries for the lot flashlights" in DESCRIPTION. Tap Submit for approval.',

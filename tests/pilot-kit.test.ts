@@ -374,9 +374,7 @@ describe('Sprint 8L pilot kit', () => {
     for (const key of ['alpha', 'beta']) {
       const steps = personas.slice(personas.indexOf(`key='${key}'`), key === 'alpha' ? personas.indexOf("key='beta'") : undefined);
       expect(steps, key).toContain('Step(SIGN_IN_PHONE');
-      expect(steps, key).toContain('Phone > Collect tab > Start collecting for event');
-      expect(steps, key).toContain('the Venmo tile yourself');
-      expect(steps, key).toMatch(/type 25.00 in STANDARD RATE/i);
+      expect(steps, key).toContain("Step('Phone > Collect tab'");
       expect(steps, key).toContain('Under Tap an activity: 15 minutes per tap');
       expect(steps, key).toContain('Slide to Log Hours');
       expect(steps, key).toContain('Phone > Home > My expense reports');
@@ -432,14 +430,13 @@ describe('Sprint 8M Extension pilot kit', () => {
     expect(treasurer).toContain('$400.00 x 50%');
   });
 
-  it("keeps check logging off both volunteer scripts: Venmo at $25.00, and Alpha's $180 cash box drop", () => {
-    for (const [key, next] of [['alpha', 'beta'], ['beta', '']] as const) {
-      const steps = persona(key, next);
-      expect(steps, key).not.toMatch(/Check tile|CHECK NUMBER|by check/i);
-      expect(steps, key).toContain('Venmo tile yourself');
-      expect(steps, key).toContain('25.00');
-    }
-    expect(persona('alpha', 'beta')).toContain('Cash box drop - Saturday lot');
+  it("keeps check logging off both volunteer scripts: Alpha's Venmo at $25.00 and $180 cash box drop", () => {
+    for (const [key, next] of [['alpha', 'beta'], ['beta', '']] as const)
+      expect(persona(key, next), key).not.toMatch(/Check tile|CHECK NUMBER|by check/i);
+    const alpha = persona('alpha', 'beta');
+    expect(alpha).toContain('Venmo tile yourself');
+    expect(alpha).toContain('25.00');
+    expect(alpha).toContain('Cash box drop - Saturday lot');
   });
 
   it('plays three seated flows: the expense pipeline, the charity request and the Flagged Hours Review gate (Sprint 8S Revision 10)', () => {
@@ -461,16 +458,31 @@ describe('Sprint 8M Extension pilot kit', () => {
     expect(kit).toContain("Every persona's own laptop, at his own seat");
   });
 
-  it("pre-activates the parish split for the Treasurer and lets Beta start on Alpha's signal with the $25.00 filled in (Sprint 8S Revision 10)", () => {
+  it('pre-activates the parish split for the Treasurer (Sprint 8S Revision 10)', () => {
     const treasurer = persona('treasurer', 'dgk');
     expect(treasurer).not.toMatch(/Switch it on in Council Wide Settings|Save parish split|type 50 in Parish share/);
     expect(treasurer).toContain('The split is already on');
     expect(read('Seed.sql')).toContain('UPDATE [Council] SET [parish_split_enabled] = 1, [parish_split_percentage] = 50.00, [parish_split_gl_line_id] = 16 WHERE [id] = 1;');
     const historian = persona('historian', 'alpha');
     expect(historian).not.toMatch(/reports 16, 19 and 22|Charter member/);
-    expect(persona('alpha', 'beta')).toContain('Say "Gate open');
+  });
+
+  it('gives Alpha the whole gate session and Beta one standalone gift (Sprint 8S Revision 10.2)', () => {
+    const alpha = persona('alpha', 'beta');
+    expect(alpha).toContain("Step('Phone > Collect tab > Start collecting for event'");
+    expect(alpha).toMatch(/type 25.00 in STANDARD RATE/i);
+    expect(alpha).toContain('The AMOUNT box already shows 25.00 from your setup. Do not type.');
+    expect(alpha).toContain('drag the Slide to Conclude & Lock bar');
+    expect(alpha).not.toMatch(/Gate open|Yes, conclude/);
     const beta = persona('beta', '');
-    expect(beta).toContain('Do nothing until Member Alpha says "Gate open"');
-    expect(beta).toContain('The AMOUNT box already shows 25.00. Do not type.');
+    expect(beta).not.toMatch(/Gate open|STANDARD RATE|Tap Start|Conclude|ACCEPTING DONATIONS|Venmo|Parking in DONATION TYPE/);
+    expect(beta).toContain('Do not tap Start collecting for event.');
+    expect(beta).toContain('tap the Cash tile');
+    expect(beta).toContain('Choose Unsolicited in DONATION TYPE');
+    expect(beta).toContain('Recorded $50.00 by Cash as a standalone donation');
+    expect(beta.indexOf('as a standalone donation')).toBeLessThan(beta.indexOf('Under Tap an activity'));
+    // The donation type and the confirmation wording must match the seed and the phone screen.
+    expect(read('Seed.sql')).toContain("('Unsolicited', 1)");
+    expect(read('apps/mobile/app/(app)/donate.tsx')).toContain("' as a standalone donation'");
   });
 });
