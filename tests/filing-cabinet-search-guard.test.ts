@@ -29,20 +29,27 @@ const seat = (roles: string[], memberType: 'Member' | 'Admin' | 'Super Admin' = 
 const ids = (specs: readonly DeskDrawerSpec[]) => specs.map((d) => d.id);
 
 describe('the left filing spine', () => {
-  it('files every Financial Secretary and Treasurer drawer in exactly one cabinet, and no other desk uses cabinets', () => {
+  it('files every Financial Secretary and Treasurer drawer in exactly one cabinet; other desks use only the reference block (Sprint 8S Rev 10.4)', () => {
     expect(CABINET_DESKS).toEqual(['financial-secretary', 'treasurer']);
     for (const d of DESK_DRAWERS) {
-      if (CABINET_DESKS.includes(d.desk)) expect(['inbound', 'outbound']).toContain(d.cabinet);
-      else expect(d.cabinet).toBeUndefined();
+      if (CABINET_DESKS.includes(d.desk)) expect(['inbound', 'outbound', 'accounting', 'reference']).toContain(d.cabinet);
+      else expect([undefined, 'reference']).toContain(d.cabinet);
     }
-    expect(DESK_CABINET_LABELS).toEqual({ inbound: '[ 📥 Inbound Operations ]', outbound: '[ 📤 Outbound Operations ]' });
+    expect(DESK_CABINET_LABELS).toEqual({
+      inbound: '[ 📥 Inbound Operations ]',
+      outbound: '[ 📤 Outbound Operations ]',
+      accounting: '[ 🔧 Accounting Configuration ]',
+      reference: '[ 📖 Reference Workflows ]',
+    });
   });
 
   it('stacks the Treasurer Desk as Inbound then Outbound, with nothing floated while no folder is lit', () => {
     const drawers = deskDrawersFor(seat(['Treasurer']), 'treasurer', OWN);
     const sections = deskSpineSections('treasurer', drawers);
-    expect(sections.map((s) => s.id)).toEqual(['inbound', 'outbound']);
-    expect(sections.map((s) => s.label)).toEqual([DESK_CABINET_LABELS.inbound, DESK_CABINET_LABELS.outbound]);
+    expect(sections.map((s) => s.id)).toEqual(['inbound', 'outbound', 'accounting', 'reference']);
+    expect(sections.map((s) => s.label)).toEqual([DESK_CABINET_LABELS.inbound, DESK_CABINET_LABELS.outbound, DESK_CABINET_LABELS.accounting, DESK_CABINET_LABELS.reference]);
+    expect(ids(sections[2].drawers)).toEqual(['chart-of-accounts']);
+    expect(ids(sections[3].drawers)).toEqual(['er-workflow', 'donation-workflow', 'planning-budgeting']);
     expect(ids(sections[0].drawers)).toEqual(expect.arrayContaining(['ledger-coder', 'cash-box-audit', 'batch-coder', 'bank-match']));
     expect(ids(sections[1].drawers)).toEqual(expect.arrayContaining(['er-settlement', 'charity-matches', 'parish-split']));
     expect(sections.flatMap((s) => s.drawers)).toHaveLength(drawers.length);
@@ -62,9 +69,12 @@ describe('the left filing spine', () => {
 
   it('lists a lean desk flat under the float, with the featured Minutes Archive first', () => {
     const drawers = deskDrawersFor(seat(['Recorder']), 'recorder', OWN);
-    expect(deskSpineSections('recorder', drawers).map((s) => [s.id, s.label])).toEqual([['folders', '']]);
+    expect(deskSpineSections('recorder', drawers).map((s) => [s.id, s.label])).toEqual([
+      ['folders', ''],
+      ['reference', DESK_CABINET_LABELS.reference],
+    ]);
     const lit = deskSpineSections('recorder', drawers, (d) => d.id === 'minutes-entry');
-    expect(lit.map((s) => s.id)).toEqual(['priority', 'folders']);
+    expect(lit.map((s) => s.id)).toEqual(['priority', 'folders', 'reference']);
     expect(lit[1].drawers[0].id).toBe('minutes-archive');
   });
 

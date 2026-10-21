@@ -9,6 +9,9 @@
 // only here, so members and the other signers never see account codes. Only the Treasurer or a Super Admin codes, never
 // on their own sheet and never the officer who issued its order (expenseLedgerCodeBlock; the drivers:
 // TREASURER_REQUIRED, SELF_APPROVAL_BLOCKED, DUAL_SIGNATURE_CONFLICT). Admins read the desk and may return sheets.
+// Sprint 8S Revision 10.4 - decoupled accounting: the Treasurer chooses only the general ledger account. The budget line
+// dropdown is gone; a green read-out ('[ Inferred Budget: Automatically Mapped to ... ]') names the line the account
+// decides (inferExpenseBudgetLine), and that line is what '🧾 Code to Ledger' saves.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
@@ -18,6 +21,8 @@ import {
   describeError,
   expenseLedgerAccountChoices,
   expenseLedgerCodeBlock,
+  inferExpenseBudgetLine,
+  inferredBudgetLabel,
   listExpenseReferences,
   sumAmounts,
   TREASURER_CODE_EXPENSE_LABEL,
@@ -26,7 +31,6 @@ import {
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import {
-  BudgetLinePicker,
   LedgerAccountPicker,
   ReturnToMemberForm,
   SignatureDeskTable,
@@ -78,6 +82,18 @@ export function TreasurerDesk() {
     return choices.length === 1 ? choices[0].id : null;
   };
 
+  // The line the chosen account decides for this sheet (null until an account is chosen).
+  const inferredLineOf = (d: ExpenseReportDetail, accountId: number | null) => {
+    const account = accountId === null ? null : (ledger.accounts.find((a) => a.id === accountId) ?? null);
+    const eventId = d.report.LinkedEventID ?? null;
+    return inferExpenseBudgetLine(budgetLines.lines, account, {
+      EventID: eventId,
+      EventName: eventId === null ? null : (refs.events.find((e) => e.id === eventId)?.EventName ?? null),
+      MeetingID: d.report.LinkedMeetingID ?? null,
+      CharityBudgetLineID: d.charityBudgetLineId,
+    });
+  };
+
   const code = async (d: ExpenseReportDetail, budgetLineId: number, generalLedgerAccountId: number) => {
     setBusyId(d.report.id);
     setMessage(null);
@@ -115,12 +131,12 @@ export function TreasurerDesk() {
       );
     }
     if (block === 'seat') return <Pill tone="outline">Treasurer codes</Pill>;
-    const lineId = budgetLines.lineIdOf(d);
     const accountId = accountOf(d);
+    const inferred = inferredLineOf(d, accountId);
+    const lineId = inferred?.id ?? null;
     const ready = lineId !== null && accountId !== null;
     return (
       <span className="inline-flex flex-col items-start gap-2">
-        <BudgetLinePicker detail={d} assignments={budgetLines} disabled={busyId !== null} />
         <LedgerAccountPicker
           detail={d}
           accounts={ledger.accounts}
@@ -128,11 +144,16 @@ export function TreasurerDesk() {
           disabled={busyId !== null}
           onChange={(id) => setAccountPicks((now) => new Map(now).set(d.report.id, id))}
         />
+        <p aria-live="polite" data-inferred-budget className={inferred ? 'max-w-72 text-sm font-bold text-green' : 'max-w-72 text-sm text-muted'}>
+          {accountId !== null && !inferred && !budgetLines.loading
+            ? `[ Inferred Budget: the ${budgetLines.fraternalYear} budget has no line for this account ]`
+            : inferredBudgetLabel(inferred)}
+        </p>
         <Button
           variant="gold"
           disabled={busyId !== null || !ready}
           aria-label={`Code expense report ${d.report.id} to the ledger`}
-          title={ready ? undefined : 'Choose a budget line and a ledger account first.'}
+          title={ready ? undefined : 'Choose a general ledger account first.'}
           onClick={() => (ready ? void code(d, lineId, accountId) : undefined)}
         >
           {busyId === d.report.id ? 'Locking…' : TREASURER_CODE_EXPENSE_LABEL}
@@ -171,7 +192,7 @@ export function TreasurerDesk() {
               <SignatureDeskTable
                 rows={rows}
                 refs={refs}
-                caption="Expense reports carrying the Financial Secretary's payment request, oldest first. Choose a budget line and a ledger account for each, then code it."
+                caption="Expense reports carrying the Financial Secretary's payment request, oldest first. Choose a general ledger account for each; the account decides the budget line. Then code it."
                 empty="No payment requests are waiting for ledger coding."
                 action={action}
                 drawer={(d) =>

@@ -46,6 +46,9 @@ export const COMPLIANCE_WARNING_TITLE = 'PARLIAMENTARY COMPLIANCE WARNING';
 const PARLIAMENTARY_LAW = 'Standard parliamentary law (Robert’s Rules of Order, general principles)';
 const CHARTER_CHECK = 'confirm the exact section of the Charter, Constitution and Laws of the Knights of Columbus with your State Deputy';
 
+/** Sprint 8S Revision 10.4: the section the notice rule cites for the 10-day notice and the two-thirds vote. */
+export const MOTION_NOTICE_SECTION = 'Section 122(b)';
+
 /** A baseline rule of Tier 2. */
 interface BaselineRule {
   id: string;
@@ -105,10 +108,13 @@ export const ADVISOR_BASELINE_RULES: readonly BaselineRule[] = [
     authority: `${PARLIAMENTARY_LAW} - Reconsider; Rescind or amend something previously adopted`,
   },
   {
+    // Sprint 8S Revision 10.4: 'motion' is a keyword too, so "How much notice does a motion need?" reaches this rule
+    // (it tied with the motion rule before, and the motion rule won). The Section 122(b) citation is the council's
+    // rule as the user gave it.
     id: 'notice',
-    keywords: ['notice', 'advance', 'days', 'deadline', 'agenda', 'submit'],
-    answer: `A proposed motion goes to the soonest Monthly meeting that is at least ${AGENDA_NOTICE_DAYS} calendar days away (the ${AGENDA_NOTICE_DAYS}-day rule), so every member has notice before the council votes on it.`,
-    authority: `Platform rule: ${AGENDA_NOTICE_DAYS}-day agenda notice (AGENDA_NOTICE_DAYS); ${PARLIAMENTARY_LAW} - Previous notice`,
+    keywords: ['notice', 'advance', 'days', 'deadline', 'agenda', 'submit', 'motion'],
+    answer: `${MOTION_NOTICE_SECTION}: a motion needs at least ${AGENDA_NOTICE_DAYS} days' previous notice to the members, and it carries only by a two-thirds (2/3) vote of the members present and voting. The platform files a proposed motion on the soonest Monthly meeting that is at least ${AGENDA_NOTICE_DAYS} calendar days away (the ${AGENDA_NOTICE_DAYS}-day rule), so every member has notice before the council votes on it.`,
+    authority: `${MOTION_NOTICE_SECTION} - ${AGENDA_NOTICE_DAYS}-day previous notice and two-thirds vote; platform rule: ${AGENDA_NOTICE_DAYS}-day agenda notice (AGENDA_NOTICE_DAYS); ${CHARTER_CHECK}`,
   },
   {
     id: 'bylaws-amend',

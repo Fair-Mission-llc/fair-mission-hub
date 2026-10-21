@@ -185,11 +185,11 @@ PERSONAS: tuple[Persona, ...] = (
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as fs_user@stmarys.org with the pilot password.', 'The Active Desks row shows the Financial Secretary Desk tab.'),
-            Step(f'{DESKS} > Financial Secretary Desk > Payment Requests', 'Click the Payment Requests folder at the top of the left filing spine (it has a red border) and read the sheets on the Desk Blotter.',
-                 'Reports 14 (Member Alpha, Home Depot, $84.97), 15 (Member Beta, Office Depot, $32.48), 20 (Member Alpha, Costco, $27.60) and 21 (Member Beta, Staples, $54.15) wait for the payment request.'),
-            Step(f'{DESKS} > Financial Secretary Desk > Payment Requests', 'Click Verify & Sign Expense on report 14, then on report 20. Click [ 🔀 Back to Desk Blotter ].',
+            Step(f'{DESKS} > Financial Secretary Desk > Auditing & Return Queue', 'Click the Auditing & Return Queue folder at the top of the left filing spine (it has a red border) and read the sheets on the Desk Blotter.',
+                 'Reports 11 (Anthony Russo, Safeway, $86.40), 14 (Member Alpha, Home Depot, $84.97), 15 (Member Beta, Office Depot, $32.48), 20 (Member Alpha, Costco, $27.60) and 21 (Member Beta, Staples, $54.15) wait for the payment request.'),
+            Step(f'{DESKS} > Financial Secretary Desk > Auditing & Return Queue', 'Click Verify & Sign Expense on report 14, then on report 20.',
                  'Each row reads "Payment request issued" and moves to the Treasurer Desk.'),
-            Step(f'{DESKS} > Financial Secretary Desk > Open the auditing queue', 'Find report 15. Type "Please add the receipt photo" in Reason for returning (required), then click Return to member.',
+            Step(f'{DESKS} > Financial Secretary Desk > Auditing & Return Queue', 'Find report 15 and open its details. Type "Please add the receipt photo" in Reason for returning (required), then click Return to member. Click [ 🔀 Back to Desk Blotter ].',
                  'Report 15 goes back to Member Beta as a Draft with your reason. Its signatures are cleared.'),
             Step(f'{DESKS} > Financial Secretary Desk > Semiannual Audit Form 1295 Center', 'Open the drawer and choose the July-December 2026 period.',
                  'The Trustee Audit Desk opens in the drawer with its five steps; step 5 offers the Form 1295 report as a DRAFT until the Trustees sign.'),
@@ -218,10 +218,12 @@ PERSONAS: tuple[Persona, ...] = (
                  'Each row shows its budgeted amount, the actual spend and the variance for fraternal year 2026-2027.'),
             Step(f'{DESKS} > Treasurer Desk > Annual Budget vs Actuals Ledger Grid', 'In the 📊 Budget Allocation & YOY Variance Analyzer, find Miscellaneous Others and Monthly Council Meetings. Write the room left on each line in Notes.',
                  'The analyzer lists each approved line against 2025-2026, with the total against the spending ceiling. Click [ 🔀 Back to Desk Blotter ].'),
+            Step(f'{DESKS} > Treasurer Desk > [ 🔧 Accounting Configuration ] › Chart of Accounts & GL Setup', 'Before you code anything, click the Chart of Accounts & GL Setup folder under [ 🔧 Accounting Configuration ] on the left filing spine. Review the seeded accounts on the Desk Blotter, and check the Assets grid line by line.',
+                 'The Assets grid shows your asset lines live: Operating Checking with Goal Account #1 and Goal Account #2 indented under it (each marked Virtual goal), General Savings, Charity Savings and Physical Assets. The Expenses grid lists Charitable Disbursements, Event Operational Costs, Council Operational Costs and Supreme Assessments. Click [ 🔀 Back to Desk Blotter ].'),
             Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'Click the Ledger Line Coder folder at the top of the left filing spine (it has a red border) and read the sheets on the Desk Blotter.',
-                 'Reports 17 (Member Alpha, FedEx Office, $118.50), 18 (Member Beta, Safeway, $54.75) and 22 (Historian User, Walgreens, $63.40) carry FS User\'s payment request.'),
-            Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'On report 17 choose Miscellaneous Others in Assign Ledger Budget Line Item and Event Operational Costs in Assign General Ledger Account, then click Categorize & Lock Expense. Code report 18 to Monthly Council Meetings and Council Operational Costs the same way.',
-                 'Both rows read "Coded to the ledger" and move to the Grand Knight Desk.'),
+                 'Reports 12 (Joseph Hernandez, Office Depot and FedEx Office, $88.49), 17 (Member Alpha, FedEx Office, $118.50), 18 (Member Beta, Safeway, $54.75) and 22 (Historian User, Walgreens, $63.40) carry a payment request. Report 14 is not here: on your laptop\'s copy of the data it still waits for the Financial Secretary\'s payment request.'),
+            Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'On report 17 choose Event Operational Costs in Assign General Ledger Account. There is no budget line to pick: read the green line under the account, then click Categorize & Lock Expense. Code report 18 to Council Operational Costs the same way.',
+                 'Report 17 reads [ Inferred Budget: Automatically Mapped to Miscellaneous Others ] and report 18 reads [ Inferred Budget: Automatically Mapped to Monthly Council Meetings ]. Both rows read "Coded to the ledger" and move to the Grand Knight Desk.'),
             Step(f'{DESKS} > Treasurer Desk > Bank Statement Match-Window', 'Open the drawer and choose any bank statement CSV the facilitator gives you. Click Run electronic audit.',
                  'The window reports how many statement rows matched the ledger and lists the unmatched ones.'),
             Step(f'{DESKS} > Treasurer Desk > Expense Report (ER) Settlement', 'Report 16 (Historian User, Michaels, $46.20) is already in the queue: the Grand Knight released it on October 8. Select it, type check number 1201 and click Record Payment Made by Check.',
@@ -241,8 +243,8 @@ PERSONAS: tuple[Persona, ...] = (
             ('Split Check Settlement', 'The Financial Secretary records the check for the parish\'s share on his own desk.'),
         ),
         chapter_notes=(
-            'The engine keeps the budget for you. You code each expense sheet once: one budget line and one general ledger '
-            'account. The Annual Budget vs Actuals Ledger Grid and the YOY analyzer work out every actual from that coding. '
+            'The engine keeps the budget for you. You code each expense sheet once: you choose its general ledger account, and '
+            'the account decides the budget line (the green Inferred Budget line). The Annual Budget vs Actuals Ledger Grid and the YOY analyzer work out every actual from that coding. '
             'You never copy an amount into a budget sheet by hand, so the same money is never entered twice.',
             'The Revenue Split Console works out the parish share for you. It reads the event\'s collections, the split '
             'percentage and what was already requested. You check the arithmetic; you do not type the share.',
@@ -375,9 +377,9 @@ GROUP_FLOWS: tuple[Flow, ...] = (
         steps=(
             Step(f'{DESKS} > Member Desk > Open my expenses', 'Click New expense report. Under Spent for choose Events and the Parish Parking Event. Add a line dated today: Ace Hardware, $18.40, "Zip ties and sign stakes". Click + Add receipt, attach a photo and click Submit for approval.',
                  'The report is Submitted and waits for the Financial Secretary\'s payment request. Write its number in the Notes field.', who='Member Alpha'),
-            Step(f'{DESKS} > Financial Secretary Desk > Payment Requests', 'Gate 1, the payment request. Find report 21 (Member Beta, Staples, $54.15), check its receipt and click Verify & Sign Expense.',
+            Step(f'{DESKS} > Financial Secretary Desk > Auditing & Return Queue', 'Gate 1, the payment request. Find report 21 (Member Beta, Staples, $54.15), check its receipt and click Verify & Sign Expense.',
                  'The row reads "Payment request issued" and leaves your desk for the Treasurer\'s coding.', who='FS User'),
-            Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'Gate 2, the ledger coding. On report 22 (Historian User, Walgreens, $63.40) choose Miscellaneous Others in Assign Ledger Budget Line Item and Council Operational Costs in Assign General Ledger Account, then click Categorize & Lock Expense.',
+            Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'Gate 2, the ledger coding. On report 22 (Historian User, Walgreens, $63.40) choose Council Operational Costs in Assign General Ledger Account, read the green [ Inferred Budget: Automatically Mapped to Monthly Council Meetings ] line, then click Categorize & Lock Expense.',
                  'The row reads "Coded to the ledger" and leaves your desk for the Grand Knight\'s release.', who='Treasurer User'),
             Step(f'{DESKS} > Grand Knight Desk > Approved Expenses', 'Gate 3, the final release. Click Final Release for Payment on report 23 (Member Alpha, Fred Meyer, $41.85).',
                  'The row reads "Released to the Treasurer". Report 23 is Approved.', who='GK User'),
@@ -979,7 +981,7 @@ def poster_financial(output: Path, generated: str) -> None:
         ('2', 'Payment request', 'Financial Secretary', 'Active Desks > Financial Secretary Desk',
          'Check the receipts and click Verify & Sign Expense. The first signature.'),
         ('3', 'Ledger coding', 'Treasurer', 'Active Desks > Treasurer Desk',
-         'Assign the budget line and the general ledger account, then Categorize & Lock Expense.'),
+         'Assign the general ledger account (it decides the budget line), then Categorize & Lock Expense.'),
         ('4', 'Final release', 'Grand Knight', 'Active Desks > Grand Knight Desk',
          'Final Release for Payment. The report is Approved and released to the Treasurer.'),
         ('5', 'Pay by check', 'Financial Secretary or Treasurer', 'Active Desks > Treasurer Desk > Expense Report (ER) Settlement',

@@ -40,6 +40,8 @@ export const MISSING_RECEIPT_REASON_MAX_LENGTH = 2000;
 export const HONORARY_EXPENSE_BADGE = '⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
+/** Dollars to whole cents, so amounts compare and subtract exactly. */
+const cents = (dollars: number): number => Math.round(dollars * 100);
 
 const isId = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0;
 
@@ -793,6 +795,52 @@ export const expenseDraftTotal = (lines: readonly ExpenseLineDraft[]): number =>
 /** The personal-exclusion rows in total (Sprint 6S). */
 export const expenseDraftPersonalTotal = (lines: readonly ExpenseLineDraft[]): number =>
   sumAmounts(lines.filter((l) => l.IsPersonal).map((l) => typedDollars(l.Amount)).filter((n) => Number.isFinite(n)));
+
+// ---- Sprint 8S Revision 10.4: the phone's plain-English receipt split ------------------------------------------------
+
+/** The phone receipt card's split switch (was 'Personal, not for the council'). */
+export const SPLIT_RECEIPT_TOGGLE_LABEL = 'Split this receipt (Contains personal items)';
+/** The one box the split switch opens: what the council pays back out of the receipt. */
+export const REQUESTED_REIMBURSEMENT_LABEL = 'Requested Reimbursement Amount';
+
+/**
+ * A phone receipt row: IsPersonal is the split switch, and RequestedReimbursement what the member asks the council to
+ * pay back, as typed. A row loaded from a saved personal line has no RequestedReimbursement (the whole line is personal).
+ */
+export type SplitExpenseLineDraft = ExpenseLineDraft & { RequestedReimbursement?: string };
+
+/**
+ * The phone's split rows as the stored lines (Sprint 6S personal exclusions). A split row of amount A asking for R
+ * becomes a council line of R and a personal line of A - R on the same receipt; R = A keeps one council line, R = 0 (or
+ * a loaded personal row) one personal line. Rows not split pass through. With `strict`, a blank, non-numeric, negative
+ * or larger-than-the-receipt request is refused naming the receipt; without it (the running totals) such a row counts
+ * as all personal. A receipt amount that is not a number is left for expenseLinesFromDrafts to refuse.
+ */
+export function expandSplitExpenseLines(lines: readonly SplitExpenseLineDraft[], strict = true): ExpenseLineDraft[] {
+  return lines.flatMap((line, i): ExpenseLineDraft[] => {
+    const { RequestedReimbursement: requestedText, ...draft } = line;
+    if (!draft.IsPersonal || requestedText === undefined) return [draft];
+    const amount = typedDollars(draft.Amount);
+    if (draft.Amount.trim() === '' || !Number.isFinite(amount)) return [draft];
+    const requested = typedDollars(requestedText);
+    if (requestedText.trim() === '' || !Number.isFinite(requested) || requested < 0 || cents(requested) > cents(amount)) {
+      if (!strict) return [draft];
+      throw invalid(
+        requestedText.trim() === ''
+          ? `Receipt ${i + 1} is split: enter the ${REQUESTED_REIMBURSEMENT_LABEL} (0.00 if none of it is for the council).`
+          : `Receipt ${i + 1}: the ${REQUESTED_REIMBURSEMENT_LABEL} must be a dollar amount from 0.00 up to the receipt's ${draft.Amount.trim()}; received "${requestedText}".`,
+        { index: i },
+      );
+    }
+    const personalCents = cents(amount) - cents(requested);
+    if (personalCents === 0) return [{ ...draft, IsPersonal: false }];
+    if (cents(requested) === 0) return [draft];
+    return [
+      { ...draft, Amount: (cents(requested) / 100).toFixed(2), IsPersonal: false },
+      { ...draft, Amount: (personalCents / 100).toFixed(2), IsPersonal: true },
+    ];
+  });
+}
 
 /** The event or meeting a form's reference key names, as an expense window span; null for '', an activity (activities run without dates) or an unknown id. */
 export function expenseReferenceSpan(key: string, refs: ExpenseReferenceOptions): ExpenseWindowSpan | null {

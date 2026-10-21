@@ -144,6 +144,7 @@ import { DisbursementLedger as ExpenseSettlement } from '@/components/modules/Ex
 import { TreasurerDesk as LedgerLineCoder } from '@/components/modules/LedgerLineCoder';
 import { DonationsWorkspace as DonationRecords } from '@/components/modules/DonationRecords';
 import { CouncilElectionWorkflow } from '@/components/modules/ElectionWorkflow';
+import { ChartOfAccountsSetup } from '@/components/modules/ChartOfAccountsSetup';
 import { CharityPipelineWorkflow, ExpenseReportWorkflow } from '@/components/FinanceWorkflowParts';
 import { AuditQueue as ExpenseRoutingTrack } from '@/components/modules/ExpenseRoutingTrack';
 import { KnowledgeArchive } from '@/components/modules/KnowledgeArchive';
@@ -925,6 +926,8 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
               return <BudgetVsActualsModule user={user} councilId={councilId} />;
             case 'bank-match':
               return <BankStatementMatchWindow user={user} councilId={councilId} />;
+            case 'chart-of-accounts':
+              return <ChartOfAccountsSetup memberId={user.memberId} councilId={councilId} />;
             default:
               return <ParishSplitConsoleCard user={user} councilId={councilId} />;
           }
@@ -1555,6 +1558,8 @@ export function RecorderDesk({ user, councilId }: { user: SessionUser; councilId
               return <MinutesEntryDrawer user={user} rows={rows} dueDays={data.data?.dueDays ?? null} onSaved={() => void data.reload()} />;
             case 'live-meeting':
               return <LiveMeetingDrawer user={user} rows={rows} />;
+            case 'election-workflow':
+              return <CouncilElectionWorkflow />;
             default:
               return <MotionsLedgerModule councilId={councilId} />;
           }
@@ -1862,6 +1867,8 @@ export function HistorianDesk({ user, councilId }: { user: SessionUser; councilI
             return <MeetingPhotos user={user} councilId={councilId} />;
           case 'oral-histories':
             return <OralHistories user={user} councilId={councilId} />;
+          case 'election-workflow':
+            return <CouncilElectionWorkflow />;
           default:
             return <PhotoGallery />;
         }

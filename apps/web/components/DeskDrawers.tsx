@@ -16,7 +16,7 @@
 // prefers reduced motion, so the opened module is in full view.
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type FocusEvent, type ReactNode } from 'react';
-import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, deskSpineSections, type DeskDrawerSpec } from '@kofc/shared';
+import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, deskSpineSections, isReferenceDrawer, type DeskDrawerSpec } from '@kofc/shared';
 import { cx, EmbeddedModuleContext } from '@/components/ui';
 import { DeskLink, DeskRow } from '@/components/WorkspaceTabs';
 
@@ -84,7 +84,7 @@ function SpineFolder({ spec, status, selected, onOpen }: { spec: DeskDrawerSpec;
           {spec.title}
         </span>
         {status?.count != null ? (
-          <span className={cx('rounded px-2 py-0.5 text-sm font-bold', status.count > 0 ? 'bg-brand-red text-white' : 'bg-line text-navy')}>{status.count}</span>
+          <span className={cx('rounded px-2 py-0.5 text-sm font-bold', status.count > 0 && !isReferenceDrawer(spec) ? 'bg-brand-red text-white' : 'bg-line text-navy')}>{status.count}</span>
         ) : null}
       </span>
       {alert ? <span className="text-xs font-bold text-brand-red">🔴 {alertText}</span> : null}
@@ -130,7 +130,7 @@ function BlotterStage({ spec, onClose, children }: { spec: DeskDrawerSpec; onClo
 export function DeskBlotter({
   desk,
   drawers,
-  status,
+  status: rawStatus,
   render,
   onClosed,
 }: {
@@ -140,10 +140,15 @@ export function DeskBlotter({
   render: (spec: DeskDrawerSpec) => ReactNode;
   onClosed?: () => void;
 }) {
+  // Sprint 8S Revision 10.4: a Reference Workflows folder is passive - it keeps its count but never lights.
+  const status = (spec: DeskDrawerSpec): DeskDrawerStatus | undefined => {
+    const s = rawStatus?.(spec);
+    return s && isReferenceDrawer(spec) ? { ...s, alert: false } : s;
+  };
   const [openId, setOpenId] = useState<string | null>(null);
   const open = drawers.find((d) => d.rowId === openId) ?? null;
   const deskTitle = DASHBOARD_TABS.find((t) => t.id === desk)?.label ?? 'Desk';
-  const sections = deskSpineSections(desk, drawers, (spec) => !!status?.(spec)?.alert);
+  const sections = deskSpineSections(desk, drawers, (spec) => !!status(spec)?.alert);
   const waiting = sections.find((s) => s.id === 'priority')?.drawers.length ?? 0;
 
   const openDrawer = (spec: DeskDrawerSpec) => {
@@ -187,7 +192,7 @@ export function DeskBlotter({
                   <DeskRow id={spec.rowId} label={spec.title}>
                     <SpineFolder
                       spec={spec}
-                      status={status?.(spec)}
+                      status={status(spec)}
                       selected={spec.rowId === openId}
                       onOpen={() => {
                         openDrawer(spec);

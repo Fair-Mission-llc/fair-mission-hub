@@ -526,6 +526,7 @@ import {
   cleanPlanningTimeInput,
   cleanSmartAlbumName,
   assertMayUploadStandaloneMedia,
+  isVaultHistorian,
   cleanVaultUpload,
   planLeadershipSnapshots,
   planTransferGuard,
@@ -6829,13 +6830,14 @@ export class MemoryDataService implements DataService {
         if (clean.eventId !== null) {
           const event = this.requireEvent(s, clean.eventId);
           councilIds = this.councilIdsOf(s, clean.eventId);
-          assertMayAttachEventMedia(actor, event as unknown as CouncilEvent, councilIds, `add photos to event ${clean.eventId}`);
+          // Sprint 8S Revision 10.4: the council's Historian files gallery photos too (isVaultHistorian).
+          if (!isVaultHistorian(actor, councilIds)) assertMayAttachEventMedia(actor, event as unknown as CouncilEvent, councilIds, `add photos to event ${clean.eventId}`);
           (event as Row).PhotoGalleryURL = appendPhotoPaths(event.PhotoGalleryURL as string | null, clean.fileUrls);
           year = calendarYearOf(event.StartDate as string);
           location = event.Location as string;
         } else if (clean.meetingId !== null) {
           const meeting = this.requireMeetingRow(s, clean.meetingId);
-          assertMayLinkMeetingDrive(actor, meeting as unknown as Meeting, `add photos to meeting ${clean.meetingId}`);
+          if (!isVaultHistorian(actor, [meeting.CouncilID as number])) assertMayLinkMeetingDrive(actor, meeting as unknown as Meeting, `add photos to meeting ${clean.meetingId}`);
           councilIds = [meeting.CouncilID as number];
           year = calendarYearOf(meeting.Date as string);
           location = meeting.Location as string;

@@ -17,6 +17,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import {
   canAttachEventMedia,
+  canTagVaultMediaAsHistorian,
   canDeleteSmartAlbum,
   canLinkMeetingDrive,
   canUploadStandaloneMedia,
@@ -574,10 +575,10 @@ export function PhotoGallery() {
     const links = await Promise.all(events.map((e) => db.events.listCouncilIds(e.id)));
     const lib = await db.media.getLibrary(user.memberId, councilId);
     const eventTargets = events
-      .filter((e: CouncilEvent, i) => canAttachEventMedia(user, e, links[i]))
+      .filter((e: CouncilEvent, i) => canAttachEventMedia(user, e, links[i]) || canTagVaultMediaAsHistorian(user, links[i]))
       .map((e) => ({ kind: 'event' as const, id: e.id, name: e.EventName, location: e.Location, date: e.StartDate }));
     const meetingTargets = lib.meetings
-      .filter((m) => m.date <= today && canLinkMeetingDrive(user, { CouncilID: councilId, OwnerID: m.ownerId }))
+      .filter((m) => m.date <= today && (canLinkMeetingDrive(user, { CouncilID: councilId, OwnerID: m.ownerId }) || canTagVaultMediaAsHistorian(user, [councilId])))
       .map((m) => ({ kind: 'meeting' as const, id: m.id, name: m.name, location: '', date: m.date }));
     return [...eventTargets, ...meetingTargets];
   }, [councilId, user.memberId]);

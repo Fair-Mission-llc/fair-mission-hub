@@ -25,6 +25,12 @@
 // '[ 📤 Outbound Operations ]' (each drawer's `cabinet`); the leaner desks list their folders flat. No folder nests.
 // Sprint 8S Revision 8: the Grand Knight Desk gains the '[ 📈 Council Goals & Targets ]' folder (gate 'council-goals'):
 // the Star Council objectives - Membership Intake, Charitable Dollars and Volunteer Hours - against the year's targets.
+// Sprint 8S Revision 10.4: every officer desk ends with a '[ 📖 Reference Workflows ]' block - the passive workflow
+// trackers (Expense Report Workflow, the charity workflow, Planning & Budgeting, Council Election Workflow) moved there
+// from the working cabinets. A reference folder never carries the Alert Boundary Accent and never floats, so the same
+// waiting sheet no longer lights two folders. The Treasurer Desk gains '[ 🔧 Accounting Configuration ]' with the
+// 'Chart of Accounts & GL Setup' folder, and the Financial Secretary's Payment Requests folder is titled
+// 'Auditing & Return Queue' (the same /expenses/audit module the sidebar opens).
 import type { DiaryEntryDetail, ExpenseReportDetail, LegacyYear, SessionUser } from './contract';
 import type { Meeting } from './types';
 import { canEndorseCharityRequest } from './charity-pipeline';
@@ -101,6 +107,7 @@ export type DeskDrawerId =
   | 'budget-vs-actuals'
   | 'bank-match'
   | 'parish-split'
+  | 'chart-of-accounts'
   | 'minutes-archive'
   | 'live-meeting'
   | 'minutes-entry'
@@ -131,12 +138,23 @@ export interface DeskDrawerSpec {
   cabinet?: DeskCabinetId;
 }
 
-/** Sprint 8S Revision 7: the two cabinet blocks of a high-density desk's spine. */
-export type DeskCabinetId = 'inbound' | 'outbound';
+/**
+ * Sprint 8S Revision 7: the two cabinet blocks of a high-density desk's spine. Sprint 8S Revision 10.4: plus the
+ * Treasurer's Accounting Configuration block and the Reference Workflows block at the foot of every officer desk.
+ */
+export type DeskCabinetId = 'inbound' | 'outbound' | 'accounting' | 'reference';
 export const DESK_CABINET_LABELS: Readonly<Record<DeskCabinetId, string>> = {
   inbound: '[ 📥 Inbound Operations ]',
   outbound: '[ 📤 Outbound Operations ]',
+  accounting: '[ 🔧 Accounting Configuration ]',
+  reference: '[ 📖 Reference Workflows ]',
 };
+/** Sprint 8S Revision 10.4: the Treasurer's general ledger folder (the chart of accounts on the Treasurer Desk). */
+export const CHART_OF_ACCOUNTS_FOLDER_TITLE = 'Chart of Accounts & GL Setup';
+/** Sprint 8S Revision 10.4: the Financial Secretary's audit folder - verify and sign each submitted sheet, or return it. */
+export const FS_AUDIT_FOLDER_TITLE = 'Auditing & Return Queue';
+/** True for a passive reference folder: it shows its count but never lights or floats. */
+export const isReferenceDrawer = (spec: Pick<DeskDrawerSpec, 'cabinet'>): boolean => spec.cabinet === 'reference';
 /** The heading of the spine's Dynamic Priority Float. */
 export const PRIORITY_FLOAT_LABEL = 'Priority: waiting on you';
 /** The high-density desks whose spines stack the two cabinet blocks; every other desk lists its folders flat. */
@@ -154,20 +172,26 @@ export interface DeskSpineSection {
  * Sprint 8S Revision 7: the left filing spine of one desk, top to bottom. First the Dynamic Priority Float - every
  * drawer `isAlert` lights, in display order - then, on a CABINET_DESKS desk, the Inbound and Outbound cabinet blocks, or
  * on a lean desk one flat list. A floated drawer is not repeated below, and empty sections are left out. Every section
- * is a flat list: no folder nests inside another.
+ * is a flat list: no folder nests inside another. Sprint 8S Revision 10.4: then the Accounting Configuration block, and
+ * last the Reference Workflows block; a reference folder never floats, whatever `isAlert` says.
  */
 export function deskSpineSections(desk: DrawerDeskId, drawers: readonly DeskDrawerSpec[], isAlert: (spec: DeskDrawerSpec) => boolean = () => false): DeskSpineSection[] {
-  const floated = drawers.filter((d) => isAlert(d));
+  const floated = drawers.filter((d) => !isReferenceDrawer(d) && isAlert(d));
   const rest = drawers.filter((d) => !floated.includes(d));
+  const working = rest.filter((d) => d.cabinet !== 'accounting' && d.cabinet !== 'reference');
   const sections: DeskSpineSection[] = [{ id: 'priority', label: PRIORITY_FLOAT_LABEL, drawers: floated }];
   if (CABINET_DESKS.includes(desk)) {
     sections.push(
-      { id: 'inbound', label: DESK_CABINET_LABELS.inbound, drawers: rest.filter((d) => d.cabinet !== 'outbound') },
-      { id: 'outbound', label: DESK_CABINET_LABELS.outbound, drawers: rest.filter((d) => d.cabinet === 'outbound') },
+      { id: 'inbound', label: DESK_CABINET_LABELS.inbound, drawers: working.filter((d) => d.cabinet !== 'outbound') },
+      { id: 'outbound', label: DESK_CABINET_LABELS.outbound, drawers: working.filter((d) => d.cabinet === 'outbound') },
     );
   } else {
-    sections.push({ id: 'folders', label: '', drawers: rest });
+    sections.push({ id: 'folders', label: '', drawers: working });
   }
+  sections.push(
+    { id: 'accounting', label: DESK_CABINET_LABELS.accounting, drawers: rest.filter((d) => d.cabinet === 'accounting') },
+    { id: 'reference', label: DESK_CABINET_LABELS.reference, drawers: rest.filter((d) => d.cabinet === 'reference') },
+  );
   return sections.filter((s) => s.drawers.length > 0);
 }
 
@@ -175,6 +199,10 @@ const ARCHIVE = OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE;
 /** Sprint 8S Revision 3: the Charitable Donation Workflow follows money going OUT to charities. */
 const CHARITY_PIPELINE_SUMMARY = 'Charity request › FS/GK endorsement › Treasurer check';
 const ARCHIVE_SUMMARY = "Search every council's signed operating notes";
+const ER_WORKFLOW_SUMMARY = 'Every signature step of a sheet, for reference';
+const PLANNING_WORKFLOW_TITLE = 'Planning & Budgeting Workflow';
+const PLANNING_SUMMARY = 'Goals, the June review, the July 1 lock and the budget vote';
+const ELECTION_SUMMARY = 'The ballot, May nominations, the June vote and the July 1 term';
 
 /** Every drawer on the officer desks, in display order per desk (Sprints 8P Stage 2 and Stage 3). */
 export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
@@ -184,19 +212,17 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'shifts-awaiting-hours', title: 'Shifts Awaiting Hours', summary: 'Volunteers who served but have not logged time', gate: 'executive-audits', rowId: DESK_FOCUS_TARGETS.hours.rowId, alerts: true },
   { desk: 'grand-knight', id: 'access-requests', title: 'Inbound Council Mail Center', summary: 'Access requests from councils not yet on the platform', gate: 'super-admin', rowId: DESK_FOCUS_TARGETS.access.rowId, alerts: true },
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
-  { desk: 'grand-knight', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-donation-workflow', alerts: true },
   { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },
-  { desk: 'grand-knight', id: 'planning-budgeting', title: 'Planning & Budgeting Workflow', summary: 'Goals, the June review, the July 1 lock and the budget vote', gate: 'planning', rowId: 'drawer-planning-budgeting' },
-  { desk: 'grand-knight', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: 'The ballot, May nominations, the June vote and the July 1 term', area: 'elections', rowId: 'drawer-election-workflow' },
   { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
   { desk: 'grand-knight', id: 'affiliation-invites', title: 'Affiliation Invites', summary: 'Accept or decline invites from nearby councils', gate: 'affiliations', rowId: 'grand-knight-affiliations' },
   { desk: 'grand-knight', id: 'connected-councils', title: 'Connected Councils', summary: 'Invite and answer nearby councils', area: 'system-settings/affiliations', rowId: 'module-connected-councils' },
   { desk: 'grand-knight', id: 'advisor', title: 'Constitutional Advisor Panels', summary: 'Ask a parliamentary or bylaws question', area: 'governance/advisor', rowId: 'module-advisor' },
   { desk: 'grand-knight', id: 'knowledge-archive', title: ARCHIVE, summary: ARCHIVE_SUMMARY, area: 'system-settings/knowledge-archive', rowId: 'drawer-gk-knowledge-archive' },
+  { desk: 'grand-knight', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-donation-workflow', cabinet: 'reference' },
+  { desk: 'grand-knight', id: 'planning-budgeting', title: PLANNING_WORKFLOW_TITLE, summary: PLANNING_SUMMARY, gate: 'planning', rowId: 'drawer-planning-budgeting', cabinet: 'reference' },
+  { desk: 'grand-knight', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-election-workflow', cabinet: 'reference' },
   // ---- Financial Secretary Desk
-  { desk: 'financial-secretary', id: 'payment-requests', title: 'Payment Requests', summary: 'Verify and sign the written order on each sheet', area: 'expenses/audit', rowId: DESK_FOCUS_TARGETS.orders.rowId, alerts: true, cabinet: 'inbound' },
-  { desk: 'financial-secretary', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: 'Every signature step of a sheet, worked in place', area: 'expenses/queue', rowId: 'drawer-fs-er-workflow', alerts: true, cabinet: 'inbound' },
-  { desk: 'financial-secretary', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-fs-donation-workflow', alerts: true, cabinet: 'outbound' },
+  { desk: 'financial-secretary', id: 'payment-requests', title: FS_AUDIT_FOLDER_TITLE, summary: 'Verify and sign the payment request on each sheet, or return it', area: 'expenses/audit', rowId: DESK_FOCUS_TARGETS.orders.rowId, alerts: true, cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'er-routing-track', title: 'Expense Report (ER) Routing Track', summary: 'Every open sheet and the signature it waits for', area: 'expenses/queue', rowId: 'drawer-er-routing-track', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'donation-records', title: 'Charitable Donation Records', summary: 'Record, check and correct council donations', area: 'donations', rowId: 'drawer-donation-records', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'church-disbursements', title: 'Church Disbursement Requests', summary: "Record the check for the parish's share", gate: 'always', rowId: 'financial-secretary-church-disbursements', cabinet: 'outbound' },
@@ -204,29 +230,34 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'financial-secretary', id: 'form-1295', title: 'Semiannual Audit Form 1295 Center', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'roster-imports', title: 'Excel Roster Imports', summary: 'The roster template and the Supreme roster sync', gate: 'always', rowId: 'drawer-roster-imports', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'knowledge-archive', title: ARCHIVE, summary: ARCHIVE_SUMMARY, area: 'system-settings/knowledge-archive', rowId: 'drawer-fs-knowledge-archive', cabinet: 'inbound' },
+  { desk: 'financial-secretary', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: ER_WORKFLOW_SUMMARY, area: 'expenses/queue', rowId: 'drawer-fs-er-workflow', cabinet: 'reference' },
+  { desk: 'financial-secretary', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-fs-donation-workflow', cabinet: 'reference' },
   // ---- Treasurer Desk
-  { desk: 'treasurer', id: 'ledger-coder', title: 'Ledger Line Coder', summary: 'Give each signed sheet its budget line and ledger account', area: 'finance/treasurer-desk', rowId: DESK_FOCUS_TARGETS.coding.rowId, alerts: true, cabinet: 'inbound' },
+  { desk: 'treasurer', id: 'ledger-coder', title: 'Ledger Line Coder', summary: 'Give each signed sheet its ledger account; the budget line follows', area: 'finance/treasurer-desk', rowId: DESK_FOCUS_TARGETS.coding.rowId, alerts: true, cabinet: 'inbound' },
   { desk: 'treasurer', id: 'er-settlement', title: 'Expense Report (ER) Settlement', summary: 'Pay fully signed sheets by check', area: 'expenses/disbursements', rowId: 'drawer-er-settlement', alerts: true, cabinet: 'outbound' },
   { desk: 'treasurer', id: 'charity-matches', title: 'Charitable Contribution Matches', summary: 'Match approved charity requests and gifts to their checks', area: 'charities/queue', rowId: 'drawer-charity-matches', alerts: true, cabinet: 'outbound' },
-  { desk: 'treasurer', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: 'Every signature step of a sheet, worked in place', area: 'expenses/queue', rowId: 'drawer-treasurer-er-workflow', alerts: true, cabinet: 'inbound' },
-  { desk: 'treasurer', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-treasurer-donation-workflow', alerts: true, cabinet: 'outbound' },
-  { desk: 'treasurer', id: 'planning-budgeting', title: 'Planning & Budgeting Workflow', summary: 'Goals, the June review, the July 1 lock and the budget vote', gate: 'planning', rowId: 'drawer-treasurer-planning-budgeting', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'cash-box-audit', title: 'Cash Box Audit Closure Panel', summary: 'Count each concluded event’s cash box and log any variance', gate: 'always', rowId: 'treasurer-cash-box-audit', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'batch-coder', title: 'High-Volume Batch Transaction Coder', summary: 'Code many electronic donations to one Revenue line', gate: 'always', rowId: 'treasurer-batch-coder', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'budget-vs-actuals', title: 'Annual Budget vs Actuals Ledger Grid', summary: 'Budgeted vs actual spend and the YOY variance analyzer', area: 'finance/dashboard', rowId: 'module-budget-vs-actuals', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'bank-match', title: 'Bank Statement Match-Window', summary: 'Match a bank statement CSV against the ledger', area: 'finance/dashboard', rowId: 'module-bank-match', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'parish-split', title: 'Parish Fundraiser Revenue Split Console', summary: "Issue the parish's share of fundraiser revenue", gate: 'always', rowId: 'treasurer-parish-split', cabinet: 'outbound' },
+  { desk: 'treasurer', id: 'chart-of-accounts', title: CHART_OF_ACCOUNTS_FOLDER_TITLE, summary: 'Every general ledger account, its type and its posted balance', area: 'finance/treasurer-desk', rowId: 'treasurer-chart-of-accounts', cabinet: 'accounting' },
+  { desk: 'treasurer', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: ER_WORKFLOW_SUMMARY, area: 'expenses/queue', rowId: 'drawer-treasurer-er-workflow', cabinet: 'reference' },
+  { desk: 'treasurer', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-treasurer-donation-workflow', cabinet: 'reference' },
+  { desk: 'treasurer', id: 'planning-budgeting', title: PLANNING_WORKFLOW_TITLE, summary: PLANNING_SUMMARY, gate: 'planning', rowId: 'drawer-treasurer-planning-budgeting', cabinet: 'reference' },
   // ---- Recorder Desk
   { desk: 'recorder', id: 'minutes-archive', title: 'Historical Meeting Minutes Archive', summary: "Read every meeting's published minutes before you open the session", gate: 'always', rowId: 'drawer-minutes-archive', featured: true },
   { desk: 'recorder', id: 'minutes-entry', title: 'Meeting Minutes Entry Desk', summary: 'The business calendar, the minutes countdown and the editor', gate: 'always', rowId: DESK_FOCUS_TARGETS.minutes.rowId, alerts: true },
   { desk: 'recorder', id: 'live-meeting', title: 'Start Live Meeting Sequence', summary: 'Open the live console and show the check-in PIN', gate: 'always', rowId: 'drawer-live-meeting' },
   { desk: 'recorder', id: 'motions-ledger', title: 'Council Resolutions and Motions Ledger', summary: "Every motion of this fraternal year's meetings and its result", area: 'meetings', rowId: 'module-motions-ledger' },
+  { desk: 'recorder', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-recorder-election-workflow', cabinet: 'reference' },
   // ---- Historian Desk
   { desk: 'historian', id: 'diary-logs', title: 'Fraternal Diary Entry Logs', summary: "Read the council's diary entries by year, author or word", gate: 'always', rowId: 'drawer-diary-logs' },
   { desk: 'historian', id: 'bulletins', title: 'Monthly Newsletters', summary: 'Write one text newsletter a month', gate: 'always', rowId: 'drawer-bulletins' },
   { desk: 'historian', id: 'meeting-photos', title: 'Meeting Photos', summary: "File each meeting's photo to the Drive media vault", gate: 'always', rowId: 'drawer-meeting-photos' },
   { desk: 'historian', id: 'oral-histories', title: 'Oral History Recordings', summary: 'Listen to testimonials and record your own', gate: 'always', rowId: 'drawer-oral-histories' },
   { desk: 'historian', id: 'media-gallery', title: 'Google Drive Media Gallery Sync Board', summary: 'Upload, tag and file photos to the Drive media vault', area: 'gallery', rowId: 'module-media-gallery' },
+  { desk: 'historian', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-historian-election-workflow', cabinet: 'reference' },
 ];
 
 function clearedBy(u: Actor, spec: DeskDrawerSpec, councilId: number, areas: ReadonlySet<string>): boolean {

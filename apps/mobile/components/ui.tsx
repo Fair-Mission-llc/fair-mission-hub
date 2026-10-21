@@ -2,7 +2,7 @@
 // which is what guarantees the Arial body font; colours come only from the shared tokens.
 // Sprint 6C: every primitive reads useTheme(), so in the large text layout text is bold, white and larger, tap areas
 // are at least LARGE_TEXT_TOUCH_TARGET tall, and cards, buttons, inputs and chips sit on black inside thick gold borders.
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode, type RefObject } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -334,15 +334,19 @@ export function Screen({
   refreshing,
   onRefresh,
   contentStyle,
+  scrollRef,
 }: {
   children: ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
   contentStyle?: StyleProp<ViewStyle>;
+  /** Sprint 8S Revision 10.4: lets a screen scroll itself back to the top (e.g. after recording a donation). */
+  scrollRef?: RefObject<ScrollView | null>;
 }) {
   const { color, space } = useTheme();
   return (
     <ScrollView
+      ref={scrollRef}
       style={{ flex: 1, backgroundColor: color.white }}
       contentContainerStyle={[{ padding: space.lg, paddingTop: space.md, gap: space.xl }, contentStyle]}
       keyboardShouldPersistTaps="handled"

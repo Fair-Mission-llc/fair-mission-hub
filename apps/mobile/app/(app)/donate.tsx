@@ -14,9 +14,10 @@
 // Sprint 5Z-Mobile-Intake: tapping Venmo, ParishSoft, Zeffy or Zelle opens a full-screen pop-up with only that channel's
 // code (components/CollectionQrModal.tsx): the council's uploaded code first, else the one bundled with the app
 // (Sprint 5Z-WhiteLabel). A QR method the app carries no image for shows the council's code inline (DonationQr).
-// Sprint 5Z-10 high-speed gate intake: the pinned-event card carries the '🎬 Start Active Intake Session' switch
-// (events.setIntakeSessionStatus). While the event's intake is Active, a full-screen overlay offers two one-tap targets,
-// cash and card, that log a donation at a preset amount with nothing typed (components/GateIntake.tsx).
+// Sprint 5Z-10 high-speed gate intake (the '🎬 Start Active Intake Session' switch and its full-screen one-tap overlay,
+// components/GateIntake.tsx) left the Collect tab in Sprint 8S Revision 10.4: tapping Start unlocks the payment tiles
+// grid at once, with no second switch. After each recorded donation the screen scrolls back to the top, so the
+// confirmation and the tiles are in view for the next donor.
 // Sprint 8L: the setup card ("Start accepting donations") is the member's on-device configuration drawer. The member
 // picks the event and the donation type by hand and may type a standard rate (e.g. the $10.00 parking tier).
 // Sprint 8M: the standard rate's placeholder suggests $25.00 (PHONE_STANDARD_RATE_HINT), still typed by hand, and the
@@ -28,8 +29,8 @@
 // After the member drags Slide to Conclude & Lock (SwipeToConfirm, Sprint 8S Revision 4), the event's collection is CONCLUDED for every phone: the gate intake closes, no more
 // donations are logged or changed for it, and the Treasurer's Cash Box Audit Closure Panel shows it ready for the count.
 // The event dropdown leaves out concluded events.
-import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import {
   CONCLUDE_EVENT_SESSION_LABEL,
   councilWideSettings,
@@ -47,7 +48,6 @@ import {
 import { CollectionQrModal, collectionQrFor } from '@/components/CollectionQrModal';
 import { DonationMethodGrid } from '@/components/DonationMethodGrid';
 import { DonationQr } from '@/components/DonationQr';
-import { GateIntakeOverlay, IntakeSessionSwitch } from '@/components/GateIntake';
 import { Dropdown } from '@/components/Dropdown';
 import { ReceiptScanTile, VERIFICATION_PHOTO_TITLE } from '@/components/ReceiptScanTile';
 import { SwipeToConfirm } from '@/components/SwipeToConfirm';
@@ -349,24 +349,8 @@ function DonateScreenBody() {
     [user.councilId, pinnedEventId],
   );
 
-  // The pinned event's gate intake (Sprint 5Z-10), shared by every phone pinned to it.
-  const intake = useLoad(async () => (pinnedEventId === null ? null : db.events.get(pinnedEventId)), [pinnedEventId]);
-  const intakeActive = intake.data?.IntakeSessionStatus === 'Active';
-  const [intakeBusy, setIntakeBusy] = useState(false);
-  const [overlayHidden, setOverlayHidden] = useState(false);
-  const setIntake = async (on: boolean) => {
-    if (pinnedEventId === null) return;
-    setIntakeBusy(true);
-    try {
-      await db.events.setIntakeSessionStatus(user.memberId, pinnedEventId, on ? 'Active' : 'Inactive');
-      setOverlayHidden(false);
-      await intake.reload();
-    } catch (err) {
-      setMessage({ tone: 'error', text: describeError(err) });
-    } finally {
-      setIntakeBusy(false);
-    }
-  };
+  // Sprint 8S Revision 10.4: brought back to the top after each recorded donation.
+  const scrollRef = useRef<ScrollView>(null);
 
   // Sprint 8N: the conclude button asks once more before it locks the logs for every phone.
   const [confirmConclude, setConfirmConclude] = useState(false);
@@ -418,11 +402,12 @@ function DonateScreenBody() {
     const where = session.active ? ` for ${session.eventName}` : ' as a standalone donation';
     setMessage({ tone: 'info', text: `Recorded ${money(saved.DonationAmount)} by ${option.method.DonationMethod}${where}. Thank the donor!` });
     setPicked(null);
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
     await stream.reload();
   };
 
   return (
-    <Screen refreshing={setup.refreshing || stream.refreshing} onRefresh={() => void Promise.all([setup.reload(), stream.reload()])}>
+    <Screen scrollRef={scrollRef} refreshing={setup.refreshing || stream.refreshing} onRefresh={() => void Promise.all([setup.reload(), stream.reload()])}>
       <AppText variant="heading" accessibilityRole="header">
         Donations
       </AppText>
@@ -447,8 +432,6 @@ function DonateScreenBody() {
                     .join(' · ')}
                 </AppText>
               ) : null}
-              <IntakeSessionSwitch active={intakeActive} busy={intakeBusy} onChange={(on) => void setIntake(on)} />
-              {intakeActive && overlayHidden ? <Button title="Show the one-tap intake overlay" onPress={() => setOverlayHidden(false)} /> : null}
               <Button
                 title="Stop accepting – the event is over"
                 variant="secondary"
@@ -511,22 +494,6 @@ function DonateScreenBody() {
               )}
             </Section>
           )}
-
-          {session.active ? (
-            <GateIntakeOverlay
-              visible={intakeActive && !overlayHidden}
-              eventName={session.eventName}
-              controller={controller}
-              options={data.methods}
-              types={data.types}
-              defaults={session.defaults}
-              recordedCount={session.recordedCount}
-              recordedTotal={session.recordedTotal}
-              onHide={() => setOverlayHidden(true)}
-              onClose={() => setIntake(false)}
-              onRecorded={() => void stream.reload()}
-            />
-          ) : null}
 
           {session.active ? (
             <Section title="Recorded for this event">

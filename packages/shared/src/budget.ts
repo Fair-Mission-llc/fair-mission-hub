@@ -1101,6 +1101,50 @@ export function defaultExpenseBudgetLineId(assignable: readonly CouncilBudgetFor
   return null;
 }
 
+/** Sprint 8S Revision 10.4: the green read-out that replaces the Treasurer's budget line dropdown. */
+export const inferredBudgetLabel = (line: Pick<CouncilBudgetForecast, 'LineItemName'> | null | undefined): string =>
+  line ? `[ Inferred Budget: Automatically Mapped to ${line.LineItemName} ]` : '[ Inferred Budget: choose a general ledger account first ]';
+
+/**
+ * Sprint 8S Revision 10.4 - the decoupled accounting rule: the Treasurer chooses only the general ledger account, and the
+ * account decides the budget line the sheet is charged to (the 'Assign Ledger Budget Line Item' dropdown is gone).
+ * Matched on the account's name, among `assignable` (the year's approved lines):
+ *   - an event cost account ('Event Operational Costs') - the sheet's own Event line, else the catch-all;
+ *   - a charity account ('Charitable Disbursements') - the linked charitable request's line, else the catch-all;
+ *   - a council operations or meeting account ('Council Operational Costs') - the fraternal meetings line
+ *     (findMeetingBudgetLine: 'Monthly Council Meetings' under Fraternal Activities);
+ *   - a Supreme assessment, fee or postage account - the Administrative Operations line naming per capita or an
+ *     assessment, else that category's first line;
+ *   - the physical property account (a long-term asset sheet) - a line naming equipment, else the first Capital
+ *     Projects line;
+ * and anything else, or a rule with no line, the 'Miscellaneous Others' catch-all (findMiscellaneousBudgetLine). null
+ * when no account is chosen yet, or the year has no line to charge.
+ */
+export function inferExpenseBudgetLine(
+  assignable: readonly CouncilBudgetForecast[],
+  account: { AccountName: string; AccountType: string } | null | undefined,
+  link: ExpenseBudgetLink,
+): CouncilBudgetForecast | null {
+  if (!account) return null;
+  const name = account.AccountName.toLowerCase();
+  const inCategory = (category: UniversalBudgetCategory) => assignable.filter((l) => l.universal_category === category);
+  const catchAll = findMiscellaneousBudgetLine(assignable) ?? null;
+  let line: CouncilBudgetForecast | undefined;
+  if (/\bevent/.test(name)) {
+    line = link.EventID !== null ? findEventBudgetLine(assignable, link.EventID, link.EventName) : undefined;
+  } else if (/charit/.test(name)) {
+    line = link.CharityBudgetLineID == null ? undefined : assignable.find((l) => l.id === link.CharityBudgetLineID);
+  } else if (/supreme|assessment|per capita|fee|postage/.test(name)) {
+    const admin = inCategory('ADMINISTRATIVE_OPERATIONS');
+    line = admin.find((l) => /per capita|assessment/i.test(l.LineItemName)) ?? admin[0];
+  } else if (account.AccountType === 'Asset' || /physical|asset|equipment/.test(name)) {
+    line = assignable.find((l) => /equipment/i.test(l.LineItemName)) ?? inCategory('CAPITAL_PROJECTS')[0];
+  } else if (/council|operat|meeting|fraternal/.test(name)) {
+    line = findMeetingBudgetLine(assignable);
+  }
+  return line ?? catchAll;
+}
+
 /**
  * The id of the latest budget_version of the line `budgetLineId` names, among the council's lines of every version
  * (Sprint 6G Extension): a sheet saved against a line that was later amended keeps charging the amended line. null when

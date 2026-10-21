@@ -73,16 +73,19 @@ describe('1. Council Wide Settings: two accordions, no text spill', () => {
 });
 
 describe('2. the ER and donation workflow drawers on both finance desks', () => {
-  it('mounts both drawers on the Financial Secretary and Treasurer Desks, Treasurer money drawers still first', () => {
+  it('mounts both drawers on the Financial Secretary and Treasurer Desks as passive reference folders, Treasurer money drawers still first', () => {
     for (const desk of ['financial-secretary', 'treasurer'] as const) {
       const titles = DESK_DRAWERS.filter((d) => d.desk === desk).map((d) => d.title);
       expect(titles).toEqual(expect.arrayContaining([EXPENSE_REPORT_WORKFLOW_TITLE, CHARITABLE_DONATION_WORKFLOW_TITLE]));
-      expect(DESK_DRAWERS.filter((d) => d.desk === desk && d.id.endsWith('-workflow')).every((d) => d.alerts)).toBe(true);
+      // Sprint 8S Revision 10.4: the workflow trackers sit in the Reference Workflows block and never light.
+      const workflows = DESK_DRAWERS.filter((d) => d.desk === desk && d.id.endsWith('-workflow'));
+      expect(workflows.every((d) => d.cabinet === 'reference' && !d.alerts)).toBe(true);
     }
     expect(EXPENSE_REPORT_WORKFLOW_TITLE).toBe('Expense Report (ER) Workflow');
     expect(CHARITABLE_DONATION_WORKFLOW_TITLE).toBe('Charitable Donation Workflow');
     expect(ids(FS, 'financial-secretary')).toEqual(expect.arrayContaining(['er-workflow', 'donation-workflow']));
-    expect(ids(TREASURER, 'treasurer').slice(0, 5)).toEqual(['ledger-coder', 'er-settlement', 'charity-matches', 'er-workflow', 'donation-workflow']);
+    expect(ids(TREASURER, 'treasurer').slice(0, 3)).toEqual(['ledger-coder', 'er-settlement', 'charity-matches']);
+    expect(ids(TREASURER, 'treasurer').slice(-3)).toEqual(['er-workflow', 'donation-workflow', 'planning-budgeting']);
     expect(ids(seat([]), 'treasurer')).not.toContain('er-workflow');
   });
 

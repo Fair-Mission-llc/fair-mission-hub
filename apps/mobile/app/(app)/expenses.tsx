@@ -16,6 +16,9 @@
 // Sprint 6S: each receipt card has a Personal switch (a split-ticket item the council does not pay), and the Honor
 // Voucher switch covers a report with no receipt and asks why. Receipts entered on the web (ExpenseReceipts) are not
 // edited here; a draft resends them, and its lines keep their receipt, so saving on the phone never drops them.
+// Sprint 8S Revision 10.4: the Personal switch reads 'Split this receipt (Contains personal items)'. Turned on, it asks
+// for one number, the Requested Reimbursement Amount; the save stores the receipt as a council line of that amount and
+// a personal line of the rest (expandSplitExpenseLines).
 import { useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import {
@@ -23,6 +26,7 @@ import {
   blankExpenseLine,
   expenseDraftPersonalTotal,
   expenseDraftTotal,
+  expandSplitExpenseLines,
   expenseLineDraftFrom,
   expenseReceiptInputsOf,
   expenseLinesFromDrafts,
@@ -42,7 +46,10 @@ import {
   EXPENSE_DESCRIPTION_MAX_LENGTH,
   EXPENSE_VENDOR_MAX_LENGTH,
   MISSING_RECEIPT_REASON_MAX_LENGTH,
+  REQUESTED_REIMBURSEMENT_LABEL,
+  SPLIT_RECEIPT_TOGGLE_LABEL,
   type ExpenseLineDraft,
+  type SplitExpenseLineDraft,
   type ExpenseReferenceOptions,
   type ExpenseReportDetail,
 } from '@kofc/shared';
@@ -61,7 +68,7 @@ const money = (n: number) => `$${n.toFixed(2)}`;
 /** A multi-line note box; AppInput lifts the height to the large text layout's touchTarget. */
 const multiline = { minHeight: 72, textAlignVertical: 'top' as const, paddingTop: SPACING.md };
 
-type Row = ExpenseLineDraft & { key: number };
+type Row = SplitExpenseLineDraft & { key: number };
 
 type SpentFor = 'event' | 'activity' | 'meeting' | 'general';
 
@@ -129,18 +136,21 @@ function ExpenseDraftForm({
   }, [refs, spentFor, reference, today, windowDays]);
   const needsPick = spentFor !== 'general' && reference === '';
 
+  // The running totals read the split receipts as they will be stored (a bad request counts as all personal).
+  const previewLines = expandSplitExpenseLines(rows, false);
+
   // Sprint 5Z-6: outside the linked event's or meeting's submission window the submit button is padlocked.
   const span = expenseReferenceSpan(reference, refs);
   const locked = span ? expenseWindowLockMessage(span, today, windowDays) : null;
 
-  const setCell = <K extends keyof ExpenseLineDraft>(key: number, field: K, value: ExpenseLineDraft[K]) =>
+  const setCell = <K extends keyof SplitExpenseLineDraft>(key: number, field: K, value: SplitExpenseLineDraft[K]) =>
     setRows((now) => now.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
 
   const save = async (status: 'Draft' | 'Submitted') => {
     setBusy(status);
     setError(null);
     try {
-      const items = expenseLinesFromDrafts(rows);
+      const items = expenseLinesFromDrafts(expandSplitExpenseLines(rows.map(({ key: _key, ...row }) => row)));
       const saved = await db.expenses.submitReport(
         user.memberId,
         {
@@ -290,11 +300,23 @@ function ExpenseDraftForm({
             />
           </Field>
           <ToggleSwitch
-            label="Personal, not for the council"
-            hint="Your own item on a shared receipt. It stays on the report so the receipt adds up, but the council does not pay it."
+            label={SPLIT_RECEIPT_TOGGLE_LABEL}
+            hint="The receipt also has your own items. Type what the council pays back; the rest stays on the report as personal."
             value={row.IsPersonal}
-            onChange={(v) => setCell(row.key, 'IsPersonal', v)}
+            onChange={(v) => setRows((now) => now.map((r) => (r.key === row.key ? { ...r, IsPersonal: v, RequestedReimbursement: v ? '' : undefined } : r)))}
           />
+          {row.IsPersonal && row.RequestedReimbursement !== undefined ? (
+            <Field label={REQUESTED_REIMBURSEMENT_LABEL}>
+              <AppInput
+                value={row.RequestedReimbursement}
+                onChangeText={(v) => setCell(row.key, 'RequestedReimbursement', v)}
+                keyboardType="decimal-pad"
+                placeholder="0.00"
+                accessibilityLabel={REQUESTED_REIMBURSEMENT_LABEL}
+                style={{ fontSize: 22 }}
+              />
+            </Field>
+          ) : null}
         </Card>
       ))}
 
@@ -303,11 +325,11 @@ function ExpenseDraftForm({
       <Card accent={color.gold}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <AppText variant="label">COUNCIL REIMBURSES</AppText>
-          <AppText variant="heading">{money(expenseDraftTotal(rows))}</AppText>
+          <AppText variant="heading">{money(expenseDraftTotal(previewLines))}</AppText>
         </View>
-        {expenseDraftPersonalTotal(rows) > 0 ? (
+        {expenseDraftPersonalTotal(previewLines) > 0 ? (
           <AppText variant="small" tone="muted">
-            Personal, not reimbursed: {money(expenseDraftPersonalTotal(rows))}
+            Personal, not reimbursed: {money(expenseDraftPersonalTotal(previewLines))}
           </AppText>
         ) : null}
         {error ? <Notice tone="error" message={error} onDismiss={() => setError(null)} /> : null}

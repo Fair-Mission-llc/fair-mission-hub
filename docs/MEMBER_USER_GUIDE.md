@@ -1037,9 +1037,10 @@ A **General** report has no window.
 3. For an event or a meeting, choose the item in **WHICH EVENT?** or **WHICH MEETING?**. The list shows only open windows.
 4. Tap **Scan Paper Receipt**. Photograph the receipt.
 5. Enter **VENDOR NAME**, **EXPENSE DATE (YYYY-MM-DD)**, **AMOUNT** and **DESCRIPTION**.
-6. Tap **+ Add another receipt** for each extra receipt.
-7. Check the **REPORT TOTAL**.
-8. Tap **Submit for approval**. You cannot change the report after this. Tap **Save draft** to finish later.
+6. If the receipt also has your own items, turn on **Split this receipt (Contains personal items)**. Type the part the council pays back in **Requested Reimbursement Amount**.
+7. Tap **+ Add another receipt** for each extra receipt.
+8. Check the total under **COUNCIL REIMBURSES**. A split receipt counts only the **Requested Reimbursement Amount**.
+9. Tap **Submit for approval**. You cannot change the report after this. Tap **Save draft** to finish later.
 
 **Expected result:** The report shows in **My reports** with the **SUBMITTED** tag.
 
@@ -1049,6 +1050,10 @@ A **General** report has no window.
 | *"Locked. Submission opens …"* | The event or meeting has not started. | Save a draft. Submit on or after the first day. |
 | *"Locked. Submission closed …"* | More than 30 days (or your council's number) have passed since the end. | Contact the Financial Secretary. |
 | The event is not in the list. | The window is closed or not open yet. | Use **General** only if the cost has no event or meeting. |
+| *"Receipt 1 is split: enter the Requested Reimbursement Amount …"* | The split switch is on, and the amount box is empty. | Type the amount. Type `0.00` if none of the receipt is for the council. |
+| *"… must be a dollar amount from 0.00 up to the receipt's …"* | The requested amount is more than the receipt. | Type an amount that is not more than **AMOUNT**. |
+
+A split receipt saves as two lines: one council line for the requested amount, and one personal line for the rest. The council pays only the council line.
 
 ### 6.2 File an expense report in the web portal
 
@@ -1253,31 +1258,29 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 | --- | --- | --- |
 | The save is refused. | **WHAT WAS DONATED** is empty. | Describe the items. |
 
-### 7.4 Use one-tap gate intake
+### 7.4 Record gate gifts right after Start
 
 > **Who can do this:** any active member of a council linked to the event.
-> **Warning:** each tap records a donation at once. You type nothing, and the phone does not ask again.
+> **Warning:** **Record donation** adds the gift to the council's records at once.
 
-**Goal:** Record cash and card gifts quickly at an event gate.
+**Goal:** Record the cars at the gate one after another, with no extra switch.
 
 **Start point:** Phone app → **Collect** → the **ACCEPTING DONATIONS** card.
 
 **Steps:**
-1. Turn on **🎬 Start Active Intake Session**. The intake opens for every phone on the event.
-2. Tap the amount under **AMOUNT PER TAP**. No amount is chosen when the intake opens. The two large buttons show *"Tap an amount first"* until you tap one.
-3. Tap **💵 Log Cash Transaction** for cash. The gift saves at once.
-4. Tap **💳 Log Stripe CC Swipe** for a card. The app records the card gift only. The app charges no card.
-5. Tap **Hide overlay** to see the normal screen.
-6. Tap **Close intake** to end the intake.
+1. Tap **Start** on the setup card. The payment tiles under **How is the donor giving?** open at once. There is no second switch.
+2. Tap the donor's tile, for example **Cash** or **Venmo**. **AMOUNT** shows your standard rate.
+3. Tap **Record donation**.
+4. Read the confirmation at the top of the screen. The screen scrolls back to the top by itself, with the tiles ready for the next donor.
 
-**Expected result:** Each tap adds one donation to the event.
+**Expected result:** Each **Record donation** adds one donation to the event, and the screen is ready for the next car.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"Cash is not enabled"* | The council has no Cash method. | Ask your council Admin to enable Cash. |
-| The large buttons do not respond. | No amount is chosen. | Tap an amount under **AMOUNT PER TAP**. |
-| You tapped one time too many. | Each tap saves a donation. | Ask the Treasurer, the Financial Secretary or an Admin to correct the donation. |
+| The **🎬 Start Active Intake Session** switch is gone. | The tiles now open as soon as you tap **Start**. | Use the tiles. |
+| You recorded one gift too many. | Each **Record donation** saves a donation. | Ask the Treasurer, the Financial Secretary or an Admin to correct the donation. |
 
 ### 7.4.1 Record a cash box drop
 

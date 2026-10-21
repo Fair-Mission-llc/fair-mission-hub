@@ -10,7 +10,7 @@
 // new photos that match are added.
 // =========================================================================
 import type { MediaAlbumCriteria, MediaLibrary, MediaLibraryItem, MediaVaultUploadInput, SmartAlbum } from './contract';
-import { assertMayReadCouncilHistory } from './history';
+import { assertMayReadCouncilHistory, holdsHistorianRole } from './history';
 import { parsePhotoGallery } from './media';
 import { assertInteger, assertText, BusinessRuleError, hasAdminRights, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 import type { CouncilMediaVault, Event, Meeting, MediaSmartAlbums } from './types';
@@ -160,6 +160,19 @@ export function assertMayUploadStandaloneMedia(actor: MemberWriteActor, councilI
 /** The gallery's standalone upload choice for a signed-in member, mirroring assertMayUploadStandaloneMedia. */
 export const canUploadStandaloneMedia = (u: { councilId: number; memberType?: string }, councilId: number): boolean =>
   u.memberType === 'Super Admin' || u.councilId === councilId;
+
+/**
+ * Sprint 8S Revision 10.4: the Council Historian files the council's photos. media.uploadToVault lets the Active Council
+ * Historian of one of the record's councils tag gallery photos to its events and meetings, beside whoever may attach
+ * the record's media (assertMayAttachEventMedia, assertMayLinkMeetingDrive). It opens only the gallery upload: the
+ * meeting's Google Drive links and the other media controls keep their own rules.
+ */
+export const isVaultHistorian = (actor: Pick<MemberWriteActor, 'active' | 'councilId' | 'roles'>, councilIds: readonly number[]): boolean =>
+  actor.active && holdsHistorianRole(actor.roles) && councilIds.includes(actor.councilId);
+
+/** The gallery's event and meeting upload choices for a signed-in Council Historian, mirroring isVaultHistorian. */
+export const canTagVaultMediaAsHistorian = (u: { councilId: number; roles?: readonly string[] }, councilIds: readonly number[]): boolean =>
+  holdsHistorianRole(u.roles) && councilIds.includes(u.councilId);
 
 /** The calendar year of a YYYY-MM-DD date. */
 export const calendarYearOf = (isoDate: string): number => Number(isoDate.slice(0, 4));

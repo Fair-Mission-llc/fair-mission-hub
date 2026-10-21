@@ -529,6 +529,7 @@ import {
   cleanPlanningTimeInput,
   cleanSmartAlbumName,
   assertMayUploadStandaloneMedia,
+  isVaultHistorian,
   cleanVaultUpload,
   planLeadershipSnapshots,
   planTransferGuard,
@@ -8184,13 +8185,14 @@ export class SqliteDataService implements DataService {
         if (clean.eventId !== null) {
           const event = await this.requireEvent(db, clean.eventId);
           councilIds = await this.councilIdsOf(db, clean.eventId);
-          assertMayAttachEventMedia(actor, event, councilIds, `add photos to event ${clean.eventId}`);
+          // Sprint 8S Revision 10.4: the council's Historian files gallery photos too (isVaultHistorian).
+          if (!isVaultHistorian(actor, councilIds)) assertMayAttachEventMedia(actor, event, councilIds, `add photos to event ${clean.eventId}`);
           await db.runAsync('UPDATE [Event] SET [PhotoGalleryURL] = ? WHERE [id] = ?', [appendPhotoPaths(event.PhotoGalleryURL, clean.fileUrls), clean.eventId]);
           year = calendarYearOf(event.StartDate);
           location = event.Location;
         } else if (clean.meetingId !== null) {
           const meeting = await this.requireMeetingRow(db, clean.meetingId);
-          assertMayLinkMeetingDrive(actor, meeting, `add photos to meeting ${clean.meetingId}`);
+          if (!isVaultHistorian(actor, [meeting.CouncilID])) assertMayLinkMeetingDrive(actor, meeting, `add photos to meeting ${clean.meetingId}`);
           councilIds = [meeting.CouncilID];
           year = calendarYearOf(meeting.Date);
           location = meeting.Location;
