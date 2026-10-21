@@ -762,7 +762,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedValue } from '../generated/schema.generated';
+import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
   buildDevEvents,
@@ -986,8 +986,19 @@ export class MemoryDataService implements DataService {
   }
 
   private async seed(): Promise<void> {
-    for (const { table, rows } of SEED_DATA) for (const row of rows) this.store.insert(table, row);
-    if (this.presentationData) for (const { table, rows } of PRESENTATION_SEED_DATA) for (const row of rows) this.store.insert(table, row);
+    const load = (data: readonly SeedTable[]) => {
+      for (const { table, rows, update } of data) {
+        for (const row of rows) this.store.insert(table, row);
+        // Sprint 8S Revision 10: a seeded UPDATE of one existing row (e.g. the pilot's parish split switched on).
+        if (update) {
+          const target = this.store.rows(table).find((r) => r.id === update.id);
+          if (!target) throw new Error(`seed update: no ${table} row with id ${update.id}`);
+          Object.assign(target as Row, update.set);
+        }
+      }
+    };
+    load(SEED_DATA);
+    if (this.presentationData) load(PRESENTATION_SEED_DATA);
 
     // Seed.sql stores dev passwords in plaintext; hash them so signIn only ever sees digests.
     for (const cred of this.store.rows('Credentials')) {

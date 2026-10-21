@@ -135,9 +135,9 @@ describe('the Collect and Recurring Meetings wording', () => {
 describe('the pilot kit', () => {
   const kit = read('scripts/pilot_kit_pdf.py');
 
-  it("adds the Historian's Charter Member step through the council Admin seat that may mark it", () => {
-    expect(kit).toContain('Charter Member badge. Only a council Admin may mark a charter member');
-    expect(kit).toContain('tick Charter member and save');
+  it("drops the Historian's Charter Member step, which needed the facilitator's Admin sign-in on his laptop (Sprint 8S Revision 10)", () => {
+    expect(kit).not.toContain('Charter Member badge. Only a council Admin may mark a charter member');
+    expect(kit).not.toContain('tick Charter member and save');
   });
 
   it("draws the Treasurer's Revenue Split lifecycle and the inferred-budget training notes", () => {

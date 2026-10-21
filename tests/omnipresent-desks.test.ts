@@ -73,11 +73,11 @@ describe('module folders on the Active Desks', () => {
 });
 
 describe('the hand-set phone Donate tab', () => {
-  it('picks no event, type or amount for the member', () => {
+  it('picks no event or type for the member, and fills the Amount box only from his own standard rate (Sprint 8S Revision 10)', () => {
     const donate = read('apps/mobile/app/(app)/donate.tsx');
     expect(donate).not.toContain('events[0]?.id');
     expect(donate).not.toContain('types[0]?.id');
-    expect(donate).not.toMatch(/useState\(defaults\.amount/);
+    expect(donate).toContain("useState(isItem || defaults.amount == null ? '' : defaults.amount.toFixed(2))");
     expect(donate).toContain('STANDARD RATE (OPTIONAL)');
     const gate = read('apps/mobile/components/GateIntake.tsx');
     expect(gate).not.toContain('defaults.amount ?? 10');

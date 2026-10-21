@@ -35,6 +35,8 @@ export type SeedValue = string | number | null;
 export interface SeedTable {
   table: string;
   rows: Record<string, SeedValue>[];
+  /** Sprint 8S Revision 10: an UPDATE of one existing row (rows is then empty). */
+  update?: { id: number; set: Record<string, SeedValue> };
 }
 
 /** Every table in Schema.sql, in creation order. */
@@ -13163,6 +13165,18 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "TargetGoalAmount": 0
       }
     ]
+  },
+  {
+    "table": "Council",
+    "rows": [],
+    "update": {
+      "id": 1,
+      "set": {
+        "parish_split_enabled": 1,
+        "parish_split_percentage": 50,
+        "parish_split_gl_line_id": 16
+      }
+    }
   },
   {
     "table": "Donation",

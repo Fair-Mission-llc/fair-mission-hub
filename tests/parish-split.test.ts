@@ -147,19 +147,21 @@ describe.each(drivers)('$name driver: the parish split engine', (d) => {
     });
   }
 
-  it('starts off, with the seeded Parish Fundraiser Share line on offer', async () => {
+  it("starts on at 50% against the seeded Parish Fundraiser Share line - St. Mary's pre-activated agreement (Sprint 8S Revision 10)", async () => {
     const db = await makePilot();
     const treasurer = await signIn(db, 'treasurer_user');
     const view = await db.finance.getParishSplitConsole(treasurer, OWN);
-    expect(view.settings).toEqual({ parish_split_enabled: 0, parish_split_percentage: 50, parish_split_gl_line_id: null });
+    expect(view.settings).toEqual({ parish_split_enabled: 1, parish_split_percentage: 50, parish_split_gl_line_id: PARISH_LINE });
     expect(view.lineOptions.map((a) => a.AccountName)).toContain('Parish Fundraiser Share');
-    expect(view.glLine).toBeNull();
+    expect(view.glLine?.AccountName).toBe('Parish Fundraiser Share');
   });
 
   it('saves the settings only with a live GL line, for the Council Wide Settings editors', async () => {
     const db = await makePilot();
     const [gk, alpha] = await Promise.all(['gk_user', 'member_alpha'].map((u) => signIn(db, u)));
-    await expectRule(db.councils.setParishSplitSettings(gk, OWN, { enabled: true }), 'PARISH_SPLIT_GL_LINE_REQUIRED');
+    // The seeded split is on, so clearing its line is refused.
+    await expectRule(db.councils.setParishSplitSettings(gk, OWN, { glLineId: null }), 'PARISH_SPLIT_GL_LINE_REQUIRED');
+    await db.councils.setParishSplitSettings(gk, OWN, { enabled: false });
     expect((await db.councils.get(OWN))?.parish_split_enabled).toBe(0);
     await expectRule(db.councils.setParishSplitSettings(alpha, OWN, { enabled: true, glLineId: PARISH_LINE }), 'ADMIN_REQUIRED');
     const saved = await db.councils.setParishSplitSettings(gk, OWN, { enabled: true, glLineId: PARISH_LINE, percentage: 50 });
@@ -171,7 +173,8 @@ describe.each(drivers)('$name driver: the parish split engine', (d) => {
     const [gk, fs, treasurer, alpha] = await Promise.all(['gk_user', 'fs_user', 'treasurer_user', 'member_alpha'].map((u) => signIn(db, u)));
     await collect(db, alpha);
 
-    // While the split is off nothing is issued.
+    // While the split is off nothing is issued (the presentation seed starts it on, so switch it off first).
+    await db.councils.setParishSplitSettings(gk, OWN, { enabled: false });
     await expectRule(db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT), 'PARISH_SPLIT_DISABLED');
     await db.councils.setParishSplitSettings(gk, OWN, { enabled: true, glLineId: PARISH_LINE });
 

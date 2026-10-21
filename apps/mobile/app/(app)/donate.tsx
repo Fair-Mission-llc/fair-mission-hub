@@ -7,9 +7,9 @@
 //     the donor to scan; physical items ask for a description and estimated value, and may carry a
 //     verification photo taken with the phone camera from the "Take Verification Photo" tile (stored in
 //     DonationPhotoURL). Sprint 7F Extension 2: a Check tile asks for the check number (required, Donation.CheckNumber).
-//  3. Sprint 8L: nothing is chosen or typed for the member. The setup card starts with no event and no donation type
-//     picked, the method is the tile the member taps, and the Amount box starts empty: the session's standard rate is
-//     only a hint beside it, so the member types each amount by hand, then records it or cancels.
+//  3. Sprint 8L: nothing is chosen for the member. The setup card starts with no event and no donation type picked and
+//     the method is the tile the member taps. Sprint 8S Revision 10: the Amount box opens filled with the session's
+//     standard rate (blank when the session has none), so the member records a standard gift with no typing.
 // While a session is running, the event's donations from every phone are listed, newest first.
 // Sprint 5Z-Mobile-Intake: tapping Venmo, ParishSoft, Zeffy or Zelle opens a full-screen pop-up with only that channel's
 // code (components/CollectionQrModal.tsx): the council's uploaded code first, else the one bundled with the app
@@ -194,8 +194,9 @@ function DonationForm({
   // Sprint 7F Extension 2: a Check donation must carry the number printed on the check.
   const isCheck = option.kind === 'check';
   const [checkNumber, setCheckNumber] = useState('');
-  // Sprint 8L: the amount is always typed by hand; the session's standard rate is only shown as a hint.
-  const [amount, setAmount] = useState('');
+  // Sprint 8S Revision 10: the Amount box opens filled with the session's standard rate (e.g. $25.00 parking), so a
+  // gate gift is recorded with no typing; the member may still change it. Item gifts start empty (Sprint 8L rule kept).
+  const [amount, setAmount] = useState(isItem || defaults.amount == null ? '' : defaults.amount.toFixed(2));
   const [typeId, setTypeId] = useState<number | null>(defaults.donationTypeId ?? null);
   const [donor, setDonor] = useState('');
   const [description, setDescription] = useState(isItem ? '' : (defaults.description ?? ''));
@@ -273,7 +274,7 @@ function DonationForm({
         </Field>
         {!isItem && defaults.amount != null ? (
           <AppText variant="small" tone="muted">
-            Standard rate for this session: {money(defaults.amount)}. Type the amount the donor gave.
+            Standard rate for this session: {money(defaults.amount)}. Change the amount if the donor gave a different sum.
           </AppText>
         ) : null}
         {isCheck ? (

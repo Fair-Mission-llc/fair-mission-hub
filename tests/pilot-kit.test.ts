@@ -154,10 +154,10 @@ describe.each(drivers)('$name driver: the pilot scripts hold true', (d) => {
     expect((await db.expenses.listUserReports(historian)).find((r) => r.report.id === 16)?.report.Status).toBe('Reimbursed');
   });
 
-  it("the Treasurer's chapter 2 and group Flow 6: $400.00 at 50% is a $200.00 request, paid with check 1404", async () => {
+  it("the Treasurer's chapter 2: the seeded 50% split turns $400.00 into a $200.00 request with no setting changed (Sprint 8S Revision 10)", async () => {
     const db = await makePilot();
     const who = await ids(db);
-    await db.councils.setParishSplitSettings(who.treasurer_user!, OWN, { enabled: true, percentage: 50, glLineId: 16 });
+    expect((await db.finance.getParishSplitConsole(who.treasurer_user!, OWN)).settings).toEqual({ parish_split_enabled: 1, parish_split_percentage: 50, parish_split_gl_line_id: 16 });
     const row = (await db.finance.getParishSplitConsole(who.treasurer_user!, OWN)).events.find((r) => r.eventName === 'Parish Parking Event')!;
     expect(row).toMatchObject({ grossCollections: 400, share: 200, alreadyRequested: 0, available: 200 });
     const issued = await db.finance.issueChurchDisbursementRequest(who.treasurer_user!, OWN, row.eventId);
@@ -203,8 +203,9 @@ describe.each(drivers)('$name driver: the pilot scripts hold true', (d) => {
   });
 });
 
-// Sprint 7I Extension: the group script's flows create every record live; these replay them on the pilot day.
-describe.each(drivers)('$name driver: the live group flows hold true', (d) => {
+// Sprint 8S Revision 10: the three seated group flows, replayed on one load after the individual scripts' steps - every
+// officer works the seeded record waiting at his own gate, and the members' new records stay on their own laptops.
+describe.each(drivers)('$name driver: the seated group flows hold true', (d) => {
   async function makePilot(): Promise<DataService> {
     const now = () => new Date(PILOT_DAY);
     if (d.name === 'memory') {
@@ -220,49 +221,40 @@ describe.each(drivers)('$name driver: the live group flows hold true', (d) => {
   const signIn = async (db: DataService, user: string) => (await db.auth.signIn(`${user}@stmarys.org`, PASSWORD))!.memberId;
   const line = (VendorName: string, Amount: number, ExpenseDescription: string) => ({ DateOfExpense: '2026-10-12', Amount, VendorName, ExpenseDescription });
 
-  it('Flow 1: two new reports reach the FS desk, one is returned, and both are paid', async () => {
+  it('Flow 1: Alpha files a new report, then FS signs 21, the Treasurer codes 22, the GK releases 23 and the Treasurer pays 13', async () => {
     const db = await makePilot();
-    const [alpha, beta, fs, treasurer, gk] = await Promise.all(['member_alpha', 'member_beta', 'fs_user', 'treasurer_user', 'gk_user'].map((u) => signIn(db, u)));
-    const a = await db.expenses.submitReport(alpha, { Status: 'Submitted', LinkedEventID: 9 }, [line('Ace Hardware', 18.4, 'Zip ties and sign stakes')]);
-    const b = await db.expenses.submitReport(
-      beta,
-      { Status: 'Submitted', LinkedEventID: 9, flag_missing_receipt: true, missing_receipt_reason: 'The register tape was lost' },
-      [line('Dollar Tree', 9.99, 'Donation receipt books')],
-    );
-    const fsDesk = (await db.expenses.listCouncilQueue(fs, OWN)).filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id);
-    expect(fsDesk).toEqual(expect.arrayContaining([a.report.id, b.report.id]));
+    const [alpha, fs, treasurer, gk] = await Promise.all(['member_alpha', 'fs_user', 'treasurer_user', 'gk_user'].map((u) => signIn(db, u)));
+    // The individual scripts' expense steps come first on the same load.
+    await db.expenses.financialSecretaryAuditOrder(fs, 14);
+    await db.expenses.financialSecretaryAuditOrder(fs, 20);
+    await db.expenses.rejectReport(fs, 15, 'Please add the receipt photo');
+    await db.expenses.treasurerLedgerAudit(treasurer, 17, { budgetLineId: 25, generalLedgerAccountId: 12 });
+    await db.expenses.grandKnightAuthorizeOrder(gk, 19);
+    await db.expenses.recordDisbursement(treasurer, OWN, [16], { CheckNumber: '1201', PayoutDate: '2026-10-12' });
 
-    await db.expenses.financialSecretaryAuditOrder(fs, a.report.id);
-    expect((await db.expenses.rejectReport(fs, b.report.id, 'Please add the receipt photo')).report.Status).toBe('Draft');
-    await db.expenses.submitReport(beta, { id: b.report.id, Status: 'Submitted', LinkedEventID: 9 }, [line('Dollar Tree', 9.99, 'Donation receipt books')]);
-    await db.expenses.financialSecretaryAuditOrder(fs, b.report.id);
-    for (const id of [a.report.id, b.report.id]) {
-      await db.expenses.treasurerLedgerAudit(treasurer, id, { budgetLineId: 25, generalLedgerAccountId: 12 });
-      await db.expenses.grandKnightAuthorizeOrder(gk, id);
-    }
-    await db.expenses.recordDisbursement(treasurer, OWN, [a.report.id], { CheckNumber: '1401', PayoutDate: '2026-10-12' });
-    await db.expenses.recordDisbursement(treasurer, OWN, [b.report.id], { CheckNumber: '1402', PayoutDate: '2026-10-12' });
-    expect((await db.expenses.listUserReports(alpha)).find((r) => r.report.id === a.report.id)?.report.Status).toBe('Reimbursed');
-    expect((await db.expenses.listUserReports(beta)).find((r) => r.report.id === b.report.id)?.report.Status).toBe('Reimbursed');
+    const mine = await db.expenses.submitReport(alpha, { Status: 'Submitted', LinkedEventID: 9 }, [line('Ace Hardware', 18.4, 'Zip ties and sign stakes')]);
+    expect(mine.report.Status).toBe('Submitted');
+    // Gate 1: the payment request on report 21.
+    expect((await db.expenses.listCouncilQueue(fs, OWN)).filter((q) => awaitsWrittenOrder(q.report)).map((q) => q.report.id)).toContain(21);
+    await db.expenses.financialSecretaryAuditOrder(fs, 21);
+    // Gate 2: the ledger coding on report 22.
+    expect((await db.expenses.listTreasurerQueue(treasurer, OWN)).map((q) => q.report.id)).toContain(22);
+    await db.expenses.treasurerLedgerAudit(treasurer, 22, { budgetLineId: 25, generalLedgerAccountId: 13 });
+    // Gate 3: the final release on report 23.
+    expect((await db.expenses.listAuthorizationQueue(gk, OWN)).map((q) => q.report.id)).toContain(23);
+    expect((await db.expenses.grandKnightAuthorizeOrder(gk, 23)).report.Status).toBe('Approved');
+    // Gate 4: the check for report 13, released in September.
+    const queue = await db.expenses.listCouncilQueue(treasurer, OWN);
+    expect(queue.find((q) => q.report.id === 13)?.report.Status).toBe('Approved');
+    await db.expenses.recordDisbursement(treasurer, OWN, [13], { CheckNumber: '1401', PayoutDate: '2026-10-12' });
+    expect((await db.expenses.listCouncilQueue(treasurer, OWN)).find((q) => q.report.id === 13)?.report.Status ?? 'Reimbursed').toBe('Reimbursed');
   });
 
-  it('Flow 3: a live 7-hour report is held, rejected and logged again', async () => {
+  it('Flow 2: Alpha proposes the food bank; the DGK claims request 6, asks for more information and places it on November 3', async () => {
     const db = await makePilot();
-    const [alpha, beta, dgk] = await Promise.all(['member_alpha', 'member_beta', 'dgk_user'].map((u) => signIn(db, u)));
-    expect(isQuarantinedHours(await db.eventTime.logHours(beta, 10, 4))).toBe(false);
-    const held = await db.eventTime.logHours(alpha, 10, 7);
-    expect(isQuarantinedHours(held)).toBe(true);
-    const id = (held as { quarantined: { id: number } }).quarantined.id;
-    expect((await db.volunteerQuarantine.listPending(dgk, OWN)).map((h) => h.row.id)).toContain(id);
-    await db.volunteerQuarantine.reject(dgk, id);
-    expect(isQuarantinedHours(await db.eventTime.logHours(alpha, 10, 4))).toBe(false);
-  });
-
-  it('Flow 5: a live charity request is vetted and placed on the soonest eligible Monthly meeting, then paid after the vote', async () => {
-    const db = await makePilot();
-    const [alpha, fs, gk, treasurer] = await Promise.all(['member_alpha', 'fs_user', 'gk_user', 'treasurer_user'].map((u) => signIn(db, u)));
-    // Facilitator preparation: the year's Monthly meetings.
-    await db.meetings.populateAnnualCadence(gk, OWN, 1, '2026-2027');
+    const [alpha, dgk] = await Promise.all(['member_alpha', 'dgk_user'].map((u) => signIn(db, u)));
+    // Facilitator preparation on the DGK laptop: the year's Monthly meetings.
+    await db.meetings.populateAnnualCadence(dgk, OWN, 1, '2026-2027');
 
     const { request } = await db.charities.submitCharitableRequest(alpha, {
       OrganizationName: 'Cathedral Neighbors Food Bank',
@@ -274,21 +266,27 @@ describe.each(drivers)('$name driver: the live group flows hold true', (d) => {
       SpecificUse: 'Groceries for 30 families',
       Is501c3: true,
     });
-    await db.charities.triageRequestStatus(fs, request.id, { action: 'claim' });
-    await db.charities.openRequestThread(fs, request.id, 'MORE_INFO', 'How many of the 30 families are in our parish?');
-    await db.charities.triageRequestStatus(fs, request.id, { action: 'advance', TargetBudgetLineID: 23 });
-    const { meeting, motion } = await db.charities.routeRequestToNextEligibleAgenda(fs, request.id);
-    expect(meeting).toMatchObject({ Date: '2026-11-03', MeetingTypeID: 1 }); // the first Tuesday at least 10 days after October 12
+    expect(request.RequestStatus).toBe('Submitted');
 
-    // After the session: the council votes, and the Treasurer pays the approved request.
-    await db.meetings.finalizeProposedMotionVote(gk, motion.id, 'Passed');
-    // Sprint 8S Revision 3: the Grand Knight's compliance endorsement comes before the Treasurer's check.
-    await expectRule(db.charities.payApprovedRequest(treasurer, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' }), 'CHARITY_ENDORSEMENT_REQUIRED');
-    await db.charities.endorseApprovedRequest(gk, request.id);
-    await expectRule(db.charities.payApprovedRequest(alpha, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' }), 'FINANCE_OFFICER_REQUIRED');
-    const paid = await db.charities.payApprovedRequest(treasurer, request.id, { CheckNumber: '1501', PayoutDate: '2026-11-04', CharityType: 'Food Security' });
-    expect(paid.disbursement.Amount).toBe(350);
-    expect(paid.request.PaymentOrderId).toBe(paid.disbursement.id);
+    await db.charities.triageRequestStatus(dgk, 6, { action: 'claim' });
+    await db.charities.openRequestThread(dgk, 6, 'MORE_INFO', 'How many of the forty seniors live in our parish?');
+    await db.charities.triageRequestStatus(dgk, 6, { action: 'advance', TargetBudgetLineID: 23 });
+    const { meeting } = await db.charities.routeRequestToNextEligibleAgenda(dgk, 6);
+    expect(meeting).toMatchObject({ Date: '2026-11-03', MeetingTypeID: 1 }); // the first Tuesday at least 10 days after October 12
+  });
+
+  it("Flow 3: Alpha's 7 hours are held on his screen; the DGK rejects the seeded 6.5-hour entry and Alpha's 4 hours log at once", async () => {
+    const db = await makePilot();
+    const [alpha, beta, dgk] = await Promise.all(['member_alpha', 'member_beta', 'dgk_user'].map((u) => signIn(db, u)));
+    // The DGK's individual script decides Beta's entry only.
+    const seeded = await db.volunteerQuarantine.listPending(dgk, OWN);
+    await db.volunteerQuarantine.clear(dgk, seeded.find((h) => h.row.user_id === beta)!.row.id);
+    const alphaSeeded = seeded.find((h) => h.row.user_id === alpha)!;
+    expect(alphaSeeded.row.hours_reported).toBe(6.5);
+
+    expect(isQuarantinedHours(await db.eventTime.logHours(alpha, 10, 7))).toBe(true);
+    expect((await db.volunteerQuarantine.reject(dgk, alphaSeeded.row.id)).clearance_status).toBe('REJECTED');
+    expect(isQuarantinedHours(await db.eventTime.logHours(alpha, 10, 4))).toBe(false);
   });
 });
 
@@ -316,11 +314,10 @@ describe('pilot kit PDFs', () => {
     expect(kit).toContain('Day in the Life');
     expect(kit).toContain('Attendee Feedback Questionnaire');
     expect(kit).not.toMatch(/\.print\(|lpr|os\.startfile/);
-    // Sprint 7I Extension: the group flows create their records live and leave the meeting console out.
+    // Sprint 7I Extension: the group flows leave the meeting console out. Sprint 8S Revision 10: the officers' group steps
+    // work seeded reports (21, 22, 23 and 13), never the ones the individual scripts use (14-20).
     const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('FEEDBACK_RATINGS: tuple'));
-    // Sprint 8L: the charity flow now plays the whole sequence - submission, vetting, the floor debate and hand vote on the
-    // Live Meeting Console, and the check.
-    expect(group).not.toMatch(/Mtgs tab|check in|report 1[4-9]|report 2[0-3]/i);
+    expect(group).not.toMatch(/Mtgs tab|check in|report 1[4-9]|report 20/i);
     // Sprint 8M Extension: Flow 5 is the live vetting only (claim, Request More Info both ways, Place on next agenda);
     // the floor vote and the grant's check happen at the real Monthly meeting, after the session.
     expect(group).not.toContain('Record Hand Ballot Tally');
@@ -328,6 +325,7 @@ describe('pilot kit PDFs', () => {
     expect(group).toContain('Claim & Audit');
     expect(group).toContain('Request More Info');
     expect(group).toContain('Place on next agenda');
+    expect(group).toContain('Advance to vote');
     // Sprint 7I Extension 2: the individual scripts leave the meeting console out too.
     expect(kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'))).not.toMatch(/Live Meeting Console|welcome line/i);
   });
@@ -444,14 +442,35 @@ describe('Sprint 8M Extension pilot kit', () => {
     expect(persona('alpha', 'beta')).toContain('Cash box drop - Saturday lot');
   });
 
-  it('plays six flows: no phone parking collections, Flow 5 vetting only, Flow 6 the parish settlement with check 1404', () => {
+  it('plays three seated flows: the expense pipeline, the charity request and the Flagged Hours Review gate (Sprint 8S Revision 10)', () => {
     const titles = [...group.matchAll(/title='(Flow \d) - ([^']+)'/g)].map((m) => `${m[1]} - ${m[2]}`);
-    expect(titles.map((t) => t.slice(0, 6))).toEqual(['Flow 1', 'Flow 2', 'Flow 3', 'Flow 4', 'Flow 5', 'Flow 6']);
-    expect(titles[4]).toMatch(/vetting/i);
-    expect(titles[5]).toBe('Flow 6 - Parish Fundraiser Revenue Settlement');
-    expect(group).not.toMatch(/Donate tab|Start accepting/);
-    const flow6 = group.slice(group.indexOf("key='parish'"));
-    expect(flow6).toContain('[ 📋 Issue Church Disbursement Request ]');
-    expect(flow6).toContain('Type 1404 in Check number and click Record Payment Made');
+    expect(titles).toEqual([
+      'Flow 1 - The expense report pipeline, gate by gate',
+      'Flow 2 - The charitable donation request workflow',
+      'Flow 3 - The Flagged Hours Review gate',
+    ]);
+    expect(group).not.toMatch(/Donate tab|Start accepting|key='parish'|Switch it on|Save parish split|Parish share \(%\)/);
+    const flow1 = group.slice(group.indexOf("key='expense'"), group.indexOf("key='charity'"));
+    for (const report of ['report 21', 'report 22', 'report 23', 'report 13']) expect(flow1, report).toContain(report);
+    expect(flow1).toContain('check number 1401');
+  });
+
+  it('keeps every persona in his own seat: no shared display, borrowed laptop or mid-session sign-out (Sprint 8S Revision 10)', () => {
+    expect(kit).not.toMatch(/wireless|display laptop|on the display|at the GK laptop|takes the keyboard|sign (?:back )?in beside|sign back in|testadmin@kofc\.org/i);
+    expect(group).not.toMatch(/who='[^']* at the [^']*laptop'|who='[^']* and [^']*'/);
+    expect(kit).toContain("Every persona's own laptop, at his own seat");
+  });
+
+  it("pre-activates the parish split for the Treasurer and lets Beta start on Alpha's signal with the $25.00 filled in (Sprint 8S Revision 10)", () => {
+    const treasurer = persona('treasurer', 'dgk');
+    expect(treasurer).not.toMatch(/Switch it on in Council Wide Settings|Save parish split|type 50 in Parish share/);
+    expect(treasurer).toContain('The split is already on');
+    expect(read('Seed.sql')).toContain('UPDATE [Council] SET [parish_split_enabled] = 1, [parish_split_percentage] = 50.00, [parish_split_gl_line_id] = 16 WHERE [id] = 1;');
+    const historian = persona('historian', 'alpha');
+    expect(historian).not.toMatch(/reports 16, 19 and 22|Charter member/);
+    expect(persona('alpha', 'beta')).toContain('Say "Gate open');
+    const beta = persona('beta', '');
+    expect(beta).toContain('Do nothing until Member Alpha says "Gate open"');
+    expect(beta).toContain('The AMOUNT box already shows 25.00. Do not type.');
   });
 });

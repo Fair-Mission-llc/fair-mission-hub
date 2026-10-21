@@ -1035,11 +1035,14 @@ GO
 
 -- Sprint 8M Core (schema 83): the general ledger line St. Mary's charges the parish's share of a fundraiser to
 -- (GLAccount 16). Sprint 8M Extension: a Revenue line - the parish's share is taken back out of the fundraiser's
--- revenue (a contra-revenue debit). The parish split itself stays off (Council.parish_split_enabled = 0) until an
--- officer switches it on under Council Wide Settings and picks this line; the Treasurer's pilot script does.
+-- revenue (a contra-revenue debit). Sprint 8S Revision 10: St. Mary's 50% parish agreement is pre-activated here, so
+-- the Treasurer's pilot script never opens Council Wide Settings: the split is on at 50.00% against this line (GLAccount
+-- 16). The baseline (no presentation data) keeps the split off.
 INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [ParentAccountID], [IsVirtualGoal], [TargetGoalAmount])
 VALUES
 (1, 'Parish Fundraiser Share', 'Revenue', NULL, 0, 0.00);
+GO
+UPDATE [Council] SET [parish_split_enabled] = 1, [parish_split_percentage] = 50.00, [parish_split_gl_line_id] = 16 WHERE [id] = 1;
 GO
 
 -- Sprint 8M Extension: the first parking weekend's collections for the Parish Parking Event (Event 9), recorded by

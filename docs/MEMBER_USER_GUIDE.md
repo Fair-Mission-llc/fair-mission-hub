@@ -1171,13 +1171,13 @@ The **Start accepting donations** card is the phone's setup drawer. The phone ch
 
 **Start point:** Phone app → **Collect** → **How is the donor giving?**
 
-The phone does not pick a method or fill in an amount. You tap the method and type every amount yourself. The session's standard rate shows under **AMOUNT** as a reminder only.
+The phone does not pick a method. You tap the method. If you typed a standard rate when you started the session, **AMOUNT** already shows that rate. Change it only if the donor gave a different amount.
 
 **Steps:**
 1. Tap the tile for the donor's method, for example **Venmo**.
 2. For a QR method: turn the phone to the donor. Wait for the donor's payment confirmation.
 3. For a QR method: check the amount. Tap **Continue**.
-4. Type the amount in **AMOUNT**, for example `25.00`.
+4. Check the amount in **AMOUNT**. It shows the session's standard rate, for example `25.00`. If the box is empty or the donor gave a different amount, type the amount.
 5. Choose the **DONATION TYPE**.
 6. Optional: fill in **DONOR NAME (OPTIONAL)** and **DESCRIPTION (OPTIONAL)**.
 7. Tap **Record donation**. The gift saves at once.

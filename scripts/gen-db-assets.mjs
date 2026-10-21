@@ -294,8 +294,24 @@ function parseTuples(text, stmt) {
 function parseSeed(sql, tables) {
   const seed = [];
   for (const stmt of splitBatches(sql)) {
+    // Sprint 8S Revision 10: one narrow UPDATE form, for presentation rows that switch a baseline row's setting on -
+    // UPDATE [Table] SET [col] = value, ... WHERE [id] = n
+    const u = stmt.match(/^UPDATE \[([^\]]+)\]\s+SET\s+([\s\S]+?)\s+WHERE\s+\[id\]\s*=\s*(\d+)$/i);
+    if (u) {
+      const [, table, assignments, id] = u;
+      const meta = tables.get(table) ?? fail(`Seed targets unknown table [${table}]`, stmt);
+      const set = {};
+      for (const part of splitTopLevel(assignments)) {
+        const a = part.match(/^\[([^\]]+)\]\s*=\s*([\s\S]+)$/);
+        if (!a) fail('Malformed SET assignment', stmt);
+        if (!meta.columns.some((x) => x.name === a[1])) fail(`Seed column [${table}].[${a[1]}] does not exist`, stmt);
+        set[a[1]] = parseTuples(`(${a[2]})`, stmt)[0][0];
+      }
+      seed.push({ table, columns: [], rows: [], update: { id: Number(id), set } });
+      continue;
+    }
     const m = stmt.match(/^INSERT INTO \[([^\]]+)\]\s*\(([^)]*)\)\s*VALUES\s*([\s\S]+)$/i);
-    if (!m) fail('Unrecognised statement in Seed.sql (only multi-row INSERT ... VALUES is supported)', stmt);
+    if (!m) fail('Unrecognised statement in Seed.sql (only multi-row INSERT ... VALUES and UPDATE ... WHERE [id] = n are supported)', stmt);
     const [, table, cols, values] = m;
     const meta = tables.get(table) ?? fail(`Seed targets unknown table [${table}]`, stmt);
     const columns = bracketNames(cols);
@@ -322,7 +338,11 @@ function splitSeed(sql) {
 const sqlLiteral = (v) => (v === null ? 'NULL' : typeof v === 'number' ? String(v) : `'${v.replace(/'/g, "''")}'`);
 
 function sqliteSeedStatements(seed) {
-  return seed.map(({ table, columns, rows }) => {
+  return seed.map(({ table, columns, rows, update }) => {
+    if (update) {
+      const set = Object.entries(update.set).map(([c, v]) => `[${c}] = ${sqlLiteral(v)}`).join(', ');
+      return `UPDATE [${table}] SET ${set} WHERE [id] = ${update.id};`;
+    }
     const cols = columns.map((c) => `[${c}]`).join(', ');
     const vals = rows.map((r) => `(${columns.map((c) => sqlLiteral(r[c])).join(', ')})`).join(',\n');
     return `INSERT INTO [${table}] (${cols}) VALUES\n${vals};`;
@@ -399,16 +419,18 @@ export type SeedValue = string | number | null;
 export interface SeedTable {
   table: string;
   rows: Record<string, SeedValue>[];
+  /** Sprint 8S Revision 10: an UPDATE of one existing row (rows is then empty). */
+  update?: { id: number; set: Record<string, SeedValue> };
 }
 
 /** Every table in Schema.sql, in creation order. */
 export const TABLES: Record<string, TableMeta> = ${JSON.stringify(meta, null, 2)};
 
 /** Seed rows from Seed.sql, in insertion order. */
-export const SEED_DATA: readonly SeedTable[] = ${JSON.stringify(seed.map(({ table, rows }) => ({ table, rows })), null, 2)};
+export const SEED_DATA: readonly SeedTable[] = ${JSON.stringify(seed.map(({ table, rows, update }) => (update ? { table, rows, update } : { table, rows })), null, 2)};
 
 /** Presentation rows from below Seed.sql's @presentation-data marker, loaded right after SEED_DATA when requested. */
-export const PRESENTATION_SEED_DATA: readonly SeedTable[] = ${JSON.stringify(presentation.map(({ table, rows }) => ({ table, rows })), null, 2)};
+export const PRESENTATION_SEED_DATA: readonly SeedTable[] = ${JSON.stringify(presentation.map(({ table, rows, update }) => (update ? { table, rows, update } : { table, rows })), null, 2)};
 `
   );
 }
