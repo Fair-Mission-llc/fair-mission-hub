@@ -11,6 +11,9 @@
 // "Forgot password?" (from enterEmail or signIn) runs the self-service reset:
 //   forgotPassword ──email──▶ resetCode ──6-digit code──▶ newPassword ──▶ signedIn
 //
+// Sprint 8S Revision 10.3: the seven @stmarys.org pilot personas (PILOT_PERSONA_EMAILS) go enterEmail ──▶ signIn
+// directly, skipping createPassword and its setup code.
+//
 // Sprint 6D: spending the setup code also stores a biometric device key (biometric-login.ts); from then on the email
 // and password prompts offer "Sign In with FaceID / Biometrics" (submitBiometric), which skips the password.
 //
@@ -66,6 +69,23 @@ export async function findCouncilAdminContact(db: DataService, councilNumber: nu
   };
 }
 
+/**
+ * Sprint 8S Revision 10.3: the seven seeded Conference Room Pilot personas (Seed.sql Credentials 28-34) already hold a
+ * password, so their email goes straight to the plain email + password sign-in, never the setup-code screen. Every
+ * other member still needs the welcome email's setup code. Remove this list after the pilot.
+ */
+export const PILOT_PERSONA_EMAILS: readonly string[] = [
+  'gk_user@stmarys.org',
+  'fs_user@stmarys.org',
+  'treasurer_user@stmarys.org',
+  'dgk_user@stmarys.org',
+  'historian_user@stmarys.org',
+  'member_alpha@stmarys.org',
+  'member_beta@stmarys.org',
+];
+
+export const isPilotPersonaEmail = (email: string): boolean => PILOT_PERSONA_EMAILS.includes(email.trim().toLowerCase());
+
 /** The label of the phone password prompt's biometric toggle (Sprint 8P Stage 2). */
 export const BIOMETRIC_TOGGLE_LABEL = '[ 🔘 Enable FaceID / Biometric Login ]';
 
@@ -119,6 +139,8 @@ export class OnboardingController {
         contact: await findCouncilAdminContact(this.deps.db, this.deps.councilNumber),
       });
     }
+    // Sprint 8S Revision 10.3: pilot personas skip the setup-code step (their password is still checked).
+    if (isPilotPersonaEmail(member.Email)) return this.set({ screen: 'signIn', email: member.Email });
     return this.set({ screen: 'createPassword', email: member.Email, firstName: member.MemberFirstName });
   }
 
