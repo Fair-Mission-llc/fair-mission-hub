@@ -38,7 +38,7 @@ import {
   useCouncilGLAccounts,
   useExpenseBudgetLineAssignments,
 } from '@/components/ExpenseParts';
-import { Button, Notice, PageTitle, Panel, Pill } from '@/components/ui';
+import { Button, cx, Notice, PageTitle, Panel, Pill } from '@/components/ui';
 import { formatMoney } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -136,7 +136,7 @@ export function TreasurerDesk() {
     const lineId = inferred?.id ?? null;
     const ready = lineId !== null && accountId !== null;
     return (
-      <span className="inline-flex flex-col items-start gap-2">
+      <span className="inline-flex min-w-0 max-w-full flex-col flex-wrap items-start gap-2">
         <LedgerAccountPicker
           detail={d}
           accounts={ledger.accounts}
@@ -144,7 +144,11 @@ export function TreasurerDesk() {
           disabled={busyId !== null}
           onChange={(id) => setAccountPicks((now) => new Map(now).set(d.report.id, id))}
         />
-        <p aria-live="polite" data-inferred-budget className={inferred ? 'max-w-72 text-sm font-bold text-green' : 'max-w-72 text-sm text-muted'}>
+        <p
+          aria-live="polite"
+          data-inferred-budget
+          className={cx('flex max-w-full flex-wrap whitespace-normal break-words text-sm [overflow-wrap:anywhere]', inferred ? 'font-bold text-green' : 'text-muted')}
+        >
           {accountId !== null && !inferred && !budgetLines.loading
             ? `[ Inferred Budget: the ${budgetLines.fraternalYear} budget has no line for this account ]`
             : inferredBudgetLabel(inferred)}

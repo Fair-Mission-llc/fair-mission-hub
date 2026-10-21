@@ -6,10 +6,12 @@
 //   * filters: several events and meetings at once, a location text and calendar years (matchesAlbumCriteria);
 //   * Smart Albums: a filter saved under a name (media.saveSmartAlbum), reopened with one click, and deleted by whoever
 //     saved it or an Admin (canDeleteSmartAlbum);
-//   * the slideshow: the viewer opens full screen and moves to the next photo every SLIDESHOW_INTERVAL_MS with a fade
+//   * the slideshow: a clicked photo opens the viewer, whose Play slideshow button moves to the next photo every SLIDESHOW_INTERVAL_MS with a fade
 //     (no fade for viewers who ask for reduced motion), and loops back to the first photo after the last one;
 //   * tagged uploads to an event or a meeting (media.uploadToVault) for those who may attach its media
 //     (canAttachEventMedia, canLinkMeetingDrive).
+// Sprint 8S Revision 10.6: the header's 'Play slideshow' button is gone, and a newly saved Smart Album opens as the
+// active filter.
 // Sprint 6R: the upload block asks first what the photos belong to - a past calendar event, a past council meeting (a
 // Christmas party, a campout) or nothing at all. Only events and meetings that have already started are offered.
 // Standalone photos are open to every member of the council (canUploadStandaloneMedia) and carry a year and an
@@ -300,6 +302,8 @@ function AlbumsPanel({
     act(async () => {
       const album = await db.media.saveSmartAlbum(user.memberId, councilId, name, criteria);
       setName('');
+      // Sprint 8S Revision 10.6: the new album opens at once as the active filter in the list.
+      onOpen(album);
       return `Saved the Smart Album "${album.album_name}".`;
     });
   const remove = (album: SmartAlbum) =>
@@ -617,11 +621,6 @@ export function PhotoGallery() {
             <div className="flex items-center gap-2">
               {activeAlbum ? <Pill tone="gold">Album: {activeAlbum.album_name}</Pill> : null}
               <Pill tone="outline">{shown.length === total ? `${total} photo${total === 1 ? '' : 's'}` : `${shown.length} of ${total} photos`}</Pill>
-              {ordered.length > 0 ? (
-                <Button size="sm" onClick={() => setViewer({ index: 0, autoplay: true })}>
-                  ▶ Play slideshow
-                </Button>
-              ) : null}
             </div>
           </div>
           <div id="gallery-panel" role="tabpanel" aria-labelledby={`gallery-tab-${grouping}`} className="flex flex-col gap-6">

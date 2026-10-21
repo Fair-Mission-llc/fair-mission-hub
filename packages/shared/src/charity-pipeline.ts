@@ -29,6 +29,9 @@ type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOffi
 export const CHARITY_REQUEST_STEP_LABEL = '[ 📋 Member Charity Request ]';
 export const CHARITY_ENDORSEMENT_STEP_LABEL = '[ ✍️ FS/GK Compliance Endorsement ]';
 export const CHARITY_SETTLEMENT_STEP_LABEL = '[ ⛪ Treasurer Check Settlement ]';
+/** Sprint 8S Revision 10.6: the working folder of the endorse button on the FS and GK Desks (the workflow drawer is read only). */
+export const CHARITY_ENDORSEMENT_FOLDER_TITLE = 'FS/GK Compliance Endorsements';
+
 /** The endorsement button. */
 export const ENDORSE_CHARITY_REQUEST_LABEL = '✍️ Endorse for payment';
 
@@ -179,11 +182,12 @@ export function buildCharityPipeline(
   const waiting = requests ? own.reduce((sum, stage) => sum + (count(stage) ?? 0), 0) : null;
   const paid = count('paid');
   const ownLabel = own.includes('settlement') ? 'check' : 'endorsement';
+  const workIn = own.includes('settlement') ? 'the Charitable Contribution Matches folder' : `the ${CHARITY_ENDORSEMENT_FOLDER_TITLE} folder`;
   const headline =
     requests === null
       ? 'Loading the council’s charity requests…'
       : waiting
-        ? `${waiting} approved request${waiting === 1 ? '' : 's'} wait${waiting === 1 ? 's' : ''} for your ${ownLabel}. Work ${waiting === 1 ? 'it' : 'them'} below.`
+        ? `${waiting} approved request${waiting === 1 ? '' : 's'} wait${waiting === 1 ? 's' : ''} for your ${ownLabel}. Work ${waiting === 1 ? 'it' : 'them'} in ${workIn}.`
         : current >= 0
           ? `Nothing waits on you. ${counts[current]} request${counts[current] === 1 ? '' : 's'} at ${steps[current].label}.`
           : 'No charity request is open. Every approved request is paid.';

@@ -135,7 +135,7 @@ describe('1. the outgoing charity pipeline (pure)', () => {
     expect(charityPipelineAlert(TREASURER, 'treasurer', OWN, toEndorse)).toBe(false);
   });
 
-  it('mounts the drawer on the FS, Treasurer and GK desks and the console in place', () => {
+  it('mounts the drawer on the FS, Treasurer and GK desks, with endorsement in its own working folder', () => {
     expect(DESK_DRAWERS.filter((d) => d.id === 'donation-workflow').map((d) => [d.desk, d.area])).toEqual([
       ['grand-knight', 'charities/vetting'],
       ['financial-secretary', 'charities/queue'],
@@ -143,8 +143,10 @@ describe('1. the outgoing charity pipeline (pure)', () => {
     ]);
     expect(deskDrawersFor(GK, 'grand-knight', OWN).map((d) => d.id)).toContain('donation-workflow');
     expect(deskDrawersFor(seat(['Trustee 1']), 'grand-knight', OWN).map((d) => d.id)).not.toContain('donation-workflow');
+    // Sprint 8S Revision 10.6: the workflow drawer is read only; the endorse button is in CharityEndorsementDesk.
     const parts = read('apps/web/components/FinanceWorkflowParts.tsx');
-    expect(parts).toContain('<CharityCheckConsole />');
+    expect(parts).not.toContain('<CharityCheckConsole />');
+    expect(parts).toContain('export function CharityEndorsementDesk(');
     expect(parts).toContain('db.charities.endorseApprovedRequest(');
     expect(read('apps/web/components/modules/CharityCheckConsole.tsx')).toContain('chargeableBlock(request, user.memberId)');
   });

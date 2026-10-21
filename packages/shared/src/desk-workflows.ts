@@ -56,6 +56,18 @@ const EXPENSE_STEPS: readonly { key: ExpenseWorkflowStepKey; label: string; when
   { key: 'check', label: 'Check issued', when: 'Treasurer', detail: 'Pay the fully signed sheet by check.', wait: (s) => isPayableExpenseReport(s.report) },
 ];
 
+/** Sprint 8S Revision 10.6: the step a sheet waits at (label and who acts), or null once it is paid or closed. */
+export function expenseWorkflowStepOf(sheet: Sheet): { key: ExpenseWorkflowStepKey; label: string; when: string } | null {
+  const step = EXPENSE_STEPS.find((s) => s.wait(sheet));
+  return step ? { key: step.key, label: step.label, when: step.when } : null;
+}
+
+/** Sprint 8S Revision 10.6: the working folders where each finance desk does its own ER steps (the reference drawer is read only). */
+export const EXPENSE_WORKFLOW_WORK_FOLDERS: Record<FinanceWorkflowDesk, string> = {
+  'financial-secretary': 'the Auditing & Return Queue folder',
+  treasurer: 'the Ledger Line Coder and Expense Report (ER) Settlement folders',
+};
+
 /** The steps each finance desk acts on. */
 export const EXPENSE_WORKFLOW_DESK_STEPS: Record<FinanceWorkflowDesk, readonly ExpenseWorkflowStepKey[]> = {
   'financial-secretary': ['payment-request'],
@@ -85,7 +97,7 @@ export function buildExpenseWorkflow(desk: FinanceWorkflowDesk, queue: readonly 
     queue === null
       ? 'Loading the council’s expense sheets…'
       : waiting
-        ? `${waiting} sheet${waiting === 1 ? '' : 's'} wait${waiting === 1 ? 's' : ''} on your step. Work ${waiting === 1 ? 'it' : 'them'} below without leaving the desk.`
+        ? `${waiting} sheet${waiting === 1 ? '' : 's'} wait${waiting === 1 ? 's' : ''} on your step. Work ${waiting === 1 ? 'it' : 'them'} in ${EXPENSE_WORKFLOW_WORK_FOLDERS[desk]}.`
         : current >= 0
           ? `Nothing waits on you. ${counts[current]} sheet${counts[current] === 1 ? '' : 's'} wait${counts[current] === 1 ? 's' : ''} at ${steps[current].label} (${steps[current].when}).`
           : 'Every sheet is paid. Nothing waits in the expense workflow.';

@@ -31,9 +31,13 @@
 // waiting sheet no longer lights two folders. The Treasurer Desk gains '[ 🔧 Accounting Configuration ]' with the
 // 'Chart of Accounts & GL Setup' folder, and the Financial Secretary's Payment Requests folder is titled
 // 'Auditing & Return Queue' (the same /expenses/audit module the sidebar opens).
+// Sprint 8S Revision 10.6: the reference folders are read-only scoreboards - no form, button or in-place module. The
+// FS/GK endorse button moved out of the Charitable Donation Workflow into its own working folder on the Grand Knight and
+// Financial Secretary Desks, 'FS/GK Compliance Endorsements' (charity-endorsements), which lights and floats while an
+// approved request waits for the reader's endorsement.
 import type { DiaryEntryDetail, ExpenseReportDetail, LegacyYear, SessionUser } from './contract';
 import type { Meeting } from './types';
-import { canEndorseCharityRequest } from './charity-pipeline';
+import { canEndorseCharityRequest, CHARITY_ENDORSEMENT_FOLDER_TITLE } from './charity-pipeline';
 import { CHARITABLE_DONATION_WORKFLOW_TITLE, COUNCIL_ELECTION_WORKFLOW_TITLE, EXPENSE_REPORT_WORKFLOW_TITLE, type FinanceWorkflowDesk } from './desk-workflows';
 import { canRespondToAffiliation } from './council-affiliations';
 import { canReadCouncilGoals, canSetCouncilGoals } from './council-goals';
@@ -91,6 +95,7 @@ export type DeskDrawerId =
   | 'election-workflow'
   | 'er-workflow'
   | 'donation-workflow'
+  | 'charity-endorsements'
   | 'knowledge-archive'
   | 'payment-requests'
   | 'er-routing-track'
@@ -212,6 +217,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'shifts-awaiting-hours', title: 'Shifts Awaiting Hours', summary: 'Volunteers who served but have not logged time', gate: 'executive-audits', rowId: DESK_FOCUS_TARGETS.hours.rowId, alerts: true },
   { desk: 'grand-knight', id: 'access-requests', title: 'Inbound Council Mail Center', summary: 'Access requests from councils not yet on the platform', gate: 'super-admin', rowId: DESK_FOCUS_TARGETS.access.rowId, alerts: true },
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
+  { desk: 'grand-knight', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-charity-endorsements', alerts: true },
   { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },
   { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
   { desk: 'grand-knight', id: 'affiliation-invites', title: 'Affiliation Invites', summary: 'Accept or decline invites from nearby councils', gate: 'affiliations', rowId: 'grand-knight-affiliations' },
@@ -226,6 +232,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'financial-secretary', id: 'er-routing-track', title: 'Expense Report (ER) Routing Track', summary: 'Every open sheet and the signature it waits for', area: 'expenses/queue', rowId: 'drawer-er-routing-track', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'donation-records', title: 'Charitable Donation Records', summary: 'Record, check and correct council donations', area: 'donations', rowId: 'drawer-donation-records', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'church-disbursements', title: 'Church Disbursement Requests', summary: "Record the check for the parish's share", gate: 'always', rowId: 'financial-secretary-church-disbursements', cabinet: 'outbound' },
+  { desk: 'financial-secretary', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/queue', gate: 'charity-endorsement', rowId: 'drawer-fs-charity-endorsements', alerts: true, cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'charity-checks', title: 'Charity Check Issuance Console', summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'form-1295', title: 'Semiannual Audit Form 1295 Center', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'roster-imports', title: 'Excel Roster Imports', summary: 'The roster template and the Supreme roster sync', gate: 'always', rowId: 'drawer-roster-imports', cabinet: 'inbound' },

@@ -297,7 +297,7 @@ PERSONAS: tuple[Persona, ...] = (
             Step(f'{DESKS} > Historian Desk > Google Drive Media Gallery Sync Board', 'Open the drawer. Under Upload Photos choose Past event and the Parish Parking Event, add one photo and upload it.',
                  'The photo appears in the gallery mosaic under the Parish Parking Event.'),
             Step(f'{DESKS} > Historian Desk > Google Drive Media Gallery Sync Board', 'Under Find photos pick the Parish Parking Event, then save the selection as a Smart Album named "Parking 2026".',
-                 'The album is listed under Smart Albums. Click [ 🔀 Back to Desk Blotter ].'),
+                 'Parking 2026 is listed under Smart Albums, highlighted as the active filter, and the gold "Album: Parking 2026" tag shows over the photos. Click [ 🔀 Back to Desk Blotter ].'),
             Step(f'{DESKS} > Historian Desk > Monthly Newsletters', 'In the Monthly Newsletters drawer, write two sentences about the first parking weekend as this month\'s bulletin and save it.',
                  'The bulletin is saved for October 2026.'),
         ),
@@ -409,8 +409,8 @@ GROUP_FLOWS: tuple[Flow, ...] = (
         ),
         after=(
             'The council debates and votes on the request at that Monthly meeting. If it passes, the Grand Knight or Financial '
-            'Secretary endorses it in the Charitable Donation Workflow drawer, and the Treasurer pays it from the Charity Check '
-            'Issuance Console; neither the Shepherd nor the endorser writes the check.'
+            'Secretary endorses it in the FS/GK Compliance Endorsements folder, and the Treasurer pays it from the Charitable '
+            'Contribution Matches folder; neither the Shepherd nor the endorser writes the check.'
         ),
     ),
     Flow(
@@ -424,7 +424,7 @@ GROUP_FLOWS: tuple[Flow, ...] = (
             'Grand Knight decides Alpha\'s seeded 6.5-hour Saturday entry on his.'
         ),
         steps=(
-            Step(HOUR_LEDGER, 'Under Report time on a shift choose Lot attendants - Sunday (October 11) in Shift I worked. Set Hours to 7 and click Save shift hours.',
+            Step(HOUR_LEDGER, 'Under Report time on a shift choose the first Lot attendants - Sunday shift (the day after the first Saturday) in Shift I worked. Set Hours to 7 and click Save shift hours.',
                  'A notice says the 7 hours were sent to leadership review before they count toward your totals.', who='Member Alpha'),
             Step(f'{DESKS} > Grand Knight Desk > Flagged Hours Review', 'Open the Flagged Hours Review drawer. Read Member Alpha\'s Saturday entry (6.5 hours against a 4-hour shift) and its reason, then click Reject & Remove.',
                  'The entry leaves the desk; its 6.5 hours never count.', who='DGK User'),
@@ -460,7 +460,7 @@ FACILITATOR_PREP: tuple[str, ...] = (
     'the same seeded records.',
     'On the Deputy Grand Knight\'s laptop, signed in as DGK User, open Governance > Recurring Meetings and click Populate '
     'the year for 2026-2027 once. Flow 2 needs a Monthly meeting at least 10 days away to place the request on.',
-    f'Hold the session while the {PILOT_EVENT} runs (October 10-31, 2026) so the members can collect for it on their phones. '
+    f'Hold the session while the {PILOT_EVENT} runs. Its three weeks follow the calendar: on load, the app moves the event by whole weeks so the pilot day is the week after its first weekend, and the members can collect for it on their phones. '
     f'Be seated before {GAVEL_TIME}: the gavel opens the session on time.',
     'Have a small bank statement CSV ready for the Treasurer\'s Bank Statement Match-Window step.',
     'Hand Member Beta the large-print pages of the individual scripts.',
@@ -772,7 +772,7 @@ def cover(title: str, subtitle: str, st, generated: str) -> list:
         Paragraph(f'The {SESSION_MINUTES}-minute session: the gavel strikes at {GAVEL_TIME}', st['h2']),
         session_timeline(st),
         Spacer(1, 8),
-        Paragraph(f'The pilot data: the {PILOT_EVENT} (October 10-31, 2026, six Lot attendants shifts, $400.00 collected the first weekend), expense reports 14-23 '
+        Paragraph(f'The pilot data: the {PILOT_EVENT} (three weeks moved to the pilot day, six Lot attendants shifts, $400.00 collected the first weekend), expense reports 14-23 '
                   'waiting on the officers\' desks, charity requests on the vetting board, three prayer intentions and two volunteer '
                   'time entries held for review. Reloading the web portal restores it in the browser; on a phone, clear the app\'s data. The individual and group phases '
                   'run on the same load: the group flows use the seeded records the individual scripts leave untouched.', st['small']),
@@ -1010,7 +1010,7 @@ def poster_financial(output: Path, generated: str) -> None:
         "Parish split: the Treasurer requests the parish's share; the FS pays it by check.",
     ], GOLD)
     note_panel(c, side_x, side_y, side_w, None, 'Charity grants going out', [
-        'After the council votes a grant, the FS or GK endorses it in the Charitable Donation Workflow drawer.',
+        'After the council votes a grant, the FS or GK endorses it in the FS/GK Compliance Endorsements folder.',
         'Treasurer (or FS, if he did not endorse it): Pay approved request, one check for the approved amount.',
         "The grant's budget line is charged; the Shepherd cannot pay it.",
     ], NAVY)
@@ -1038,7 +1038,7 @@ def poster_charity(output: Path, generated: str) -> None:
          'Place on next agenda puts it on the soonest Monthly meeting at least 10 days away, as a proposed motion.'),
         ('5', 'Council vote', 'The members at the meeting', 'Governance > Live Meeting Console',
          'The Recorder\'s hand tally on the console. Decided Passed, Failed or Tabled.'),
-        ('6', 'Endorse and pay', 'FS or GK endorses; another finance officer pays - never the Shepherd', 'Active Desks > Treasurer Desk > Charitable Donation Workflow',
+        ('6', 'Endorse and pay', 'FS or GK endorses; another finance officer pays - never the Shepherd', 'Active Desks > FS/GK Compliance Endorsements, then Treasurer Desk > Charitable Contribution Matches',
          'FS/GK Compliance Endorsement, then Pay approved request: one check for the approved amount, charged to the budget line.'),
         ('7', 'Follow up', 'The Trustees', 'Six months after filing',
          'The Trustees are prompted for a status report on what the grant did.'),

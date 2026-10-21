@@ -868,6 +868,9 @@ GO
 -- The pilot fundraiser (Event 9): the cathedral parking lot on six weekend mornings in October 2026, owned by the GK
 -- persona, open at the gate through October 31. Shifts 9-14; both member personas are signed up for every shift, so
 -- each can log time after a shift and take check donations at the gate while the event is under way.
+-- Sprint 8S Revision 10.6: the dates below are the design dates. When the presentation data loads, both app drivers
+-- move this event, its shifts, its donations and the time held against its shifts by whole weeks so the pilot day
+-- always falls in the event's second week (packages/shared/src/pilot-timeline.ts).
 INSERT INTO [Event] ([EventName], [EventDescription], [OwnerID], [StartDate], [EndDate], [Location], [CategoryID], [FundsRaised-Cash], [FundsRaised-Electronic], [Highlights], [PlannedNumberAttendees], [ActualNumberAttendees], [IsAnnual], [IsMultiDay], [MissionAreaID])
 VALUES
 ('Parish Parking Event', 'Cathedral parking lot fundraiser during the weekend Masses', 28, '2026-10-10', '2026-10-31', 'St. Mary''s Cathedral Parking Lot', 5, 250.00, 150.00, NULL, 150, 0, 0, 1, 3);

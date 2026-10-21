@@ -94,7 +94,8 @@ describe.each(drivers)('$name driver: the Conference Room Pilot personas', (d) =
   it('signs both member personas up for every Parish Parking Event shift', async () => {
     const db = await makePresentation();
     const event = (await db.events.listByCouncil(OWN)).find((e) => e.EventName === 'Parish Parking Event')!;
-    expect(event).toMatchObject({ StartDate: '2026-10-10', EndDate: '2026-10-31', Location: "St. Mary's Cathedral Parking Lot" });
+    // Sprint 8S Revision 10.6: re-anchored by whole weeks to NOW (Sunday 2026-09-20, day 8 of the event: its second weekend).
+    expect(event).toMatchObject({ StartDate: '2026-09-12', EndDate: '2026-10-03', Location: "St. Mary's Cathedral Parking Lot" });
     const shifts = await db.events.listShifts(event.id);
     expect(shifts).toHaveLength(6);
     for (const email of ['member_alpha@stmarys.org', 'member_beta@stmarys.org']) {

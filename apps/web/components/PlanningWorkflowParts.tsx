@@ -12,6 +12,9 @@
 // bar, the step row and a progress wheel - the same layout as the Council Election Workflow and the finance desks'
 // Expense Report (ER) and Charitable Donation Workflows.
 //
+// Sprint 8S Revision 10.6: `readOnly` (the desks' Planning & Budgeting Workflow reference folder) hides every edit and
+// review button; the goals are set and reviewed on Council Wide Settings.
+//
 // LoanerLibrarySharingCard - the council's Cross-Council Loaner Library switch (Council.is_loaner_library_enabled).
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -67,7 +70,7 @@ function GoalTargetBlocks({ targets, spiritual }: { targets: CouncilGoalTargets;
 }
 
 /** The banner and the year's goals and budget status. */
-export function FraternalPlanningWorkflow({ user, council }: { user: SessionUser; council: Council }) {
+export function FraternalPlanningWorkflow({ user, council, readOnly = false }: { user: SessionUser; council: Council; readOnly?: boolean }) {
   const today = useMemo(() => new Date(), []);
   const years = useMemo(() => {
     const upcoming = upcomingFraternalYear(today);
@@ -85,8 +88,8 @@ export function FraternalPlanningWorkflow({ user, council }: { user: SessionUser
   const goalsStatus: PlanningStatus = g ? g.planningStatus : goalsPlanningStatusOf(null, year, today);
   const budgetStatus = budgetPlanningStatusOf(budget.data?.lines ?? []);
   const flow = buildPlanningWorkflow({ fraternalYear: year, today, goalsStatus, budgetStatus });
-  const setter = canSetCouncilGoals(user, council.id);
-  const budgetEditor = canManageBudgetForecast(user, council.id);
+  const setter = !readOnly && canSetCouncilGoals(user, council.id);
+  const budgetEditor = !readOnly && canManageBudgetForecast(user, council.id);
   const targets = g ? (Object.fromEntries(g.metrics.map((m) => [m.key, m.target])) as CouncilGoalTargets) : null;
   const allTargets = targets ? ({ ...Object.fromEntries(COUNCIL_GOAL_KEYS.map((k) => [k, 0])), ...targets } as CouncilGoalTargets) : null;
 

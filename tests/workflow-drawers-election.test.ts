@@ -112,17 +112,19 @@ describe('2. the ER and donation workflow drawers on both finance desks', () => 
     expect(erWorkflowAlert(TREASURER, 'treasurer', [NEEDS_GK])).toBe(false);
   });
 
-  it('works each step in place on both desks', () => {
+  it('keeps both drawers read only on both desks (Sprint 8S Revision 10.6)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks).toContain('<ExpenseReportWorkflow desk="financial-secretary"');
     expect(desks).toContain('<ExpenseReportWorkflow desk="treasurer"');
     // Sprint 8S Revision 3: the donation drawer became the outgoing charity pipeline (tests/outgoing-charity-old-business.test.ts).
     expect(desks).toContain("useCharityPipeline(user, councilId, 'financial-secretary'");
     expect(desks).toContain("useCharityPipeline(user, councilId, 'treasurer'");
+    // Sprint 8S Revision 10.6: the reference drawers mount no working module; each step names its working folder.
     const parts = read('apps/web/components/FinanceWorkflowParts.tsx');
     for (const mounted of ['<PaymentRequestDesk />', '<LedgerLineCoder />', '<ExpenseSettlement />', '<ExpenseRoutingTrack />', '<CharityCheckConsole />']) {
-      expect(parts).toContain(mounted);
+      expect(parts).not.toContain(mounted);
     }
+    expect(parts).toContain('EXPENSE_WORKFLOW_WORK_FOLDERS[desk]');
   });
 });
 

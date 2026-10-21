@@ -9,14 +9,14 @@
 //
 // Sprint 8S Revision 2: renamed from ElectionTracker.tsx. The Grand Knight Desk drawer mounts CouncilElectionWorkflow:
 // the same grid under the Planning & Budgeting Workflow's step-by-step layout (desk-workflows.ts buildElectionWorkflow).
-import Link from 'next/link';
+// Sprint 8S Revision 10.6: that drawer is a read-only Reference Workflows scoreboard - no Nominate buttons, nomination
+// form or Set the ballot link. Members nominate on the Officer Nominations Desk (/elections).
 import { useMemo, useState } from 'react';
 import {
   buildElectionWorkflow,
   describeError,
   formatTimestamp,
   GRAND_KNIGHT_ROLE,
-  canConfigureBallot,
   withNewMemberBadge,
   type BallotSeat,
   type OfficerSeat,
@@ -48,8 +48,8 @@ function SeatStatus({ ballot }: { ballot: BallotSeat | undefined }) {
   return ballot.nominationsOpen ? <Pill tone="navy">Open</Pill> : <Pill tone="outline">Closed</Pill>;
 }
 
-/** One elected office in the grid; open seats are buttons that select the card for the nomination form. */
-function SeatCard({ seat, ballot, selected, onSelect }: { seat: OfficerSeat; ballot: BallotSeat | undefined; selected: boolean; onSelect: () => void }) {
+/** One elected office in the grid; open seats are buttons that select the card for the nomination form (none when read only). */
+function SeatCard({ seat, ballot, selected, onSelect }: { seat: OfficerSeat; ballot: BallotSeat | undefined; selected: boolean; onSelect?: () => void }) {
   const open = ballot?.nominationsOpen === true;
   const nominees = ballot?.nominees ?? [];
   return (
@@ -84,7 +84,7 @@ function SeatCard({ seat, ballot, selected, onSelect }: { seat: OfficerSeat; bal
           <p className="border-t border-line pt-2 text-xs italic">No nominations yet.</p>
         )
       ) : null}
-      {open ? (
+      {open && onSelect ? (
         <Button size="sm" variant={selected ? 'primary' : 'secondary'} aria-pressed={selected} onClick={onSelect} className="mt-auto self-start">
           {selected ? 'Selected' : 'Nominate'}
         </Button>
@@ -182,7 +182,7 @@ function useElectionData(councilId: number) {
 }
 
 /** The nominations grid and form while a window is open, else the closed placeholder. */
-function NominationsBody({ councilId, data, onReload }: { councilId: number; data: ElectionData; onReload: () => Promise<unknown> }) {
+function NominationsBody({ councilId, data, onReload, readOnly = false }: { councilId: number; data: ElectionData; onReload: () => Promise<unknown>; readOnly?: boolean }) {
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const { seats, ballot } = data;
@@ -207,7 +207,9 @@ function NominationsBody({ councilId, data, onReload }: { councilId: number; dat
             {formatTimestamp(b.ballot.NominationsCloseAt)}.
           </p>
         ))}
-        <p className="text-xs text-muted">Pick an open office, then choose the brother Knight you are nominating.</p>
+        <p className="text-xs text-muted">
+          {readOnly ? 'This folder is for reference. Nominate a brother Knight on the Officer Nominations Desk.' : 'Pick an open office, then choose the brother Knight you are nominating.'}
+        </p>
       </div>
       {message ? (
         <div className="mb-4">
@@ -223,13 +225,13 @@ function NominationsBody({ councilId, data, onReload }: { councilId: number; dat
             key={seat.roleId}
             seat={seat}
             ballot={ballot.find((b) => b.roleId === seat.roleId)}
-            selected={seat.roleId === selected?.roleId}
-            onSelect={() => setSelectedRoleId(seat.roleId)}
+            selected={!readOnly && seat.roleId === selected?.roleId}
+            onSelect={readOnly ? undefined : () => setSelectedRoleId(seat.roleId)}
           />
         ))}
       </ul>
 
-      {selected ? (
+      {selected && !readOnly ? (
         <NominationForm
           key={`${councilId}-${selected.roleId}`}
           councilId={councilId}
@@ -262,10 +264,10 @@ export function NominationsDesk() {
 /**
  * Sprint 8S Revision 2: '[ 🗳️ Council Election Workflow ]' on the Grand Knight Desk, in the step-by-step layout of the
  * Planning & Budgeting Workflow drawer (WorkflowParts.tsx): the highlighted action bar, the four steps (the ballot, May
- * nominations, the June vote, the July 1 term - buildElectionWorkflow), the progress wheels, then the nominations grid.
+ * nominations, the June vote, the July 1 term - buildElectionWorkflow), the progress wheels, then the nominations grid,
+ * read only (Sprint 8S Revision 10.6).
  */
 export function CouncilElectionWorkflow() {
-  const user = useUser();
   const scope = useCouncilScope();
   const councilId = scope.councilId;
   const data = useElectionData(councilId);
@@ -275,13 +277,7 @@ export function CouncilElectionWorkflow() {
   const flow = buildElectionWorkflow({ today, electedSeats: data.data.seats.length, ballot: data.data.ballot });
   return (
     <div className="flex flex-col gap-4">
-      <WorkflowActionBar headline={flow.headline}>
-        {canConfigureBallot(user, councilId) ? (
-          <Link href="/council-lookups" className="rounded border-2 border-navy bg-white px-3 py-1 text-sm font-bold underline">
-            Set the ballot
-          </Link>
-        ) : null}
-      </WorkflowActionBar>
+      <WorkflowActionBar headline={flow.headline} />
       <WorkflowStepRow steps={flow.steps} label="Election steps" />
       <WorkflowWheels
         wheels={[
@@ -290,7 +286,7 @@ export function CouncilElectionWorkflow() {
           { label: 'Offices with a nominee', value: flow.nominated, total: flow.onBallot, caption: `${flow.nominated} of ${flow.onBallot} open offices` },
         ]}
       />
-      <NominationsBody councilId={councilId} data={data.data} onReload={data.reload} />
+      <NominationsBody councilId={councilId} data={data.data} onReload={data.reload} readOnly />
     </div>
   );
 }

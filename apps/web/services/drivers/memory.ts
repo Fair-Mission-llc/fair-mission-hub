@@ -763,6 +763,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
+import { PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate } from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -986,6 +987,34 @@ export class MemoryDataService implements DataService {
     await this.init();
   }
 
+  /**
+   * Sprint 8S Revision 10.6: moves the pilot's Parish Parking Event, its shifts, its donations and the shift time entries
+   * held against them by whole weeks so today falls in the event's second week (pilotTimelineOffsetDays).
+   */
+  private anchorPilotTimeline(): void {
+    const event = this.store.rows('Event').find((e) => e.EventName === PILOT_PARKING_EVENT_NAME) as Row | undefined;
+    if (!event) return;
+    const days = pilotTimelineOffsetDays(event.StartDate as string, this.now());
+    if (days === 0) return;
+    const move = (row: Row, column: string) => {
+      if (typeof row[column] === 'string') row[column] = shiftSeedDate(row[column] as string, days);
+    };
+    move(event, 'StartDate');
+    move(event, 'EndDate');
+    const shiftIds = new Set<number>();
+    for (const shift of this.store.rows('Shift') as Row[]) {
+      if (shift.EventID !== event.id) continue;
+      shiftIds.add(shift.id as number);
+      move(shift, 'ShiftDate');
+    }
+    for (const donation of this.store.rows('Donation') as Row[]) if (donation.EventID === event.id) move(donation, 'DonationDate');
+    for (const held of this.store.rows('VolunteerQuarantine') as Row[]) {
+      if (held.activity_type !== 'SHIFT' || !shiftIds.has(held.activity_id as number)) continue;
+      move(held, 'activity_date');
+      move(held, 'date_logged');
+    }
+  }
+
   private async seed(): Promise<void> {
     const load = (data: readonly SeedTable[]) => {
       for (const { table, rows, update } of data) {
@@ -999,7 +1028,10 @@ export class MemoryDataService implements DataService {
       }
     };
     load(SEED_DATA);
-    if (this.presentationData) load(PRESENTATION_SEED_DATA);
+    if (this.presentationData) {
+      load(PRESENTATION_SEED_DATA);
+      this.anchorPilotTimeline();
+    }
 
     // Seed.sql stores dev passwords in plaintext; hash them so signIn only ever sees digests.
     for (const cred of this.store.rows('Credentials')) {

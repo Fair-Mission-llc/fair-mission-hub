@@ -771,6 +771,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
+import { PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate } from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -1112,7 +1113,11 @@ export class SqliteDataService implements DataService {
       await this.createAndSeed(db);
       return db;
     }
-    if (version >= SCHEMA_VERSION && (await this.columnsMatch(db))) return db;
+    if (version >= SCHEMA_VERSION && (await this.columnsMatch(db))) {
+      // A phone installed on an earlier day keeps the pilot event under way today too.
+      if (this.presentationData) await db.withTransactionAsync(() => this.anchorPilotTimeline(db));
+      return db;
+    }
     // An older or structurally different database: CREATE TABLE IF NOT EXISTS would keep the stale tables and the seed
     // INSERTs would throw on the missing columns. Back the file up, wipe it and rebuild from scratch.
     await this.backupDatabase(db);
@@ -1156,7 +1161,10 @@ export class SqliteDataService implements DataService {
     await db.withTransactionAsync(async () => {
       for (const statement of SCHEMA_STATEMENTS) await db.execAsync(statement);
       for (const statement of SEED_STATEMENTS) await db.execAsync(statement);
-      if (this.presentationData) for (const statement of PRESENTATION_SEED_STATEMENTS) await db.execAsync(statement);
+      if (this.presentationData) {
+        for (const statement of PRESENTATION_SEED_STATEMENTS) await db.execAsync(statement);
+        await this.anchorPilotTimeline(db);
+      }
       await this.hashSeededPasswords(db);
       await this.seedDevMember(db);
       await this.seedDevMeetings(db);
@@ -1167,6 +1175,43 @@ export class SqliteDataService implements DataService {
       for (const c of await db.getAllAsync<{ id: number }>('SELECT [id] FROM [Council] ORDER BY [id]')) await this.backfillLeadershipHistory(db, c.id);
       await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION};`);
     });
+  }
+
+  /**
+   * Sprint 8S Revision 10.6: moves the pilot's Parish Parking Event, its shifts, its donations and the shift time entries
+   * held against them by whole weeks so today falls in the event's second week (pilotTimelineOffsetDays).
+   */
+  private async anchorPilotTimeline(db: SQLite.SQLiteDatabase): Promise<void> {
+    const event = await db.getFirstAsync<{ id: number; StartDate: string }>(
+      'SELECT [id], [StartDate] FROM [Event] WHERE [EventName] = ? ORDER BY [id] LIMIT 1',
+      [PILOT_PARKING_EVENT_NAME],
+    );
+    if (!event) return;
+    const days = pilotTimelineOffsetDays(event.StartDate, this.now());
+    if (days === 0) return;
+    const move = async (table: string, columns: string[], where: string, args: (string | number)[]) => {
+      const rows = await db.getAllAsync<Record<string, string | number | null>>(
+        `SELECT [id], ${columns.map((c) => `[${c}]`).join(', ')} FROM [${table}] WHERE ${where}`,
+        args,
+      );
+      for (const row of rows) {
+        const set = columns.filter((c) => typeof row[c] === 'string');
+        if (set.length === 0) continue;
+        await db.runAsync(
+          `UPDATE [${table}] SET ${set.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`,
+          [...set.map((c) => shiftSeedDate(row[c] as string, days)), row.id as number],
+        );
+      }
+    };
+    await move('Event', ['StartDate', 'EndDate'], '[id] = ?', [event.id]);
+    await move('Shift', ['ShiftDate'], '[EventID] = ?', [event.id]);
+    await move('Donation', ['DonationDate'], '[EventID] = ?', [event.id]);
+    await move(
+      'VolunteerQuarantine',
+      ['activity_date', 'date_logged'],
+      "[activity_type] = 'SHIFT' AND [activity_id] IN (SELECT [id] FROM [Shift] WHERE [EventID] = ?)",
+      [event.id],
+    );
   }
 
   private async seedDevMeetings(db: SQLite.SQLiteDatabase): Promise<void> {

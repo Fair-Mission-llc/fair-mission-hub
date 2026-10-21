@@ -145,7 +145,7 @@ import { TreasurerDesk as LedgerLineCoder } from '@/components/modules/LedgerLin
 import { DonationsWorkspace as DonationRecords } from '@/components/modules/DonationRecords';
 import { CouncilElectionWorkflow } from '@/components/modules/ElectionWorkflow';
 import { ChartOfAccountsSetup } from '@/components/modules/ChartOfAccountsSetup';
-import { CharityPipelineWorkflow, ExpenseReportWorkflow } from '@/components/FinanceWorkflowParts';
+import { CharityEndorsementDesk, CharityPipelineWorkflow, ExpenseReportWorkflow } from '@/components/FinanceWorkflowParts';
 import { AuditQueue as ExpenseRoutingTrack } from '@/components/modules/ExpenseRoutingTrack';
 import { KnowledgeArchive } from '@/components/modules/KnowledgeArchive';
 import { AuditDesk as PaymentRequestDesk } from '@/components/modules/PaymentRequestDesk';
@@ -516,23 +516,24 @@ function useCharityPipeline(user: SessionUser, councilId: number, desk: CharityP
     alert: rows ? charityPipelineAlert(user, desk, councilId, rows) : false,
     alertText: desk === 'treasurer' ? 'Endorsed charity requests waiting for your check' : 'Approved charity requests waiting for your endorsement',
   };
-  const drawer = <CharityPipelineWorkflow desk={desk} user={user} councilId={councilId} requests={rows} error={requests.error} onChanged={requests.reload} />;
-  return { status, drawer, reload: requests.reload };
+  const drawer = <CharityPipelineWorkflow desk={desk} requests={rows} error={requests.error} />;
+  // Sprint 8S Revision 10.6: the FS/GK Compliance Endorsements working folder reads the same requests.
+  const endorsements = <CharityEndorsementDesk user={user} councilId={councilId} requests={rows} error={requests.error} onChanged={requests.reload} />;
+  return { status, drawer, endorsements, reload: requests.reload };
 }
 
-/** The Planning & Budgeting Workflow drawer: the council's planning banner and goals (FraternalPlanningWorkflow). */
+/**
+ * The Planning & Budgeting Workflow drawer: the council's planning banner and goals (FraternalPlanningWorkflow). Sprint 8S
+ * Revision 10.6: read only - the goals are set and reviewed on Council Wide Settings.
+ */
 function PlanningBudgetingDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
   const council = useLoad(() => db.councils.get(councilId), [councilId]);
   return (
     <>
       {council.error ? <Notice tone="error">{council.error}</Notice> : null}
-      {council.data ? <FraternalPlanningWorkflow key={council.data.id} user={user} council={council.data} /> : council.loading ? <p className="text-sm">Loading…</p> : null}
+      {council.data ? <FraternalPlanningWorkflow key={council.data.id} user={user} council={council.data} readOnly /> : council.loading ? <p className="text-sm">Loading…</p> : null}
       <p className="text-sm">
-        The final budget vote stays on the{' '}
-        <Link href="/budget" className="font-bold underline">
-          Annual Budget Planner
-        </Link>
-        .
+        This folder is for reference. Set and review the goals on Council Wide Settings; the final budget vote stays on the Annual Budget Planner.
       </p>
     </>
   );
@@ -687,7 +688,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   const reviewHeld = has('flagged-hours') && flags.feature_volunteer_quarantine;
   const readsHours = has('shifts-awaiting-hours');
   const readsMail = has('access-requests');
-  const charity = useCharityPipeline(user, councilId, 'grand-knight', has('donation-workflow'));
+  const charity = useCharityPipeline(user, councilId, 'grand-knight', has('donation-workflow') || has('charity-endorsements'));
   const queue = useLoad(() => db.expenses.listAuthorizationQueue(user.memberId, councilId), [user.memberId, councilId]);
   const audits = useLoad(async () => {
     const [held, awaiting, council, requests] = await Promise.all([
@@ -725,6 +726,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return { count: a?.hours ?? null, alert: (a?.overdue ?? 0) > 0, alertText: `${a?.overdue ?? 0} past the first reminder` };
             case 'access-requests':
               return { count: a?.requests ?? null, alert: (a?.requests ?? 0) > 0, alertText: 'Access requests to review' };
+            case 'charity-endorsements':
+              return charity.status;
             case 'donation-workflow':
               return charity.status;
             default:
@@ -748,6 +751,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return <InboundMailCenter />;
             case 'vetting-board':
               return <CharityVettingBoard />;
+            case 'charity-endorsements':
+              return charity.endorsements;
             case 'donation-workflow':
               return charity.drawer;
             case 'council-goals':
@@ -791,7 +796,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
   const waiting = all.filter((d) => awaitsWrittenOrder(d.report));
   const alert = fsPaymentRequestAlert(user, all);
   const erWaiting = waiting.length;
-  const charity = useCharityPipeline(user, councilId, 'financial-secretary', drawers.some((d) => d.id === 'donation-workflow'));
+  const charity = useCharityPipeline(user, councilId, 'financial-secretary', drawers.some((d) => d.id === 'donation-workflow' || d.id === 'charity-endorsements'));
   return (
     <div className="flex flex-col gap-4">
       {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
@@ -803,7 +808,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
             ? { count: queue.data ? waiting.length : null, alert }
             : spec.id === 'er-workflow'
               ? { count: queue.data ? erWaiting : null, alert: erWorkflowAlert(user, 'financial-secretary', all), alertText: 'Payment requests waiting for your signature' }
-              : spec.id === 'donation-workflow'
+              : spec.id === 'donation-workflow' || spec.id === 'charity-endorsements'
                 ? charity.status
                 : spec.id === 'er-routing-track'
                   ? { count: queue.data ? all.length : null }
@@ -819,6 +824,8 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
               return <PaymentRequestDesk />;
             case 'er-workflow':
               return <ExpenseReportWorkflow desk="financial-secretary" user={user} queue={queue.data ?? null} />;
+            case 'charity-endorsements':
+              return charity.endorsements;
             case 'donation-workflow':
               return charity.drawer;
             case 'er-routing-track':

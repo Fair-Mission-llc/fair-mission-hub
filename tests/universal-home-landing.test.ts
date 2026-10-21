@@ -342,7 +342,7 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
     const donation = generated.slice(generated.indexOf('"Donation": ['), generated.indexOf(']', generated.indexOf('"Donation": [')));
     expect(donation).toContain('"revenue_gl_account_id"');
     const driver = read('apps/mobile/services/drivers/sqlite.ts');
-    expect(driver).toContain('if (version >= SCHEMA_VERSION && (await this.columnsMatch(db))) return db;');
+    expect(driver).toContain('if (version >= SCHEMA_VERSION && (await this.columnsMatch(db))) {');
     expect(driver.indexOf('await this.backupDatabase(db);')).toBeLessThan(driver.indexOf('await SQLite.deleteDatabaseAsync(DB_NAME);\n    const fresh'));
     expect(driver).toContain('SQLite.backupDatabaseAsync({ sourceDatabase: db, destDatabase: dest })');
   });
