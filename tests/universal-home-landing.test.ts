@@ -206,7 +206,7 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
       ['home', []],
       ['member', []],
     ]);
-    expect(map.phoneTabs.map((t) => t.tab)).toEqual(['Home', 'Mtgs', 'Signup', 'Report', 'Donate']);
+    expect(map.phoneTabs.map((t) => t.tab)).toEqual(['Home', 'Mtgs', 'Signup', 'Report', 'Collect']);
   });
 
   it('unlocks the full depth for officers and Super Admins', () => {
@@ -223,7 +223,7 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
   });
 
   it('follows the feature flags for the phone tabs', () => {
-    expect(navigationGuideMap(plain, { ...ALL_FEATURES_ON, flag_fundraising_inflow: false }).phoneTabs.map((t) => t.tab)).not.toContain('Donate');
+    expect(navigationGuideMap(plain, { ...ALL_FEATURES_ON, flag_fundraising_inflow: false }).phoneTabs.map((t) => t.tab)).not.toContain('Collect');
   });
 
   it('renders as collapsible blocks with only the overview open', () => {

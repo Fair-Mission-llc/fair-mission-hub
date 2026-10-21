@@ -71,7 +71,7 @@ The phone app has five tabs at the bottom of the screen. A gold bar marks the op
 | **Mtgs** | Answer meeting invitations and read meeting agendas. |
 | **Signup** | Find shifts in the next 30 days and sign up. |
 | **Report** | Log hours for a council activity or for a shift. |
-| **Donate** | Record cash, card, QR-code and item donations. |
+| **Collect** | Record cash, card, QR-code and item donations. |
 
 The navy header at the top of the phone has two more controls.
 
@@ -79,7 +79,7 @@ The navy header at the top of the phone has two more controls.
 - **Your name** opens **Settings**. **Settings** holds the large text switch and **Sign out**.
 
 > **Council modules:** your council can switch off some modules. A switched-off module has no tab and no menu link.
-> The **Mtgs**, **Signup** and **Donate** tabs can be switched off. The **Home** and **Report** tabs always show.
+> The **Mtgs**, **Signup** and **Collect** tabs can be switched off. The **Home** and **Report** tabs always show.
 
 ### 1.4 Web portal sidebar
 
@@ -1120,13 +1120,13 @@ A **General** report has no window.
 ## 7. Take donations at an event
 
 > **Before you start**
-> - **Access:** any active member. The **Donate** tab shows only when your council keeps the **Fundraising inflow** module on.
+> - **Access:** any active member. The **Collect** tab shows only when your council keeps the **Fundraising inflow** module on.
 > - **Data loss:** **Record donation** and each gate-intake tap add a gift to the council's records at once.
 > - **Data loss:** you cannot delete a donation on the phone. Only the Treasurer, the Financial Secretary or an Admin corrects a donation.
 
 ### Concept: event sessions and methods
 
-The **Donate** tab links donations to an event. You start a session for the event. Every donation then goes to that event.
+The **Collect** tab links donations to an event. You start a session for the event. Every donation then goes to that event.
 A donation without a session is a standalone donation.
 
 | Tile hint | Methods | What happens |
@@ -1142,12 +1142,12 @@ A donation without a session is a standalone donation.
 
 **Goal:** Link the next donations to one event.
 
-**Start point:** Phone app → **Donate** tab.
+**Start point:** Phone app → **Collect** tab.
 
 The **Start accepting donations** card is the phone's setup drawer. The phone chooses nothing for you. No event and no donation type is selected when the card opens. You choose each one yourself.
 
 **Steps:**
-1. Tap **Start accepting for an event**.
+1. Tap **Start collecting for event**.
 2. Choose the event in **EVENT**.
 3. Choose the type in **DONATION TYPE**, for example **Parking**.
 4. Optional: type the standard rate in **STANDARD RATE (OPTIONAL)**, for example `25.00` for the parking rate.
@@ -1169,7 +1169,7 @@ The **Start accepting donations** card is the phone's setup drawer. The phone ch
 
 **Goal:** Record one donor's gift.
 
-**Start point:** Phone app → **Donate** → **How is the donor giving?**
+**Start point:** Phone app → **Collect** → **How is the donor giving?**
 
 The phone does not pick a method or fill in an amount. You tap the method and type every amount yourself. The session's standard rate shows under **AMOUNT** as a reminder only.
 
@@ -1213,7 +1213,7 @@ The phone does not pick a method or fill in an amount. You tap the method and ty
 
 **Goal:** Record a gift by paper check, with the number printed on the check.
 
-**Start point:** Phone app → **Donate** → **How is the donor giving?**
+**Start point:** Phone app → **Collect** → **How is the donor giving?**
 
 **Steps:**
 1. Tap the **Check** tile.
@@ -1238,7 +1238,7 @@ The phone does not pick a method or fill in an amount. You tap the method and ty
 
 **Goal:** Record donated goods.
 
-**Start point:** Phone app → **Donate** → **Physical items** tile.
+**Start point:** Phone app → **Collect** → **Physical items** tile.
 
 **Steps:**
 1. Describe the items in **WHAT WAS DONATED**. The field is required.
@@ -1260,7 +1260,7 @@ The phone does not pick a method or fill in an amount. You tap the method and ty
 
 **Goal:** Record cash and card gifts quickly at an event gate.
 
-**Start point:** Phone app → **Donate** → the **ACCEPTING DONATIONS** card.
+**Start point:** Phone app → **Collect** → the **ACCEPTING DONATIONS** card.
 
 **Steps:**
 1. Turn on **🎬 Start Active Intake Session**. The intake opens for every phone on the event.
@@ -1286,7 +1286,7 @@ The phone does not pick a method or fill in an amount. You tap the method and ty
 
 **Goal:** Record the cash box of a shift as one consolidated donation.
 
-**Start point:** Phone app → **Donate** → the **ACCEPTING DONATIONS** card.
+**Start point:** Phone app → **Collect** → the **ACCEPTING DONATIONS** card.
 
 **Steps:**
 1. Count the cash in the cash box.
@@ -1308,7 +1308,7 @@ The phone does not pick a method or fill in an amount. You tap the method and ty
 
 **Goal:** End the event link on this phone.
 
-**Start point:** Phone app → **Donate** → the **ACCEPTING DONATIONS** card.
+**Start point:** Phone app → **Collect** → the **ACCEPTING DONATIONS** card.
 
 **Steps:**
 1. Tap **Stop accepting – the event is over**.
@@ -1601,7 +1601,7 @@ The drawers show only when your council uses the Faith Center.
 | The gold agenda highlight does not move | The phone lost its connection. | Check your data or Wi-Fi connection. |
 | *"Locked. Submission closed …"* on an expense | The 30-day expense window is closed. | Contact the Financial Secretary. |
 | QR code missing | The council has no image for the method. | Take cash or card. Tell your council Admin. |
-| Event missing from **Donate** | The event is not at the gate yet. | Wait until 2 hours before the first shift, by default. |
+| Event missing from **Collect** | The event is not at the gate yet. | Wait until 2 hours before the first shift, by default. |
 | *"You are … m from the meeting hall, outside the … m check-in area. …"* | Your phone is outside the meeting circle. | Type the meeting PIN (5.5). |
 | *"That meeting PIN is not correct. …"* | The PIN is wrong. | Ask the Grand Knight for the PIN (5.5). |
 | *"Enter the check number printed on the check."* | A check donation has no check number. | Enter the number printed on the check (7.2.1). |

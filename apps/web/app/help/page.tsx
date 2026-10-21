@@ -145,7 +145,7 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
       {
         q: 'How do I take donations at an event?',
         a: [
-          'On the phone, open Donate → Start accepting for an event, choose the event and any default amount, type or description, and tap Start.',
+          'On the phone, open Collect → Start collecting for event, choose the event and any default amount, type or description, and tap Start.',
           'For each donor, tap the method tile (Cash, Credit Card, a QR method or Physical items), fill in the form and tap Record donation. Tap Stop accepting when the event is over.',
         ],
       },

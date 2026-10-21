@@ -51,7 +51,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   meetings: { href: '/meetings', label: 'Meeting Center', hint: 'Meetings, invitations, minutes' },
   'meetings/cadence': {
     href: '/meetings/cadence',
-    label: 'Annual Cadence Manager',
+    label: 'Recurring Meetings',
     hint: 'Standing meeting patterns and the annual calendar',
     restrictedTo: 'the Grand Knight, the Deputy Grand Knight and Admins',
   },

@@ -488,7 +488,7 @@ function DonateScreenBody() {
               <AppText variant="title" accessibilityRole="header">
                 Active Multi-Donation Event Intake
               </AppText>
-              <Button title="Start accepting for an event" onPress={() => setStarting(true)} />
+              <Button title="Start collecting for event" onPress={() => setStarting(true)} />
             </Card>
           )}
 

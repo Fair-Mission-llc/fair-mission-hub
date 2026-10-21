@@ -277,7 +277,7 @@ function CadenceEngine() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Cadence Engine</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>Recurring Meetings</PageTitle>
       {!allowed ? (
         <Notice tone="error">Only the council&apos;s Admins and Grand Knight, or a Super Admin, manage its meeting cadence.</Notice>
       ) : (

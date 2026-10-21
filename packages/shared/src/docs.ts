@@ -166,7 +166,7 @@ export function docTitle(slug: string, markdown: string): string {
 // =========================================================================
 
 /** The five tabs of the phone app's bottom bar, left to right (MEMBER_USER_GUIDE.md section 1.3). */
-export const PHONE_TABS = ['Home', 'Mtgs', 'Signup', 'Report', 'Donate'] as const;
+export const PHONE_TABS = ['Home', 'Mtgs', 'Signup', 'Report', 'Collect'] as const;
 export type PhoneTab = (typeof PHONE_TABS)[number];
 
 /** One row of a task's Common problems table. */

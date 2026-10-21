@@ -106,7 +106,7 @@ The built-in groups are All Members and Active Officers (`DISTRIBUTION_GROUPS`).
 | Mark or clear anyone's no-show | — | — | — | — | ✅ | — |
 | Take meeting attendance and attach minutes | 👤 ⁵ | 👤 ⁵ | ✅ | ✅ | ✅ | ✅ |
 | Edit Meeting Agenda Templates (Council Lookups) | — | — | — | — | ✅ | ✅ |
-| Manage meeting cadences and populate the annual calendar (Cadence Engine) | — | — | — | — | ✅ | ✅ |
+| Manage meeting cadences and populate the annual calendar (Recurring Meetings) | — | — | — | — | ✅ | ✅ |
 | No-show and awaiting-hours audits (dashboard) | — | — | ✅ ⁷ | ✅ ⁷ | ✅ | ✅ ⁷ |
 | Monthly executive summary and Faith-in-Action mission tracking (dashboard) | — | — | ✅ | ✅ | ✅ | ✅ ⁷ |
 

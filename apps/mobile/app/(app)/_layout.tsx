@@ -1,9 +1,10 @@
 // The signed-in shell: navy header with the council banner, and five bottom tabs in the portal's pillar order (Sprint 6Z):
-// Home, then Mtgs (Governance), Signup and Report (Faith In Action), and Donate (Finances).
+// Home, then Mtgs (Governance), Signup and Report (Faith In Action), and Collect (Finances).
 // The selected tab is a navy block with a gold bar and a bold gold label (gold on navy ~6.4:1; gold is never
 // text on white, see the shared theme), so the active choice reads at a glance. Messages is no longer a tab (Sprint 5X-Mobile): the header's
 // envelope opens it and carries the unread badge.
-// Sprint 6A: a tab whose module the council's feature flags switch off (Signup, Mtgs, Donate) is hidden entirely.
+// Sprint 6A: a tab whose module the council's feature flags switch off (Signup, Mtgs, Collect) is hidden entirely.
+// Sprint 8S Revision 7: the Donate tab reads 'Collect' (display only; the route stays donate).
 // The gold bar floats over the top edge of the navy block so it never pushes the label down; the label sits centred
 // in a tap space of TAB_HEIGHT, and the bar grows by the device's bottom inset so the home indicator doesn't eat it.
 // Sprint 6C: in the large text layout the bar is pitch black with a thick gold top edge, every tab is a touchTarget
@@ -96,7 +97,7 @@ export default function AppLayout() {
         <Tabs.Screen name="meetings" options={tab('Mtgs', 'meetings')} />
         <Tabs.Screen name="shifts" options={tab('Signup', 'shifts')} />
         <Tabs.Screen name="log" options={tab('Report')} />
-        <Tabs.Screen name="donate" options={tab('Donate', 'donate')} />
+        <Tabs.Screen name="donate" options={tab('Collect', 'donate')} />
         {/* Opened from the header envelope; not a tab of its own. */}
         <Tabs.Screen name="messages" options={{ ...tab('Messages'), href: null }} />
         {/* Opened from a meeting card on Home; not a tab of its own. */}

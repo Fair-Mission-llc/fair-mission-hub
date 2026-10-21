@@ -43,7 +43,8 @@ describe('drawers on every officer desk', () => {
     expect(recorder[0]).toMatchObject({ id: 'minutes-archive', title: 'Historical Meeting Minutes Archive', featured: true });
     expect(recorder.map((d) => d.id)).toEqual(expect.arrayContaining(['minutes-entry', 'live-meeting', 'motions-ledger']));
     expect(DESK_DRAWERS.filter((d) => d.featured).map((d) => d.id)).toEqual(['minutes-archive']);
-    expect(read('apps/web/components/DeskDrawers.tsx')).toContain("spec.featured && 'md:col-span-2 xl:col-span-3'");
+    // Sprint 8S Revision 7: the featured folder leads the spine (gold-tinted, starred) instead of spanning a grid row.
+    expect(read('apps/web/components/DeskDrawers.tsx')).toContain("spec.featured && 'bg-gold/10'");
   });
 
   it('leads the Historian Desk with the Fraternal Diary Entry Logs reader', () => {

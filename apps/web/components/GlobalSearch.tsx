@@ -4,6 +4,8 @@
 // open the Affiliated Roster, and always offers the Online Help Center and the Interactive Help Desk with the words
 // carried over. Events and members load once, the first time the input gets focus, so pages that never search pay
 // nothing.
+// Sprint 8S Revision 7: every query passes the reader's clearance mask (portalAreas), so restricted finance, payables and
+// configuration pages never show to a seat that does not clear them.
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
@@ -68,6 +70,7 @@ export function GlobalSearch() {
         members: data?.members,
         eventHref: areas.has('events') ? '/events' : '/calendar',
         memberHref: areas.has('members') ? '/members' : undefined,
+        areas,
       }),
     [query, pages, data, areas],
   );

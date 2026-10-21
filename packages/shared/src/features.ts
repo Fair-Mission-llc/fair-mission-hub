@@ -53,7 +53,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   flag_mobile_elections: { label: 'Officer elections', hint: 'Officer nominations and the appointed leadership matrix' },
   flag_fundraising_inflow: {
     label: 'Fundraising inflow',
-    hint: 'Recorded donations, the phone app Donate tab: event point-of-sale, card and QR collections, gate intake drawers',
+    hint: 'Recorded donations, the phone app Collect tab: event point-of-sale, card and QR collections, gate intake drawers',
   },
   flag_charity_proposals: { label: 'Charity proposals', hint: 'Member charity grant proposals and the vetting desk that tracks them' },
   flag_complex_shifts: { label: 'Event shifts', hint: 'The event planner, shift sign-ups and shift hour reports' },

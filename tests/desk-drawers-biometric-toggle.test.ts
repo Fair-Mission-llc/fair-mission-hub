@@ -220,7 +220,8 @@ describe.each(drivers)('$name driver: the biometric toggle', (d) => {
 describe('the guides', () => {
   it('document the drawers, the alert boundary and the biometric toggle', () => {
     const admin = read('docs/ADMIN_USER_GUIDE.md');
-    expect(admin).toContain('### 19.3.2 Concept: action drawers and the alert boundary');
+    // Sprint 8S Revision 7: the section now explains the filing spine and the Desk Blotter stage.
+    expect(admin).toContain('### 19.3.2 Concept: the filing spine, the Desk Blotter and the alert boundary');
     expect(admin).toContain('**[ 🔀 Back to Desk Blotter ]**');
     expect(admin).not.toContain('Release approved expenses on the full desk');
     expect(admin).not.toContain('Verify & sign on the full desk');

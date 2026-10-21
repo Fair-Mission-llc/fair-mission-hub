@@ -141,7 +141,7 @@ The categories group the links by the work you do. A link can sit in a different
 | --- | --- | --- | --- | --- |
 | **Visual Master Calendar** | Faith In Action | Every member | Events, shifts, meetings and birthdays by date, in mission colours | 20.4 |
 | **Event Planner** | Faith In Action | Event planners, Admins | Event dates, shifts and sign-up targets | 5 |
-| **Annual Cadence Manager** | Governance | Officers, Admins | The year's meeting pattern | 4.4 |
+| **Recurring Meetings** | Governance | Officers, Admins | The year's meeting pattern | 4.4 |
 | **Meeting Center** | Governance | Every member | Meetings, invitations and minutes | 4 |
 | **Live Meeting Console** | Governance | Officers, Admins | The live agenda, check-ins, ballots and hand tallies | 4.1 |
 
@@ -310,7 +310,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Pillar | Links, in sidebar order |
 | --- | --- |
-| **Governance** | Live Meeting Console, Annual Cadence Manager, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
+| **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
 | **Faith In Action** | Standalone Activities, Home, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
 | **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Trustee Audit Desk, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Projections |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
@@ -371,7 +371,7 @@ The settings marked **Not used yet** on the page are saved for future features (
 | **Mtgs** | Answer meeting invitations and read agendas | Yes, with **Meeting management** |
 | **Signup** | Find shifts in the next 30 days and sign up | Yes, with **Event shifts** |
 | **Report** | Log hours for a council activity or a shift | No |
-| **Donate** | Record cash, card, QR-code and item donations | Yes, with **Fundraising inflow** |
+| **Collect** | Record cash, card, QR-code and item donations | Yes, with **Fundraising inflow** |
 
 The navy header of the phone holds the **envelope** (messages) and **your name** (**Settings**, large text and **Sign out**). The member guide explains each phone task.
 
@@ -434,10 +434,10 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 | Flag column | Label in the Feature Flags Control Center | Web pages hidden when off | Phone items hidden when off |
 | --- | --- | --- | --- |
 | `flag_mobile_elections` | **Officer elections** | Council Officer Nominations, Appointed Leadership Matrix | None |
-| `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Donate** |
+| `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
 | `flag_complex_shifts` | **Event shifts** | Event Planner, the shift tabs of the Member Actions Hub | **Signup**, and the shift mode of **Report** |
-| `flag_meeting_management` | **Meeting management** | Meeting Center, Annual Cadence Manager, Live Meeting Console | **Mtgs** |
+| `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console | **Mtgs** |
 | `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit, Treasurer Ledger Audit Desk, GK Expense Authorize, Bulk Check Payments Made | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
@@ -564,7 +564,7 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 
 **Goal:** Create the fraternal year's regular meetings in one step.
 
-**Start point:** Sidebar → Governance → **Annual Cadence Manager**.
+**Start point:** Sidebar → Governance → **Recurring Meetings**.
 
 **Steps:**
 1. Select **Add cadence**.
@@ -575,7 +575,7 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 6. Choose the **Fraternal year**. Select **Populate the year**.
 
 <!-- KEEP_IMAGE: annual cadence manager capture -->
-![Annual Cadence Manager (/meetings/cadence)](../generated/dashboard_visual_catalog/meetings_cadence.png)
+![Recurring Meetings (/meetings/cadence)](../generated/dashboard_visual_catalog/meetings_cadence.png)
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** The platform creates one meeting per month, July through June. Each meeting lasts 120 minutes.
@@ -2254,7 +2254,7 @@ The card counts the rows that are on, for example *"14 of 17 deployed"*. The mat
 | **Extra hours allowed past a scheduled shift** | 1.0 hour | 0 to 8, in quarter hours | The shift padding rule (section 15.3) |
 | **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **🔍 Check for Inactive Members** (section 14.9) |
 | **Days back a member may log volunteer time** | 90 days | 7 to 730 | The logging window. A member may log shift time and activity time this many days back. |
-| **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Donate** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
+| **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Collect** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
 | **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | The **Recorder Desk** counts down to the due date: the meeting's last day plus this number. Minutes not published by then show as overdue. |
 | **Days of notice before a special election** | 60 days | 1 to 365 | **Not used yet.** A mid-year nomination stays open for 14 days. |
 
@@ -2462,7 +2462,7 @@ A donation by check counts in the cash column of the event, because the council 
 
 A donation by check now records the number printed on the check. The number helps the Financial Secretary match each check to the bank deposit.
 
-- On the phone, the **Donate** tab shows a **Check** tile when the council turned Check on. The Check form has a **CHECK NUMBER (REQUIRED)** field.
+- On the phone, the **Collect** tab shows a **Check** tile when the council turned Check on. The Check form has a **CHECK NUMBER (REQUIRED)** field.
 - On the web, the **Donations History** form shows a **Check number** field when **Check** is the method.
 - A donation by check cannot be saved without a check number. A donation by any other method cannot have a check number.
 
@@ -2472,7 +2472,7 @@ A donation by check now records the number printed on the check. The number help
 
 **Goal:** Record a check donation with its check number.
 
-**Start point:** Phone → **Donate** tab.
+**Start point:** Phone → **Collect** tab.
 
 **Steps:**
 1. Tap the **Check** tile.
@@ -2897,7 +2897,7 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 | **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 19.3.2), with **Approved Expenses** first. | None. You work inside the drawers. |
 | **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 19.3.2), with **Payment Requests** first. | None. You work inside the drawers. |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches** first. | None. You work inside the drawers. |
-| **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** across the top row. | None. You work inside the drawers. |
+| **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** first on the spine. | None. You work inside the drawers. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The desk blotter, with the **Fraternal Diary Entry Logs** first. | None. You work inside the drawers. |
 | **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
@@ -2921,17 +2921,26 @@ A drawer shows only to a reader who may open the module. A reader who may not op
 
 The Deputy Grand Knight (DGK) gets the same **Grand Knight Desk** drawers as the GK.
 
-### 19.3.2 Concept: action drawers and the alert boundary
+### 19.3.2 Concept: the filing spine, the Desk Blotter and the alert boundary
 
-Every officer desk is a desk blotter: the **Grand Knight Desk**, the **Financial Secretary Desk**, the **Treasurer Desk**, the **Recorder Desk** and the **Historian Desk**. A desk blotter is a grid of drawer tiles. Each tile shows a module name, one line about the module and, for a queue, the number of sheets that wait.
+Every officer desk is a split-view console: the **Grand Knight Desk**, the **Financial Secretary Desk**, the **Treasurer Desk**, the **Recorder Desk** and the **Historian Desk**. The console has two parts:
 
-Select a tile. The drawer slides out from the right side of the screen, over the desk. The full module works inside the drawer. You sign, verify and look up records in the drawer. You do not go to another page.
+- **The filing spine** (the left quarter of the desk). The spine is a flat list of folder links, one for each module. A folder shows the module name and, for a queue, the number of sheets that wait. No folder is inside another folder.
+- **The Desk Blotter** (the right three quarters of the desk). The folder that you select opens here. The full module works on the blotter. You sign, verify and look up records on the blotter. You do not go to another page.
 
-To close a drawer, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the drawer. You can also select **Close**, select the dimmed desk, or push **Esc**.
+The spine has this order from the top:
 
-**Alert boundary:** a tile with a thick red border and a red glow has work that waits for you. The tile also shows a red line that names the work, for example *"🔴 Waiting for your signature"*. The desk checks the queues again every 30 seconds.
+1. **Priority: waiting on you.** Every folder with work that waits for you moves to the top of the spine, inside a red box. Each of these folders has a thick red border.
+2. **The cabinets** (the **Financial Secretary Desk** and the **Treasurer Desk** only). Two cabinet blocks show, one above the other:
+   - **[ 📥 Inbound Operations ]**: work that comes in to you. For example, payment requests, coding, cash box counts, donation records and bank matches.
+   - **[ 📤 Outbound Operations ]**: money and reports that go out. For example, checks, charity matches, Church Disbursement Requests and the Form 1295.
+3. **The other folders.** On the **Grand Knight Desk**, the **Recorder Desk** and the **Historian Desk**, the other folders show in one flat list.
 
-| Desk | Tile with the alert boundary | The red border shows when |
+To close a folder, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the blotter. You can also select **Close** or push **Esc**.
+
+**Alert boundary:** a folder with a thick red border and a red glow has work that waits for you. It moves to the top of the spine. The folder also shows a red line that names the work, for example *"🔴 Waiting for your signature"*. The desk checks the queues again every 30 seconds.
+
+| Desk | Folder with the alert boundary | The red border shows when |
 | --- | --- | --- |
 | **Grand Knight Desk** | **Approved Expenses** | A sheet in the release queue waits for your final release, and you may sign it. A sheet that you submitted, ordered or coded does not light the border. |
 | **Financial Secretary Desk** | **Payment Requests** | A sheet waits for its payment request, and you may sign it. Your own sheet does not light the border. |
@@ -4005,7 +4014,7 @@ Four figures show at the top of the panel: **Events awaiting the count**, **Logg
 
 **Goal:** Close the event's donation intake at the end of the event.
 
-**Start point:** Phone → **Donate** tab → the **ACCEPTING DONATIONS** card.
+**Start point:** Phone → **Collect** tab → the **ACCEPTING DONATIONS** card.
 
 **Steps:**
 1. Record the last donation, for example the cash box drop.
@@ -4214,6 +4223,8 @@ Type 2 or more letters. A list of results opens under the search bar. The result
 
 Each kind shows at most 5 results.
 
+**Restricted pages:** each time you type, the search reads the permissions of your role again. The finance pages (the general ledger, the balance sheet, the finance dashboard and the Trustee audit), the payment desks (**FS Expense Audit**, **GK Expense Authorize**, **Leadership Auditing Queue** and **Bulk Check Payments Made**), **Donations History**, the Supreme roster sync, and the council and platform settings pages are restricted. The search shows a restricted page only when your role can open that page. **Annual Budget Projections** is not restricted: every member can read the budget.
+
 ### 26.2 Find a page, an event, a member or a help answer
 
 > **Who can do this:** every signed-in member. Member results show only for readers of the **Affiliated Roster**.
@@ -4325,7 +4336,7 @@ Select a link name to open that page. Select a desk name to open that desk tab o
 ## Appendix: QR code files
 
 The two onboarding codes are in `apps/web/public/assets/images/qr/`. Print or project the codes for new members.
-The phone **Donate** screen shows the collection codes. The phone shows the council's image link first.
+The phone **Collect** screen shows the collection codes. The phone shows the council's image link first.
 When the link is missing or broken, the phone shows the code that ships with the app.
 
 To put a real code in place, replace the file. Keep the file name.

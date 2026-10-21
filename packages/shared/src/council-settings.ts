@@ -458,14 +458,14 @@ export const PLATFORM_SETTING_RULES: Record<PlatformSettingName, SettingRule> = 
   },
   cadence_invitation_horizon_days: {
     label: 'Days before a scheduled meeting that invitations appear',
-    hint: "Invitations to the meetings that Meeting Cadence builds reach members' meeting lists this many days before each meeting.",
+    hint: "Invitations to the meetings that Recurring Meetings builds reach members' meeting lists this many days before each meeting.",
     min: 1,
     max: 60,
     unit: 'days',
     group: 'reminders',
     inUse: true,
     help:
-      "Used when a council builds its year of meetings on Meeting Cadence. Each meeting's invitations stay hidden from members until this " +
+      "Used when a council builds its year of meetings on Recurring Meetings. Each meeting's invitations stay hidden from members until this " +
       'many days before the meeting, so a year of invitations does not crowd the phone. The new number applies to meetings built after you ' +
       'save it. Meetings already built keep their release dates. Applies to every council.',
   },

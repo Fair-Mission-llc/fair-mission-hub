@@ -113,7 +113,7 @@ export const PHONE_TAB_SUMMARIES: Record<PhoneTab, { summary: string; route: Mob
   Mtgs: { summary: 'Answer meeting invitations and read the agendas.', route: 'meetings' },
   Signup: { summary: 'Find shifts in the next 30 days and sign up.', route: 'shifts' },
   Report: { summary: 'Log hours for a council activity or a shift.', route: 'log' },
-  Donate: { summary: 'Record cash, card, QR-code and item donations.', route: 'donate' },
+  Collect: { summary: 'Record cash, card, QR-code and item donations.', route: 'donate' },
 };
 
 export type NavigationMapDepth = 'summary' | 'full';
