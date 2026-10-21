@@ -187,6 +187,20 @@ describe.each(drivers)('$name driver: the pilot scripts hold true', (d) => {
     // Beta reports 9 hours on the 4-hour Sunday shift (Shift 10): it is held for review.
     expect(isQuarantinedHours(await db.eventTime.logHours(who.member_beta!, 10, 9))).toBe(true);
   });
+
+  it("Sprint 8S Revision 9: the members' phone tap grid logs Alpha's hour of Planning and Beta's two hours of Ushering directly", async () => {
+    const db = await makePilot();
+    const who = await ids(db);
+    const activities = await db.activities.listByCouncil(OWN);
+    const idOf = (name: string) => activities.find((a) => a.ActivityName === name)!.id;
+    const today = '2026-10-12';
+    for (const [member, name, taps] of [[who.member_alpha!, 'Planning', 4], [who.member_beta!, 'Ushering', 8]] as const) {
+      let last: Awaited<ReturnType<typeof db.activityTime.addQuarterHour>> | null = null;
+      for (let i = 0; i < taps; i += 1) last = await db.activityTime.addQuarterHour(member, idOf(name), today);
+      expect(isQuarantinedHours(last!), name).toBe(false);
+      expect((last as { Hours: number }).Hours, name).toBe(taps / 4);
+    }
+  });
 });
 
 // Sprint 7I Extension: the group script's flows create every record live; these replay them on the pilot day.
@@ -358,17 +372,36 @@ describe('Sprint 8L pilot kit', () => {
       expect(personas, folder).toContain(folder);
   });
 
-  it('keeps every worksheet and poster web-only: no phone app, Expo Go or phone tabs (Sprint 8S Revision 8)', () => {
-    expect(kit).not.toMatch(/phones?|smartphone|Expo Go|Collect tab|Report tab|Donate tab|tap/i);
-    expect(kit).toContain("HOUR_LEDGER = 'Member Actions Hub > Hour ledger tab'");
+  it('puts Alpha and Beta on their phones in the individual phase and keeps the group phase web-only (Sprint 8S Revision 9)', () => {
     for (const key of ['alpha', 'beta']) {
       const steps = personas.slice(personas.indexOf(`key='${key}'`), key === 'alpha' ? personas.indexOf("key='beta'") : undefined);
-      expect(steps, key).toContain('Step(HOUR_LEDGER');
-      expect(steps, key).toContain("device='Laptop (web portal)");
-      expect(steps, key).not.toMatch(/Venmo|Record donation|Conclude Event Session/);
+      expect(steps, key).toContain('Step(SIGN_IN_PHONE');
+      expect(steps, key).toContain('Phone > Collect tab > Start collecting for event');
+      expect(steps, key).toContain('the Venmo tile yourself');
+      expect(steps, key).toMatch(/type 25.00 in STANDARD RATE/i);
+      expect(steps, key).toContain('Under Tap an activity: 15 minutes per tap');
+      expect(steps, key).toContain('Slide to Log Hours');
+      expect(steps, key).toContain('Phone > Home > My expense reports');
+      expect(steps, key).toContain('Tap Submit for approval.');
     }
-    const flow2 = group.slice(group.indexOf("key='hours'"), group.indexOf("key='returned'"));
-    expect(flow2.match(/Step\(HOUR_LEDGER/g)).toHaveLength(2);
+    // The officers' scripts and every group flow stay on the laptops.
+    for (const key of ['gk', 'fs', 'treasurer', 'dgk', 'historian']) {
+      const next = ['gk', 'fs', 'treasurer', 'dgk', 'historian', 'alpha'][['gk', 'fs', 'treasurer', 'dgk', 'historian'].indexOf(key) + 1];
+      expect(personas.slice(personas.indexOf(`key='${key}'`), personas.indexOf(`key='${next}'`)), key).not.toMatch(/\bphones?\b|Phone >|\btap\b/i);
+    }
+    const flows = group.slice(0, group.indexOf('# Sprint 8S Revision 8: the Live Meeting session'));
+    expect(flows).not.toMatch(/\bphones?\b|smartphone|Expo Go|Collect tab|Report tab|Donate tab|\btap\b/i);
+    expect(flows.match(/Step\(HOUR_LEDGER/g)).toHaveLength(2);
+    expect(kit).toContain('Synchronized Group Workflow (web only)');
+    expect(kit).toContain('Individual Desk Coordinate Phase (mobile and web)');
+    expect(kit).not.toMatch(/Expo Go|smartphone/i);
+  });
+
+  it('has Member Alpha log the cash box drop, then conclude the session (Sprint 8N)', () => {
+    const alpha = personas.slice(personas.indexOf("key='alpha'"), personas.indexOf("key='beta'"));
+    const at = (text: string) => alpha.indexOf(text);
+    expect(at('type 180.00 in AMOUNT')).toBeGreaterThan(at('tap the Venmo tile yourself'));
+    expect(at('[ 🛑 Conclude Event Session & Lock Logs ]')).toBeGreaterThan(at('type 180.00 in AMOUNT'));
   });
 
   it("reviews the budget sheet on the Treasurer's script and prints Member Beta's pages in large type", () => {
@@ -388,7 +421,7 @@ describe('Sprint 8L pilot kit', () => {
 describe('Sprint 8M Extension pilot kit', () => {
   const kit = read('scripts/pilot_kit_pdf.py');
   const personas = kit.slice(kit.indexOf('PERSONAS: tuple'), kit.indexOf('GROUP_FLOWS: tuple'));
-  const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('# Sprint 8S Revision 8: the web-only Live Meeting session'));
+  const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('# Sprint 8S Revision 8: the Live Meeting session'));
   const persona = (key: string, next: string) => personas.slice(personas.indexOf(`key='${key}'`), next ? personas.indexOf(`key='${next}'`) : undefined);
 
   it("frees the Treasurer's script from the Grand Knight and adds the Parish Revenue Split Console chapter", () => {
@@ -401,13 +434,14 @@ describe('Sprint 8M Extension pilot kit', () => {
     expect(treasurer).toContain('$400.00 x 50%');
   });
 
-  it('keeps check logging and donations off both volunteer scripts (web-only since Sprint 8S Revision 8)', () => {
+  it("keeps check logging off both volunteer scripts: Venmo at $25.00, and Alpha's $180 cash box drop", () => {
     for (const [key, next] of [['alpha', 'beta'], ['beta', '']] as const) {
       const steps = persona(key, next);
-      expect(steps, key).not.toMatch(/Check tile|CHECK NUMBER|by check|Venmo|Cash tile/i);
-      expect(steps, key).toContain('Save shift hours');
+      expect(steps, key).not.toMatch(/Check tile|CHECK NUMBER|by check/i);
+      expect(steps, key).toContain('Venmo tile yourself');
+      expect(steps, key).toContain('25.00');
     }
-    expect(persona('alpha', 'beta')).toContain('Dollar Tree, $12.00, chalk for lot lane markings');
+    expect(persona('alpha', 'beta')).toContain('Cash box drop - Saturday lot');
   });
 
   it('plays six flows: no phone parking collections, Flow 5 vetting only, Flow 6 the parish settlement with check 1404', () => {
