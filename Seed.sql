@@ -865,8 +865,8 @@ VALUES
 (20, 34); -- Member
 GO
 
--- The pilot fundraiser (Event 9): the cathedral parking lot on six weekend mornings in October 2026, owned by the GK
--- persona, open at the gate through October 31. Shifts 9-14; both member personas are signed up for every shift, so
+-- The pilot fundraiser (Event 9): the cathedral parking lot on six weekend mornings and one Wednesday afternoon in October 2026, owned by the GK
+-- persona, open at the gate through October 31. Shifts 9-15; both member personas are signed up for every shift, so
 -- each can log time after a shift and take check donations at the gate while the event is under way.
 -- Sprint 8S Revision 10.6: the dates below are the design dates. When the presentation data loads, both app drivers
 -- move this event, its shifts, its donations and the time held against its shifts by whole weeks so the pilot day
@@ -886,7 +886,11 @@ VALUES
 ('Lot attendants - Saturday', 'Direct cars, collect parking donations, take checks', '2026-10-17', '08:00:00', '12:00:00', 9, 2, 2),
 ('Lot attendants - Sunday', 'Direct cars, collect parking donations, take checks', '2026-10-18', '07:30:00', '11:30:00', 9, 2, 2),
 ('Lot attendants - Saturday', 'Direct cars, collect parking donations, take checks', '2026-10-24', '08:00:00', '12:00:00', 9, 2, 2),
-('Lot attendants - Sunday', 'Direct cars, collect parking donations, take checks', '2026-10-25', '07:30:00', '11:30:00', 9, 2, 2);
+('Lot attendants - Sunday', 'Direct cars, collect parking donations, take checks', '2026-10-25', '07:30:00', '11:30:00', 9, 2, 2),
+-- Sprint 8S Revision 10.7: Shift 15, a Wednesday afternoon-to-night slot. The timeline anchor puts every pilot day 2-8
+-- days after the first Saturday, so a Wednesday pilot day is always this shift's day and the phone sees a volunteer
+-- slot under way. Appended last so Shifts 9-14 keep their ids.
+('Lot attendants - Wednesday', 'Weekday evening Masses: direct cars, collect parking donations, take checks', '2026-10-14', '12:00:00', '23:30:00', 9, 2, 2);
 GO
 INSERT INTO [EventSignup] ([ShiftID], [MemberID], [NoShow])
 VALUES
@@ -895,7 +899,8 @@ VALUES
 (11, 33, 0), (11, 34, 0),
 (12, 33, 0), (12, 34, 0),
 (13, 33, 0), (13, 34, 0),
-(14, 33, 0), (14, 34, 0);
+(14, 33, 0), (14, 34, 0),
+(15, 33, 0), (15, 34, 0);
 GO
 
 -- Six expense sheets in the approval pipeline (ExpenseReport 14-19): 14-15 wait for the FS persona's written order,

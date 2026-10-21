@@ -97,11 +97,11 @@ describe.each(drivers)('$name driver: the Conference Room Pilot personas', (d) =
     // Sprint 8S Revision 10.6: re-anchored by whole weeks to NOW (Sunday 2026-09-20, day 8 of the event: its second weekend).
     expect(event).toMatchObject({ StartDate: '2026-09-12', EndDate: '2026-10-03', Location: "St. Mary's Cathedral Parking Lot" });
     const shifts = await db.events.listShifts(event.id);
-    expect(shifts).toHaveLength(6);
+    expect(shifts).toHaveLength(7); // Sprint 8S Revision 10.7: six weekend shifts + the Wednesday slot
     for (const email of ['member_alpha@stmarys.org', 'member_beta@stmarys.org']) {
       const member = (await db.auth.signIn(email, PASSWORD))!;
       const mine = (await db.events.listMemberShifts(member.memberId)).filter((s) => s.event.id === event.id);
-      expect(mine, email).toHaveLength(6);
+      expect(mine, email).toHaveLength(7);
     }
   });
 });

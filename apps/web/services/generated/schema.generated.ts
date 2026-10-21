@@ -12480,6 +12480,16 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "EventID": 9,
         "MinNumberVolunteers": 2,
         "NumberVolunteersSignedUp": 2
+      },
+      {
+        "ShiftName": "Lot attendants - Wednesday",
+        "ShiftDescription": "Weekday evening Masses: direct cars, collect parking donations, take checks",
+        "ShiftDate": "2026-10-14",
+        "StartTime": "12:00:00",
+        "EndTime": "23:30:00",
+        "EventID": 9,
+        "MinNumberVolunteers": 2,
+        "NumberVolunteersSignedUp": 2
       }
     ]
   },
@@ -12543,6 +12553,16 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
       },
       {
         "ShiftID": 14,
+        "MemberID": 34,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 15,
+        "MemberID": 33,
+        "NoShow": 0
+      },
+      {
+        "ShiftID": 15,
         "MemberID": 34,
         "NoShow": 0
       }

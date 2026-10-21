@@ -16,7 +16,9 @@ import {
   isEventAtGate,
   pilotTimelineOffsetDays,
   PILOT_PARKING_EVENT_NAME,
+  shiftEnd,
   shiftSeedDate,
+  shiftStart,
   toIsoDate,
   type DataService,
 } from '@kofc/shared';
@@ -81,7 +83,12 @@ describe.each(makers)('$name driver: the parking event on game day', (d) => {
     const event = (await db.events.listByCouncil(OWN)).find((e) => e.EventName === PILOT_PARKING_EVENT_NAME)!;
     expect(event).toMatchObject({ StartDate: '2026-10-17', EndDate: '2026-11-07', collection_status: 'OPEN' });
     const shifts = await db.events.listShifts(event.id);
-    expect(shifts.map((s) => s.ShiftDate)).toEqual(['2026-10-17', '2026-10-18', '2026-10-24', '2026-10-25', '2026-10-31', '2026-11-01']);
+    // Sprint 8S Revision 10.7: Shift 15, the Wednesday 12:00 PM-11:30 PM slot, lands on game day itself.
+    expect(shifts.map((s) => s.ShiftDate).sort()).toEqual(['2026-10-17', '2026-10-18', '2026-10-21', '2026-10-24', '2026-10-25', '2026-10-31', '2026-11-01']);
+    const wednesday = shifts.find((s) => s.ShiftDate === '2026-10-21')!;
+    expect(wednesday).toMatchObject({ ShiftName: 'Lot attendants - Wednesday', StartTime: '12:00:00', EndTime: '23:30:00' });
+    expect(shiftStart(wednesday).getTime()).toBeLessThanOrEqual(GAME_DAY.getTime());
+    expect(shiftEnd(wednesday).getTime()).toBeGreaterThan(GAME_DAY.getTime());
     // The phone Collect tab offers only events at the gate (donate.tsx).
     expect(isEventAtGate(event, shifts, GAME_DAY)).toBe(true);
     const donations = await db.donations.list(OWN, { eventId: event.id });
