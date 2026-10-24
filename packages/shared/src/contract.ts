@@ -122,6 +122,7 @@ import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from '.
 import type { CouncilWideSettings } from './council-settings';
 import type { BulletinLayoutInput, LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { OldBusinessItem } from './old-business';
+import type { GLSplitProfile, GLSplitProfileInput } from './gl-splits';
 import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeofenceChanges } from './geofence';
 import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './council-goals';
@@ -4098,6 +4099,19 @@ export interface DataService {
      * written when it rejects.
      */
     batchCodeDonations(actorId: number, councilId: number, input: BatchCodingInput): Promise<BatchCodingResult>;
+    /**
+     * Sprint 9 Revision 6.0 (gl-splits.ts): the council's Split Accounts and their destinations, for the ledger's readers
+     * (assertMayReadGeneralLedger). Rejects MEMBER_NOT_FOUND, COUNCIL_ACCESS_DENIED and INVALID_INPUT for an unknown council.
+     */
+    listGLSplitProfiles(actorId: number, councilId: number): Promise<GLSplitProfile[]>;
+    /**
+     * Sprint 9 Revision 6.0: makes the account a Split Account with the given destinations and shares, changes its
+     * destinations, or (isSplitAccount false) makes it an ordinary account again, removing its destinations. Postings
+     * already made are not changed. The council's Treasurer or a Super Admin only (TREASURER_REQUIRED,
+     * COUNCIL_ACCESS_DENIED); INVALID_INPUT for a profile cleanGLSplitProfile refuses. Resolves to every profile of
+     * the council afterwards.
+     */
+    setGLSplitProfile(actorId: number, councilId: number, accountId: number, input: GLSplitProfileInput): Promise<GLSplitProfile[]>;
     /**
      * Sprint 8N: the Cash Box Audit Closure Panel (buildCashAuditBoard) - each event's logged cash, collection status and
      * closed count, with the variance metrics shown above the fold. The general ledger readers

@@ -4,10 +4,11 @@
 // normal-side balance, virtual goals indented under their bank account. Every account name opens the drill-down drawer
 // (finance.getAccountLedger): every line ever posted to it with its date, description, check number, linked event and
 // running balance, and each line's whole multi-line posting. Same readers as the Financial Management Center
-// (canReadGeneralLedger).
+// (canReadGeneralLedger). Sprint 9 Revision 6.0: a Split Account carries a tag; the Treasurer edits its profile on the
+// Treasurer Desk's Chart of Accounts & GL Setup folder.
 import Link from 'next/link';
 import { useState } from 'react';
-import { GL_ACCOUNT_TYPE_LABELS, GL_ACCOUNT_TYPES, type GLAccount, type GLAccountType } from '@kofc/shared';
+import { GL_ACCOUNT_TYPE_LABELS, GL_ACCOUNT_TYPES, GL_SPLIT_ACCOUNT_LABEL, isSplitAccount, type GLAccount, type GLAccountType } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { AccountLedgerDrawer, flattenChart, Money } from '@/components/FinanceParts';
 import { Empty, Notice, PageTitle, Pill, Table, Td } from '@/components/ui';
@@ -79,6 +80,7 @@ function LedgerSpreadsheet() {
                             {n.account.AccountName}
                           </button>
                           {n.account.IsVirtualGoal === 1 ? <Pill tone="gold">Virtual goal</Pill> : null}
+                          {isSplitAccount(n.account) ? <Pill tone="navy">{GL_SPLIT_ACCOUNT_LABEL}</Pill> : null}
                         </span>
                       </Td>
                       <Td className="text-right">

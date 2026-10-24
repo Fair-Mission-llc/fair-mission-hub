@@ -464,6 +464,10 @@ import {
   isCouncilWideList,
   isListVisibleTo,
   assertMayRunEventIntake,
+  buildGLSplitProfiles,
+  cleanGLSplitProfile,
+  type GLAccountSplitAllocation,
+  type GLSplitProfile,
   agendaAlreadyStructured,
   agendaLineNotFound,
   assertAgendaLineRef,
@@ -6437,7 +6441,7 @@ export class MemoryDataService implements DataService {
       return s.transaction(() => {
         assertMayCodeExpenseLedger(this.memberWriteActor(s, actorId), councilId, `code donations for council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
-        const plan = planBatchCoding(councilId, this.batchCodingRows(s, councilId), this.glAccounts(s, councilId), input, this.now());
+        const plan = planBatchCoding(councilId, this.batchCodingRows(s, councilId), this.glAccounts(s, councilId), input, this.now(), this.glSplitProfiles(s, councilId));
         assertLedgerPeriodsOpen(plan.lines, this.councilAudits(s, councilId));
         const batchId = this.insertJournalLines(s, councilId, plan.lines)[0]!.TransactionID as string;
         const stamp = { revenue_gl_account_id: plan.revenueAccount.id, coding_batch_id: batchId, coded_by_member_id: actorId, coded_at: toTimestamp(this.now()) };
@@ -6450,7 +6454,31 @@ export class MemoryDataService implements DataService {
           total: plan.total,
           revenueAccountId: plan.revenueAccount.id,
           revenueAccountName: plan.revenueAccount.AccountName,
+          splits: plan.splits,
         };
+      });
+    },
+
+    listGLSplitProfiles: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayReadGeneralLedger(this.memberWriteActor(s, actorId), councilId, `read the split accounts of council ${councilId}`);
+      this.assertCouncilsExist(s, [councilId]);
+      return this.glSplitProfiles(s, councilId);
+    },
+
+    setGLSplitProfile: async (actorId, councilId, accountId, input) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayCodeExpenseLedger(this.memberWriteActor(s, actorId), councilId, `change the split accounts of council ${councilId}`);
+        this.assertCouncilsExist(s, [councilId]);
+        const destinations = cleanGLSplitProfile(councilId, accountId, input, this.glAccounts(s, councilId), this.glSplitAllocations(s, councilId));
+        s.remove('GLAccountSplitAllocation', (r) => r.source_gl_account_id === accountId);
+        for (const d of destinations) {
+          s.insert('GLAccountSplitAllocation', { source_gl_account_id: accountId, destination_gl_account_id: d.destinationAccountId, split_percentage: d.percentage });
+        }
+        const account = s.rows('GLAccount').find((a) => a.id === accountId)!;
+        account.is_split_account = destinations.length > 0 ? 1 : 0;
+        return this.glSplitProfiles(s, councilId);
       });
     },
 
@@ -6747,6 +6775,19 @@ export class MemoryDataService implements DataService {
 
   private glAccounts(s: MemoryStore, councilId: number): GLAccount[] {
     return s.rows('GLAccount').filter((a) => a.CouncilID === councilId).map((a) => ({ ...a }) as unknown as GLAccount);
+  }
+
+  /** Sprint 9 Revision 6.0: the split allocation rows whose split account belongs to the council. */
+  private glSplitAllocations(s: MemoryStore, councilId: number): GLAccountSplitAllocation[] {
+    const own = new Set(s.rows('GLAccount').filter((a) => a.CouncilID === councilId).map((a) => a.id));
+    return s
+      .rows('GLAccountSplitAllocation')
+      .filter((r) => own.has(r.source_gl_account_id))
+      .map((r) => ({ ...r }) as unknown as GLAccountSplitAllocation);
+  }
+
+  private glSplitProfiles(s: MemoryStore, councilId: number): GLSplitProfile[] {
+    return buildGLSplitProfiles(councilId, this.glAccounts(s, councilId), this.glSplitAllocations(s, councilId));
   }
 
   private glAccount(s: MemoryStore, accountId: number): GLAccount | null {

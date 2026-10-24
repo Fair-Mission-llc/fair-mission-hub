@@ -52,6 +52,8 @@ export * from './media-vault';
 export * from './treasurer-desk';
 export * from './member-lifecycle';
 export * from './volunteer-quarantine';
+export * from './gl-splits';
+export * from './budget-category-charts';
 export * from './council-settings';
 export * from './navigation-guide';
 export * from './platform-access';

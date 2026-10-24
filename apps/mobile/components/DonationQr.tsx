@@ -2,6 +2,7 @@
 // (Specifications: "present the QR code on the member's phone"). The image lives in blob storage; until a
 // council uploads one (the dev seed stores placeholder:// links), or if it fails to load, a framed notice
 // says so instead of an empty box, so the member knows to take the payment another way.
+// Sprint 9 Revision 6.0: under the heading, the account the donor pays into (payee, merchantAccountLine).
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { AppText } from '@/components/ui';
@@ -12,7 +13,7 @@ const LOADABLE = /^(https?:|data:image\/|file:)/i;
 /** True when a council's QR link is one the phone can load: not null, blank or a dev-seed placeholder:// link. */
 export const isLoadableQrUrl = (url: string | null): url is string => url !== null && LOADABLE.test(url.trim());
 
-export function DonationQr({ url, methodName }: { url: string | null; methodName: string }) {
+export function DonationQr({ url, methodName, payee }: { url: string | null; methodName: string; payee: string }) {
   const { color, radius, space } = useTheme();
   const [failed, setFailed] = useState(false);
   const usable = isLoadableQrUrl(url) && !failed;
@@ -25,6 +26,9 @@ export function DonationQr({ url, methodName }: { url: string | null; methodName
     >
       <AppText variant="heading" style={{ fontSize: 20, lineHeight: 26 }}>
         Scan to pay with {methodName}
+      </AppText>
+      <AppText variant="title" style={{ textAlign: 'center' }}>
+        {payee}
       </AppText>
       {usable ? (
         <Image source={{ uri: url }} onError={() => setFailed(true)} resizeMode="contain" style={{ width: '100%', aspectRatio: 1, maxWidth: 320 }} />

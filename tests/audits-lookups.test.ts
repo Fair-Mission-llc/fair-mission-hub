@@ -205,7 +205,8 @@ describe('council lookup save planning', () => {
     expect(() => planCouncilLookupSave('CouncilDonationMethod', OWN, methods, [{ DonationMethodID: 1, account_owner_entity: 'COUNCIL' }])).toThrow(/used twice/);
     expect(
       planCouncilLookupSave('CouncilDonationMethod', OWN, methods, [{ DonationMethodID: 3, DonationMethodURL: ' ', account_owner_entity: 'PARISH' }]).inserts,
-    ).toEqual([{ DonationMethodID: 3, DonationMethodURL: null, account_owner_entity: 'PARISH' }]);
+    // Sprint 9 Revision 6.0 (schema 99): the account name donors see rides along, blank as null.
+    ).toEqual([{ DonationMethodID: 3, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: null }]);
   });
 });
 

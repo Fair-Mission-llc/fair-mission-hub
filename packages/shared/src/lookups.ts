@@ -245,7 +245,7 @@ export const COUNCIL_LOOKUP_META: Record<CouncilLookupTableName, CouncilLookupTa
     clean: (record) => cleanDonationType(record),
   },
   CouncilDonationMethod: {
-    columns: ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity'],
+    columns: ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity', 'account_identity_label'],
     keyField: 'DonationMethodID',
     foreignKeys: [{ column: 'DonationMethodID', table: 'DonationMethod', label: 'donation method' }],
     clean: (record) => cleanCouncilDonationMethod(record),

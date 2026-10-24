@@ -134,7 +134,7 @@ describe('the vault on disk', () => {
     await expect(vaultService(dir).init()).rejects.toThrow(/database version 97.*never wiped/);
     const check2 = new DatabaseSync(join(dir, HUB_VAULT_FILE));
     expect((check2.prepare('SELECT COUNT(*) AS n FROM [Donation] WHERE [id] = ?').get(gift.id) as { n: number }).n).toBe(1);
-    check2.exec('PRAGMA user_version = 98;');
+    check2.exec('PRAGMA user_version = 99;');
     check2.close();
   });
 
@@ -169,7 +169,7 @@ describe('/api/sync/replicate and /api/sync/photo', () => {
 
   it('signs a device in, runs its calls as that member only, and refuses the rest', async () => {
     expect(hubModeOn()).toBe(true);
-    expect(await (await replicateGet()).json()).toMatchObject({ hub: true, schemaVersion: 98 });
+    expect(await (await replicateGet()).json()).toMatchObject({ hub: true, schemaVersion: 99 });
 
     const signIn = await post({ method: 'auth.signIn', args: ['testmember@kofc.org', 'dev-pass-secure-9912'] });
     const cookie = signIn.headers.get('set-cookie')!.split(';')[0];

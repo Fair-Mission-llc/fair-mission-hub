@@ -310,6 +310,8 @@ export function createRemoteDataService(): DataService {
       recordChurchDisbursementPayment: notImplemented('finance.recordChurchDisbursementPayment'),
       getBatchCodingQueue: notImplemented('finance.getBatchCodingQueue'),
       batchCodeDonations: notImplemented('finance.batchCodeDonations'),
+      listGLSplitProfiles: notImplemented('finance.listGLSplitProfiles'),
+      setGLSplitProfile: notImplemented('finance.setGLSplitProfile'),
       getCashAuditBoard: notImplemented('finance.getCashAuditBoard'),
       closeCashAudit: notImplemented('finance.closeCashAudit'),
       transferAssetFunds: notImplemented('finance.transferAssetFunds'),

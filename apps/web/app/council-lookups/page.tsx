@@ -30,6 +30,8 @@ import {
   ACCOUNT_OWNER_ENTITIES,
   ACCOUNT_OWNER_LABELS,
   accountOwnerGateMessage,
+  ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL,
+  ACCOUNT_IDENTITY_LABEL_MAX_LENGTH,
   AGENDA_TEMPLATE_MAX_LENGTH,
   canConfigureBallot,
   canManageAgendaTemplates,
@@ -98,6 +100,8 @@ function useColumns(table: CouncilLookupTableName): { columns: Column[] | null; 
       { key: 'DonationMethodID', label: 'Method', options: options.data },
       { key: 'DonationMethodURL', label: 'QR code image URL', maxLength: 255, optional: true },
       { key: 'account_owner_entity', label: ACCOUNT_OWNER_COLUMN_LABEL, choices: ACCOUNT_OWNER_ENTITIES.map((o) => ({ value: o, label: ACCOUNT_OWNER_LABELS[o] })) },
+      // Sprint 9 Revision 6.0: the name the phone's QR screen shows the donor.
+      { key: 'account_identity_label', label: ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL, maxLength: ACCOUNT_IDENTITY_LABEL_MAX_LENGTH, optional: true },
     ],
     CouncilBudgetCategory: [{ key: 'CategoryName', label: 'Budget category (fund)', maxLength: 255 }],
   };

@@ -7,6 +7,7 @@
 // a SafeAreaView, so a high-resolution upload cannot push the Continue button off a short phone.
 // Sprint 6A: the code's source comes from the in-memory QR cache (lib/qr-cache.ts), which the Donate screen warms ahead
 // of the tap, and an upload that failed once is skipped for the rest of the run; the button now reads "Continue".
+// Sprint 9 Revision 6.0: under the heading, the account the donor pays into (payee), from the council's configuration.
 import { useState } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { Image, Modal, useWindowDimensions, View } from 'react-native';
@@ -40,12 +41,15 @@ export const collectionQrFor = (methodName: string): ImageSourcePropType | null 
 
 export function CollectionQrModal({
   methodName,
+  payee,
   uploadedUrl,
   fallback,
   visible,
   onClose,
 }: {
   methodName: string;
+  /** Sprint 9 Revision 6.0: whose account the donor pays (merchantAccountLine), from the council's configuration. */
+  payee: string;
   /** The council's uploaded code for this channel, shown first when the phone can load it. */
   uploadedUrl: string | null;
   /** The code bundled with the app, shown when the council has none or it fails to load. */
@@ -67,6 +71,9 @@ export function CollectionQrModal({
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg, padding: space.lg }}>
           <AppText variant="heading" accessibilityRole="header" style={{ textAlign: 'center' }}>
             Scan to pay with {methodName}
+          </AppText>
+          <AppText variant="title" style={{ textAlign: 'center' }}>
+            {payee}
           </AppText>
           <View style={{ padding: space.md, borderWidth: FRAME_BORDER, borderColor: color.gold, borderRadius: radius.md }}>
             <Image

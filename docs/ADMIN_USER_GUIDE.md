@@ -39,6 +39,7 @@
 26. [The global search bar](#26-the-global-search-bar)
 27. [The Navigation Guide screen](#27-the-navigation-guide-screen)
 28. [Run a room pilot on the hub laptop](#28-run-a-room-pilot-on-the-hub-laptop)
+29. [Split accounts, budget categories and payment account names](#29-split-accounts-budget-categories-and-payment-account-names)
 29. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
@@ -4446,6 +4447,115 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | --- | --- | --- |
 | `hub:archive` shows *"The hub is running."* | The hub holds the vault file open. | Stop `npm run dev:pilot` with Ctrl+C. Run `npm run hub:archive` again. |
 | You need a record from an archived session. | The archive keeps the old vault as a file. | Ask the developer to open the vault file in the dated folder under `packages/backend/data/archive`. |
+| The hub stops with *"The hub vault is at database version 98, but this build needs version 99 …"* | A new release changed the tables. The hub never rebuilds the vault. | Stop the hub. Run `npm run hub:archive`. Start the hub again. |
+
+---
+
+## 29. Split accounts, budget categories and payment account names
+
+### 29.1 Concept: the split account
+
+A split account is a Revenue or Expense line that shares each posting with other lines. The Treasurer codes donations to the split account as to any line. The split account itself keeps no balance.
+
+The split profile names the destination accounts and the share of each one. The shares add up to exactly 100%.
+
+| Rule | Detail |
+| --- | --- |
+| Destination type | Each destination has the same account type as the split account. |
+| Destinations not allowed | The split account itself, another split account and a virtual goal. |
+| Number of destinations | 1 to 10. |
+| Rounding | Each share is rounded to the cent. The last destination takes the leftover cent. |
+
+When the Treasurer codes a batch to a split account, the batch posts one credit to each destination. For example, a $810.00 batch on a 40% / 60% split credits $324.00 and $486.00. The donations still show the split account as their coded line.
+
+A change to the profile applies to the next batch only. Postings made before the change stay as they are.
+
+### 29.2 Set up a split account
+
+> **Who can do this:** the council's Treasurer and Super Admins. Other officers and Admins see the profiles.
+
+**Goal:** Make a ledger line share its postings with other lines.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **[ 🔧 Accounting Configuration ]** → **Chart of Accounts & GL Setup**.
+
+**Steps:**
+1. Find the account. Select **Edit split** on its row.
+2. Select the **Split Account** checkbox.
+3. In **Destination 1**, choose the first account. Enter its share in **Share (%)**.
+4. Repeat step 3 for each destination. Select **Add destination** for more rows.
+5. Check that **Total** reads **100%**.
+6. Select **Save split profile**.
+
+**Expected result:** The account shows the **Split Account** tag. The line **Split: …** under the account name lists each destination and its share.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"The shares of … must add up to 100%; …"* | The shares do not total 100. | Correct the shares. |
+| *"… must be a Revenue account."* or *"… must be an Expense account."* | A destination has another account type. | Choose an account of the same type. |
+| *"… receives a share of …, so it cannot be a Split Account itself."* | The account is a destination of another split account. | Remove the account from the other profile first. |
+| **Edit split** does not show. | You are not the Treasurer. | Ask the Treasurer. |
+
+To stop a split, select **Edit split**, clear the **Split Account** checkbox and select **Save split profile**.
+
+### 29.3 Concept: the council's budget categories
+
+The council keeps its own list of budget categories, for example **Youth Programs** or **Charities**. Each budget line can be filed under one category. A line without a category shows under **Uncategorized**.
+
+The **📊 Budget Allocation & YOY Variance Analyzer** groups the year by these categories in two charts:
+
+| Chart | What the chart shows |
+| --- | --- |
+| **Allocation Pie** | Each category's share of the year's budget. Before the vote, the pie uses the proposed figures. After the vote, it uses the approved figures. |
+| **Year-to-date spending against each cap** | Each category's spending since July 1 against its approved cap. **✖ Over** marks a category over its cap. |
+
+A table under the charts lists each category with its figures. The first eight categories keep their colors. More categories show together as **Other**.
+
+### 29.4 Keep the budget categories
+
+> **Who can do this:** the council's Financial Secretary (FS), Treasurer and Admins, and Super Admins.
+> **Warning:** **Delete** removes the category at once. The portal refuses to delete a category that a budget line still uses.
+
+**Goal:** Add, rename or delete the council's budget categories.
+
+**Start point:** Sidebar → Finances → **Budget** → **Budget categories** panel.
+
+**Steps:**
+1. To add a category, enter the name in **New category**. Select **Add category**.
+2. To rename a category, change its name. Select **Rename**.
+3. To delete a category, select **Delete**. You cannot undo this.
+4. In **Annual Budget Projections**, choose the category on each line.
+
+**Expected result:** A message confirms the change. The category list and the line pickers show the change.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The panel does not show. | You are not the FS, the Treasurer or an Admin. | Ask the FS or the Treasurer. |
+| A category cannot be deleted. | A budget line still uses the category. | Choose another category on those lines first. |
+| The charts do not show on the analyzer. | You may not read the budget progress. | Ask the Grand Knight or the Treasurer. |
+
+### 29.5 Name the account behind a payment method
+
+> **Who can do this:** council Admins, the council's Financial Secretary and Treasurer, and Super Admins.
+
+**Goal:** Show donors whose account a QR code pays into.
+
+**Start point:** Sidebar → System Settings → **Council Lookups** → **Enabled donation methods**.
+
+**Steps:**
+1. Find the payment method, for example **Venmo**.
+2. Check the **Account owner** (25.2).
+3. In **Account name donors see**, enter the account name as the payment app shows it, for example `St. Mary's Cathedral Parish`.
+4. Select **Save changes**.
+
+**Expected result:** On the phone, the QR code screen shows *"Pays into St. Mary's Cathedral Parish (Parish account)"* under the heading.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The phone shows *"Pays into the council's account"* only. | The method has no account name. | Enter the account name (step 3). |
+| The phone shows the wrong owner. | The **Account owner** is wrong. | Correct the owner (25.2). |
 
 ---
 

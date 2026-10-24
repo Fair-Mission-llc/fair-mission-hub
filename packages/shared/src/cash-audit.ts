@@ -19,6 +19,7 @@
 // Parish Fundraiser Revenue Split Console settles it against the parish share instead.
 // Drivers load rows, call these helpers, then only store.
 // =========================================================================
+import { expandSplitJournalLines, type GLSplitProfile } from './gl-splits';
 import type { AccountOwnerEntity } from './account-ownership';
 import type { DonationMethodKind } from './contract';
 import { cleanJournalDate, compareGLAccounts, type CleanJournalLine } from './finance';
@@ -184,6 +185,11 @@ export interface BatchCodingResult {
   total: number;
   revenueAccountId: number;
   revenueAccountName: string;
+  /**
+   * Sprint 9 Revision 6.0: when the line is a Split Account, the share each destination was credited (in profile
+   * order); empty otherwise.
+   */
+  splits: { destinationAccountId: number; destinationAccountName: string; amount: number }[];
 }
 
 /**
@@ -198,7 +204,8 @@ export function planBatchCoding(
   accounts: readonly GLAccount[],
   input: BatchCodingInput,
   now: Date,
-): { lines: CleanJournalLine[]; donationIds: number[]; total: number; revenueAccount: GLAccount } {
+  splitProfiles: readonly GLSplitProfile[] = [],
+): { lines: CleanJournalLine[]; donationIds: number[]; total: number; revenueAccount: GLAccount; splits: BatchCodingResult['splits'] } {
   if (typeof input !== 'object' || input === null) throw invalid('Choose the donations to code and the Revenue line.');
   const ids = input.donationIds;
   if (!Array.isArray(ids) || ids.length === 0) throw invalid('Select at least one un-coded donation to code.', { field: 'donationIds' });
@@ -241,15 +248,25 @@ export function planBatchCoding(
     LinkedMeetingID: null,
     CheckNumber: null,
   };
-  return {
-    lines: [
+  // Sprint 9 Revision 6.0: a Split Account's credit is shared out to its destinations (gl-splits.ts).
+  const lines = expandSplitJournalLines(
+    [
       { ...base, GLAccountID: cash.id, DebitAmount: total, CreditAmount: 0 },
       { ...base, GLAccountID: revenueAccount.id, DebitAmount: 0, CreditAmount: total },
     ],
-    donationIds: picked.map((r) => r.donation.id),
-    total,
-    revenueAccount,
-  };
+    splitProfiles,
+  );
+  const profile = splitProfiles.find((p) => p.accountId === revenueAccount.id);
+  const splits = profile
+    ? lines
+        .slice(1)
+        .map((l) => ({
+          destinationAccountId: l.GLAccountID,
+          destinationAccountName: profile.destinations.find((d) => d.destinationAccountId === l.GLAccountID)?.destinationAccountName ?? '',
+          amount: l.CreditAmount,
+        }))
+    : [];
+  return { lines, donationIds: picked.map((r) => r.donation.id), total, revenueAccount, splits };
 }
 
 // ---- the Cash Box Audit Closure Panel -------------------------------------------------------------------------------

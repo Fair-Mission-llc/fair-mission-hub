@@ -2952,6 +2952,13 @@ export const TABLES: Record<string, TableMeta> = {
           "PARISH",
           "THIRD_PARTY"
         ]
+      },
+      {
+        "name": "account_identity_label",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -5069,6 +5076,16 @@ export const TABLES: Record<string, TableMeta> = {
       {
         "name": "TargetGoalAmount",
         "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "is_split_account",
+        "kind": "bit",
         "notNull": true,
         "identity": false,
         "default": {
@@ -7985,6 +8002,59 @@ export const TABLES: Record<string, TableMeta> = {
       }
     ],
     "uniqueKeys": []
+  },
+  "GLAccountSplitAllocation": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "source_gl_account_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "destination_gl_account_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "split_percentage",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "source_gl_account_id",
+        "refTable": "GLAccount",
+        "refColumn": "id"
+      },
+      {
+        "column": "destination_gl_account_id",
+        "refTable": "GLAccount",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "source_gl_account_id",
+        "destination_gl_account_id"
+      ]
+    ]
   }
 };
 

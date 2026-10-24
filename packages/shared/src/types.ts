@@ -671,6 +671,8 @@ export interface CouncilDonationMethod {
   DonationMethodURL?: string | null;
   /** Sprint 8O: who owns the account the method pays into (account-ownership.ts); 'COUNCIL' by default. */
   account_owner_entity?: 'COUNCIL' | 'PARISH' | 'THIRD_PARTY';
+  /** Sprint 9 Revision 6.0 (schema 99): the account's name as the donor sees it in the payment app; NULL shows the owner only. */
+  account_identity_label?: string | null;
 }
 
 export interface Donation {
@@ -1187,6 +1189,16 @@ export interface GLAccount {
   ParentAccountID?: number | null; // another GLAccount of the same council
   IsVirtualGoal: number; // BIT, default 0
   TargetGoalAmount: number; // DECIMAL(18,2), default 0.00
+  /** Sprint 9 Revision 6.0 (schema 99): BIT, default 0 - a Split Account whose postings go to its destinations (gl-splits.ts). */
+  is_split_account?: number;
+}
+
+/** Sprint 9 Revision 6.0 (schema 99): one destination of a Split Account and the share of each posting it receives. */
+export interface GLAccountSplitAllocation {
+  id: number;
+  source_gl_account_id: number;
+  destination_gl_account_id: number;
+  split_percentage: number; // DECIMAL(5,2); a split account's rows add up to 100.00
 }
 
 /**

@@ -35,6 +35,26 @@ export const ACCOUNT_OWNER_LABELS: Record<AccountOwnerEntity, string> = {
 /** The editor's column heading. */
 export const ACCOUNT_OWNER_COLUMN_LABEL = 'Account owner';
 
+/**
+ * Sprint 9 Revision 6.0 (schema 99): CouncilDonationMethod.account_identity_label - the account's name as the donor sees
+ * it in the payment app - its editor heading and length (VARCHAR(100)).
+ */
+export const ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL = 'Account name donors see';
+export const ACCOUNT_IDENTITY_LABEL_MAX_LENGTH = 100;
+
+/** The owner as the phone's QR screen says it: 'the council', 'the parish' or 'a third party'. */
+const OWNER_PHRASE: Record<AccountOwnerEntity, string> = { COUNCIL: "the council's", PARISH: "the parish's", THIRD_PARTY: "a third party's" };
+
+/**
+ * The line under the phone's QR code: whose account the donor pays (Sprint 9 Revision 6.0). With a label:
+ * 'Pays into St. Mary's Cathedral Parish (Parish account)'; without one: 'Pays into the parish's account'.
+ */
+export function merchantAccountLine(link: { account_owner_entity?: string | null; account_identity_label?: string | null } | null | undefined): string {
+  const owner = accountOwnerEntityOf(link);
+  const label = (link?.account_identity_label ?? '').trim();
+  return label ? `Pays into ${label} (${ACCOUNT_OWNER_LABELS[owner]})` : `Pays into ${OWNER_PHRASE[owner]} account`;
+}
+
 /** The front-end validation gate's text: shown, and the save held, while a row has no owner chosen. */
 export const ACCOUNT_OWNER_REQUIRED_TEXT = 'Choose who owns the account each payment method pays into (Council, Parish or Third party) before you save.';
 

@@ -1,0 +1,315 @@
+// Sprint 9 Revision 6.0 (schema 99): GL Split Accounts on the batch coder (gl-splits.ts), the Budget Analyzer's charts
+// over the council's own budget categories (budget-category-charts.ts) and the merchant account label on the phone's QR
+// screens (account-ownership.ts merchantAccountLine).
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import {
+  buildBudgetCategoryCharts,
+  CHART_NEUTRAL_COLOR,
+  CHART_SERIES_COLORS,
+  cleanGLSplitProfile,
+  currentFraternalYear,
+  donutSlicePath,
+  expandSplitJournalLines,
+  merchantAccountLine,
+  PLATFORM_SCHEMA_VERSION,
+  splitAmount,
+  type BudgetCategoryPerformance,
+  type CleanJournalLine,
+  type DataService,
+  type GLAccount,
+  type GLAccountSplitAllocation,
+  type GLSplitProfile,
+} from '@kofc/shared';
+import { TABLES } from '../apps/web/services/generated/schema.generated';
+import { MemoryDataService } from '../apps/web/services/drivers/memory';
+import { SqliteDataService } from '../apps/mobile/services/drivers/sqlite';
+import { drivers, expectRule } from './helpers';
+import { openDatabases } from './shims/expo-sqlite';
+
+const ROOT = join(__dirname, '..');
+const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
+const PASSWORD = 'dev-pass-secure-9912';
+const OWN = 1;
+const PARKING_FUNDRAISING = 8;
+const PARISH_SHARE = 16;
+const PILOT_DAY = new Date(2026, 9, 12, 19, 0, 0);
+
+const account = (id: number, AccountType: GLAccount['AccountType'], extra: Partial<GLAccount> = {}): GLAccount => ({
+  id,
+  CouncilID: OWN,
+  AccountName: `Account ${id}`,
+  AccountType,
+  ParentAccountID: null,
+  IsVirtualGoal: 0,
+  TargetGoalAmount: 0,
+  ...extra,
+});
+
+describe('schema 99', () => {
+  it('adds the split columns and table and the merchant account label, and moves every version marker', () => {
+    const schema = read('Schema.sql');
+    expect(schema).toContain('(schema version 99)');
+    expect(TABLES.GLAccount.columns.map((c) => c.name)).toContain('is_split_account');
+    expect(TABLES.GLAccountSplitAllocation.columns.map((c) => c.name)).toEqual(['id', 'source_gl_account_id', 'destination_gl_account_id', 'split_percentage']);
+    expect(TABLES.CouncilDonationMethod.columns.map((c) => c.name)).toContain('account_identity_label');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 99;');
+    expect(PLATFORM_SCHEMA_VERSION).toBe(99);
+  });
+});
+
+describe('split profile rules (pure)', () => {
+  const accounts = [
+    account(1, 'Asset'),
+    account(8, 'Revenue'),
+    account(9, 'Revenue'),
+    account(10, 'Revenue'),
+    account(11, 'Revenue', { is_split_account: 1 }),
+    account(12, 'Expense'),
+    account(13, 'Revenue', { IsVirtualGoal: 1 }),
+  ];
+  const clean = (input: unknown, allocations: GLAccountSplitAllocation[] = []) => cleanGLSplitProfile(OWN, 8, input, accounts, allocations);
+
+  it('takes same-type destinations whose shares add up to 100', () => {
+    expect(
+      clean({
+        isSplitAccount: true,
+        destinations: [
+          { destinationAccountId: 9, percentage: 33.33 },
+          { destinationAccountId: 10, percentage: 66.67 },
+        ],
+      }),
+    ).toEqual([
+      { destinationAccountId: 9, percentage: 33.33 },
+      { destinationAccountId: 10, percentage: 66.67 },
+    ]);
+    expect(clean({ isSplitAccount: false })).toEqual([]);
+  });
+
+  it('refuses shares off 100, bad destinations and a destination becoming a split account', () => {
+    const one = (destinationAccountId: number, percentage = 100) => ({ isSplitAccount: true, destinations: [{ destinationAccountId, percentage }] });
+    expect(() => clean({ isSplitAccount: true, destinations: [{ destinationAccountId: 9, percentage: 60 }] })).toThrow(/add up to 100%/);
+    expect(() => clean(one(8))).toThrow(/its own destination/);
+    expect(() => clean(one(11))).toThrow(/is a Split Account/);
+    expect(() => clean(one(12))).toThrow(/must be a Revenue account/);
+    expect(() => clean(one(13))).toThrow(/virtual goal/);
+    expect(() => clean(one(99))).toThrow(/not an account of council/);
+    expect(() => clean(one(9, 100.001))).toThrow(/two decimals/);
+    expect(() => clean({ isSplitAccount: true, destinations: [] })).toThrow(/at least one destination/);
+    expect(() => clean({})).toThrow(/Split Account/);
+    expect(() =>
+      clean(
+        {
+          isSplitAccount: true,
+          destinations: [
+            { destinationAccountId: 9, percentage: 50 },
+            { destinationAccountId: 9, percentage: 50 },
+          ],
+        },
+      ),
+    ).toThrow(/listed twice/);
+    // Account 8 already receives a share of account 11, so it cannot split.
+    expect(() => clean(one(9), [{ id: 1, source_gl_account_id: 11, destination_gl_account_id: 8, split_percentage: 100 }])).toThrow(/receives a share/);
+  });
+
+  it('shares an amount to the cent, the last destination taking the rounding', () => {
+    expect(splitAmount(100, [{ percentage: 33.33 }, { percentage: 33.33 }, { percentage: 33.34 }])).toEqual([33.33, 33.33, 33.34]);
+    expect(splitAmount(0.01, [{ percentage: 50 }, { percentage: 50 }])).toEqual([0.01, 0]);
+    expect(splitAmount(810, [{ percentage: 50 }, { percentage: 50 }])).toEqual([405, 405]);
+  });
+
+  it('replaces only the split account line with one line per destination', () => {
+    const base = { Description: 'Batch', DateLogged: '2026-10-12', LinkedEventID: null, LinkedMeetingID: null, CheckNumber: null };
+    const lines: CleanJournalLine[] = [
+      { ...base, GLAccountID: 1, DebitAmount: 10, CreditAmount: 0 },
+      { ...base, GLAccountID: 8, DebitAmount: 0, CreditAmount: 10 },
+    ];
+    const profile: GLSplitProfile = {
+      accountId: 8,
+      accountName: 'Parking',
+      destinations: [
+        { destinationAccountId: 9, destinationAccountName: 'Council', percentage: 70 },
+        { destinationAccountId: 10, destinationAccountName: 'Parish', percentage: 30 },
+      ],
+    };
+    const out = expandSplitJournalLines(lines, [profile]);
+    expect(out.map((l) => [l.GLAccountID, l.DebitAmount, l.CreditAmount])).toEqual([
+      [1, 10, 0],
+      [9, 0, 7],
+      [10, 0, 3],
+    ]);
+    expect(out[1]!.Description).toBe('Batch (70% of Parking)');
+    expect(expandSplitJournalLines(lines, [])).toEqual(lines);
+  });
+});
+
+describe.each(drivers)('$name driver: split accounts on the batch coder', (d) => {
+  async function makePilot(): Promise<DataService> {
+    const now = () => new Date(PILOT_DAY);
+    if (d.name === 'memory') {
+      const db = new MemoryDataService({ now, presentationData: true });
+      await db.init();
+      return db;
+    }
+    openDatabases.length = 0;
+    const db = new SqliteDataService({ now, presentationData: true });
+    await db.init();
+    return db;
+  }
+  const signIn = async (db: DataService, user: string) => (await db.auth.signIn(`${user}@stmarys.org`, PASSWORD))!.memberId;
+  const creditsOf = async (db: DataService, actor: number) => {
+    const out = new Map<number, number>();
+    const walk = (nodes: Awaited<ReturnType<DataService['finance']['listChartOfAccounts']>>['accounts']) =>
+      nodes.forEach((n) => {
+        out.set(n.account.id, n.creditTotal);
+        walk(n.children);
+      });
+    walk((await db.finance.listChartOfAccounts(actor, OWN)).accounts);
+    return out;
+  };
+
+  it('lets only the Treasurer set a profile, and posts a coded batch to the destinations', async () => {
+    const db = await makePilot();
+    const [fs, treasurer] = await Promise.all(['fs_user', 'treasurer_user'].map((u) => signIn(db, u)));
+    const profile = {
+      isSplitAccount: true,
+      destinations: [
+        { destinationAccountId: PARISH_SHARE, percentage: 40 },
+        { destinationAccountId: PARKING_FUNDRAISING, percentage: 60 },
+      ],
+    };
+    const queue = await db.finance.getBatchCodingQueue(treasurer, OWN);
+    const other = queue.revenueAccounts.find((a) => a.id !== PARKING_FUNDRAISING && a.id !== PARISH_SHARE)!;
+    expect(other).toBeDefined();
+
+    // The split account is another Revenue line; Parking Fundraising and the parish share receive the shares.
+    await expectRule(db.finance.setGLSplitProfile(fs, OWN, other.id, profile), 'TREASURER_REQUIRED');
+    const saved = await db.finance.setGLSplitProfile(treasurer, OWN, other.id, profile);
+    expect(saved).toEqual([
+      {
+        accountId: other.id,
+        accountName: other.AccountName,
+        destinations: [
+          { destinationAccountId: PARISH_SHARE, destinationAccountName: 'Parish Fundraiser Share', percentage: 40 },
+          { destinationAccountId: PARKING_FUNDRAISING, destinationAccountName: 'Parking Fundraising', percentage: 60 },
+        ],
+      },
+    ]);
+    expect(await db.finance.listGLSplitProfiles(fs, OWN)).toEqual(saved);
+    await expectRule(db.finance.setGLSplitProfile(treasurer, OWN, PARISH_SHARE, { isSplitAccount: true, destinations: [{ destinationAccountId: other.id, percentage: 100 }] }), 'INVALID_INPUT');
+
+    const before = await creditsOf(db, treasurer);
+    const ids = queue.rows.map((r) => r.donation.id);
+    const done = await db.finance.batchCodeDonations(treasurer, OWN, { donationIds: ids, revenueAccountId: other.id });
+    expect(done.splits).toEqual([
+      { destinationAccountId: PARISH_SHARE, destinationAccountName: 'Parish Fundraiser Share', amount: 324 },
+      { destinationAccountId: PARKING_FUNDRAISING, destinationAccountName: 'Parking Fundraising', amount: 486 },
+    ]);
+    const after = await creditsOf(db, treasurer);
+    expect(after.get(other.id)).toBe(before.get(other.id));
+    expect((after.get(PARISH_SHARE) ?? 0) - (before.get(PARISH_SHARE) ?? 0)).toBe(324);
+    expect((after.get(PARKING_FUNDRAISING) ?? 0) - (before.get(PARKING_FUNDRAISING) ?? 0)).toBe(486);
+    const posting = (await db.finance.listLedgerTransactions(treasurer, OWN)).find((t) => t.transactionId === done.batchId);
+    expect(posting).toMatchObject({ amount: 810, lineCount: 3 });
+    // The donations keep the line they were coded to.
+    const coded = (await db.donations.list(OWN, {})).filter((x) => ids.includes(x.id));
+    expect(new Set(coded.map((x) => x.revenue_gl_account_id))).toEqual(new Set([other.id]));
+
+    // Switching the split off clears its destinations.
+    expect(await db.finance.setGLSplitProfile(treasurer, OWN, other.id, { isSplitAccount: false })).toEqual([]);
+    expect((await db.finance.getBatchCodingQueue(treasurer, OWN)).revenueAccounts.find((a) => a.id === other.id)?.is_split_account).toBe(0);
+  });
+
+  it('keeps the account name donors see on each payment method and hands it to the phone', async () => {
+    const db = await makePilot();
+    const admin = (await db.auth.signIn('testsuperadmin@kofc.org', PASSWORD))!.memberId;
+    const methods = await db.donations.listMethods(OWN);
+    const venmo = methods.find((m) => m.method.DonationMethod === 'Venmo')!;
+    await db.lookups.saveCouncilSpecific(admin, OWN, 'CouncilDonationMethod', [
+      {
+        id: venmo.link.id,
+        DonationMethodID: venmo.method.id,
+        DonationMethodURL: venmo.link.DonationMethodURL ?? null,
+        account_owner_entity: 'PARISH',
+        account_identity_label: "St. Mary's Cathedral Parish",
+      },
+    ]);
+    const after = (await db.donations.listMethods(OWN)).find((m) => m.link.id === venmo.link.id)!;
+    expect(merchantAccountLine(after.link)).toBe("Pays into St. Mary's Cathedral Parish (Parish account)");
+    await expectRule(
+      db.lookups.saveCouncilSpecific(admin, OWN, 'CouncilDonationMethod', [
+        { id: venmo.link.id, DonationMethodID: venmo.method.id, account_owner_entity: 'PARISH', account_identity_label: 'x'.repeat(101) },
+      ]),
+      'INVALID_INPUT',
+    );
+  });
+
+  it('feeds the category charts from the year\'s progress', async () => {
+    const db = await makePilot();
+    const treasurer = await signIn(db, 'treasurer_user');
+    const progress = await db.budget.getBudgetProgress(treasurer, OWN, currentFraternalYear(PILOT_DAY));
+    const charts = buildBudgetCategoryCharts(progress);
+    expect(charts.slices.length).toBe(progress.categories.length);
+    expect(charts.slices.reduce((t, s) => t + Math.round(s.amount * 100), 0) / 100).toBe(charts.total);
+  });
+});
+
+describe('merchant account line and budget category charts (pure)', () => {
+  it('names the account owner, with the label when there is one', () => {
+    expect(merchantAccountLine({ account_owner_entity: 'COUNCIL', account_identity_label: '  ' })).toBe("Pays into the council's account");
+    expect(merchantAccountLine({ account_owner_entity: 'PARISH' })).toBe("Pays into the parish's account");
+    expect(merchantAccountLine(null)).toBe("Pays into the council's account");
+    expect(merchantAccountLine({ account_owner_entity: 'THIRD_PARTY', account_identity_label: 'Zeffy for St. Mary' })).toBe('Pays into Zeffy for St. Mary (Third-party account)');
+  });
+
+  const category = (categoryId: number | null, label: string, proposed: number, approved: number, actual: number): BudgetCategoryPerformance => ({
+    categoryId,
+    label,
+    lineCount: 1,
+    proposed,
+    approved,
+    actual,
+    variance: approved - actual,
+    percentUsed: null,
+    alert: 'On Track' as BudgetCategoryPerformance['alert'],
+  });
+
+  it('shares the approved budget once Approved, keeps colour slots by list order and folds past eight', () => {
+    const named = Array.from({ length: 10 }, (_, i) => category(i + 1, `Fund ${i + 1}`, 100, 200, i === 0 ? 250 : 50));
+    const charts = buildBudgetCategoryCharts({ status: 'Approved', throughDate: '2026-10-12', categories: [...named, category(null, 'Uncategorized', 0, 400, 0)] });
+    expect(charts.basis).toBe('approved');
+    expect(charts.slices.map((s) => s.label)).toEqual(['Fund 1', 'Fund 2', 'Fund 3', 'Fund 4', 'Fund 5', 'Fund 6', 'Fund 7', 'Fund 8', 'Other', 'Uncategorized']);
+    expect(charts.slices.slice(0, 8).map((s) => s.color)).toEqual([...CHART_SERIES_COLORS]);
+    expect(charts.slices.slice(8).map((s) => s.color)).toEqual([CHART_NEUTRAL_COLOR, CHART_NEUTRAL_COLOR]);
+    expect(charts.slices[8]).toMatchObject({ amount: 400, approved: 400, actual: 100 });
+    expect(charts.total).toBe(2400);
+    expect(charts.slices[0]).toMatchObject({ sharePercent: 8.3, percentUsed: 125, overBudget: true });
+  });
+
+  it('shares the proposed budget before approval', () => {
+    const charts = buildBudgetCategoryCharts({ status: 'Draft', throughDate: '2026-10-12', categories: [category(1, 'A', 300, 0, 0), category(2, 'B', 100, 0, 0)] });
+    expect(charts.basis).toBe('proposed');
+    expect(charts.slices.map((s) => [s.sharePercent, s.percentUsed])).toEqual([
+      [75, null],
+      [25, null],
+    ]);
+  });
+
+  it('draws a donut slice as a closed ring segment', () => {
+    expect(donutSlicePath(110, 110, 100, 60, 0, Math.PI / 2)).toBe('M 110.000 10.000 A 100 100 0 0 1 210.000 110.000 L 170.000 110.000 A 60 60 0 0 0 110.000 50.000 Z');
+  });
+});
+
+describe('screens', () => {
+  it('puts the split editor on the Treasurer chart, the category panel on the Budget page and the payee on the phone QR screens', () => {
+    expect(read('apps/web/components/modules/ChartOfAccountsSetup.tsx')).toContain('db.finance.setGLSplitProfile(');
+    expect(read('apps/web/components/CashAuditParts.tsx')).toContain('done.splits');
+    expect(read('apps/web/app/budget/page.tsx')).toContain('<BudgetCategoryManager');
+    expect(read('apps/web/components/BudgetAnalyzerParts.tsx')).toContain('<BudgetCategoryCharts progress={progress} />');
+    expect(read('apps/web/app/council-lookups/page.tsx')).toContain("key: 'account_identity_label'");
+    expect(read('apps/mobile/components/CollectionQrModal.tsx')).toContain('{payee}');
+    expect(read('apps/mobile/components/DonationQr.tsx')).toContain('{payee}');
+    expect(read('apps/mobile/app/(app)/donate.tsx')).toContain('merchantAccountLine(option.link)');
+  });
+});

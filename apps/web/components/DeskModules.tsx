@@ -40,6 +40,7 @@ export function BudgetVsActualsModule({ user, councilId }: { user: SessionUser; 
   const year = currentFraternalYear(new Date());
   const concluded = useLoad(() => db.budget.getConcludedPerformance(user.memberId, councilId), [user.memberId, councilId]);
   const analysis = useLoad(() => db.budget.getBudgetAnalysis(user.memberId, councilId, year), [user.memberId, councilId, year]);
+  const progress = useLoad(() => db.budget.getBudgetProgress(user.memberId, councilId, year).catch(() => null), [user.memberId, councilId, year]);
   return (
     <div className="flex flex-col gap-4">
       {concluded.error ? <Notice tone="error">{concluded.error}</Notice> : null}
@@ -48,6 +49,7 @@ export function BudgetVsActualsModule({ user, councilId }: { user: SessionUser; 
       {analysis.data ? (
         <BudgetAnalyzerCard
           analysis={analysis.data}
+          progress={progress.data}
           canSetCeiling={canManageBudgetForecast(user, councilId)}
           onSaveCeiling={async (ceiling) => {
             await db.budget.setTargetSpendingCeiling(user.memberId, councilId, year, ceiling);

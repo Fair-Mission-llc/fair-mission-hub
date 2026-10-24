@@ -1220,3 +1220,17 @@ VolunteerQuarantine gains one column.
 •	captured_at (DATETIME, NOT NULL) — when the photo was stored.
 Rules (donation-attachments.ts). The phone's Check donation form carries '📸 Attach Deposit Photo' (Sprint 9 Revision 4.0 took it off the Cash form). The camera saves the shot at JPEG quality 0.5 into the app's media folder; donations.attachDepositPhoto writes the row once the donation is recorded. Adding or reading a photo takes the right to change the donation (assertMayChangeDonation): its recorder, its event's owner, the council's Financial Secretary or Treasurer, an Admin of its council or a Super Admin. Only Check donations take one (INVALID_INPUT), and none is added after the event's collection session is concluded. donations.remove deletes the donation's photo rows with it.
 ________________________________________
+# 55. GL Split Accounts and Merchant Account Labels (Sprint 9 Revision 6.0)
+Schema version 99; the phone database version moves to 99.
+GLAccount gains one column.
+•	is_split_account (BIT, NOT NULL, DEFAULT 0) — 1 for a Split Account: a line the Treasurer codes to that never holds a balance itself; its batch postings go to its destinations. Set only by finance.setGLSplitProfile.
+[GLAccountSplitAllocation]
+•	id (INTEGER, NOT NULL, IDENTITY) — Primary Key.
+•	source_gl_account_id (INTEGER, NOT NULL) — Foreign Key references GLAccount(id): the Split Account.
+•	destination_gl_account_id (INTEGER, NOT NULL) — Foreign Key references GLAccount(id): an account that receives a share. Unique with source_gl_account_id.
+•	split_percentage (DECIMAL(5,2), NOT NULL) — the share of each posting, above 0 and up to 100. A split account's rows add up to exactly 100.00.
+Rules (gl-splits.ts). Only the council's Treasurer or a Super Admin changes a profile (TREASURER_REQUIRED); the general ledger's readers see it (finance.listGLSplitProfiles). A destination is another account of the same council and the same account type, not a virtual goal and not a Split Account itself; an account that receives a share cannot become a Split Account; at most 10 destinations (cleanGLSplitProfile, INVALID_INPUT). When finance.batchCodeDonations codes donations to a Split Account, the batch posting's credit on it is replaced by one credit per destination (expandSplitJournalLines): each share is rounded to the cent and the last destination takes the rounding. The donations keep the Split Account in revenue_gl_account_id. Switching the split off deletes the account's rows; postings already made never change.
+CouncilDonationMethod gains one column.
+•	account_identity_label (VARCHAR(100), NULL) — the name of the account the payment method pays into, as the donor sees it in the payment app. Edited on Council Lookups > Enabled donation methods ('Account name donors see'). The phone's QR code screens show it with the account owner (merchantAccountLine): 'Pays into <label> (<owner> account)', or 'Pays into the council's / parish's / a third party's account' without a label.
+Budget categories need no table change: CouncilBudgetCategory (section 11) is the council's own category list. Since Revision 6.0 the Financial Secretary, Treasurer and Admins also keep it on the Budget page, and the Budget Analyzer draws the Allocation Pie and the year-to-date spending bars from budget.getBudgetProgress categories (budget-category-charts.ts).
+________________________________________

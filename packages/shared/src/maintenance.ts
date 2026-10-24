@@ -9,7 +9,7 @@
 // donations and messages keep their history. A distribution list's member entries are the one exception;
 // they belong to the list and go with it.
 // =========================================================================
-import { cleanAccountOwnerEntity, type AccountOwnerEntity } from './account-ownership';
+import { cleanAccountOwnerEntity, type AccountOwnerEntity, ACCOUNT_IDENTITY_LABEL_MAX_LENGTH } from './account-ownership';
 import { cleanDistrictNumber } from './council-affiliations';
 import type {
   DistributionListChanges,
@@ -242,16 +242,24 @@ export function cleanDonationType(input: { DonationType?: unknown }): { Donation
  * A donation method a council enables, with the optional QR image URL that routes payments to its account. Sprint 8O: the
  * account's owner (account-ownership.ts) must be chosen explicitly - COUNCIL, PARISH or THIRD_PARTY - on every save.
  */
-export function cleanCouncilDonationMethod(input: { DonationMethodID?: unknown; DonationMethodURL?: unknown; account_owner_entity?: unknown }): {
+export function cleanCouncilDonationMethod(input: {
+  DonationMethodID?: unknown;
+  DonationMethodURL?: unknown;
+  account_owner_entity?: unknown;
+  account_identity_label?: unknown;
+}): {
   DonationMethodID: number;
   DonationMethodURL: string | null;
   account_owner_entity: AccountOwnerEntity;
+  account_identity_label: string | null;
 } {
-  assertKnownFields(input, ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity'], 'CouncilDonationMethod');
+  assertKnownFields(input, ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity', 'account_identity_label'], 'CouncilDonationMethod');
   return {
     DonationMethodID: assertInteger(input.DonationMethodID, 'Donation method', 1),
     DonationMethodURL: optionalText(input.DonationMethodURL, 'Donation method URL', 255),
     account_owner_entity: cleanAccountOwnerEntity(input.account_owner_entity),
+    // Sprint 9 Revision 6.0 (schema 99): the account's name as the donor sees it in the payment app.
+    account_identity_label: optionalText(input.account_identity_label, 'Account name donors see', ACCOUNT_IDENTITY_LABEL_MAX_LENGTH),
   };
 }
 

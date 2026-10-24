@@ -9,8 +9,11 @@
 //   - Category footprints: each universal_category's share of the approved total, with its change from last year.
 //   - Line comparison: every line's approved cap against the previous year's line it continues.
 // Direction is carried by words and symbols (▲ ▼ ●), never colour alone.
+// Sprint 9 Revision 6.0: given the year's progress (budget.getBudgetProgress), the card opens the category section with
+// the Allocation Pie and the year-to-date spending bars over the council's own budget categories (BudgetCategoryCharts).
 import { useEffect, useId, useState } from 'react';
-import { buildBudgetCeilingTrack, describeError, type BudgetAnalysis, type BudgetCeilingTrack, type BudgetYearOverYearChange } from '@kofc/shared';
+import { buildBudgetCeilingTrack, describeError, type BudgetAnalysis, type BudgetCeilingTrack, type BudgetYearOverYearChange, type BudgetYearPerformance } from '@kofc/shared';
+import { BudgetCategoryCharts } from '@/components/BudgetCategoryCharts';
 import { formatPercent } from '@/components/BudgetParts';
 import { SummaryCard } from '@/components/DuesParts';
 import { Button, cx, Input } from '@/components/ui';
@@ -180,10 +183,13 @@ function CeilingSection({
 
 export function BudgetAnalyzerCard({
   analysis,
+  progress,
   canSetCeiling,
   onSaveCeiling,
 }: {
   analysis: BudgetAnalysis;
+  /** Sprint 9 Revision 6.0: the year's budget against spend (budget.getBudgetProgress), behind the category charts. */
+  progress?: BudgetYearPerformance | null;
   canSetCeiling: boolean;
   /** Saves (or with null clears) the year's Target Spending Ceiling (budget.setTargetSpendingCeiling) and reloads. */
   onSaveCeiling?: (ceiling: number | null) => Promise<void>;
@@ -226,6 +232,13 @@ export function BudgetAnalyzerCard({
         {priorNote ? <p className="text-base font-normal">{priorNote}</p> : null}
 
         <CeilingSection analysis={analysis} canSetCeiling={canSetCeiling} onSaveCeiling={onSaveCeiling} />
+
+        {progress ? (
+          <div>
+            <h3 className="font-serif text-xl">Council budget categories</h3>
+            <BudgetCategoryCharts progress={progress} />
+          </div>
+        ) : null}
 
         <div>
           <h3 className="font-serif text-xl">Category footprints</h3>

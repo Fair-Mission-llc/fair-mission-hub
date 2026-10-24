@@ -33,6 +33,8 @@
 // took it off the Cash form, so cash box entries need no photo). The
 // camera shot is saved compressed (DEPOSIT_PHOTO_QUALITY) into the app's media folder; once the donation is recorded,
 // donations.attachDepositPhoto writes its TransactionAttachments row. Optional: a donation records without one.
+// Sprint 9 Revision 6.0 (schema 99): each QR screen names the account the donor pays into (merchantAccountLine: the
+// method's account_identity_label and account owner from Council Lookups), so no account name is built into the app.
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import {
@@ -43,6 +45,7 @@ import {
   formatDate,
   isCollectionOpen,
   isEventAtGate,
+  merchantAccountLine,
   PHONE_STANDARD_RATE_HINT,
   takesDepositPhoto,
   SPACING,
@@ -252,6 +255,7 @@ function DonationForm({
         <>
           <CollectionQrModal
             methodName={option.method.DonationMethod}
+            payee={merchantAccountLine(option.link)}
             uploadedUrl={option.qrCodeUrl}
             fallback={bundledQr}
             visible={qrOpen}
@@ -260,7 +264,7 @@ function DonationForm({
           <Button title={`Show the ${option.method.DonationMethod} QR code`} variant="secondary" onPress={() => setQrOpen(true)} />
         </>
       ) : option.kind === 'qr' ? (
-        <DonationQr url={option.qrCodeUrl} methodName={option.method.DonationMethod} />
+        <DonationQr url={option.qrCodeUrl} methodName={option.method.DonationMethod} payee={merchantAccountLine(option.link)} />
       ) : null}
       <Card accent={color.navy}>
         <AppText variant="title">{isItem ? 'Physical item donation' : `${option.method.DonationMethod} donation`}</AppText>

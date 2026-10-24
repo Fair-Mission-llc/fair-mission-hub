@@ -58,6 +58,16 @@ export const MISSION_AREA_COLORS = {
   life: BRAND.red,
 } as const;
 
+/**
+ * Sprint 9 Revision 6.0: the categorical series colours of the portal's charts (the budget category pie and bars), in
+ * fixed slot order - the data-viz reference palette, validated on the white surface (CVD and normal-vision separation
+ * pass; three slots sit under 3:1 contrast, so every chart ships labels and a table). A chart gives a series the slot
+ * of its entity's place in a stable order, never its rank; past the eighth series, the rest fold into 'Other'.
+ */
+export const CHART_SERIES_COLORS = ['#2A78D6', '#EB6834', '#1BAF7A', '#EDA100', '#E87BA4', '#008300', '#6250D6', '#E34948'] as const;
+/** The neutral of the charts: the Uncategorized group and the folded 'Other' slice. */
+export const CHART_NEUTRAL_COLOR = '#8A94A6';
+
 /** Body copy, forms, lists, timestamps. */
 export const FONT_BODY = 'Arial, sans-serif';
 /** Major titles only. */

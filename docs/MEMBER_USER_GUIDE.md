@@ -1211,7 +1211,7 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 
 **Steps:**
 1. Tap the tile for the donor's method, for example **Venmo**.
-2. For a QR method: turn the phone to the donor. Wait for the donor's payment confirmation.
+2. For a QR method: read the **Pays into …** line under the heading. Tell the donor whose account receives the gift. Turn the phone to the donor. Wait for the donor's payment confirmation.
 3. For a QR method: check the amount. Tap **Continue**.
 4. Check the amount in **AMOUNT**. It shows the session's standard rate, for example `25.00`. If the box is empty or the donor gave a different amount, type the amount.
 5. Choose the **DONATION TYPE**.
@@ -1240,6 +1240,7 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 | --- | --- | --- |
 | *"Your council has not uploaded this QR code yet."* | A custom QR method has no image. | Take the gift as cash or card. Tell your council Admin. |
 | *"The QR code could not be loaded."* | The phone is offline, or the image link is broken. | Take the gift as cash or card. |
+| The **Pays into …** line names the wrong account. | The council has not set the account name or owner of the method. | Tell your council Admin or the Treasurer. |
 | *"Your council has not enabled any donation methods yet."* | The council has no methods. | Ask an Admin, the Treasurer or the Financial Secretary. |
 
 ### 7.2.1 Record a donation by check

@@ -467,6 +467,10 @@ import {
   isCouncilWideList,
   isListVisibleTo,
   assertMayRunEventIntake,
+  buildGLSplitProfiles,
+  cleanGLSplitProfile,
+  type GLAccountSplitAllocation,
+  type GLSplitProfile,
   agendaAlreadyStructured,
   agendaLineNotFound,
   assertAgendaLineRef,
@@ -960,8 +964,11 @@ const DB_NAME = 'kofc.db';
  * 98: VolunteerQuarantine.return_explanation - the reviewer's reason on a time entry returned for correction, in place
  *     of the 'Returned for correction: ' prefix in quarantine_reason - and TransactionAttachments, the deposit photos
  *     taken with '📸 Attach Deposit Photo' on Check donations (Sprint 9 Revision 3.0; Cash too until Revision 4.0).
+ * 99: GLAccount.is_split_account and GLAccountSplitAllocation - Split Accounts whose batch postings are shared out to
+ *     destination accounts by percentage - and CouncilDonationMethod.account_identity_label, the account name the
+ *     phone's QR screen shows (Sprint 9 Revision 6.0).
  */
-const SCHEMA_VERSION = 98;
+const SCHEMA_VERSION = 99;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -7700,7 +7707,14 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `code donations for council ${councilId}`);
         await this.assertCouncilsExist(db, [councilId]);
-        const plan = planBatchCoding(councilId, await this.batchCodingRows(db, councilId), await this.glAccounts(db, councilId), input, this.now());
+        const plan = planBatchCoding(
+          councilId,
+          await this.batchCodingRows(db, councilId),
+          await this.glAccounts(db, councilId),
+          input,
+          this.now(),
+          await this.glSplitProfiles(db, councilId),
+        );
         assertLedgerPeriodsOpen(plan.lines, await this.councilAudits(db, councilId));
         const ids = await this.insertJournalLines(db, councilId, plan.lines);
         const posted = await db.getFirstAsync<{ TransactionID: string }>('SELECT [TransactionID] FROM [JournalEntry] WHERE [id] = ?', [ids[0] ?? 0]);
@@ -7722,9 +7736,35 @@ export class SqliteDataService implements DataService {
           total: plan.total,
           revenueAccountId: plan.revenueAccount.id,
           revenueAccountName: plan.revenueAccount.AccountName,
+          splits: plan.splits,
         };
       });
       return result!;
+    },
+
+    listGLSplitProfiles: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the split accounts of council ${councilId}`);
+      await this.assertCouncilsExist(db, [councilId]);
+      return this.glSplitProfiles(db, councilId);
+    },
+
+    setGLSplitProfile: async (actorId, councilId, accountId, input) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `change the split accounts of council ${councilId}`);
+        await this.assertCouncilsExist(db, [councilId]);
+        const destinations = cleanGLSplitProfile(councilId, accountId, input, await this.glAccounts(db, councilId), await this.glSplitAllocations(db, councilId));
+        await db.runAsync('DELETE FROM [GLAccountSplitAllocation] WHERE [source_gl_account_id] = ?', [accountId]);
+        for (const d of destinations) {
+          await db.runAsync(
+            'INSERT INTO [GLAccountSplitAllocation] ([source_gl_account_id], [destination_gl_account_id], [split_percentage]) VALUES (?, ?, ?)',
+            [accountId, d.destinationAccountId, d.percentage],
+          );
+        }
+        await db.runAsync('UPDATE [GLAccount] SET [is_split_account] = ? WHERE [id] = ?', [destinations.length > 0 ? 1 : 0, accountId]);
+      });
+      return this.glSplitProfiles(db, councilId);
     },
 
     getCashAuditBoard: async (actorId, councilId) => {
@@ -8055,6 +8095,18 @@ export class SqliteDataService implements DataService {
       await this.glAccounts(db, councilId),
       new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
     );
+  }
+
+  /** Sprint 9 Revision 6.0: the split allocation rows whose split account belongs to the council. */
+  private glSplitAllocations(db: SQLite.SQLiteDatabase, councilId: number): Promise<GLAccountSplitAllocation[]> {
+    return db.getAllAsync<GLAccountSplitAllocation>(
+      `SELECT s.* FROM [GLAccountSplitAllocation] s JOIN [GLAccount] a ON a.[id] = s.[source_gl_account_id] WHERE a.[CouncilID] = ? ORDER BY s.[id]`,
+      [councilId],
+    );
+  }
+
+  private async glSplitProfiles(db: SQLite.SQLiteDatabase, councilId: number): Promise<GLSplitProfile[]> {
+    return buildGLSplitProfiles(councilId, await this.glAccounts(db, councilId), await this.glSplitAllocations(db, councilId));
   }
 
   private glAccounts(db: SQLite.SQLiteDatabase, councilId: number): Promise<GLAccount[]> {

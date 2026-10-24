@@ -3908,3 +3908,49 @@ GO
 
 CREATE INDEX [TransactionAttachments_Donation_Idx] ON [TransactionAttachments] ([donation_id]);
 GO
+
+-- =========================================================================
+-- Sprint 9 Revision 6.0: GL SPLIT ACCOUNTS AND MERCHANT ACCOUNT LABELS (schema version 99)
+--
+-- GLAccount.is_split_account marks a Split Account: a line the Treasurer codes to but that never holds a balance of
+-- its own. GLAccountSplitAllocation holds its destinations - another account of the same council and type, and the
+-- percentage of each posting it receives. The percentages of one split account add up to exactly 100.00
+-- (gl-splits.ts). When the Treasurer codes donations to a split account on the High-Volume Batch Transaction Coder,
+-- the batch posting credits each destination its share instead of the split account (cents rounding to the last
+-- destination), and the donations keep the split account as the line they were coded to. Only the Treasurer and Super
+-- Admins change the profile (finance.setGLSplitProfile). A split account cannot be a destination itself.
+--
+-- CouncilDonationMethod.account_identity_label is the name of the account an enabled payment method pays into, as the
+-- donor sees it in the payment app (for example 'St. Mary''s Cathedral Parish' or '@KofC-15295'). The phone's QR code
+-- screen shows it with the method's account owner (account_owner_entity), so the collector can tell the donor whose
+-- account the money goes to. NULL shows the owner only.
+-- The phone database version moves to 99.
+-- =========================================================================
+ALTER TABLE [GLAccount] ADD [is_split_account] BIT NOT NULL DEFAULT 0;
+GO
+
+CREATE TABLE [GLAccountSplitAllocation] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[source_gl_account_id] INTEGER NOT NULL,
+	[destination_gl_account_id] INTEGER NOT NULL,
+	[split_percentage] DECIMAL(5,2) NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [GLAccountSplitAllocation]
+ADD FOREIGN KEY([source_gl_account_id])
+REFERENCES [GLAccount]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [GLAccountSplitAllocation]
+ADD FOREIGN KEY([destination_gl_account_id])
+REFERENCES [GLAccount]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE UNIQUE INDEX [GLAccountSplitAllocation_Source_Destination_Idx] ON [GLAccountSplitAllocation] ([source_gl_account_id], [destination_gl_account_id]);
+GO
+
+ALTER TABLE [CouncilDonationMethod] ADD [account_identity_label] VARCHAR(100) NULL;
+GO

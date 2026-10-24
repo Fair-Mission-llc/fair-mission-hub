@@ -22,6 +22,8 @@ import {
   describeCashVariance,
   describeError,
   formatDate,
+  GL_SPLIT_ACCOUNT_LABEL,
+  isSplitAccount,
   SELECT_ALL_UNCODED_LABEL,
   type CashAuditRow,
   type SessionUser,
@@ -237,7 +239,10 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
       const done = await db.finance.batchCodeDonations(user.memberId, councilId, { donationIds: picked.map((r) => r.donation.id), revenueAccountId: lineId });
       setMessage({
         tone: 'info',
-        text: `Coded ${done.count} donation${done.count === 1 ? '' : 's'} (${formatMoney(done.total)}) to ${done.revenueAccountName} as one posting.`,
+        text:
+          `Coded ${done.count} donation${done.count === 1 ? '' : 's'} (${formatMoney(done.total)}) to ${done.revenueAccountName} as one posting.` +
+          // Sprint 9 Revision 6.0: a Split Account's credit went to its destinations.
+          (done.splits.length > 0 ? ` Split: ${done.splits.map((x) => `${formatMoney(x.amount)} to ${x.destinationAccountName}`).join(', ')}.` : ''),
       });
       setSelected(new Set());
       await view.reload();
@@ -286,7 +291,7 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
                       <option value="">Choose the Revenue line</option>
                       {view.data!.revenueAccounts.map((a) => (
                         <option key={a.id} value={a.id}>
-                          {a.AccountName}
+                          {isSplitAccount(a) ? `${a.AccountName} (${GL_SPLIT_ACCOUNT_LABEL})` : a.AccountName}
                         </option>
                       ))}
                     </Select>

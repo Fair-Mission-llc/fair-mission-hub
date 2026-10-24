@@ -57,6 +57,8 @@ function FinanceDashboard() {
   const concluded = useLoad(() => db.budget.getConcludedPerformance(user.memberId, councilId), [user.memberId, councilId]);
   const analysisYear = currentFraternalYear(new Date());
   const analysis = useLoad(() => db.budget.getBudgetAnalysis(user.memberId, councilId, analysisYear), [user.memberId, councilId, analysisYear]);
+  // Sprint 9 Revision 6.0: the category charts; a reader who may not review budget performance just goes without them.
+  const progress = useLoad(() => db.budget.getBudgetProgress(user.memberId, councilId, analysisYear).catch(() => null), [user.memberId, councilId, analysisYear]);
   const [transferring, setTransferring] = useState(false);
   const canPost = canPostGeneralLedger(user, councilId);
   const reload = async () => {
@@ -125,6 +127,7 @@ function FinanceDashboard() {
       {analysis.data ? (
         <BudgetAnalyzerCard
           analysis={analysis.data}
+          progress={progress.data}
           canSetCeiling={canManageBudgetForecast(user, councilId)}
           onSaveCeiling={async (ceiling) => {
             await db.budget.setTargetSpendingCeiling(user.memberId, councilId, analysisYear, ceiling);

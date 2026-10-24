@@ -6,7 +6,8 @@
 // budget.prePopulateNextYear, custom lines come from the drawer (budget.addCustomBudgetLine), and each line's proposed
 // amount, notes and category save on change (budget.updateLineItemBudget). Everyone else sees the same sheet as
 // read-only text. Lines are grouped under the council's own budget categories (CouncilBudgetCategory, kept on Council
-// Lookup Tables) with an Uncategorized group for the rest. Writes are open May 1 through June 30 (canEditBudgetYear);
+// Lookup Tables, and since Sprint 9 Revision 6.0 in the Budget categories panel on this page) with an Uncategorized
+// group for the rest. Writes are open May 1 through June 30 (canEditBudgetYear);
 // before that the drivers refuse them (BUDGET_WINDOW_NOT_OPEN) and from July 1 the year is Finalized
 // (BUDGET_YEAR_FINALIZED). A Super Admin on the in-memory mock may tick "Simulate June Drafting Window", which unlocks
 // the inputs and sends superAdminOverride with every write.
@@ -45,8 +46,10 @@ import {
   type BudgetYearPerformance,
   type CouncilBudgetCategory,
   type CouncilBudgetForecast,
+  canManageCouncilLookups,
 } from '@kofc/shared';
 import { BudgetAlertTag, formatPercent } from '@/components/BudgetParts';
+import { BudgetCategoryManager } from '@/components/BudgetCategoryManager';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { Drawer } from '@/components/Drawer';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
@@ -322,7 +325,7 @@ function CustomLineDrawer({
         >
           {(id) => <Input id={id} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />}
         </Field>
-        <Field label="Budget category" hint="The council's categories are kept under Council Lookup Tables → Budget categories.">
+        <Field label="Budget category" hint="The council's categories are kept in the Budget categories panel on this page.">
           {(id) => <CategorySelect id={id} value={categoryId} categories={categories} onChange={setCategoryId} />}
         </Field>
         <Field label="Notes (optional)">
@@ -575,6 +578,11 @@ function Projections({ councilId, year, today, simulated }: { councilId: number;
         />
       ) : null}
 
+      {/* Sprint 9 Revision 6.0: the FS, Treasurer or an Admin define the council's categories here. */}
+      {canManageCouncilLookups(user, councilId, 'CouncilBudgetCategory') && forecast.data ? (
+        <BudgetCategoryManager councilId={councilId} categories={categories} onChanged={forecast.reload} />
+      ) : null}
+
       <section aria-label="Budget spreadsheet" className="rounded border border-line bg-white">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2">
           <h2 className="font-serif text-lg font-bold">Annual Budget Projections · {year}</h2>
@@ -588,7 +596,7 @@ function Projections({ councilId, year, today, simulated }: { councilId: number;
         </header>
         <div className="flex flex-col gap-6 p-4">
           {categories.length === 0 && canEdit ? (
-            <Notice tone="info">This council has no budget categories yet. Add them under Council Lookup Tables → Budget categories; until then every line is Uncategorized.</Notice>
+            <Notice tone="info">This council has no budget categories yet. Add them in the Budget categories panel above; until then every line is Uncategorized.</Notice>
           ) : null}
           {forecast.loading && !forecast.data ? (
             <p className="text-sm text-muted">Loading…</p>
