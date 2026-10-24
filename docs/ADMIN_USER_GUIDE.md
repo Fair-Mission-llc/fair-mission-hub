@@ -8,27 +8,27 @@
 > **Every administrator is also a member.** Signing up, logging hours and taking donations are in the [Member User Guide](MEMBER_USER_GUIDE.md).
 > The full access table is in the [Role Permissions Matrix](ROLE_PERMISSIONS_MATRIX.md).
 
-> **Section numbers:** the four officer manuals share one numbering. Section 6.3 is the same section in whichever manual holds it. The [manual map](#manual-map) shows which manual holds each chapter.
+> **Numbering and shared tasks:** this manual numbers its own chapters from 1. A task that several officers do is printed word for word in the manual of each of those officers. A reference to a section in another manual names that manual. The [manual map](#manual-map) lists the chapters of all four officer manuals.
 
 ---
 
 ## Contents
 
 - [1. Roles and access](#1-roles-and-access)
-- [3. Module feature flags](#3-module-feature-flags)
-- [8. The Google Drive archive vault](#8-the-google-drive-archive-vault)
-- [9. The feedback inbox and SOP publishing](#9-the-feedback-inbox-and-sop-publishing)
-- [10. Lookup tables, service connections and global lists](#10-lookup-tables-service-connections-and-global-lists)
-- [11. Data protection rules](#11-data-protection-rules)
-- [12. Troubleshooting reference](#12-troubleshooting-reference)
-- [16. Council Wide Settings and platform settings](#16-council-wide-settings-and-platform-settings)
-- [17. Access requests, impersonation and remote help](#17-access-requests-impersonation-and-remote-help)
-- [25. Feedback loops and the Super Admin Desk](#25-feedback-loops-and-the-super-admin-desk)
-- [28. Run a room pilot on the hub laptop](#28-run-a-room-pilot-on-the-hub-laptop)
-- [30. Reset the database to the seed data](#30-reset-the-database-to-the-seed-data)
-- [31. Network addresses, ports and configuration keys](#31-network-addresses-ports-and-configuration-keys)
-- [32. Firewall clearance](#32-firewall-clearance)
-- [33. The software bill of materials (SBOM)](#33-the-software-bill-of-materials-sbom)
+- [2. Module feature flags](#2-module-feature-flags)
+- [3. The Google Drive archive vault](#3-the-google-drive-archive-vault)
+- [4. The feedback inbox and SOP publishing](#4-the-feedback-inbox-and-sop-publishing)
+- [5. Lookup tables, service connections and global lists](#5-lookup-tables-service-connections-and-global-lists)
+- [6. Data protection rules](#6-data-protection-rules)
+- [7. Troubleshooting reference](#7-troubleshooting-reference)
+- [8. Council Wide Settings and platform settings](#8-council-wide-settings-and-platform-settings)
+- [9. Access requests, impersonation and remote help](#9-access-requests-impersonation-and-remote-help)
+- [10. Feedback loops and the Super Admin Desk](#10-feedback-loops-and-the-super-admin-desk)
+- [11. Run a room pilot on the hub laptop](#11-run-a-room-pilot-on-the-hub-laptop)
+- [12. Reset the database to the seed data](#12-reset-the-database-to-the-seed-data)
+- [13. Network addresses, ports and configuration keys](#13-network-addresses-ports-and-configuration-keys)
+- [14. Firewall clearance](#14-firewall-clearance)
+- [15. The software bill of materials (SBOM)](#15-the-software-bill-of-materials-sbom)
 - [Appendix: QR code files](#appendix-qr-code-files)
 - [Manual map](#manual-map)
 
@@ -44,7 +44,6 @@ A **Warning** line comes before the steps when the task deletes data, sends mess
 ## 1. Roles and access
 
 ### 1.1 Member types and officer roles
-
 A member has one member type. A member may also hold one or more officer roles.
 
 | Member type | Scope |
@@ -63,7 +62,6 @@ A member has one member type. A member may also hold one or more officer roles.
 | Any other seated officer | Reads the dashboards. Schedules meetings. Runs the live console. |
 
 ### 1.2 Access rules
-
 - An Admin acts only on the Admin's own council. A Super Admin acts on any council.
 - The data service checks every rule. A refused action shows a message and changes nothing.
 - Nobody signs or pays an expense report that the same person submitted. The rule includes Super Admins.
@@ -77,7 +75,6 @@ A member has one member type. A member may also hold one or more officer roles.
 <!-- /KEEP_IMAGE -->
 
 ### 1.3 Choose the council
-
 Most management pages have a **Council** selector at the top.
 
 - An Admin sees the Admin's own council.
@@ -87,10 +84,9 @@ The navy header shows your own council, your name, your member type and your off
 
 ---
 
-## 3. Module feature flags
+## 2. Module feature flags
 
-### 3.1 Concept: backend logic of the flags
-
+### 2.1 Concept: backend logic of the flags
 Each council row has twelve on/off columns. Each column is a module feature flag. A new council has every flag on.
 
 | Flag column | Label in the Feature Flags Control Center | Web pages hidden when off | Phone items hidden when off |
@@ -106,7 +102,7 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
 | `feature_council_history` | **Council history** | Council history (Team Legacy) | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
-| `feature_volunteer_quarantine` | **Flagged hours review** | The **Flagged Hours Review** drawer on the **Grand Knight Desk** of the dashboard. Members' hours also stop going to review (section 15). | None |
+| `feature_volunteer_quarantine` | **Flagged hours review** | The **Flagged Hours Review** drawer on the **Grand Knight Desk** of the dashboard. Members' hours also stop going to review (section 10 of the Executive Governance Manual). | None |
 
 The flags follow four rules.
 
@@ -117,8 +113,7 @@ The flags follow four rules.
 
 The general ledger, the budget and the activity hour log have no flag. They stay on for every council.
 
-### 3.2 Switch a module on or off
-
+### 2.2 Switch a module on or off
 > **Prerequisite (who can do this):** You must have Super Admin privileges. Council Admins do not see the Feature Flags Control Center.
 > **Warning:** a switched-off module disappears at once for every member of the council, on the web and on the phone.
 
@@ -141,10 +136,9 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 
 ---
 
-## 8. The Google Drive archive vault
+## 3. The Google Drive archive vault
 
-### 8.1 Concept: backend logic of the Drive archive vault
-
+### 3.1 Concept: backend logic of the Drive archive vault
 The vault files council documents in the council's shared Google Drive. The vault has one root folder and three sub-folders.
 
 | Folder path | Holds | Filled from | Accepted files |
@@ -171,8 +165,7 @@ The vault follows five rules.
 > **Security warning:** the portal has no server-side sessions yet. The upload route cannot confirm that the caller is an Admin.
 > Set `DRIVE_VAULT_LIVE=1` only behind an authenticating proxy. Without the four settings, the screen keeps a browser link for the file.
 
-### 8.2 Turn on live Drive uploads
-
+### 3.2 Turn on live Drive uploads
 > **Prerequisite (who can do this):** You must be the platform's server operator. A Super Admin approves the change.
 > **Warning:** an open upload route lets anyone who reaches the server write files to the shared drive.
 
@@ -190,7 +183,7 @@ The vault follows five rules.
 
 **Expected result:** A new Admin upload creates a file under `Fraternal Enterprise Suite`.
 
-A council can use its own Drive private key instead of the server key. A council Admin saves the key on the **Credentials Vault** page (10.8).
+A council can use its own Drive private key instead of the server key. A council Admin saves the key on the **Credentials Vault** page (5.2).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -200,21 +193,20 @@ A council can use its own Drive private key instead of the server key. A council
 
 ---
 
-## 9. The feedback inbox and SOP publishing
+## 4. The feedback inbox and SOP publishing
 
-### 9.1 Read the feedback inbox
-
+### 4.1 Read the feedback inbox
 > **Prerequisite (who can do this):** You must have Super Admin privileges.
 
 **Goal:** Read the notes and bug reports that council Admins send.
 
-**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. The platform owner also reads the notes on the **Super Admin Desk** (25.6).
+**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. The platform owner also reads the notes on the **Super Admin Desk** (10.3).
 
 **Steps:**
 1. Scroll below **Send a Note to the Platform Owner**.
 2. Read each note. The newest note shows first.
 
-The Online Help Center has no feedback form since Sprint 8O. Section 25.4 explains the change.
+The Online Help Center has no feedback form since Sprint 8O. Section 10.1 explains the change.
 
 <!-- KEEP_IMAGE: online help center capture -->
 ![Online Help Center with the Feedback inbox (/help)](../generated/dashboard_visual_catalog/help.png)
@@ -228,8 +220,7 @@ The Online Help Center has no feedback form since Sprint 8O. Section 25.4 explai
 | The inbox is missing. | Only Super Admins see the inbox. | Ask a Super Admin. |
 | The inbox is not on the Online Help Center. | The inbox moved to **Administrative Feedback Loops** in Sprint 8O. | Open Sidebar → System Settings → **Administrative Feedback Loops**. |
 
-### 9.2 Publish a standard operating procedure
-
+### 4.2 Publish a standard operating procedure
 > **Prerequisite (who can do this):** You must be a platform maintainer with write access to the code repository.
 > **Warning:** the SOP Center reads the files when the portal is built. A new SOP shows only after a rebuild.
 
@@ -255,10 +246,9 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 
 ---
 
-## 10. Lookup tables, service connections and global lists
+## 5. Lookup tables, service connections and global lists
 
-### 10.7 Keep the council lookup tables
-
+### 5.1 Keep the council lookup tables
 > **Prerequisite (who can do this):** You must be a council Admin or a Super Admin for every tab. The Treasurer and the FS may edit the donation tabs and **Budget categories** only.
 > **Warning:** **Save changes** saves every row together. One refused row saves nothing.
 
@@ -278,7 +268,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 
 **Expected result:** The changes save. Phones show the new values on the next load.
 
-The outbound email settings are not on this page. Set them on the **Credentials Vault** page (10.8). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (16.8).
+The outbound email settings are not on this page. Set them on the **Credentials Vault** page (5.2). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (8.8).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -286,8 +276,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 | *"Your role cannot maintain this council's lookups."* | You are on another council, or you have no finance role. | Ask a council Admin. |
 | A budget category will not delete. | Budget lines use the category. | Move the lines to another category. |
 
-### 10.8 Connect the council email, Google Drive, Microsoft Co-Pilot and receipt reading
-
+### 5.2 Connect the council email, Google Drive, Microsoft Co-Pilot and receipt reading
 > **Prerequisite (who can do this):** You must be a council Admin or a Super Admin to save or remove a connection. Seated officers see the status lines only. Other members do not see the **Credentials Vault**.
 > **Warning:** **Remove** deletes the saved password or key at once. The council goes back to the portal default.
 
@@ -317,8 +306,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 | Saved keys stop working after a server restart. | The server has no fixed vault secret. | Ask the server operator to set `CREDENTIALS_VAULT_SECRET`. Save the keys again. |
 | A message says the endpoint must be a cognitiveservices.azure.com address. | The value is not the Azure endpoint. | Copy **Endpoint** from **Keys and Endpoint**. |
 
-### 10.9 Keep the global lists, councils, parishes and charities
-
+### 5.3 Keep the global lists, councils, parishes and charities
 > **Prerequisite (who can do this):** You must be a Super Admin for **Global Governance Matrices** and **Councils**. You must be a council Admin or a Super Admin for **Parish & Pastors Linkage**. You must be a charity registry keeper for **Global Charities Registry**.
 > **Warning:** a value marked **Built in** cannot be renamed or deleted.
 
@@ -347,7 +335,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 ![Global Charities Registry (/charities/registry)](../generated/dashboard_visual_catalog/charities_registry.png)
 <!-- /KEEP_IMAGE -->
 
-The base dues rate, the tenant type and the **Platform Settings** are not on **Global Governance Matrices**. A Super Admin sets them on **Global System Parameters** (sections 16.5 to 16.8).
+The base dues rate, the tenant type and the **Platform Settings** are not on **Global Governance Matrices**. A Super Admin sets them on **Global System Parameters** (sections 8.5 to 8.8).
 
 **Expected result:** Every council sees the new value.
 
@@ -358,40 +346,37 @@ The base dues rate, the tenant type and the **Platform Settings** are not on **G
 
 ---
 
-## 11. Data protection rules
-
+## 6. Data protection rules
 - **Nothing cascades.** The platform refuses to delete a record that other records use. The message names the record in use.
 - Examples: a shift with sign-ups, a member with logged hours, a lookup value in use.
 - One exception: a deleted distribution list also deletes the list's member entries.
-- **Time windows** protect records. Shift hours and activity hours close after the council's logging window. The default is 90 days (section 16.3).
+- **Time windows** protect records. Shift hours and activity hours close after the council's logging window. The default is 90 days (section 8.3).
 - **Approved budgets** are frozen for everyone.
 
 ---
 
-## 12. Troubleshooting reference
-
+## 7. Troubleshooting reference
 | Symptom or message | Cause | Fix |
 | --- | --- | --- |
-| A page is missing from the sidebar | Your role has no access, or a feature flag is off. | Check section 1 and section 3. |
+| A page is missing from the sidebar | Your role has no access, or a feature flag is off. | Check section 1 and section 2. |
 | *"…cannot …"* refusal on save | You act outside your council or role. | Switch the **Council** selector, or ask a Super Admin. |
 | Delete refused (record in use) | Other records depend on the record. | Clear the dependants first, or keep the record. |
 | New member cannot create a password | The setup code expired or the email is wrong. | Select **Send new setup code**. |
-| Drive uploads stay as browser links | Live uploads are off. | See 8.2. |
-| Other devices cannot reach the hub | The firewall blocks port 3000, or the Wi-Fi is set to Public. | See section 32. |
-| *"The hub vault is at database version ..."* | The vault is older than this build. | Archive the vault (section 30.1). |
-| Every member is signed out after a restart | `PORTAL_SESSION_SECRET` is not set. | Set the key (section 31). |
-| Saved council credentials are gone after a restart | `CREDENTIALS_VAULT_SECRET` is not set. | Set the key (section 31). Enter the credentials again. |
-| `npm run build:pilot` stops with `[sbom] ...` | The lockfile is missing or belongs to another project. | Run `npm install` (section 33.1). |
+| Drive uploads stay as browser links | Live uploads are off. | See 3.2. |
+| Other devices cannot reach the hub | The firewall blocks port 3000, or the Wi-Fi is set to Public. | See section 14. |
+| *"The hub vault is at database version ..."* | The vault is older than this build. | Archive the vault (section 12.2). |
+| Every member is signed out after a restart | `PORTAL_SESSION_SECRET` is not set. | Set the key (section 13). |
+| Saved council credentials are gone after a restart | `CREDENTIALS_VAULT_SECRET` is not set. | Set the key (section 13). Enter the credentials again. |
+| `npm run build:pilot` stops with `[sbom] ...` | The lockfile is missing or belongs to another project. | Run `npm install` (section 15.2). |
 | An officer cannot find a task | Officer tasks are in the role manuals. | Open the manual from the officer's desk header. |
 
 Quick answers are also in **Answers → Online Help Center**. Officer problems are in the Common problems tables of the role manuals.
 
 ---
 
-## 16. Council Wide Settings and platform settings
+## 8. Council Wide Settings and platform settings
 
-### 16.1 Concept: council settings and platform settings
-
+### 8.1 Concept: council settings and platform settings
 Some numbers belong to one council. Other numbers belong to every council at once.
 
 | Kind | Who changes it | Where | What it holds |
@@ -406,8 +391,7 @@ The time windows and reminder days were fixed numbers in earlier versions. Each 
 
 The page address is `/system-settings/council-settings`. Every administration and setup page sits under the System Settings pillar. An old bookmark to `/setup/council-settings` opens the new address.
 
-### 16.2 Concept: the setting cards and the (i) help
-
+### 8.2 Concept: the setting cards and the (i) help
 Both settings pages group the fields into cards. Each card has a navy title bar and its own save button.
 
 | Page | Cards, in order |
@@ -425,8 +409,7 @@ Some fields show a red **Not used yet** tag. The portal saves the number for a f
 
 The screenshot above shows the page before the cards were added. The fields and their labels are the same.
 
-### 16.2.1 Concept: the settings filing cabinet
-
+### 8.2.1 Concept: the settings filing cabinet
 **Council Wide Settings** is a filing cabinet. A rail of four tabs is on the left. The cards of the selected tab show on the right. The page opens on **Standard Bank Accounts**. Select a tab to show its cards. On a narrow screen, the tabs are above the cards.
 
 A number that you typed but did not save stays in its card when you select a different tab. Save each card before you leave the page.
@@ -436,7 +419,7 @@ A number that you typed but did not save stays in its card when you select a dif
 | **Standard Bank Accounts** | The **Payment & Account Settings** links and the read-only **Council Instance Record**. |
 | **Global Revenue Splits** | The **Parish Fundraiser Split** card and the **Annual Budget Planner** banner. |
 | **User Access & Roster Control** | The **Meeting Check-In**, **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. |
-| **System Flags & Toggles** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 16.3), the **Council Feature Deployment Matrix** (section 16.2.2), the **Cross-Council Loaner Library Sharing** card, the **Module & Platform Switches** links, the **Reference Archives** links and the **Custom User Guides** card. |
+| **System Flags & Toggles** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **Council Feature Deployment Matrix** (section 8.2.2), the **Cross-Council Loaner Library Sharing** card, the **Module & Platform Switches** links, the **Reference Archives** links and the **Custom User Guides** card. |
 
 The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
@@ -446,8 +429,7 @@ The **Council Instance Record** shows the council number and name, the organizat
 
 The **Reference Archives** links show only the pages that you may open: **Operations Knowledge Archive**, **System Lookups** and **Supreme Sync**.
 
-### 16.2.2 Concept: the Council Feature Deployment Matrix
-
+### 8.2.2 Concept: the Council Feature Deployment Matrix
 The **Council Feature Deployment Matrix** is on the **System Flags & Toggles** tab. The matrix shows which advanced capabilities and modules are on for the council. Each row has a status badge.
 
 | Badge | Meaning |
@@ -461,20 +443,19 @@ The **Council Feature Deployment Matrix** is on the **System Flags & Toggles** t
 | --- | --- | --- |
 | **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, on the **Global Revenue Splits** tab |
 | **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, on the **System Flags & Toggles** tab |
-| **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 16.4.1) |
+| **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Council Lookups** → **Email Gateway** |
 
-**Council modules** rows: one row for each of the twelve module switches (section 3). A Super Admin changes them on the **Feature Flags Control Center**.
+**Council modules** rows: one row for each of the twelve module switches (section 2). A Super Admin changes them on the **Feature Flags Control Center**.
 
 The card counts the rows that are on, for example *"14 of 17 deployed"*. The matrix changes nothing by itself, except the **Biometric Authentication** button.
 
-### 16.3 Concept: the council settings
-
+### 8.3 Concept: the council settings
 **Financial Submissions** card:
 
 | On-screen label | Default | Allowed values | What the setting controls |
 | --- | --- | --- | --- |
-| **Days after an event or meeting to submit expenses** | 30 days | 1 to 365 | The expense filing window (section 6). A report that names an event or a meeting can be submitted from its first day through this many days after it ends. |
+| **Days after an event or meeting to submit expenses** | 30 days | 1 to 365 | The expense filing window (section 4 of the Executive Governance Manual). A report that names an event or a meeting can be submitted from its first day through this many days after it ends. |
 | **Days before an unsubmitted expense draft expires** | 90 days | 7 to 730 | **Not used yet.** Drafts do not expire today. |
 | **Days a charity proposal stays open for a vote** | 14 days | 1 to 90 | **Not used yet.** The council votes at the next Monthly meeting at least 10 days away. |
 
@@ -482,10 +463,10 @@ The card counts the rows that are on, for example *"14 of 17 deployed"*. The mat
 
 | On-screen label | Default | Allowed values | What the setting controls |
 | --- | --- | --- | --- |
-| **Most activities a member may report in one day** | 5 | 1 to 24 | The 5-activity rule (section 15.2) |
-| **Most hours a member may report on one activity in one day** | 5.0 hours | 0.25 to 24, in quarter hours | The 5.0-hour rule (section 15.2) |
-| **Extra hours allowed past a scheduled shift** | 1.0 hour | 0 to 8, in quarter hours | The shift padding rule (section 15.3) |
-| **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **🔍 Check for Inactive Members** (section 14.9) |
+| **Most activities a member may report in one day** | 5 | 1 to 24 | The 5-activity rule (section 10.2 of the Executive Governance Manual) |
+| **Most hours a member may report on one activity in one day** | 5.0 hours | 0.25 to 24, in quarter hours | The 5.0-hour rule (section 10.2 of the Executive Governance Manual) |
+| **Extra hours allowed past a scheduled shift** | 1.0 hour | 0 to 8, in quarter hours | The shift padding rule (section 10.3 of the Executive Governance Manual) |
+| **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **🔍 Check for Inactive Members** (section 3.4 of the Financial Secretary Manual) |
 | **Days back a member may log volunteer time** | 90 days | 7 to 730 | The logging window. A member may log shift time and activity time this many days back. |
 | **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Collect** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
 | **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | The **Recorder Desk** counts down to the due date: the meeting's last day plus this number. Minutes not published by then show as overdue. |
@@ -495,8 +476,8 @@ The card counts the rows that are on, for example *"14 of 17 deployed"*. The mat
 
 | On-screen label | Default | Allowed values | What the setting controls |
 | --- | --- | --- | --- |
-| **Days after a shift before the first hours reminder** | 5 days | 1 to 60 | The first text reminder to a volunteer with no logged hours (section 13) |
-| **Days between follow-up hours reminders** | 7 days | 1 to 60 | The follow-up text reminders (section 13) |
+| **Days after a shift before the first hours reminder** | 5 days | 1 to 60 | The first text reminder to a volunteer with no logged hours (section 8 of the Executive Governance Manual) |
+| **Days between follow-up hours reminders** | 7 days | 1 to 60 | The follow-up text reminders (section 8 of the Executive Governance Manual) |
 | **Days before an officer is reminded to sign an expense report** | 3 days | 1 to 60 | **Not used yet.** No signature reminder is sent today. |
 
 A value of 0 for **Extra hours allowed past a scheduled shift** sends every report longer than the scheduled shift to review.
@@ -505,8 +486,7 @@ The logging window replaces two older limits: 3 months for shift time and 6 mont
 
 The logging window also ends the hours reminders. A shift older than the window shows **Closed** on the **Shifts awaiting hours** panel, and the reminders stop.
 
-### 16.4 Change the Council Wide Settings
-
+### 8.4 Change the Council Wide Settings
 > **Prerequisite (who can do this):** You must be a council Admin or a council officer of the council, or a Super Admin. Other members do not see this page.
 
 **Goal:** Set your council's volunteer time limits, time windows and reminder timing.
@@ -515,7 +495,7 @@ The logging window also ends the hours reminders. A shift older than the window 
 
 **Steps:**
 1. Super Admins only: choose the council in **Council** at the top of the page.
-2. Select the **System Flags & Toggles** tab. Find the card that holds the setting (section 16.3).
+2. Select the **System Flags & Toggles** tab. Find the card that holds the setting (section 8.3).
 3. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
 4. Enter the new number.
 5. Select the save button of the card, for example **Save Financial Submissions**.
@@ -528,13 +508,12 @@ The logging window also ends the hours reminders. A shift older than the window 
 | The page is not in the sidebar. | You are not an Admin or an officer of the council. | Ask a council Admin to make the change. |
 | A number in another card went back to its old value. | Each card saves only its own fields. | Enter the number again and select the save button of that card. |
 | The message says the value "must be a multiple of 0.25 hours". | Hours use 15-minute steps. | Enter a value such as `4.5` or `4.75`. |
-| The message says the value must be "from" one number "to" another. | The value is outside the allowed range (section 16.3). | Enter a value inside the range. |
+| The message says the value must be "from" one number "to" another. | The value is outside the allowed range (section 8.3). | Enter a value inside the range. |
 | The message says "Nothing changed." | Every number in the card is the same as the saved value. | Change a number, then save. |
 | A field with **Not used yet** has no effect. | No feature reads the number yet. | No fix is needed. Keep the default. |
-| You cannot find the cards. | A different tab is selected. | Select the tab that holds the card (section 16.2.1). |
+| You cannot find the cards. | A different tab is selected. | Select the tab that holds the card (section 8.2.1). |
 
-### 16.4.1 Turn biometric sign-in on or off for the council
-
+### 8.4.1 Turn biometric sign-in on or off for the council
 > **Prerequisite (who can do this):** You must be a council Admin or a council officer of the council, or a Super Admin.
 
 **Goal:** Allow or stop Face ID and fingerprint sign-in on the phones of the council's members.
@@ -555,22 +534,20 @@ The logging window also ends the hours reminders. A shift older than the window 
 | A member still sees the **[ 🔘 Enable FaceID / Biometric Login ]** switch. | The phone does not know the member's council before the sign-in. | No action. The phone makes no key after the sign-in. |
 | A member reads *"Your council has turned off biometric sign-in."* | Biometric sign-in is off for the council. | The member signs in with the password. |
 
-### 16.5 Concept: the Global System Parameters page
-
+### 8.5 Concept: the Global System Parameters page
 The **Global System Parameters** page holds the numbers that sit above the settings of one council. Only Super Admins see the page.
 
 | Card | What the card holds | Applies to |
 | --- | --- | --- |
 | **Global Council Parameters Dashboard** | The base dues rate and the tenant type (Knights of Columbus council or a white-labelled organization) | One council at a time |
-| **Platform Settings** | Three cards of numbers (section 16.6) | Every council at once |
+| **Platform Settings** | Three cards of numbers (section 8.6) | Every council at once |
 
 The **Platform Settings** card had the name **Platform Limits** in earlier versions. The cards were on **Global Governance Matrices** before that. The **Feature Flags Control Center** holds only the on/off module switches.
 
-### 16.6 Concept: the platform settings
-
+### 8.6 Concept: the platform settings
 | Card | On-screen label | Default | Allowed values | What the setting controls |
 | --- | --- | --- | --- | --- |
-| **Reminder Cadences** | **Days before a scheduled meeting that invitations appear** | 5 days | 1 to 60 | When the invitations of a cadence meeting reach the members (section 4). Meetings that are already built keep their release dates. |
+| **Reminder Cadences** | **Days before a scheduled meeting that invitations appear** | 5 days | 1 to 60 | When the invitations of a cadence meeting reach the members (section 2 of the Executive Governance Manual). Meetings that are already built keep their release dates. |
 | **Sign-in & Records** | **Hours a portal sign-in lasts** | 8 hours | 1 to 168 | When the portal server ends a web sign-in. The member then signs in again. |
 | **Sign-in & Records** | **Days to keep audit records** | 180 days | 30 to 3,650 | **Not used yet.** The portal keeps every record today. |
 | **Recording & Text Limits** | **Oral history recording time limit** | 900 seconds | 60 to 3,600 | The oral history recorder |
@@ -579,8 +556,7 @@ The **Platform Settings** card had the name **Platform Limits** in earlier versi
 
 A sign-in that already started keeps its old end time. The new sign-in length applies from the next sign-in.
 
-### 16.7 Change the platform settings
-
+### 8.7 Change the platform settings
 > **Prerequisite (who can do this):** You must be a Super Admin.
 > **Warning:** the settings apply to every council at once.
 
@@ -589,7 +565,7 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 **Start point:** Sidebar → System Settings → **Global System Parameters** → **Platform Settings**.
 
 **Steps:**
-1. Find the card that holds the setting (section 16.6).
+1. Find the card that holds the setting (section 8.6).
 2. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
 3. Enter the new number.
 4. Select the save button of the card, for example **Save Sign-in & Records**. The new numbers apply to every council at once.
@@ -604,8 +580,7 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 | The message says that the portal server did not take the new sign-in length. | Your web sign-in on the server ended. | Sign out. Sign in again. Save the number again. |
 | Meeting invitations still appear 5 days before the meeting. | The meetings were built before the change. | No fix is needed. Meetings built after the change use the new number. |
 
-### 16.8 Set a council's base dues rate and tenant type
-
+### 8.8 Set a council's base dues rate and tenant type
 > **Prerequisite (who can do this):** You must be a Super Admin.
 > **Warning:** a new tenant type changes the sidebar and the labels of every member of the council at once.
 
@@ -629,10 +604,9 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 
 ---
 
-## 17. Access requests, impersonation and remote help
+## 9. Access requests, impersonation and remote help
 
-### 17.1 Concept: council access requests
-
+### 9.1 Concept: council access requests
 A council that is not on the platform can ask for access from the sign-in page. The sign-in page has a small **[ 🔑 Request Access ]** link under the sign-in prompts, on the web and on the phone. Select the link to open the form.
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
@@ -649,8 +623,7 @@ Approving a request marks the request as reviewed. Approving does not create the
 
 > The web portal keeps requests on the portal server. A server restart clears them until the production database is connected. A request sent from the phone stays on that phone.
 
-### 17.2 Approve a council access request
-
+### 9.2 Approve a council access request
 > **Who can do this:** Super Admins. Other members do not see the Inbound Council Mail Center.
 
 **Goal:** Mark a council's access request as reviewed.
@@ -671,8 +644,7 @@ Approving a request marks the request as reviewed. Approving does not create the
 | The card says "No council has asked for access yet." | No request reached the portal server. | Ask the council to send the form again from the web sign-in page. |
 | The card shows an error about the session. | Your server session ended. | Sign out, then sign in again. |
 
-### 17.7 Concept: user impersonation (view as a member)
-
+### 9.3 Concept: user impersonation (view as a member)
 A Super Admin can see the portal exactly as one member sees the portal. Use this to check a member's sidebar, pages and permissions.
 
 | Rule | Value |
@@ -696,8 +668,7 @@ The gold bar names the member's council. When you select **Return to my account*
 
 Super Admins find members in two places. The **Affiliated Roster** shows one council at a time. The **View-As Member Lookup** page shows every council in one tree.
 
-### 17.8 View the portal as another member
-
+### 9.4 View the portal as another member
 > **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate User** button.
 
 **Goal:** See the portal with one member's sidebar, pages and permissions.
@@ -719,8 +690,7 @@ Super Admins find members in two places. The **Affiliated Roster** shows one cou
 | The row has no **👥 Impersonate User** button. | The member is you or another Super Admin. | You cannot view as a Super Admin. |
 | An error says "The server did not answer, so the view could not start." | The portal server cannot see the member or your session ended. | Sign out, sign in again, then try again. |
 
-### 17.8.1 Find a member in any council and view as that member
-
+### 9.4.1 Find a member in any council and view as that member
 > **Who can do this:** Super Admins. Other members do not see this page.
 
 **Goal:** Find one member among all councils without a long scroll, then view the portal as that member.
@@ -746,8 +716,7 @@ Super Admins find members in two places. The **Affiliated Roster** shows one cou
 | *"Nobody you may view as matches"* | No member matches every word you typed. | Type fewer words. |
 | A member shows in one group only. | Each member shows in the group of the highest seat. A Grand Knight who is also an Admin shows under **Executive Officers**. | Look in the group of the member's highest seat. |
 
-### 17.9 Concept: co-watching remote assistance
-
+### 9.5 Concept: co-watching remote assistance
 An officer or Admin who needs help can share a copy of the screen with the Super Admins. The officer starts and stops the sharing. Nothing is shared until the officer selects **Share my screen**.
 
 - The copy refreshes every 5 seconds while the officer shares.
@@ -755,8 +724,7 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 - The copy cannot run on the Super Admin's computer. The desk shows the copy as a still picture of the page.
 - Sharing stops when the officer selects **Stop sharing**, when a Super Admin closes the request, or after 30 minutes without an update.
 
-### 17.10 Ask for remote help
-
+### 9.6 Ask for remote help
 > **Who can do this:** Officers and Admins. Members and Super Admins do not see the button.
 
 **Goal:** Let a Super Admin see your screen while you get help.
@@ -778,8 +746,7 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 | The request fails with a session message. | Your server session ended. | Sign out, then sign in again. |
 | The red button changed back by itself. | A Super Admin closed the request, or 30 minutes passed. | Send a new request if you still need help. |
 
-### 17.11 Watch an officer's screen
-
+### 9.7 Watch an officer's screen
 > **Who can do this:** Super Admins. Other members do not see the Remote Assistance Desk.
 
 **Goal:** See the screen an officer shares and guide the officer.
@@ -803,16 +770,14 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 
 ---
 
-## 25. Feedback loops and the Super Admin Desk
+## 10. Feedback loops and the Super Admin Desk
 
-### 25.4 Concept: the Administrative Feedback Loops
-
+### 10.1 Concept: the Administrative Feedback Loops
 Members no longer send feedback from the Online Help Center. A member brings a problem to the council's Admin through the Communications Hub.
 The council's Admin sends a note to the platform owner from **Administrative Feedback Loops**.
 Only sessions with Admin clearance or higher see the page. A member, an officer without Admin rights and a phone user do not see the page.
 
-### 25.5 Send a note to the platform owner
-
+### 10.2 Send a note to the platform owner
 > **Who can do this:** council Admins and Super Admins. Other members do not see this page.
 
 **Goal:** Report a problem or ask for a change to the platform.
@@ -831,8 +796,7 @@ Only sessions with Admin clearance or higher see the page. A member, an officer 
 | --- | --- | --- |
 | The page is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin to send the note. |
 
-### 25.6 Use the Super Admin Desk
-
+### 10.3 Use the Super Admin Desk
 > **Who can do this:** the platform owner only. The tab shows only for the owner's own Super Admin sign-in. Other Super Admins do not see the tab.
 
 **Goal:** Read Admin notes, approve council licenses and switch council modules from one desk.
@@ -861,10 +825,9 @@ The desk has three folders across the top:
 
 ---
 
-## 28. Run a room pilot on the hub laptop
+## 11. Run a room pilot on the hub laptop
 
 ### Concept: the hub laptop and the vault
-
 In a room pilot, one laptop is the hub. The hub holds the council's data in one file on its disk:
 `packages/backend/data/central-hub-vault.db`. This file is the vault.
 
@@ -886,8 +849,7 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | `npm run dev:mobile:pilot` | Starts the phone app server. The phones work on the hub. |
 | `npm run hub:archive` | Moves the vault into `packages/backend/data/archive`. The next start makes a fresh vault. |
 
-### 28.1 Start the hub before a pilot session
-
+### 11.1 Start the hub before a pilot session
 > **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
 
 **Goal:** Start the hub, so that every laptop and phone works on the vault.
@@ -915,8 +877,7 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | The hub stops with *"The hub vault is at database version ..."*. | The vault is from an older version of the platform. | Run `npm run hub:archive`. Start the hub again. The old vault stays in the archive folder. |
 | Windows asks if Node.js can use the network. | The firewall protects the laptop. | Allow access on private networks. |
 
-### 28.2 Keep or archive the vault after a session
-
+### 11.2 Keep or archive the vault after a session
 > **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
 > **Warning:** do not delete or move the vault file by hand. Use `npm run hub:archive`. A vault that you delete cannot be recovered.
 
@@ -940,24 +901,22 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 
 ---
 
-## 30. Reset the database to the seed data
+## 12. Reset the database to the seed data
 
-### Concept: where the records live
-
+### 12.1 Concept: where the records live
 The platform has three kinds of build. Each kind keeps its records in a different place.
 
 | Build | Command | Where the records live | What resets them |
 | --- | --- | --- | --- |
 | Demo portal | `npm run build:web` | In each browser tab. Each tab has its own copy. | A reload of the tab (F5). |
-| Room pilot hub | `npm run build:pilot` | In one vault file on the hub laptop: `packages/backend/data/central-hub-vault.db`. | `npm run hub:archive` (section 30.1). |
+| Room pilot hub | `npm run build:pilot` | In one vault file on the hub laptop: `packages/backend/data/central-hub-vault.db`. | `npm run hub:archive` (section 12.2). |
 | Production | `NEXT_PUBLIC_DATA_DRIVER=remote` | In the council's Azure SQL database. | Never from the platform. Ask the database owner. |
 
 Every new database starts from two files: `Schema.sql` makes the tables, and `Seed.sql` adds the seed records. The seed records include the pilot personas and the scripted records of the pilot kit.
 
-The database version is 99. A hub vault made by an older version is refused at start (section 28.2).
+The database version is 99. A hub vault made by an older version is refused at start (section 11.2).
 
-### 30.1 Reset the hub vault to the seed data
-
+### 12.2 Reset the hub vault to the seed data
 > **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
 > **Warning:** the next session starts without the records of every earlier session. The old vault stays in the archive folder.
 
@@ -979,8 +938,7 @@ The database version is 99. A hub vault made by an older version is refused at s
 | `hub:archive` shows *"The hub is running."* | The hub holds the vault file open. | Stop `npm run dev:pilot`. Run `npm run hub:archive` again. |
 | `hub:archive` shows *"No vault in ..."*. | The vault was archived before, or the hub never started. | No action. The next `npm run dev:pilot` makes a fresh vault. |
 
-### 30.2 Rebuild the seed files after a change to Seed.sql
-
+### 12.3 Rebuild the seed files after a change to Seed.sql
 > **Who can do this:** a platform maintainer with write access to the code repository.
 
 **Goal:** Make the portal and the phone app use the changed seed records.
@@ -992,7 +950,7 @@ The database version is 99. A hub vault made by an older version is refused at s
 2. Run `npm run gen:db --workspace=apps/web`. The command writes the seed files of the portal and the phone app.
 3. Run `npm run gen:db:check --workspace=apps/web`. The command must end without an error.
 4. Run `npm test`.
-5. On a hub laptop, reset the vault (section 30.1).
+5. On a hub laptop, reset the vault (section 12.2).
 
 **Expected result:** A reloaded demo tab and a fresh hub vault show the changed seed records.
 
@@ -1004,10 +962,9 @@ The database version is 99. A hub vault made by an older version is refused at s
 
 ---
 
-## 31. Network addresses, ports and configuration keys
+## 13. Network addresses, ports and configuration keys
 
-### Concept: the 0.0.0.0 address
-
+### 13.1 Concept: the 0.0.0.0 address
 `npm run dev:pilot` serves the portal on the address `0.0.0.0`, port `3000`. The address `0.0.0.0` means every network address of the hub laptop. Laptops and phones on the room Wi-Fi reach the portal at `http://<hub laptop address>:3000`.
 
 Use `npm run dev:pilot` for every pilot. `npm run dev:web` is the developer server of the demo portal. It is not a pilot hub.
@@ -1017,8 +974,7 @@ Use `npm run dev:pilot` for every pilot. `npm run dev:web` is the developer serv
 | TCP `3000` | The web portal (Node.js) | `npm run dev:pilot` (`next start -H 0.0.0.0 -p 3000`) | Every laptop and phone of the pilot |
 | TCP `8081` | The phone app bundler (Expo, Node.js) | `npm run dev:mobile:pilot` | The phones in Expo Go |
 
-### Concept: the configuration keys
-
+### 13.2 Concept: the configuration keys
 The launchers set most keys. Set the other keys in the terminal or in `.env`. Never commit `.env` to the repository.
 
 | Key | Set by | What it does |
@@ -1033,8 +989,7 @@ The launchers set most keys. Set the other keys in the terminal or in `.env`. Ne
 | `CREDENTIALS_VAULT_SECRET` | You | Seals the saved council credentials. Without the key, every saved credential must be entered again after a restart. |
 | `FORM_1295_PYTHON` | You, optional | The Python program for the PDF reports and the custom guides. The default is `py` on Windows and `python3` elsewhere. |
 
-### 31.1 Find the hub laptop address
-
+### 13.3 Find the hub laptop address
 > **Who can do this:** the pilot facilitator, on the hub laptop.
 
 **Goal:** Know the address that every device of the pilot opens.
@@ -1056,16 +1011,14 @@ The launchers set most keys. Set the other keys in the terminal or in `.env`. Ne
 
 ---
 
-## 32. Firewall clearance
+## 14. Firewall clearance
 
-### Concept: why the firewall blocks the pilot
-
+### 14.1 Concept: why the firewall blocks the pilot
 Windows Defender Firewall blocks connections from other devices by default. The pilot needs two connections into the hub laptop: TCP port `3000` for the portal and TCP port `8081` for the phone bundler.
 
 Allow the ports on **Private** networks only. Never allow them on **Public** networks, for example the Wi-Fi of a café or a hotel.
 
-### 32.1 Clear the pilot ports in Windows Defender Firewall
-
+### 14.2 Clear the pilot ports in Windows Defender Firewall
 > **Who can do this:** the pilot facilitator, with an administrator account on the hub laptop.
 > **Warning:** the rule opens the ports to every device on private networks. Remove the rules after the pilot (step 5).
 
@@ -1092,10 +1045,9 @@ Allow the ports on **Private** networks only. Never allow them on **Public** net
 
 ---
 
-## 33. The software bill of materials (SBOM)
+## 15. The software bill of materials (SBOM)
 
-### Concept: the SBOM file
-
+### 15.1 Concept: the SBOM file
 A software bill of materials (SBOM) lists every software package that a build contains. Auditors use the list to check licenses and known security problems.
 
 `npm run build:pilot` writes the file `sbom.json` to the project folder before it builds the portal. The file follows the CycloneDX 1.5 standard. A failed SBOM stops the build.
@@ -1111,8 +1063,7 @@ A software bill of materials (SBOM) lists every software package that a build co
 
 The script reads only `package.json` and `package-lock.json`. It opens no network connection and runs no other program. The file is not kept in the code repository, because every build stamps it with a new date and serial number.
 
-### 33.1 Make the SBOM for an audit
-
+### 15.2 Make the SBOM for an audit
 > **Who can do this:** a platform maintainer or the pilot facilitator, on the laptop that builds the portal.
 
 **Goal:** Give an auditor the list of the packages in the pilot build.
@@ -1135,7 +1086,6 @@ The script reads only `package.json` and `package-lock.json`. It opens no networ
 ---
 
 ## Appendix: QR code files
-
 The two onboarding codes are in `apps/web/public/assets/images/qr/`. Print or project the codes for new members.
 The phone **Collect** screen shows the collection codes. The phone shows the council's image link first.
 When the link is missing or broken, the phone shows the code that ships with the app.
@@ -1157,55 +1107,75 @@ To put a real code in place, replace the file. Keep the file name.
 
 ## Manual map
 
-Each chapter and the manual that holds it. A chapter split between manuals is listed once for each manual.
+The chapters of the four officer manuals. A shared task is printed in each manual that lists its chapter.
 
-| Chapter | Manual |
-| --- | --- |
-| Primer: double-entry bookkeeping for the Treasurer | Treasurer Manual |
-| 1. Roles and access | Administrator User Guide |
-| 2. Left navigation map | Executive Governance Manual |
-| 3. Module feature flags | Administrator User Guide |
-| 4. Governance | Executive Governance Manual |
-| 5. Faith In Action | Executive Governance Manual |
-| 6. Finances: release, vetting and endorsement | Executive Governance Manual |
-| 6. Finances: the Financial Secretary's work | Financial Secretary Manual |
-| 6. Finances: the Treasurer's work | Treasurer Manual |
-| 7. Performance | Executive Governance Manual |
-| 8. The Google Drive archive vault | Administrator User Guide |
-| 8. Resources | Executive Governance Manual |
-| 9. The feedback inbox and SOP publishing | Administrator User Guide |
-| 10. Lookup tables, service connections and global lists | Administrator User Guide |
-| 10. Find members with a trade skill | Executive Governance Manual |
-| 10. Members, setup codes and the Supreme roster sync | Financial Secretary Manual |
-| 11. Data protection rules | Administrator User Guide |
-| 12. Troubleshooting reference | Administrator User Guide |
-| 13. Automated messages reference | Executive Governance Manual |
-| 14. Member engagement | Executive Governance Manual |
-| 14. The roster lifecycle | Financial Secretary Manual |
-| 15. Flagged hours review | Executive Governance Manual |
-| 16. Council Wide Settings and platform settings | Administrator User Guide |
-| 17. Access requests, impersonation and remote help | Administrator User Guide |
-| 17. Asset photos | Executive Governance Manual |
-| 17. Donations by check | Financial Secretary Manual |
-| 17. Payment methods and revenue | Treasurer Manual |
-| 18. Annual roadmap, meeting check-in and meeting photos | Executive Governance Manual |
-| 19. The Active Desks dashboard | Executive Governance Manual |
-| 19. The Financial Secretary Desk | Financial Secretary Manual |
-| 19. The Treasurer Desk | Treasurer Manual |
-| 20. The Cross-Council Loaner Library and the colour-coded calendar | Executive Governance Manual |
-| 21. Planning workflows and bilateral council affiliations | Executive Governance Manual |
-| 22. The Operations Knowledge Archive | Executive Governance Manual |
-| 23. Church Disbursement Requests | Financial Secretary Manual |
-| 23. Parish fundraiser splits | Treasurer Manual |
-| 24. Batch coding and cash box audits | Treasurer Manual |
-| 25. Feedback loops and the Super Admin Desk | Administrator User Guide |
-| 25. Account ownership and parish-held revenue | Treasurer Manual |
-| 26. The global search bar | Executive Governance Manual |
-| 27. The Navigation Guide screen | Executive Governance Manual |
-| 28. Run a room pilot on the hub laptop | Administrator User Guide |
-| 29. Split accounts, budget categories and payment account names | Treasurer Manual |
-| 30. Reset the database to the seed data | Administrator User Guide |
-| 31. Network addresses, ports and configuration keys | Administrator User Guide |
-| 32. Firewall clearance | Administrator User Guide |
-| 33. The software bill of materials (SBOM) | Administrator User Guide |
-| Appendix: QR code files | Administrator User Guide |
+**Administrator User Guide**
+
+- 1. Roles and access
+- 2. Module feature flags
+- 3. The Google Drive archive vault
+- 4. The feedback inbox and SOP publishing
+- 5. Lookup tables, service connections and global lists
+- 6. Data protection rules
+- 7. Troubleshooting reference
+- 8. Council Wide Settings and platform settings
+- 9. Access requests, impersonation and remote help
+- 10. Feedback loops and the Super Admin Desk
+- 11. Run a room pilot on the hub laptop
+- 12. Reset the database to the seed data
+- 13. Network addresses, ports and configuration keys
+- 14. Firewall clearance
+- 15. The software bill of materials (SBOM)
+- Appendix: QR code files
+
+**Executive Governance Manual**
+
+- 1. Left navigation map
+- 2. Governance
+- 3. Faith In Action
+- 4. Finances: release, vetting and endorsement
+- 5. Performance
+- 6. Resources
+- 7. Find members with a trade skill
+- 8. Automated messages reference
+- 9. Member engagement
+- 10. Flagged hours review
+- 11. Council Wide Settings
+- 12. Asset photos and remote help
+- 13. Annual roadmap, meeting check-in and meeting photos
+- 14. The Active Desks dashboard
+- 15. The Cross-Council Loaner Library and the colour-coded calendar
+- 16. Planning workflows and bilateral council affiliations
+- 17. The Operations Knowledge Archive
+- 18. Parish fundraiser split setup
+- 19. The global search bar
+- 20. The Navigation Guide screen
+
+**Financial Secretary Manual**
+
+- 1. Finances: the Financial Secretary's work
+- 2. Members, setup codes, the Supreme roster sync and Supreme forms
+- 3. The roster lifecycle
+- 4. Payment methods, checks, asset photos and remote help
+- 5. The Three-Signature Expense Flow
+- 6. The Active Desks and the Financial Secretary Desk
+- 7. The budget review and vote
+- 8. The Operations Knowledge Archive
+- 9. Parish fundraiser splits and Church Disbursement Requests
+- 10. Payment account ownership
+- 11. Budget categories and payment account names
+
+**Treasurer Manual**
+
+- 1. Double-entry bookkeeping primer
+- 2. Finances: the Treasurer's work
+- 3. Supreme forms
+- 4. Payment methods, checks, revenue, asset photos and remote help
+- 5. The Three-Signature Expense Flow
+- 6. The Active Desks and the Treasurer Desk
+- 7. The budget review and vote
+- 8. The Operations Knowledge Archive
+- 9. Parish fundraiser splits
+- 10. Batch coding and cash box audits
+- 11. Account ownership and parish-held revenue
+- 12. Split accounts, budget categories and payment account names

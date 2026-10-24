@@ -114,10 +114,10 @@ describe('the collapsible left-navigation guides', () => {
   const admin = readOfficerManuals();
   // Sprint 9 Master Hardening Pass: part 2 moved to the Executive Governance Manual, where chapter 4 follows it.
   const executive = read('docs/EXECUTIVE_GOVERNANCE_MANUAL.md');
-  const part2 = executive.slice(executive.indexOf('## 2. Left navigation map'), executive.indexOf('## 4. Governance'));
+  const part2 = executive.slice(executive.indexOf('## 1. Left navigation map'), executive.indexOf('## 2. Governance'));
 
   it('maps the left navigation by category before the desks and the phone tabs', () => {
-    expect(executive).toContain('- [2. Left navigation map](#2-left-navigation-map)');
+    expect(executive).toContain('- [1. Left navigation map](#1-left-navigation-map)');
     const order = ['🏠 Dashboard', '📅 Calendars', '👥 Rosters', '✅ Vetting', '📒 Ledgers', '🗄️ Archives', '🗂️ The desk tabs', '⏱️ The time windows', '📱 The five phone tabs'].map((t) =>
       part2.indexOf(`<summary>${t}`),
     );

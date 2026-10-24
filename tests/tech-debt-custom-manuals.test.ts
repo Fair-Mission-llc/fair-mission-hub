@@ -10,6 +10,7 @@ import {
   COUNCIL_WIDE_SETTING_DEFAULTS,
   COUNCIL_WIDE_SETTING_NAMES,
   COUNCIL_WIDE_SETTING_RULES,
+  CUSTOM_MANUAL_KINDS,
   CUSTOM_MANUAL_SOURCES,
   customizeManualMarkdown,
   customManualFileName,
@@ -91,7 +92,8 @@ describe('gate window setting', () => {
 });
 
 describe('custom user guides', () => {
-  const guides = { admin: read(CUSTOM_MANUAL_SOURCES.admin.source), member: read(CUSTOM_MANUAL_SOURCES.member.source) };
+  // Sprint 9 Revision 7.1: the three role manuals print too.
+  const guides = Object.fromEntries(CUSTOM_MANUAL_KINDS.map((k) => [k, read(CUSTOM_MANUAL_SOURCES[k].source)])) as Record<(typeof CUSTOM_MANUAL_KINDS)[number], string>;
   const custom = {
     ...COUNCIL_WIDE_SETTING_DEFAULTS,
     volunteer_logging_window_days: 120,
@@ -130,9 +132,19 @@ describe('custom user guides', () => {
     const out = customizeManualMarkdown('admin', guides.admin, COUNCIL, custom, '2026-10-11');
     expect(out).toContain('| **Days back a member may log volunteer time** | 90 days (this council: **120 days**) |');
     expect(out).toContain('| **Hours before an event that gate donations open** | 2 hours (this council: **3.5 hours**) |');
-    // Sprint 9 Master Hardening Pass: the inactivity and padding sentences moved to the role manuals.
-    expect(out).toContain("This council's window is 120 days (section 16.3)");
+    expect(out).toContain("This council's window is 120 days (section 8.3)");
     expect(out).not.toContain('90 days by default');
+  });
+
+  it("prints the council's numbers in the role manuals", () => {
+    const executive = customizeManualMarkdown('executive', guides.executive, COUNCIL, custom, '2026-10-11');
+    expect(executive).toContain('The 1.0 hour is the default; this council allows 0.5 hours.');
+    expect(executive).toContain('| **Days back a member may log volunteer time** | 90 days (this council: **120 days**) |');
+    expect(executive).not.toContain('90 days by default');
+    expect(customizeManualMarkdown('financial-secretary', guides['financial-secretary'], COUNCIL, custom, '2026-10-11')).toContain('The default is 365 days; this council uses 400 days.');
+    const treasurer = customizeManualMarkdown('treasurer', guides.treasurer, COUNCIL, custom, '2026-10-11');
+    expect(treasurer.indexOf('Council Wide Settings')).toBeLessThan(treasurer.indexOf('## Contents'));
+    expect(customManualFileName('executive', 15295)).toBe('Executive_Governance_Manual_Council_15295.pdf');
   });
 
   it('leaves the guide as written apart from the summary when the council keeps the defaults', () => {
@@ -144,7 +156,8 @@ describe('custom user guides', () => {
   it('checks the posted payload', () => {
     const ok = { guide: 'admin', council: COUNCIL, settings: { er_submission_window_days: 45 } };
     expect(cleanCustomManualPayload(ok)).toEqual({ guide: 'admin', council: COUNCIL, settings: { ...COUNCIL_WIDE_SETTING_DEFAULTS, er_submission_window_days: 45 } });
-    expect(() => cleanCustomManualPayload({ ...ok, guide: 'treasurer' })).toThrow(/Choose the guide/);
+    expect(cleanCustomManualPayload({ ...ok, guide: 'treasurer' }).guide).toBe('treasurer');
+    expect(() => cleanCustomManualPayload({ ...ok, guide: 'recorder' })).toThrow(/Choose the guide/);
     expect(() => cleanCustomManualPayload({ ...ok, council: { ...COUNCIL, id: 0 } })).toThrow(/council by its id/);
     expect(() => cleanCustomManualPayload({ ...ok, council: { ...COUNCIL, name: 'Two\nlines' } })).toThrow(/council name/);
     expect(() => cleanCustomManualPayload({ ...ok, settings: { er_submission_window_days: 9999 } })).toThrow();
@@ -167,8 +180,9 @@ describe('custom user guides', () => {
     expect(route).toContain("'compile_all_manuals.py'");
     expect(route).toContain('runPythonScript(');
     const page = read('apps/web/app/system-settings/council-settings/page.tsx');
-    expect(page).toContain('📥 Generate Custom Admin Guide PDF');
-    expect(page).toContain('📥 Generate Custom Member Guide PDF');
+    expect(page).toContain('📥 Generate Custom ${label} PDF');
+    for (const kind of CUSTOM_MANUAL_KINDS) expect(page).toContain(`{ guide: '${kind}', label: `);
+    expect(read('scripts/compile_all_manuals.py')).toContain("key='financial-secretary'");
     const script = read('scripts/compile_all_manuals.py');
     for (const flag of ['--input', '--output', '--base', '--prepared-for']) expect(script).toContain(`'${flag}'`);
   });

@@ -196,6 +196,6 @@ describe('Council Wide Settings page and plain-English labels', () => {
     for (const old of ['Clear Hours to Ledger', 'Delete Fraudulent Time', 'Code to Ledger', '📜 Approve Expense', 'Countersign Expense', 'Run inactivity sweep']) {
       expect(guide).not.toContain(old);
     }
-    expect(guide).toContain('## 16. Council Wide Settings and platform settings'); // renamed in Sprint 7E
+    expect(guide).toContain('## 8. Council Wide Settings and platform settings'); // renamed in Sprint 7E
   });
 });

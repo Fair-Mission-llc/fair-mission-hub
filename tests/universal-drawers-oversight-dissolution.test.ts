@@ -189,9 +189,9 @@ describe('docs and phone schema', () => {
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (89|9\d);/);
     expect(read('Schema.sql')).toContain('(schema version 89)');
     const admin = readOfficerManuals();
-    expect(admin).toContain('### 19.10.1 Read the Historical Meeting Minutes Archive');
-    expect(admin).toContain('### 19.12.1 Read the Fraternal Diary Entry Logs');
-    expect(admin).toContain('## 22. The Operations Knowledge Archive');
+    expect(admin).toContain('### 14.8.1 Read the Historical Meeting Minutes Archive');
+    expect(admin).toContain('### 14.10.1 Read the Fraternal Diary Entry Logs');
+    expect(admin).toContain('## 17. The Operations Knowledge Archive');
     expect(admin).not.toContain('`/dashboard#oversight` |');
     expect(read('scripts/pilot_kit_pdf.py')).not.toContain("{DESKS} > Oversight Desk");
   });

@@ -236,9 +236,9 @@ describe('Administrator User Guide print edition', () => {
   });
 
   it('documents split tickets, the Honorary Expense and receipt reading', () => {
-    expect(guide).toContain('### 6.14 Concept: receipts, split tickets and Honorary Expenses');
+    expect(guide).toContain('### 1.13 Concept: receipts, split tickets and Honorary Expenses');
     expect(guide).toContain(HONORARY_EXPENSE_BADGE);
-    expect(guide).toContain('### 10.8 Connect the council email, Google Drive, Microsoft Co-Pilot and receipt reading');
+    expect(guide).toContain('### 5.2 Connect the council email, Google Drive, Microsoft Co-Pilot and receipt reading');
   });
 });
 

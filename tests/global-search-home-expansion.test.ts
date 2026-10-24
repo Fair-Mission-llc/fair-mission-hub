@@ -116,7 +116,7 @@ describe('Home expansion', () => {
 
   it('documents the search bar and the request access link', () => {
     const admin = readOfficerManuals();
-    expect(admin).toContain('## 26. The global search bar');
+    expect(admin).toContain('## 19. The global search bar');
     expect(admin).toContain('**[ 🔑 Request Access ]**');
     expect(admin).not.toContain('Register Your Council / Request Access');
   });

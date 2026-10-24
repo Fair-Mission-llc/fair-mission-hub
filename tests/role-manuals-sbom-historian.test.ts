@@ -82,21 +82,82 @@ describe('CycloneDX SBOM (scripts/generate-sbom.mjs)', () => {
   });
 });
 
-describe('the split officer manuals', () => {
+describe('the officer manuals (Sprint 9 Revision 7.1: sequential numbering, mirrored shared tasks)', () => {
   const manuals = Object.fromEntries(MANUAL_FILES.map((f) => [f, read(f)]));
   const admin = manuals['docs/ADMIN_USER_GUIDE.md'];
+  const titles = (markdown: string) => [...markdown.matchAll(/^#{3,4}\s+\d+(?:\.\d+)+\s+(.+)$/gm)].map((m) => m[1]);
+  /** One task's text from its heading to the next heading, without the heading (whose number differs per manual). */
+  const sectionBody = (markdown: string, title: string) => {
+    const lines = markdown.split('\n');
+    const at = lines.findIndex((l) => /^#{3,4} [\d.]+ /.test(l) && l.replace(/^#{3,4} [\d.]+ /, '') === title);
+    if (at < 0) return null;
+    const rest = lines.slice(at + 1);
+    const next = rest.findIndex((l) => /^#{2,4} /.test(l));
+    return rest.slice(0, next < 0 ? undefined : next).join('\n').trim();
+  };
 
-  it('holds every numbered section in exactly one manual', () => {
-    const all = MANUAL_FILES.flatMap((f) => sectionIds(manuals[f]));
-    expect(new Set(all).size).toBe(all.length);
-    for (const id of ['4.1', '6.2', '6.3', '6.7', '10.4', '16.4', '19.6', '19.7.1', '24.5', '28.1', '29.2.1']) expect(all).toContain(id);
+  it('numbers every manual 1, 2, 3 with no gaps', () => {
+    for (const file of MANUAL_FILES) {
+      const md = manuals[file];
+      const chapters = [...md.matchAll(/^## (\d+)\. /gm)].map((m) => Number(m[1]));
+      expect(chapters, file).toEqual(chapters.map((_, i) => i + 1));
+      for (const chapter of chapters) {
+        const tops = sectionIds(md)
+          .filter((id) => id.split('.').length === 2 && id.startsWith(`${chapter}.`))
+          .map((id) => Number(id.split('.')[1]));
+        expect(tops, `${file} chapter ${chapter}`).toEqual(tops.map((_, i) => i + 1));
+      }
+      expect(new Set(sectionIds(md)).size, file).toBe(sectionIds(md).length);
+    }
+  });
+
+  it('prints each shared task word for word in every manual of the officers who do it', () => {
+    const shared: [string, string[]][] = [
+      ['Post to the ledger or reconcile a bank statement', ['TREASURER_MANUAL', 'FINANCIAL_SECRETARY_MANUAL']],
+      ['Vet a charity request', ['EXECUTIVE_GOVERNANCE_MANUAL', 'TREASURER_MANUAL', 'FINANCIAL_SECRETARY_MANUAL']],
+      ['Endorse an approved charity grant for payment', ['EXECUTIVE_GOVERNANCE_MANUAL', 'FINANCIAL_SECRETARY_MANUAL']],
+      ["Record the council's budget vote by July 10", ['EXECUTIVE_GOVERNANCE_MANUAL', 'TREASURER_MANUAL', 'FINANCIAL_SECRETARY_MANUAL']],
+      ['Change the Council Wide Settings', ['ADMIN_USER_GUIDE', 'EXECUTIVE_GOVERNANCE_MANUAL']],
+      ['Pay an approved charity grant', ['TREASURER_MANUAL', 'FINANCIAL_SECRETARY_MANUAL']],
+    ];
+    for (const [title, files] of shared) {
+      const bodies = files.map((f) => sectionBody(manuals[`docs/${f}.md`], title));
+      expect(bodies.every((b) => b !== null && b.length > 200), title).toBe(true);
+      // A cross-reference may name another manual in one copy; the steps themselves are identical.
+      const unref = (s: string) =>
+        s
+          .replace(/\b(sections?|Chapter) [\d.]*\d( of the (Treasurer Manual|Financial Secretary Manual|Executive Governance Manual|Administrator User Guide))?/gi, '$1 #')
+          .replace(/\((section )?[\d.]*\d( of the [^)]+)?\)/g, '(#)');
+      const steps = bodies.map((b) => unref(b!.slice(b!.indexOf('**Steps:**'), b!.indexOf('**Expected result:**'))));
+      for (const s of steps) expect(s, title).toBe(steps[0]);
+    }
+  });
+
+  it('names the other manual whenever a reference leaves this one', () => {
+    for (const file of MANUAL_FILES) {
+      const md = manuals[file];
+      const ids = new Set([...sectionIds(md), ...[...md.matchAll(/^## (\d+)\. /gm)].map((m) => m[1])]);
+      for (const m of md.matchAll(/(?<!article \d, )\b[Ss]ections? (\d+(?:\.\d+)*)(?![\d(.])(?! of the )/g)) {
+        expect(ids.has(m[1]), `${file}: ${m[0]}`).toBe(true);
+      }
+    }
+    expect(manuals['docs/EXECUTIVE_GOVERNANCE_MANUAL.md']).toContain('article 2, section 3');
   });
 
   it('prunes the Administrator guide to system maintenance', () => {
-    for (const officerTask of ['6.2', '6.3', '6.5', '6.12', '4.1', '19.5', '19.7', '24.5', '29.2']) expect(sectionIds(admin)).not.toContain(officerTask);
-    for (const chapter of ['## 30. Reset the database to the seed data', '## 31. Network addresses, ports and configuration keys', '## 32. Firewall clearance', '## 33. The software bill of materials (SBOM)']) {
+    for (const officerTask of ['Issue a payment request', 'Give the final release for payment', 'Run a live meeting', 'Code sheets from the Treasurer Desk', 'Code electronic donations in a batch']) {
+      expect(titles(admin)).not.toContain(officerTask);
+    }
+    for (const chapter of [
+      '## 12. Reset the database to the seed data',
+      '## 13. Network addresses, ports and configuration keys',
+      '## 14. Firewall clearance',
+      '## 15. The software bill of materials (SBOM)',
+    ]) {
       expect(admin).toContain(chapter);
     }
+    expect(admin).toContain('## 6. Data protection rules');
+    expect(admin).toContain('## 7. Troubleshooting reference');
     expect(admin).toContain('`0.0.0.0`');
     expect(admin).toContain('New-NetFirewallRule');
     expect(admin).toContain('-Profile Private');
@@ -106,15 +167,21 @@ describe('the split officer manuals', () => {
 
   it('gives the Treasurer the double-entry primer, bulk coding and GL splits', () => {
     const t = manuals['docs/TREASURER_MANUAL.md'];
-    expect(t).toContain('## Primer: double-entry bookkeeping for the Treasurer');
-    expect(t).toContain('### Concept: the five account types');
-    for (const id of ['6.5', '6.6', '6.7', '19.7', '24.5', '29.1', '29.2']) expect(sectionIds(t)).toContain(id);
+    expect(t).toContain('## 1. Double-entry bookkeeping primer');
+    expect(t).toContain('### 1.2 Concept: the five account types');
+    for (const title of ['Code sheets from the Treasurer Desk', 'Code electronic donations in a batch', 'Set up a split account', 'Issue a Church Disbursement Request']) {
+      expect(titles(t)).toContain(title);
+    }
+    expect(titles(t)).not.toContain('Pay a Church Disbursement Request');
   });
 
   it('gives the Financial Secretary and the GK/DGK their own books', () => {
-    expect(sectionIds(manuals['docs/FINANCIAL_SECRETARY_MANUAL.md'])).toEqual(expect.arrayContaining(['6.2', '6.4', '6.10', '19.6', '10.4']));
+    const f = titles(manuals['docs/FINANCIAL_SECRETARY_MANUAL.md']);
+    for (const title of ['Issue a payment request', 'Run the Supreme roster sync', 'Pay a Church Disbursement Request', 'Check for inactive members (the inactivity sweep)']) {
+      expect(f).toContain(title);
+    }
     const e = manuals['docs/EXECUTIVE_GOVERNANCE_MANUAL.md'];
-    expect(sectionIds(e)).toEqual(expect.arrayContaining(['4.1', '6.3', '6.8', '15.5', '19.5', '21.4']));
+    for (const title of ['Run a live meeting', 'Give the final release for payment', 'Approve or reject held volunteer time']) expect(titles(e)).toContain(title);
     expect(e).toContain('The Deputy Grand Knight holds every grant of the Grand Knight.');
   });
 
@@ -161,12 +228,12 @@ describe('the desk manual headers', () => {
   it("answers 'How do I…' from the seat's own manual only", () => {
     const tasks = (key: (typeof ROLE_MANUAL_KEYS)[number]) => parseGuideTasks(read(`docs/${ROLE_MANUALS[key].markdown}`));
     const treasurer = tasks('treasurer');
-    expect(searchRoleManual(treasurer, 'code electronic donations in a batch')[0].id).toBe('24.5');
-    expect(searchRoleManual(treasurer, 'issue a payment request').map((t) => t.id)).not.toContain('6.2');
-    expect(searchRoleManual(tasks('financial-secretary'), 'issue a payment request')[0].id).toBe('6.2');
-    expect(searchRoleManual(tasks('executive'), 'final release for payment')[0].id).toBe('6.3');
+    expect(searchRoleManual(treasurer, 'code electronic donations in a batch')[0].title).toBe('Code electronic donations in a batch');
+    expect(searchRoleManual(treasurer, 'issue a payment request').map((t) => t.title)).not.toContain('Issue a payment request');
+    expect(searchRoleManual(tasks('financial-secretary'), 'issue a payment request')[0]).toMatchObject({ id: '1.2', title: 'Issue a payment request' });
+    expect(searchRoleManual(tasks('executive'), 'final release for payment')[0].title).toBe('Give the final release for payment');
     expect(searchRoleManual(treasurer, 'how do I').length).toBe(0);
-    expect(treasurer.find((t) => t.id === '6.5')?.who).toMatch(/Treasurer/);
+    expect(treasurer.find((t) => t.title === 'Pay approved reports by check')?.who).toMatch(/Treasurer/);
   });
 });
 

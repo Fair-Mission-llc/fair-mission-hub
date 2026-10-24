@@ -1,5 +1,5 @@
 // POST /api/council/compile-manual - one council's custom copy of a user guide (Sprint 7H), as a print-ready PDF.
-// Takes JSON { guide: 'admin' | 'member', council: { id, number, name }, settings } (the Council Wide Settings the page
+// Takes JSON { guide: one of CUSTOM_MANUAL_KINDS (Sprint 9 Revision 7.1: the three role manuals too), council: { id, number, name }, settings } (the Council Wide Settings the page
 // read through the data service; cleanCustomManualPayload range-checks every value). The route reads the guide's
 // Markdown from docs/, writes the council's copy (customizeManualMarkdown: the council's numbers in place of the
 // defaults, and a settings table up front) to a temporary folder, lays it out with the guides' own ReportLab script

@@ -200,7 +200,7 @@ describe('the guides', () => {
     expect(admin).toContain('| **Top 5 Fraternal Volunteers** |');
     // Sprint 8P Stage 3: the badge strip and the Oversight Desk are gone.
     expect(admin).toContain('The portal has no status badge strip and no **Oversight Desk**.');
-    expect(admin).toContain('### 19.13 Read the Executive Dashboard page');
+    expect(admin).toContain('### 14.11 Read the Executive Dashboard page');
     expect(admin).toContain('`/executive-dashboard`');
     expect(admin).not.toContain('**Executive Summary** frame');
     expect(admin).not.toContain('On **Home**, the');

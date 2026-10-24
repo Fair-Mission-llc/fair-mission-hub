@@ -1,11 +1,13 @@
 // =========================================================================
 // ON-DEMAND CUSTOM USER GUIDES (Sprint 7H)
-// The Council Wide Settings page prints either user guide for one council: the server route
-// /api/council/compile-manual reads docs/ADMIN_USER_GUIDE.md or docs/MEMBER_USER_GUIDE.md, passes it through
+// The Council Wide Settings page prints any of the five guides for one council (Sprint 9 Revision 7.1: the Treasurer,
+// Financial Secretary and Executive Governance manuals joined the Administrator and Member guides): the server route
+// /api/council/compile-manual reads the guide's Markdown from docs/ (CUSTOM_MANUAL_SOURCES), passes it through
 // customizeManualMarkdown with the council's settings, and lays the result out with the guides' own ReportLab script
 // (scripts/compile_all_manuals.py). The guides are written with the default numbers; the customized copy:
 //   - opens with a notice naming the council and the print date, and a table of all its Council Wide Settings;
-//   - shows the council's value beside the default in the Administrator guide's settings tables (section 16.3);
+//   - shows the council's value beside the default in every settings table (Administrator guide 8.3, Executive
+//     Governance Manual 11.2);
 //   - swaps the default number for the council's own in the sentences listed in MANUAL_SETTING_PHRASES, each tied to
 //     one setting. Other numbers (the 5-activity rule's name, worked examples) keep the default wording.
 // Pure: the route loads the Markdown and runs the script.
@@ -25,14 +27,20 @@ import { BusinessRuleError, type MemberWriteActor } from './rules';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 
-/** The two guides a council can print. */
-export const CUSTOM_MANUAL_KINDS = ['admin', 'member'] as const;
+/**
+ * The guides a council can print. Sprint 9 Revision 7.1: the three role manuals too. Each key is also the guide's
+ * --only key in scripts/compile_all_manuals.py.
+ */
+export const CUSTOM_MANUAL_KINDS = ['admin', 'member', 'treasurer', 'financial-secretary', 'executive'] as const;
 export type CustomManualKind = (typeof CUSTOM_MANUAL_KINDS)[number];
 
 /** Each guide's Markdown source (repository-relative) and the download's file name. */
 export const CUSTOM_MANUAL_SOURCES: Record<CustomManualKind, { source: string; title: string; fileStem: string }> = {
   admin: { source: 'docs/ADMIN_USER_GUIDE.md', title: 'Administrator User Guide', fileStem: 'Admin_User_Guide' },
   member: { source: 'docs/MEMBER_USER_GUIDE.md', title: 'Member User Guide', fileStem: 'Member_User_Guide' },
+  treasurer: { source: 'docs/TREASURER_MANUAL.md', title: 'Treasurer Manual', fileStem: 'Treasurer_Manual' },
+  'financial-secretary': { source: 'docs/FINANCIAL_SECRETARY_MANUAL.md', title: 'Financial Secretary Manual', fileStem: 'Financial_Secretary_Manual' },
+  executive: { source: 'docs/EXECUTIVE_GOVERNANCE_MANUAL.md', title: 'Executive Governance Manual', fileStem: 'Executive_Governance_Manual' },
 };
 
 /** Longest CouncilName (VARCHAR(255)). */
@@ -77,10 +85,15 @@ export interface ManualSettingPhrase {
 }
 
 export const MANUAL_SETTING_PHRASES: readonly ManualSettingPhrase[] = [
-  // Administrator guide. Sprint 9 Master Hardening Pass: the pruned guide keeps only the data protection sentence; the
-  // flagged-hours, inactivity-sweep and padding sentences moved with their chapters into the role manuals, which a
-  // council does not print as a custom copy.
-  { guide: 'admin', setting: 'volunteer_logging_window_days', find: 'The default is 90 days (section 16.3)', replace: (v) => `This council's window is ${v} (section 16.3)` },
+  // Administrator guide (Sprint 9 Revision 7.1: renumbered; the data protection rules cite the settings in 8.3).
+  { guide: 'admin', setting: 'volunteer_logging_window_days', find: 'The default is 90 days (section 8.3)', replace: (v) => `This council's window is ${v} (section 8.3)` },
+  // Executive Governance Manual: the flagged hours review and the padding rule moved here with their chapter.
+  { guide: 'executive', setting: 'volunteer_logging_window_days', find: 'up to 90 days later, by default', replace: (v) => `up to ${v} later in this council` },
+  { guide: 'executive', setting: 'volunteer_logging_window_days', find: '(90 days by default)', replace: (v) => `(${v} in this council)` },
+  { guide: 'executive', setting: 'volunteer_logging_window_days', find: 'the logging window, 90 days by default', replace: (v) => `the logging window, ${v} in this council` },
+  { guide: 'executive', setting: 'max_shift_padding_hours', find: 'The 1.0 hour is the default.', replace: (v) => `The 1.0 hour is the default; this council allows ${v}.` },
+  // Financial Secretary Manual: the inactivity sweep moved here with the roster lifecycle.
+  { guide: 'financial-secretary', setting: 'inactivity_threshold_days', find: 'The default is 365 days.', replace: (v) => `The default is 365 days; this council uses ${v}.` },
   // Member guide
   { guide: 'member', setting: 'volunteer_logging_window_days', find: 'Dates up to 90 days before today', replace: (v) => `Dates up to ${v} before today` },
   { guide: 'member', setting: 'volunteer_logging_window_days', find: 'Shifts up to 90 days before today', replace: (v) => `Shifts up to ${v} before today` },
@@ -163,7 +176,7 @@ export function customizeManualMarkdown(
     const value = settings[phrase.setting];
     out = out.split(phrase.find).join(phrase.replace(formatSettingValue(rule, value), value.toLocaleString('en-US')));
   }
-  // The settings tables (Administrator guide 16.3): the council's value beside the default.
+  // The settings tables (Administrator guide 8.3, Executive Governance Manual 11.2): the council's value beside the default.
   for (const name of COUNCIL_WIDE_SETTING_NAMES) {
     const rule = COUNCIL_WIDE_SETTING_RULES[name];
     const row = new RegExp(`^(\\| \\*\\*${escapeRegExp(rule.label)}\\*\\* \\| )([^|\\n]+?)( \\|)`, 'gm');

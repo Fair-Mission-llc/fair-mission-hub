@@ -69,7 +69,7 @@ describe('module folders on the Active Desks', () => {
   it('sends nobody to the sidebar from the desks', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks).not.toMatch(/(click|select|open)[^.\n]{0,40}sidebar/i);
-    expect(readOfficerManuals()).toContain('### 19.3.1 Concept: the advanced modules on the desks');
+    expect(readOfficerManuals()).toContain('### 14.3.1 Concept: the advanced modules on the desks');
   });
 });
 

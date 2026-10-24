@@ -10,20 +10,20 @@ const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8')
 describe('the Navigation Guide chapter', () => {
   // Sprint 9 Master Hardening Pass: chapter 27 moved to the Executive Governance Manual, where the manual map closes it.
   const admin = read('docs/EXECUTIVE_GOVERNANCE_MANUAL.md');
-  const chapter = admin.slice(admin.indexOf('## 27. The Navigation Guide screen'), admin.indexOf('## Manual map'));
+  const chapter = admin.slice(admin.indexOf('## 20. The Navigation Guide screen'), admin.indexOf('## Manual map'));
 
   it('is listed in the contents and sits before the manual map', () => {
-    expect(admin).toContain('- [27. The Navigation Guide screen](#27-the-navigation-guide-screen)');
-    expect(admin.indexOf('## 27. The Navigation Guide screen')).toBeGreaterThan(admin.indexOf('## 26. The global search bar'));
+    expect(admin).toContain('- [20. The Navigation Guide screen](#20-the-navigation-guide-screen)');
+    expect(admin.indexOf('## 20. The Navigation Guide screen')).toBeGreaterThan(admin.indexOf('## 19. The global search bar'));
     expect(chapter.length).toBeGreaterThan(2000);
   });
 
   it('documents the role depth, the closed groups and the sidebar-first levels', () => {
     for (const heading of [
-      '### 27.2 Concept: the guide changes with your role',
-      '### 27.3 Concept: every category group starts closed',
-      '### 27.4 Concept: the sidebar-first order',
-      '### 27.5 Find a page with the Navigation Guide',
+      '### 20.2 Concept: the guide changes with your role',
+      '### 20.3 Concept: every category group starts closed',
+      '### 20.4 Concept: the sidebar-first order',
+      '### 20.5 Find a page with the Navigation Guide',
     ]) {
       expect(chapter).toContain(heading);
     }

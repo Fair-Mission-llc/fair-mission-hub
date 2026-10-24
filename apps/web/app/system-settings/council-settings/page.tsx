@@ -54,6 +54,7 @@ import {
   councilLabel,
   councilWideSettings,
   customManualFileName,
+  CUSTOM_MANUAL_SOURCES,
   COUNCIL_SETTING_GROUP_ORDER,
   COUNCIL_WIDE_SETTING_NAMES,
   COUNCIL_WIDE_SETTING_RULES,
@@ -132,7 +133,19 @@ function InactivitySweepCard({ council }: { council: Council }) {
   );
 }
 
-/** The two print buttons (Sprint 7H): the guide downloads with this council's saved numbers. */
+/**
+ * The print buttons (Sprint 7H): the guide downloads with this council's saved numbers. Sprint 9 Revision 7.1: one button
+ * for each of the five guides, the three officer role manuals included.
+ */
+/** One print button for each guide, in this order. */
+const CUSTOM_GUIDE_BUTTONS: readonly { guide: CustomManualKind; label: string }[] = [
+  { guide: 'admin', label: 'Admin Guide' },
+  { guide: 'member', label: 'Member Guide' },
+  { guide: 'executive', label: 'Executive Governance Manual' },
+  { guide: 'financial-secretary', label: 'Financial Secretary Manual' },
+  { guide: 'treasurer', label: 'Treasurer Manual' },
+];
+
 function CustomGuidesCard({ council }: { council: Council }) {
   const [busy, setBusy] = useState<CustomManualKind | null>(null);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
@@ -151,7 +164,7 @@ function CustomGuidesCard({ council }: { council: Council }) {
       a.download = customManualFileName(guide, council.CouncilNumber);
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      setMessage({ tone: 'info', text: `The ${guide === 'admin' ? 'Administrator' : 'Member'} guide for council ${council.CouncilNumber} is downloading.` });
+      setMessage({ tone: 'info', text: `The ${CUSTOM_MANUAL_SOURCES[guide].title} for council ${council.CouncilNumber} is downloading.` });
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     } finally {
@@ -162,15 +175,14 @@ function CustomGuidesCard({ council }: { council: Council }) {
     <Panel title="Custom User Guides" className="mt-6">
       <p className="mb-3 text-base">
         Print a user guide for {council.CouncilName} with the council&apos;s saved numbers in place of the defaults. Save any changed card first. The server
-        compiles the PDF; the Administrator guide takes a few seconds.
+        compiles the PDF; the larger guides take a few seconds.
       </p>
       <div className="flex flex-wrap gap-3">
-        <Button variant="gold" disabled={busy !== null} onClick={() => void generate('admin')}>
-          {busy === 'admin' ? 'Compiling…' : '📥 Generate Custom Admin Guide PDF'}
-        </Button>
-        <Button variant="gold" disabled={busy !== null} onClick={() => void generate('member')}>
-          {busy === 'member' ? 'Compiling…' : '📥 Generate Custom Member Guide PDF'}
-        </Button>
+        {CUSTOM_GUIDE_BUTTONS.map(({ guide, label }) => (
+          <Button key={guide} variant="gold" disabled={busy !== null} onClick={() => void generate(guide)}>
+            {busy === guide ? 'Compiling…' : `📥 Generate Custom ${label} PDF`}
+          </Button>
+        ))}
       </div>
       {message ? (
         <div className="mt-3">
