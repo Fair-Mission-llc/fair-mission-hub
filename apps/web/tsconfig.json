@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "ES2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2022"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
@@ -13,13 +17,40 @@
     "allowJs": false,
     "incremental": true,
     "jsx": "react-jsx",
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@kofc/shared": ["../../packages/shared/src/index.ts"]
+      "@/*": [
+        "./*"
+      ],
+      "@kofc/shared": [
+        "../../packages/shared/src/index.ts"
+      ],
+      "expo-sqlite": [
+        "./services/server/hub/shims/expo-sqlite.ts"
+      ],
+      "expo-crypto": [
+        "./services/server/hub/shims/expo-crypto.ts"
+      ],
+      "expo-secure-store": [
+        "./services/server/hub/shims/expo-secure-store.ts"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "app/**/*", "components/**/*", "lib/**/*", "services/**/*.ts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "app/**/*",
+    "components/**/*",
+    "lib/**/*",
+    "services/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

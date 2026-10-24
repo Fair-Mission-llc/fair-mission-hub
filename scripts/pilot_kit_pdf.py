@@ -29,6 +29,12 @@ session, records the gate gifts and the cash box drop and concludes the session.
 concludes nothing: he records one standalone gift (a $50.00 cash gift handed to him after Mass, type Unsolicited) from
 the Collect tab's payment tiles, which the phone saves with no event.
 
+Sprint 9 Revision 4.0: the pilot runs on the hub laptop. Every laptop and phone works on one database on that laptop's
+disk (packages/backend/data/central-hub-vault.db), so a record saved on one device is on every device at once, and the
+vault keeps every record, meeting log and check photo from one session to the next. The facilitator starts each
+scripted rehearsal on a fresh vault (npm run hub:archive moves the last one into an archive folder; nothing is
+deleted). The Collect tab's deposit photo is on the Check form only.
+
     py scripts/pilot_kit_pdf.py                 writes all five PDFs under docs/
     py scripts/compile_all_manuals.py           compiles the two user guides, then this kit
     py scripts/compile_all_manuals.py --only pilot-kit
@@ -221,7 +227,7 @@ PERSONAS: tuple[Persona, ...] = (
             Step(f'{DESKS} > Treasurer Desk > [ 🔧 Accounting Configuration ] › Chart of Accounts & GL Setup', 'Before you code anything, click the Chart of Accounts & GL Setup folder under [ 🔧 Accounting Configuration ] on the left filing spine. Review the seeded accounts on the Desk Blotter, and check the Assets grid line by line.',
                  'The Assets grid shows your asset lines live: Operating Checking with Goal Account #1 and Goal Account #2 indented under it (each marked Virtual goal), General Savings, Charity Savings and Physical Assets. The Expenses grid lists Charitable Disbursements, Event Operational Costs, Council Operational Costs and Supreme Assessments. Click [ 🔀 Back to Desk Blotter ].'),
             Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'Click the Ledger Line Coder folder at the top of the left filing spine (it has a red border) and read the sheets on the Desk Blotter.',
-                 'Reports 12 (Joseph Hernandez, Office Depot and FedEx Office, $88.49), 17 (Member Alpha, FedEx Office, $118.50), 18 (Member Beta, Safeway, $54.75) and 22 (Historian User, Walgreens, $63.40) carry a payment request. Report 14 is not here: on your laptop\'s copy of the data it still waits for the Financial Secretary\'s payment request.'),
+                 'Reports 12 (Joseph Hernandez, Office Depot and FedEx Office, $88.49), 17 (Member Alpha, FedEx Office, $118.50), 18 (Member Beta, Safeway, $54.75) and 22 (Historian User, Walgreens, $63.40) carry a payment request. Report 14 shows here only after the Financial Secretary signs it in his own script. Code only the reports that the next steps name.'),
             Step(f'{DESKS} > Treasurer Desk > Ledger Line Coder', 'On report 17 choose Event Operational Costs in Assign General Ledger Account. There is no budget line to pick: read the green line under the account, then click Categorize & Lock Expense. Code report 18 to Council Operational Costs the same way.',
                  'Report 17 reads [ Inferred Budget: Automatically Mapped to Miscellaneous Others ] and report 18 reads [ Inferred Budget: Automatically Mapped to Monthly Council Meetings ]. Both rows read "Coded to the ledger" and move to the Grand Knight Desk.'),
             Step(f'{DESKS} > Treasurer Desk > Bank Statement Match-Window', 'Open the drawer and choose any bank statement CSV the facilitator gives you. Click Run electronic audit.',
@@ -369,10 +375,10 @@ GROUP_FLOWS: tuple[Flow, ...] = (
         minutes=16,
         context=(
             'The council pays nothing until three different officers have signed, and then the Treasurer writes the check. '
-            'Every persona stays in his own seat on his own laptop. Each laptop keeps its own copy of the pilot data, so a '
-            'record made on one laptop does not travel to the next. The room walks the pipeline gate by gate instead: Member '
-            'Alpha files a new report, and each officer works the seeded report already waiting at his own gate. Read in '
-            'order, the five steps are one report\'s path from receipt to check.'
+            'Every persona stays in his own seat on his own laptop. Every laptop works on the one hub database, so a record '
+            'saved on one laptop is on every laptop at once. The room walks the pipeline gate by gate: Member Alpha files a '
+            'new report, and each officer works the seeded report already waiting at his own gate. Read in order, the five '
+            'steps are one report\'s path from receipt to check.'
         ),
         steps=(
             Step(f'{DESKS} > Member Desk > Open my expenses', 'Click New expense report. Under Spent for choose Events and the Parish Parking Event. Add a line dated today: Ace Hardware, $18.40, "Zip ties and sign stakes". Click + Add receipt, attach a photo and click Submit for approval.',
@@ -455,9 +461,12 @@ GROUP_TIMETABLE: tuple[tuple[int, str], ...] = tuple((f.minutes, f.title) for f 
 
 # Done by the facilitator before the attendees arrive; not part of the timed phases.
 FACILITATOR_PREP: tuple[str, ...] = (
-    'Reload the web portal on every laptop so the pilot data is fresh, and clear the phone app\'s data on Member Alpha\'s '
-    'and Member Beta\'s phones. Each browser and phone keeps its own copy of the pilot data, so every device starts from '
-    'the same seeded records.',
+    'On the hub laptop, start a fresh vault: stop the portal, run npm run hub:archive, then npm run dev:pilot and npm run '
+    'dev:mobile:pilot. hub:archive moves the last session\'s vault into packages/backend/data/archive and deletes nothing. '
+    'Every laptop opens the portal at the address that dev:pilot prints, and Member Alpha and Member Beta scan the phone '
+    'QR code. All devices work on the one hub database, so every device starts from the same seeded records.',
+    'To keep adding to the same records from one session to the next, skip npm run hub:archive. The vault keeps every '
+    'record, meeting log and check photo, but the seeded records that the scripts use are then already worked.',
     'On the Deputy Grand Knight\'s laptop, signed in as DGK User, open Governance > Recurring Meetings and click Populate '
     'the year for 2026-2027 once. Flow 2 needs a Monthly meeting at least 10 days away to place the request on.',
     f'Hold the session while the {PILOT_EVENT} runs. Its three weeks follow the calendar: on load, the app moves the event by whole weeks so the pilot day is the week after its first weekend, and the members can collect for it on their phones. '
@@ -774,8 +783,9 @@ def cover(title: str, subtitle: str, st, generated: str) -> list:
         Spacer(1, 8),
         Paragraph(f'The pilot data: the {PILOT_EVENT} (three weeks moved to the pilot day, six Lot attendants shifts, $400.00 collected the first weekend), expense reports 14-23 '
                   'waiting on the officers\' desks, charity requests on the vetting board, three prayer intentions and two volunteer '
-                  'time entries held for review. Reloading the web portal restores it in the browser; on a phone, clear the app\'s data. The individual and group phases '
-                  'run on the same load: the group flows use the seeded records the individual scripts leave untouched.', st['small']),
+                  'time entries held for review. The data is on the hub laptop: a fresh vault (npm run hub:archive, then npm run dev:pilot) restores it, '
+                  'and reloading a browser or a phone app changes nothing. The individual and group phases '
+                  'run on the same vault: the group flows use the seeded records the individual scripts leave untouched.', st['small']),
         Spacer(1, 4),
         Paragraph(f'Compiled {generated}.', st['small']),
         PageBreak(),
@@ -842,8 +852,9 @@ def build_group(output: Path, generated: str) -> None:
     story = cover('Group Cross-Desk Script', f'The {GROUP_PHASE_MINUTES}-minute Synchronized Group Workflow: live records passed from desk to desk', st, generated)
     story += [Paragraph('Before you start', st['h1']),
               Paragraph('Seat the seven personas around the table, each signed in to the web portal on his own laptop. Nobody changes seats, '
-                        'uses another laptop or signs out during the session. Each laptop keeps its own copy of the pilot data, so every officer '
-                        'works the seeded record waiting at his own gate, and the members file their new records on their own laptops. The '
+                        'uses another laptop or signs out during the session. Every laptop works on the one hub database, so a record saved on one '
+                        'laptop is on every laptop at once. Every officer works the seeded record waiting at his own gate, and the members file '
+                        'their new records on their own laptops. The '
                         "facilitator reads each flow's context aloud; the persona named in bold at each step does it on his own laptop while the "
                         'room follows along. Every web step starts from the Active Desks row; a module is a folder on its desk\'s left '
                         'filing spine that opens on the Desk Blotter.', st['body']),
@@ -896,6 +907,10 @@ def draw_text(c, text: str, x: float, y: float, width: float, font='Helvetica', 
     return y
 
 
+# Sprint 9 Revision 4.0: the footer line of every poster.
+HUB_POSTER_LINE = 'Pilot hub: every laptop and phone works on one database on the hub laptop. Records are kept from session to session.'
+
+
 def poster_frame(c, title: str, subtitle: str, generated: str) -> None:
     c.setFillColor(NAVY)
     c.rect(0, PH - 2.1 * inch, PW, 2.1 * inch, stroke=0, fill=1)
@@ -911,6 +926,8 @@ def poster_frame(c, title: str, subtitle: str, generated: str) -> None:
     c.rect(0, 0, PW, 0.7 * inch, stroke=0, fill=1)
     c.setFillColor(WHITE)
     c.setFont('Helvetica', 11)
+    # Sprint 9 Revision 4.0: where the room's data lives.
+    c.drawString(PM, 0.5 * inch, HUB_POSTER_LINE)
     c.drawString(PM, 0.28 * inch, f'Knights of Columbus Tracking Platform  |  Conference Room Pilot  |  {COUNCIL}')
     c.drawRightString(PW - PM, 0.28 * inch, f'Compiled {generated}  |  11 x 17 in')
 

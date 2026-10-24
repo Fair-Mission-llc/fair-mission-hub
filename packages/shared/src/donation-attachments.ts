@@ -1,22 +1,23 @@
 // =========================================================================
 // DEPOSIT PHOTOS (Sprint 9 Revision 3.0, schema 98)
 // Pure rules behind donations.attachDepositPhoto / listAttachments and the phone's '📸 Attach Deposit Photo' button.
-// When a collector records a Cash or Check donation on the Donate tab, they may photograph the cash or the check
+// When a collector records a Check donation on the Donate tab, they may photograph the paper check
 // before it goes into the deposit bag. The phone compresses the shot (DEPOSIT_PHOTO_QUALITY), copies it into the app's
 // media folder and stores one TransactionAttachments row per photo: the donation, the file path and when it was taken.
 //
 // Who: anyone with the right to change the donation (rules.ts assertMayChangeDonation) - the member who recorded it,
 // the owner of its event, the council's Financial Secretary or Treasurer, an Admin of its council or a Super Admin.
 // The same right reads the photos back, because a check photo shows the donor's bank details. A photo is not added
-// once the event's collection session is concluded (assertCollectionOpen). Only Cash and Check donations take one.
+// once the event's collection session is concluded (assertCollectionOpen). Since Sprint 9 Revision 4.0 only Check
+// donations take one: cash box entries stay photo-free (Revision 3.0 also allowed Cash).
 // =========================================================================
 import { BusinessRuleError } from './rules';
 import type { DonationMethodKind } from './contract';
 
-/** The button on the phone's Cash and Check donation forms. */
+/** The button on the phone's Check donation form. */
 export const DEPOSIT_PHOTO_TITLE = '📸 Attach Deposit Photo';
 /** The donation method kinds that take a deposit photo. */
-export const DEPOSIT_PHOTO_METHOD_KINDS: readonly DonationMethodKind[] = ['cash', 'check'];
+export const DEPOSIT_PHOTO_METHOD_KINDS: readonly DonationMethodKind[] = ['check'];
 /**
  * JPEG quality the phone camera saves a deposit photo at (0-1; other photos use 0.8): the compression that keeps files
  * small while a check stays readable.
@@ -28,10 +29,10 @@ export const ATTACHMENT_PATH_MAX_LENGTH = 500;
 /** Whether a donation of this method kind may carry a deposit photo. */
 export const takesDepositPhoto = (kind: DonationMethodKind): boolean => DEPOSIT_PHOTO_METHOD_KINDS.includes(kind);
 
-/** INVALID_INPUT unless the donation was taken in cash or by check. */
+/** INVALID_INPUT unless the donation was taken by check. */
 export function assertDepositPhotoMethod(kind: DonationMethodKind, donationId: number): void {
   if (takesDepositPhoto(kind)) return;
-  throw new BusinessRuleError('INVALID_INPUT', `Donation ${donationId} was not taken in cash or by check, so it takes no deposit photo.`, {
+  throw new BusinessRuleError('INVALID_INPUT', `Donation ${donationId} was not taken by check, so it takes no deposit photo.`, {
     donationId,
     kind,
   });

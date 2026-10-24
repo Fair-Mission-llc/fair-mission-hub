@@ -156,7 +156,10 @@ export type BusinessRuleCode =
   | 'CHARITY_ENDORSER_REQUIRED'
   | 'SELF_ENDORSEMENT_BLOCKED'
   | 'CHARITY_ENDORSEMENT_REQUIRED'
-  | 'ENDORSER_PAYOUT_BLOCKED';
+  | 'ENDORSER_PAYOUT_BLOCKED'
+  | 'HUB_SESSION_REQUIRED'
+  | 'HUB_IDENTITY_MISMATCH'
+  | 'HUB_UNREACHABLE';
 
 /** A request the business rules refuse. `details` holds the values that caused it. */
 export class BusinessRuleError extends Error {

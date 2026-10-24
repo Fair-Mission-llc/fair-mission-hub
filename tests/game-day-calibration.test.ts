@@ -107,7 +107,8 @@ describe('1b. the phone re-anchors an already installed database', () => {
   it('runs the anchor after the presentation seed and on every open of a current database', () => {
     const driver = read('apps/mobile/services/drivers/sqlite.ts');
     expect(driver).toContain('await this.anchorPilotTimeline(db);');
-    expect(driver).toContain('if (this.presentationData) await db.withTransactionAsync(() => this.anchorPilotTimeline(db));');
+    // Sprint 9 Revision 4.0: a phone still re-anchors on every open; only the persistent hub vault keeps its dates.
+    expect(driver).toContain('if (this.presentationData && !this.persistent) await db.withTransactionAsync(() => this.anchorPilotTimeline(db));');
     expect(read('Seed.sql')).toContain('packages/shared/src/pilot-timeline.ts');
   });
 });

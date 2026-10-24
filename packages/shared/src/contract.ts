@@ -2806,7 +2806,7 @@ export interface DataService {
      */
     remove(actorId: number, id: number): Promise<void>;
     /**
-     * Sprint 9 Revision 3.0 (schema 98): stores one deposit photo for a Cash or Check donation ('📸 Attach Deposit
+     * Sprint 9 Revision 3.0 (schema 98): stores one deposit photo for a Check donation (Cash too until Revision 4.0) ('📸 Attach Deposit
      * Photo'): `filePath` is the photo's path in the phone's media folder (cleanAttachmentPath), captured_at is now.
      * Rights as `update` (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED); INVALID_INPUT for another method kind;
      * COLLECTION_SESSION_CONCLUDED once the donation's event is concluded; RECORD_NOT_FOUND for an unknown donation.

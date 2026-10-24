@@ -5,11 +5,13 @@
 //
 //   NEXT_PUBLIC_DATA_DRIVER=memory  (default)  in-memory mock, seeded from Seed.sql
 //   NEXT_PUBLIC_DATA_DRIVER=remote             production Azure SQL, via drivers/remote.ts
+//   NEXT_PUBLIC_DATA_DRIVER=hub                Sprint 9 Revision 4.0: the room pilot's hub laptop - every call goes to
+//                                              /api/sync/replicate and runs on its persistent vault (npm run build:pilot)
 //
 // The memory driver is client-side state: import `db` only from client
 // components ("use client"); each browser tab gets its own copy.
 // =========================================================================
-import { guardViewAsWrites, type DataService } from '@kofc/shared';
+import { createHubDataService, fetchHubTransport, guardViewAsWrites, HUB_DATA_DRIVER, type DataService } from '@kofc/shared';
 import { postAlchemerViaServer } from './alchemer-transport';
 import { sendEmailViaServer } from './email-transport';
 import { MemoryDataService } from './drivers/memory';
@@ -27,8 +29,11 @@ function createDataService(): DataService {
       return new MemoryDataService({ postAlchemer: postAlchemerViaServer, sendEmail: sendEmailViaServer, presentationData: true });
     case 'remote':
       return createRemoteDataService();
+    case HUB_DATA_DRIVER:
+      // The portal and the hub are the same server, so the calls go to this origin with the session cookie.
+      return createHubDataService(fetchHubTransport(''));
     default:
-      throw new Error(`Unknown NEXT_PUBLIC_DATA_DRIVER "${driver}" (expected "memory" or "remote")`);
+      throw new Error(`Unknown NEXT_PUBLIC_DATA_DRIVER "${driver}" (expected "memory", "remote" or "hub")`);
   }
 }
 

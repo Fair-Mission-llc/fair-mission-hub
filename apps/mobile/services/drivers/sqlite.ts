@@ -959,7 +959,7 @@ const DB_NAME = 'kofc.db';
  *     Active Shifts first and folds prayers and devotions into two drawers (Sprint 8S Revision 4).
  * 98: VolunteerQuarantine.return_explanation - the reviewer's reason on a time entry returned for correction, in place
  *     of the 'Returned for correction: ' prefix in quarantine_reason - and TransactionAttachments, the deposit photos
- *     taken with '📸 Attach Deposit Photo' on Cash and Check donations (Sprint 9 Revision 3.0).
+ *     taken with '📸 Attach Deposit Photo' on Check donations (Sprint 9 Revision 3.0; Cash too until Revision 4.0).
  */
 const SCHEMA_VERSION = 98;
 
@@ -1039,6 +1039,9 @@ type Bind = string | number | null;
 
 const noParish = (parishId: number) => new BusinessRuleError('INVALID_INPUT', `No parish with id ${parishId}.`, { parishId });
 
+/** The expo-sqlite calls the service makes, so a host can hand in another implementation (Sprint 9 Revision 4.0). */
+export type SqliteModule = Pick<typeof SQLite, 'openDatabaseAsync' | 'deleteDatabaseAsync' | 'backupDatabaseAsync'>;
+
 export interface SqliteDataServiceOptions {
   /** Clock used for seeding and the history-window rules. Tests pin it. Default: real time. */
   now?: () => Date;
@@ -1062,6 +1065,18 @@ export interface SqliteDataServiceOptions {
    * the device's secure store (see ballotSecret).
    */
   ballotSecret?: string;
+  /**
+   * Sprint 9 Revision 4.0: the SQLite implementation; expo-sqlite by default. The pilot hub (apps/web/services/server/hub)
+   * passes a Node adapter over a file on the laptop's disk.
+   */
+  sqlite?: SqliteModule;
+  /**
+   * Sprint 9 Revision 4.0: a database that must never be wiped - the pilot hub's central-hub-vault.db. An older or
+   * structurally different file is not backed up and rebuilt as on a phone: opening stops with an error that names the
+   * versions, and the file is left as it is. The pilot event is also not moved to today on each open, so dates recorded
+   * in earlier sessions stay as they were (it is placed once, when the file is first created).
+   */
+  persistent?: boolean;
 }
 
 export class SqliteDataService implements DataService {
@@ -1074,8 +1089,12 @@ export class SqliteDataService implements DataService {
   private ballotSecretValue: Promise<string> | null;
   /** Sprint 7G: wrong meeting PINs per member and meeting (geofence.ts), kept for this driver's life only. */
   private readonly pinAttempts = new MeetingPinAttempts();
+  private readonly sqlite: SqliteModule;
+  private readonly persistent: boolean;
 
   constructor(options: SqliteDataServiceOptions = {}) {
+    this.sqlite = options.sqlite ?? SQLite;
+    this.persistent = options.persistent ?? false;
     this.presentationData = options.presentationData ?? false;
     this.ballotSecretValue = options.ballotSecret ? Promise.resolve(options.ballotSecret) : null;
     this.now = options.now ?? (() => new Date());
@@ -1100,7 +1119,8 @@ export class SqliteDataService implements DataService {
         // a failed open has nothing to close
       }
     }
-    await SQLite.deleteDatabaseAsync(DB_NAME);
+    if (this.persistent) throw new Error('This database is persistent (the pilot hub vault) and is never reset.');
+    await this.sqlite.deleteDatabaseAsync(DB_NAME);
     await this.init();
   }
 
@@ -1115,7 +1135,7 @@ export class SqliteDataService implements DataService {
   }
 
   private async open(): Promise<SQLite.SQLiteDatabase> {
-    const db = await SQLite.openDatabaseAsync(DB_NAME);
+    const db = await this.sqlite.openDatabaseAsync(DB_NAME);
     // Must be set per connection, and cannot be changed inside a transaction.
     await db.execAsync('PRAGMA foreign_keys = ON;');
     const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
@@ -1125,16 +1145,24 @@ export class SqliteDataService implements DataService {
       return db;
     }
     if (version >= SCHEMA_VERSION && (await this.columnsMatch(db))) {
-      // A phone installed on an earlier day keeps the pilot event under way today too.
-      if (this.presentationData) await db.withTransactionAsync(() => this.anchorPilotTimeline(db));
+      // A phone installed on an earlier day keeps the pilot event under way today too. The persistent hub vault does
+      // not: it keeps every date as recorded.
+      if (this.presentationData && !this.persistent) await db.withTransactionAsync(() => this.anchorPilotTimeline(db));
       return db;
+    }
+    if (this.persistent) {
+      await db.closeAsync();
+      throw new Error(
+        `The hub vault is at database version ${version}, but this build needs version ${SCHEMA_VERSION} with the same tables. ` +
+          'The vault is never wiped: copy it somewhere safe and migrate it, or move it aside to start a new one.',
+      );
     }
     // An older or structurally different database: CREATE TABLE IF NOT EXISTS would keep the stale tables and the seed
     // INSERTs would throw on the missing columns. Back the file up, wipe it and rebuild from scratch.
     await this.backupDatabase(db);
     await db.closeAsync();
-    await SQLite.deleteDatabaseAsync(DB_NAME);
-    const fresh = await SQLite.openDatabaseAsync(DB_NAME);
+    await this.sqlite.deleteDatabaseAsync(DB_NAME);
+    const fresh = await this.sqlite.openDatabaseAsync(DB_NAME);
     await fresh.execAsync('PRAGMA foreign_keys = ON;');
     await this.createAndSeed(fresh);
     return fresh;
@@ -1156,9 +1184,9 @@ export class SqliteDataService implements DataService {
   private async backupDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
     const name = `kofc.backup-${this.now().toISOString().replace(/[:.]/g, '-')}.db`;
     try {
-      const dest = await SQLite.openDatabaseAsync(name);
+      const dest = await this.sqlite.openDatabaseAsync(name);
       try {
-        await SQLite.backupDatabaseAsync({ sourceDatabase: db, destDatabase: dest });
+        await this.sqlite.backupDatabaseAsync({ sourceDatabase: db, destDatabase: dest });
       } finally {
         await dest.closeAsync();
       }

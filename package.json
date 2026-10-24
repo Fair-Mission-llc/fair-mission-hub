@@ -10,9 +10,12 @@
   "scripts": {
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:pilot": "node scripts/start-pilot.mjs",
+    "hub:archive": "node scripts/hub-archive.mjs",
     "dev:mobile": "npm run start --workspace=apps/mobile",
+    "dev:mobile:pilot": "node scripts/start-mobile-pilot.mjs",
     "build:shared": "npm run build --workspace=packages/shared",
     "build:web": "npm run build --workspace=apps/web",
+    "build:pilot": "node scripts/build-pilot.mjs",
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspace=apps/web && npm run typecheck --workspace=apps/mobile"
   },

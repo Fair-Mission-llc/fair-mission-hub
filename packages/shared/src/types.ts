@@ -1463,7 +1463,7 @@ export interface VolunteerQuarantine {
 
 /**
  * Sprint 9 Revision 3.0 (schema 98): a deposit photo taken with the phone camera ('📸 Attach Deposit Photo') when a
- * Cash or Check donation is recorded (donation-attachments.ts).
+ * Check donation is recorded (donation-attachments.ts; Cash too until Sprint 9 Revision 4.0).
  */
 export interface TransactionAttachment {
   id: number;

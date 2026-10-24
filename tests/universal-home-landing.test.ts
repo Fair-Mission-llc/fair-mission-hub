@@ -343,7 +343,9 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
     expect(donation).toContain('"revenue_gl_account_id"');
     const driver = read('apps/mobile/services/drivers/sqlite.ts');
     expect(driver).toContain('if (version >= SCHEMA_VERSION && (await this.columnsMatch(db))) {');
-    expect(driver.indexOf('await this.backupDatabase(db);')).toBeLessThan(driver.indexOf('await SQLite.deleteDatabaseAsync(DB_NAME);\n    const fresh'));
-    expect(driver).toContain('SQLite.backupDatabaseAsync({ sourceDatabase: db, destDatabase: dest })');
+    // Sprint 9 Revision 4.0: the SQLite module is injectable (this.sqlite); a phone still backs up before it rebuilds.
+    expect(driver.indexOf('await this.backupDatabase(db);')).toBeGreaterThan(-1);
+    expect(driver.indexOf('await this.backupDatabase(db);')).toBeLessThan(driver.indexOf('await this.sqlite.deleteDatabaseAsync(DB_NAME);\n    const fresh'));
+    expect(driver).toContain('this.sqlite.backupDatabaseAsync({ sourceDatabase: db, destDatabase: dest })');
   });
 });

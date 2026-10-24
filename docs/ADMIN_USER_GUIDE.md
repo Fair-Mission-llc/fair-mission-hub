@@ -38,7 +38,8 @@
 25. [Account ownership, parish-held revenue, feedback loops and the Super Admin Desk](#25-account-ownership-parish-held-revenue-feedback-loops-and-the-super-admin-desk)
 26. [The global search bar](#26-the-global-search-bar)
 27. [The Navigation Guide screen](#27-the-navigation-guide-screen)
-28. [Appendix: QR code files](#appendix-qr-code-files)
+28. [Run a room pilot on the hub laptop](#28-run-a-room-pilot-on-the-hub-laptop)
+29. [Appendix: QR code files](#appendix-qr-code-files)
 
 ### How to read a tutorial
 
@@ -4384,6 +4385,84 @@ Select a link name to open that page. Select a desk name to open that desk tab o
 | A group that you opened is closed again. | The screen starts with every category group closed on each visit. | Select the group title again. |
 | A page that a colleague uses is not on the screen. | Your role cannot open the page. | Ask a council Admin about your role. |
 | A whole module is missing. | Your council switched the module off (section 3). | Ask a Super Admin to switch the module on. |
+
+## 28. Run a room pilot on the hub laptop
+
+### Concept: the hub laptop and the vault
+
+In a room pilot, one laptop is the hub. The hub holds the council's data in one file on its disk:
+`packages/backend/data/central-hub-vault.db`. This file is the vault.
+
+Every other laptop and phone on the room Wi-Fi works on the vault. No device keeps its own copy. A record saved on one device is on every device at once.
+
+The vault keeps every record from every session:
+- donations, expense reports, hours and charity requests;
+- meeting logs, check-ins and ballots;
+- check photos. The photos are kept in a `photos` folder beside the vault.
+
+The vault never clears itself. A restart of the hub laptop keeps every record that was saved before the restart.
+
+The pilot scripts use seeded records, for example report 21 at the Financial Secretary's gate. After a session, those records are already worked. Start each scripted rehearsal on a fresh vault. The command `npm run hub:archive` moves the old vault into an `archive` folder. It deletes nothing.
+
+| Command | What it does |
+| --- | --- |
+| `npm run build:pilot` | Builds the web portal as the hub. |
+| `npm run dev:pilot` | Starts the hub. It prints the portal address, for example `http://10.0.0.167:3000`. |
+| `npm run dev:mobile:pilot` | Starts the phone app server. The phones work on the hub. |
+| `npm run hub:archive` | Moves the vault into `packages/backend/data/archive`. The next start makes a fresh vault. |
+
+### 28.1 Start the hub before a pilot session
+
+> **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
+
+**Goal:** Start the hub, so that every laptop and phone works on the vault.
+
+**Start point:** The hub laptop → a terminal in the project folder.
+
+**Steps:**
+1. Connect the hub laptop to the room Wi-Fi.
+2. Run `npm run build:pilot`. Wait for the build to finish.
+3. To start the scripted rehearsal on fresh records, run `npm run hub:archive`.
+4. Run `npm run dev:pilot`. Keep this terminal open.
+5. Read the line `[pilot] Hub mode: every device works on packages/backend/data/central-hub-vault.db.` Write down the portal address on that line.
+6. In a second terminal, run `npm run dev:mobile:pilot`. Keep this terminal open.
+7. On each laptop, open the portal address in the browser. Sign in.
+8. On each phone, scan the QR code in the second terminal with Expo Go. Sign in.
+
+**Expected result:** Every device shows the same records. A donation recorded on a phone shows on the Treasurer's laptop after the page reloads.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The terminal shows `WARNING: not a hub build`. | The portal was built with `npm run build:web`. | Stop the hub. Run `npm run build:pilot`. Run `npm run dev:pilot` again. |
+| A device shows *"The pilot hub laptop cannot be reached."* | The device is not on the room Wi-Fi, or the hub is stopped. | Connect the device to the room Wi-Fi. Check that `npm run dev:pilot` runs. |
+| The phone app cannot sign in. | The phone server has the wrong hub address. | Stop `npm run dev:mobile:pilot`. Run `npm run dev:mobile:pilot -- --hub http://<hub address>:3000`. |
+| The hub stops with *"The hub vault is at database version ..."*. | The vault is from an older version of the platform. | Run `npm run hub:archive`. Start the hub again. The old vault stays in the archive folder. |
+| Windows asks if Node.js can use the network. | The firewall protects the laptop. | Allow access on private networks. |
+
+### 28.2 Keep or archive the vault after a session
+
+> **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
+> **Warning:** do not delete or move the vault file by hand. Use `npm run hub:archive`. A vault that you delete cannot be recovered.
+
+**Goal:** Keep the records for the next session, or put them aside for a fresh rehearsal.
+
+**Start point:** The hub laptop → the terminal that runs `npm run dev:pilot`.
+
+**Steps:**
+1. Press Ctrl+C in the terminal that runs `npm run dev:pilot`. The hub stops. Every saved record stays in the vault.
+2. To keep adding to the same records next session, do nothing more. The next `npm run dev:pilot` opens the same vault.
+3. To start the next rehearsal on fresh records, run `npm run hub:archive`.
+
+**Expected result:** With step 2, the next session shows every record from this session. With step 3, the terminal shows `[hub] Archived the vault to ...`. The next session starts from the seeded records.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| `hub:archive` shows *"The hub is running."* | The hub holds the vault file open. | Stop `npm run dev:pilot` with Ctrl+C. Run `npm run hub:archive` again. |
+| You need a record from an archived session. | The archive keeps the old vault as a file. | Ask the developer to open the vault file in the dated folder under `packages/backend/data/archive`. |
+
+---
 
 ## Appendix: QR code files
 

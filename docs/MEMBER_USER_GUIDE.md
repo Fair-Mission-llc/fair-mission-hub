@@ -1273,15 +1273,18 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 3. Enter the number printed on the check in **CHECK NUMBER (REQUIRED)**.
 4. Choose the **DONATION TYPE**.
 5. Optional: fill in **DONOR NAME (OPTIONAL)**.
-6. Tap **Record donation**. The gift saves at once.
+6. Optional: under **DEPOSIT PHOTO (OPTIONAL)**, tap **📸 Attach Deposit Photo**. Photograph the front of the check. The Cash form has no photo button.
+7. Tap **Record donation**. The gift saves at once.
 
-**Expected result:** A message says *"Recorded $50.00 by Check for … Thank the donor!"* with the amount and the event.
+**Expected result:** A message says *"Recorded $50.00 by Check for … Thank the donor!"* with the amount and the event. With a photo, the message also says *"Deposit photo attached."*. In a room pilot, the photo is kept on the hub laptop.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"Enter the check number printed on the check."* | **CHECK NUMBER (REQUIRED)** is empty. | Enter the check number. Tap **Record donation** again. |
 | There is no **Check** tile. | The council did not turn on the Check method. | Take the gift as cash. Tell your council Admin. |
+| *"The deposit photo was not attached: …"* | The gift saved, but the photo did not. | Tell the Financial Secretary. The gift does not need the photo. |
+| The phone asks for camera access. | The app needs your permission to use the camera. | Tap **Allow**. Or turn on camera access for the app in the phone settings. |
 
 ### 7.3 Record a physical item donation
 

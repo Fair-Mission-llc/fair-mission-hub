@@ -23,3 +23,7 @@ scripts/__pycache__/
 
 # Sprint 8R: Expo tooling writes a root tsconfig.json stub; the repository has no root TypeScript config.
 /tsconfig.json
+
+# Sprint 9 Revision 4.0: the pilot hub vault, its ballot secret, backups and check photos stay on the hub laptop.
+packages/backend/data/*
+!packages/backend/data/.gitkeep

@@ -1,5 +1,5 @@
 // Sprint 9 Revision 3.0 (schema 98): VolunteerQuarantine.return_explanation, the TransactionAttachments table and the
-// phone's '📸 Attach Deposit Photo' button on Cash and Check donations.
+// phone's '📸 Attach Deposit Photo' button on Check donations (Sprint 9 Revision 4.0: Cash forms carry none).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -31,20 +31,22 @@ describe('Schema 98', () => {
     expect(read('packages/shared/src/volunteer-quarantine.ts')).not.toContain('QUARANTINE_RETURN_PREFIX');
   });
 
-  it('takes deposit photos on Cash and Check only, compressed', () => {
-    expect(takesDepositPhoto('cash')).toBe(true);
+  it('takes deposit photos on Check only, compressed', () => {
     expect(takesDepositPhoto('check')).toBe(true);
-    for (const kind of ['card', 'qr', 'item', 'other'] as const) expect(takesDepositPhoto(kind)).toBe(false);
+    for (const kind of ['cash', 'card', 'qr', 'item', 'other'] as const) expect(takesDepositPhoto(kind)).toBe(false);
     expect(DEPOSIT_PHOTO_QUALITY).toBeLessThan(0.8);
   });
 
-  it("puts '📸 Attach Deposit Photo' on the phone's Cash and Check forms and binds it after recording", () => {
+  it("puts '📸 Attach Deposit Photo' on the phone's Check form only and binds it after recording", () => {
     expect(DEPOSIT_PHOTO_TITLE).toBe('📸 Attach Deposit Photo');
     const phone = read('apps/mobile/app/(app)/donate.tsx');
     expect(phone).toContain('title={DEPOSIT_PHOTO_TITLE}');
     expect(phone).toContain('quality={DEPOSIT_PHOTO_QUALITY}');
     expect(phone).toContain('const takesDeposit = takesDepositPhoto(option.kind);');
-    expect(phone).toContain('db.donations.attachDepositPhoto(user.memberId, saved.id, v.depositPhotoPath)');
+    // Sprint 9 Revision 4.0: no cash wording is left on the photo tile.
+    expect(phone).not.toContain('Photograph the cash');
+    expect(phone).not.toContain('Photo of the cash');
+    expect(phone).toContain('db.donations.attachDepositPhoto(user.memberId, saved.id, await storeDepositPhoto(v.depositPhotoPath))');
     expect(read('apps/mobile/lib/use-photo-capture.ts')).toContain("launchCameraAsync({ mediaTypes: ['images'], quality, exif: false })");
   });
 });
@@ -61,9 +63,11 @@ describe.each(drivers)('$name driver: deposit photos', (d) => {
     return { db, base, cash, check, other };
   };
 
-  it('stores a deposit photo for a Cash or Check donation and lists it back', async () => {
+  it('stores a deposit photo for a Check donation and lists it back, and refuses one on Cash', async () => {
     const { db, base, cash, check } = await setup();
-    const gift = await db.donations.record(MEMBER.member, { ...base, DonationMethodID: cash.method.id });
+    const cashGift = await db.donations.record(MEMBER.member, { ...base, DonationMethodID: cash.method.id });
+    await expectRule(db.donations.attachDepositPhoto(MEMBER.member, cashGift.id, PHOTO), 'INVALID_INPUT');
+    const gift = await db.donations.record(MEMBER.member, { ...base, DonationMethodID: check.method.id, CheckNumber: '1187' });
     const photo = await db.donations.attachDepositPhoto(MEMBER.member, gift.id, `  ${PHOTO}  `);
     expect(photo).toMatchObject({ donation_id: gift.id, file_path: PHOTO });
     expect(photo.id).toBeGreaterThan(0);
@@ -77,8 +81,8 @@ describe.each(drivers)('$name driver: deposit photos', (d) => {
   });
 
   it('refuses another member, another method, a blank path and an unknown donation, writing nothing', async () => {
-    const { db, base, cash, other } = await setup();
-    const gift = await db.donations.record(MEMBER.member, { ...base, DonationMethodID: cash.method.id });
+    const { db, base, check, other } = await setup();
+    const gift = await db.donations.record(MEMBER.member, { ...base, DonationMethodID: check.method.id, CheckNumber: '1190' });
     await expectRule(db.donations.attachDepositPhoto(MEMBER.newMember, gift.id, PHOTO), 'ADMIN_REQUIRED');
     await expectRule(db.donations.listAttachments(MEMBER.newMember, gift.id), 'ADMIN_REQUIRED');
     await expectRule(db.donations.attachDepositPhoto(MEMBER.member, gift.id, '   '), 'INVALID_INPUT');
@@ -94,8 +98,8 @@ describe.each(drivers)('$name driver: deposit photos', (d) => {
   });
 
   it('deletes the photo rows with their donation', async () => {
-    const { db, base, cash } = await setup();
-    const gift = await db.donations.record(MEMBER.member, { ...base, DonationMethodID: cash.method.id });
+    const { db, base, check } = await setup();
+    const gift = await db.donations.record(MEMBER.member, { ...base, DonationMethodID: check.method.id, CheckNumber: '1191' });
     await db.donations.attachDepositPhoto(MEMBER.member, gift.id, PHOTO);
     await db.donations.remove(MEMBER.member, gift.id);
     expect(d.count(db, 'TransactionAttachments')).toBe(0);

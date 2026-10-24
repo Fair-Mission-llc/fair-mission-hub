@@ -29,7 +29,8 @@
 // After the member drags Slide to Conclude & Lock (SwipeToConfirm, Sprint 8S Revision 4), the event's collection is CONCLUDED for every phone: the gate intake closes, no more
 // donations are logged or changed for it, and the Treasurer's Cash Box Audit Closure Panel shows it ready for the count.
 // The event dropdown leaves out concluded events.
-// Sprint 9 Revision 3.0 (schema 98): the Cash and Check forms carry '📸 Attach Deposit Photo' (DEPOSIT_PHOTO_TITLE). The
+// Sprint 9 Revision 3.0 (schema 98): the Check form carries '📸 Attach Deposit Photo' (DEPOSIT_PHOTO_TITLE; Revision 4.0
+// took it off the Cash form, so cash box entries need no photo). The
 // camera shot is saved compressed (DEPOSIT_PHOTO_QUALITY) into the app's media folder; once the donation is recorded,
 // donations.attachDepositPhoto writes its TransactionAttachments row. Optional: a donation records without one.
 import { useEffect, useRef, useState } from 'react';
@@ -65,6 +66,7 @@ import { useTheme } from '@/lib/layout-mode';
 import { describeError, useLoad } from '@/lib/use-async';
 import { useDonationSession } from '@/lib/use-donation-session';
 import { db } from '@/services/db';
+import { storeDepositPhoto } from '@/services/hub-photos';
 
 const money = (n: number) => `$${n.toFixed(2)}`;
 
@@ -75,7 +77,7 @@ interface DonationValues {
   donor: string;
   description: string;
   photoPath: string | null;
-  /** Sprint 9 Revision 3.0: the Cash or Check deposit photo's stored path, or null. */
+  /** Sprint 9 Revision 3.0: the Check deposit photo's stored path, or null. */
   depositPhotoPath: string | null;
   /** Sprint 7F Extension 2: required for a Check donation, null otherwise. */
   checkNumber: string | null;
@@ -202,7 +204,7 @@ function DonationForm({
   // Sprint 7F Extension 2: a Check donation must carry the number printed on the check.
   const isCheck = option.kind === 'check';
   const [checkNumber, setCheckNumber] = useState('');
-  // Sprint 9 Revision 3.0: Cash and Check donations may carry a deposit photo.
+  // Sprint 9 Revision 3.0: a Check donation may carry a deposit photo (Revision 4.0: Check only, never Cash).
   const takesDeposit = takesDepositPhoto(option.kind);
   const [depositPhotoPath, setDepositPhotoPath] = useState<string | null>(null);
   // Sprint 8S Revision 10: the Amount box opens filled with the session's standard rate (e.g. $25.00 parking), so a
@@ -307,9 +309,9 @@ function DonationForm({
             <ReceiptScanTile
               prefix="deposit"
               title={DEPOSIT_PHOTO_TITLE}
-              hint={isCheck ? 'Photograph the front of the check before it goes in the deposit bag.' : 'Photograph the cash before it goes in the deposit bag.'}
+              hint="Photograph the front of the check before it goes in the deposit bag."
               photoPath={depositPhotoPath}
-              photoLabel={isCheck ? 'Photo of the check' : 'Photo of the cash'}
+              photoLabel="Photo of the check"
               quality={DEPOSIT_PHOTO_QUALITY}
               onCaptured={setDepositPhotoPath}
               onRemove={() => setDepositPhotoPath(null)}
@@ -431,7 +433,8 @@ function DonateScreenBody() {
     let photoNote = '';
     if (v.depositPhotoPath) {
       try {
-        await db.donations.attachDepositPhoto(user.memberId, saved.id, v.depositPhotoPath);
+        // Sprint 9 Revision 4.0: in hub mode the photo is uploaded to the hub laptop first, which keeps it for every session.
+        await db.donations.attachDepositPhoto(user.memberId, saved.id, await storeDepositPhoto(v.depositPhotoPath));
         photoNote = ' Deposit photo attached.';
       } catch (err) {
         setMessage({ tone: 'error', text: `${recorded} The deposit photo was not attached: ${describeError(err)}` });

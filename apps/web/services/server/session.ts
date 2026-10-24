@@ -12,8 +12,9 @@
 // tab-only promotion is not honoured, until the remote driver puts both sides on one database. Live Drive, SendGrid and
 // Supreme actions are refused for them, which fails closed.
 import { NextResponse } from 'next/server';
-import type { MemberWriteActor, SessionUser } from '@kofc/shared';
+import type { DataService, MemberWriteActor, SessionUser } from '@kofc/shared';
 import { MemoryDataService } from '../drivers/memory';
+import { hubModeOn, serializedHub } from './hub/hub-vault';
 import { deliverServerEmail } from './notify';
 import { portalSessionSecret } from './secrets';
 import {
@@ -35,8 +36,11 @@ const throttle = new SignInThrottle();
 /**
  * The server's own copy of the member data, seeded once per process like the browser's. Sprint 6Z-Email-Proxy: it also
  * holds each council's email gateway, saved through /api/councils/email-gateway and read by the notification route.
+ * Sprint 9 Revision 4.0: in hub mode (npm run build:pilot) it is the pilot hub's vault instead (hub/hub-vault.ts), the
+ * one database every device works on, so the limit of the mock below does not apply there.
  */
-export async function memberDirectory(): Promise<MemoryDataService> {
+export async function memberDirectory(): Promise<DataService> {
+  if (hubModeOn()) return serializedHub();
   // Sprint 7F: the server copy's own email (the council access request notice) goes through deliverServerEmail.
   directory ??= new MemoryDataService({ presentationData: true, log: () => {}, sendEmail: deliverServerEmail });
   await directory.init();
