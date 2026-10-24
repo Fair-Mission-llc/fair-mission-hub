@@ -62,7 +62,8 @@ Do these steps in order, from the repository root.
    npm run dev:web
    ```
    Open `http://localhost:3000`.
-6. Optional: start the phone app with `npm run dev:mobile` and scan the QR code with Expo Go. The phone and the computer must be on the same Wi-Fi network.
+6. Optional: start the phone app with `npm run dev:mobile` and scan the QR code with Expo Go. The phone and the computer must be on the same Wi-Fi network. Since Sprint 9 Revision 1.2 the bundler runs with `--offline` (anonymous manifest signatures), so it never asks for an Expo account sign-in.
+7. Pilot sessions: run `npm run build:web` once, then `npm run dev:pilot`. It serves the built web portal on port 3000 on every network address of this computer (`0.0.0.0`), so other devices on the same Wi-Fi open `http://<this computer's IP>:3000`. It serves the last build: rebuild after code changes (use `npm run dev:web` for live reloading).
 
 ### 2.1 Demo sign-ins
 
