@@ -21,16 +21,19 @@ export async function saveToMediaFolder(sourceUri: string, prefix: string): Prom
   return target.uri;
 }
 
+/** JPEG quality (0-1) of a captured photo unless the caller asks for more compression. */
+export const DEFAULT_PHOTO_QUALITY = 0.8;
+
 /**
  * Opens the phone's camera (asking for permission the first time) and saves the photo into the media folder.
- * Resolves to its file:// URI, or null when the member cancels.
+ * `quality` is the JPEG compression (0-1). Resolves to its file:// URI, or null when the member cancels.
  */
-export async function capturePhoto(prefix: string): Promise<string | null> {
+export async function capturePhoto(prefix: string, quality: number = DEFAULT_PHOTO_QUALITY): Promise<string | null> {
   const permission = await ImagePicker.requestCameraPermissionsAsync();
   if (!permission.granted) {
     throw new Error('Camera access is turned off for KofC Tracker. Allow it in your phone settings, then try again.');
   }
-  const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8, exif: false });
+  const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality, exif: false });
   if (result.canceled || result.assets.length === 0) return null;
   return saveToMediaFolder(result.assets[0].uri, prefix);
 }
@@ -39,7 +42,7 @@ export async function capturePhoto(prefix: string): Promise<string | null> {
  * State for a capture button: `capture()` takes a photo, saves it and hands the stored path to `onCaptured`
  * (which records it, e.g. events.uploadPhotos with the signed-in member as actorId). Failures land in `error`.
  */
-export function usePhotoCapture(prefix: string, onCaptured: (path: string) => Promise<void> | void) {
+export function usePhotoCapture(prefix: string, onCaptured: (path: string) => Promise<void> | void, quality: number = DEFAULT_PHOTO_QUALITY) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +50,7 @@ export function usePhotoCapture(prefix: string, onCaptured: (path: string) => Pr
     setBusy(true);
     setError(null);
     try {
-      const path = await capturePhoto(prefix);
+      const path = await capturePhoto(prefix, quality);
       if (path) await onCaptured(path);
     } catch (err) {
       setError(describeError(err));

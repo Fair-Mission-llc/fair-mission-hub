@@ -81,3 +81,4 @@ export * from './mobile-home';
 export * from './legal-notices';
 export * from './pilot-timeline';
 export * from './calendar-feed';
+export * from './donation-attachments';

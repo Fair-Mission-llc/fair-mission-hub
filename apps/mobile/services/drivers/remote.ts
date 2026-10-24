@@ -122,6 +122,8 @@ export function createRemoteDataService(): DataService {
       record: notImplemented('donations.record'),
       update: notImplemented('donations.update'),
       remove: notImplemented('donations.remove'),
+      attachDepositPhoto: notImplemented('donations.attachDepositPhoto'),
+      listAttachments: notImplemented('donations.listAttachments'),
     },
     expenses: {
       listUserReports: notImplemented('expenses.listUserReports'),

@@ -1209,3 +1209,14 @@ ________________________________________
 Schema version 97; no table change; the phone database version moves to 97.
 Rules. Signing in unlocks the whole phone app; no in-session button asks for Face ID, a fingerprint or a passcode. Report Hours taps queue 15 minutes each and are saved only by dragging 'Slide to Log Hours'; the Donate screen concludes and locks a collection session only by dragging 'Slide to Conclude & Lock'. Phone Home draws, in order (MOBILE_HOME_SECTIONS): My Active Shifts, the feast day banner, the greeting, '[ 📿 Active Spiritual Intentions Drawer ]' (the Council Prayer Intentions list), '[ 📖 Daily Devotional Drawer ]' (today's NABRE verse, the devotional tally and the shield), the Council Dashboard card and the expense card. Both drawers start closed.
 ________________________________________
+# 54. Return Explanations and Deposit Photos (Sprint 9 Revision 3.0)
+Schema version 98; the phone database version moves to 98.
+VolunteerQuarantine gains one column.
+•	return_explanation (VARCHAR(500), NULL) — the reviewer's required reason when the Grand Knight, Deputy Grand Knight or an Admin rejects a held time entry back to its member (clearance_status 'DRAFT'). Written only by volunteerQuarantine.reject; kept after the member resubmits, as the review record. Replaces the Sprint 9 Revision 1.1 'Returned for correction: ' prefix in quarantine_reason, which now keeps the guard text that held the entry. No backfill.
+[TransactionAttachments]
+•	id (INTEGER, NOT NULL, IDENTITY) — Primary Key.
+•	donation_id (INTEGER, NOT NULL) — Foreign Key references Donation(id): the Cash or Check donation the photo belongs to. A donation may carry several.
+•	file_path (VARCHAR(500), NOT NULL) — the photo's file:// path in the phone's media folder.
+•	captured_at (DATETIME, NOT NULL) — when the photo was stored.
+Rules (donation-attachments.ts). The phone's Cash and Check donation forms carry '📸 Attach Deposit Photo'. The camera saves the shot at JPEG quality 0.5 into the app's media folder; donations.attachDepositPhoto writes the row once the donation is recorded. Adding or reading a photo takes the right to change the donation (assertMayChangeDonation): its recorder, its event's owner, the council's Financial Secretary or Treasurer, an Admin of its council or a Super Admin. Only Cash and Check donations take one (INVALID_INPUT), and none is added after the event's collection session is concluded. donations.remove deletes the donation's photo rows with it.
+________________________________________

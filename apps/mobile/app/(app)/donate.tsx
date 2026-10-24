@@ -29,15 +29,21 @@
 // After the member drags Slide to Conclude & Lock (SwipeToConfirm, Sprint 8S Revision 4), the event's collection is CONCLUDED for every phone: the gate intake closes, no more
 // donations are logged or changed for it, and the Treasurer's Cash Box Audit Closure Panel shows it ready for the count.
 // The event dropdown leaves out concluded events.
+// Sprint 9 Revision 3.0 (schema 98): the Cash and Check forms carry '📸 Attach Deposit Photo' (DEPOSIT_PHOTO_TITLE). The
+// camera shot is saved compressed (DEPOSIT_PHOTO_QUALITY) into the app's media folder; once the donation is recorded,
+// donations.attachDepositPhoto writes its TransactionAttachments row. Optional: a donation records without one.
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import {
   CONCLUDE_EVENT_SESSION_LABEL,
   councilWideSettings,
+  DEPOSIT_PHOTO_QUALITY,
+  DEPOSIT_PHOTO_TITLE,
   formatDate,
   isCollectionOpen,
   isEventAtGate,
   PHONE_STANDARD_RATE_HINT,
+  takesDepositPhoto,
   SPACING,
   toIsoDate,
   type CouncilDonationOption,
@@ -69,6 +75,8 @@ interface DonationValues {
   donor: string;
   description: string;
   photoPath: string | null;
+  /** Sprint 9 Revision 3.0: the Cash or Check deposit photo's stored path, or null. */
+  depositPhotoPath: string | null;
   /** Sprint 7F Extension 2: required for a Check donation, null otherwise. */
   checkNumber: string | null;
 }
@@ -194,6 +202,9 @@ function DonationForm({
   // Sprint 7F Extension 2: a Check donation must carry the number printed on the check.
   const isCheck = option.kind === 'check';
   const [checkNumber, setCheckNumber] = useState('');
+  // Sprint 9 Revision 3.0: Cash and Check donations may carry a deposit photo.
+  const takesDeposit = takesDepositPhoto(option.kind);
+  const [depositPhotoPath, setDepositPhotoPath] = useState<string | null>(null);
   // Sprint 8S Revision 10: the Amount box opens filled with the session's standard rate (e.g. $25.00 parking), so a
   // gate gift is recorded with no typing; the member may still change it. Item gifts start empty (Sprint 8L rule kept).
   const [amount, setAmount] = useState(isItem || defaults.amount == null ? '' : defaults.amount.toFixed(2));
@@ -224,6 +235,7 @@ function DonationForm({
         donor: donor.trim(),
         description: description.trim(),
         photoPath: isItem ? photoPath : null,
+        depositPhotoPath: takesDeposit ? depositPhotoPath : null,
         checkNumber: isCheck ? checkNumber.trim() : null,
       });
     } catch (err) {
@@ -287,6 +299,20 @@ function DonationForm({
               autoCorrect={false}
               placeholder="The number printed on the check"
               accessibilityLabel="Check number, required"
+            />
+          </Field>
+        ) : null}
+        {takesDeposit ? (
+          <Field label="DEPOSIT PHOTO (OPTIONAL)">
+            <ReceiptScanTile
+              prefix="deposit"
+              title={DEPOSIT_PHOTO_TITLE}
+              hint={isCheck ? 'Photograph the front of the check before it goes in the deposit bag.' : 'Photograph the cash before it goes in the deposit bag.'}
+              photoPath={depositPhotoPath}
+              photoLabel={isCheck ? 'Photo of the check' : 'Photo of the cash'}
+              quality={DEPOSIT_PHOTO_QUALITY}
+              onCaptured={setDepositPhotoPath}
+              onRemove={() => setDepositPhotoPath(null)}
             />
           </Field>
         ) : null}
@@ -400,7 +426,22 @@ function DonateScreenBody() {
       CheckNumber: v.checkNumber,
     });
     const where = session.active ? ` for ${session.eventName}` : ' as a standalone donation';
-    setMessage({ tone: 'info', text: `Recorded ${money(saved.DonationAmount)} by ${option.method.DonationMethod}${where}. Thank the donor!` });
+    const recorded = `Recorded ${money(saved.DonationAmount)} by ${option.method.DonationMethod}${where}.`;
+    // Sprint 9 Revision 3.0: the deposit photo is bound once the donation exists. A failure here leaves the donation recorded.
+    let photoNote = '';
+    if (v.depositPhotoPath) {
+      try {
+        await db.donations.attachDepositPhoto(user.memberId, saved.id, v.depositPhotoPath);
+        photoNote = ' Deposit photo attached.';
+      } catch (err) {
+        setMessage({ tone: 'error', text: `${recorded} The deposit photo was not attached: ${describeError(err)}` });
+        setPicked(null);
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+        await stream.reload();
+        return;
+      }
+    }
+    setMessage({ tone: 'info', text: `${recorded}${photoNote} Thank the donor!` });
     setPicked(null);
     scrollRef.current?.scrollTo({ y: 0, animated: true });
     await stream.reload();

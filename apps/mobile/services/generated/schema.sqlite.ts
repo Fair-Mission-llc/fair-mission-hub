@@ -95,7 +95,7 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [ExpenseReceipts] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [expense_id] INTEGER NOT NULL,\n  [merchant_name] TEXT NOT NULL,\n  [gross_total] REAL NOT NULL,\n  [receipt_file_url] TEXT,\n  FOREIGN KEY ([expense_id]) REFERENCES [ExpenseReport]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [MemberDevotionals] (\n  [user_id] INTEGER NOT NULL,\n  [rosaries_said] INTEGER NOT NULL DEFAULT 0,\n  [adorations_count] INTEGER NOT NULL DEFAULT 0,\n  [confessions_count] INTEGER NOT NULL DEFAULT 0,\n  PRIMARY KEY ([user_id]),\n  FOREIGN KEY ([user_id]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [MemberCouncilAffiliationLog] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [user_id] INTEGER NOT NULL,\n  [council_id] INTEGER NOT NULL,\n  [membership_status] TEXT NOT NULL,\n  [date_joined] TEXT NOT NULL,\n  [date_exited] TEXT,\n  FOREIGN KEY ([user_id]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id])\n);",
-  "CREATE TABLE IF NOT EXISTS [VolunteerQuarantine] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [user_id] INTEGER NOT NULL,\n  [activity_type] TEXT NOT NULL,\n  [activity_id] INTEGER NOT NULL,\n  [activity_date] TEXT NOT NULL,\n  [hours_reported] REAL NOT NULL,\n  [scheduled_hours] REAL,\n  [notes] TEXT,\n  [date_logged] TEXT NOT NULL,\n  [quarantine_reason] TEXT NOT NULL,\n  [clearance_status] TEXT NOT NULL DEFAULT 'PENDING',\n  [reviewed_by_member_id] INTEGER,\n  [reviewed_at] TEXT,\n  [cleared_time_id] INTEGER,\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([user_id]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([reviewed_by_member_id]) REFERENCES [Member]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [VolunteerQuarantine] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [user_id] INTEGER NOT NULL,\n  [activity_type] TEXT NOT NULL,\n  [activity_id] INTEGER NOT NULL,\n  [activity_date] TEXT NOT NULL,\n  [hours_reported] REAL NOT NULL,\n  [scheduled_hours] REAL,\n  [notes] TEXT,\n  [date_logged] TEXT NOT NULL,\n  [quarantine_reason] TEXT NOT NULL,\n  [clearance_status] TEXT NOT NULL DEFAULT 'PENDING',\n  [reviewed_by_member_id] INTEGER,\n  [reviewed_at] TEXT,\n  [cleared_time_id] INTEGER,\n  [return_explanation] TEXT,\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([user_id]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([reviewed_by_member_id]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [PlatformSettings] (\n  [id] INTEGER NOT NULL,\n  [oral_history_max_seconds] INTEGER NOT NULL DEFAULT 900,\n  [diary_text_max_length] INTEGER NOT NULL DEFAULT 4000,\n  [prayer_intention_max_length] INTEGER NOT NULL DEFAULT 500,\n  [cadence_invitation_horizon_days] INTEGER NOT NULL DEFAULT 5,\n  [user_session_expiry_hours] INTEGER NOT NULL DEFAULT 8,\n  [audit_log_retention_days] INTEGER NOT NULL DEFAULT 180,\n  PRIMARY KEY ([id])\n);",
   "CREATE TABLE IF NOT EXISTS [CouncilAccessRequests] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_name] TEXT NOT NULL,\n  [contact_email] TEXT NOT NULL,\n  [city] TEXT NOT NULL,\n  [state] TEXT NOT NULL,\n  [status] TEXT NOT NULL DEFAULT 'PENDING',\n  [submitted_at] TEXT NOT NULL,\n  [reviewed_by_id] INTEGER,\n  [reviewed_at] TEXT,\n  FOREIGN KEY ([reviewed_by_id]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [CouncilHistorianBulletin] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [bulletin_month] TEXT NOT NULL,\n  [body] TEXT NOT NULL DEFAULT '',\n  [author_member_id] INTEGER,\n  [updated_at] TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  [headline] TEXT,\n  [body_format] TEXT NOT NULL DEFAULT 'STRUCTURED' CHECK ([body_format] IN ('STRUCTURED', 'PLAIN')),\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([author_member_id]) REFERENCES [Member]([id])\n);",
@@ -103,6 +103,7 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [CouncilAffiliations] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [requesting_council_id] INTEGER NOT NULL,\n  [target_council_id] INTEGER NOT NULL,\n  [status] TEXT NOT NULL DEFAULT 'PENDING',\n  [date_established] TEXT,\n  [requested_by_member_id] INTEGER,\n  [requested_at] TEXT NOT NULL,\n  [responded_by_member_id] INTEGER,\n  [responded_at] TEXT,\n  FOREIGN KEY ([requesting_council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([target_council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([requested_by_member_id]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([responded_by_member_id]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [CouncilOperationsKnowledge] (\n  [entry_id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [category_tag] TEXT NOT NULL,\n  [entry_text] TEXT NOT NULL,\n  [officer_signature] TEXT NOT NULL,\n  [date_logged] TEXT NOT NULL,\n  [origin_council_stamp] TEXT NOT NULL DEFAULT '',\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [ParishDisbursementRequest] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [event_id] INTEGER NOT NULL,\n  [gross_collections] REAL NOT NULL,\n  [split_percentage] REAL NOT NULL,\n  [amount] REAL NOT NULL,\n  [gl_account_id] INTEGER NOT NULL,\n  [status] TEXT NOT NULL DEFAULT 'PENDING' CHECK ([status] IN ('PENDING', 'PAID')),\n  [requested_by_member_id] INTEGER NOT NULL,\n  [requested_at] TEXT NOT NULL,\n  [paid_by_member_id] INTEGER,\n  [paid_at] TEXT,\n  [check_number] TEXT,\n  [transaction_id] TEXT,\n  [settlement_method] TEXT NOT NULL DEFAULT 'CHECK' CHECK ([settlement_method] IN ('CHECK', 'PARISH_HELD')),\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([event_id]) REFERENCES [Event]([id]),\n  FOREIGN KEY ([gl_account_id]) REFERENCES [GLAccount]([id]),\n  FOREIGN KEY ([requested_by_member_id]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([paid_by_member_id]) REFERENCES [Member]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [TransactionAttachments] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [donation_id] INTEGER NOT NULL,\n  [file_path] TEXT NOT NULL,\n  [captured_at] TEXT NOT NULL,\n  FOREIGN KEY ([donation_id]) REFERENCES [Donation]([id])\n);",
   "CREATE INDEX IF NOT EXISTS [Member_CouncilID_Idx] ON [Member] ([CouncilID]);",
   "CREATE INDEX IF NOT EXISTS [Council_Sort_Idx] ON [Council] ([CouncilNumber], [CouncilName]);",
   "CREATE INDEX IF NOT EXISTS [Member_Name_Idx] ON [Member] ([MemberLastName], [MemberFirstName]);",
@@ -182,6 +183,7 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE INDEX IF NOT EXISTS [CouncilOperationsKnowledge_Council_Idx] ON [CouncilOperationsKnowledge] ([council_id], [category_tag], [date_logged]);",
   "CREATE INDEX IF NOT EXISTS [ParishDisbursementRequest_Council_Idx] ON [ParishDisbursementRequest] ([council_id], [status]);",
   "CREATE INDEX IF NOT EXISTS [Donation_Coding_Idx] ON [Donation] ([CouncilID], [revenue_gl_account_id]);",
+  "CREATE INDEX IF NOT EXISTS [TransactionAttachments_Donation_Idx] ON [TransactionAttachments] ([donation_id]);",
   "DROP VIEW IF EXISTS [view_Member];",
   "CREATE VIEW [view_Member] AS\nSELECT\n[Council].[CouncilNumber],\n[Council].[CouncilName],\n[Member].[MemberNumber],\n[Member].[MemberFirstName],\n[Member].[MemberLastName],\n[Member].[Phone],\n[Member].[Email],\n[Member].[StreetAddress1],\n[Member].[City],\n[Member].[State],\n[Member].[ZipCode],\n[Role].[Role],\n[Degree].[Degree],\n[MemberStatus].[Status]\nFROM [Member]\nINNER JOIN [Degree] ON [Member].[DegreeID] = [Degree].[id]\nINNER JOIN [Council] ON [Member].[CouncilID] = [Council].[id]\nINNER JOIN [MemberStatus] ON [Member].[StatusID] = [MemberStatus].[id]\nINNER JOIN [MemberRoles] ON [Member].[id] = [MemberRoles].[MemberID]\nINNER JOIN [Role] ON [MemberRoles].[RoleID] = [Role].[id];",
   "DROP VIEW IF EXISTS [view_Event];",
@@ -1083,7 +1085,8 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
     "clearance_status",
     "reviewed_by_member_id",
     "reviewed_at",
-    "cleared_time_id"
+    "cleared_time_id",
+    "return_explanation"
   ],
   "PlatformSettings": [
     "id",
@@ -1165,6 +1168,12 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
     "check_number",
     "transaction_id",
     "settlement_method"
+  ],
+  "TransactionAttachments": [
+    "id",
+    "donation_id",
+    "file_path",
+    "captured_at"
   ]
 };
 

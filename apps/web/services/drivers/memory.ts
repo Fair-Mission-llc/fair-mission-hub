@@ -549,12 +549,12 @@ import {
   assertFeatureEnabled,
   assertMayReviewQuarantine,
   assertOwnsQuarantine,
+  cleanReturnReason,
   assertQuarantineDraft,
   assertQuarantinePending,
   buildQuarantineDesk,
   buildReturnedEntries,
   quarantineResubmitText,
-  quarantineReturnText,
   councilFeatureFlags,
   HOURS_STEP,
   isQuarantineExempt,
@@ -591,6 +591,8 @@ import {
 } from '@kofc/shared';
 import {
   assertCollectionOpen,
+  assertDepositPhotoMethod,
+  cleanAttachmentPath,
   assertDonationNotCoded,
   accountOwnerEntityOf,
   donationAccountOwner,
@@ -737,6 +739,7 @@ import type {
   CouncilMediaVault,
   EventPlanningTime,
   MediaSmartAlbums,
+  TransactionAttachment,
   VolunteerQuarantine,
   VolunteerQuarantineActivityType,
 } from '@kofc/shared';
@@ -2553,8 +2556,42 @@ export class MemoryDataService implements DataService {
         assertMayChangeDonation(actor, existing, this.eventOwnerOf(s, existing.EventID), `delete donation ${id}`);
         assertDonationNotCoded(existing, `delete donation ${id}`);
         this.assertDonationCollectionOpen(s, existing.EventID, `delete donation ${id}`);
-        this.withFundsSync(s, [existing.EventID], () => s.remove('Donation', (r) => r.id === id));
+        this.withFundsSync(s, [existing.EventID], () => {
+          // Schema 98: the donation's deposit photos go with it.
+          s.remove('TransactionAttachments', (a) => a.donation_id === id);
+          s.remove('Donation', (r) => r.id === id);
+        });
       });
+    },
+
+    attachDepositPhoto: async (actorId, donationId, filePath) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        const donation = { ...this.requireDonation(s, donationId) } as unknown as Donation;
+        assertMayChangeDonation(actor, donation, this.eventOwnerOf(s, donation.EventID), `attach a deposit photo to donation ${donationId}`);
+        const method = s.rows('DonationMethod').find((dm) => dm.id === donation.DonationMethodID);
+        assertDepositPhotoMethod(donationMethodKind((method?.DonationMethod as string | undefined) ?? ''), donationId);
+        this.assertDonationCollectionOpen(s, donation.EventID, `attach a deposit photo to donation ${donationId}`);
+        const row = s.insert('TransactionAttachments', {
+          donation_id: donationId,
+          file_path: cleanAttachmentPath(filePath),
+          captured_at: toTimestamp(this.now()),
+        });
+        return { ...row } as unknown as TransactionAttachment;
+      });
+    },
+
+    listAttachments: async (actorId, donationId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const donation = { ...this.requireDonation(s, donationId) } as unknown as Donation;
+      assertMayChangeDonation(actor, donation, this.eventOwnerOf(s, donation.EventID), `read the deposit photos of donation ${donationId}`);
+      return s
+        .rows('TransactionAttachments')
+        .filter((a) => a.donation_id === donationId)
+        .sort((a, b) => (a.captured_at as string).localeCompare(b.captured_at as string) || (a.id as number) - (b.id as number))
+        .map((a) => ({ ...a }) as unknown as TransactionAttachment);
     },
   };
 
@@ -3986,7 +4023,7 @@ export class MemoryDataService implements DataService {
         const row = this.requireReviewableHold(s, actorId, quarantineId);
         Object.assign(row, {
           clearance_status: 'DRAFT',
-          quarantine_reason: quarantineReturnText(reason),
+          return_explanation: cleanReturnReason(reason),
           reviewed_by_member_id: actorId,
           reviewed_at: toTimestamp(this.now()),
           cleared_time_id: null,

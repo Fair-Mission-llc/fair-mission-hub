@@ -551,12 +551,12 @@ import {
   assertFeatureEnabled,
   assertMayReviewQuarantine,
   assertOwnsQuarantine,
+  cleanReturnReason,
   assertQuarantineDraft,
   assertQuarantinePending,
   buildQuarantineDesk,
   buildReturnedEntries,
   quarantineResubmitText,
-  quarantineReturnText,
   councilFeatureFlags,
   HOURS_STEP,
   isQuarantineExempt,
@@ -595,6 +595,8 @@ import {
 } from '@kofc/shared';
 import {
   assertCollectionOpen,
+  assertDepositPhotoMethod,
+  cleanAttachmentPath,
   assertDonationNotCoded,
   accountOwnerEntityOf,
   donationAccountOwner,
@@ -745,6 +747,7 @@ import type {
   CouncilMediaVault,
   EventPlanningTime,
   MediaSmartAlbums,
+  TransactionAttachment,
   VolunteerQuarantine,
   VolunteerQuarantineActivityType,
 } from '@kofc/shared';
@@ -954,8 +957,11 @@ const DB_NAME = 'kofc.db';
  * 97: no table change - signing in unlocks the whole app: the Report Hours pocket gate (Face ID on each tap) is gone,
  *     taps queue for the Slide to Log Hours bar, and Conclude & Lock is a swipe (SwipeToConfirm); phone Home puts My
  *     Active Shifts first and folds prayers and devotions into two drawers (Sprint 8S Revision 4).
+ * 98: VolunteerQuarantine.return_explanation - the reviewer's reason on a time entry returned for correction, in place
+ *     of the 'Returned for correction: ' prefix in quarantine_reason - and TransactionAttachments, the deposit photos
+ *     taken with '📸 Attach Deposit Photo' on Cash and Check donations (Sprint 9 Revision 3.0).
  */
-const SCHEMA_VERSION = 97;
+const SCHEMA_VERSION = 98;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -3039,9 +3045,44 @@ export class SqliteDataService implements DataService {
         assertDonationNotCoded(existing, `delete donation ${id}`);
         await this.assertDonationCollectionOpen(db, existing.EventID, `delete donation ${id}`);
         await this.withFundsSync(db, [existing.EventID], async () => {
+          // Schema 98: the donation's deposit photos go with it.
+          await db.runAsync('DELETE FROM [TransactionAttachments] WHERE [donation_id] = ?', [id]);
           await db.runAsync('DELETE FROM [Donation] WHERE [id] = ?', [id]);
         });
       });
+    },
+
+    attachDepositPhoto: async (actorId, donationId, filePath) => {
+      const db = await this.ready();
+      let attachmentId = 0;
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const donation = await this.requireDonation(db, donationId);
+        assertMayChangeDonation(actor, donation, await this.eventOwnerOf(db, donation.EventID), `attach a deposit photo to donation ${donationId}`);
+        const method = await db.getFirstAsync<{ DonationMethod: string }>('SELECT [DonationMethod] FROM [DonationMethod] WHERE [id] = ?', [
+          donation.DonationMethodID,
+        ]);
+        assertDepositPhotoMethod(donationMethodKind(method?.DonationMethod ?? ''), donationId);
+        await this.assertDonationCollectionOpen(db, donation.EventID, `attach a deposit photo to donation ${donationId}`);
+        const ins = await db.runAsync('INSERT INTO [TransactionAttachments] ([donation_id], [file_path], [captured_at]) VALUES (?, ?, ?)', [
+          donationId,
+          cleanAttachmentPath(filePath),
+          toTimestamp(this.now()),
+        ]);
+        attachmentId = ins.lastInsertRowId;
+      });
+      return (await db.getFirstAsync<TransactionAttachment>('SELECT * FROM [TransactionAttachments] WHERE [id] = ?', [attachmentId]))!;
+    },
+
+    listAttachments: async (actorId, donationId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const donation = await this.requireDonation(db, donationId);
+      assertMayChangeDonation(actor, donation, await this.eventOwnerOf(db, donation.EventID), `read the deposit photos of donation ${donationId}`);
+      return db.getAllAsync<TransactionAttachment>(
+        'SELECT * FROM [TransactionAttachments] WHERE [donation_id] = ? ORDER BY [captured_at], [id]',
+        [donationId],
+      );
     },
   };
 
@@ -4802,9 +4843,9 @@ export class SqliteDataService implements DataService {
         await this.requireReviewableHold(db, actorId, quarantineId);
         await db.runAsync(
           `UPDATE [VolunteerQuarantine]
-              SET [clearance_status] = 'DRAFT', [quarantine_reason] = ?, [reviewed_by_member_id] = ?, [reviewed_at] = ?, [cleared_time_id] = NULL
+              SET [clearance_status] = 'DRAFT', [return_explanation] = ?, [reviewed_by_member_id] = ?, [reviewed_at] = ?, [cleared_time_id] = NULL
             WHERE [id] = ?`,
-          [quarantineReturnText(reason), actorId, toTimestamp(this.now()), quarantineId],
+          [cleanReturnReason(reason), actorId, toTimestamp(this.now()), quarantineId],
         );
       });
       return (await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [quarantineId]))!;

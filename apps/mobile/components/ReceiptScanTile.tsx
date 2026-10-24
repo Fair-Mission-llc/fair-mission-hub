@@ -32,6 +32,7 @@ export function ReceiptScanTile({
   photoLabel,
   onCaptured,
   onRemove,
+  quality,
 }: {
   /** File-name prefix inside the media folder, e.g. "receipt". */
   prefix: string;
@@ -43,10 +44,12 @@ export function ReceiptScanTile({
   photoLabel: string;
   onCaptured: (path: string) => Promise<void> | void;
   onRemove: () => void;
+  /** JPEG quality (0-1); the camera default (0.8) when left out. Sprint 9 Revision 3.0: deposit photos use 0.5. */
+  quality?: number;
 }) {
   const { color, space, large } = useTheme();
   const styles = useStyles();
-  const { capture, busy, error, clearError } = usePhotoCapture(prefix, onCaptured);
+  const { capture, busy, error, clearError } = usePhotoCapture(prefix, onCaptured, quality);
   const label = photoPath ? `Retake: ${title}` : title;
   return (
     <View style={{ gap: space.sm }}>

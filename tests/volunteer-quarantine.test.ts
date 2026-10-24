@@ -12,7 +12,6 @@ import {
   quarantineActivityKey,
   quarantineReasons,
   quarantineReturnReason,
-  QUARANTINE_RETURN_PREFIX,
   QUARANTINE_RETURN_REASON_MAX_LENGTH,
   type DataService,
   type MemberWriteActor,
@@ -210,7 +209,9 @@ describe.each(drivers)('$name driver: volunteer time quarantine', (d) => {
 
     const returned = await db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id, '  The food drive ran 4 hours.  ');
     expect(returned).toMatchObject({ clearance_status: 'DRAFT', reviewed_by_member_id: MEMBER.admin, cleared_time_id: null });
-    expect(returned.quarantine_reason).toBe(`${QUARANTINE_RETURN_PREFIX}The food drive ran 4 hours.`);
+    // Schema 98: the reason has its own column, and the guard text that held the entry stays.
+    expect(returned.return_explanation).toBe('The food drive ran 4 hours.');
+    expect(returned.quarantine_reason).toMatch(/More than 5\.0 hours/);
     expect(quarantineReturnReason(returned)).toBe('The food drive ran 4 hours.');
     expect(d.count(db, 'VolunteerQuarantine')).toBe(1);
     expect(d.count(db, 'ActivityTime')).toBe(0);
@@ -243,6 +244,9 @@ describe.each(drivers)('$name driver: volunteer time quarantine', (d) => {
     const resubmitted = await db.volunteerQuarantine.resubmit(MEMBER.member, id, 4, 'set-up and pickup');
     expect(resubmitted).toMatchObject({ clearance_status: 'PENDING', hours_reported: 4, notes: 'set-up and pickup', reviewed_by_member_id: null, reviewed_at: null });
     expect(resubmitted.quarantine_reason).toBe('Resubmitted after correction. No limit is broken now.');
+    // The reviewer's reason stays on the row as the review record, but no longer reads as a return.
+    expect(resubmitted.return_explanation).toBe('The food drive ran 4 hours.');
+    expect(quarantineReturnReason(resubmitted)).toBeNull();
     expect(await db.volunteerQuarantine.listReturned(MEMBER.member)).toEqual([]);
     const [entry] = await db.volunteerQuarantine.listPending(MEMBER.admin, 1);
     expect(entry.row).toMatchObject({ id, hours_reported: 4 });

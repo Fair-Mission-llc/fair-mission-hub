@@ -1451,12 +1451,25 @@ export interface VolunteerQuarantine {
   scheduled_hours?: number | null; // DECIMAL(5,2): the shift's scheduled length; NULL for MANUAL
   notes?: string | null; // VARCHAR(2000): the member's own description of the time
   date_logged: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
-  quarantine_reason: string; // VARCHAR(500): why it is held; while DRAFT, 'Returned for correction: ' + the reviewer's reason
+  quarantine_reason: string; // VARCHAR(500): why the guards held it
   clearance_status: VolunteerQuarantineStatus; // VARCHAR(10), DEFAULT 'PENDING'
   reviewed_by_member_id?: number | null; // Member who cleared, deleted or returned it
   reviewed_at?: string | null; // DATETIME
   /** The EventTime or ActivityTime row a clearance wrote; NULL until APPROVED. */
   cleared_time_id?: number | null;
+  /** VARCHAR(500) (schema 98): the reviewer's reason for returning it to the member (DRAFT); NULL until returned. */
+  return_explanation?: string | null;
+}
+
+/**
+ * Sprint 9 Revision 3.0 (schema 98): a deposit photo taken with the phone camera ('📸 Attach Deposit Photo') when a
+ * Cash or Check donation is recorded (donation-attachments.ts).
+ */
+export interface TransactionAttachment {
+  id: number;
+  donation_id: number; // Donation
+  file_path: string; // VARCHAR(500): the photo's file:// path in the phone's media folder
+  captured_at: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
 }
 
 /** Sprint 8I: the six governance tags of the Operations Knowledge Archive. */

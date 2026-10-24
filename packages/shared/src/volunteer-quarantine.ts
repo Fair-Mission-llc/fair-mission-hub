@@ -219,16 +219,14 @@ export function buildQuarantineDesk(rows: readonly VolunteerQuarantine[], lookup
 }
 
 // ---- returned for correction (Sprint 9 Revision 1.1) ---------------------------------------------------------
-// A reviewer's reject no longer deletes the entry: it goes back to the member as DRAFT with a required reason. Schema
-// 97 has no column for the reason, so it is stored in quarantine_reason behind QUARANTINE_RETURN_PREFIX (the guard
-// text it replaces is computed again when the member resubmits). cleared_time_id is cleared; reviewed_by_member_id
-// and reviewed_at record who returned it and when. The member corrects the hours on the phone and resubmits, which
-// sends the entry back to PENDING for review.
+// A reviewer's reject no longer deletes the entry: it goes back to the member as DRAFT with a required reason, stored
+// in VolunteerQuarantine.return_explanation (schema 98; before it, a 'Returned for correction: ' prefix in
+// quarantine_reason). quarantine_reason keeps the guard text that held the entry. cleared_time_id is cleared;
+// reviewed_by_member_id and reviewed_at record who returned it and when. The member corrects the hours on the phone
+// and resubmits, which sends the entry back to PENDING for review; return_explanation stays as the review record.
 
-/** Marks quarantine_reason as a reviewer's return reason. */
-export const QUARANTINE_RETURN_PREFIX = 'Returned for correction: ';
-/** The longest return reason that still fits VARCHAR(500) behind the prefix. */
-export const QUARANTINE_RETURN_REASON_MAX_LENGTH = QUARANTINE_REASON_MAX_LENGTH - QUARANTINE_RETURN_PREFIX.length;
+/** VolunteerQuarantine.return_explanation is VARCHAR(500). */
+export const QUARANTINE_RETURN_REASON_MAX_LENGTH = 500;
 /** The label of the reviewer's required text field. */
 export const QUARANTINE_RETURN_REASON_LABEL = 'Reason for returning time report (required)';
 
@@ -248,13 +246,10 @@ export function cleanReturnReason(reason: string | null | undefined): string {
   return text;
 }
 
-/** The quarantine_reason value a return stores. */
-export const quarantineReturnText = (reason: string): string => `${QUARANTINE_RETURN_PREFIX}${cleanReturnReason(reason)}`;
-
-/** The reviewer's reason on a DRAFT entry, or null for any other entry. */
-export function quarantineReturnReason(row: Pick<VolunteerQuarantine, 'clearance_status' | 'quarantine_reason'>): string | null {
-  if (row.clearance_status !== 'DRAFT' || !row.quarantine_reason.startsWith(QUARANTINE_RETURN_PREFIX)) return null;
-  return row.quarantine_reason.slice(QUARANTINE_RETURN_PREFIX.length);
+/** The reviewer's reason on a DRAFT entry, or null for any other entry or a draft without one. */
+export function quarantineReturnReason(row: Pick<VolunteerQuarantine, 'clearance_status' | 'return_explanation'>): string | null {
+  if (row.clearance_status !== 'DRAFT') return null;
+  return row.return_explanation?.trim() ? row.return_explanation : null;
 }
 
 /** quarantine_reason for a resubmitted entry: the guards it still breaks, if any. */

@@ -49,6 +49,7 @@ import type {
   EventSignup,
   GlobalCharityRegistry,
   EventTime,
+  TransactionAttachment,
   VolunteerQuarantine,
   GLAccount,
   GLAccountType,
@@ -2799,8 +2800,20 @@ export interface DataService {
      * that right over the donation both before and after. RECORD_NOT_FOUND for an unknown donation.
      */
     update(actorId: number, id: number, changes: DonationChanges): Promise<Donation>;
-    /** Deletes one donation, with the same rights as `update`, and re-totals its event. */
+    /**
+     * Deletes one donation, with the same rights as `update`, and re-totals its event. Since schema 98 its deposit
+     * photo rows (TransactionAttachments) go with it.
+     */
     remove(actorId: number, id: number): Promise<void>;
+    /**
+     * Sprint 9 Revision 3.0 (schema 98): stores one deposit photo for a Cash or Check donation ('📸 Attach Deposit
+     * Photo'): `filePath` is the photo's path in the phone's media folder (cleanAttachmentPath), captured_at is now.
+     * Rights as `update` (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED); INVALID_INPUT for another method kind;
+     * COLLECTION_SESSION_CONCLUDED once the donation's event is concluded; RECORD_NOT_FOUND for an unknown donation.
+     */
+    attachDepositPhoto(actorId: number, donationId: number, filePath: string): Promise<TransactionAttachment>;
+    /** The donation's deposit photos, oldest first. Rights as `update`, since a check photo shows bank details. */
+    listAttachments(actorId: number, donationId: number): Promise<TransactionAttachment[]>;
   };
 
   /**
@@ -4405,7 +4418,7 @@ export interface DataService {
      * "Reject & Return to Member" (Sprint 9 Revision 1.1; was "Reject & Remove", which flipped it to REJECTED): nothing is
      * deleted. The entry goes back to its member as DRAFT with the reviewer's required `reason`
      * (cleanReturnReason: RETURN_REASON_REQUIRED when blank, INVALID_INPUT past QUARANTINE_RETURN_REASON_MAX_LENGTH),
-     * stored in quarantine_reason; cleared_time_id is cleared and reviewed_by_member_id / reviewed_at record the return.
+     * stored in return_explanation (schema 98); cleared_time_id is cleared and reviewed_by_member_id / reviewed_at record the return.
      * Its hours stay out of the time tables. RECORD_NOT_FOUND, QUARANTINE_STATUS_CONFLICT as for clear.
      */
     reject(actorId: number, quarantineId: number, reason: string): Promise<VolunteerQuarantine>;

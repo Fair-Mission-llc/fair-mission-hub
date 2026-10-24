@@ -3871,3 +3871,40 @@ GO
 -- today's verse with the devotional tally into '[ 📖 Daily Devotional Drawer ]' (mobile-home.ts).
 -- The phone database version moves to 97.
 -- =========================================================================
+
+-- =========================================================================
+-- Sprint 9 Revision 3.0: RETURN EXPLANATIONS AND DEPOSIT PHOTOS (schema version 98)
+--
+-- VolunteerQuarantine.return_explanation holds the reviewer's required reason when the Grand Knight, Deputy Grand
+-- Knight or an Admin rejects a held time entry back to its member (clearance_status 'DRAFT', Sprint 9 Revision 1.1).
+-- Until now the reason rode in quarantine_reason behind a 'Returned for correction: ' prefix; quarantine_reason now
+-- keeps the guard text that held the entry. The reason stays on the row after the member resubmits, as the review
+-- record. No backfill: no database outside a phone held a returned entry, and phones rebuild at this version.
+--
+-- TransactionAttachments holds the deposit photos a collector takes with the phone camera when recording a Cash or
+-- Check donation ('📸 Attach Deposit Photo'): the donation, the photo's path in the phone's media folder, and when it
+-- was taken. A donation may carry several. Reading or adding them takes the right to change the donation
+-- (rules.ts assertMayChangeDonation): the photo of a check shows the donor's bank details. Deleting a donation
+-- deletes its photo rows with it.
+-- The phone database version moves to 98.
+-- =========================================================================
+ALTER TABLE [VolunteerQuarantine] ADD [return_explanation] VARCHAR(500) NULL;
+GO
+
+CREATE TABLE [TransactionAttachments] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[donation_id] INTEGER NOT NULL,
+	[file_path] VARCHAR(500) NOT NULL,
+	[captured_at] DATETIME NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [TransactionAttachments]
+ADD FOREIGN KEY([donation_id])
+REFERENCES [Donation]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE INDEX [TransactionAttachments_Donation_Idx] ON [TransactionAttachments] ([donation_id]);
+GO
