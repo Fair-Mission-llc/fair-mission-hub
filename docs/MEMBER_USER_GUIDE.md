@@ -516,6 +516,53 @@ Other shifts show **Scheduled** on the web.
 | A shift left **My Active Shifts**. | The phone hides a shift when the shift ends. The phone also hides a shift marked as a no-show. | Check **My shift history** in the web **Hour ledger**. |
 | You cannot work a shift. | The phone app has no absence button. | Tell the event owner. The event owner finds a replacement. |
 
+### Concept: your personal calendar link
+
+The web portal gives each member a personal calendar link. A calendar app uses the link to show your schedule.
+The link works with Google Calendar, Apple Calendar and Outlook.
+
+The calendar shows only your own schedule:
+- the shifts that you signed up for, with the event name and the event location;
+- the council meetings that you are invited to. A meeting that you declined does not show.
+
+The calendar starts 30 days before today. Your calendar app checks the link for changes about once an hour.
+The calendar is read-only. Sign up for shifts and answer invitations in the portal or the phone app.
+
+The link is private. A person who has your link can read your schedule. Do not share the link.
+
+### 3.4 Sync your schedule with your phone calendar
+
+> **Who can do this:** any member.
+
+**Goal:** See your shifts and meetings in Google Calendar, Apple Calendar or Outlook.
+
+**Start point:** Web portal → Sidebar → Faith In Action → **Visual Master Calendar** → **🗓️ Sync with Your Phone Calendar** card, below the calendar.
+
+**Steps:**
+1. Open the start point.
+2. Read your link in the **Your personal calendar link** box.
+3. Select **Copy link**.
+4. Add the link to your calendar app:
+
+| Calendar app | What to do |
+| --- | --- |
+| Google Calendar | On a computer, open Google Calendar. Select **+** next to **Other calendars**. Select **From URL**. Paste the link. Select **Add calendar**. |
+| iPhone or iPad | Open **Settings → Apps → Calendar → Calendar Accounts → Add Account → Other → Add Subscribed Calendar**. Paste the link. Tap **Next**. |
+| Outlook | Select **Add calendar → Subscribe from web**. Paste the link. Select **Import**. |
+
+5. On an iPhone, an iPad or a computer with Outlook, you can select **Subscribe** on the card instead of steps 3 and 4.
+
+**Expected result:** A calendar named **Knights of Columbus - My Schedule** shows in your calendar app. Each shift shows as "event name - shift name". Each meeting shows with its name and location.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The card says *"Sign in again: there is no portal session on the server."* | Your portal sign-in ended. | Sign out. Sign in to the web portal again. |
+| A new shift is not in your calendar app. | The calendar app checks the link about once an hour. Google Calendar can take up to 24 hours. | Wait. Or refresh the calendar in the app. |
+| The calendar app says that it cannot open the link. | The calendar app cannot reach the council's portal from the internet. | Ask a council Admin for the public address of the portal. |
+| The app shows *"This calendar link is not valid."* | The council changed its portal key. Old links stop working. | Copy a new link from the card. Replace the old link in the app. |
+| Someone else has your link. | The link is a private key to your schedule. One link cannot be stopped alone. | Tell a council Admin. Only a new portal key stops the link. The new key also stops the links of all other members. |
+
 ---
 
 ## 4. Log your hours with the Rapid-Tap grid

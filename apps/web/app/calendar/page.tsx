@@ -14,6 +14,8 @@
 // shift tones become markers - a red outline that pulses for an assignment within 48 hours, a ⚑ flag for a shift short of
 // volunteers - so the urgency cues survive the colour. Meetings stay solid navy; an event with no coupled category keeps
 // the plain tones.
+// Sprint 9 Revision 2.0: under the grid, the '🗓️ Sync with Your Phone Calendar' card (CalendarSyncCard) gives the
+// member their own read-only calendar feed link for Google Calendar, Apple Calendar or Outlook.
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
@@ -50,6 +52,7 @@ import {
   type Observance,
   type ShiftFeedItem,
 } from '@kofc/shared';
+import { CalendarSyncCard } from '@/components/CalendarSyncCard';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { DriveButtons } from '@/components/DriveLinks';
 import { Button, cx, Empty, Field, NewMemberBadge, Notice, PageTitle, Pill, Select, Tabs } from '@/components/ui';
@@ -648,6 +651,7 @@ function MasterCalendar() {
             />
           ) : null}
         </div>
+        <CalendarSyncCard />
       </div>
     </>
   );

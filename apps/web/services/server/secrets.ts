@@ -13,6 +13,8 @@
 //   GOOGLE_DRIVE_PRIVATE_KEY        > the Drive vault's service account; live use also needs DRIVE_VAULT_LIVE=1. Sprint 6Y:
 //   GOOGLE_DRIVE_SHARED_DRIVE_ID   /  a council's own GOOGLE_DRIVE_PRIVATE_KEY in the credentials vault wins over this one
 //   ALCHEMER_API_KEY / _SECRET     Alchemer REST v5 pair (the Supreme sync is still simulated)
+//   CALENDAR_FEED_SECRET           signs members' personal calendar feed links (Sprint 9 Revision 2.0; at least 32
+//                                  characters). Not set: PORTAL_SESSION_SECRET signs them instead.
 import { driveCredentialsFromEnv, type DriveCredentials } from '../google-drive';
 import { PORTAL_SESSION_SECRET_MIN_LENGTH } from './session-token';
 
@@ -46,6 +48,16 @@ function configuredOrRandom(env: Env, name: string, tag: string, effect: string)
  */
 export const portalSessionSecret = (env: Env = process.env): string =>
   configuredOrRandom(env, 'PORTAL_SESSION_SECRET', 'session', 'portal sessions end when the server restarts');
+
+/**
+ * Sprint 9 Revision 2.0: the key that signs personal calendar feed links (calendar-token.ts). CALENDAR_FEED_SECRET when
+ * set and long enough, else the session key. Changing it breaks every member's subscribed link, so they copy a new one.
+ */
+export function calendarFeedSecret(env: Env = process.env): string {
+  const configured = env.CALENDAR_FEED_SECRET?.trim();
+  if (configured && configured.length >= PORTAL_SESSION_SECRET_MIN_LENGTH) return configured;
+  return portalSessionSecret(env);
+}
 
 /**
  * The key that seals every row of the credentials vault (Sprint 6Y; before it, councils' SMTP passwords). Read from
