@@ -4487,11 +4487,10 @@ A change to the profile applies to the next batch only. Postings made before the
 
 **Steps:**
 1. Find the Revenue account. Select **Edit split** on its row. Only Revenue rows show the button.
-2. Select the **Split Account** checkbox.
-3. In **Destination 1**, choose the first account. Enter its share in **Share (%)**.
-4. Repeat step 3 for each destination. Select **Add destination** for more rows.
-5. Check that **Total** reads **100%**.
-6. Select **Save split profile**.
+2. In **Destination 1**, choose the first account. Enter its share in **Share (%)**.
+3. Repeat step 2 for each destination. Select **Add destination** for more rows.
+4. Check that **Total** reads **100%**.
+5. Select **Save split profile**.
 
 **Expected result:** The account shows the **Split Account** tag. The line **Split: …** under the account name lists each destination and its share.
 
@@ -4504,7 +4503,36 @@ A change to the profile applies to the next batch only. Postings made before the
 | *"… receives a share of …, so it cannot be a Split Account itself."* | The account is a destination of another split account. | Remove the account from the other profile first. |
 | **Edit split** does not show. | You are not the Treasurer. | Ask the Treasurer. |
 
-To stop a split, select **Edit split**, clear the **Split Account** checkbox and select **Save split profile**.
+An account is a split account while it has destinations. The editor has no on/off switch.
+
+To stop a split, select **Edit split**. Select **Remove** on each destination. Select **Save with no split**.
+
+### 29.2.1 Override the split for one event's batch
+
+> **Who can do this:** the council's Treasurer and Super Admins.
+> **Warning:** Coding posts money to the general ledger. You cannot undo the coding.
+
+**Goal:** Split one event's batch of donations by different shares, one time only.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **🧮 High-Volume Batch Transaction Coder**.
+
+**Steps:**
+1. Select the donations of one event only.
+2. Select the line in **Revenue GL line for the selection**.
+3. Select **⚖️ Override Event Split**. The share table opens with the line's split, if the line has one.
+4. Change the destinations and the shares. Check that **Total** reads **100%**.
+5. Select **Code selected to this Revenue line**. You cannot undo this.
+
+**Expected result:** The message ends with **Event Split Override: …** and the amount for each destination. The line's own split does not change. The next batch uses the line's split again.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **⚖️ Override Event Split** is unavailable. | No line is chosen, or the selection holds donations of more than one event or no event. | Select one event's donations and a line. |
+| *"An Event Split Override codes the donations of one event at a time: …"* | The selection changed after you opened the override. | Select only that event's donations. |
+| *"… is a Split Account, so it cannot receive a share."* | A destination is a split account. | Choose an ordinary Revenue line. |
+
+An override can also split an ordinary Revenue line. The line itself can be one of the destinations.
 
 ### 29.3 Concept: the council's budget categories
 

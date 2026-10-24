@@ -14,6 +14,8 @@ import {
   expandSplitJournalLines,
   maySplitAccount,
   merchantAccountLine,
+  buildGLSplitProfiles,
+  splitAccountIdsOf,
   PLATFORM_SCHEMA_VERSION,
   splitAmount,
   type BudgetCategoryPerformance,
@@ -75,8 +77,7 @@ describe('split profile rules (pure)', () => {
   it('takes same-type destinations whose shares add up to 100', () => {
     expect(
       clean({
-        isSplitAccount: true,
-        destinations: [
+                destinations: [
           { destinationAccountId: 9, percentage: 33.33 },
           { destinationAccountId: 10, percentage: 66.67 },
         ],
@@ -85,25 +86,26 @@ describe('split profile rules (pure)', () => {
       { destinationAccountId: 9, percentage: 33.33 },
       { destinationAccountId: 10, percentage: 66.67 },
     ]);
-    expect(clean({ isSplitAccount: false })).toEqual([]);
+    expect(clean({ destinations: [] })).toEqual([]);
   });
 
   it('refuses shares off 100, bad destinations and a destination becoming a split account', () => {
-    const one = (destinationAccountId: number, percentage = 100) => ({ isSplitAccount: true, destinations: [{ destinationAccountId, percentage }] });
-    expect(() => clean({ isSplitAccount: true, destinations: [{ destinationAccountId: 9, percentage: 60 }] })).toThrow(/add up to 100%/);
+    const one = (destinationAccountId: number, percentage = 100) => ({ destinations: [{ destinationAccountId, percentage }] });
+    expect(() => clean({ destinations: [{ destinationAccountId: 9, percentage: 60 }] })).toThrow(/add up to 100%/);
     expect(() => clean(one(8))).toThrow(/its own destination/);
-    expect(() => clean(one(11))).toThrow(/is a Split Account/);
+    expect(() => clean(one(11), [{ id: 9, source_gl_account_id: 11, destination_gl_account_id: 10, split_percentage: 100 }])).toThrow(/is a Split Account/);
     expect(() => clean(one(12))).toThrow(/must be a Revenue account/);
     expect(() => clean(one(13))).toThrow(/virtual goal/);
-    expect(() => clean(one(99))).toThrow(/not an account of council/);
+    expect(() => clean(one(99))).toThrow(/not an account of this council/);
     expect(() => clean(one(9, 100.001))).toThrow(/two decimals/);
-    expect(() => clean({ isSplitAccount: true, destinations: [] })).toThrow(/at least one destination/);
-    expect(() => clean({})).toThrow(/Split Account/);
+    // Sprint 9 Revision 6.2: no switch - an empty list ends the split, and the list itself is required.
+    expect(clean({ destinations: [] })).toEqual([]);
+    expect(() => clean({})).toThrow(/List the destination accounts/);
+    expect(() => clean({ isSplitAccount: true })).toThrow(/List the destination accounts/);
     expect(() =>
       clean(
         {
-          isSplitAccount: true,
-          destinations: [
+                    destinations: [
             { destinationAccountId: 9, percentage: 50 },
             { destinationAccountId: 9, percentage: 50 },
           ],
@@ -149,16 +151,28 @@ describe('split profile rules (pure)', () => {
   });
 
   it('lets only a Revenue account become a Split Account (Revision 6.1), but any account stop splitting', () => {
-    const one = (id: number) => ({ isSplitAccount: true, destinations: [{ destinationAccountId: id, percentage: 100 }] });
+    const one = (id: number) => ({ destinations: [{ destinationAccountId: id, percentage: 100 }] });
     const expense = [account(12, 'Expense'), account(14, 'Expense'), account(1, 'Asset'), account(2, 'Asset')];
     expect(() => cleanGLSplitProfile(OWN, 12, one(14), expense, [])).toThrow(/only Revenue accounts can be Split Accounts/);
     expect(() => cleanGLSplitProfile(OWN, 1, one(2), expense, [])).toThrow(/only Revenue accounts/);
-    expect(cleanGLSplitProfile(OWN, 12, { isSplitAccount: false }, expense, [])).toEqual([]);
+    expect(cleanGLSplitProfile(OWN, 12, { destinations: [] }, expense, [])).toEqual([]);
     expect([maySplitAccount(account(8, 'Revenue')), maySplitAccount(account(12, 'Expense')), maySplitAccount(account(13, 'Revenue', { IsVirtualGoal: 1 }))]).toEqual([
       true,
       false,
       false,
     ]);
+  });
+});
+
+describe('implicit split accounts and the event override (Revision 6.2, pure)', () => {
+  const accounts = [account(1, 'Asset'), account(8, 'Revenue', { is_split_account: 0 }), account(9, 'Revenue', { is_split_account: 1 }), account(10, 'Revenue')];
+  const rows = [{ id: 1, source_gl_account_id: 8, destination_gl_account_id: 10, split_percentage: 100 }];
+
+  it('makes an account a Split Account by its destination rows alone, whatever the mirror column says', () => {
+    expect([...splitAccountIdsOf(rows)]).toEqual([8]);
+    expect(buildGLSplitProfiles(OWN, accounts, rows).map((p) => p.accountId)).toEqual([8]);
+    // Account 9's stale mirror flag makes it nothing: it has no rows, so it may receive a share.
+    expect(cleanGLSplitProfile(OWN, 8, { destinations: [{ destinationAccountId: 9, percentage: 100 }] }, accounts, rows)).toEqual([{ destinationAccountId: 9, percentage: 100 }]);
   });
 });
 
@@ -191,8 +205,7 @@ describe.each(drivers)('$name driver: split accounts on the batch coder', (d) =>
     const db = await makePilot();
     const [fs, treasurer] = await Promise.all(['fs_user', 'treasurer_user'].map((u) => signIn(db, u)));
     const profile = {
-      isSplitAccount: true,
-      destinations: [
+            destinations: [
         { destinationAccountId: PARISH_SHARE, percentage: 40 },
         { destinationAccountId: PARKING_FUNDRAISING, percentage: 60 },
       ],
@@ -216,7 +229,7 @@ describe.each(drivers)('$name driver: split accounts on the batch coder', (d) =>
       },
     ]);
     expect(await db.finance.listGLSplitProfiles(fs, OWN)).toEqual(saved);
-    await expectRule(db.finance.setGLSplitProfile(treasurer, OWN, PARISH_SHARE, { isSplitAccount: true, destinations: [{ destinationAccountId: other.id, percentage: 100 }] }), 'INVALID_INPUT');
+    await expectRule(db.finance.setGLSplitProfile(treasurer, OWN, PARISH_SHARE, { destinations: [{ destinationAccountId: other.id, percentage: 100 }] }), 'INVALID_INPUT');
 
     const before = await creditsOf(db, treasurer);
     const ids = queue.rows.map((r) => r.donation.id);
@@ -236,7 +249,7 @@ describe.each(drivers)('$name driver: split accounts on the batch coder', (d) =>
     expect(new Set(coded.map((x) => x.revenue_gl_account_id))).toEqual(new Set([other.id]));
 
     // Switching the split off clears its destinations.
-    expect(await db.finance.setGLSplitProfile(treasurer, OWN, other.id, { isSplitAccount: false })).toEqual([]);
+    expect(await db.finance.setGLSplitProfile(treasurer, OWN, other.id, { destinations: [] })).toEqual([]);
     expect((await db.finance.getBatchCodingQueue(treasurer, OWN)).revenueAccounts.find((a) => a.id === other.id)?.is_split_account).toBe(0);
   });
 
@@ -249,8 +262,7 @@ describe.each(drivers)('$name driver: split accounts on the batch coder', (d) =>
     const cash = queue.depositAccount!;
     const rowsBefore = (await db.finance.getAccountLedger(superAdmin, split.id)).rows.length;
     await db.finance.setGLSplitProfile(treasurer, OWN, split.id, {
-      isSplitAccount: true,
-      destinations: [
+            destinations: [
         { destinationAccountId: PARISH_SHARE, percentage: 25 },
         { destinationAccountId: PARKING_FUNDRAISING, percentage: 75 },
       ],
@@ -281,6 +293,73 @@ describe.each(drivers)('$name driver: split accounts on the batch coder', (d) =>
 
     // The split account itself takes no new posting.
     expect((await db.finance.getAccountLedger(superAdmin, split.id)).rows).toHaveLength(rowsBefore);
+  });
+
+  it('splits one event batch by a one-time Event Split Override, leaving the master profile alone (Revision 6.2)', async () => {
+    const db = await makePilot();
+    const [fs, treasurer] = await Promise.all(['fs_user', 'treasurer_user'].map((u) => signIn(db, u)));
+    const queue = await db.finance.getBatchCodingQueue(treasurer, OWN);
+    const split = queue.revenueAccounts.find((a) => a.id !== PARKING_FUNDRAISING && a.id !== PARISH_SHARE)!;
+    const master = [
+      { destinationAccountId: PARISH_SHARE, percentage: 50 },
+      { destinationAccountId: PARKING_FUNDRAISING, percentage: 50 },
+    ];
+    await db.finance.setGLSplitProfile(treasurer, OWN, split.id, { destinations: master });
+    expect((await db.finance.getBatchCodingQueue(treasurer, OWN)).splitProfiles.map((p) => p.accountId)).toEqual([split.id]);
+
+    // The un-coded gifts: Zelle $400 (event 1?) and two Venmo gifts; pick the donations of one event.
+    const byEvent = new Map<number, number[]>();
+    for (const r of queue.rows) if (r.donation.EventID != null) byEvent.set(r.donation.EventID, [...(byEvent.get(r.donation.EventID) ?? []), r.donation.id]);
+    const [eventId, ids] = [...byEvent.entries()][0]!;
+    const amount = queue.rows.filter((r) => ids.includes(r.donation.id)).reduce((t, r) => t + r.donation.DonationAmount, 0);
+    const override = [
+      { destinationAccountId: PARISH_SHARE, percentage: 10 },
+      { destinationAccountId: PARKING_FUNDRAISING, percentage: 90 },
+    ];
+
+    // Only the Treasurer codes; the override follows the split rules and needs one event's donations.
+    await expectRule(db.finance.batchCodeDonations(fs, OWN, { donationIds: ids, revenueAccountId: split.id, eventSplitOverride: override }), 'TREASURER_REQUIRED');
+    await expectRule(
+      db.finance.batchCodeDonations(treasurer, OWN, { donationIds: ids, revenueAccountId: split.id, eventSplitOverride: [{ destinationAccountId: PARISH_SHARE, percentage: 60 }] }),
+      'INVALID_INPUT',
+    );
+    await expectRule(
+      db.finance.batchCodeDonations(treasurer, OWN, { donationIds: ids, revenueAccountId: split.id, eventSplitOverride: [{ destinationAccountId: split.id, percentage: 100 }] }),
+      'INVALID_INPUT',
+    );
+    const standalone = queue.rows.find((r) => r.donation.EventID == null);
+    if (standalone) {
+      await expectRule(
+        db.finance.batchCodeDonations(treasurer, OWN, { donationIds: [ids[0]!, standalone.donation.id], revenueAccountId: split.id, eventSplitOverride: override }),
+        'INVALID_INPUT',
+      );
+    }
+
+    const done = await db.finance.batchCodeDonations(treasurer, OWN, { donationIds: ids, revenueAccountId: split.id, eventSplitOverride: override });
+    expect(done.overridden).toBe(true);
+    expect(done.splits.map((x) => [x.destinationAccountId, x.amount])).toEqual([
+      [PARISH_SHARE, Math.round(amount * 10) / 100],
+      [PARKING_FUNDRAISING, Math.round(amount * 100 - Math.round(amount * 10)) / 100],
+    ]);
+    const posting = (await db.finance.listLedgerTransactions(treasurer, OWN)).find((t) => t.transactionId === done.batchId);
+    expect(posting).toMatchObject({ amount, lineCount: 3, linkedEventId: eventId });
+    // The master profile is untouched.
+    expect((await db.finance.listGLSplitProfiles(treasurer, OWN))[0]!.destinations.map((x) => x.percentage)).toEqual([50, 50]);
+
+    // An override may also split an ordinary Revenue line, keeping part of the money on it.
+    const rest = (await db.finance.getBatchCodingQueue(treasurer, OWN)).rows.filter((r) => r.donation.EventID != null && r.donation.EventID !== eventId);
+    if (rest.length > 0) {
+      const next = rest.filter((r) => r.donation.EventID === rest[0]!.donation.EventID);
+      const plain = await db.finance.batchCodeDonations(treasurer, OWN, {
+        donationIds: next.map((r) => r.donation.id),
+        revenueAccountId: PARKING_FUNDRAISING,
+        eventSplitOverride: [
+          { destinationAccountId: PARKING_FUNDRAISING, percentage: 75 },
+          { destinationAccountId: PARISH_SHARE, percentage: 25 },
+        ],
+      });
+      expect(plain.splits.map((x) => x.destinationAccountId)).toEqual([PARKING_FUNDRAISING, PARISH_SHARE]);
+    }
   });
 
   it('keeps the account name donors see on each payment method and hands it to the phone', async () => {

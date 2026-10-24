@@ -8,7 +8,7 @@
 // Treasurer Desk's Chart of Accounts & GL Setup folder.
 import Link from 'next/link';
 import { useState } from 'react';
-import { GL_ACCOUNT_TYPE_LABELS, GL_ACCOUNT_TYPES, GL_SPLIT_ACCOUNT_LABEL, isSplitAccount, type GLAccount, type GLAccountType } from '@kofc/shared';
+import { GL_ACCOUNT_TYPE_LABELS, GL_ACCOUNT_TYPES, GL_SPLIT_ACCOUNT_LABEL, type GLAccount, type GLAccountType } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { AccountLedgerDrawer, flattenChart, Money } from '@/components/FinanceParts';
 import { Empty, Notice, PageTitle, Pill, Table, Td } from '@/components/ui';
@@ -28,6 +28,9 @@ function LedgerSpreadsheet() {
   const user = useUser();
   const scope = useCouncilScope();
   const chart = useLoad(() => db.finance.listChartOfAccounts(user.memberId, scope.councilId), [user.memberId, scope.councilId]);
+  // Sprint 9 Revision 6.2: an account is a Split Account when it has destinations.
+  const profiles = useLoad(() => db.finance.listGLSplitProfiles(user.memberId, scope.councilId), [user.memberId, scope.councilId]);
+  const splitIds = new Set((profiles.data ?? []).map((p) => p.accountId));
   const [drill, setDrill] = useState<GLAccount | null>(null);
   const nodes = flattenChart(chart.data);
 
@@ -80,7 +83,7 @@ function LedgerSpreadsheet() {
                             {n.account.AccountName}
                           </button>
                           {n.account.IsVirtualGoal === 1 ? <Pill tone="gold">Virtual goal</Pill> : null}
-                          {isSplitAccount(n.account) ? <Pill tone="navy">{GL_SPLIT_ACCOUNT_LABEL}</Pill> : null}
+                          {splitIds.has(n.account.id) ? <Pill tone="navy">{GL_SPLIT_ACCOUNT_LABEL}</Pill> : null}
                         </span>
                       </Td>
                       <Td className="text-right">

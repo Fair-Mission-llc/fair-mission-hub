@@ -8,6 +8,8 @@
 //  - BatchTransactionCoder: the un-coded electronic (card and QR-code) donations in one grid, with
 //    '[✓ Select All Un-coded Transactions]', a checkbox per row and one Revenue line drop-down. The selected donations are
 //    coded in a single group action (finance.batchCodeDonations), which posts one balanced transaction for the batch.
+//    Sprint 9 Revision 6.2: with the donations of one event selected, '⚖️ Override Event Split' opens a one-time share
+//    table (SplitShareRows) that splits this posting in place of the line's master split; nothing is saved to the line.
 // The Treasurer (or a Super Admin) acts; the other general ledger readers see the same cards read-only.
 import { useState } from 'react';
 import {
@@ -23,11 +25,13 @@ import {
   describeError,
   formatDate,
   GL_SPLIT_ACCOUNT_LABEL,
-  isSplitAccount,
+  maySplitAccount,
+  OVERRIDE_EVENT_SPLIT_LABEL,
   SELECT_ALL_UNCODED_LABEL,
   type CashAuditRow,
   type SessionUser,
 } from '@kofc/shared';
+import { SplitShareRows, splitRowsOf, splitRowsToDestinations, type SplitRow } from '@/components/SplitShareRows';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { formatMoney, parseNumberField } from '@/lib/format';
 import { useLoad } from '@/lib/use-load';
@@ -214,6 +218,8 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
   const view = useLoad(() => db.finance.getBatchCodingQueue(user.memberId, councilId), [user.memberId, councilId]);
   const [selected, setSelected] = useState<ReadonlySet<number>>(new Set());
   const [lineId, setLineId] = useState<number | null>(null);
+  // Sprint 9 Revision 6.2: the one-time Event Split Override - its rows, or null while it is not in use.
+  const [override, setOverride] = useState<SplitRow[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<Message>(null);
   const mayCode = canBatchCodeDonations(user, councilId);
@@ -222,6 +228,13 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
   const allSelected = rows.length > 0 && allIds.every((id) => selected.has(id));
   const picked = rows.filter((r) => selected.has(r.donation.id));
   const pickedTotal = picked.reduce((sum, r) => sum + Math.round(r.donation.DonationAmount * 100), 0) / 100;
+  const splitProfiles = view.data?.splitProfiles ?? [];
+  const splitIds = new Set(splitProfiles.map((p) => p.accountId));
+  // The override works on one event's donations at a time (the event session envelope).
+  const pickedEvents = new Set(picked.map((r) => r.donation.EventID ?? null));
+  const overrideEvent = pickedEvents.size === 1 && !pickedEvents.has(null) ? picked[0]! : null;
+  const overrideChoices = (view.data?.revenueAccounts ?? []).filter((a) => maySplitAccount(a) && !splitIds.has(a.id));
+  const openOverride = () => setOverride(splitRowsOf(splitProfiles.find((p) => p.accountId === lineId)));
 
   const toggle = (id: number) =>
     setSelected((prev) => {
@@ -236,15 +249,22 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
     setBusy(true);
     setMessage(null);
     try {
-      const done = await db.finance.batchCodeDonations(user.memberId, councilId, { donationIds: picked.map((r) => r.donation.id), revenueAccountId: lineId });
+      const done = await db.finance.batchCodeDonations(user.memberId, councilId, {
+        donationIds: picked.map((r) => r.donation.id),
+        revenueAccountId: lineId,
+        eventSplitOverride: override ? splitRowsToDestinations(override) : null,
+      });
       setMessage({
         tone: 'info',
         text:
           `Coded ${done.count} donation${done.count === 1 ? '' : 's'} (${formatMoney(done.total)}) to ${done.revenueAccountName} as one posting.` +
           // Sprint 9 Revision 6.0: a Split Account's credit went to its destinations.
-          (done.splits.length > 0 ? ` Split: ${done.splits.map((x) => `${formatMoney(x.amount)} to ${x.destinationAccountName}`).join(', ')}.` : ''),
+          (done.splits.length > 0
+            ? ` ${done.overridden ? 'Event Split Override' : 'Split'}: ${done.splits.map((x) => `${formatMoney(x.amount)} to ${x.destinationAccountName}`).join(', ')}.`
+            : ''),
       });
       setSelected(new Set());
+      setOverride(null);
       await view.reload();
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
@@ -291,18 +311,40 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
                       <option value="">Choose the Revenue line</option>
                       {view.data!.revenueAccounts.map((a) => (
                         <option key={a.id} value={a.id}>
-                          {isSplitAccount(a) ? `${a.AccountName} (${GL_SPLIT_ACCOUNT_LABEL})` : a.AccountName}
+                          {splitIds.has(a.id) ? `${a.AccountName} (${GL_SPLIT_ACCOUNT_LABEL})` : a.AccountName}
                         </option>
                       ))}
                     </Select>
                   )}
                 </Field>
                 {mayCode ? (
+                  <Button
+                    variant="secondary"
+                    disabled={busy || lineId === null || overrideEvent === null}
+                    onClick={() => (override ? setOverride(null) : openOverride())}
+                    title={overrideEvent === null ? 'Select the donations of one event and a Revenue line first.' : undefined}
+                  >
+                    {override ? 'Cancel Event Split Override' : OVERRIDE_EVENT_SPLIT_LABEL}
+                  </Button>
+                ) : null}
+                {mayCode ? (
                   <Button variant="gold" disabled={busy || picked.length === 0 || lineId === null} onClick={() => void code()}>
                     {busy ? 'Coding…' : `${BATCH_CODE_BUTTON_LABEL} (${picked.length} · ${formatMoney(pickedTotal)})`}
                   </Button>
                 ) : null}
               </div>
+              {override && overrideEvent ? (
+                <section aria-labelledby="event-split-override" className="flex flex-col gap-3 rounded border-2 border-gold p-3">
+                  <h3 id="event-split-override" className="font-serif text-base font-bold">
+                    {OVERRIDE_EVENT_SPLIT_LABEL}: {overrideEvent.eventName}
+                  </h3>
+                  <p className="text-sm">
+                    These shares split this one posting of {formatMoney(pickedTotal)} in place of the line&apos;s master split. They are not saved to the line;
+                    the next batch uses the master rules again.
+                  </p>
+                  <SplitShareRows rows={override} onChange={setOverride} choices={overrideChoices} disabled={busy} />
+                </section>
+              ) : null}
               <Table caption="Un-coded electronic donations" head={['', 'Date', 'Method', 'Event', 'Donor / description', 'Amount']}>
                 {rows.map((r) => (
                   <tr key={r.donation.id}>

@@ -19,7 +19,7 @@
 // Parish Fundraiser Revenue Split Console settles it against the parish share instead.
 // Drivers load rows, call these helpers, then only store.
 // =========================================================================
-import { expandSplitJournalLines, type GLSplitProfile } from './gl-splits';
+import { cleanSplitDestinations, expandSplitJournalLines, type GLSplitDestination, type GLSplitProfile } from './gl-splits';
 import type { AccountOwnerEntity } from './account-ownership';
 import type { DonationMethodKind } from './contract';
 import { cleanJournalDate, compareGLAccounts, type CleanJournalLine } from './finance';
@@ -143,6 +143,8 @@ export interface BatchCodingQueue {
   revenueAccounts: GLAccount[];
   /** The cash account each batch is deposited to, or null when the council has none. */
   depositAccount: GLAccount | null;
+  /** Sprint 9 Revision 6.2: the council's Split Accounts and their master shares (the Event Split Override starts from them). */
+  splitProfiles: GLSplitProfile[];
 }
 
 /**
@@ -157,7 +159,12 @@ export const isUncodedElectronic = (
   ELECTRONIC_DONATION_KINDS.includes(kind) && !isParishHeldDonation(kind, owner) && donation.coding_batch_id == null && donation.revenue_gl_account_id == null;
 
 /** finance.getBatchCodingQueue from the council's donations (with their method kinds and names) and chart of accounts. */
-export function buildBatchCodingQueue(councilId: number, rows: readonly BatchCodingRow[], accounts: readonly GLAccount[]): BatchCodingQueue {
+export function buildBatchCodingQueue(
+  councilId: number,
+  rows: readonly BatchCodingRow[],
+  accounts: readonly GLAccount[],
+  splitProfiles: readonly GLSplitProfile[] = [],
+): BatchCodingQueue {
   const waiting = rows
     .filter((r) => r.donation.CouncilID === councilId && isUncodedElectronic(r.donation, r.kind, r.accountOwner))
     .sort((a, b) => a.donation.DonationDate.localeCompare(b.donation.DonationDate) || a.donation.id - b.donation.id);
@@ -167,6 +174,7 @@ export function buildBatchCodingQueue(councilId: number, rows: readonly BatchCod
     uncodedTotal: dollars(waiting.reduce((sum, r) => sum + cents(r.donation.DonationAmount), 0)),
     revenueAccounts: revenue,
     depositAccount: deposit[0] ?? null,
+    splitProfiles: [...splitProfiles],
   };
 }
 
@@ -174,6 +182,13 @@ export function buildBatchCodingQueue(councilId: number, rows: readonly BatchCod
 export interface BatchCodingInput {
   donationIds: number[];
   revenueAccountId: number;
+  /**
+   * Sprint 9 Revision 6.2: a one-time Event Split Override - the shares this one posting is split by, in place of the
+   * line's master split (or of no split). Only for donations of one event; the destinations follow the split rules
+   * (cleanSplitDestinations) and the coded line itself may be one of them unless it is a Split Account. Not stored:
+   * the posted lines are the record. Omitted or null codes by the master rules.
+   */
+  eventSplitOverride?: GLSplitDestination[] | null;
 }
 
 /** finance.batchCodeDonations' answer. */
@@ -185,6 +200,8 @@ export interface BatchCodingResult {
   total: number;
   revenueAccountId: number;
   revenueAccountName: string;
+  /** Sprint 9 Revision 6.2: true when an Event Split Override decided the shares. */
+  overridden: boolean;
   /**
    * Sprint 9 Revision 6.0: when the line is a Split Account, the share each destination was credited (in profile
    * order); empty otherwise.
@@ -205,7 +222,7 @@ export function planBatchCoding(
   input: BatchCodingInput,
   now: Date,
   splitProfiles: readonly GLSplitProfile[] = [],
-): { lines: CleanJournalLine[]; donationIds: number[]; total: number; revenueAccount: GLAccount; splits: BatchCodingResult['splits'] } {
+): { lines: CleanJournalLine[]; donationIds: number[]; total: number; revenueAccount: GLAccount; splits: BatchCodingResult['splits']; overridden: boolean } {
   if (typeof input !== 'object' || input === null) throw invalid('Choose the donations to code and the Revenue line.');
   const ids = input.donationIds;
   if (!Array.isArray(ids) || ids.length === 0) throw invalid('Select at least one un-coded donation to code.', { field: 'donationIds' });
@@ -248,15 +265,37 @@ export function planBatchCoding(
     LinkedMeetingID: null,
     CheckNumber: null,
   };
+  // Sprint 9 Revision 6.2: a one-time Event Split Override replaces the line's master split for this posting only.
+  const override = input.eventSplitOverride;
+  let profiles: readonly GLSplitProfile[] = splitProfiles;
+  if (override !== undefined && override !== null) {
+    const events = new Set(picked.map((r) => r.donation.EventID ?? null));
+    const eventId = events.size === 1 ? [...events][0] : null;
+    if (eventId === null || eventId === undefined) {
+      throw invalid('An Event Split Override codes the donations of one event at a time: select only that event\'s donations.', { field: 'eventSplitOverride' });
+    }
+    const eventName = picked[0]!.eventName ?? `event ${eventId}`;
+    const own = accounts.filter((a) => a.CouncilID === councilId);
+    const destinations = cleanSplitDestinations(override, own, new Set(splitProfiles.map((p) => p.accountId)), `the ${eventName} override`, null);
+    const names = new Map(own.map((a) => [a.id, a.AccountName]));
+    profiles = [
+      {
+        accountId: revenueAccount.id,
+        accountName: `${revenueAccount.AccountName}, ${eventName} override`,
+        accountType: revenueAccount.AccountType,
+        destinations: destinations.map((d) => ({ ...d, destinationAccountName: names.get(d.destinationAccountId) ?? '' })),
+      },
+    ];
+  }
   // Sprint 9 Revision 6.0: a Split Account's credit is shared out to its destinations (gl-splits.ts).
   const lines = expandSplitJournalLines(
     [
       { ...base, GLAccountID: cash.id, DebitAmount: total, CreditAmount: 0 },
       { ...base, GLAccountID: revenueAccount.id, DebitAmount: 0, CreditAmount: total },
     ],
-    splitProfiles,
+    profiles,
   );
-  const profile = splitProfiles.find((p) => p.accountId === revenueAccount.id);
+  const profile = profiles.find((p) => p.accountId === revenueAccount.id);
   const splits = profile
     ? lines
         .slice(1)
@@ -266,7 +305,7 @@ export function planBatchCoding(
           amount: l.CreditAmount,
         }))
     : [];
-  return { lines, donationIds: picked.map((r) => r.donation.id), total, revenueAccount, splits };
+  return { lines, donationIds: picked.map((r) => r.donation.id), total, revenueAccount, splits, overridden: override !== undefined && override !== null };
 }
 
 // ---- the Cash Box Audit Closure Panel -------------------------------------------------------------------------------

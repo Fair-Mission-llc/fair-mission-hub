@@ -7699,7 +7699,7 @@ export class SqliteDataService implements DataService {
       const db = await this.ready();
       assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the batch coder of council ${councilId}`);
       await this.assertCouncilsExist(db, [councilId]);
-      return buildBatchCodingQueue(councilId, await this.batchCodingRows(db, councilId), await this.glAccounts(db, councilId));
+      return buildBatchCodingQueue(councilId, await this.batchCodingRows(db, councilId), await this.glAccounts(db, councilId), await this.glSplitProfiles(db, councilId));
     },
 
     batchCodeDonations: async (actorId, councilId, input) => {
@@ -7737,6 +7737,7 @@ export class SqliteDataService implements DataService {
           total: plan.total,
           revenueAccountId: plan.revenueAccount.id,
           revenueAccountName: plan.revenueAccount.AccountName,
+          overridden: plan.overridden,
           splits: plan.splits,
         };
       });

@@ -6,11 +6,13 @@
 // cash box audit when it is first needed.
 // Sprint 9 Revision 6.0 (schema 99): Split Accounts (gl-splits.ts). A split account carries a 'Split Account' tag and
 // its destinations and shares under its name. The council's Treasurer (or a Super Admin) has an 'Edit split' button on
-// each account that opens the editor below the grid: the Split Account switch, the destination accounts (same type)
+// each account that opens the editor below the grid: the destination accounts (same type)
 // and each one's percentage, which must add up to 100 (finance.setGLSplitProfile). Coding donations to a split account
 // on the batch coder then posts the shares to the destinations.
 // Sprint 9 Revision 6.1: only Revenue rows carry 'Edit split' (maySplitAccount); Asset, Liability, Equity and Expense rows
 // have no split controls. Every posting to a split account - manual entries, event revenue, batch coding - is shared out.
+// Sprint 9 Revision 6.2: no Split Account switch. A line is a Split Account exactly when it has destinations (the
+// profiles from finance.listGLSplitProfiles); the editor saves the destination rows, and none ends the split.
 import { useState } from 'react';
 import {
   canBatchCodeDonations,
@@ -18,31 +20,22 @@ import {
   GL_ACCOUNT_TYPE_LABELS,
   GL_ACCOUNT_TYPES,
   GL_SPLIT_ACCOUNT_LABEL,
-  GL_SPLIT_MAX_DESTINATIONS,
-  isSplitAccount,
   maySplitAccount,
   type GLAccount,
   type GLSplitProfile,
 } from '@kofc/shared';
 import { AccountLedgerDrawer, flattenChart, Money } from '@/components/FinanceParts';
-import { Button, Empty, Field, Input, Notice, Pill, Select, Table, Td } from '@/components/ui';
+import { SplitShareRows, splitRowsOf, splitRowsToDestinations, type SplitRow } from '@/components/SplitShareRows';
+import { Button, Empty, Notice, Pill, Table, Td } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
-
-interface DraftRow {
-  key: number;
-  accountId: number | null;
-  percentage: string;
-}
-
-/** The sum of the typed shares, to the cent of a percent; NaN while a share is not a number. */
-const totalOf = (rows: readonly DraftRow[]) => rows.reduce((sum, r) => sum + Math.round(Number(r.percentage) * 100), 0) / 100;
 
 function SplitEditor({
   account,
   accounts,
   profile,
+  splitIds,
   councilId,
   onSaved,
   onClose,
@@ -50,41 +43,25 @@ function SplitEditor({
   account: GLAccount;
   accounts: GLAccount[];
   profile: GLSplitProfile | undefined;
+  /** The accounts that are Split Accounts (they have destination rows). */
+  splitIds: ReadonlySet<number>;
   councilId: number;
   onSaved: () => Promise<void>;
   onClose: () => void;
 }) {
   const user = useUser();
-  let nextKey = 0;
-  const [splits, setSplits] = useState(isSplitAccount(account));
-  const [rows, setRows] = useState<DraftRow[]>(() =>
-    profile && profile.destinations.length > 0
-      ? profile.destinations.map((d) => ({ key: nextKey++, accountId: d.destinationAccountId, percentage: String(d.percentage) }))
-      : [
-          { key: nextKey++, accountId: null, percentage: '' },
-          { key: nextKey++, accountId: null, percentage: '' },
-        ],
-  );
+  const [rows, setRows] = useState<SplitRow[]>(() => splitRowsOf(profile));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // A destination is another account of the same type that is not itself split and not a virtual goal.
-  const choices = accounts.filter((a) => a.id !== account.id && a.AccountType === account.AccountType && !isSplitAccount(a) && a.IsVirtualGoal !== 1);
-  const total = totalOf(rows);
-
-  const change = (key: number, patch: Partial<DraftRow>) => setRows((all) => all.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+  // A destination is another Revenue account that is not itself split and not a virtual goal.
+  const choices = accounts.filter((a) => a.id !== account.id && maySplitAccount(a) && !splitIds.has(a.id));
+  const destinations = splitRowsToDestinations(rows);
 
   const save = async () => {
     setBusy(true);
     setError(null);
     try {
-      await db.finance.setGLSplitProfile(
-        user.memberId,
-        councilId,
-        account.id,
-        splits
-          ? { isSplitAccount: true, destinations: rows.map((r) => ({ destinationAccountId: r.accountId ?? 0, percentage: Number(r.percentage) })) }
-          : { isSplitAccount: false },
-      );
+      await db.finance.setGLSplitProfile(user.memberId, councilId, account.id, { destinations });
       await onSaved();
       onClose();
     } catch (err) {
@@ -99,55 +76,15 @@ function SplitEditor({
       <h3 id="split-editor" className="font-serif text-lg font-bold">
         Split profile: {account.AccountName}
       </h3>
-      <label className="inline-flex items-center gap-2 text-sm font-bold">
-        <input type="checkbox" checked={splits} onChange={(e) => setSplits(e.target.checked)} disabled={busy} />
-        {GL_SPLIT_ACCOUNT_LABEL}: share every posting to this Revenue line out to the accounts below
-      </label>
-      {splits ? (
-        <>
-          {rows.map((r, i) => (
-            <div key={r.key} className="flex flex-wrap items-end gap-3">
-              <Field label={`Destination ${i + 1}`} className="min-w-56 flex-1">
-                {(id) => (
-                  <Select id={id} value={r.accountId ?? ''} onChange={(e) => change(r.key, { accountId: e.target.value === '' ? null : Number(e.target.value) })} disabled={busy}>
-                    <option value="">Choose a {GL_ACCOUNT_TYPE_LABELS[account.AccountType].toLowerCase()} account</option>
-                    {choices.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.AccountName}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </Field>
-              <Field label="Share (%)" className="w-28">
-                {(id) => <Input id={id} inputMode="decimal" value={r.percentage} onChange={(e) => change(r.key, { percentage: e.target.value })} disabled={busy} />}
-              </Field>
-              <Button variant="secondary" size="sm" onClick={() => setRows((all) => all.filter((x) => x.key !== r.key))} disabled={busy || rows.length <= 1}>
-                Remove
-              </Button>
-            </div>
-          ))}
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setRows((all) => [...all, { key: Math.max(0, ...all.map((x) => x.key)) + 1, accountId: null, percentage: '' }])}
-              disabled={busy || rows.length >= GL_SPLIT_MAX_DESTINATIONS}
-            >
-              Add destination
-            </Button>
-            <span className={Number.isFinite(total) && total === 100 ? 'text-sm font-bold' : 'text-sm font-bold text-brand-red'}>
-              Total: {Number.isFinite(total) ? `${total}%` : '–'} (must be 100%)
-            </span>
-          </div>
-        </>
-      ) : (
-        <p className="text-sm">Saving with the switch off makes {account.AccountName} an ordinary account again. Postings already made stay as they are.</p>
-      )}
+      <p className="text-sm">
+        Every posting to {account.AccountName} is shared out to the accounts below. With one or more destinations the line is a {GL_SPLIT_ACCOUNT_LABEL}; save
+        with no destinations to make it an ordinary line again. Postings already made stay as they are.
+      </p>
+      <SplitShareRows rows={rows} onChange={setRows} choices={choices} disabled={busy} />
       {error ? <Notice tone="error">{error}</Notice> : null}
       <div className="flex flex-wrap gap-3">
         <Button onClick={() => void save()} disabled={busy}>
-          {busy ? 'Saving…' : 'Save split profile'}
+          {busy ? 'Saving…' : destinations.length > 0 ? 'Save split profile' : 'Save with no split'}
         </Button>
         <Button variant="secondary" onClick={onClose} disabled={busy}>
           Cancel
@@ -167,6 +104,8 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
   const assets = nodes.filter((n) => n.account.AccountType === 'Asset');
   const mayEdit = canBatchCodeDonations(user, councilId);
   const profileOf = (id: number) => profiles.data?.find((p) => p.accountId === id);
+  // Sprint 9 Revision 6.2: a Split Account is one with destinations on disk.
+  const splitIds = new Set((profiles.data ?? []).map((p) => p.accountId));
 
   return (
     <div className="flex flex-col gap-4">
@@ -186,6 +125,7 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
           account={editing}
           accounts={nodes.map((n) => n.account)}
           profile={profileOf(editing.id)}
+          splitIds={splitIds}
           councilId={councilId}
           onSaved={async () => {
             await Promise.all([chart.reload(), profiles.reload()]);
@@ -214,7 +154,7 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
                               {n.account.AccountName}
                             </button>
                             {n.account.IsVirtualGoal === 1 ? <Pill tone="gold">Virtual goal</Pill> : null}
-                            {isSplitAccount(n.account) ? <Pill tone="navy">{GL_SPLIT_ACCOUNT_LABEL}</Pill> : null}
+                            {splitIds.has(n.account.id) ? <Pill tone="navy">{GL_SPLIT_ACCOUNT_LABEL}</Pill> : null}
                           </span>
                           {profile && profile.destinations.length > 0 ? (
                             <span className="mt-1 block text-xs" style={{ paddingLeft: `${n.depth * 1.5}rem` }}>

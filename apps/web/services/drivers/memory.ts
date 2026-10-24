@@ -6434,7 +6434,7 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       assertMayReadGeneralLedger(this.memberWriteActor(s, actorId), councilId, `read the batch coder of council ${councilId}`);
       this.assertCouncilsExist(s, [councilId]);
-      return buildBatchCodingQueue(councilId, this.batchCodingRows(s, councilId), this.glAccounts(s, councilId));
+      return buildBatchCodingQueue(councilId, this.batchCodingRows(s, councilId), this.glAccounts(s, councilId), this.glSplitProfiles(s, councilId));
     },
 
     batchCodeDonations: async (actorId, councilId, input) => {
@@ -6455,6 +6455,7 @@ export class MemoryDataService implements DataService {
           total: plan.total,
           revenueAccountId: plan.revenueAccount.id,
           revenueAccountName: plan.revenueAccount.AccountName,
+          overridden: plan.overridden,
           splits: plan.splits,
         };
       });

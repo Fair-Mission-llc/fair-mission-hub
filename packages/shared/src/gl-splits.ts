@@ -14,6 +14,11 @@
 // coding, parish settlements and the rest. A line on a Split Account is replaced, in place, by its destination lines,
 // debit or credit alike, so the split account never carries a balance.
 //
+// Sprint 9 Revision 6.2: no on/off switch - an account is a Split Account exactly when it has destination rows on disk
+// (splitAccountIdsOf); saving an empty list ends the split. The batch coder also takes a one-time Event Split Override
+// (cleanSplitDestinations, in cash-audit.ts planBatchCoding): its shares replace the line's master rules for that one
+// posting and are kept nowhere but in the posted lines.
+//
 // Rules (cleanGLSplitProfile): the account and every destination belong to the council; a destination has the same
 // account type as the split account, is neither the split account itself, another split account nor a virtual goal,
 // and appears once; each share is above 0 with at most two decimals, and the shares total 100.00. An account that is
@@ -35,6 +40,8 @@ export const maySplitAccount = (account: Pick<GLAccount, 'AccountType' | 'IsVirt
 export const GL_SPLIT_MAX_DESTINATIONS = 10;
 /** The label the chart of accounts shows on a split account. */
 export const GL_SPLIT_ACCOUNT_LABEL = 'Split Account';
+/** Sprint 9 Revision 6.2: the batch coder's one-time override control. */
+export const OVERRIDE_EVENT_SPLIT_LABEL = '⚖️ Override Event Split';
 
 const cents = (n: number) => Math.round(n * 100);
 const dollars = (c: number) => c / 100;
@@ -56,17 +63,74 @@ export interface GLSplitProfile {
   destinations: (GLSplitDestination & { destinationAccountName: string })[];
 }
 
-/** finance.setGLSplitProfile's input: whether the account splits, and to where. */
+/**
+ * finance.setGLSplitProfile's input: the account's destinations and shares. Sprint 9 Revision 6.2: there is no on/off
+ * switch - an account is a Split Account exactly when it has destination rows, so an empty list makes it an ordinary
+ * account again.
+ */
 export interface GLSplitProfileInput {
-  isSplitAccount: boolean;
-  destinations?: GLSplitDestination[];
+  destinations: GLSplitDestination[];
 }
 
+/**
+ * The GLAccount.is_split_account mirror (schema 99, kept because the schema is locked). Since Revision 6.2 the drivers
+ * write it from the destination rows on every save and no rule reads it: use splitAccountIdsOf for decisions.
+ */
 export const isSplitAccount = (account: Pick<GLAccount, 'is_split_account'>): boolean => Number(account.is_split_account ?? 0) === 1;
 
+/** Sprint 9 Revision 6.2: the ids of the accounts that are Split Accounts - those with destination rows on disk. */
+export const splitAccountIdsOf = (allocations: readonly Pick<GLAccountSplitAllocation, 'source_gl_account_id'>[]): Set<number> =>
+  new Set(allocations.map((a) => a.source_gl_account_id));
+
 /**
- * Checks a profile against the council's chart and allocation rows. Resolves to the destinations to store (empty when
- * the account stops splitting). INVALID_INPUT for anything the header rules forbid.
+ * The shared destination checks of a profile and of a one-time override: each destination is an account of the council,
+ * a Revenue account, not a virtual goal, not a Split Account (`splitIds`) and listed once; each share is above 0 and up
+ * to 100 with at most two decimals; the shares total exactly 100.00. `forbiddenId` (the split account itself) may not be
+ * a destination. `whose` names the profile in messages.
+ */
+export function cleanSplitDestinations(
+  destinations: unknown,
+  own: readonly GLAccount[],
+  splitIds: ReadonlySet<number>,
+  whose: string,
+  forbiddenId: number | null,
+): GLSplitDestination[] {
+  if (!Array.isArray(destinations) || destinations.length === 0) {
+    throw invalid(`Give ${whose} at least one destination account and its share.`, { field: 'destinations' });
+  }
+  if (destinations.length > GL_SPLIT_MAX_DESTINATIONS) {
+    throw invalid(`A split may have at most ${GL_SPLIT_MAX_DESTINATIONS} destinations; received ${destinations.length}.`, { field: 'destinations' });
+  }
+  const seen = new Set<number>();
+  const clean: GLSplitDestination[] = [];
+  for (const d of destinations as unknown[]) {
+    const id = (d as GLSplitDestination | null)?.destinationAccountId;
+    const pct = (d as GLSplitDestination | null)?.percentage;
+    const target = own.find((a) => a.id === id);
+    if (!target) throw invalid(`Destination ${JSON.stringify(id)} is not an account of this council.`, { field: 'destinations', destinationAccountId: id });
+    if (target.id === forbiddenId) throw invalid(`${target.AccountName} cannot be its own destination.`, { destinationAccountId: id });
+    if (splitIds.has(target.id)) throw invalid(`${target.AccountName} is a Split Account, so it cannot receive a share.`, { destinationAccountId: id });
+    if (target.IsVirtualGoal === 1) throw invalid(`${target.AccountName} is a virtual goal, so it cannot receive a share.`, { destinationAccountId: id });
+    if (target.AccountType !== GL_SPLIT_ACCOUNT_TYPE) {
+      throw invalid(`${target.AccountName} is a ${target.AccountType} account; every destination of ${whose} must be a Revenue account.`, { destinationAccountId: id });
+    }
+    if (seen.has(target.id)) throw invalid(`${target.AccountName} is listed twice.`, { destinationAccountId: id });
+    seen.add(target.id);
+    if (typeof pct !== 'number' || !Number.isFinite(pct) || pct <= 0 || pct > 100 || Math.abs(cents(pct) - pct * 100) > 1e-6) {
+      throw invalid(`The share for ${target.AccountName} must be a percentage above 0 and up to 100, with at most two decimals; received ${JSON.stringify(pct)}.`, {
+        destinationAccountId: id,
+      });
+    }
+    clean.push({ destinationAccountId: target.id, percentage: pct });
+  }
+  const total = clean.reduce((sum, d) => sum + cents(d.percentage), 0);
+  if (total !== 10_000) throw invalid(`The shares of ${whose} must add up to 100%; they add up to ${dollars(total)}%.`, { field: 'destinations', total: dollars(total) });
+  return clean;
+}
+
+/**
+ * Checks a profile against the council's chart and allocation rows. Resolves to the destinations to store; an empty
+ * list makes the account an ordinary account (allowed for any account). INVALID_INPUT for anything the header rules forbid.
  */
 export function cleanGLSplitProfile(
   councilId: number,
@@ -78,11 +142,9 @@ export function cleanGLSplitProfile(
   const own = accounts.filter((a) => a.CouncilID === councilId);
   const account = own.find((a) => a.id === accountId);
   if (!account) throw invalid(`Account ${JSON.stringify(accountId)} is not an account of council ${councilId}.`, { accountId, councilId });
-  if (typeof input !== 'object' || input === null || typeof (input as GLSplitProfileInput).isSplitAccount !== 'boolean') {
-    throw invalid('Say whether the account is a Split Account.', { field: 'isSplitAccount' });
-  }
-  const { isSplitAccount: splits, destinations } = input as GLSplitProfileInput;
-  if (!splits) return [];
+  const destinations = typeof input === 'object' && input !== null ? (input as GLSplitProfileInput).destinations : undefined;
+  if (!Array.isArray(destinations)) throw invalid('List the destination accounts and their shares (an empty list ends the split).', { field: 'destinations' });
+  if (destinations.length === 0) return [];
   if (account.AccountType !== GL_SPLIT_ACCOUNT_TYPE) {
     throw invalid(`${account.AccountName} is a ${account.AccountType} account; only Revenue accounts can be Split Accounts.`, { accountId, accountType: account.AccountType });
   }
@@ -95,49 +157,21 @@ export function cleanGLSplitProfile(
       sourceAccountId: feeds.source_gl_account_id,
     });
   }
-  if (!Array.isArray(destinations) || destinations.length === 0) {
-    throw invalid(`Give ${account.AccountName} at least one destination account and its share.`, { field: 'destinations' });
-  }
-  if (destinations.length > GL_SPLIT_MAX_DESTINATIONS) {
-    throw invalid(`A Split Account may have at most ${GL_SPLIT_MAX_DESTINATIONS} destinations; received ${destinations.length}.`, { field: 'destinations' });
-  }
-  const seen = new Set<number>();
-  const clean: GLSplitDestination[] = [];
-  for (const d of destinations) {
-    const id = (d as GLSplitDestination | null)?.destinationAccountId;
-    const pct = (d as GLSplitDestination | null)?.percentage;
-    const target = own.find((a) => a.id === id);
-    if (!target) throw invalid(`Destination ${JSON.stringify(id)} is not an account of council ${councilId}.`, { field: 'destinations', destinationAccountId: id });
-    if (target.id === accountId) throw invalid(`${account.AccountName} cannot be its own destination.`, { destinationAccountId: id });
-    if (isSplitAccount(target)) throw invalid(`${target.AccountName} is a Split Account, so it cannot receive a share.`, { destinationAccountId: id });
-    if (target.IsVirtualGoal === 1) throw invalid(`${target.AccountName} is a virtual goal, so it cannot receive a share.`, { destinationAccountId: id });
-    if (target.AccountType !== account.AccountType) {
-      throw invalid(`${target.AccountName} is a ${target.AccountType} account; every destination of ${account.AccountName} must be a ${account.AccountType} account.`, {
-        destinationAccountId: id,
-      });
-    }
-    if (seen.has(target.id)) throw invalid(`${target.AccountName} is listed twice.`, { destinationAccountId: id });
-    seen.add(target.id);
-    if (typeof pct !== 'number' || !Number.isFinite(pct) || pct <= 0 || pct > 100 || Math.abs(cents(pct) - pct * 100) > 1e-6) {
-      throw invalid(`The share for ${target.AccountName} must be a percentage above 0 and up to 100, with at most two decimals; received ${JSON.stringify(pct)}.`, {
-        destinationAccountId: id,
-      });
-    }
-    clean.push({ destinationAccountId: target.id, percentage: pct });
-  }
-  const total = clean.reduce((sum, d) => sum + cents(d.percentage), 0);
-  if (total !== 10_000) {
-    throw invalid(`The shares of ${account.AccountName} must add up to 100%; they add up to ${dollars(total)}%.`, { field: 'destinations', total: dollars(total) });
-  }
-  return clean;
+  // The account's own rows are replaced by this save, so it does not count as a split account here.
+  const splitIds = splitAccountIdsOf(allocations.filter((a) => a.source_gl_account_id !== accountId));
+  return cleanSplitDestinations(destinations, own, splitIds, account.AccountName, accountId);
 }
 
-/** The split accounts of a council and their destinations, in chart order of the split account then the share rows. */
+/**
+ * The split accounts of a council and their destinations, in name order of the split account then the share rows.
+ * Sprint 9 Revision 6.2: an account is listed when it has destination rows on disk, whatever the is_split_account mirror says.
+ */
 export function buildGLSplitProfiles(councilId: number, accounts: readonly GLAccount[], allocations: readonly GLAccountSplitAllocation[]): GLSplitProfile[] {
   const own = accounts.filter((a) => a.CouncilID === councilId);
   const names = new Map(own.map((a) => [a.id, a.AccountName]));
+  const splitIds = splitAccountIdsOf(allocations);
   return own
-    .filter(isSplitAccount)
+    .filter((a) => splitIds.has(a.id))
     .sort((a, b) => a.AccountName.localeCompare(b.AccountName) || a.id - b.id)
     .map((a) => ({
       accountId: a.id,
