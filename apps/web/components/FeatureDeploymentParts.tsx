@@ -6,7 +6,8 @@
 //   FeatureDeploymentMatrix  the Council Feature Deployment Matrix (feature-deployment.ts councilFeatureDeployment): one
 //                            row per advanced capability and per council module, a '🟢 DEPLOYED' or '⚪ AVAILABLE / OFF'
 //                            badge and where its switch lives. The Biometric Authentication row carries its own switch
-//                            (councils.setBiometricLoginEnabled) for the page's editors.
+//                            (councils.setBiometricLoginEnabled) for the page's editors. Sprint 9 Revision 5.0: the
+//                            Geofenced Meeting Check-In row is hidden while GPS_UI_SUPPRESSED is on.
 //   CouncilInstanceRecord    the council's record, read only, with the platform schema version (Standard Bank Accounts).
 //   SettingsLinkCards        the System Settings pages a tab points to, as far as the reader may open them: the payment
 //                            and account pages (BANK_ACCOUNT_SETTINGS_PAGES), the module and platform switches
@@ -18,6 +19,7 @@
 import Link from 'next/link';
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import {
+  GPS_UI_SUPPRESSED,
   canEditCouncilWideSettings,
   councilTenantType,
   describeError,
@@ -113,7 +115,8 @@ function StatusBadge({ row }: { row: Pick<FeatureDeploymentRow, 'deployed'> }) {
 /** The Council Feature Deployment Matrix for one council. */
 export function FeatureDeploymentMatrix({ council, onSaved }: { council: Council; onSaved: () => Promise<void> }) {
   const user = useUser();
-  const rows = councilFeatureDeployment(council);
+  // Sprint 9 Revision 5.0: the GPS check-in row is hidden while GPS_UI_SUPPRESSED is on.
+  const rows = councilFeatureDeployment(council).filter((r) => !(GPS_UI_SUPPRESSED && r.id === 'geofence'));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
   const editable = canEditCouncilWideSettings(user);

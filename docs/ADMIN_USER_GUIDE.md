@@ -2235,7 +2235,6 @@ The **Council Feature Deployment Matrix** is on the **System Flags & Toggles** t
 | **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, on the **Global Revenue Splits** tab |
 | **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, on the **System Flags & Toggles** tab |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 16.4.1) |
-| **Geofenced Meeting Check-In** | The council has a meeting point. | **Meeting Check-In** card, on the **User Access & Roster Control** tab |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Council Lookups** → **Email Gateway** |
 
 **Council modules** rows: one row for each of the twelve module switches (section 3). A Super Admin changes them on the **Feature Flags Control Center**.
@@ -2774,51 +2773,38 @@ Under the roadmap, the **Three-Signature Expense Flow** draws the path of an exp
 - Council leadership may return a submitted report to the member as a draft, with a reason. The return clears the report's signatures.
 - Nobody signs a report that they submitted. One officer never signs two lines of the same report.
 
-### 18.4 Concept: meeting check-in by GPS or PIN
+### 18.4 Concept: meeting check-in by PIN
 
-Members check in to a live meeting from the phone with **📍 Check In to Meeting**. The phone sends its location one time. The portal accepts the check-in when two things are true:
+Members check in to a live meeting from the phone with the 4-digit **meeting PIN**. The Grand Knight reads out the PIN at the meeting. The phone does not ask for the member's location.
 
-- The phone is inside the council's circle: no farther from the meeting point than the check-in radius (100 m by default).
-- The phone's location is at least as precise as the check-in radius.
-
-When the location check fails, the phone asks for the 4-digit **meeting PIN**. The Grand Knight reads out the PIN at the meeting. After 5 wrong PINs, the PIN box locks for that member and that meeting. An officer then checks the member in on the **Live Meeting Console**.
-
+- After 5 wrong PINs, the PIN box locks for that member and that meeting. An officer then checks the member in on the **Live Meeting Console**.
 - The default meeting PIN is `0000`. Change the PIN before the first meeting.
 - Only the Grand Knight, the council's Admins and Super Admins see or change the PIN. The PIN is not sent to members' phones.
-- Without a meeting point, GPS check-in is off and every member uses the PIN.
 
-### 18.5 Set the meeting location and the meeting PIN
+### 18.5 Set the meeting PIN
 
-> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Admins, and Super Admins. Other officers do not see the **📍 Meeting Check-In** card.
-> **Warning:** a new PIN takes effect at once. Members who know only the old PIN cannot check in with the PIN.
+> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Admins, and Super Admins. Other officers do not see the **🔢 Meeting Check-In** card.
+> **Warning:** a new PIN takes effect at once. Members who know only the old PIN cannot check in.
 
-**Goal:** Set where the council meets, how close a phone must be, and the meeting PIN.
+**Goal:** Set the 4-digit PIN that members type to check in to a meeting.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **User Access & Roster Control** → **📍 Meeting Check-In**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **User Access & Roster Control** → **🔢 Meeting Check-In**.
 
 **Steps:**
-1. Find the meeting hall on a map. Copy its latitude and longitude in decimal degrees.
-2. Enter the latitude in **Meeting point latitude**, for example `47.606200`.
-3. Enter the longitude in **Meeting point longitude**, for example `-122.332100`.
-4. Enter the circle size in **Check-in radius (meters)**, from 25 to 5,000.
-5. Enter 4 digits in **Meeting PIN**.
-6. Select **Save meeting check-in**.
+1. Enter 4 digits in **Meeting PIN**.
+2. Select **Save meeting check-in**.
 
 <!-- KEEP_IMAGE: meeting check-in card on council settings -->
 ![Meeting Check-In card with the default PIN warning (/setup/council-settings)](../generated/dashboard_visual_catalog/council_settings_meeting_check_in.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The card says *"Saved. Phones within 100 m of the meeting point can check in by GPS; others use the PIN."*
+**Expected result:** The card says *"Saved. Members check in with this PIN."*
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"The PIN is still the default 0000, which any member can guess. …"* | The PIN is `0000`. | Enter a new 4-digit PIN. Select **Save meeting check-in**. |
 | *"The meeting PIN must be exactly 4 digits."* | The PIN has letters, or too few or too many digits. | Enter 4 digits. |
-| *"Enter the latitude and the longitude together."* | One coordinate is empty. | Fill in both coordinates, or clear both. |
-| *"The check-in radius must be a whole number of meters from 25 to 5,000; …"* | The radius is out of range. | Enter a whole number from 25 to 5,000. |
-| Members inside the hall get *"Your phone's location is only accurate to … m, …"* | Phones are less precise indoors. | Enter a larger radius, for example 150. |
-| *"Saved. No meeting point is set, so members check in with the PIN only."* | Both coordinates are blank. | Enter both coordinates to turn GPS check-in on. |
 
 ### 18.6 File a meeting photo with the minutes
 
@@ -3725,9 +3711,9 @@ Two councils of the same state can affiliate. An affiliation is a handshake betw
 
 A council Admin can send an invite but cannot accept one. Only the GK or the DGK of the invited council accepts the invite.
 
-The **Connected Councils** directory lists the other councils of your state. The nearest council shows first. The portal measures the distance between the meeting points of the councils. A council without a meeting point follows in district order. Councils of your own district show first.
+The **Connected Councils** directory lists the other councils of your state. The nearest council shows first. The portal measures the distance between the councils' stored meeting points. A council without a meeting point follows in district order. Councils of your own district show first.
 
-The GK sets the meeting point on **Council Wide Settings** → **User Access & Roster Control** → **Meeting Check-In**. A Super Admin enters the district number on the **Councils** page.
+A Super Admin enters the district number on the **Councils** page.
 
 ### 21.6 Send an affiliation invite
 
@@ -3749,7 +3735,6 @@ The GK sets the meeting point on **Council Wide Settings** → **User Access & R
 | --- | --- | --- |
 | A council is not in the list. | The council is in another state. | Affiliations stay inside your state. |
 | The portal says an invite is already pending. | One of the two councils already sent an invite. | Wait for the other council's answer. |
-| The list is not in distance order. | Your council has no meeting point. | Ask the GK to set the meeting point on **Meeting Check-In**. |
 
 ### 21.7 Accept or decline an affiliation invite
 

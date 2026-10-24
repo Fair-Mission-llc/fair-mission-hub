@@ -467,6 +467,13 @@ import {
   isCouncilWideList,
   isListVisibleTo,
   assertMayRunEventIntake,
+  assertQuickCheckInMember,
+  assertQuickCheckInToday,
+  assertShiftCaptain,
+  compareRosterEntries,
+  isShiftCaptain,
+  type QuickCheckInRosterEntry,
+  type QuickCheckInShift,
   agendaAlreadyStructured,
   agendaLineNotFound,
   assertAgendaLineRef,
@@ -3700,6 +3707,68 @@ export class SqliteDataService implements DataService {
         signupId = ins.lastInsertRowId;
       });
       return (await db.getFirstAsync<EventSignup>('SELECT * FROM [EventSignup] WHERE [id] = ?', [signupId]))!;
+    },
+
+    getQuickCheckInBoard: async (actorId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const today = toIsoDate(this.now());
+      const todays = await db.getAllAsync<Shift>('SELECT * FROM [Shift] WHERE [ShiftDate] = ? ORDER BY [StartTime], [id]', [today]);
+      const shifts: QuickCheckInShift[] = [];
+      const councils = new Set<number>();
+      for (const shift of todays) {
+        const event = await db.getFirstAsync<CouncilEvent>('SELECT * FROM [Event] WHERE [id] = ?', [shift.EventID]);
+        if (!event) continue;
+        const eventCouncilIds = await this.councilIdsOf(db, event.id);
+        if (!isShiftCaptain(actor, { eventId: event.id, ownerId: event.OwnerID, eventCouncilIds })) continue;
+        eventCouncilIds.forEach((id) => councils.add(id));
+        const signups = await db.getAllAsync<{ MemberID: number }>('SELECT [MemberID] FROM [EventSignup] WHERE [ShiftID] = ? ORDER BY [id]', [shift.id]);
+        shifts.push({ shift, event, signedUpMemberIds: signups.map((r) => r.MemberID) });
+      }
+      const roster: QuickCheckInRosterEntry[] =
+        councils.size === 0
+          ? []
+          : (
+              await db.getAllAsync<QuickCheckInRosterEntry>(
+                `SELECT m.[id] AS memberId, m.[CouncilID] AS councilId, m.[MemberFirstName] AS firstName, m.[MemberLastName] AS lastName
+                   FROM [Member] m
+                  WHERE m.[CouncilID] IN (${marks(councils.size)})
+                    AND m.[StatusID] = (SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active')`,
+                [...councils],
+              )
+            ).sort(compareRosterEntries);
+      return { shifts, roster };
+    },
+
+    quickCheckIn: async (actorId, shiftId, memberId) => {
+      const db = await this.ready();
+      let result: { signupId: number; alreadySignedUp: boolean } = { signupId: 0, alreadySignedUp: false };
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const shift = await this.requireShift(db, shiftId);
+        const event = await this.requireEvent(db, shift.EventID);
+        const scope = { eventId: event.id, ownerId: event.OwnerID, eventCouncilIds: await this.councilIdsOf(db, event.id) };
+        assertShiftCaptain(actor, scope);
+        assertQuickCheckInToday(shift, toIsoDate(this.now()));
+        const member = await db.getFirstAsync<{ CouncilID: number; active: number }>(
+          `SELECT m.[CouncilID], (st.[Status] = 'Active') AS active FROM [Member] m
+             LEFT JOIN [MemberStatus] st ON st.[id] = m.[StatusID] WHERE m.[id] = ?`,
+          [memberId],
+        );
+        if (!member) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
+        assertQuickCheckInMember({ id: memberId, CouncilID: member.CouncilID, active: member.active === 1 }, scope);
+        const existing = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [EventSignup] WHERE [ShiftID] = ? AND [MemberID] = ?', [shiftId, memberId]);
+        if (existing) {
+          result = { signupId: existing.id, alreadySignedUp: true };
+          return;
+        }
+        // A full shift still takes walk-ins, as it takes honorary signups (Sprint 5Z-Final-Polish).
+        await db.runAsync('UPDATE [Shift] SET [NumberVolunteersSignedUp] = [NumberVolunteersSignedUp] + 1 WHERE [id] = ?', [shiftId]);
+        const ins = await db.runAsync('INSERT INTO [EventSignup] ([ShiftID], [MemberID], [NoShow]) VALUES (?, ?, 0)', [shiftId, memberId]);
+        result = { signupId: ins.lastInsertRowId, alreadySignedUp: false };
+      });
+      const signup = (await db.getFirstAsync<EventSignup>('SELECT * FROM [EventSignup] WHERE [id] = ?', [result.signupId]))!;
+      return { signup, alreadySignedUp: result.alreadySignedUp };
     },
 
     listMemberShifts: async (memberId, range) => {

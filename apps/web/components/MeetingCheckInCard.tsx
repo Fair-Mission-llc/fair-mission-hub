@@ -3,10 +3,13 @@
 // Admins set where the council meets, how close a phone must be to check in by GPS, and the 4-digit meeting PIN for
 // members outside the circle (councils.getMeetingGeofence / setMeetingGeofence, geofence.ts). Other readers of the page
 // do not see the card: the PIN is never sent to them.
+// Sprint 9 Revision 5.0: while GPS_UI_SUPPRESSED is on, the card shows only the PIN. The meeting point and radius are
+// hidden but still sent back unchanged on save, so nothing stored is lost.
 import { useState, type FormEvent } from 'react';
 import {
   DEFAULT_MEETING_PIN_TOKEN,
   describeError,
+  GPS_UI_SUPPRESSED,
   hasMeetingPoint,
   holdsGrandKnightSeat,
   MEETING_GEOFENCE_MAX_RADIUS_METERS,
@@ -42,7 +45,9 @@ function CheckInForm({ user, councilId, fence, onSaved }: { user: SessionUser; c
       await onSaved();
       setMessage({
         tone: 'info',
-        text: hasMeetingPoint(saved)
+        text: GPS_UI_SUPPRESSED
+          ? 'Saved. Members check in with this PIN.'
+          : hasMeetingPoint(saved)
           ? `Saved. Phones within ${saved.radiusMeters} m of the meeting point can check in by GPS; others use the PIN.`
           : 'Saved. No meeting point is set, so members check in with the PIN only.',
       });
@@ -56,16 +61,20 @@ function CheckInForm({ user, councilId, fence, onSaved }: { user: SessionUser; c
   return (
     <form onSubmit={(e) => void submit(e)} className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Meeting point latitude" hint="Decimal degrees, e.g. 47.606200. Leave both blank to switch GPS check-in off.">
-          {(id) => <Input id={id} inputMode="decimal" value={latitude} onChange={(e) => setLatitude(e.target.value)} />}
-        </Field>
-        <Field label="Meeting point longitude" hint="Decimal degrees, e.g. -122.332100.">
-          {(id) => <Input id={id} inputMode="decimal" value={longitude} onChange={(e) => setLongitude(e.target.value)} />}
-        </Field>
-        <Field label="Check-in radius (meters)" hint={`From ${MEETING_GEOFENCE_MIN_RADIUS_METERS} to ${MEETING_GEOFENCE_MAX_RADIUS_METERS.toLocaleString('en-US')}. The phone's location must also be this precise.`}>
-          {(id) => <Input id={id} inputMode="numeric" value={radius} onChange={(e) => setRadius(e.target.value)} />}
-        </Field>
-        <Field label="Meeting PIN" hint="4 digits. Read it out at the meeting for members outside the circle.">
+        {GPS_UI_SUPPRESSED ? null : (
+          <>
+            <Field label="Meeting point latitude" hint="Decimal degrees, e.g. 47.606200. Leave both blank to switch GPS check-in off.">
+              {(id) => <Input id={id} inputMode="decimal" value={latitude} onChange={(e) => setLatitude(e.target.value)} />}
+            </Field>
+            <Field label="Meeting point longitude" hint="Decimal degrees, e.g. -122.332100.">
+              {(id) => <Input id={id} inputMode="decimal" value={longitude} onChange={(e) => setLongitude(e.target.value)} />}
+            </Field>
+            <Field label="Check-in radius (meters)" hint={`From ${MEETING_GEOFENCE_MIN_RADIUS_METERS} to ${MEETING_GEOFENCE_MAX_RADIUS_METERS.toLocaleString('en-US')}. The phone's location must also be this precise.`}>
+              {(id) => <Input id={id} inputMode="numeric" value={radius} onChange={(e) => setRadius(e.target.value)} />}
+            </Field>
+          </>
+        )}
+        <Field label="Meeting PIN" hint={GPS_UI_SUPPRESSED ? '4 digits. Read it out at the meeting; members type it on the phone to check in.' : '4 digits. Read it out at the meeting for members outside the circle.'}>
           {(id) => <Input id={id} inputMode="numeric" maxLength={4} autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value)} />}
         </Field>
       </div>
@@ -89,9 +98,11 @@ export function MeetingCheckInCard({ user, councilId }: { user: SessionUser; cou
     <section aria-labelledby="meeting-check-in" className="mt-5 rounded border-2 border-navy bg-white text-black">
       <header className="border-b-2 border-navy bg-navy px-4 py-2 text-white" data-surface="navy">
         <h2 id="meeting-check-in" className="font-serif text-xl font-bold">
-          📍 Meeting Check-In
+          {GPS_UI_SUPPRESSED ? '🔢' : '📍'} Meeting Check-In
         </h2>
-        <p className="text-sm">Where members check in by GPS from the phone, and the PIN for members outside the circle.</p>
+        <p className="text-sm">
+          {GPS_UI_SUPPRESSED ? 'The 4-digit PIN members type on the phone to check in to a meeting.' : 'Where members check in by GPS from the phone, and the PIN for members outside the circle.'}
+        </p>
       </header>
       <div className="p-4 sm:p-5">
         {fence.error ? <Notice tone="error">{fence.error}</Notice> : null}

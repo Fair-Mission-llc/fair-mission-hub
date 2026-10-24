@@ -526,6 +526,7 @@ The calendar shows only your own schedule:
 - the council meetings that you are invited to. A meeting that you declined does not show.
 
 The calendar starts 30 days before today. Your calendar app checks the link for changes about once an hour.
+The calendar reads the council's saved records. Your shifts from the last 30 days stay in the calendar after the portal restarts.
 The calendar is read-only. Sign up for shifts and answer invitations in the portal or the phone app.
 
 The link is private. A person who has your link can read your schedule. Do not share the link.
@@ -562,6 +563,46 @@ The link is private. A person who has your link can read your schedule. Do not s
 | The calendar app says that it cannot open the link. | The calendar app cannot reach the council's portal from the internet. | Ask a council Admin for the public address of the portal. |
 | The app shows *"This calendar link is not valid."* | The council changed its portal key. Old links stop working. | Copy a new link from the card. Replace the old link in the app. |
 | Someone else has your link. | The link is a private key to your schedule. One link cannot be stopped alone. | Tell a council Admin. Only a new portal key stops the link. The new key also stops the links of all other members. |
+
+### Concept: the Shift Captain and walk-in volunteers
+
+A walk-in volunteer is a member who comes to an event without a sign-up.
+A Shift Captain puts a walk-in on a shift from the phone, with no typing.
+
+These members are Shift Captains for an event:
+- the event owner;
+- an elected officer or a Trustee of a council that runs the event;
+- an Admin of a council that runs the event, and any Super Admin.
+
+The **⏱️ Quick Check-In** button shows only on the day of a shift that you captain.
+The roster lists the active members of the councils that run the event.
+The walk-in reports their own hours later, from the **Report** tab (4.4).
+
+### 3.5 Check in a walk-in volunteer
+
+> **Who can do this:** a Shift Captain, on the day of the shift. Other members do not see the button.
+
+**Goal:** Put a walk-in volunteer on today's shift.
+
+**Start point:** Phone app → **Signup** tab, or **Collect** tab → **⏱️ Quick Check-In**, below the page heading.
+
+**Steps:**
+1. Tap **⏱️ Quick Check-In**. The roster opens from the bottom of the screen.
+2. If you captain more than one shift today, tap the shift under **TODAY'S SHIFT**.
+3. Find the walk-in volunteer. The roster is in last-name order.
+4. Tap the name of the volunteer.
+5. Read the message at the top of the roster.
+6. Tap **✕** to close the roster.
+
+**Expected result:** A message says *"(name) is checked in to (shift). They report their hours from the Report tab."* The name shows **✓** in the roster. The shift is on the volunteer's own schedule.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The **⏱️ Quick Check-In** button is missing. | You are not a Shift Captain for a shift today. | Ask the event owner or an officer to check in the volunteer. |
+| The name is grey and shows **✓**. | The member is already on the shift. | No action. |
+| *"… was already on (shift)."* | Another captain checked in the member first. | No action. |
+| The volunteer is not in the roster. | The volunteer is not an active member of a council that runs the event. | Ask a council Admin to check the member's status. |
 
 ---
 
@@ -948,21 +989,15 @@ The **Agenda** sub-tab opens on the live meeting by default. With no live meetin
 | --- | --- | --- |
 | No **Edit** controls show. | Only officers, Admins and the meeting owner change a meeting. | Ask an officer. |
 
-### Concept: check in by location or by PIN
+### Concept: check in with the meeting PIN
 
 You check in to a live council meeting from the phone. Checking in marks you present. Only members who checked in may vote on a secret ballot.
 
-The phone checks in one of two ways:
-
-| Way | When the phone uses the way | What you do |
-| --- | --- | --- |
-| **Location (GPS)** | Your phone is inside the council's check-in area. The area is a circle round the meeting hall, with a radius of 100 m by default. | Tap **📍 Check In to Meeting**. |
-| **Meeting PIN** | Your phone is outside the circle, its location is not precise enough, or location is off. | Type the 4-digit meeting PIN that the Grand Knight reads out. |
-
-- The phone reads your location one time, when you tap the button. The phone does not track you.
-- The phone must also know your location to within the circle size. Indoors, the phone can be less precise.
+- The Grand Knight reads out a 4-digit meeting PIN at the meeting.
+- You type the PIN in the **CHECK IN** box on the phone.
+- The phone does not ask for your location.
 - After 5 wrong PINs, the PIN box locks for that meeting. An officer can then check you in from the console.
-- The Grand Knight sets the circle and the PIN. The PIN is not shown to members in the app.
+- The Grand Knight sets the PIN. The PIN is not shown to members in the app.
 
 ### Concept: the annual roadmap
 
@@ -986,12 +1021,9 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 
 **Steps:**
 1. Check for the red **● LIVE** tag in the navy header. The **CHECK IN** box shows only while the meeting is live.
-2. Tap **📍 Check In to Meeting**.
-3. If the phone asks for your location, tap **Allow**. The phone reads your location one time.
-4. Read the message in the **CHECK IN** box.
-5. If the box shows **MEETING PIN**, ask the Grand Knight for the PIN.
-6. Type the 4 digits in **MEETING PIN**.
-7. Tap **Check in with PIN**.
+2. Listen for the meeting PIN. The Grand Knight reads out the PIN.
+3. Type the 4 digits in **MEETING PIN**.
+4. Tap **Check in with PIN**.
 
 <!-- KEEP_IMAGE: check-in drawer GPS placeholder -->
 ![Phone: the CHECK IN box with the check-in button (placeholder)](../generated/mobile_app_catalog/meeting_check_in_gps.png)
@@ -1001,16 +1033,12 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 ![Phone: the MEETING PIN box after the location check failed (placeholder)](../generated/mobile_app_catalog/meeting_check_in_pin.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The box turns navy and shows **✓ You are checked in**. A message says *"Checked in. You are 40 m from the meeting point."* or *"Checked in with the meeting PIN."*
+**Expected result:** The box turns navy and shows **✓ You are checked in**. A message says *"Checked in with the meeting PIN."*
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| *"You are 1,112 m from the meeting hall, outside the 100 m check-in area. Enter the 4-digit meeting PIN from the Grand Knight instead."* | Your phone is outside the circle. | Type the meeting PIN (steps 5 to 7). |
-| *"Your phone's location is only accurate to 180 m, and check-in needs 100 m or better. …"* | The phone cannot fix its location precisely indoors. | Use the meeting PIN, or step near a window and open the app again. |
-| *"Your council has not set its meeting location, so GPS check-in is off. …"* | The Grand Knight has not set the meeting point. | Use the meeting PIN. |
-| *"Location access is off for KofC Tracker, so GPS check-in cannot be used. …"* | You did not allow location for the app. | Use the meeting PIN, or allow location in your phone settings. |
-| *"Your phone's location services are off. …"* | Location is off for the whole phone. | Use the meeting PIN, or turn on location services. |
+| **Check in with PIN** stays grey. | The PIN has fewer than 4 digits. | Type all 4 digits. |
 | *"That meeting PIN is not correct. Ask the Grand Knight for the PIN and try again."* | The PIN is wrong. | Ask the Grand Knight for the PIN. Type the PIN again. |
 | *"You entered a wrong meeting PIN 5 times, so PIN check-in is locked for this meeting. …"* | You typed a wrong PIN 5 times. | Ask an officer to check you in from the **Live Meeting Console**. |
 | No **CHECK IN** box. | The meeting is not live yet. | Wait for the Grand Knight to start the meeting. |
@@ -1655,7 +1683,6 @@ The drawers show only when your council uses the Faith Center.
 | *"Locked. Submission closed …"* on an expense | The 30-day expense window is closed. | Contact the Financial Secretary. |
 | QR code missing | The council has no image for the method. | Take cash or card. Tell your council Admin. |
 | Event missing from **Collect** | The event is not at the gate yet. | Wait until 2 hours before the first shift, by default. |
-| *"You are … m from the meeting hall, outside the … m check-in area. …"* | Your phone is outside the meeting circle. | Type the meeting PIN (5.5). |
 | *"That meeting PIN is not correct. …"* | The PIN is wrong. | Ask the Grand Knight for the PIN (5.5). |
 | *"Enter the check number printed on the check."* | A check donation has no check number. | Enter the number printed on the check (7.2.1). |
 

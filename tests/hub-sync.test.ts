@@ -15,6 +15,7 @@ import {
   HUB_PUBLIC_METHODS,
   HUB_VAULT_RELATIVE_PATH,
   SecurityPrivilegeError,
+  toIsoDate,
   type HubCall,
 } from '@kofc/shared';
 import { SqliteDataService, type SqliteModule } from '../apps/mobile/services/drivers/sqlite';
@@ -22,6 +23,9 @@ import { createNodeSqlite, HUB_VAULT_FILE } from '../apps/web/services/server/hu
 import { hubDataDir, hubModeOn } from '../apps/web/services/server/hub/hub-vault';
 import { GET as replicateGet, POST as replicatePost } from '../apps/web/app/api/sync/replicate/route';
 import { GET as photoGet, POST as photoPost } from '../apps/web/app/api/sync/photo/route';
+import { GET as calendarGet } from '../apps/web/app/api/calendar/sync/route';
+import { signCalendarToken } from '../apps/web/services/server/calendar-token';
+import { calendarFeedSecret } from '../apps/web/services/server/secrets';
 import { expectRule } from './helpers';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
@@ -206,6 +210,25 @@ describe('/api/sync/replicate and /api/sync/photo', () => {
     expect(new Uint8Array(await back.arrayBuffer())).toEqual(jpeg);
     expect((await photoGet(new Request(`http://hub${path}`))).status).toBe(401);
     expect((await photoGet(new Request('http://hub/api/sync/photo?name=..%2F..%2Fsecret.jpg', { headers: { cookie } }))).status).toBe(404);
+  });
+
+  it('builds the personal calendar feed from the vault file (Sprint 9 Revision 5.0)', async () => {
+    // Another connection to the same file - as after a hub restart - adds a shift and signs the member up for it.
+    const today = toIsoDate(new Date());
+    const other = vaultService(dir);
+    const event = await other.events.create(
+      { EventName: 'Vault Walk-in Supper', EventDescription: '', OwnerID: 2, StartDate: today, EndDate: today, Location: 'Hall', CategoryID: 1 },
+      [1],
+    );
+    const shift = await other.events.createShift({
+      ShiftName: 'Serving line', ShiftDescription: '', ShiftDate: today, StartTime: '17:00:00', EndTime: '19:00:00', EventID: event.id, MinNumberVolunteers: 1,
+    });
+    await other.events.signupForShift(3, shift.id);
+
+    const res = await calendarGet(new Request(`http://hub/api/calendar/sync?token=${await signCalendarToken(3, calendarFeedSecret())}`));
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain('Vault Walk-in Supper');
+    expect(read('apps/web/app/api/calendar/sync/route.ts')).toContain('memberDirectory');
   });
 
   it('answers 404 while the portal is not a hub build', async () => {

@@ -12,7 +12,8 @@
 // it in a popup (GroupedSettingsCards).
 //
 // Sprint 7G: under the cards, the Grand Knight, the council's Admins and Super Admins get the Meeting Check-In card
-// (MeetingCheckInCard): the meeting point, the GPS check-in radius and the 4-digit meeting PIN.
+// (MeetingCheckInCard): the meeting point, the GPS check-in radius and the 4-digit meeting PIN. Sprint 9 Revision 5.0:
+// while GPS_UI_SUPPRESSED is on, the card shows the PIN only.
 //
 // Sprint 7H: the Custom User Guides card prints either user guide for this council, with its numbers in place of the
 // defaults (/api/council/compile-manual, customizeManualMarkdown). The page's own audience may print.

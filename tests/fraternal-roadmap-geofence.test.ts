@@ -367,9 +367,11 @@ describe('Sprint 7G screens and manuals', () => {
     const admin = read('docs/ADMIN_USER_GUIDE.md');
     const member = read('docs/MEMBER_USER_GUIDE.md');
     for (const text of ['Annual Fraternal Roadmap', 'Overdue: Nominations', 'meeting PIN']) expect(admin).toContain(text);
-    for (const text of [CHECK_IN_BUTTON_LABEL, 'Check in with PIN', 'You are 1,112 m from the meeting hall', 'Council Dashboard', 'CHECK NUMBER (REQUIRED)']) {
+    for (const text of ['Check in with PIN', 'Council Dashboard', 'CHECK NUMBER (REQUIRED)']) {
       expect(member).toContain(text);
     }
+    // Sprint 9 Revision 5.0: GPS check-in is hidden (GPS_UI_SUPPRESSED), so the guide teaches the PIN only.
+    for (const text of [CHECK_IN_BUTTON_LABEL, 'You are 1,112 m from the meeting hall', 'Location (GPS)']) expect(member).not.toContain(text);
     const script = read('scripts/compile_all_manuals.py');
     expect(script).toContain('docs/ADMIN_USER_GUIDE.pdf');
     expect(script).toContain('docs/MEMBER_USER_GUIDE.pdf');

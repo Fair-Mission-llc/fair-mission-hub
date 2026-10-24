@@ -5,6 +5,7 @@
 // Phase 4.5: an All-Hands shift (Shift.IsAllHands) has no cap, so it always sits under Shifts Opening with an
 // ALL HANDS tag, no volunteer target and a plain Sign up, however many members have joined.
 // Shifts I already hold are left out; they live under "My shifts" on Home.
+// Sprint 9 Revision 5.0: a Shift Captain with a shift today sees '⏱️ Quick Check-In' under the heading (QuickCheckIn).
 import { useState } from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { councilLabel, isAllHandsShift, isShiftFull, shiftStatus, signupWindow, sortCouncils, visibleFeed, type ShiftFeedItem } from '@kofc/shared';
@@ -12,6 +13,7 @@ import { Dropdown, type DropdownOption } from '@/components/Dropdown';
 import { AllHandsTag, FullTag, PriorityTag, ShiftCard, type ShiftLook } from '@/components/ShiftCard';
 import { AppText, choiceStyle, Button, EmptyState, Loading, Notice } from '@/components/ui';
 import { FeatureGate } from '@/components/FeatureGate';
+import { QuickCheckIn } from '@/components/QuickCheckIn';
 import { useUser } from '@/lib/app-context';
 import { useTheme } from '@/lib/layout-mode';
 import { describeError, useLoad } from '@/lib/use-async';
@@ -115,6 +117,7 @@ function ShiftsScreenBody() {
           <AppText variant="heading" accessibilityRole="header">
             Signup Desk
           </AppText>
+          <QuickCheckIn />
           <View
             accessibilityRole="tablist"
             style={{ flexDirection: 'row', borderWidth: theme.border(2), borderColor: theme.large ? color.gold : color.navy, borderRadius: radius.md, overflow: 'hidden' }}

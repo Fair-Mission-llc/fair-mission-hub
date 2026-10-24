@@ -96,6 +96,20 @@ describe.each(makers)('$name driver: the parking event on game day', (d) => {
     expect(donations.reduce((sum, g) => sum + g.DonationAmount, 0)).toBe(400);
   });
 
+  it('lets the Grand Knight check the Historian in to the Wednesday slot with Quick Check-In (Sprint 9 Revision 5.0)', async () => {
+    const db = await d.make(GAME_DAY);
+    const GK = 28;
+    const HISTORIAN = 32;
+    const board = await db.events.getQuickCheckInBoard(GK);
+    const wednesday = board.shifts.find((s) => s.shift.ShiftName === 'Lot attendants - Wednesday')!;
+    expect(wednesday.event.EventName).toBe(PILOT_PARKING_EVENT_NAME);
+    expect(wednesday.signedUpMemberIds.sort((a, b) => a - b)).toEqual([33, 34]);
+    expect(board.roster.find((r) => r.memberId === HISTORIAN)).toMatchObject({ firstName: 'Historian', lastName: 'User' });
+    expect((await db.events.quickCheckIn(GK, wednesday.shift.id, HISTORIAN)).alreadySignedUp).toBe(false);
+    // Member Alpha captains nothing, so the phone shows Alpha no Quick Check-In button.
+    expect((await db.events.getQuickCheckInBoard(33)).shifts).toEqual([]);
+  });
+
   it('leaves the seeded dates alone on the scripts\' own day', async () => {
     const db = await d.make(new Date(2026, 9, 12, 19, 0, 0));
     const event = (await db.events.listByCouncil(OWN)).find((e) => e.EventName === PILOT_PARKING_EVENT_NAME)!;

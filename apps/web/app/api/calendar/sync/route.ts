@@ -6,8 +6,11 @@
 // for - each with its event's name and location - and the meetings they are invited to, from 30 days ago onward.
 // 404 for a missing, malformed or forged token, or a member who is gone; 403 for a member who is no longer Active.
 //
-// The route reads the server's own copy of the data (memberDirectory). LIMIT OF THE MOCK: a sign-up made only in a
-// browser tab is not in that copy, so it is not in the feed until the remote driver puts both sides on one database.
+// The route reads memberDirectory(). On a pilot hub build (Sprint 9 Revision 4.0) that is the persistent vault file,
+// packages/backend/data/central-hub-vault.db, which every phone and browser writes to, so each sign-up - past shifts
+// included, from 30 days back - is in the feed and stays there across hub restarts (Sprint 9 Revision 5.0 test in
+// tests/hub-sync.test.ts). On a plain demo build it is the server's in-memory copy, which does not see sign-ups made
+// only in a browser tab.
 import {
   buildCalendarFeed,
   calendarFeedStart,

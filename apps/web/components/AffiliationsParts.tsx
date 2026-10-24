@@ -15,6 +15,7 @@ import {
   canRespondToAffiliation,
   COUNCIL_AFFILIATION_STATUS_LABELS,
   describeError,
+  GPS_UI_SUPPRESSED,
   type AffiliationDecision,
   type AffiliationDirectory,
   type AffiliationDirectoryEntry,
@@ -188,7 +189,9 @@ export function AffiliationDirectoryPanel({ user, councilId }: { user: SessionUs
             <p className="text-sm">
               {d.sortedByDistance
                 ? 'Nearest first, measured between the councils’ meeting points.'
-                : 'Your council has no meeting point yet, so the list is in district order. Set it on Council Wide Settings, Meeting Check-In, to sort by distance.'}{' '}
+                : GPS_UI_SUPPRESSED
+                  ? 'The list is in district order.'
+                  : 'Your council has no meeting point yet, so the list is in district order. Set it on Council Wide Settings, Meeting Check-In, to sort by distance.'}{' '}
               {d.districtNumber !== null ? `Your council is in district ${d.districtNumber}.` : 'Your district number is not on file yet (a Super Admin enters it on the Councils page).'}{' '}
               Loaner library sharing is <strong>{d.loanerLibraryEnabled ? 'on' : 'off'}</strong> for your council.
             </p>

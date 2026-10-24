@@ -8,10 +8,13 @@
 // Meeting_Photos-<meeting>-<time>.jpg and meetings.setCheckInPhoto stores the path on the check-in. The phone has no
 // channel to Google Drive, so the photo stays on the phone; the web console files meeting photos in Drive
 // (Media / Meeting_Photos).
+//
+// Sprint 9 Revision 5.0: while GPS_UI_SUPPRESSED is on, the drawer opens on the meeting PIN and never shows the GPS
+// button or a distance. readPosition and the GPS path stay, so turning the flag off brings them back.
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import * as Location from 'expo-location';
-import { BusinessRuleError, CHECK_IN_BUTTON_LABEL, MEETING_PHOTO_DRIVE_FOLDER, type CheckInProof } from '@kofc/shared';
+import { BusinessRuleError, CHECK_IN_BUTTON_LABEL, GPS_UI_SUPPRESSED, MEETING_PHOTO_DRIVE_FOLDER, type CheckInProof } from '@kofc/shared';
 import { CapturePhotoButton } from '@/components/CapturePhotoButton';
 import { AppInput, AppText, Button, Field, Notice } from '@/components/ui';
 import { useUser } from '@/lib/app-context';
@@ -55,7 +58,7 @@ export function GeofenceCheckIn({
   const { color, radius, space, large } = useTheme();
   const user = useUser();
   const [busy, setBusy] = useState(false);
-  const [gpsLocked, setGpsLocked] = useState(false);
+  const [gpsLocked, setGpsLocked] = useState(GPS_UI_SUPPRESSED);
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -67,7 +70,9 @@ export function GeofenceCheckIn({
       result.alreadyCheckedIn
         ? 'You were already checked in.'
         : result.method === 'gps'
-          ? `Checked in. You are ${result.distanceMeters} m from the meeting point.`
+          ? GPS_UI_SUPPRESSED
+            ? 'Checked in.'
+            : `Checked in. You are ${result.distanceMeters} m from the meeting point.`
           : 'Checked in with the meeting PIN.',
     );
     onChanged();

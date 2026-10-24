@@ -33,6 +33,8 @@
 // took it off the Cash form, so cash box entries need no photo). The
 // camera shot is saved compressed (DEPOSIT_PHOTO_QUALITY) into the app's media folder; once the donation is recorded,
 // donations.attachDepositPhoto writes its TransactionAttachments row. Optional: a donation records without one.
+// Sprint 9 Revision 5.0: a Shift Captain with a shift today sees '⏱️ Quick Check-In' under the heading (QuickCheckIn),
+// to sign walk-in volunteers up from the gate table.
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import {
@@ -60,6 +62,7 @@ import { ReceiptScanTile, VERIFICATION_PHOTO_TITLE } from '@/components/ReceiptS
 import { SwipeToConfirm } from '@/components/SwipeToConfirm';
 import { AppInput, AppText, Button, Card, EmptyState, Field, Loading, Notice, Pill, Screen, Section } from '@/components/ui';
 import { FeatureGate } from '@/components/FeatureGate';
+import { QuickCheckIn } from '@/components/QuickCheckIn';
 import { useUser } from '@/lib/app-context';
 import { warmCollectionQrs } from '@/lib/qr-cache';
 import { useTheme } from '@/lib/layout-mode';
@@ -455,6 +458,7 @@ function DonateScreenBody() {
       <AppText variant="heading" accessibilityRole="header">
         Donations
       </AppText>
+      <QuickCheckIn />
 
       {message ? <Notice tone={message.tone} message={message.text} onDismiss={() => setMessage(null)} /> : null}
       {setup.error ? <Notice tone="error" message={setup.error} /> : null}
