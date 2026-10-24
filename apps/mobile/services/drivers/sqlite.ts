@@ -550,8 +550,13 @@ import {
   planConcludedRevenue,
   assertFeatureEnabled,
   assertMayReviewQuarantine,
+  assertOwnsQuarantine,
+  assertQuarantineDraft,
   assertQuarantinePending,
   buildQuarantineDesk,
+  buildReturnedEntries,
+  quarantineResubmitText,
+  quarantineReturnText,
   councilFeatureFlags,
   HOURS_STEP,
   isQuarantineExempt,
@@ -4196,10 +4201,11 @@ export class SqliteDataService implements DataService {
             { memberId, shiftId },
           );
         }
-        // A new report replaces the member's still-pending one for the shift (Sprint 7B).
+        // A new report replaces the member's still-pending one for the shift (Sprint 7B), or one returned to them for
+        // correction (Sprint 9 Revision 1.1).
         await db.runAsync(
           `DELETE FROM [VolunteerQuarantine]
-            WHERE [user_id] = ? AND [activity_type] = 'SHIFT' AND [activity_id] = ? AND [clearance_status] = 'PENDING'`,
+            WHERE [user_id] = ? AND [activity_type] = 'SHIFT' AND [activity_id] = ? AND [clearance_status] IN ('PENDING', 'DRAFT')`,
           [memberId, shiftId],
         );
         const owner = await db.getFirstAsync<{ OwnerID: number | null }>('SELECT [OwnerID] FROM [Event] WHERE [id] = ?', [shift.EventID]);
@@ -4789,13 +4795,90 @@ export class SqliteDataService implements DataService {
       return (await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [quarantineId]))!;
     },
 
-    reject: async (actorId, quarantineId) => {
+    // Sprint 9 Revision 1.1: a reject returns the entry to its member as DRAFT with the reviewer's reason.
+    reject: async (actorId, quarantineId, reason) => {
       const db = await this.ready();
       await db.withTransactionAsync(async () => {
         await this.requireReviewableHold(db, actorId, quarantineId);
         await db.runAsync(
-          `UPDATE [VolunteerQuarantine] SET [clearance_status] = 'REJECTED', [reviewed_by_member_id] = ?, [reviewed_at] = ? WHERE [id] = ?`,
-          [actorId, toTimestamp(this.now()), quarantineId],
+          `UPDATE [VolunteerQuarantine]
+              SET [clearance_status] = 'DRAFT', [quarantine_reason] = ?, [reviewed_by_member_id] = ?, [reviewed_at] = ?, [cleared_time_id] = NULL
+            WHERE [id] = ?`,
+          [quarantineReturnText(reason), actorId, toTimestamp(this.now()), quarantineId],
+        );
+      });
+      return (await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [quarantineId]))!;
+    },
+
+    listReturned: async (actorId) => {
+      const db = await this.ready();
+      await this.requireMember(db, actorId);
+      const council = await db.getFirstAsync<{ flag: number | null }>(
+        'SELECT c.[feature_volunteer_quarantine] AS flag FROM [Member] m LEFT JOIN [Council] c ON c.[id] = m.[CouncilID] WHERE m.[id] = ?',
+        [actorId],
+      );
+      if (!councilFeatureFlags({ feature_volunteer_quarantine: council?.flag ?? undefined }).feature_volunteer_quarantine) return [];
+      const rows = await db.getAllAsync<VolunteerQuarantine>(
+        `SELECT * FROM [VolunteerQuarantine] WHERE [user_id] = ? AND [clearance_status] = 'DRAFT'`,
+        [actorId],
+      );
+      if (rows.length === 0) return [];
+      const members = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string }>(
+        `SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member]
+          WHERE [id] = ? OR [id] IN (SELECT [reviewed_by_member_id] FROM [VolunteerQuarantine] WHERE [user_id] = ? AND [clearance_status] = 'DRAFT')`,
+        [actorId, actorId],
+      );
+      const shifts = await db.getAllAsync<{ id: number; ShiftName: string; EventName: string }>(
+        `SELECT sh.[id], sh.[ShiftName], e.[EventName] FROM [Shift] sh JOIN [Event] e ON e.[id] = sh.[EventID]
+          WHERE sh.[id] IN (SELECT [activity_id] FROM [VolunteerQuarantine]
+                             WHERE [user_id] = ? AND [clearance_status] = 'DRAFT' AND [activity_type] = 'SHIFT')`,
+        [actorId],
+      );
+      const activities = await db.getAllAsync<{ id: number; ActivityName: string }>(
+        `SELECT [id], [ActivityName] FROM [Activities]
+          WHERE [id] IN (SELECT [activity_id] FROM [VolunteerQuarantine]
+                          WHERE [user_id] = ? AND [clearance_status] = 'DRAFT' AND [activity_type] = 'MANUAL')`,
+        [actorId],
+      );
+      return buildReturnedEntries(rows, {
+        members: new Map(members.map((m) => [m.id, m])),
+        shifts: new Map(shifts.map((sh) => [sh.id, sh])),
+        activities: new Map(activities.map((a) => [a.id, a])),
+      });
+    },
+
+    resubmit: async (actorId, quarantineId, hours, notes) => {
+      assertValidHours(hours);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        await this.requireMember(db, actorId);
+        const row = await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [quarantineId]);
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No returned time entry with id ${quarantineId}.`, { quarantineId });
+        assertOwnsQuarantine(actorId, row);
+        const council = await db.getFirstAsync<GateCouncil>('SELECT [id], [feature_volunteer_quarantine] FROM [Council] WHERE [id] = ?', [row.council_id]);
+        assertFeatureEnabled(row.council_id, 'feature_volunteer_quarantine', council);
+        assertQuarantineDraft(row);
+        const owner =
+          row.activity_type === 'SHIFT'
+            ? await db.getFirstAsync<{ OwnerID: number | null }>(
+                'SELECT e.[OwnerID] FROM [Shift] sh JOIN [Event] e ON e.[id] = sh.[EventID] WHERE sh.[id] = ?',
+                [row.activity_id],
+              )
+            : null;
+        const reasons = await this.quarantineReasonsFor(db, actorId, {
+          activityType: row.activity_type,
+          activityId: row.activity_id,
+          date: row.activity_date,
+          hours,
+          scheduledHours: row.scheduled_hours ?? undefined,
+          ownsEvent: owner?.OwnerID === actorId,
+        });
+        await db.runAsync(
+          `UPDATE [VolunteerQuarantine]
+              SET [hours_reported] = ?, [notes] = ?, [quarantine_reason] = ?, [clearance_status] = 'PENDING',
+                  [reviewed_by_member_id] = NULL, [reviewed_at] = NULL, [cleared_time_id] = NULL
+            WHERE [id] = ?`,
+          [hours, notes !== undefined ? notes.trim() || null : (row.notes ?? null), quarantineResubmitText(reasons), quarantineId],
         );
       });
       return (await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [quarantineId]))!;

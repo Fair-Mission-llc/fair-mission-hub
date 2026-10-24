@@ -548,8 +548,13 @@ import {
   planConcludedRevenue,
   assertFeatureEnabled,
   assertMayReviewQuarantine,
+  assertOwnsQuarantine,
+  assertQuarantineDraft,
   assertQuarantinePending,
   buildQuarantineDesk,
+  buildReturnedEntries,
+  quarantineResubmitText,
+  quarantineReturnText,
   councilFeatureFlags,
   HOURS_STEP,
   isQuarantineExempt,
@@ -3496,8 +3501,12 @@ export class MemoryDataService implements DataService {
             { memberId, shiftId },
           );
         }
-        // A new report replaces the member's still-pending one for the shift (Sprint 7B).
-        s.remove('VolunteerQuarantine', (q) => this.isPendingHold(q, memberId, 'SHIFT', shiftId));
+        // A new report replaces the member's still-pending one for the shift (Sprint 7B), or one returned to them for
+        // correction (Sprint 9 Revision 1.1).
+        s.remove(
+          'VolunteerQuarantine',
+          (q) => this.isPendingHold(q, memberId, 'SHIFT', shiftId) || (this.isHoldOf(q, memberId, 'SHIFT', shiftId) && q.clearance_status === 'DRAFT'),
+        );
         const member = this.requireMember(s, memberId);
         const event = this.requireEvent(s, shift.EventID as number);
         const scheduledHours = shiftDefaultLengthHours(shift as unknown as Shift);
@@ -3815,8 +3824,12 @@ export class MemoryDataService implements DataService {
 
   // ---- volunteer time quarantine (Sprint 7B) --------------------------------
 
+  private isHoldOf(q: Row, memberId: number, type: VolunteerQuarantineActivityType, activityId: number): boolean {
+    return q.user_id === memberId && q.activity_type === type && q.activity_id === activityId;
+  }
+
   private isPendingHold(q: Row, memberId: number, type: VolunteerQuarantineActivityType, activityId: number): boolean {
-    return q.user_id === memberId && q.activity_type === type && q.activity_id === activityId && q.clearance_status === 'PENDING';
+    return this.isHoldOf(q, memberId, type, activityId) && q.clearance_status === 'PENDING';
   }
 
   /**
@@ -3966,11 +3979,75 @@ export class MemoryDataService implements DataService {
       });
     },
 
-    reject: async (actorId, quarantineId) => {
+    // Sprint 9 Revision 1.1: a reject returns the entry to its member as DRAFT with the reviewer's reason.
+    reject: async (actorId, quarantineId, reason) => {
       const s = await this.ready();
       return s.transaction(() => {
         const row = this.requireReviewableHold(s, actorId, quarantineId);
-        Object.assign(row, { clearance_status: 'REJECTED', reviewed_by_member_id: actorId, reviewed_at: toTimestamp(this.now()) });
+        Object.assign(row, {
+          clearance_status: 'DRAFT',
+          quarantine_reason: quarantineReturnText(reason),
+          reviewed_by_member_id: actorId,
+          reviewed_at: toTimestamp(this.now()),
+          cleared_time_id: null,
+        });
+        return { ...row } as unknown as VolunteerQuarantine;
+      });
+    },
+
+    listReturned: async (actorId) => {
+      const s = await this.ready();
+      const member = this.requireMember(s, actorId);
+      const council = s.rows('Council').find((c) => c.id === member.CouncilID);
+      if (!councilFeatureFlags(council as Partial<Council> | undefined).feature_volunteer_quarantine) return [];
+      const rows = s
+        .rows('VolunteerQuarantine')
+        .filter((q) => q.user_id === actorId && q.clearance_status === 'DRAFT')
+        .map((q) => ({ ...q }) as unknown as VolunteerQuarantine);
+      const events = new Map(s.rows('Event').map((e) => [e.id as number, e.EventName as string]));
+      return buildReturnedEntries(rows, {
+        members: new Map(
+          s.rows('Member').map((m) => [m.id as number, { MemberFirstName: m.MemberFirstName as string, MemberLastName: m.MemberLastName as string }]),
+        ),
+        shifts: new Map(
+          s.rows('Shift').map((sh) => [sh.id as number, { ShiftName: sh.ShiftName as string, EventName: events.get(sh.EventID as number) ?? '' }]),
+        ),
+        activities: new Map(s.rows('Activities').map((a) => [a.id as number, { ActivityName: a.ActivityName as string }])),
+      });
+    },
+
+    resubmit: async (actorId, quarantineId, hours, notes) => {
+      assertValidHours(hours);
+      const s = await this.ready();
+      return s.transaction(() => {
+        const member = this.requireMember(s, actorId);
+        const row = s.rows('VolunteerQuarantine').find((q) => q.id === quarantineId);
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No returned time entry with id ${quarantineId}.`, { quarantineId });
+        assertOwnsQuarantine(actorId, row as unknown as VolunteerQuarantine);
+        const councilId = row.council_id as number;
+        assertFeatureEnabled(councilId, 'feature_volunteer_quarantine', s.rows('Council').find((c) => c.id === councilId) as GateCouncil | undefined);
+        assertQuarantineDraft(row as unknown as VolunteerQuarantine);
+        const activityType = row.activity_type as VolunteerQuarantineActivityType;
+        const activityId = row.activity_id as number;
+        const shift = activityType === 'SHIFT' ? s.rows('Shift').find((sh) => sh.id === activityId) : undefined;
+        const event = shift ? s.rows('Event').find((e) => e.id === shift.EventID) : undefined;
+        const reasons = this.quarantineReasonsFor(s, member, {
+          activityType,
+          activityId,
+          date: row.activity_date as string,
+          hours,
+          scheduledHours: (row.scheduled_hours as number | null) ?? undefined,
+          ownsEvent: event?.OwnerID === actorId,
+        });
+        Object.assign(row, {
+          hours_reported: hours,
+          notes: notes !== undefined ? notes.trim() || null : row.notes,
+          quarantine_reason: quarantineResubmitText(reasons),
+          clearance_status: 'PENDING',
+          reviewed_by_member_id: null,
+          reviewed_at: null,
+          cleared_time_id: null,
+        });
         return { ...row } as unknown as VolunteerQuarantine;
       });
     },

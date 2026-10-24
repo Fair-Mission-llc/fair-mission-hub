@@ -117,7 +117,7 @@ import type { DistributionGroup } from './messaging';
 import type { FeatureFlagChanges, FeatureFlagName } from './features';
 import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
-import type { QuarantineDeskEntry, QuarantinedHours } from './volunteer-quarantine';
+import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
 import type { BulletinLayoutInput, LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { OldBusinessItem } from './old-business';
@@ -4402,9 +4402,25 @@ export interface DataService {
      */
     clear(actorId: number, quarantineId: number): Promise<VolunteerQuarantine>;
     /**
-     * "Reject & Remove": flips the entry to REJECTED. Its hours never reach the time tables; the row stays as the
-     * review record. RECORD_NOT_FOUND, QUARANTINE_STATUS_CONFLICT as for clear.
+     * "Reject & Return to Member" (Sprint 9 Revision 1.1; was "Reject & Remove", which flipped it to REJECTED): nothing is
+     * deleted. The entry goes back to its member as DRAFT with the reviewer's required `reason`
+     * (cleanReturnReason: RETURN_REASON_REQUIRED when blank, INVALID_INPUT past QUARANTINE_RETURN_REASON_MAX_LENGTH),
+     * stored in quarantine_reason; cleared_time_id is cleared and reviewed_by_member_id / reviewed_at record the return.
+     * Its hours stay out of the time tables. RECORD_NOT_FOUND, QUARANTINE_STATUS_CONFLICT as for clear.
      */
-    reject(actorId: number, quarantineId: number): Promise<VolunteerQuarantine>;
+    reject(actorId: number, quarantineId: number, reason: string): Promise<VolunteerQuarantine>;
+    /**
+     * The caller's own entries returned for correction (DRAFT), with the reviewer's reason, oldest first. Any member may
+     * call it for themselves; empty while their council's feature_volunteer_quarantine flag is off. MEMBER_NOT_FOUND
+     * for an unknown actor.
+     */
+    listReturned(actorId: number): Promise<ReturnedTimeEntry[]>;
+    /**
+     * The member's corrected report: sets the hours (assertValidHours: a multiple of 0.25 in (0, 24]) and, when given,
+     * the notes, and sends the entry back to PENDING for review with the guards run again (quarantineResubmitText).
+     * Only the entry's own member (RECORD_NOT_FOUND for anyone else or an unknown id); only a DRAFT entry
+     * (QUARANTINE_STATUS_CONFLICT); FEATURE_DISABLED while the flag is off.
+     */
+    resubmit(actorId: number, quarantineId: number, hours: number, notes?: string): Promise<VolunteerQuarantine>;
   };
 }

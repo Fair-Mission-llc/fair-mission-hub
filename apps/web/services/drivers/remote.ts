@@ -362,6 +362,8 @@ export function createRemoteDataService(): DataService {
       listPending: notImplemented('volunteerQuarantine.listPending'),
       clear: notImplemented('volunteerQuarantine.clear'),
       reject: notImplemented('volunteerQuarantine.reject'),
+      listReturned: notImplemented('volunteerQuarantine.listReturned'),
+      resubmit: notImplemented('volunteerQuarantine.resubmit'),
     },
     feedback: {
       submit: notImplemented('feedback.submit'),

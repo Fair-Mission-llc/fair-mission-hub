@@ -1432,8 +1432,12 @@ export interface MemberCouncilAffiliationLog {
 
 /** Sprint 7B: a time entry's kind - a shift report (EventTime) or a council activity entry (ActivityTime). */
 export type VolunteerQuarantineActivityType = 'SHIFT' | 'MANUAL';
-/** Sprint 7B: PENDING while held; APPROVED once cleared to the time tables; REJECTED once deleted as unfounded. */
-export type VolunteerQuarantineStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+/**
+ * Sprint 7B: PENDING while held; APPROVED once cleared to the time tables; REJECTED once deleted as unfounded (rows
+ * from before Sprint 9 Revision 1.1). Sprint 9 Revision 1.1: DRAFT once a reviewer rejects it back to the member with a
+ * required reason (volunteer-quarantine.ts quarantineReturnReason); the member corrects the hours and resubmits it to PENDING.
+ */
+export type VolunteerQuarantineStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
 
 /** Sprint 7B: a regular member's time entry held for leadership review instead of logged (volunteer-quarantine.ts). */
 export interface VolunteerQuarantine {
@@ -1447,9 +1451,9 @@ export interface VolunteerQuarantine {
   scheduled_hours?: number | null; // DECIMAL(5,2): the shift's scheduled length; NULL for MANUAL
   notes?: string | null; // VARCHAR(2000): the member's own description of the time
   date_logged: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
-  quarantine_reason: string; // VARCHAR(500)
+  quarantine_reason: string; // VARCHAR(500): why it is held; while DRAFT, 'Returned for correction: ' + the reviewer's reason
   clearance_status: VolunteerQuarantineStatus; // VARCHAR(10), DEFAULT 'PENDING'
-  reviewed_by_member_id?: number | null; // Member who cleared or deleted it
+  reviewed_by_member_id?: number | null; // Member who cleared, deleted or returned it
   reviewed_at?: string | null; // DATETIME
   /** The EventTime or ActivityTime row a clearance wrote; NULL until APPROVED. */
   cleared_time_id?: number | null;

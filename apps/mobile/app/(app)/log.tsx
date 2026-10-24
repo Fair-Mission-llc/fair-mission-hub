@@ -14,11 +14,15 @@
 // and grayed, and Save stays disabled while it is chosen.
 // Sprint 6C: in the large text layout (useTheme) the tiles fill the width one per row and stand at least 140 points
 // tall, black with a thick gold edge and large white type; the slide bar's thumb and every button grow to match.
+// Sprint 9 Revision 1.1: entries a reviewer returned for correction (DRAFT, volunteerQuarantine.listReturned) sit at
+// the top, above both modes, each with the reviewer's reason, a 15-minute stepper starting at the reported hours, and
+// Resubmit, which sends the corrected report back to review (volunteerQuarantine.resubmit).
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 import {
   eventExpenseSpan,
   expenseWindowLockMessage,
+  formatDate,
   formatHours,
   formatShiftWhen,
   HOURS_STEP,
@@ -29,6 +33,7 @@ import {
   MAX_HOURS_PER_ENTRY,
   toIsoDate,
   type Activities,
+  type ReturnedTimeEntry,
 } from '@kofc/shared';
 import { SwipeToConfirm } from '@/components/SwipeToConfirm';
 import { AppInput, AppText, Button, Card, EmptyState, Field, Loading, Notice, Screen, Section } from '@/components/ui';
@@ -458,6 +463,74 @@ function ShiftReport({ onToast }: { onToast: (toast: Toast) => void }) {
   );
 }
 
+/** One returned entry: the reviewer's reason, the corrected hours and Resubmit. */
+function ReturnedReport({ entry, onDone }: { entry: ReturnedTimeEntry; onDone: (toast: Toast) => void }) {
+  const { color, space } = useTheme();
+  const user = useUser();
+  const [hours, setHours] = useState(entry.row.hours_reported);
+  const [notes, setNotes] = useState(entry.row.notes ?? '');
+  const [busy, setBusy] = useState(false);
+
+  const resubmit = async () => {
+    if (hours <= 0 || busy) return;
+    setBusy(true);
+    try {
+      await db.volunteerQuarantine.resubmit(user.memberId, entry.row.id, hours, notes);
+      onDone({ tone: 'info', text: `Resubmitted ${formatHours(hours)} for review.` });
+    } catch (err) {
+      onDone({ tone: 'error', text: describeError(err) });
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card accent={color.red} style={{ gap: space.sm }}>
+      <AppText variant="label" tone="red">
+        RETURNED FOR CORRECTION
+      </AppText>
+      <AppText variant="title">{entry.activityLabel}</AppText>
+      <AppText variant="small" tone="muted">
+        {formatDate(entry.row.activity_date)} · reported {formatHours(entry.row.hours_reported)}
+      </AppText>
+      <View style={{ gap: space.xs, borderLeftWidth: 4, borderLeftColor: color.red, paddingLeft: space.md }}>
+        <AppText variant="label">{entry.returnedByName ? `${entry.returnedByName.toUpperCase()} SAYS` : 'THE REVIEWER SAYS'}</AppText>
+        <AppText accessibilityLabel={`Reason for returning: ${entry.returnReason}`}>{entry.returnReason}</AppText>
+      </View>
+      <Field label="CORRECTED HOURS">
+        <QuarterStepper value={hours} onChange={setHours} />
+      </Field>
+      <Field label="NOTES (OPTIONAL)">
+        <AppInput value={notes} onChangeText={setNotes} multiline style={{ minHeight: 72, textAlignVertical: 'top', paddingTop: space.md }} maxLength={255} />
+      </Field>
+      <Button title="Resubmit for review" busy={busy} disabled={hours <= 0 || busy} onPress={() => void resubmit()} />
+    </Card>
+  );
+}
+
+/** The member's own time entries a reviewer sent back; nothing shows when there are none. */
+function ReturnedReports({ onToast }: { onToast: (toast: Toast) => void }) {
+  const user = useUser();
+  const state = useLoad(() => db.volunteerQuarantine.listReturned(user.memberId), [user.memberId]);
+  const rows = state.data ?? [];
+  if (state.error) return <Notice tone="error" message={state.error} />;
+  if (rows.length === 0) return null;
+  return (
+    <Section title="Returned for correction">
+      <AppText tone="muted">A reviewer sent these back. Read the reason, fix the hours and resubmit.</AppText>
+      {rows.map((entry) => (
+        <ReturnedReport
+          key={entry.row.id}
+          entry={entry}
+          onDone={(toast) => {
+            onToast(toast);
+            if (toast.tone === 'info') void state.reload();
+          }}
+        />
+      ))}
+    </Section>
+  );
+}
+
 export default function LogScreen() {
   const { color, large } = useTheme();
   const shiftsOn = useFeatureFlags().flag_complex_shifts;
@@ -474,6 +547,7 @@ export default function LogScreen() {
           <AppText variant="heading" accessibilityRole="header">
             Report Hours
           </AppText>
+          <ReturnedReports onToast={toast.show} />
           {shiftsOn ? <Segmented value={mode} onChange={setMode} /> : null}
           {mode === 'activity' ? <ActivityGrid tracker={tracker} /> : <ShiftReport onToast={toast.show} />}
           <View style={{ height: large ? 160 : 72 }} />

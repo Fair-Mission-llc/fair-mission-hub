@@ -11,6 +11,9 @@ import {
   mayReviewQuarantine,
   quarantineActivityKey,
   quarantineReasons,
+  quarantineReturnReason,
+  QUARANTINE_RETURN_PREFIX,
+  QUARANTINE_RETURN_REASON_MAX_LENGTH,
   type DataService,
   type MemberWriteActor,
 } from '@kofc/shared';
@@ -195,17 +198,74 @@ describe.each(drivers)('$name driver: volunteer time quarantine', (d) => {
     expect(turnout.find((t) => t.signup.MemberID === MEMBER.member && t.shift.id === shift.id)?.hoursLogged).toBe(5);
   });
 
-  it('deletes fraudulent time: REJECTED, and the hours never count', async () => {
+  it('Sprint 9 Revision 1.1: a reject returns the entry to the member as DRAFT with the reason, deleting nothing', async () => {
     const db = await d.make();
     const before = await totalHours(db);
     const held = await db.activityTime.logHours(MEMBER.member, 3, 12, DAY);
     if (!isQuarantinedHours(held)) throw new Error('expected the entry to be held');
-    const rejected = await db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id);
-    expect(rejected).toMatchObject({ clearance_status: 'REJECTED', reviewed_by_member_id: MEMBER.admin, cleared_time_id: null });
+    // The reason is required: nothing changes without it.
+    await expectRule(db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id, '   '), 'RETURN_REASON_REQUIRED');
+    await expectRule(db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id, 'x'.repeat(QUARANTINE_RETURN_REASON_MAX_LENGTH + 1)), 'INVALID_INPUT');
+    expect((await db.volunteerQuarantine.listPending(MEMBER.admin, 1)).map((e) => e.row.id)).toEqual([held.quarantined.id]);
+
+    const returned = await db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id, '  The food drive ran 4 hours.  ');
+    expect(returned).toMatchObject({ clearance_status: 'DRAFT', reviewed_by_member_id: MEMBER.admin, cleared_time_id: null });
+    expect(returned.quarantine_reason).toBe(`${QUARANTINE_RETURN_PREFIX}The food drive ran 4 hours.`);
+    expect(quarantineReturnReason(returned)).toBe('The food drive ran 4 hours.');
+    expect(d.count(db, 'VolunteerQuarantine')).toBe(1);
     expect(d.count(db, 'ActivityTime')).toBe(0);
     expect(await totalHours(db)).toBe(before);
-    await expectRule(db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id), 'QUARANTINE_STATUS_CONFLICT');
+    expect(await db.volunteerQuarantine.listPending(MEMBER.admin, 1)).toEqual([]);
+    await expectRule(db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id, 'again'), 'QUARANTINE_STATUS_CONFLICT');
+    await expectRule(db.volunteerQuarantine.clear(MEMBER.admin, held.quarantined.id), 'QUARANTINE_STATUS_CONFLICT');
     await expectRule(db.volunteerQuarantine.clear(MEMBER.admin, 999), 'RECORD_NOT_FOUND');
+
+    // The member sees it with the reviewer's explanation; nobody else's list has it.
+    const [mine] = await db.volunteerQuarantine.listReturned(MEMBER.member);
+    expect(mine).toMatchObject({ activityLabel: 'Food drive', returnReason: 'The food drive ran 4 hours.' });
+    expect(mine.returnedByName).toMatch(/\w+ \w+/);
+    expect(await db.volunteerQuarantine.listReturned(MEMBER.admin)).toEqual([]);
+  });
+
+  it('Sprint 9 Revision 1.1: the member corrects the hours and resubmits the draft to review', async () => {
+    const db = await d.make();
+    const before = await totalHours(db);
+    const held = await db.activityTime.logHours(MEMBER.member, 3, 12, DAY, 'all day');
+    if (!isQuarantinedHours(held)) throw new Error('expected the entry to be held');
+    const id = held.quarantined.id;
+    // Only a draft may be resubmitted, and only by its own member.
+    await expectRule(db.volunteerQuarantine.resubmit(MEMBER.member, id, 4), 'QUARANTINE_STATUS_CONFLICT');
+    await db.volunteerQuarantine.reject(MEMBER.admin, id, 'The food drive ran 4 hours.');
+    await expectRule(db.volunteerQuarantine.resubmit(MEMBER.admin, id, 4), 'RECORD_NOT_FOUND');
+    await expectRule(db.volunteerQuarantine.resubmit(MEMBER.member, 999, 4), 'RECORD_NOT_FOUND');
+    await expectRule(db.volunteerQuarantine.resubmit(MEMBER.member, id, 4.1), 'INVALID_HOURS_INCREMENT');
+
+    const resubmitted = await db.volunteerQuarantine.resubmit(MEMBER.member, id, 4, 'set-up and pickup');
+    expect(resubmitted).toMatchObject({ clearance_status: 'PENDING', hours_reported: 4, notes: 'set-up and pickup', reviewed_by_member_id: null, reviewed_at: null });
+    expect(resubmitted.quarantine_reason).toBe('Resubmitted after correction. No limit is broken now.');
+    expect(await db.volunteerQuarantine.listReturned(MEMBER.member)).toEqual([]);
+    const [entry] = await db.volunteerQuarantine.listPending(MEMBER.admin, 1);
+    expect(entry.row).toMatchObject({ id, hours_reported: 4 });
+    await expectRule(db.volunteerQuarantine.resubmit(MEMBER.member, id, 4), 'QUARANTINE_STATUS_CONFLICT');
+    await db.volunteerQuarantine.clear(MEMBER.admin, id);
+    expect(await totalHours(db)).toBe(before + 4);
+  });
+
+  it('Sprint 9 Revision 1.1: a resubmission still over a limit names it, and a fresh shift report replaces a draft', async () => {
+    const db = await d.make();
+    const held = await db.activityTime.logHours(MEMBER.member, 3, 12, DAY);
+    if (!isQuarantinedHours(held)) throw new Error('expected the entry to be held');
+    await db.volunteerQuarantine.reject(MEMBER.admin, held.quarantined.id, 'Twelve hours is too many.');
+    const still = await db.volunteerQuarantine.resubmit(MEMBER.member, held.quarantined.id, 8);
+    expect(still.quarantine_reason).toMatch(/^Resubmitted after correction\. More than 5\.0 hours/);
+
+    const shift = await shiftByName(db, 'Leaf Raking');
+    const report = await db.eventTime.logHours(MEMBER.member, shift.id, 5);
+    if (!isQuarantinedHours(report)) throw new Error('expected the report to be held');
+    await db.volunteerQuarantine.reject(MEMBER.admin, report.quarantined.id, 'The shift was 3 hours.');
+    expect(await db.volunteerQuarantine.listReturned(MEMBER.member)).toHaveLength(1);
+    expect(isQuarantinedHours(await db.eventTime.logHours(MEMBER.member, shift.id, 3))).toBe(false);
+    expect(await db.volunteerQuarantine.listReturned(MEMBER.member)).toEqual([]);
   });
 
   it('refuses a plain member at the desk, writing nothing', async () => {
@@ -214,7 +274,7 @@ describe.each(drivers)('$name driver: volunteer time quarantine', (d) => {
     if (!isQuarantinedHours(held)) throw new Error('expected the entry to be held');
     await expectRule(db.volunteerQuarantine.listPending(MEMBER.member, 1), 'ADMIN_REQUIRED');
     await expectRule(db.volunteerQuarantine.clear(MEMBER.member, held.quarantined.id), 'ADMIN_REQUIRED');
-    await expectRule(db.volunteerQuarantine.reject(MEMBER.member, held.quarantined.id), 'ADMIN_REQUIRED');
+    await expectRule(db.volunteerQuarantine.reject(MEMBER.member, held.quarantined.id, 'no'), 'ADMIN_REQUIRED');
     expect(d.count(db, 'ActivityTime')).toBe(0);
     await expectRule(db.volunteerQuarantine.listPending(MEMBER.admin, 999), 'INVALID_INPUT');
   });
@@ -225,5 +285,6 @@ describe.each(drivers)('$name driver: volunteer time quarantine', (d) => {
     expect(isQuarantinedHours(await db.activityTime.logHours(MEMBER.member, 3, 8, DAY))).toBe(false);
     expect(d.count(db, 'VolunteerQuarantine')).toBe(0);
     await expectRule(db.volunteerQuarantine.listPending(MEMBER.admin, 1), 'FEATURE_DISABLED');
+    expect(await db.volunteerQuarantine.listReturned(MEMBER.member)).toEqual([]);
   });
 });

@@ -18,6 +18,7 @@ import {
   quarantineActivityKey,
   quarantineReasons,
   shiftDefaultLengthHours,
+  QUARANTINE_RETURN_REASON_LABEL,
   TREASURER_CODE_EXPENSE_LABEL,
   type MemberWriteActor,
 } from '@kofc/shared';
@@ -182,7 +183,9 @@ describe('Council Wide Settings page and plain-English labels', () => {
 
   it('uses the new button text everywhere', () => {
     expect(read('apps/web/components/QuarantineDesk.tsx')).toContain('[ 🟢 Approve & Add to Time Log ]');
-    expect(read('apps/web/components/QuarantineDesk.tsx')).toContain('[ 🔴 Reject & Remove ]');
+    expect(read('apps/web/components/QuarantineDesk.tsx')).toContain('[ 🔴 Reject & Return to Member ]');
+    // Sprint 9 Revision 1.1: a reject asks for a reason first.
+    expect(QUARANTINE_RETURN_REASON_LABEL).toBe('Reason for returning time report (required)');
     expect(TREASURER_CODE_EXPENSE_LABEL).toBe('🏷️ Categorize & Lock Expense');
     const parts = read('apps/web/components/ExpenseParts.tsx');
     expect(parts).toContain("EXPENSE_APPROVE_LABEL = '📝 Verify & Sign Expense'");

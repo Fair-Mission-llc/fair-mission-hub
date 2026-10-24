@@ -14,7 +14,9 @@
 //   - +1 hour shift padding gate: it reports more than 1.0 hour over the shift's scheduled StartTime-EndTime length.
 // Held hours are never in EventTime or ActivityTime, so every hours total - council summaries, the canonization shield,
 // the leaderboards - leaves them out without a filter. Clearing an entry (APPROVED) writes it to EventTime or
-// ActivityTime; deleting it (REJECTED) keeps the row as the audit trail and its hours never count.
+// ActivityTime; deleting it (REJECTED) keeps the row as the audit trail and its hours never count. Since Sprint 9
+// Revision 1.1 a reviewer's reject returns the entry to the member as DRAFT with a required reason instead of deleting
+// it; the member corrects the hours and resubmits it to PENDING (see "returned for correction" below).
 //
 // Exempt, so their entries always log directly: Admins and Super Admins (member type), holders of an elected office or
 // a Trustee seat, and, for a shift, the owner of the shift's event. Reviewers: the council's Grand Knight and Deputy
@@ -40,7 +42,7 @@ import {
 import type { VolunteerQuarantine, VolunteerQuarantineActivityType, VolunteerQuarantineStatus } from './types';
 
 export const QUARANTINE_ACTIVITY_TYPES = ['SHIFT', 'MANUAL'] as const satisfies readonly VolunteerQuarantineActivityType[];
-export const QUARANTINE_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const satisfies readonly VolunteerQuarantineStatus[];
+export const QUARANTINE_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'DRAFT'] as const satisfies readonly VolunteerQuarantineStatus[];
 /** Default: more distinct activities than this in one day sends the entry to review (quarantine_max_daily_activities). */
 export const QUARANTINE_DAILY_ACTIVITY_LIMIT = DEFAULT_QUARANTINE_MAX_DAILY_ACTIVITIES;
 /** Default: more hours than this against one activity in one day sends the entry to review (quarantine_max_single_hours). */
@@ -214,6 +216,88 @@ export function buildQuarantineDesk(rows: readonly VolunteerQuarantine[], lookup
         description: row.notes?.trim() ? row.notes : null,
       };
     });
+}
+
+// ---- returned for correction (Sprint 9 Revision 1.1) ---------------------------------------------------------
+// A reviewer's reject no longer deletes the entry: it goes back to the member as DRAFT with a required reason. Schema
+// 97 has no column for the reason, so it is stored in quarantine_reason behind QUARANTINE_RETURN_PREFIX (the guard
+// text it replaces is computed again when the member resubmits). cleared_time_id is cleared; reviewed_by_member_id
+// and reviewed_at record who returned it and when. The member corrects the hours on the phone and resubmits, which
+// sends the entry back to PENDING for review.
+
+/** Marks quarantine_reason as a reviewer's return reason. */
+export const QUARANTINE_RETURN_PREFIX = 'Returned for correction: ';
+/** The longest return reason that still fits VARCHAR(500) behind the prefix. */
+export const QUARANTINE_RETURN_REASON_MAX_LENGTH = QUARANTINE_REASON_MAX_LENGTH - QUARANTINE_RETURN_PREFIX.length;
+/** The label of the reviewer's required text field. */
+export const QUARANTINE_RETURN_REASON_LABEL = 'Reason for returning time report (required)';
+
+/** The trimmed reason; RETURN_REASON_REQUIRED when blank, INVALID_INPUT when longer than the column allows. */
+export function cleanReturnReason(reason: string | null | undefined): string {
+  const text = (reason ?? '').trim();
+  if (!text) {
+    throw new BusinessRuleError('RETURN_REASON_REQUIRED', 'Give the member a reason for returning the time report.', {});
+  }
+  if (text.length > QUARANTINE_RETURN_REASON_MAX_LENGTH) {
+    throw new BusinessRuleError(
+      'INVALID_INPUT',
+      `The reason for returning the time report is ${text.length} characters; the limit is ${QUARANTINE_RETURN_REASON_MAX_LENGTH}.`,
+      { length: text.length, max: QUARANTINE_RETURN_REASON_MAX_LENGTH },
+    );
+  }
+  return text;
+}
+
+/** The quarantine_reason value a return stores. */
+export const quarantineReturnText = (reason: string): string => `${QUARANTINE_RETURN_PREFIX}${cleanReturnReason(reason)}`;
+
+/** The reviewer's reason on a DRAFT entry, or null for any other entry. */
+export function quarantineReturnReason(row: Pick<VolunteerQuarantine, 'clearance_status' | 'quarantine_reason'>): string | null {
+  if (row.clearance_status !== 'DRAFT' || !row.quarantine_reason.startsWith(QUARANTINE_RETURN_PREFIX)) return null;
+  return row.quarantine_reason.slice(QUARANTINE_RETURN_PREFIX.length);
+}
+
+/** quarantine_reason for a resubmitted entry: the guards it still breaks, if any. */
+export const quarantineResubmitText = (reasons: readonly string[]): string =>
+  quarantineReasonText(['Resubmitted after correction.', ...(reasons.length ? reasons : ['No limit is broken now.'])]);
+
+/** Only the member who logged it may resubmit; anyone else gets RECORD_NOT_FOUND, so another member's entry stays hidden. */
+export function assertOwnsQuarantine(actorId: number, row: Pick<VolunteerQuarantine, 'id' | 'user_id'>): void {
+  if (row.user_id === actorId) return;
+  throw new BusinessRuleError('RECORD_NOT_FOUND', `No returned time entry with id ${row.id}.`, { quarantineId: row.id });
+}
+
+/** Only a DRAFT entry may be resubmitted (QUARANTINE_STATUS_CONFLICT). */
+export function assertQuarantineDraft(row: Pick<VolunteerQuarantine, 'id' | 'clearance_status'>): void {
+  if (row.clearance_status === 'DRAFT') return;
+  throw new BusinessRuleError(
+    'QUARANTINE_STATUS_CONFLICT',
+    `Time entry ${row.id} is ${row.clearance_status}, not returned for correction, so it cannot be resubmitted.`,
+    { quarantineId: row.id, status: row.clearance_status },
+  );
+}
+
+/** One of the member's own entries returned for correction, as the phone's Report Hours screen shows it. */
+export interface ReturnedTimeEntry extends QuarantineDeskEntry {
+  /** The reviewer's explanation. */
+  returnReason: string;
+  /** Who returned it, or null when unknown. */
+  returnedByName: string | null;
+}
+
+/** The member's DRAFT rows with labels and reasons, oldest first. Rows without a return reason are left out. */
+export function buildReturnedEntries(rows: readonly VolunteerQuarantine[], lookups: QuarantineDeskLookups): ReturnedTimeEntry[] {
+  return buildQuarantineDesk(
+    rows.filter((r) => quarantineReturnReason(r) !== null),
+    lookups,
+  ).map((entry) => {
+    const reviewer = entry.row.reviewed_by_member_id != null ? lookups.members.get(entry.row.reviewed_by_member_id) : undefined;
+    return {
+      ...entry,
+      returnReason: quarantineReturnReason(entry.row)!,
+      returnedByName: reviewer ? `${reviewer.MemberFirstName} ${reviewer.MemberLastName}` : null,
+    };
+  });
 }
 
 // ---- results --------------------------------------------------------------------------------------------------

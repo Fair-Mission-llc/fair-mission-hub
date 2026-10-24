@@ -182,7 +182,7 @@ describe.each(drivers)('$name driver: the pilot scripts hold true', (d) => {
     const alpha = held.find((h) => h.row.user_id === who.member_alpha)!;
     const beta = held.find((h) => h.row.user_id === who.member_beta)!;
     expect((await db.volunteerQuarantine.clear(who.dgk_user!, beta.row.id)).clearance_status).toBe('APPROVED');
-    expect((await db.volunteerQuarantine.reject(who.dgk_user!, alpha.row.id)).clearance_status).toBe('REJECTED');
+    expect((await db.volunteerQuarantine.reject(who.dgk_user!, alpha.row.id, 'Shift 9 ran 4 hours; report 4.')).clearance_status).toBe('DRAFT');
     // Alpha reports the Saturday shift (Shift 9) again with its 4 scheduled hours: it logs directly.
     expect(isQuarantinedHours(await db.eventTime.logHours(who.member_alpha!, 9, 4))).toBe(false);
     // Beta reports 9 hours on the 4-hour Sunday shift (Shift 10): it is held for review.
@@ -286,7 +286,7 @@ describe.each(drivers)('$name driver: the seated group flows hold true', (d) => 
     expect(alphaSeeded.row.hours_reported).toBe(6.5);
 
     expect(isQuarantinedHours(await db.eventTime.logHours(alpha, 10, 7))).toBe(true);
-    expect((await db.volunteerQuarantine.reject(dgk, alphaSeeded.row.id)).clearance_status).toBe('REJECTED');
+    expect((await db.volunteerQuarantine.reject(dgk, alphaSeeded.row.id, 'Too many hours for one day.')).clearance_status).toBe('DRAFT');
     expect(isQuarantinedHours(await db.eventTime.logHours(alpha, 10, 4))).toBe(false);
   });
 });

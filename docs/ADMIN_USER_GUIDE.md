@@ -2131,7 +2131,7 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 ### 15.5 Approve or reject held volunteer time
 
 > **Prerequisite (who can do this):** The Grand Knight (GK), the Deputy Grand Knight (DGK) or an Admin of the council, or a Super Admin. Other members do not see the desk.
-> **Warning:** each decision is final. You cannot change an approved or rejected entry on the desk.
+> **Warning:** an approval is final. A rejected entry goes back to the member. It returns to the desk only when the member resubmits it.
 
 **Goal:** Decide each held entry, so that true hours count and false hours never count.
 
@@ -2143,7 +2143,9 @@ When the switch is off, every entry counts at once. The desk is hidden. Entries 
 3. Read the **Description** that the member wrote. Read the red reason under the description.
 4. Ask the member or the event owner about the time when the entry is not clear.
 5. Select **[ 🟢 Approve & Add to Time Log ]** for true hours. The hours count in every total at once.
-6. Select **[ 🔴 Reject & Remove ]** for false hours. The hours never count. You cannot undo this.
+6. Select **[ 🔴 Reject & Return to Member ]** for wrong hours. The field **Reason for returning time report (required)** opens.
+7. Type the reason. Tell the member what to correct. Select **Send back to member**. You cannot send an entry back without a reason.
+8. The entry goes back to the member as a draft. The hours do not count. The member sees your reason on the phone **Report Hours** screen, corrects the hours and resubmits. The entry then comes back to the desk for a new decision.
 
 **Expected result:** The entry leaves the desk. A message confirms the decision. An approved entry shows in the council's hours and on the member's shield.
 
