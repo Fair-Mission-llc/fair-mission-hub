@@ -19,6 +19,7 @@ import { portalSessionSecret } from './secrets';
 import {
   PORTAL_SESSION_COOKIE,
   readCookie,
+  secureCookies,
   sessionActor,
   sessionClaimsFor,
   sessionCookieHeader,
@@ -42,7 +43,6 @@ export async function memberDirectory(): Promise<MemoryDataService> {
   return directory;
 }
 
-const secureCookies = () => process.env.NODE_ENV === 'production';
 
 export type SignInOutcome = { ok: true; user: SessionUser; cookie: string } | { ok: false; status: 401 | 429; message: string };
 

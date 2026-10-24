@@ -134,6 +134,19 @@ export function readCookie(header: string | null, name: string): string | null {
   return null;
 }
 
+/** Sprint 9 Revision 2.1: the switch that lets a Wi-Fi pilot (npm run dev:pilot) send session cookies over plain http. */
+export const ALLOW_HTTP_COOKIES_ENV = 'PORTAL_ALLOW_HTTP_COOKIES';
+
+/**
+ * Whether session cookies carry Secure (https only). Always in production, except when PORTAL_ALLOW_HTTP_COOKIES=1:
+ * scripts/start-pilot.mjs sets it for `npm run dev:pilot`, whose phones and laptops reach the portal at
+ * http://<laptop IP>:3000, where a browser drops a Secure cookie. HttpOnly and SameSite=Strict stay on either way.
+ * Never set the switch on a server that is reachable from the internet.
+ */
+export function secureCookies(env: Record<string, string | undefined> = process.env): boolean {
+  return env.NODE_ENV === 'production' && env[ALLOW_HTTP_COOKIES_ENV]?.trim() !== '1';
+}
+
 /**
  * The Set-Cookie header for a session token. No Max-Age, so the browser drops it when it closes; the token's own `exp`
  * ends it after the platform's session length regardless. `token` null clears the cookie.

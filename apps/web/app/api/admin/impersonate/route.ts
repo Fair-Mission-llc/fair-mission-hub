@@ -22,13 +22,14 @@ import {
   PORTAL_SESSION_COOKIE,
   impersonationClaimsFor,
   readCookie,
+  secureCookies,
   sessionActor,
   sessionCookieHeader,
   signSessionToken,
   verifySessionToken,
 } from '@/services/server/session-token';
 
-const secure = () => process.env.NODE_ENV === 'production';
+const secure = () => secureCookies();
 
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as { memberId?: unknown } | null;

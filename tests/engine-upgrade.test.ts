@@ -24,6 +24,7 @@ import {
   PORTAL_SESSION_COOKIE,
   PORTAL_SESSION_TTL_SECONDS,
   readCookie,
+  secureCookies,
   sessionActor,
   sessionClaimsFor,
   sessionCookieHeader,
@@ -190,6 +191,22 @@ describe('portal session tokens', () => {
     expect(sessionCookieHeader(null, false)).toContain('Max-Age=0');
     expect(readCookie(`theme=dark; ${PORTAL_SESSION_COOKIE}=abc.def`, PORTAL_SESSION_COOKIE)).toBe('abc.def');
     expect(readCookie(null, PORTAL_SESSION_COOKIE)).toBeNull();
+  });
+
+  it('Sprint 9 Revision 2.1: drops Secure in production only when the Wi-Fi pilot switch is on', () => {
+    expect(secureCookies({ NODE_ENV: 'production' })).toBe(true);
+    expect(secureCookies({ NODE_ENV: 'production', PORTAL_ALLOW_HTTP_COOKIES: '1' })).toBe(false);
+    expect(secureCookies({ NODE_ENV: 'production', PORTAL_ALLOW_HTTP_COOKIES: 'true' })).toBe(true);
+    expect(secureCookies({ NODE_ENV: 'production', PORTAL_ALLOW_HTTP_COOKIES: '0' })).toBe(true);
+    expect(secureCookies({ NODE_ENV: 'development' })).toBe(false);
+    // Without Secure the cookie keeps HttpOnly and SameSite=Strict.
+    expect(sessionCookieHeader('abc.def', false)).toBe(`${PORTAL_SESSION_COOKIE}=abc.def; Path=/api; HttpOnly; SameSite=Strict`);
+    // Only the pilot launcher turns the switch on.
+    const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
+    expect(JSON.parse(read('package.json')).scripts['dev:pilot']).toBe('node scripts/start-pilot.mjs');
+    expect(read('scripts/start-pilot.mjs')).toContain("PORTAL_ALLOW_HTTP_COOKIES: '1'");
+    expect(read('apps/web/services/server/session.ts')).not.toMatch(/NODE_ENV === 'production'/);
+    expect(read('apps/web/app/api/admin/impersonate/route.ts')).not.toMatch(/NODE_ENV === 'production'/);
   });
 
   it('locks a username after five failures in 15 minutes', () => {

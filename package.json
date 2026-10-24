@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev:web": "npm run dev --workspace=apps/web",
-    "dev:pilot": "npx next start apps/web -H 0.0.0.0 -p 3000",
+    "dev:pilot": "node scripts/start-pilot.mjs",
     "dev:mobile": "npm run start --workspace=apps/mobile",
     "build:shared": "npm run build --workspace=packages/shared",
     "build:web": "npm run build --workspace=apps/web",
