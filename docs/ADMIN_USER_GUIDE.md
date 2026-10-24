@@ -4455,18 +4455,25 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 
 ### 29.1 Concept: the split account
 
-A split account is a Revenue or Expense line that shares each posting with other lines. The Treasurer codes donations to the split account as to any line. The split account itself keeps no balance.
+A split account is a Revenue line that shares each posting with other Revenue lines. Only Revenue lines can be split accounts. Asset, Liability, Equity and Expense lines cannot.
 
 The split profile names the destination accounts and the share of each one. The shares add up to exactly 100%.
 
 | Rule | Detail |
 | --- | --- |
-| Destination type | Each destination has the same account type as the split account. |
+| Destination type | Each destination is another Revenue line. |
 | Destinations not allowed | The split account itself, another split account and a virtual goal. |
 | Number of destinations | 1 to 10. |
 | Rounding | Each share is rounded to the cent. The last destination takes the leftover cent. |
 
-When the Treasurer codes a batch to a split account, the batch posts one credit to each destination. For example, a $810.00 batch on a 40% / 60% split credits $324.00 and $486.00. The donations still show the split account as their coded line.
+Every posting to a split account goes to its destinations at once. The split applies to all ways of posting:
+
+- a batch of donations on the **🧮 High-Volume Batch Transaction Coder**;
+- revenue logged for a concluded event or activity;
+- a manual double-entry transaction;
+- any other posting to the general ledger.
+
+For example, a $810.00 posting on a 40% / 60% split credits $324.00 and $486.00. The split account itself takes no posting. Coded donations still show the split account as their coded line.
 
 A change to the profile applies to the next batch only. Postings made before the change stay as they are.
 
@@ -4479,7 +4486,7 @@ A change to the profile applies to the next batch only. Postings made before the
 **Start point:** **Active Desks** row → **Treasurer Desk** → **[ 🔧 Accounting Configuration ]** → **Chart of Accounts & GL Setup**.
 
 **Steps:**
-1. Find the account. Select **Edit split** on its row.
+1. Find the Revenue account. Select **Edit split** on its row. Only Revenue rows show the button.
 2. Select the **Split Account** checkbox.
 3. In **Destination 1**, choose the first account. Enter its share in **Share (%)**.
 4. Repeat step 3 for each destination. Select **Add destination** for more rows.
@@ -4492,7 +4499,8 @@ A change to the profile applies to the next batch only. Postings made before the
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"The shares of … must add up to 100%; …"* | The shares do not total 100. | Correct the shares. |
-| *"… must be a Revenue account."* or *"… must be an Expense account."* | A destination has another account type. | Choose an account of the same type. |
+| *"… must be a Revenue account."* | A destination is not a Revenue line. | Choose a Revenue line. |
+| **Edit split** does not show on a row. | The account is not a Revenue line. | Only Revenue lines can split. |
 | *"… receives a share of …, so it cannot be a Split Account itself."* | The account is a destination of another split account. | Remove the account from the other profile first. |
 | **Edit split** does not show. | You are not the Treasurer. | Ask the Treasurer. |
 

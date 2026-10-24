@@ -468,6 +468,7 @@ import {
   isListVisibleTo,
   assertMayRunEventIntake,
   buildGLSplitProfiles,
+  expandSplitJournalLines,
   cleanGLSplitProfile,
   type GLAccountSplitAllocation,
   type GLSplitProfile,
@@ -8134,7 +8135,8 @@ export class SqliteDataService implements DataService {
   private async insertJournalLines(db: SQLite.SQLiteDatabase, councilId: number, lines: readonly CleanJournalLine[]): Promise<number[]> {
     const transactionId = formatTransactionId(await Crypto.getRandomBytesAsync(16));
     const ids: number[] = [];
-    for (const l of lines) {
+    // Sprint 9 Revision 6.1: every posting, from every channel, is shared out to the destinations of a Revenue split account.
+    for (const l of expandSplitJournalLines(lines, await this.glSplitProfiles(db, councilId))) {
       const res = await db.runAsync(
         `INSERT INTO [JournalEntry] ([CouncilID], [GLAccountID], [DateLogged], [Description], [DebitAmount], [CreditAmount], [LinkedEventID], [LinkedMeetingID], [LinkedActivityID], [IsBankReconciled], [CheckNumber], [TransactionID], [payment_method_id])
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,

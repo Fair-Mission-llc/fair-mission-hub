@@ -59,7 +59,10 @@ describe('sealing', () => {
     expect(unsealCredential(sealed, 2, 'SMTP_OUTBOUND_PASSWORD', SECRET)).toBeNull();
     expect(unsealCredential(sealed, 1, 'GOOGLE_DRIVE_PRIVATE_KEY', SECRET)).toBeNull();
     expect(unsealCredential(sealed, 1, 'SMTP_OUTBOUND_PASSWORD', 't'.repeat(40))).toBeNull();
-    expect(unsealCredential(`${sealed.slice(0, -2)}AA`, 1, 'SMTP_OUTBOUND_PASSWORD', SECRET)).toBeNull();
+    // Tamper with a character that always carries data: the old 'AA' overwrite was sometimes no change at all (flaky).
+    const tampered = `${sealed.slice(0, -2)}${sealed.at(-2) === 'A' ? 'B' : 'A'}${sealed.at(-1)}`;
+    expect(tampered).not.toBe(sealed);
+    expect(unsealCredential(tampered, 1, 'SMTP_OUTBOUND_PASSWORD', SECRET)).toBeNull();
     expect(unsealCredential(PASSWORD, 1, 'SMTP_OUTBOUND_PASSWORD', SECRET)).toBeNull();
     expect(sealCredential(PASSWORD, 1, 'SMTP_OUTBOUND_PASSWORD', SECRET)).not.toBe(sealed);
   });

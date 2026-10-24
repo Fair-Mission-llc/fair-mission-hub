@@ -8,6 +8,12 @@
 // account is replaced by one line per destination (expandSplitJournalLines), so the books show the shares and the
 // split account stays at zero. The donations still record the split account as the line they were coded to.
 //
+// Sprint 9 Revision 6.1: only a Revenue account may be a Split Account (GL_SPLIT_ACCOUNT_TYPE), and the split is applied
+// to EVERY posting, not only the batch coder's: each driver's one journal writer (insertJournalLines) passes every
+// transaction through expandSplitJournalLines - manual double-entry rows, concluded event and activity revenue, batch
+// coding, parish settlements and the rest. A line on a Split Account is replaced, in place, by its destination lines,
+// debit or credit alike, so the split account never carries a balance.
+//
 // Rules (cleanGLSplitProfile): the account and every destination belong to the council; a destination has the same
 // account type as the split account, is neither the split account itself, another split account nor a virtual goal,
 // and appears once; each share is above 0 with at most two decimals, and the shares total 100.00. An account that is
@@ -17,6 +23,13 @@
 import { BusinessRuleError } from './rules';
 import type { CleanJournalLine } from './finance';
 import type { GLAccount, GLAccountSplitAllocation } from './types';
+
+/** Sprint 9 Revision 6.1: the only account type that may be a Split Account. */
+export const GL_SPLIT_ACCOUNT_TYPE = 'Revenue' as const;
+
+/** True for an account the Treasurer may make a Split Account (or that is one): a Revenue line that is not a virtual goal. */
+export const maySplitAccount = (account: Pick<GLAccount, 'AccountType' | 'IsVirtualGoal'>): boolean =>
+  account.AccountType === GL_SPLIT_ACCOUNT_TYPE && account.IsVirtualGoal !== 1;
 
 /** The most destinations one split account may have. */
 export const GL_SPLIT_MAX_DESTINATIONS = 10;
@@ -38,6 +51,8 @@ export interface GLSplitDestination {
 export interface GLSplitProfile {
   accountId: number;
   accountName: string;
+  /** Sprint 9 Revision 6.1: the split account's type; postings are split only for 'Revenue'. */
+  accountType: GLAccount['AccountType'];
   destinations: (GLSplitDestination & { destinationAccountName: string })[];
 }
 
@@ -68,6 +83,9 @@ export function cleanGLSplitProfile(
   }
   const { isSplitAccount: splits, destinations } = input as GLSplitProfileInput;
   if (!splits) return [];
+  if (account.AccountType !== GL_SPLIT_ACCOUNT_TYPE) {
+    throw invalid(`${account.AccountName} is a ${account.AccountType} account; only Revenue accounts can be Split Accounts.`, { accountId, accountType: account.AccountType });
+  }
   if (account.IsVirtualGoal === 1) throw invalid(`${account.AccountName} is a virtual goal, so it cannot be a Split Account.`, { accountId });
   const feeds = allocations.find((a) => a.destination_gl_account_id === accountId && a.source_gl_account_id !== accountId);
   if (feeds) {
@@ -124,6 +142,7 @@ export function buildGLSplitProfiles(councilId: number, accounts: readonly GLAcc
     .map((a) => ({
       accountId: a.id,
       accountName: a.AccountName,
+      accountType: a.AccountType,
       destinations: allocations
         .filter((r) => r.source_gl_account_id === a.id)
         .sort((x, y) => x.id - y.id)
@@ -144,11 +163,13 @@ export function splitAmount(amount: number, destinations: readonly Pick<GLSplitD
 }
 
 /**
- * Replaces every line posted to a split account by one line per destination carrying its share (splitAmount), on the
- * same side. A destination whose share rounds to zero gets no line. Lines on other accounts pass through unchanged.
+ * Replaces every line posted to a Revenue split account by one line per destination carrying its share (splitAmount),
+ * on the same side, in the line's place. A destination whose share rounds to zero gets no line. Lines on other accounts
+ * - and on a split account that is not a Revenue account, which Revision 6.1 no longer allows - pass through unchanged.
+ * Destinations are never split accounts, so running the lines through twice changes nothing.
  */
 export function expandSplitJournalLines(lines: readonly CleanJournalLine[], profiles: readonly GLSplitProfile[]): CleanJournalLine[] {
-  const byAccount = new Map(profiles.map((p) => [p.accountId, p]));
+  const byAccount = new Map(profiles.filter((p) => p.accountType === GL_SPLIT_ACCOUNT_TYPE).map((p) => [p.accountId, p]));
   const out: CleanJournalLine[] = [];
   for (const line of lines) {
     const profile = byAccount.get(line.GLAccountID);

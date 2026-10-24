@@ -465,6 +465,7 @@ import {
   isListVisibleTo,
   assertMayRunEventIntake,
   buildGLSplitProfiles,
+  expandSplitJournalLines,
   cleanGLSplitProfile,
   type GLAccountSplitAllocation,
   type GLSplitProfile,
@@ -6805,7 +6806,8 @@ export class MemoryDataService implements DataService {
    */
   private insertJournalLines(s: MemoryStore, councilId: number, lines: readonly CleanJournalLine[]): JournalEntry[] {
     const TransactionID = formatTransactionId(globalThis.crypto.getRandomValues(new Uint8Array(16)));
-    return lines.map(
+    // Sprint 9 Revision 6.1: every posting, from every channel, is shared out to the destinations of a Revenue split account.
+    return expandSplitJournalLines(lines, this.glSplitProfiles(s, councilId)).map(
       (line) =>
         ({
           ...s.insert('JournalEntry', {

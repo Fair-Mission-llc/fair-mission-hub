@@ -12,6 +12,7 @@ import {
   currentFraternalYear,
   donutSlicePath,
   expandSplitJournalLines,
+  maySplitAccount,
   merchantAccountLine,
   PLATFORM_SCHEMA_VERSION,
   splitAmount,
@@ -128,6 +129,7 @@ describe('split profile rules (pure)', () => {
     const profile: GLSplitProfile = {
       accountId: 8,
       accountName: 'Parking',
+      accountType: 'Revenue',
       destinations: [
         { destinationAccountId: 9, destinationAccountName: 'Council', percentage: 70 },
         { destinationAccountId: 10, destinationAccountName: 'Parish', percentage: 30 },
@@ -141,6 +143,22 @@ describe('split profile rules (pure)', () => {
     ]);
     expect(out[1]!.Description).toBe('Batch (70% of Parking)');
     expect(expandSplitJournalLines(lines, [])).toEqual(lines);
+    // Sprint 9 Revision 6.1: a split left on a non-Revenue account is never applied; a second pass changes nothing.
+    expect(expandSplitJournalLines(lines, [{ ...profile, accountType: 'Expense' }])).toEqual(lines);
+    expect(expandSplitJournalLines(out, [profile])).toEqual(out);
+  });
+
+  it('lets only a Revenue account become a Split Account (Revision 6.1), but any account stop splitting', () => {
+    const one = (id: number) => ({ isSplitAccount: true, destinations: [{ destinationAccountId: id, percentage: 100 }] });
+    const expense = [account(12, 'Expense'), account(14, 'Expense'), account(1, 'Asset'), account(2, 'Asset')];
+    expect(() => cleanGLSplitProfile(OWN, 12, one(14), expense, [])).toThrow(/only Revenue accounts can be Split Accounts/);
+    expect(() => cleanGLSplitProfile(OWN, 1, one(2), expense, [])).toThrow(/only Revenue accounts/);
+    expect(cleanGLSplitProfile(OWN, 12, { isSplitAccount: false }, expense, [])).toEqual([]);
+    expect([maySplitAccount(account(8, 'Revenue')), maySplitAccount(account(12, 'Expense')), maySplitAccount(account(13, 'Revenue', { IsVirtualGoal: 1 }))]).toEqual([
+      true,
+      false,
+      false,
+    ]);
   });
 });
 
@@ -190,6 +208,7 @@ describe.each(drivers)('$name driver: split accounts on the batch coder', (d) =>
       {
         accountId: other.id,
         accountName: other.AccountName,
+        accountType: 'Revenue',
         destinations: [
           { destinationAccountId: PARISH_SHARE, destinationAccountName: 'Parish Fundraiser Share', percentage: 40 },
           { destinationAccountId: PARKING_FUNDRAISING, destinationAccountName: 'Parking Fundraising', percentage: 60 },
@@ -219,6 +238,49 @@ describe.each(drivers)('$name driver: split accounts on the batch coder', (d) =>
     // Switching the split off clears its destinations.
     expect(await db.finance.setGLSplitProfile(treasurer, OWN, other.id, { isSplitAccount: false })).toEqual([]);
     expect((await db.finance.getBatchCodingQueue(treasurer, OWN)).revenueAccounts.find((a) => a.id === other.id)?.is_split_account).toBe(0);
+  });
+
+  it('splits every posting to a Revenue split account: manual rows and concluded event revenue (Revision 6.1)', async () => {
+    const db = await makePilot();
+    const superAdmin = (await db.auth.signIn('testsuperadmin@kofc.org', PASSWORD))!.memberId;
+    const treasurer = await signIn(db, 'treasurer_user');
+    const queue = await db.finance.getBatchCodingQueue(treasurer, OWN);
+    const split = queue.revenueAccounts.find((a) => a.id !== PARKING_FUNDRAISING && a.id !== PARISH_SHARE)!;
+    const cash = queue.depositAccount!;
+    const rowsBefore = (await db.finance.getAccountLedger(superAdmin, split.id)).rows.length;
+    await db.finance.setGLSplitProfile(treasurer, OWN, split.id, {
+      isSplitAccount: true,
+      destinations: [
+        { destinationAccountId: PARISH_SHARE, percentage: 25 },
+        { destinationAccountId: PARKING_FUNDRAISING, percentage: 75 },
+      ],
+    });
+
+    // A manual double-entry posting: the credit on the split account is stored as its two shares, in its place.
+    const manual = await db.finance.logDoubleEntryTransaction(superAdmin, [
+      { GLAccountID: cash.id, DebitAmount: 100, Description: 'Bake sale deposit' },
+      { GLAccountID: split.id, CreditAmount: 100, Description: 'Bake sale deposit' },
+    ]);
+    expect(manual.map((l) => [l.GLAccountID, l.DebitAmount, l.CreditAmount])).toEqual([
+      [cash.id, 100, 0],
+      [PARISH_SHARE, 0, 25],
+      [PARKING_FUNDRAISING, 0, 75],
+    ]);
+    expect(new Set(manual.map((l) => l.TransactionID)).size).toBe(1);
+
+    // Concluded event revenue logged to the split account.
+    const past = await db.events.create(
+      { EventName: 'Fish fry', EventDescription: 'Hall', OwnerID: superAdmin, StartDate: '2026-09-12', EndDate: '2026-09-12', Location: 'Hall', CategoryID: 1 },
+      [OWN],
+    );
+    const revenue = await db.finance.logConcludedRevenue(superAdmin, OWN, { LinkedEventID: past.id, Amount: 300.01, RevenueAccountID: split.id, DateLogged: '2026-09-13' });
+    expect(revenue.filter((l) => l.CreditAmount > 0).map((l) => [l.GLAccountID, l.CreditAmount, l.LinkedEventID])).toEqual([
+      [PARISH_SHARE, 75, past.id],
+      [PARKING_FUNDRAISING, 225.01, past.id],
+    ]);
+
+    // The split account itself takes no new posting.
+    expect((await db.finance.getAccountLedger(superAdmin, split.id)).rows).toHaveLength(rowsBefore);
   });
 
   it('keeps the account name donors see on each payment method and hands it to the phone', async () => {

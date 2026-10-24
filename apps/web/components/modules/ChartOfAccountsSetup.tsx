@@ -9,6 +9,8 @@
 // each account that opens the editor below the grid: the Split Account switch, the destination accounts (same type)
 // and each one's percentage, which must add up to 100 (finance.setGLSplitProfile). Coding donations to a split account
 // on the batch coder then posts the shares to the destinations.
+// Sprint 9 Revision 6.1: only Revenue rows carry 'Edit split' (maySplitAccount); Asset, Liability, Equity and Expense rows
+// have no split controls. Every posting to a split account - manual entries, event revenue, batch coding - is shared out.
 import { useState } from 'react';
 import {
   canBatchCodeDonations,
@@ -18,6 +20,7 @@ import {
   GL_SPLIT_ACCOUNT_LABEL,
   GL_SPLIT_MAX_DESTINATIONS,
   isSplitAccount,
+  maySplitAccount,
   type GLAccount,
   type GLSplitProfile,
 } from '@kofc/shared';
@@ -98,7 +101,7 @@ function SplitEditor({
       </h3>
       <label className="inline-flex items-center gap-2 text-sm font-bold">
         <input type="checkbox" checked={splits} onChange={(e) => setSplits(e.target.checked)} disabled={busy} />
-        {GL_SPLIT_ACCOUNT_LABEL}: share every batch posting to this line out to the accounts below
+        {GL_SPLIT_ACCOUNT_LABEL}: share every posting to this Revenue line out to the accounts below
       </label>
       {splits ? (
         <>
@@ -174,10 +177,10 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
       {chart.data && nodes.length > 0 ? (
         <p className="text-sm">
           {nodes.length} accounts, {assets.length} of them asset lines. Expense coding on the Ledger Line Coder uses the Expense accounts below; each one
-          also decides the budget line the sheet is charged to. A {GL_SPLIT_ACCOUNT_LABEL} shares each batch posting out to its destinations.
+          also decides the budget line the sheet is charged to. A Revenue line may be a {GL_SPLIT_ACCOUNT_LABEL}: every posting to it is shared out to its destinations.
         </p>
       ) : null}
-      {editing && chart.data ? (
+      {editing && chart.data && maySplitAccount(editing) ? (
         <SplitEditor
           key={editing.id}
           account={editing}
@@ -199,7 +202,7 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
                 <h3 id={`coa-${type}`} className="border-b-4 border-gold pb-1 font-serif text-lg font-bold">
                   {GL_ACCOUNT_TYPE_LABELS[type]}
                 </h3>
-                <Table caption={`${GL_ACCOUNT_TYPE_LABELS[type]} accounts`} head={['Account', 'Debits', 'Credits', 'Balance', ...(mayEdit ? [''] : [])]}>
+                <Table caption={`${GL_ACCOUNT_TYPE_LABELS[type]} accounts`} head={['Account', 'Debits', 'Credits', 'Balance', ...(mayEdit && type === 'Revenue' ? [''] : [])]}>
                   {rows.map((n) => {
                     const profile = profileOf(n.account.id);
                     return (
@@ -228,13 +231,13 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
                         <Td className="text-right font-bold">
                           <Money value={n.balance} />
                         </Td>
-                        {mayEdit ? (
+                        {mayEdit && type === 'Revenue' ? (
                           <Td className="text-right">
-                            {n.account.IsVirtualGoal === 1 ? null : (
+                            {maySplitAccount(n.account) ? (
                               <Button variant="secondary" size="sm" onClick={() => setEditing(n.account)} aria-label={`Edit the split profile of ${n.account.AccountName}`}>
                                 Edit split
                               </Button>
-                            )}
+                            ) : null}
                           </Td>
                         ) : null}
                       </tr>

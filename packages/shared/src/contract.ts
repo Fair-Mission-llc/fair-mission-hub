@@ -4039,6 +4039,8 @@ export interface DataService {
     /**
      * Posts one balanced transaction atomically and resolves to its stored lines, in the order given (cleanJournalLines).
      * Since Sprint 5Z-8 every line carries the same freshly generated TransactionID (a UUID), as do a transfer's two.
+     * Sprint 9 Revision 6.1: a line on a Revenue Split Account is stored as one line per destination, in its place
+     * (gl-splits.ts expandSplitJournalLines), as for every other posting of the ledger.
      * Rejects INVALID_INPUT for fewer than two lines or more than JOURNAL_MAX_LINES, a line with both or neither amount,
      * an amount below 0 or with fractions of a cent, a blank or over-long description or check number, a malformed
      * date, an unknown account, accounts of more than one council, or a linked event or meeting outside that council;
@@ -4105,9 +4107,10 @@ export interface DataService {
      */
     listGLSplitProfiles(actorId: number, councilId: number): Promise<GLSplitProfile[]>;
     /**
-     * Sprint 9 Revision 6.0: makes the account a Split Account with the given destinations and shares, changes its
+     * Sprint 9 Revision 6.0: makes a Revenue account (Revision 6.1) a Split Account with the given destinations and shares, changes its
      * destinations, or (isSplitAccount false) makes it an ordinary account again, removing its destinations. Postings
-     * already made are not changed. The council's Treasurer or a Super Admin only (TREASURER_REQUIRED,
+     * already made are not changed. From then on every posting to the account, from any channel, goes to the
+     * destinations (Revision 6.1). The council's Treasurer or a Super Admin only (TREASURER_REQUIRED,
      * COUNCIL_ACCESS_DENIED); INVALID_INPUT for a profile cleanGLSplitProfile refuses. Resolves to every profile of
      * the council afterwards.
      */
