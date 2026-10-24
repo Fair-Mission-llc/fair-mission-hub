@@ -29,6 +29,17 @@ export async function readDocsFile(name: string): Promise<string | null> {
   }
 }
 
+/** One binary file under docs/, e.g. a compiled manual PDF (Sprint 9 Master Hardening Pass), or null when it is missing. */
+export async function readDocsBytes(name: string): Promise<Buffer | null> {
+  const root = await docsRoot();
+  if (!root) return null;
+  try {
+    return await readFile(/*turbopackIgnore: true*/ `${root}${path.sep}${name}`);
+  } catch {
+    return null;
+  }
+}
+
 /** Every markdown file of a docs/ subfolder but its README, sorted by title. */
 export async function readDocsFolder(folder: string): Promise<DocFile[]> {
   const root = await docsRoot();

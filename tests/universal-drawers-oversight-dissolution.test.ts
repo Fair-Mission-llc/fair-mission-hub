@@ -3,6 +3,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readOfficerManuals } from './support/officer-manuals';
 import {
   DASHBOARD_TABS,
   DESK_DRAWERS,
@@ -127,6 +128,9 @@ describe('the Operations Knowledge Archive lexicon', () => {
       'packages/shared/src/navigation-guide.ts',
       'packages/shared/src/operations-knowledge.ts',
       'docs/ADMIN_USER_GUIDE.md',
+      'docs/EXECUTIVE_GOVERNANCE_MANUAL.md',
+      'docs/FINANCIAL_SECRETARY_MANUAL.md',
+      'docs/TREASURER_MANUAL.md',
       'data_dictionary.md',
     ])
       expect(read(file), file).not.toMatch(/Knowledge Vault|KnowledgeVault/);
@@ -184,7 +188,7 @@ describe('docs and phone schema', () => {
   it('moves the phone database to version 89 and documents the stage', () => {
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (89|9\d);/);
     expect(read('Schema.sql')).toContain('(schema version 89)');
-    const admin = read('docs/ADMIN_USER_GUIDE.md');
+    const admin = readOfficerManuals();
     expect(admin).toContain('### 19.10.1 Read the Historical Meeting Minutes Archive');
     expect(admin).toContain('### 19.12.1 Read the Fraternal Diary Entry Logs');
     expect(admin).toContain('## 22. The Operations Knowledge Archive');

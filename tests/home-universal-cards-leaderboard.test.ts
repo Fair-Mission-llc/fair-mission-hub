@@ -15,6 +15,7 @@ import {
   type ServiceLogRow,
 } from '@kofc/shared';
 import { drivers, MEMBER } from './helpers';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 const OWN = 1;
@@ -194,7 +195,7 @@ describe('the Executive Dashboard page', () => {
 
 describe('the guides', () => {
   it('walk through the six-card Home, the badges on the Oversight Desk and the Executive Dashboard page', () => {
-    const admin = read('docs/ADMIN_USER_GUIDE.md');
+    const admin = readOfficerManuals();
     expect(admin).toContain('**Home** holds seven large cards, and nothing else.');
     expect(admin).toContain('| **Top 5 Fraternal Volunteers** |');
     // Sprint 8P Stage 3: the badge strip and the Oversight Desk are gone.

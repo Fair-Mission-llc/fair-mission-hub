@@ -17,6 +17,7 @@ import {
 } from '@kofc/shared';
 import { TABLES } from '../apps/web/services/generated/schema.generated';
 import { drivers, expectRule, MEMBER } from './helpers';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 const OWN = 1;
@@ -276,7 +277,7 @@ describe('Sprint 7A Extension screens and guide', () => {
   });
 
   it('documents the new tools in the administrator user guide', () => {
-    const guide = read('docs/ADMIN_USER_GUIDE.md');
+    const guide = readOfficerManuals();
     // Sprint 8C: the Shared Member Center is the Council Dashboard.
     for (const heading of ['Council Dashboard', 'Personal impact', 'council membership history', 'roster template', 'inactivity sweep']) {
       expect(guide.toLowerCase()).toContain(heading.toLowerCase());

@@ -32,6 +32,7 @@ export * from './copilot';
 export * from './bylaws';
 export * from './advisor';
 export * from './docs';
+export * from './role-manuals';
 export * from './performance';
 export * from './bulletins';
 export * from './marketing';

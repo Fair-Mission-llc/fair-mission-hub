@@ -16,6 +16,7 @@
     "build:shared": "npm run build --workspace=packages/shared",
     "build:web": "npm run build --workspace=apps/web",
     "build:pilot": "node scripts/build-pilot.mjs",
+    "sbom": "node scripts/generate-sbom.mjs",
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspace=apps/web && npm run typecheck --workspace=apps/mobile"
   },

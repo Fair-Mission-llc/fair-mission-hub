@@ -139,6 +139,7 @@ import {
 } from '@kofc/shared';
 import { BankStatementMatchWindow, BudgetVsActualsModule, MotionsLedgerModule } from '@/components/DeskModules';
 import { DeskBlotter } from '@/components/DeskDrawers';
+import { DeskManualHeader } from '@/components/DeskManualHeader';
 import { AuthorizationDesk as ApprovedExpenseSigning } from '@/components/modules/ApprovedExpenseSigning';
 import { DisbursementLedger as ExpenseSettlement } from '@/components/modules/ExpenseSettlement';
 import { TreasurerDesk as LedgerLineCoder } from '@/components/modules/LedgerLineCoder';
@@ -712,6 +713,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   const a = audits.data;
   return (
     <div className="flex flex-col gap-4">
+      {/* Sprint 9 Master Hardening Pass: the seat's own role manual and its 'How do I…' search. */}
+      <DeskManualHeader manual="EXECUTIVE_GOVERNANCE_MANUAL" />
       {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
       <DeskBlotter
         desk="grand-knight"
@@ -799,6 +802,8 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
   const charity = useCharityPipeline(user, councilId, 'financial-secretary', drawers.some((d) => d.id === 'donation-workflow' || d.id === 'charity-endorsements'));
   return (
     <div className="flex flex-col gap-4">
+      {/* Sprint 9 Master Hardening Pass: the seat's own role manual and its 'How do I…' search. */}
+      <DeskManualHeader manual="FINANCIAL_SECRETARY_MANUAL" />
       {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
       <DeskBlotter
         desk="financial-secretary"
@@ -886,6 +891,8 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
   const erOwn = sheets ? sheets.filter((d) => awaitsTreasurerCoding(d.report) || isPayableExpenseReport(d.report)).length : null;
   return (
     <div className="flex flex-col gap-4">
+      {/* Sprint 9 Master Hardening Pass: the seat's own role manual and its 'How do I…' search. */}
+      <DeskManualHeader manual="TREASURER_MANUAL" />
       {coding.error ? <Notice tone="error">{coding.error}</Notice> : null}
       <DeskBlotter
         desk="treasurer"

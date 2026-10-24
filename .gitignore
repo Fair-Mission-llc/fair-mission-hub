@@ -27,3 +27,6 @@ scripts/__pycache__/
 # Sprint 9 Revision 4.0: the pilot hub vault, its ballot secret, backups and check photos stay on the hub laptop.
 packages/backend/data/*
 !packages/backend/data/.gitkeep
+
+# Sprint 9 Master Hardening Pass: the CycloneDX SBOM npm run build:pilot (or npm run sbom) writes; stamped per build.
+/sbom.json

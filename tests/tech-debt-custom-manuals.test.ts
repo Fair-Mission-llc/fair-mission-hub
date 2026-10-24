@@ -130,8 +130,8 @@ describe('custom user guides', () => {
     const out = customizeManualMarkdown('admin', guides.admin, COUNCIL, custom, '2026-10-11');
     expect(out).toContain('| **Days back a member may log volunteer time** | 90 days (this council: **120 days**) |');
     expect(out).toContain('| **Hours before an event that gate donations open** | 2 hours (this council: **3.5 hours**) |');
-    expect(out).toContain('The default is 365 days; this council uses 400 days.');
-    expect(out).toContain('The 1.0 hour is the default; this council allows 0.5 hours.');
+    // Sprint 9 Master Hardening Pass: the inactivity and padding sentences moved to the role manuals.
+    expect(out).toContain("This council's window is 120 days (section 16.3)");
     expect(out).not.toContain('90 days by default');
   });
 

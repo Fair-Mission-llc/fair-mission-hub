@@ -29,6 +29,7 @@ import {
   type MonthlySummary,
 } from '@kofc/shared';
 import { drivers, expectRule, MEMBER, rawInsert } from './helpers';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 
@@ -364,7 +365,7 @@ describe('the portal pages', () => {
   });
 
   it('documents the sprint in the admin guide', () => {
-    const guide = read('docs/ADMIN_USER_GUIDE.md');
+    const guide = readOfficerManuals();
     expect(guide).toContain('Annual Council Goals Progress Center');
     expect(guide).toContain('Cross-Council Loaner Library');
     expect(guide).toContain('Year-over-Year Trends');

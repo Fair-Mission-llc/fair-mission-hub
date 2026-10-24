@@ -4,6 +4,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readOfficerManuals } from './support/officer-manuals';
 import {
   ALL_FEATURES_ON,
   EXPENSE_CODED_BY_TREASURER_LABEL,
@@ -110,11 +111,13 @@ describe('Member Actions folded into Home', () => {
 });
 
 describe('the collapsible left-navigation guides', () => {
-  const admin = read('docs/ADMIN_USER_GUIDE.md');
-  const part2 = admin.slice(admin.indexOf('## 2. Left navigation map'), admin.indexOf('## 3. Module feature flags'));
+  const admin = readOfficerManuals();
+  // Sprint 9 Master Hardening Pass: part 2 moved to the Executive Governance Manual, where chapter 4 follows it.
+  const executive = read('docs/EXECUTIVE_GOVERNANCE_MANUAL.md');
+  const part2 = executive.slice(executive.indexOf('## 2. Left navigation map'), executive.indexOf('## 4. Governance'));
 
   it('maps the left navigation by category before the desks and the phone tabs', () => {
-    expect(admin).toContain('2. [Left navigation map](#2-left-navigation-map)');
+    expect(executive).toContain('- [2. Left navigation map](#2-left-navigation-map)');
     const order = ['🏠 Dashboard', '📅 Calendars', '👥 Rosters', '✅ Vetting', '📒 Ledgers', '🗄️ Archives', '🗂️ The desk tabs', '⏱️ The time windows', '📱 The five phone tabs'].map((t) =>
       part2.indexOf(`<summary>${t}`),
     );
@@ -322,7 +325,7 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
     expect(expenseStatusBadge({ Status: 'Submitted', RejectionReason: null, FinancialSecretaryMemberID: 2 }).label).toBe(EXPENSE_RECORDED_BY_FS_LABEL);
     expect(expenseStatusBadge({ Status: 'Submitted', RejectionReason: null, FinancialSecretaryMemberID: 2, TreasurerMemberID: 5 }).label).toBe(EXPENSE_CODED_BY_TREASURER_LABEL);
     expect([EXPENSE_RECORDED_BY_FS_LABEL, EXPENSE_CODED_BY_TREASURER_LABEL]).toEqual(['RECORDED BY FS', 'CODED BY TREASURER']);
-    for (const file of ['packages/shared/src/expenses.ts', 'docs/ADMIN_USER_GUIDE.md', 'docs/MEMBER_USER_GUIDE.md']) {
+    for (const file of ['packages/shared/src/expenses.ts', 'docs/ADMIN_USER_GUIDE.md', 'docs/EXECUTIVE_GOVERNANCE_MANUAL.md', 'docs/FINANCIAL_SECRETARY_MANUAL.md', 'docs/TREASURER_MANUAL.md', 'docs/MEMBER_USER_GUIDE.md']) {
       expect(read(file)).not.toMatch(/'Order Issued'|'Ledger Coded'|\*\*Order Issued\*\*|\*\*Ledger Coded\*\*/);
     }
   });

@@ -129,13 +129,13 @@ describe('the Collect and Recurring Meetings wording', () => {
     expect(read('apps/mobile/app/(app)/_layout.tsx')).toContain("tab('Collect', 'donate')");
     expect(read('apps/mobile/app/(app)/donate.tsx')).toContain('<Button title="Start collecting for event"');
     expect(navigationGuideMap(seat([]), ALL_FEATURES_ON).phoneTabs.map((t) => t.tab)).toContain('Collect');
-    for (const guide of ['docs/ADMIN_USER_GUIDE.md', 'docs/MEMBER_USER_GUIDE.md']) expect(read(guide)).not.toContain('**Donate** tab');
+    for (const guide of ['docs/ADMIN_USER_GUIDE.md', 'docs/EXECUTIVE_GOVERNANCE_MANUAL.md', 'docs/FINANCIAL_SECRETARY_MANUAL.md', 'docs/TREASURER_MANUAL.md', 'docs/MEMBER_USER_GUIDE.md']) expect(read(guide)).not.toContain('**Donate** tab');
   });
 
   it('titles the cadence page Recurring Meetings everywhere a reader sees it', () => {
     expect(read('apps/web/app/meetings/cadence/page.tsx')).toContain('>Recurring Meetings</PageTitle>');
     expect(read('apps/web/components/Sidebar.tsx')).toContain("label: 'Recurring Meetings',");
-    for (const file of ['docs/ADMIN_USER_GUIDE.md', 'docs/ROLE_PERMISSIONS_MATRIX.md', 'scripts/pilot_kit_pdf.py', 'packages/shared/src/council-settings.ts']) {
+    for (const file of ['docs/ADMIN_USER_GUIDE.md', 'docs/EXECUTIVE_GOVERNANCE_MANUAL.md', 'docs/FINANCIAL_SECRETARY_MANUAL.md', 'docs/TREASURER_MANUAL.md', 'docs/ROLE_PERMISSIONS_MATRIX.md', 'scripts/pilot_kit_pdf.py', 'packages/shared/src/council-settings.ts']) {
       const text = read(file);
       for (const old of ['Meeting Cadence', 'Annual Cadence Manager', 'Cadence Engine']) expect(text).not.toContain(old);
     }

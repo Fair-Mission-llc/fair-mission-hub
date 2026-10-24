@@ -230,7 +230,8 @@ export function parseGuideTasks(markdown: string): GuideTask[] {
     }
     const t: GuideTask | null = task;
     if (!t) continue;
-    const who = /^>\s*\*\*Who can do this:\*\*\s*(.*)$/.exec(trimmed);
+    // Sprint 9 Master Hardening Pass: the officer manuals write it '**Prerequisite (who can do this):**'.
+    const who = /^>\s*\*\*(?:Who can do this|Prerequisite \(who can do this\)):\*\*\s*(.*)$/.exec(trimmed);
     if (who) {
       t.who = who[1].trim();
       continue;

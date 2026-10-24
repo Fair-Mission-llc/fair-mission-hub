@@ -32,6 +32,7 @@ import { TABLES } from '../apps/web/services/generated/schema.generated';
 import { SCHEMA_STATEMENTS } from '../apps/mobile/services/generated/schema.sqlite';
 import { drivers, expectRule, MEMBER, type DriverUnderTest } from './helpers';
 import { openDatabases } from './shims/expo-sqlite';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 const OWN = 1;
@@ -364,7 +365,7 @@ describe('Sprint 7G screens and manuals', () => {
   });
 
   it('documents the sprint in both guides and compiles both PDFs', () => {
-    const admin = read('docs/ADMIN_USER_GUIDE.md');
+    const admin = readOfficerManuals();
     const member = read('docs/MEMBER_USER_GUIDE.md');
     for (const text of ['Annual Fraternal Roadmap', 'Overdue: Nominations', 'meeting PIN']) expect(admin).toContain(text);
     for (const text of ['Check in with PIN', 'Council Dashboard', 'CHECK NUMBER (REQUIRED)']) {

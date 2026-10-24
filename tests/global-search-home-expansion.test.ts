@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readOfficerManuals } from './support/officer-manuals';
 import {
   GLOBAL_SEARCH_MAX_PER_KIND,
   GLOBAL_SEARCH_MIN_CHARS,
@@ -114,7 +115,7 @@ describe('Home expansion', () => {
   });
 
   it('documents the search bar and the request access link', () => {
-    const admin = read('docs/ADMIN_USER_GUIDE.md');
+    const admin = readOfficerManuals();
     expect(admin).toContain('## 26. The global search bar');
     expect(admin).toContain('**[ 🔑 Request Access ]**');
     expect(admin).not.toContain('Register Your Council / Request Access');

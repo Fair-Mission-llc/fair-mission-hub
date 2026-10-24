@@ -19,6 +19,7 @@ import { BIOMETRIC_TOGGLE_LABEL, OnboardingController } from '../apps/mobile/ser
 import { sessionStore } from '../apps/mobile/services/session';
 import { _reset } from './shims/expo-secure-store';
 import { drivers } from './helpers';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 const OWN = 1;
@@ -219,7 +220,7 @@ describe.each(drivers)('$name driver: the biometric toggle', (d) => {
 
 describe('the guides', () => {
   it('document the drawers, the alert boundary and the biometric toggle', () => {
-    const admin = read('docs/ADMIN_USER_GUIDE.md');
+    const admin = readOfficerManuals();
     // Sprint 8S Revision 7: the section now explains the filing spine and the Desk Blotter stage.
     expect(admin).toContain('### 19.3.2 Concept: the filing spine, the Desk Blotter and the alert boundary');
     expect(admin).toContain('**[ 🔀 Back to Desk Blotter ]**');

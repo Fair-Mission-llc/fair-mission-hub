@@ -36,6 +36,7 @@ import { MemoryDataService } from '../apps/web/services/drivers/memory';
 import { SqliteDataService } from '../apps/mobile/services/drivers/sqlite';
 import { openDatabases } from './shims/expo-sqlite';
 import { drivers, expectRule, MEMBER, rawInsert, type DriverUnderTest } from './helpers';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 
@@ -396,7 +397,7 @@ describe('the portal pages', () => {
   });
 
   it('documents the sprint in the admin guide', () => {
-    const guide = read('docs/ADMIN_USER_GUIDE.md');
+    const guide = readOfficerManuals();
     expect(guide).toContain('Annual Budget Planner');
     expect(guide).toContain('Connected Councils');
     expect(guide).toContain('July 10');

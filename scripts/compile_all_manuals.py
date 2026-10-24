@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Compiles both user manuals into their print-ready PDF editions (Sprint 7G), then the pilot kit (Phase 7I).
+"""Compiles the user manuals into their print-ready PDF editions (Sprint 7G), then the pilot kit (Phase 7I).
 
     py scripts/compile_all_manuals.py            docs/ADMIN_USER_GUIDE.md  -> docs/ADMIN_USER_GUIDE.pdf
                                                  docs/MEMBER_USER_GUIDE.md -> docs/MEMBER_USER_GUIDE.pdf
+                                                 docs/TREASURER_MANUAL.md  -> docs/TREASURER_MANUAL.pdf
+                                                 docs/FINANCIAL_SECRETARY_MANUAL.md -> docs/FINANCIAL_SECRETARY_MANUAL.pdf
+                                                 docs/EXECUTIVE_GOVERNANCE_MANUAL.md -> docs/EXECUTIVE_GOVERNANCE_MANUAL.pdf
+    py scripts/compile_all_manuals.py --only treasurer   (or financial-secretary, executive)
     py scripts/compile_all_manuals.py --check    run each guide's wording check only; write nothing
     py scripts/compile_all_manuals.py --only member
     py scripts/compile_all_manuals.py --only admin --input custom.md --output custom.pdf --base docs
@@ -12,7 +16,13 @@
                                                  the Conference Room Pilot scripts and 11x17 posters only
                                                  (scripts/pilot_kit_pdf.py; a full run compiles them after the guides)
 
-Both guides go through the same ReportLab layout as the Administrator guide (scripts/admin_guide_pdf.py): a title
+Sprint 9 Master Hardening Pass: the old master Administrator guide is split. The Administrator guide keeps system
+maintenance only (settings, connections, the hub laptop, database resets, network ports, firewall clearance and the
+SBOM); the officer workflows moved to three role manuals - Treasurer, Financial Secretary, and the Executive Governance
+Manual shared by the Grand Knight and the Deputy Grand Knight. The four share one section numbering, and each officer
+desk links its own PDF (packages/shared/src/role-manuals.ts).
+
+Every guide goes through the same ReportLab layout as the Administrator guide (scripts/admin_guide_pdf.py): a title
 page, the guide's own sections with clickable contents links and PDF bookmarks, its tables and screen captures, a
 page footer and a closing disclaimer. The text is the Markdown text, word for word.
 
@@ -60,7 +70,8 @@ MANUALS = (
         output='docs/ADMIN_USER_GUIDE.pdf',
         title='Administrator User Guide',
         disclaimer=layout.DISCLAIMER,
-        required_screen_names=layout.REQUIRED_SCREEN_NAMES,
+        # Sprint 9 Master Hardening Pass: 'Council Artifacts' moved to the Executive Governance Manual with chapter 8.
+        required_screen_names=('Donations History', 'Credentials Vault'),
     ),
     Manual(
         key='member',
@@ -69,6 +80,31 @@ MANUALS = (
         title='Member User Guide',
         disclaimer=MEMBER_DISCLAIMER,
         required_screen_names=(),
+    ),
+    # Sprint 9 Master Hardening Pass: the three role manuals split out of the master Administrator guide.
+    Manual(
+        key='treasurer',
+        source='docs/TREASURER_MANUAL.md',
+        output='docs/TREASURER_MANUAL.pdf',
+        title='Treasurer Manual',
+        disclaimer=layout.DISCLAIMER,
+        required_screen_names=(),
+    ),
+    Manual(
+        key='financial-secretary',
+        source='docs/FINANCIAL_SECRETARY_MANUAL.md',
+        output='docs/FINANCIAL_SECRETARY_MANUAL.pdf',
+        title='Financial Secretary Manual',
+        disclaimer=layout.DISCLAIMER,
+        required_screen_names=('Donations History',),
+    ),
+    Manual(
+        key='executive',
+        source='docs/EXECUTIVE_GOVERNANCE_MANUAL.md',
+        output='docs/EXECUTIVE_GOVERNANCE_MANUAL.pdf',
+        title='Executive Governance Manual',
+        disclaimer=layout.DISCLAIMER,
+        required_screen_names=layout.REQUIRED_SCREEN_NAMES,
     ),
 )
 
@@ -92,7 +128,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument('--prepared-for', default='', help='the council named on the title page')
     args = parser.parse_args(argv)
     if (args.input or args.output) and args.only in (None, 'pilot-kit'):
-        parser.error('--input and --output need --only admin or --only member')
+        parser.error('--input and --output need --only with one guide')
     if args.only == 'pilot-kit':
         if not args.check:
             pilot_kit_pdf.compile_pilot_kit()

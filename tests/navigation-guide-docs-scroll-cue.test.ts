@@ -3,15 +3,17 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 
 describe('the Navigation Guide chapter', () => {
-  const admin = read('docs/ADMIN_USER_GUIDE.md');
-  const chapter = admin.slice(admin.indexOf('## 27. The Navigation Guide screen'), admin.indexOf('## Appendix: QR code files'));
+  // Sprint 9 Master Hardening Pass: chapter 27 moved to the Executive Governance Manual, where the manual map closes it.
+  const admin = read('docs/EXECUTIVE_GOVERNANCE_MANUAL.md');
+  const chapter = admin.slice(admin.indexOf('## 27. The Navigation Guide screen'), admin.indexOf('## Manual map'));
 
-  it('is listed in the contents and sits before the appendix', () => {
-    expect(admin).toContain('27. [The Navigation Guide screen](#27-the-navigation-guide-screen)');
+  it('is listed in the contents and sits before the manual map', () => {
+    expect(admin).toContain('- [27. The Navigation Guide screen](#27-the-navigation-guide-screen)');
     expect(admin.indexOf('## 27. The Navigation Guide screen')).toBeGreaterThan(admin.indexOf('## 26. The global search bar'));
     expect(chapter.length).toBeGreaterThan(2000);
   });
@@ -66,6 +68,6 @@ describe('the Home scroll cue', () => {
   });
 
   it('is documented in both guides', () => {
-    for (const guide of ['docs/ADMIN_USER_GUIDE.md', 'docs/MEMBER_USER_GUIDE.md']) expect(read(guide)).toContain('**Scroll down for more council info ↓**');
+    for (const guide of ['docs/EXECUTIVE_GOVERNANCE_MANUAL.md', 'docs/MEMBER_USER_GUIDE.md']) expect(read(guide)).toContain('**Scroll down for more council info ↓**');
   });
 });

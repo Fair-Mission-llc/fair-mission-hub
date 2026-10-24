@@ -40,7 +40,7 @@ describe('Quick Check-In scrapped (Sprint 9 Revision 5.1)', () => {
   });
 
   it('keeps walk-in check-in out of the guides and the pilot kit', () => {
-    for (const path of ['docs/MEMBER_USER_GUIDE.md', 'docs/ADMIN_USER_GUIDE.md', 'scripts/pilot_kit_pdf.py']) {
+    for (const path of ['docs/MEMBER_USER_GUIDE.md', 'docs/ADMIN_USER_GUIDE.md', 'docs/EXECUTIVE_GOVERNANCE_MANUAL.md', 'docs/FINANCIAL_SECRETARY_MANUAL.md', 'docs/TREASURER_MANUAL.md', 'scripts/pilot_kit_pdf.py']) {
       expect(read(path)).not.toMatch(/Quick Check-In|Shift Captain|walk-in/i);
     }
   });

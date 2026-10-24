@@ -39,6 +39,7 @@ import {
 import type { MemoryDataService } from '../apps/web/services/drivers/memory';
 import { drivers, MEMBER, type DriverUnderTest } from './helpers';
 import { openDatabases } from './shims/expo-sqlite';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 const OWN = 1;
@@ -93,15 +94,14 @@ describe('the Council Dashboard rename', () => {
   });
 
   it('keeps the guides on the new name', () => {
-    for (const guide of ['docs/ADMIN_USER_GUIDE.md', 'docs/MEMBER_USER_GUIDE.md']) {
-      const text = read(guide);
+    for (const text of [readOfficerManuals(), read('docs/MEMBER_USER_GUIDE.md')]) {
       expect(text).toContain('Council Dashboard');
       expect(text).not.toContain('Shared Member Center');
       expect(text).not.toContain('Reports Desk');
       // The page keeps its own title; only the sidebar path is gone.
       expect(text).not.toContain('Sidebar → Finances → **Leadership Auditing Queue**');
     }
-    const admin = read('docs/ADMIN_USER_GUIDE.md');
+    const admin = readOfficerManuals();
     expect(admin).toContain('**[ 🚗 Open Shifts Needing Volunteers ]**');
     expect(admin).toContain('**[ 📥 My Charity Requests ]**');
     expect(admin).toContain('**Canonization Rank Benchmarks** card');

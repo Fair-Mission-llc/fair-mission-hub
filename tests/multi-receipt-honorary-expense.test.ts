@@ -31,6 +31,7 @@ import { TABLES } from '../apps/web/services/generated/schema.generated';
 import { cleanReceiptFile, parseReceiptWithAzure, receiptOcrConnected, ReceiptOcrError } from '../apps/web/services/ocr/receipt-parser';
 import { credentialsVault } from '../apps/web/services/server/credentials-vault';
 import { drivers, expectRule, MEMBER, NOW, treasurerCode } from './helpers';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 const OWN = 1;
@@ -210,7 +211,7 @@ describe.each(drivers)('multi-receipt sheets ($name driver)', (d) => {
 // ---- the offline print edition of the Administrator User Guide ------------------------------------------------------
 
 describe('Administrator User Guide print edition', () => {
-  const guide = read('docs/ADMIN_USER_GUIDE.md');
+  const guide = readOfficerManuals();
 
   it('ships the ReportLab compiler with its wording check and closing disclaimer', () => {
     const script = read('scripts/admin_guide_pdf.py');

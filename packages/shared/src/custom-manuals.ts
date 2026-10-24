@@ -77,13 +77,10 @@ export interface ManualSettingPhrase {
 }
 
 export const MANUAL_SETTING_PHRASES: readonly ManualSettingPhrase[] = [
-  // Administrator guide
-  { guide: 'admin', setting: 'volunteer_logging_window_days', find: 'up to 90 days later, by default', replace: (v) => `up to ${v} later in this council` },
+  // Administrator guide. Sprint 9 Master Hardening Pass: the pruned guide keeps only the data protection sentence; the
+  // flagged-hours, inactivity-sweep and padding sentences moved with their chapters into the role manuals, which a
+  // council does not print as a custom copy.
   { guide: 'admin', setting: 'volunteer_logging_window_days', find: 'The default is 90 days (section 16.3)', replace: (v) => `This council's window is ${v} (section 16.3)` },
-  { guide: 'admin', setting: 'volunteer_logging_window_days', find: '(90 days by default)', replace: (v) => `(${v} in this council)` },
-  { guide: 'admin', setting: 'volunteer_logging_window_days', find: 'the logging window, 90 days by default', replace: (v) => `the logging window, ${v} in this council` },
-  { guide: 'admin', setting: 'inactivity_threshold_days', find: 'The default is 365 days.', replace: (v) => `The default is 365 days; this council uses ${v}.` },
-  { guide: 'admin', setting: 'max_shift_padding_hours', find: 'The 1.0 hour is the default.', replace: (v) => `The 1.0 hour is the default; this council allows ${v}.` },
   // Member guide
   { guide: 'member', setting: 'volunteer_logging_window_days', find: 'Dates up to 90 days before today', replace: (v) => `Dates up to ${v} before today` },
   { guide: 'member', setting: 'volunteer_logging_window_days', find: 'Shifts up to 90 days before today', replace: (v) => `Shifts up to ${v} before today` },

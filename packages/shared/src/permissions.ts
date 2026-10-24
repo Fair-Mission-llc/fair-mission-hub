@@ -668,6 +668,14 @@ export const canViewBudgetForecast = (u: Actor, councilId: number): boolean => i
 export const canDesignateBudgetDirector = (u: Actor, member: Pick<Member, 'CouncilID'>): boolean => canAdministerCouncil(u, member.CouncilID);
 
 /**
+ * The base member links (Sprint 9 Master Hardening Pass): Home, the Member Actions Hub (personal hours and shifts), the
+ * Visual Master Calendar (with its phone calendar sync card) and the photo gallery. portalAreas opens every signed-in
+ * member's list with them, so every seat - the Council Historian, who holds no officer seat, included - inherits them.
+ * Only a council feature flag or the white-label tenant gate can take one away, for every role alike.
+ */
+export const MEMBER_BASE_AREAS = ['home', 'member-actions', 'calendar', 'gallery'] as const satisfies readonly PortalArea[];
+
+/**
  * Sections shown in the portal's navigation. The ledger is open to everyone because event owners use it, and the
  * meeting center because a meeting's owner may be any member (it is read-only for everyone else without rights).
  * Sprint 6A: `flags` are the council's feature flags (features.ts); a module switched off is left out for every role.
@@ -679,7 +687,9 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   // used to; Admins and Super Admins volunteer too. Then the shared views.
   // Sprint 8S: the Member Actions link is back in every member's sidebar; Sprint 8S Corrected: as its own page, /member-actions
   // (Sprint 8S Revision: the 'Member Actions Hub', holding only the Volunteer Check-In & Service Center).
-  const areas: PortalArea[] = ['home', 'member-actions', 'calendar', 'gallery'];
+  // Sprint 9 Master Hardening Pass: every role starts from MEMBER_BASE_AREAS - a Council Historian included - and only
+  // adds links on top; no branch below removes one.
+  const areas: PortalArea[] = [...MEMBER_BASE_AREAS];
   if (canMaintainLookups(u)) areas.push('lookups');
   if (canMaintainCouncils(u)) areas.push('councils');
   if (canOpenFeatureFlagsControlCenter(u)) areas.push('feature-flags');

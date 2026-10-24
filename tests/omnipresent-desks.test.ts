@@ -8,6 +8,7 @@ import { MemoryDataService } from '../apps/web/services/drivers/memory';
 import { SqliteDataService } from '../apps/mobile/services/drivers/sqlite';
 import { drivers, NOW } from './helpers';
 import { openDatabases } from './shims/expo-sqlite';
+import { readOfficerManuals } from './support/officer-manuals';
 
 const ROOT = join(__dirname, '..');
 const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
@@ -68,7 +69,7 @@ describe('module folders on the Active Desks', () => {
   it('sends nobody to the sidebar from the desks', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks).not.toMatch(/(click|select|open)[^.\n]{0,40}sidebar/i);
-    expect(read('docs/ADMIN_USER_GUIDE.md')).toContain('### 19.3.1 Concept: the advanced modules on the desks');
+    expect(readOfficerManuals()).toContain('### 19.3.1 Concept: the advanced modules on the desks');
   });
 });
 
