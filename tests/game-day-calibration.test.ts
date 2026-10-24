@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  DonationSessionController,
   buildCharityPipeline,
   buildExpenseWorkflow,
   CHARITY_ENDORSEMENT_FOLDER_TITLE,
@@ -96,18 +97,21 @@ describe.each(makers)('$name driver: the parking event on game day', (d) => {
     expect(donations.reduce((sum, g) => sum + g.DonationAmount, 0)).toBe(400);
   });
 
-  it('lets the Grand Knight check the Historian in to the Wednesday slot with Quick Check-In (Sprint 9 Revision 5.0)', async () => {
+  it('lets any plain member start collecting for the parking event and record a gift (Sprint 9 Revision 5.1)', async () => {
     const db = await d.make(GAME_DAY);
-    const GK = 28;
-    const HISTORIAN = 32;
-    const board = await db.events.getQuickCheckInBoard(GK);
-    const wednesday = board.shifts.find((s) => s.shift.ShiftName === 'Lot attendants - Wednesday')!;
-    expect(wednesday.event.EventName).toBe(PILOT_PARKING_EVENT_NAME);
-    expect(wednesday.signedUpMemberIds.sort((a, b) => a - b)).toEqual([33, 34]);
-    expect(board.roster.find((r) => r.memberId === HISTORIAN)).toMatchObject({ firstName: 'Historian', lastName: 'User' });
-    expect((await db.events.quickCheckIn(GK, wednesday.shift.id, HISTORIAN)).alreadySignedUp).toBe(false);
-    // Member Alpha captains nothing, so the phone shows Alpha no Quick Check-In button.
-    expect((await db.events.getQuickCheckInBoard(33)).shifts).toEqual([]);
+    const event = (await db.events.listByCouncil(OWN)).find((e) => e.EventName === PILOT_PARKING_EVENT_NAME)!;
+    const typeId = (await db.donations.listTypes(OWN))[0].id;
+    const cash = (await db.donations.listMethods(OWN)).find((m) => m.kind === 'cash')!;
+    // Member Beta (34) holds no office; member 3 holds no office and has no shift on the event. Neither is refused.
+    for (const memberId of [34, 3]) {
+      expect((await db.members.listRoles(memberId)).filter((r) => r.Officer === 1)).toEqual([]);
+      const session = new DonationSessionController(db, OWN, memberId);
+      expect(await session.start(event.id, { amount: 25, donationTypeId: typeId })).toMatchObject({ active: true, eventId: event.id });
+      const gift = await session.record({ DonationMethodID: cash.method.id });
+      expect(gift).toMatchObject({ EventID: event.id, DonationAmount: 25, RecordedBy: memberId });
+    }
+    // The Collect tab puts no role check in front of 'Start collecting for event'.
+    expect(read('apps/mobile/app/(app)/donate.tsx')).not.toMatch(/memberType|listRoles|holds\w*Seat|Officer/);
   });
 
   it('leaves the seeded dates alone on the scripts\' own day', async () => {

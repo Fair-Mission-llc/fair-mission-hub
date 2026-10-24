@@ -564,46 +564,6 @@ The link is private. A person who has your link can read your schedule. Do not s
 | The app shows *"This calendar link is not valid."* | The council changed its portal key. Old links stop working. | Copy a new link from the card. Replace the old link in the app. |
 | Someone else has your link. | The link is a private key to your schedule. One link cannot be stopped alone. | Tell a council Admin. Only a new portal key stops the link. The new key also stops the links of all other members. |
 
-### Concept: the Shift Captain and walk-in volunteers
-
-A walk-in volunteer is a member who comes to an event without a sign-up.
-A Shift Captain puts a walk-in on a shift from the phone, with no typing.
-
-These members are Shift Captains for an event:
-- the event owner;
-- an elected officer or a Trustee of a council that runs the event;
-- an Admin of a council that runs the event, and any Super Admin.
-
-The **⏱️ Quick Check-In** button shows only on the day of a shift that you captain.
-The roster lists the active members of the councils that run the event.
-The walk-in reports their own hours later, from the **Report** tab (4.4).
-
-### 3.5 Check in a walk-in volunteer
-
-> **Who can do this:** a Shift Captain, on the day of the shift. Other members do not see the button.
-
-**Goal:** Put a walk-in volunteer on today's shift.
-
-**Start point:** Phone app → **Signup** tab, or **Collect** tab → **⏱️ Quick Check-In**, below the page heading.
-
-**Steps:**
-1. Tap **⏱️ Quick Check-In**. The roster opens from the bottom of the screen.
-2. If you captain more than one shift today, tap the shift under **TODAY'S SHIFT**.
-3. Find the walk-in volunteer. The roster is in last-name order.
-4. Tap the name of the volunteer.
-5. Read the message at the top of the roster.
-6. Tap **✕** to close the roster.
-
-**Expected result:** A message says *"(name) is checked in to (shift). They report their hours from the Report tab."* The name shows **✓** in the roster. The shift is on the volunteer's own schedule.
-
-**Common problems:**
-| Problem | Cause | Fix |
-| --- | --- | --- |
-| The **⏱️ Quick Check-In** button is missing. | You are not a Shift Captain for a shift today. | Ask the event owner or an officer to check in the volunteer. |
-| The name is grey and shows **✓**. | The member is already on the shift. | No action. |
-| *"… was already on (shift)."* | Another captain checked in the member first. | No action. |
-| The volunteer is not in the roster. | The volunteer is not an active member of a council that runs the event. | Ask a council Admin to check the member's status. |
-
 ---
 
 ## 4. Log your hours with the Rapid-Tap grid
@@ -1025,12 +985,8 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 3. Type the 4 digits in **MEETING PIN**.
 4. Tap **Check in with PIN**.
 
-<!-- KEEP_IMAGE: check-in drawer GPS placeholder -->
-![Phone: the CHECK IN box with the check-in button (placeholder)](../generated/mobile_app_catalog/meeting_check_in_gps.png)
-<!-- /KEEP_IMAGE -->
-
-<!-- KEEP_IMAGE: check-in drawer PIN placeholder -->
-![Phone: the MEETING PIN box after the location check failed (placeholder)](../generated/mobile_app_catalog/meeting_check_in_pin.png)
+<!-- KEEP_IMAGE: check-in drawer PIN pad placeholder -->
+![Phone: the CHECK IN box with the MEETING PIN field and number pad (placeholder)](../generated/mobile_app_catalog/meeting_check_in_pin_pad.png)
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** The box turns navy and shows **✓ You are checked in**. A message says *"Checked in with the meeting PIN."*

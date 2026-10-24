@@ -35,9 +35,8 @@ vault keeps every record, meeting log and check photo from one session to the ne
 scripted rehearsal on a fresh vault (npm run hub:archive moves the last one into an archive folder; nothing is
 deleted). The Collect tab's deposit photo is on the Check form only.
 
-Sprint 9 Revision 5.0: GPS check-in is hidden (the phone checks in with the meeting PIN only). The phone's
-⏱️ Quick Check-In for walk-in volunteers is not scripted: it shows only to a Shift Captain (the event owner, an officer,
-a Trustee or an Admin), and the officers' scripts stay on the web while Alpha and Beta, the phone personas, captain nothing.
+Sprint 9 Revision 5.0: GPS check-in is hidden (the phone checks in with the meeting PIN only). Members report their
+own volunteer hours after the event; nobody checks them in on site.
 
     py scripts/pilot_kit_pdf.py                 writes all five PDFs under docs/
     py scripts/compile_all_manuals.py           compiles the two user guides, then this kit

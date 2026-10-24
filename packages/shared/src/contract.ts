@@ -123,7 +123,6 @@ import type { CouncilWideSettings } from './council-settings';
 import type { BulletinLayoutInput, LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { OldBusinessItem } from './old-business';
 import type { CheckInProof, GeofencedCheckInResult, MeetingGeofence, MeetingGeofenceChanges } from './geofence';
-import type { QuickCheckInBoard, QuickCheckInResult } from './quick-check-in';
 import type { FraternalRoadmap, RoadmapAlertSweep } from './roadmap';
 import type { CouncilGoalsProgress, CouncilGoalTargets, CouncilTrends } from './council-goals';
 import type { AssetLoanChange, LoanerLibraryEntry } from './loaner-library';
@@ -2974,21 +2973,6 @@ export interface DataService {
      * honorary signups (Sprint 5Z-Final-Polish), so NumberVolunteersSignedUp may exceed it.
      */
     signupForShift(memberId: number, shiftId: number): Promise<EventSignup>;
-    /**
-     * Sprint 9 Revision 5.0 (quick-check-in.ts): the phone's Quick Check-In board - every shift dated today (the data
-     * service's own clock, local time) whose event the actor captains (isShiftCaptain), soonest first, with the members already signed
-     * up, and the roster: Active members of the councils those events are linked to, by last and first name. Empty for
-     * a member who captains nothing today. Rejects MEMBER_NOT_FOUND for an unknown actor.
-     */
-    getQuickCheckInBoard(actorId: number): Promise<QuickCheckInBoard>;
-    /**
-     * Sprint 9 Revision 5.0: a Shift Captain signs a walk-in up for one of today's shifts, as signupForShift does
-     * (EventSignup row, NumberVolunteersSignedUp + 1; a full shift still takes them). A member already signed up
-     * resolves to their signup with alreadySignedUp and nothing written. Rejects COUNCIL_ACCESS_DENIED when the actor is
-     * not the shift's captain, INVALID_INPUT for a shift not dated today or a member who is not an Active member of a
-     * council the event is linked to, and SHIFT_NOT_FOUND, EVENT_NOT_FOUND or MEMBER_NOT_FOUND for unknown ids.
-     */
-    quickCheckIn(actorId: number, shiftId: number, memberId: number): Promise<QuickCheckInResult>;
 
     /** Every shift the member is signed up for between the dates inclusive (default: all), soonest first. */
     listMemberShifts(memberId: number, range?: { fromDate?: string; toDate?: string }): Promise<MemberShift[]>;

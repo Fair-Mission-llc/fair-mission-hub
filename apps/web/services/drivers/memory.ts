@@ -464,13 +464,6 @@ import {
   isCouncilWideList,
   isListVisibleTo,
   assertMayRunEventIntake,
-  assertQuickCheckInMember,
-  assertQuickCheckInToday,
-  assertShiftCaptain,
-  compareRosterEntries,
-  isShiftCaptain,
-  type QuickCheckInRosterEntry,
-  type QuickCheckInShift,
   agendaAlreadyStructured,
   agendaLineNotFound,
   assertAgendaLineRef,
@@ -3095,59 +3088,6 @@ export class MemoryDataService implements DataService {
         const row = s.insert('EventSignup', { ShiftID: shiftId, MemberID: memberId, NoShow: 0 });
         (shift as Row).NumberVolunteersSignedUp = (shift.NumberVolunteersSignedUp as number) + 1;
         return { ...row } as unknown as EventSignup;
-      });
-    },
-
-    getQuickCheckInBoard: async (actorId) => {
-      const s = await this.ready();
-      const actor = this.memberWriteActor(s, actorId);
-      const today = toIsoDate(this.now());
-      const shifts: QuickCheckInShift[] = [];
-      const councils = new Set<number>();
-      for (const shift of s.rows('Shift')) {
-        if (shift.ShiftDate !== today) continue;
-        const event = s.rows('Event').find((ev) => ev.id === shift.EventID);
-        if (!event) continue;
-        const eventCouncilIds = this.councilIdsOf(s, event.id as number);
-        if (!isShiftCaptain(actor, { eventId: event.id as number, ownerId: event.OwnerID as number, eventCouncilIds })) continue;
-        eventCouncilIds.forEach((id) => councils.add(id));
-        shifts.push({
-          shift: { ...shift } as unknown as Shift,
-          event: { ...event } as unknown as CouncilEvent,
-          signedUpMemberIds: s.rows('EventSignup').filter((e) => e.ShiftID === shift.id).map((e) => e.MemberID as number),
-        });
-      }
-      const activeId = this.activeStatusId(s);
-      const roster: QuickCheckInRosterEntry[] = s
-        .rows('Member')
-        .filter((m) => m.StatusID === activeId && councils.has(m.CouncilID as number))
-        .map((m) => ({
-          memberId: m.id as number,
-          councilId: m.CouncilID as number,
-          firstName: m.MemberFirstName as string,
-          lastName: m.MemberLastName as string,
-        }))
-        .sort(compareRosterEntries);
-      return { shifts: shifts.sort((a, b) => compareShifts(a.shift, b.shift)), roster };
-    },
-
-    quickCheckIn: async (actorId, shiftId, memberId) => {
-      const s = await this.ready();
-      return s.transaction(() => {
-        const actor = this.memberWriteActor(s, actorId);
-        const shift = this.requireShift(s, shiftId);
-        const event = this.requireEvent(s, shift.EventID as number);
-        const scope = { eventId: event.id as number, ownerId: event.OwnerID as number, eventCouncilIds: this.councilIdsOf(s, event.id as number) };
-        assertShiftCaptain(actor, scope);
-        assertQuickCheckInToday(shift as unknown as Shift, toIsoDate(this.now()));
-        const member = this.requireMember(s, memberId);
-        assertQuickCheckInMember({ id: memberId, CouncilID: member.CouncilID as number, active: member.StatusID === this.activeStatusId(s) }, scope);
-        const existing = s.rows('EventSignup').find((e) => e.ShiftID === shiftId && e.MemberID === memberId);
-        if (existing) return { signup: { ...existing } as unknown as EventSignup, alreadySignedUp: true };
-        // A full shift still takes walk-ins, as it takes honorary signups (Sprint 5Z-Final-Polish).
-        const row = s.insert('EventSignup', { ShiftID: shiftId, MemberID: memberId, NoShow: 0 });
-        (shift as Row).NumberVolunteersSignedUp = (shift.NumberVolunteersSignedUp as number) + 1;
-        return { signup: { ...row } as unknown as EventSignup, alreadySignedUp: false };
       });
     },
 

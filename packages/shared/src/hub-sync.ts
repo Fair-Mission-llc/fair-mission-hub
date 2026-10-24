@@ -83,7 +83,7 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'donations.remove', 'donations.update', 'elections.assignAppointedRole', 'elections.concludeFraternalYear',
   'elections.dispatchRoadmapAlerts', 'elections.getFraternalRoadmap', 'elections.recordOfficerAbdication',
   'elections.submitNomination', 'elections.toggleRoleBallotStatus', 'events.concludeCollectionSession',
-  'events.deletePlanningTime', 'events.getQuickCheckInBoard', 'events.logPlanningTime', 'events.quickCheckIn', 'events.setFlyerFile', 'events.setIntakeSessionStatus',
+  'events.deletePlanningTime', 'events.logPlanningTime', 'events.setFlyerFile', 'events.setIntakeSessionStatus',
   'events.setNoShow', 'events.uploadPhotos', 'expenses.financialSecretaryAuditOrder', 'expenses.getAssetRecord',
   'expenses.getAssetRecordForExpense', 'expenses.grandKnightAuthorizeOrder', 'expenses.listAssetsInventory',
   'expenses.listAuthorizationQueue', 'expenses.listCouncilQueue', 'expenses.listLoanerLibrary',

@@ -150,8 +150,6 @@ export function createRemoteDataService(): DataService {
       listShiftsBetween: notImplemented('events.listShiftsBetween'),
       listSignups: notImplemented('events.listSignups'),
       signupForShift: notImplemented('events.signupForShift'),
-      getQuickCheckInBoard: notImplemented('events.getQuickCheckInBoard'),
-      quickCheckIn: notImplemented('events.quickCheckIn'),
       listMemberShifts: notImplemented('events.listMemberShifts'),
       listShiftFeed: notImplemented('events.listShiftFeed'),
       countNoShows: notImplemented('events.countNoShows'),

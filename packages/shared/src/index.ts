@@ -52,7 +52,6 @@ export * from './media-vault';
 export * from './treasurer-desk';
 export * from './member-lifecycle';
 export * from './volunteer-quarantine';
-export * from './quick-check-in';
 export * from './council-settings';
 export * from './navigation-guide';
 export * from './platform-access';
