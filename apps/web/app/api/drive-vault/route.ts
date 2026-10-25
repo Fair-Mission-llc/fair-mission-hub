@@ -12,10 +12,16 @@
 // reads the form: 401 without a session, 403 unless the session is an Active Admin or Super Admin (the same members
 // whose uploads the screens send here). Live uploads still need the credentials AND DRIVE_VAULT_LIVE=1; otherwise the
 // route answers 503 { archived: false } and the screen keeps the file as a browser blob link.
+// Sprint 10 Revision 3.1: when the council keeps its files on a Local Network Server, the upload is written there first
+// (fileIntoRepository) and the answer carries the portal link to store; Google Drive is not touched.
 import { NextResponse } from 'next/server';
-import { assertDriveVaultUpload, cleanDriveVaultSubfolder, describeError, hasAdminRights } from '@kofc/shared';
+import { assertDriveVaultUpload, cleanDriveVaultSubfolder, describeError, hasAdminRights, type FileRepositoryFolder } from '@kofc/shared';
 import { councilDriveCredentials, councilDriveOffReason, driveVaultClient } from '@/services/server/credentials-vault';
+import { fileIntoRepository } from '@/services/server/file-repository';
 import { requirePortalSession } from '@/services/server/session';
+
+/** The network share folder for each document kind. */
+const DRIVE_KIND_FOLDER: Record<string, FileRepositoryFolder> = { minutes: 'Minutes', voucher: 'Vouchers', media: 'Media', flyer: 'Flyers' };
 
 export async function POST(req: Request) {
   const session = await requirePortalSession(req, hasAdminRights, { archived: false });
@@ -33,6 +39,15 @@ export async function POST(req: Request) {
     folder = kind === 'media' ? cleanDriveVaultSubfolder(form.get('folder')) : null;
   } catch (err) {
     return NextResponse.json({ archived: false, message: describeError(err) }, { status: 400 });
+  }
+
+  // Sprint 10 Revision 3.1: the council's Local Network Server, when it keeps its files there.
+  try {
+    const ref = await fileIntoRepository(session.claims.councilId, { folder: DRIVE_KIND_FOLDER[kind] ?? 'Media', prefix: 'doc', originalName: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+    if (ref) return NextResponse.json({ archived: true, fileId: ref });
+  } catch (err) {
+    console.error('[file-repository] network share write failed:', describeError(err));
+    return NextResponse.json({ archived: false, message: 'The council file server did not accept the file. Check the server network address and the service account.' }, { status: 502 });
   }
 
   const creds = councilDriveCredentials(session.claims.councilId);

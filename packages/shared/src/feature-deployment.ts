@@ -29,10 +29,10 @@ import type { Council } from './types';
  * Archives' links are gone; the Annual Budget Planner banner moved to the Annual Budget Center.
  */
 export const COUNCIL_SETTINGS_DRAWERS = [
-  { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: "Payment methods, account owners and sealed keys, and the council's record." },
+  { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: "Payment methods, the Account Owners Matrix, sealed keys and the council's record." },
   { id: 'access-roster', label: 'User Access & Roster Control', hint: 'Meeting check-in, the inactivity sweep and the member rank benchmarks.' },
-  { id: 'system-settings', label: 'System Settings', hint: 'Time limits, windows and reminders, and the printable custom guides.' },
-  { id: 'feature-controls', label: 'Feature Controls', hint: 'The parish fundraiser split, loaner library sharing and the module switch pages.' },
+  { id: 'system-settings', label: 'System Settings', hint: 'Time limits, windows and reminders, where uploaded files are kept, and the printable custom guides.' },
+  { id: 'feature-controls', label: 'Feature Controls', hint: 'Loaner library sharing and the module switch pages.' },
   { id: 'feature-matrix', label: 'Council Feature Deployment Matrix', hint: 'Which advanced capabilities and modules are on for the council, and where each switch lives.' },
 ] as const;
 export type CouncilSettingsDrawerId = (typeof COUNCIL_SETTINGS_DRAWERS)[number]['id'];
@@ -91,7 +91,8 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Parametric Parish Splits',
       description: "Shares each fundraiser's collections with the parish at the council's saved percentage and GL line.",
       deployed: on(council.parish_split_enabled),
-      managedOn: onDrawer('feature-controls', 'Parish Fundraiser Split'),
+      // Sprint 10 Revision 3.1: the switch card is gone; splits come from the Revenue account split profiles.
+      managedOn: 'Treasurer Desk: Revenue account split profiles (the Parish Fundraiser Split card is retired)',
     },
     {
       id: 'loaner-library',
@@ -147,4 +148,4 @@ export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed
  * The platform's database schema version, shown under System Information. It moves with the phone database's
  * SCHEMA_VERSION (apps/mobile/services/drivers/sqlite.ts) and the Schema.sql sprint headers.
  */
-export const PLATFORM_SCHEMA_VERSION = 100;
+export const PLATFORM_SCHEMA_VERSION = 101;

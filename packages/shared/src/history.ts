@@ -21,6 +21,7 @@ import type {
 } from './contract';
 import { assertFraternalYear, currentFraternalYear, fraternalYearBounds } from './budget';
 import { isDriveFileId } from './drive-vault';
+import { isFileRepositoryRef } from './file-repository';
 import { COUNCIL_HISTORIAN_ROLE } from './elections';
 import {
   assertIsoDate,
@@ -127,7 +128,7 @@ function optionalText(value: unknown, label: string, max: number): string | null
 export function cleanHistoryAssetUrl(value: unknown, label: string, allowBlob: boolean): string | null | undefined {
   const text = optionalText(value, label, HISTORY_ASSET_URL_MAX_LENGTH);
   if (text == null) return text;
-  if (isDriveFileId(text) || /^https:\/\/[^\s]+$/i.test(text) || (allowBlob && /^blob:[^\s]+$/i.test(text))) return text;
+  if (isDriveFileId(text) || isFileRepositoryRef(text) || /^https:\/\/[^\s]+$/i.test(text) || (allowBlob && /^blob:[^\s]+$/i.test(text))) return text;
   throw invalid(`${label} must be a Google Drive file id or an https link${allowBlob ? ' (or a recording kept in this browser)' : ''}.`, { label });
 }
 

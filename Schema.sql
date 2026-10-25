@@ -3977,3 +3977,87 @@ ADD FOREIGN KEY([VerifiedByMemberID])
 REFERENCES [Member]([id])
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO
+
+-- =========================================================================
+-- Sprint 10 Revision 3.1: ACCOUNT OWNERS, THE NETWORK FILE REPOSITORY AND THE ADVISORY PANEL (schema version 101)
+--
+-- AccountOwners: the electronic accounts a council keeps (Venmo, Zelle, the parish ParishSoft account...), each with the
+-- person to call about it. The user named the columns id, account_name, contact_name, contact_number, contact_email and
+-- ein_number; council_id is added so every council keeps its own rows (multi-tenant isolation). Edited in the Account
+-- Owners Matrix on Council Wide Settings by the council's Admins and Super Admins (councils.saveAccountOwner).
+--
+-- Council.file_repository_mode is 'CLOUD' (the Google Drive vault, the default) or 'LOCAL_NETWORK'. In LOCAL_NETWORK
+-- mode the portal server writes uploaded documents and check photos to file_server_path (a UNC path such as
+-- \server\share\kofc) with file_server_username; the service account password is sealed in the Credentials Vault
+-- (FILE_SERVER_PASSWORD), never in this table. The rules layer enforces the mode values (no CHECK), as elsewhere.
+--
+-- AdvisoryPanelMeetings and AdvisoryFeedback back the Application Advisory Panel: meeting dates kept by Super Admins
+-- and the consultation notes panelists from any council send. Panelists hold the new 'Application Advisory Panelist'
+-- role (Seed.sql). The phone database version moves to 101.
+-- =========================================================================
+CREATE TABLE [AccountOwners] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[council_id] INTEGER NOT NULL,
+	[account_name] VARCHAR(150) NOT NULL,
+	[contact_name] VARCHAR(100) NULL,
+	[contact_number] VARCHAR(50) NULL,
+	[contact_email] VARCHAR(100) NULL,
+	[ein_number] VARCHAR(20) NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [AccountOwners]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE UNIQUE INDEX [AccountOwners_Council_Name_Idx] ON [AccountOwners] ([council_id], [account_name]);
+GO
+
+ALTER TABLE [Council] ADD [file_repository_mode] VARCHAR(20) NOT NULL DEFAULT 'CLOUD';
+GO
+ALTER TABLE [Council] ADD [file_server_path] VARCHAR(260) NULL;
+GO
+ALTER TABLE [Council] ADD [file_server_username] VARCHAR(100) NULL;
+GO
+
+CREATE TABLE [AdvisoryPanelMeetings] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[meeting_date] DATE NOT NULL,
+	[title] VARCHAR(200) NOT NULL,
+	[location] VARCHAR(200) NULL,
+	[agenda] VARCHAR(1000) NULL,
+	[created_by_member_id] INTEGER NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [AdvisoryPanelMeetings]
+ADD FOREIGN KEY([created_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE TABLE [AdvisoryFeedback] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[member_id] INTEGER NOT NULL,
+	[council_id] INTEGER NOT NULL,
+	[topic] VARCHAR(100) NOT NULL,
+	[body] VARCHAR(2000) NOT NULL,
+	[submitted_at] DATETIME NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [AdvisoryFeedback]
+ADD FOREIGN KEY([member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [AdvisoryFeedback]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO

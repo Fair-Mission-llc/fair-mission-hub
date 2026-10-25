@@ -14,12 +14,15 @@
 //   - every status, not only Active, for the councils they administer (listRoster { allStatuses: true }), with a Status
 //     column;
 //   - for a Super Admin, an 'Impersonate Admin' button on each council Admin's row (mayImpersonateMember).
+// Sprint 10 Revision 3.1: the council's Financial Secretary gets 'Send new setup code' on each row of their own council
+// (canResendSetupCode; the server: assertMayResendSetupCode), without Admin rights.
 // The drivers check every write again, so a refusal is reported, never hidden.
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   canCreateMembers,
   canEditMember,
+  canResendSetupCode,
   councilLabel,
   describeError,
   filterRosterMembers,
@@ -112,7 +115,24 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
   const mayAdd = manager && canCreateMembers(user, addTo);
   const lookups: Lookups | null = data && manager ? { statuses: data.statuses, degrees: data.degrees, types: data.types } : null;
   const showStatus = manager;
-  const rowActions = manager;
+  // Sprint 10 Revision 3.1: the council's Financial Secretary sends setup codes on their own, without Admin rights.
+  const onboarder = !manager && canResendSetupCode(user, user.councilId);
+  const rowActions = manager || onboarder;
+  const [sending, setSending] = useState<number | null>(null);
+  const [sent, setSent] = useState<string | null>(null);
+  const resend = async (m: Member) => {
+    setError(null);
+    setSent(null);
+    setSending(m.id);
+    try {
+      await db.members.resendWelcome(user.memberId, m.id);
+      setSent(`A new welcome email with a fresh setup code was sent to ${m.Email}.`);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setSending(null);
+    }
+  };
 
   const viewAs = async (memberId: number) => {
     setError(null);
@@ -169,6 +189,11 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
           {error}
         </Notice>
       ) : null}
+      {sent ? (
+        <Notice tone="info" onDismiss={() => setSent(null)}>
+          {sent}
+        </Notice>
+      ) : null}
       {data && shown.length === 0 ? <Empty>{query.trim() ? 'Nobody matches the search.' : 'No members to show yet.'}</Empty> : null}
       {shown.length > 0 ? (
         <div className={cx('overflow-x-auto', compact && 'max-h-96 overflow-y-auto')}>
@@ -206,6 +231,11 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
                         {canEditMember(user, m) && lookups ? (
                           <Button size="sm" variant="secondary" onClick={() => setEditing({ kind: 'edit', member: m })} aria-label={`Edit ${m.MemberFirstName} ${m.MemberLastName}`}>
                             Edit
+                          </Button>
+                        ) : null}
+                        {onboarder && canResendSetupCode(user, m.CouncilID) ? (
+                          <Button size="sm" variant="secondary" disabled={sending !== null} onClick={() => void resend(m)} aria-label={`Send ${m.MemberFirstName} ${m.MemberLastName} a new setup code`}>
+                            {sending === m.id ? 'Sending…' : 'Send new setup code'}
                           </Button>
                         ) : null}
                         {mayImpersonateMember(user, { memberId: m.id, memberType: typeName }) ? (

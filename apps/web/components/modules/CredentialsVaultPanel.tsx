@@ -81,6 +81,19 @@ const DRIVE_CARD: SecretCard = {
   removedText: 'Removed. Council files use the portal Drive again.',
 };
 
+const FILE_SERVER_CARD: SecretCard = {
+  credentialKey: 'FILE_SERVER_PASSWORD',
+  title: 'Network file server',
+  intro:
+    "Type the password of the service account the portal uses to write to the council's file server (Council Wide Settings, System Settings, File Repository Mode). It is locked away once saved.",
+  label: 'Service account password',
+  placeholder: 'Service account password',
+  multiLine: false,
+  maxLength: 256,
+  savedText: 'Saved. The portal server signs in to the file server with it.',
+  removedText: "Removed. The portal server uses its own account on the file server.",
+};
+
 const COPILOT_CARD: SecretCard = {
   credentialKey: 'COPILOT_STUDIO_DIRECT_LINE_SECRET',
   title: 'Microsoft Co-Pilot (Copilot Studio)',
@@ -201,7 +214,7 @@ function SecretPanel({ card, councilId, saved, onChanged }: { card: SecretCard; 
  * The vault for one council. Sprint 10 Revision 3.0: `homeCouncilOnly` (the Super Admin Desk drawer) pins it to the
  * reader's own home council - no council picker, and no other council's sealed keys are ever requested.
  */
-export function CredentialsVaultPanel({ homeCouncilOnly = false }: { homeCouncilOnly?: boolean }) {
+export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !homeCouncilOnly }: { homeCouncilOnly?: boolean; showTitle?: boolean }) {
   const user = useUser();
   const scope = useCouncilScope();
   const councilId = homeCouncilOnly ? user.councilId : scope.councilId;
@@ -217,6 +230,7 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false }: { homeCouncil
   const copilot = vault.data?.credentials.find((c) => c.credential_key === 'COPILOT_STUDIO_DIRECT_LINE_SECRET');
   const ocrEndpoint = vault.data?.credentials.find((c) => c.credential_key === 'AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT');
   const ocrKey = vault.data?.credentials.find((c) => c.credential_key === 'AZURE_DOCUMENT_INTELLIGENCE_KEY');
+  const fileServer = vault.data?.credentials.find((c) => c.credential_key === 'FILE_SERVER_PASSWORD');
   const emailOn = councilEmailGateway(council.data) !== null && (vault.data ? Boolean(vault.data.gateway.password) : true);
   const connections: Connection[] = [
     { name: 'Outbound email', connected: emailOn, on: 'Connected to the council mail account', off: 'Using the portal default' },
@@ -231,7 +245,7 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false }: { homeCouncil
 
   return (
     <>
-      {homeCouncilOnly ? null : <PageTitle actions={<CouncilSelect scope={scope} />}>Credentials Vault</PageTitle>}
+      {!showTitle ? null : homeCouncilOnly ? <PageTitle>Credentials Vault</PageTitle> : <PageTitle actions={<CouncilSelect scope={scope} />}>Credentials Vault</PageTitle>}
       <StatusBanner connections={connections} unknown={council.data === undefined || (mayEdit && vault.loading)} />
       {vault.error ? <Notice tone="error">{vault.error}</Notice> : null}
       {mayEdit ? (
@@ -241,6 +255,7 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false }: { homeCouncil
           <SecretPanel key={`copilot-${councilId}`} card={COPILOT_CARD} councilId={councilId} saved={copilot} onChanged={reload} />
           <SecretPanel key={`ocr-endpoint-${councilId}`} card={OCR_ENDPOINT_CARD} councilId={councilId} saved={ocrEndpoint} onChanged={reload} />
           <SecretPanel key={`ocr-key-${councilId}`} card={OCR_KEY_CARD} councilId={councilId} saved={ocrKey} onChanged={reload} />
+          <SecretPanel key={`file-server-${councilId}`} card={FILE_SERVER_CARD} councilId={councilId} saved={fileServer} onChanged={reload} />
         </div>
       ) : (
         <p className="text-sm">

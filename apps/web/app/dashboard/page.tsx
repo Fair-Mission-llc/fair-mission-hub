@@ -82,6 +82,7 @@
 import { dashboardTabsFor, isFraternalTenant } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import {
+  DeskSeatFrame,
   FinancialSecretaryDesk,
   GrandKnightDesk,
   HistorianDesk,
@@ -129,15 +130,25 @@ function Dashboard() {
         {shown === 'home' ? (
           <HomeDesk councilId={scope.councilId} faithOn={faithOn} />
         ) : shown === 'grand-knight' ? (
-          <GrandKnightDesk user={user} councilId={scope.councilId} />
+          <DeskSeatFrame desk="grand-knight" councilId={scope.councilId}>
+            <GrandKnightDesk user={user} councilId={scope.councilId} />
+          </DeskSeatFrame>
         ) : shown === 'financial-secretary' ? (
-          <FinancialSecretaryDesk user={user} councilId={scope.councilId} />
+          <DeskSeatFrame desk="financial-secretary" councilId={scope.councilId}>
+            <FinancialSecretaryDesk user={user} councilId={scope.councilId} />
+          </DeskSeatFrame>
         ) : shown === 'treasurer' ? (
-          <TreasurerDesk user={user} councilId={scope.councilId} />
+          <DeskSeatFrame desk="treasurer" councilId={scope.councilId}>
+            <TreasurerDesk user={user} councilId={scope.councilId} />
+          </DeskSeatFrame>
         ) : shown === 'recorder' ? (
-          <RecorderDesk user={user} councilId={scope.councilId} />
+          <DeskSeatFrame desk="recorder" councilId={scope.councilId}>
+            <RecorderDesk user={user} councilId={scope.councilId} />
+          </DeskSeatFrame>
         ) : shown === 'historian' ? (
-          <HistorianDesk user={user} councilId={scope.councilId} />
+          <DeskSeatFrame desk="historian" councilId={scope.councilId}>
+            <HistorianDesk user={user} councilId={scope.councilId} />
+          </DeskSeatFrame>
         ) : shown === 'super-admin' ? (
           <SuperAdminDesk user={user} />
         ) : (

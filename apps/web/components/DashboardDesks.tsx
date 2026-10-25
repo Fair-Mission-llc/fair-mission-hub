@@ -62,7 +62,7 @@
 // the Operations Knowledge Archive drawer holds the entry form for its writers. The Member Desk puts its two shift
 // trackers side by side at the top and keeps plain panels.
 import Link from 'next/link';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
 import {
   addDays,
   awaitsTreasurerCoding,
@@ -137,6 +137,9 @@ import {
   type MinutesCountdown,
   type SessionUser,
   canSyncSupremeRoster,
+  SEAT_VACANT_MESSAGE,
+  vacantDeskSeat,
+  type DashboardTabId,
 } from '@kofc/shared';
 import { BankStatementMatchWindow, BudgetVsActualsModule, MotionsLedgerModule } from '@/components/DeskModules';
 import { DeskBlotter } from '@/components/DeskDrawers';
@@ -195,6 +198,70 @@ const DESK_ROWS = 6;
  * gone - the card is at least 20rem tall (min-h-80) and grows with its content, and the page scrolls in the browser.
  * The navy tone (Sprint 8D/8E) is the high-contrast honor card: white on navy, gold-edged.
  */
+// ---- vacant seats and desk failures (Sprint 10 Revision 3.1) -------------------------------------------------------
+
+/** The placeholder for an officer seat nobody holds, linking to the Member Roster and the appointments matrix. */
+export function VacantSeatCard({ role }: { role: string }) {
+  return (
+    <section aria-label={`${role} seat vacant`} className="rounded border-2 border-dashed border-navy bg-white p-4">
+      <p className="font-serif text-lg font-bold text-navy">{SEAT_VACANT_MESSAGE}</p>
+      <p className="mt-1 text-sm">
+        Nobody holds the <strong>{role}</strong> seat in this council. The desk below still opens for Admins, but its signatures wait for a {role}.
+      </p>
+      <p className="mt-2 flex flex-wrap gap-4 text-sm">
+        <Link href="/roster" className="font-bold underline">
+          Open the Member Roster
+        </Link>
+        <Link href="/elections/appointments" className="font-bold underline">
+          Appointed Leadership Matrix
+        </Link>
+      </p>
+    </section>
+  );
+}
+
+/** Catches a desk that fails to render, so one missing record never blanks the whole dashboard. */
+class DeskErrorBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[desk] a desk failed to render:', error, info.componentStack);
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
+/**
+ * Sprint 10 Revision 3.1: the frame every officer desk renders in. It reads the council's seats
+ * (elections.listOfficerSeats) and leads with VacantSeatCard when the desk's office has no holder (vacantDeskSeat), and
+ * it catches a desk that throws - for example on a missing officer record - showing a plain card instead of a blank page.
+ * A seat list that fails to load never blocks the desk.
+ */
+export function DeskSeatFrame({ desk, councilId, children }: { desk: DashboardTabId; councilId: number; children: ReactNode }) {
+  const seats = useLoad(() => db.elections.listOfficerSeats(councilId).catch(() => null), [councilId]);
+  const vacant = vacantDeskSeat(seats.data, desk);
+  return (
+    <div className="flex flex-col gap-4">
+      {vacant ? <VacantSeatCard role={vacant} /> : null}
+      <DeskErrorBoundary
+        key={`${desk}-${councilId}`}
+        fallback={
+          vacant ? (
+            <Notice tone="info">This desk has nothing to show while the {vacant} seat is vacant.</Notice>
+          ) : (
+            <Notice tone="error">Part of this desk could not be shown. Reload the page; if it happens again, tell your council Admin.</Notice>
+          )
+        }
+      >
+        {children}
+      </DeskErrorBoundary>
+    </div>
+  );
+}
+
 function HomeCard({ title, actions, tone = 'white', children }: { title: string; actions?: ReactNode; tone?: 'white' | 'navy'; children: ReactNode }) {
   return (
     <section

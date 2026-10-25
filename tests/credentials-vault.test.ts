@@ -173,7 +173,8 @@ describe('/api/councils/credentials', () => {
     expect((await post(save)).status).toBe(401);
     expect((await post(save, await cookieFor('testmember@kofc.org'))).status).toBe(403);
     expect((await post({ ...save, councilId: councilId + 1000 }, admin)).status).toBe(403);
-    expect((await post({ ...save, councilId: 999 }, await cookieFor('testsuperadmin@kofc.org'))).status).toBe(404);
+    // Sprint 10 Revision 3.1: another council's vault is 403 Forbidden for every member type, a Super Admin included.
+    expect((await post({ ...save, councilId: 999 }, await cookieFor('testsuperadmin@kofc.org'))).status).toBe(403);
     expect((await post({ ...save, credentialKey: 'AWS_SECRET' }, admin)).status).toBe(400);
     expect((await post({ ...save, credentialKey: 'SMTP_OUTBOUND_PASSWORD' }, admin)).status).toBe(400);
     expect((await post({ ...save, value: '' }, admin)).status).toBe(400);

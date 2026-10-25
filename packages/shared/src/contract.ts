@@ -118,6 +118,9 @@ import type { DistributionGroup } from './messaging';
 import type { FeatureFlagChanges, FeatureFlagName } from './features';
 import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { MemberRosterOptions, MemberRosterResult } from './member-roster';
+import type { AccountOwner, AccountOwnerInput } from './account-owners';
+import type { FileRepositorySettings } from './file-repository';
+import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
@@ -2512,6 +2515,21 @@ export interface DataService {
      */
     setEmailGateway(actorId: number, councilId: number, settings: EmailGatewaySettings | null): Promise<Council>;
     /**
+     * Sprint 10 Revision 3.1: the council's Account Owners Matrix (account-owners.ts), by account name. The council's
+     * Active Admins and any Active Super Admin (assertMayManageAccountOwners: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED).
+     */
+    listAccountOwners(actorId: number, councilId: number): Promise<AccountOwner[]>;
+    /** Adds a row (no id) or changes one of the council's rows; INVALID_INPUT for a bad field or a duplicate account name. */
+    saveAccountOwner(actorId: number, councilId: number, input: AccountOwnerInput): Promise<AccountOwner>;
+    /** Deletes one of the council's rows; RECORD_NOT_FOUND for another council's row or an unknown id. */
+    removeAccountOwner(actorId: number, councilId: number, id: number): Promise<void>;
+    /**
+     * Sprint 10 Revision 3.1: where the council's uploads are filed (file-repository.ts) - the mode, the UNC path and the
+     * service account username. The password goes to the Credentials Vault, never here. The council's Active Admins and
+     * any Active Super Admin (assertMaySetFileRepository); INVALID_INPUT for a bad mode or path.
+     */
+    setFileRepositorySettings(actorId: number, councilId: number, settings: FileRepositorySettings): Promise<Council>;
+    /**
      * Sprint 6B: saves Council.base_dues_rate (dues.ts cleanDuesRate) and resolves to the updated council. Only an
      * Active Grand Knight or Financial Secretary of the council may (assertMayEditDuesRate; DUES_RATE_EDITOR_REQUIRED or
      * COUNCIL_ACCESS_DENIED, nothing written) - Admins and Super Admins without one of those seats are refused.
@@ -3635,6 +3653,27 @@ export interface DataService {
    * history row get one (planHistoryBackfill). Writes are all or nothing; an unknown actor rejects MEMBER_NOT_FOUND,
    * an unknown council or role INVALID_INPUT.
    */
+  /**
+   * Sprint 10 Revision 3.1: the Application Advisory Panel (advisory-panel.ts). Reads and feedback: Active panelists
+   * (the 'Application Advisory Panelist' role) and Super Admins (assertMayReadAdvisoryPanel); meetings and panelists are
+   * kept by Super Admins (assertMayKeepAdvisoryPanel). MEMBER_NOT_FOUND for an unknown actor.
+   */
+  advisory: {
+    /** The panel's meetings, soonest first. */
+    listMeetings(actorId: number): Promise<AdvisoryPanelMeeting[]>;
+    /** Adds (no id) or changes a meeting; INVALID_INPUT for a bad date or a blank title. */
+    saveMeeting(actorId: number, input: AdvisoryPanelMeetingInput): Promise<AdvisoryPanelMeeting>;
+    removeMeeting(actorId: number, id: number): Promise<void>;
+    /** Every consultation note, newest first, with the sender's name and council. */
+    listFeedback(actorId: number): Promise<AdvisoryFeedbackDetail[]>;
+    /** Sends one note from the actor, filed under their home council. */
+    submitFeedback(actorId: number, input: AdvisoryFeedbackInput): Promise<AdvisoryFeedback>;
+    /** The members who hold the panelist role, from every council. Super Admins only. */
+    listPanelists(actorId: number): Promise<AdvisoryPanelist[]>;
+    /** Gives (true) or takes away (false) the panelist role; resolves to the new list. Super Admins only. */
+    setPanelist(actorId: number, memberId: number, designated: boolean): Promise<AdvisoryPanelist[]>;
+  };
+
   elections: {
     /** Every council office in OFFICE_ROLE_NAMES order with its holder and, for elected seats, its ballot state. */
     listOfficerSeats(councilId: number): Promise<OfficerSeat[]>;

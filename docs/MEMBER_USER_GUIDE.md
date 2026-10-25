@@ -97,6 +97,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - **📸 Council Photo Gallery** sits under **Navigation Guide**, above the pillars. Its two links open **Browse Albums** and the **Gallery Management Center**.
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
 - Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
+- **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **⚖** to read them.
+- If a Super Admin made you an **Application Advisory Panelist**, **🔊 Application Advisory Panel** shows under **Navigation Guide**.
 
 </details>
 

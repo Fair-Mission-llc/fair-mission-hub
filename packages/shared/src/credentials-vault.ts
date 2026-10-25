@@ -11,7 +11,21 @@
 // and stores the sealed text; it unseals a value only inside a server route, at the moment of use. No data driver reads
 // or writes the table, no route answers with a value, and the browser only ever sees CredentialStatus: the key, when it
 // was saved and REDACTED_SECRET. This file holds the browser-safe half: the key names, the masked view and the checks.
-import { BusinessRuleError } from './rules';
+import { BusinessRuleError, SecurityPrivilegeError } from './rules';
+
+/**
+ * Sprint 10 Revision 3.1: the vault's tenancy boundary, checked by the server routes before anything else. A session may
+ * see or change only its own home council's keys - a Super Admin included. Any other council: COUNCIL_ACCESS_DENIED,
+ * which the routes answer with 403 Forbidden.
+ */
+export function assertHomeCouncilVault(actor: { memberId: number; councilId: number }, councilId: number): void {
+  if (actor.councilId === councilId) return;
+  throw new SecurityPrivilegeError('COUNCIL_ACCESS_DENIED', `The Credentials Vault opens only for your home council (${actor.councilId}), not council ${councilId}.`, {
+    actorId: actor.memberId,
+    actorCouncilId: actor.councilId,
+    councilId,
+  });
+}
 
 /** The credentials a council may keep in the vault. */
 export const CREDENTIAL_KEYS = [
@@ -20,6 +34,8 @@ export const CREDENTIAL_KEYS = [
   'COPILOT_STUDIO_DIRECT_LINE_SECRET',
   'AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT',
   'AZURE_DOCUMENT_INTELLIGENCE_KEY',
+  // Sprint 10 Revision 3.1: the network file server's service account password (file-repository.ts).
+  'FILE_SERVER_PASSWORD',
 ] as const;
 export type CredentialKey = (typeof CREDENTIAL_KEYS)[number];
 
@@ -32,6 +48,7 @@ export const CREDENTIAL_LABELS: Record<CredentialKey, string> = {
   COPILOT_STUDIO_DIRECT_LINE_SECRET: 'Microsoft Copilot Studio Direct Line secret',
   AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: 'Azure Document Intelligence endpoint',
   AZURE_DOCUMENT_INTELLIGENCE_KEY: 'Azure Document Intelligence key',
+  FILE_SERVER_PASSWORD: 'Network file server service account password',
 };
 
 /**
@@ -44,6 +61,7 @@ export const CREDENTIAL_RULES: Record<CredentialKey, { maxLength: number; multiL
   COPILOT_STUDIO_DIRECT_LINE_SECRET: { maxLength: 500, multiLine: false },
   AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: { maxLength: 500, multiLine: false },
   AZURE_DOCUMENT_INTELLIGENCE_KEY: { maxLength: 500, multiLine: false },
+  FILE_SERVER_PASSWORD: { maxLength: 256, multiLine: false },
 };
 
 /** Sealed values look like `v1.<iv>.<tag>.<ciphertext>`, each part base64url. */

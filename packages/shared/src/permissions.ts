@@ -10,6 +10,7 @@
 // identity yet, so until the remote driver's API enforces them server-side they are a usability gate.
 // =========================================================================
 import type { CouncilLookupTableName, SessionUser } from './contract';
+import { canOpenAdvisoryPanel } from './advisory-panel';
 import { budgetWindowOf } from './budget';
 import { ALL_FEATURES_ON, withFeatureFlags, type FeatureFlags } from './features';
 import { DEFAULT_TENANT_TYPE, withTenantGate, type TenantType } from './tenant';
@@ -84,6 +85,7 @@ export type PortalArea =
   | 'system-settings/affiliations'
   | 'system-settings/knowledge-archive'
   | 'navigation-guide'
+  | 'advisory-panel'
   | 'performance/charts'
   | 'history'
   | 'faith-center'
@@ -216,6 +218,13 @@ export const canOpenViewAsMember = (u: Actor): boolean => isAdmin(u);
  * Sprint 10 Revision 3.0: who sees the Supreme roster CSV uploader, which now lives only on the Financial Secretary Desk -
  * the council's Financial Secretary, its Admins, or a Super Admin (onboarding.ts assertMaySyncSupremeRoster on the server).
  */
+/**
+ * Sprint 10 Revision 3.1: who sees 'Send new setup code' on a member's roster row - the council's Financial Secretary on
+ * their own, its Admins, or a Super Admin (onboarding.ts assertMayResendSetupCode on the server).
+ */
+export const canResendSetupCode = (u: Actor, councilId: number): boolean =>
+  canAdministerCouncil(u, councilId) || ((u.roles ?? []).includes('Financial Secretary') && u.councilId === councilId);
+
 export const canSyncSupremeRoster = (u: Actor, councilId: number): boolean =>
   canAdministerCouncil(u, councilId) || ((u.roles ?? []).includes('Financial Secretary') && u.councilId === councilId);
 
@@ -785,6 +794,9 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   areas.push('inventory/loaner-library');
   // Sprint 7C Extension: the Navigation Guide explains the viewer's own sidebar, so every member has it, pinned above the pillars.
   areas.push('navigation-guide');
+  // Sprint 10 Revision 3.1: the Application Advisory Panel - Super Admins and the members of any council who hold the
+  // 'Application Advisory Panelist' role. Pinned above the pillars like the Navigation Guide (advisory-panel.ts).
+  if (canOpenAdvisoryPanel(u)) areas.push('advisory-panel');
   return withTenantGate(withFeatureFlags(areas, flags), tenant);
 }
 
@@ -795,7 +807,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
  * (Sprint 7C Extension) is pinned above the pillars rather than filed in one. Sprint 8C: the Leadership Auditing Queue
  * ('expenses/queue') left the sidebar; the page stays open to its readers from the Financial Secretary Desk.
  */
-export type PortalNavItem = Exclude<PortalArea, 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue'>;
+export type PortalNavItem = Exclude<PortalArea, 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue' | 'advisory-panel'>;
 
 export interface PortalNavGroup {
   id: 'governance' | 'faith' | 'finances' | 'performance' | 'resources' | 'answers' | 'setup';

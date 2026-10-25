@@ -1237,3 +1237,35 @@ CouncilDonationMethod gains one column.
 •	account_identity_label (VARCHAR(100), NULL) — the name of the account the payment method pays into, as the donor sees it in the payment app. Edited on Council Lookups > Enabled donation methods ('Account name donors see'). The phone's QR code screens show it with the account owner (merchantAccountLine): 'Pays into <label> (<owner> account)', or 'Pays into the council's / parish's / a third party's account' without a label.
 Budget categories need no table change: CouncilBudgetCategory (section 11) is the council's own category list. Since Revision 6.0 the Financial Secretary, Treasurer and Admins also keep it on the Budget page, and the Budget Analyzer draws the Allocation Pie and the year-to-date spending bars from budget.getBudgetProgress categories (budget-category-charts.ts).
 ________________________________________
+# 56. Account Owners, the Network File Repository and the Advisory Panel (Sprint 10 Revision 3.1)
+Schema version 101; the phone database version moves to 101.
+[AccountOwners]
+•	id (INTEGER, NOT NULL, IDENTITY) — Primary Key.
+•	council_id (INTEGER, NOT NULL) — Foreign Key references Council(id): the council that keeps the account. Every read and write is limited to one council.
+•	account_name (VARCHAR(150), NOT NULL) — the electronic account, for example Venmo or the parish ParishSoft account. Unique within a council (AccountOwners_Council_Name_Idx).
+•	contact_name (VARCHAR(100), NULL) — who to call about the account.
+•	contact_number (VARCHAR(50), NULL) — the contact's phone number.
+•	contact_email (VARCHAR(100), NULL) — the contact's email address.
+•	ein_number (VARCHAR(20), NULL) — the account holder's EIN, stored as 'NN-NNNNNNN' (cleanEinNumber).
+Rules (account-owners.ts). The council's Active Admins and any Active Super Admin read and keep the rows (assertMayManageAccountOwners) through councils.listAccountOwners, saveAccountOwner and removeAccountOwner, on the Account Owners Matrix in the Standard Bank Accounts drawer of Council Wide Settings. The user named the columns; council_id was added for multi-tenant isolation.
+Council gains three columns.
+•	file_repository_mode (VARCHAR(20), NOT NULL, DEFAULT 'CLOUD') — 'CLOUD' (the Google Drive vault) or 'LOCAL_NETWORK' (the council's own file server). The rules layer enforces the values (no CHECK).
+•	file_server_path (VARCHAR(260), NULL) — the share's UNC path, for example \hall-server\kofc.
+•	file_server_username (VARCHAR(100), NULL) — the service account the portal server signs in as. Its password is sealed in the Credentials Vault under FILE_SERVER_PASSWORD, never in this table.
+Rules (file-repository.ts). councils.setFileRepositorySettings: the council's Active Admins and Super Admins. In LOCAL_NETWORK mode every upload route (/api/drive-vault, meeting photos, oral histories, asset photos, hub check photos) writes the file to the share through the portal server and stores a portal link (/api/file-repository?file=c<council>/<folder>/<name>), which only signed-in members of the council and Super Admins can open.
+[AdvisoryPanelMeetings]
+•	id (INTEGER, NOT NULL, IDENTITY) — Primary Key.
+•	meeting_date (DATE, NOT NULL) — the meeting day.
+•	title (VARCHAR(200), NOT NULL) — what the meeting is.
+•	location (VARCHAR(200), NULL) — where, or 'Online'.
+•	agenda (VARCHAR(1000), NULL) — the agenda in a few lines.
+•	created_by_member_id (INTEGER, NOT NULL) — Foreign Key references Member(id): the Super Admin who added it.
+[AdvisoryFeedback]
+•	id (INTEGER, NOT NULL, IDENTITY) — Primary Key.
+•	member_id (INTEGER, NOT NULL) — Foreign Key references Member(id): the panelist who sent the note.
+•	council_id (INTEGER, NOT NULL) — Foreign Key references Council(id): the sender's home council when the note was sent.
+•	topic (VARCHAR(100), NOT NULL) — the note's subject.
+•	body (VARCHAR(2000), NOT NULL) — the note.
+•	submitted_at (DATETIME, NOT NULL) — when it was sent.
+Rules (advisory-panel.ts). Panelists hold the new Role row 'Application Advisory Panelist' (Seed.sql; Officer 0), given or taken away by a Super Admin (advisory.setPanelist). Panelists of any council and Super Admins read the meetings and the feedback and send feedback (assertMayReadAdvisoryPanel); only Super Admins keep the meetings (assertMayKeepAdvisoryPanel). The roadmap and release lists are kept in code (ADVISORY_ROADMAP, ADVISORY_RELEASES).
+________________________________________

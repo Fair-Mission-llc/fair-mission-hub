@@ -58,8 +58,8 @@ const newCharity = (over: Partial<NewGlobalCharity> = {}): NewGlobalCharity => (
 
 describe('schema 100: the verification columns', () => {
   it('adds IsVerified, VerifiedAt and VerifiedByMemberID to GlobalCharityRegistry', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(100);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 100;');
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(100);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (10\d|1[1-9]\d);/);
     const schema = read('Schema.sql');
     expect(schema).toContain('ALTER TABLE [GlobalCharityRegistry] ADD [IsVerified] BIT NOT NULL DEFAULT 0;');
     expect(schema).toContain('ALTER TABLE [GlobalCharityRegistry] ADD [VerifiedAt] DATETIME NULL;');

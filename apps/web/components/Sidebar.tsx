@@ -16,6 +16,7 @@
 // sidebar collapses: the hamburger button at its top hides or shows the links, and this browser remembers the choice.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   canOpenArchiveVault,
   COUNCIL_PHOTO_GALLERY_TITLE,
@@ -30,7 +31,12 @@ import {
   type PortalNavItem,
   type SessionUser,
   type TenantType,
+  ADVISORY_PANEL_HREF,
+  ADVISORY_PANEL_TITLE,
+  LEGAL_NOTICES,
+  type LegalNoticeId,
 } from '@kofc/shared';
+import { Drawer } from '@/components/Drawer';
 import { cx } from '@/components/ui';
 
 export interface NavEntry {
@@ -352,16 +358,73 @@ function GalleryNode({ pathname, hash, tenant }: { pathname: string; hash: strin
   );
 }
 
+/** Sprint 10 Revision 3.1: the notices the sidebar footer links to. */
+const SIDEBAR_LEGAL_NOTICES: readonly LegalNoticeId[] = ['terms', 'privacy'];
+
+/**
+ * The sidebar's persistent legal footer (Sprint 10 Revision 3.1): Terms of Service and Privacy Policy, always at the foot of
+ * the rail - as text links while the sidebar is open, as one ⚖ button while it is collapsed. Each opens its notice
+ * (legal-notices.ts) in a drawer over the page.
+ */
+function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
+  const [open, setOpen] = useState<LegalNoticeId | null>(null);
+  const notice = LEGAL_NOTICES.find((n) => n.id === open);
+  const items = LEGAL_NOTICES.filter((n) => SIDEBAR_LEGAL_NOTICES.includes(n.id));
+  return (
+    <footer aria-label="Legal" className="mt-auto border-t border-t-gold px-3 pt-2 text-xs">
+      {collapsed ? (
+        <button type="button" onClick={() => setOpen('terms')} title="Terms of Service and Privacy Policy" aria-label="Terms of Service and Privacy Policy" className="w-full text-center text-base hover:text-gold">
+          ⚖
+        </button>
+      ) : (
+        <ul className="flex flex-col gap-1">
+          {items.map((n) => (
+            <li key={n.id}>
+              <button type="button" onClick={() => setOpen(n.id)} className="text-left underline-offset-2 hover:text-gold hover:underline">
+                {n.title}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {notice && typeof document !== 'undefined'
+        ? createPortal(
+        <Drawer title={notice.title} onClose={() => setOpen(null)}>
+          <div className="flex flex-col gap-3 text-sm leading-relaxed text-navy">
+            {notice.paragraphs.map((text) => (
+              <p key={text}>{text}</p>
+            ))}
+            {notice.signature ? <p className="font-bold">{notice.signature}</p> : null}
+            <div className="flex flex-wrap gap-4 border-t border-line pt-3">
+              {items
+                .filter((n) => n.id !== notice.id)
+                .map((n) => (
+                  <button key={n.id} type="button" onClick={() => setOpen(n.id)} className="font-bold underline">
+                    {n.title}
+                  </button>
+                ))}
+            </div>
+          </div>
+        </Drawer>,
+            document.body,
+          )
+        : null}
+    </footer>
+  );
+}
+
 export function Sidebar({ user, pathname, features, tenant }: { user: SessionUser; pathname: string; features: FeatureFlags; tenant: TenantType }) {
   const groups = portalSidebar(user, features, tenant);
   const hash = useHash();
   const [collapsed, toggle] = useCollapsed();
-  const hasGallery = portalAreas(user, features, tenant).includes('gallery');
+  const areas = portalAreas(user, features, tenant);
+  const hasGallery = areas.includes('gallery');
+  const hasAdvisoryPanel = areas.includes('advisory-panel');
   return (
     <nav
       data-surface="navy"
       aria-label="Portal sections"
-      className={cx('shrink-0 overflow-hidden bg-navy py-3 text-white motion-safe:transition-[width] motion-safe:duration-200', collapsed ? 'w-14' : 'w-64')}
+      className={cx('flex shrink-0 flex-col overflow-hidden bg-navy py-3 text-white motion-safe:transition-[width] motion-safe:duration-200', collapsed ? 'w-14' : 'w-64')}
     >
       {/* Sprint 10 Revision 1.0: the persistent hamburger that hides or shows the sidebar's links. */}
       <div className={cx('flex pb-2', collapsed ? 'justify-center' : 'justify-end px-3')}>
@@ -383,6 +446,19 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
         {/* Sprint 7C Extension: every member's Navigation Guide, pinned above the pillars. */}
         <ul aria-label="Navigation help" className="flex flex-col pb-2">
           <NavLink item="navigation-guide" current={isCurrent(pathname, 'navigation-guide')} tenant={tenant} />
+          {/* Sprint 10 Revision 3.1: the Application Advisory Panel, a top-level workspace for panelists and Super Admins. */}
+          {hasAdvisoryPanel ? (
+            <li>
+              <Link
+                href={ADVISORY_PANEL_HREF}
+                title="Roadmap, future releases, panel meeting dates and consultation feedback"
+                aria-current={pathname === ADVISORY_PANEL_HREF ? 'page' : undefined}
+                className={navLinkClass(pathname === ADVISORY_PANEL_HREF)}
+              >
+                {ADVISORY_PANEL_TITLE}
+              </Link>
+            </li>
+          ) : null}
         </ul>
         {hasGallery ? <GalleryNode pathname={pathname} hash={hash} tenant={tenant} /> : null}
         {groups.map((group) => {
@@ -406,6 +482,7 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
           );
         })}
       </div>
+      <SidebarLegalFooter collapsed={collapsed} />
     </nav>
   );
 }

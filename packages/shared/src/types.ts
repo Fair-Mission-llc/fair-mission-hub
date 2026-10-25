@@ -156,6 +156,14 @@ export interface Council {
    * members (feature-deployment.ts biometricLoginEnabled). A missing or NULL value reads as on.
    */
   biometric_login_enabled?: number | null;
+  /**
+   * Sprint 10 Revision 3.1 (Schema 101): where uploads are filed - 'CLOUD' (the Google Drive vault, the default) or
+   * 'LOCAL_NETWORK' (file-repository.ts). The share's UNC path and service account username; the password is sealed in
+   * the Credentials Vault (FILE_SERVER_PASSWORD).
+   */
+  file_repository_mode?: string | null;
+  file_server_path?: string | null;
+  file_server_username?: string | null;
 }
 
 /**

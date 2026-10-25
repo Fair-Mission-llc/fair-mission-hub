@@ -11,11 +11,13 @@
 // route writes.
 //
 // Only the portal session of an Active Admin of that council or an Active Super Admin may (401 without a session, 403
-// otherwise) - the assertMayMaintainCouncilRecords rule of the email gateway.
+// otherwise) - the assertMayMaintainCouncilRecords rule of the email gateway. Sprint 10 Revision 3.1: only for the
+// session's own home council, a Super Admin included - any other council answers 403 Forbidden (vault-gate.ts).
 import { NextResponse } from 'next/server';
-import { assertMayMaintainCouncilRecords, describeError, isCredentialKey, resolveDocumentIntelligenceEndpoint, type CredentialKey } from '@kofc/shared';
+import { describeError, isCredentialKey, resolveDocumentIntelligenceEndpoint, type CredentialKey } from '@kofc/shared';
 import { credentialsVault } from '@/services/server/credentials-vault';
-import { memberDirectory, requirePortalSession } from '@/services/server/session';
+import { memberDirectory } from '@/services/server/session';
+import { requireHomeCouncilVaultSession } from '@/services/server/vault-gate';
 
 /** Keys saved through their own route, alongside the settings they belong with. */
 const OWN_ROUTE: Partial<Record<CredentialKey, string>> = { SMTP_OUTBOUND_PASSWORD: '/api/councils/email-gateway' };
@@ -25,21 +27,13 @@ const councilIdOf = (value: unknown): number | null => {
   return typeof id === 'number' && Number.isInteger(id) && id > 0 ? id : null;
 };
 
-const mayMaintain = (councilId: number) => (actor: Parameters<typeof assertMayMaintainCouncilRecords>[0]) => {
-  try {
-    assertMayMaintainCouncilRecords(actor, councilId, "manage the council's saved credentials");
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 const listing = (councilId: number) => NextResponse.json({ credentials: credentialsVault().status(councilId) });
 
 export async function GET(req: Request) {
   const councilId = councilIdOf(new URL(req.url).searchParams.get('councilId'));
   if (councilId === null) return NextResponse.json({ message: 'Name the council as ?councilId=.' }, { status: 400 });
-  const session = await requirePortalSession(req, mayMaintain(councilId));
+  const session = await requireHomeCouncilVaultSession(req, councilId, "manage the council's saved credentials");
   if ('denied' in session) return session.denied;
   return listing(councilId);
 }
@@ -48,7 +42,7 @@ export async function POST(req: Request) {
   const payload = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   const councilId = typeof payload?.councilId === 'number' ? councilIdOf(payload.councilId) : null;
   if (councilId === null) return NextResponse.json({ message: 'Name the council as councilId.' }, { status: 400 });
-  const session = await requirePortalSession(req, mayMaintain(councilId));
+  const session = await requireHomeCouncilVaultSession(req, councilId, "manage the council's saved credentials");
   if ('denied' in session) return session.denied;
 
   const key = payload?.credentialKey;

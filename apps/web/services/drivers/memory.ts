@@ -778,7 +778,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -1560,6 +1560,49 @@ export class MemoryDataService implements DataService {
       return { ...row } as unknown as Council;
     },
 
+    // Sprint 10 Revision 3.1: the Account Owners Matrix and the file repository mode.
+    listAccountOwners: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayManageAccountOwners(this.memberWriteActor(s, actorId), councilId);
+      return s
+        .rows('AccountOwners')
+        .filter((r) => r.council_id === councilId)
+        .map((r) => ({ ...r }) as unknown as AccountOwner)
+        .sort((a, b) => a.account_name.localeCompare(b.account_name));
+    },
+    saveAccountOwner: async (actorId, councilId, input) => {
+      const clean = cleanAccountOwner(input);
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayManageAccountOwners(this.memberWriteActor(s, actorId), councilId);
+        this.requireRecord(s, 'Council', councilId);
+        const mine = s.rows('AccountOwners').filter((r) => r.council_id === councilId) as unknown as AccountOwner[];
+        assertAccountNameFree(mine, clean.account_name, input.id ?? null);
+        if (input.id != null) {
+          const row = s.rows('AccountOwners').find((r) => r.id === input.id && r.council_id === councilId);
+          if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${input.id}.`, { id: input.id });
+          Object.assign(row, clean);
+          return { ...row } as unknown as AccountOwner;
+        }
+        return { ...s.insert('AccountOwners', { council_id: councilId, ...clean }) } as unknown as AccountOwner;
+      });
+    },
+    removeAccountOwner: async (actorId, councilId, id) => {
+      const s = await this.ready();
+      assertMayManageAccountOwners(this.memberWriteActor(s, actorId), councilId);
+      if (s.remove('AccountOwners', (r) => r.id === id && r.council_id === councilId) === 0) {
+        throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
+      }
+    },
+    setFileRepositorySettings: async (actorId, councilId, settings) => {
+      const clean = cleanFileRepositorySettings(settings);
+      const s = await this.ready();
+      assertMaySetFileRepository(this.memberWriteActor(s, actorId), councilId);
+      const row = this.requireRecord(s, 'Council', councilId);
+      Object.assign(row, clean);
+      return withoutMeetingPin({ ...row } as unknown as Council);
+    },
+
     setDuesRate: async (actorId, councilId, rate) => {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
@@ -2121,7 +2164,7 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
       const member = this.requireMember(s, memberId);
-      assertMayImportSupremeRoster(actor, member.CouncilID as number, `send member ${memberId} a new setup code`);
+      assertMayResendSetupCode(actor, member.CouncilID as number, `send member ${memberId} a new setup code`);
       const cred = s.rows('Credentials').find((c) => c.id === member.CredentialID);
       if (cred && cred.Password !== UNREGISTERED_PASSWORD) {
         throw new BusinessRuleError('ALREADY_REGISTERED', `${member.Email as string} has already registered; they can reset their password instead.`, { memberId });
@@ -2313,6 +2356,32 @@ export class MemoryDataService implements DataService {
       budgetDirector: actor.IsBudgetDirector === 1,
       officer: roles.some((r) => r.Officer === 1),
     };
+  }
+
+  /** A feedback row with the sender's name and council label (Sprint 10 Revision 3.1). */
+  private advisoryFeedbackDetail(s: MemoryStore, row: AdvisoryFeedback): AdvisoryFeedbackDetail {
+    const member = s.rows('Member').find((m) => m.id === row.member_id);
+    const council = s.rows('Council').find((c) => c.id === row.council_id);
+    return {
+      ...row,
+      memberName: member ? `${member.MemberFirstName} ${member.MemberLastName}` : `Member ${row.member_id}`,
+      councilLabel: council ? rosterCouncilLabel(council as unknown as Council) : `Council ${row.council_id}`,
+    };
+  }
+
+  /** Every holder of the panelist role, by last name (Sprint 10 Revision 3.1). */
+  private advisoryPanelists(s: MemoryStore): AdvisoryPanelist[] {
+    const role = s.rows('Role').find((r) => r.Role === ADVISORY_PANELIST_ROLE);
+    if (!role) return [];
+    const ids = new Set(s.rows('MemberRoles').filter((r) => r.RoleID === role.id).map((r) => r.MemberID as number));
+    return s
+      .rows('Member')
+      .filter((m) => ids.has(m.id as number))
+      .sort((a, b) => String(a.MemberLastName).localeCompare(String(b.MemberLastName)) || String(a.MemberFirstName).localeCompare(String(b.MemberFirstName)))
+      .map((m) => {
+        const council = s.rows('Council').find((c) => c.id === m.CouncilID);
+        return { memberId: m.id as number, name: `${m.MemberFirstName} ${m.MemberLastName}`, councilLabel: council ? rosterCouncilLabel(council as unknown as Council) : `Council ${m.CouncilID}` };
+      });
   }
 
   private memberTypeName(s: MemoryStore, typeId: number): string | undefined {
@@ -5171,6 +5240,64 @@ export class MemoryDataService implements DataService {
   }
 
   // ---- officer elections (Sprint 5U) ----------------------------------------
+
+  // Sprint 10 Revision 3.1: the Application Advisory Panel (advisory-panel.ts).
+  advisory: DataService['advisory'] = {
+    listMeetings: async (actorId) => {
+      const s = await this.ready();
+      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId));
+      return (s.rows('AdvisoryPanelMeetings').map((r) => ({ ...r })) as unknown as AdvisoryPanelMeeting[]).sort(
+        (a, b) => a.meeting_date.localeCompare(b.meeting_date) || a.id - b.id,
+      );
+    },
+    saveMeeting: async (actorId, input) => {
+      const clean = cleanAdvisoryMeeting(input);
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      if (input.id != null) {
+        const row = s.rows('AdvisoryPanelMeetings').find((r) => r.id === input.id);
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No advisory panel meeting ${input.id}.`, { id: input.id });
+        Object.assign(row, clean);
+        return { ...row } as unknown as AdvisoryPanelMeeting;
+      }
+      return { ...s.insert('AdvisoryPanelMeetings', { ...clean, created_by_member_id: actorId }) } as unknown as AdvisoryPanelMeeting;
+    },
+    removeMeeting: async (actorId, id) => {
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      if (s.remove('AdvisoryPanelMeetings', (r) => r.id === id) === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `No advisory panel meeting ${id}.`, { id });
+    },
+    listFeedback: async (actorId) => {
+      const s = await this.ready();
+      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId));
+      return (s.rows('AdvisoryFeedback').map((r) => this.advisoryFeedbackDetail(s, r as unknown as AdvisoryFeedback)) as AdvisoryFeedbackDetail[]).sort(
+        (a, b) => b.submitted_at.localeCompare(a.submitted_at) || b.id - a.id,
+      );
+    },
+    submitFeedback: async (actorId, input) => {
+      const clean = cleanAdvisoryFeedback(input);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      return { ...s.insert('AdvisoryFeedback', { member_id: actorId, council_id: actor.councilId, ...clean, submitted_at: toTimestamp(this.now()) }) } as unknown as AdvisoryFeedback;
+    },
+    listPanelists: async (actorId) => {
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      return this.advisoryPanelists(s);
+    },
+    setPanelist: async (actorId, memberId, designated) => {
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      this.requireMember(s, memberId);
+      const role = s.rows('Role').find((r) => r.Role === ADVISORY_PANELIST_ROLE);
+      if (!role) throw new BusinessRuleError('INVALID_INPUT', `The ${ADVISORY_PANELIST_ROLE} role is missing from the Role table.`, {});
+      const held = s.rows('MemberRoles').some((r) => r.MemberID === memberId && r.RoleID === role.id);
+      if (designated && !held) s.insert('MemberRoles', { RoleID: role.id as number, MemberID: memberId });
+      if (!designated && held) s.remove('MemberRoles', (r) => r.MemberID === memberId && r.RoleID === role.id);
+      return this.advisoryPanelists(s);
+    },
+  };
 
   elections: DataService['elections'] = {
     listOfficerSeats: async (councilId) => {

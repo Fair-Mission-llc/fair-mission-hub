@@ -415,15 +415,15 @@ The form has no **Designated Budget Director** box. An Admin assigns the Budget 
 | You cannot move a member to another council. | Admins act on their own council only. | Ask a Super Admin. |
 
 ### 2.2 Send a new setup code
-> **Prerequisite (who can do this):** You must have council Admin privileges for the council, or Super Admin privileges.
+> **Prerequisite (who can do this):** You must be the council's Financial Secretary, a council Admin or a Super Admin. The Financial Secretary does not need Admin rights.
 > **Warning:** a new code replaces the old code.
 
 **Goal:** Help a member who lost or used up the setup code.
 
-**Start point:** Sidebar → Faith In Action → **Member Roster** → **Edit** on the member's row.
+**Start point:** Sidebar → Faith In Action → **Member Roster**. The Financial Secretary finds **Send new setup code** on the member's row. An Admin selects **Edit** on the row first.
 
 **Steps:**
-1. Select **Edit** on the member's row. The record opens in a drawer.
+1. Find the member's row. An Admin selects **Edit**; the record opens in a drawer.
 2. Select **Send new setup code**.
 
 **Expected result:** The member gets a new welcome email. The new code is valid for 14 days.
@@ -1061,15 +1061,9 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 ### 9.1 Concept: the parish fundraiser split
 Some fundraisers use parish property, for example the cathedral parking lot. The council then owes the parish a share of the money collected. The parish split calculates that share and pays it by check.
 
-Each council sets its own split on **Council Wide Settings** → **Feature Controls** → **Parish Fundraiser Split**:
+Since Sprint 10 Revision 3.1 the **Parish Fundraiser Split** card is retired. Council Wide Settings has no parish split switch. Revenue splits come from the chart of accounts: the Treasurer gives a Revenue account a split profile (**Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split**), and every posting to that account is shared out by its percentages.
 
-| Setting | What it does | Default |
-| --- | --- | --- |
-| **The parish split is on** / **off** | Switches the split on or off. | Off |
-| **Parish share (%)** | The parish's percentage of each event's collections, from 0.01 to 100. | 50 |
-| **General ledger line for the parish share** | The ledger line that the payment to the parish is charged to. The line is a revenue line or an expense line. | None |
-
-The split cannot be on without a ledger line. When the switch is on and no line is chosen, the card shows a red message and **Save parish split** stays unavailable.
+A council that switched the parish split on before the card was retired keeps its saved percentage and ledger line. The console below still issues Church Disbursement Requests for it.
 
 A revenue line takes the parish share back out of the fundraiser's revenue. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for this purpose.
 
@@ -1087,26 +1081,26 @@ When the FS records the payment, the ledger gets one posting. The posting is a d
 
 The officer who issues a request cannot also pay the request.
 
-### 9.3 Set up the parish split
-> **Who can do this:** the council's officers, the council's Admins and Super Admins.
+### 9.3 Share fundraiser revenue with a split profile
+> **Who can do this:** the council's Treasurer and Super Admins.
 
-**Goal:** Switch the parish split on with a percentage and a ledger line.
+**Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages. The **Parish Fundraiser Split** card is retired.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Feature Controls** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on the Revenue account.
 
 **Steps:**
-1. Select the switch. The switch shows **The parish split is on**.
-2. Enter the percentage in **Parish share (%)**, for example `50`.
-3. Select the line in **General ledger line for the parish share**.
-4. Select **Save parish split**.
+1. Select **Edit split** on the Revenue account that receives the fundraiser's money.
+2. Add a destination account and its percentage for each share, for example **Parish Fundraiser Share** at `50`.
+3. Make the percentages total exactly 100.
+4. Save the split.
 
-**Expected result:** The message **Saved for council … The split is on.** shows. The Treasurer's console names the line and the percentage.
+**Expected result:** The account shows as a split account. Every posting to it is shared out to the destination accounts.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| A red message shows and **Save parish split** is unavailable. | The split is on, but no ledger line is chosen. | Select a line in **General ledger line for the parish share**. |
-| The line you want is not in the list. | Only revenue lines and expense lines of your council show. | Ask the Treasurer to add the line to the chart of accounts. |
+| Council Wide Settings has no parish split switch. | The **Parish Fundraiser Split** card is retired. | Use a split profile on the Revenue account. |
+| **Edit split** is missing on an account. | Only Revenue accounts can split. | Choose a Revenue account. |
 
 ### 9.4 Pay a Church Disbursement Request
 > **Who can do this:** the council's Financial Secretary and Super Admins. The officer who issued the request cannot pay the request.

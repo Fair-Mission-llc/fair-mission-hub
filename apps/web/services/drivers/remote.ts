@@ -63,6 +63,10 @@ export function createRemoteDataService(): DataService {
       getPlatformSettings: notImplemented('councils.getPlatformSettings'),
       setPlatformSettings: notImplemented('councils.setPlatformSettings'),
       setEmailGateway: notImplemented('councils.setEmailGateway'),
+      listAccountOwners: notImplemented('councils.listAccountOwners'),
+      saveAccountOwner: notImplemented('councils.saveAccountOwner'),
+      removeAccountOwner: notImplemented('councils.removeAccountOwner'),
+      setFileRepositorySettings: notImplemented('councils.setFileRepositorySettings'),
     },
     parishes: {
       listByCouncil: notImplemented('parishes.listByCouncil'),
@@ -247,6 +251,15 @@ export function createRemoteDataService(): DataService {
       listMemberAlerts: notImplemented('notifications.listMemberAlerts'),
       markAsRead: notImplemented('notifications.markAsRead'),
       dispatchHighPriorityAlert: notImplemented('notifications.dispatchHighPriorityAlert'),
+    },
+    advisory: {
+      listMeetings: notImplemented('advisory.listMeetings'),
+      saveMeeting: notImplemented('advisory.saveMeeting'),
+      removeMeeting: notImplemented('advisory.removeMeeting'),
+      listFeedback: notImplemented('advisory.listFeedback'),
+      submitFeedback: notImplemented('advisory.submitFeedback'),
+      listPanelists: notImplemented('advisory.listPanelists'),
+      setPanelist: notImplemented('advisory.setPanelist'),
     },
     elections: {
       listOfficerSeats: notImplemented('elections.listOfficerSeats'),

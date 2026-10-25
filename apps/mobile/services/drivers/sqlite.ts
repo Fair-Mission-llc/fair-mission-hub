@@ -786,7 +786,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -972,8 +972,10 @@ const DB_NAME = 'kofc.db';
  *     phone's QR screen shows (Sprint 9 Revision 6.0).
  * 100: GlobalCharityRegistry.IsVerified, VerifiedAt and VerifiedByMemberID - the verification mark an Admin sets, which
  *     puts a charity in the Propose Charity Grant form's auto-fill dropdowns (Sprint 10 Revision 1.0).
+ * 101: AccountOwners, Council.file_repository_mode / file_server_path / file_server_username, AdvisoryPanelMeetings and
+ *     AdvisoryFeedback, and the 'Application Advisory Panelist' role (Sprint 10 Revision 3.1).
  */
-const SCHEMA_VERSION = 100;
+const SCHEMA_VERSION = 101;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -2035,6 +2037,58 @@ export class SqliteDataService implements DataService {
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
+
+    // Sprint 10 Revision 3.1: the Account Owners Matrix and the file repository mode.
+    listAccountOwners: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayManageAccountOwners(await this.memberWriteActor(db, actorId), councilId);
+      return db.getAllAsync<AccountOwner>('SELECT * FROM [AccountOwners] WHERE [council_id] = ? ORDER BY [account_name] COLLATE NOCASE, [id]', [councilId]);
+    },
+    saveAccountOwner: async (actorId, councilId, input) => {
+      const clean = cleanAccountOwner(input);
+      const db = await this.ready();
+      let id = input.id ?? null;
+      await db.withTransactionAsync(async () => {
+        assertMayManageAccountOwners(await this.memberWriteActor(db, actorId), councilId);
+        await this.requireRecord(db, 'Council', councilId);
+        const mine = await db.getAllAsync<AccountOwner>('SELECT [id], [account_name] FROM [AccountOwners] WHERE [council_id] = ?', [councilId]);
+        assertAccountNameFree(mine, clean.account_name, id);
+        const values = [clean.account_name, clean.contact_name, clean.contact_number, clean.contact_email, clean.ein_number];
+        if (id !== null) {
+          const done = await db.runAsync(
+            'UPDATE [AccountOwners] SET [account_name] = ?, [contact_name] = ?, [contact_number] = ?, [contact_email] = ?, [ein_number] = ? WHERE [id] = ? AND [council_id] = ?',
+            [...values, id, councilId],
+          );
+          if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
+        } else {
+          const added = await db.runAsync(
+            'INSERT INTO [AccountOwners] ([council_id], [account_name], [contact_name], [contact_number], [contact_email], [ein_number]) VALUES (?, ?, ?, ?, ?, ?)',
+            [councilId, ...values],
+          );
+          id = added.lastInsertRowId;
+        }
+      });
+      return (await db.getFirstAsync<AccountOwner>('SELECT * FROM [AccountOwners] WHERE [id] = ?', [id]))!;
+    },
+    removeAccountOwner: async (actorId, councilId, id) => {
+      const db = await this.ready();
+      assertMayManageAccountOwners(await this.memberWriteActor(db, actorId), councilId);
+      const done = await db.runAsync('DELETE FROM [AccountOwners] WHERE [id] = ? AND [council_id] = ?', [id, councilId]);
+      if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
+    },
+    setFileRepositorySettings: async (actorId, councilId, settings) => {
+      const clean = cleanFileRepositorySettings(settings);
+      const db = await this.ready();
+      assertMaySetFileRepository(await this.memberWriteActor(db, actorId), councilId);
+      await this.requireRecord(db, 'Council', councilId);
+      await db.runAsync('UPDATE [Council] SET [file_repository_mode] = ?, [file_server_path] = ?, [file_server_username] = ? WHERE [id] = ?', [
+        clean.file_repository_mode,
+        clean.file_server_path,
+        clean.file_server_username,
+        councilId,
+      ]);
+      return withoutMeetingPin((await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!);
+    },
   };
 
   // ---- council-level maintenance: parishes, pastors, activities, lists ----
@@ -2538,7 +2592,7 @@ export class SqliteDataService implements DataService {
       const actor = await this.memberWriteActor(db, actorId);
       const member = await db.getFirstAsync<Member>('SELECT * FROM [Member] WHERE [id] = ?', [memberId]);
       if (!member) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
-      assertMayImportSupremeRoster(actor, member.CouncilID, `send member ${memberId} a new setup code`);
+      assertMayResendSetupCode(actor, member.CouncilID, `send member ${memberId} a new setup code`);
       if (await db.getFirstAsync('SELECT [id] FROM [Credentials] WHERE [id] = ? AND [Password] <> ?', [member.CredentialID, UNREGISTERED_PASSWORD])) {
         throw new BusinessRuleError('ALREADY_REGISTERED', `${member.Email} has already registered; they can reset their password instead.`, { memberId });
       }
@@ -6193,6 +6247,113 @@ export class SqliteDataService implements DataService {
   }
 
   // ---- officer elections (Sprint 5U) ----------------------------------------
+
+  // Sprint 10 Revision 3.1: the Application Advisory Panel (advisory-panel.ts).
+  advisory: DataService['advisory'] = {
+    listMeetings: async (actorId) => {
+      const db = await this.ready();
+      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      return db.getAllAsync<AdvisoryPanelMeeting>('SELECT * FROM [AdvisoryPanelMeetings] ORDER BY [meeting_date], [id]');
+    },
+    saveMeeting: async (actorId, input) => {
+      const clean = cleanAdvisoryMeeting(input);
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      let id = input.id ?? null;
+      if (id !== null) {
+        const done = await db.runAsync('UPDATE [AdvisoryPanelMeetings] SET [meeting_date] = ?, [title] = ?, [location] = ?, [agenda] = ? WHERE [id] = ?', [
+          clean.meeting_date,
+          clean.title,
+          clean.location,
+          clean.agenda,
+          id,
+        ]);
+        if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `No advisory panel meeting ${id}.`, { id });
+      } else {
+        id = (
+          await db.runAsync('INSERT INTO [AdvisoryPanelMeetings] ([meeting_date], [title], [location], [agenda], [created_by_member_id]) VALUES (?, ?, ?, ?, ?)', [
+            clean.meeting_date,
+            clean.title,
+            clean.location,
+            clean.agenda,
+            actorId,
+          ])
+        ).lastInsertRowId;
+      }
+      return (await db.getFirstAsync<AdvisoryPanelMeeting>('SELECT * FROM [AdvisoryPanelMeetings] WHERE [id] = ?', [id]))!;
+    },
+    removeMeeting: async (actorId, id) => {
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      const done = await db.runAsync('DELETE FROM [AdvisoryPanelMeetings] WHERE [id] = ?', [id]);
+      if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `No advisory panel meeting ${id}.`, { id });
+    },
+    listFeedback: async (actorId) => {
+      const db = await this.ready();
+      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      const rows = await db.getAllAsync<AdvisoryFeedback & { MemberFirstName: string | null; MemberLastName: string | null }>(
+        `SELECT f.*, m.[MemberFirstName], m.[MemberLastName] FROM [AdvisoryFeedback] f LEFT JOIN [Member] m ON m.[id] = f.[member_id]
+          ORDER BY f.[submitted_at] DESC, f.[id] DESC`,
+      );
+      const councils = await db.getAllAsync<Council>('SELECT * FROM [Council]');
+      return rows.map(({ MemberFirstName, MemberLastName, ...row }) => {
+        const council = councils.find((c) => c.id === row.council_id);
+        return {
+          ...row,
+          memberName: MemberFirstName ? `${MemberFirstName} ${MemberLastName}` : `Member ${row.member_id}`,
+          councilLabel: council ? rosterCouncilLabel(council) : `Council ${row.council_id}`,
+        };
+      });
+    },
+    submitFeedback: async (actorId, input) => {
+      const clean = cleanAdvisoryFeedback(input);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      const id = (
+        await db.runAsync('INSERT INTO [AdvisoryFeedback] ([member_id], [council_id], [topic], [body], [submitted_at]) VALUES (?, ?, ?, ?, ?)', [
+          actorId,
+          actor.councilId,
+          clean.topic,
+          clean.body,
+          toTimestamp(this.now()),
+        ])
+      ).lastInsertRowId;
+      return (await db.getFirstAsync<AdvisoryFeedback>('SELECT * FROM [AdvisoryFeedback] WHERE [id] = ?', [id]))!;
+    },
+    listPanelists: async (actorId) => {
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      return this.advisoryPanelists(db);
+    },
+    setPanelist: async (actorId, memberId, designated) => {
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      const member = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Member] WHERE [id] = ?', [memberId]);
+      if (!member) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
+      const role = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Role] WHERE [Role] = ?', [ADVISORY_PANELIST_ROLE]);
+      if (!role) throw new BusinessRuleError('INVALID_INPUT', `The ${ADVISORY_PANELIST_ROLE} role is missing from the Role table.`, {});
+      const held = await db.getFirstAsync<{ RoleID: number }>('SELECT [RoleID] FROM [MemberRoles] WHERE [MemberID] = ? AND [RoleID] = ?', [memberId, role.id]);
+      if (designated && !held) await db.runAsync('INSERT INTO [MemberRoles] ([RoleID], [MemberID]) VALUES (?, ?)', [role.id, memberId]);
+      if (!designated && held) await db.runAsync('DELETE FROM [MemberRoles] WHERE [MemberID] = ? AND [RoleID] = ?', [memberId, role.id]);
+      return this.advisoryPanelists(db);
+    },
+  };
+
+  /** Every holder of the panelist role, by last name (Sprint 10 Revision 3.1). */
+  private async advisoryPanelists(db: SQLite.SQLiteDatabase): Promise<AdvisoryPanelist[]> {
+    const rows = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string; CouncilID: number }>(
+      `SELECT m.[id], m.[MemberFirstName], m.[MemberLastName], m.[CouncilID] FROM [Member] m
+        JOIN [MemberRoles] mr ON mr.[MemberID] = m.[id] JOIN [Role] r ON r.[id] = mr.[RoleID]
+       WHERE r.[Role] = ? ORDER BY m.[MemberLastName], m.[MemberFirstName]`,
+      [ADVISORY_PANELIST_ROLE],
+    );
+    const councils = await db.getAllAsync<Council>('SELECT * FROM [Council]');
+    return rows.map((m) => {
+      const council = councils.find((c) => c.id === m.CouncilID);
+      return { memberId: m.id, name: `${m.MemberFirstName} ${m.MemberLastName}`, councilLabel: council ? rosterCouncilLabel(council) : `Council ${m.CouncilID}` };
+    });
+  }
 
   elections: DataService['elections'] = {
     listOfficerSeats: async (councilId) => {

@@ -48,7 +48,8 @@ VALUES
 ('Family Director', 0),
 ('Chaplain', 0),
 ('Member', 0),
-('Council Historian', 0); -- Sprint 6L: appointed by the Grand Knight; keeps the council history annals (not an officer seat)
+('Council Historian', 0), -- Sprint 6L: appointed by the Grand Knight; keeps the council history annals (not an officer seat)
+('Application Advisory Panelist', 0); -- Sprint 10 Revision 3.1: a Super Admin designates members of any council to the Application Advisory Panel
 GO
 
 -- 4. Member Type Data Load

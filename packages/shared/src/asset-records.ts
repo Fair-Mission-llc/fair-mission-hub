@@ -8,6 +8,7 @@
 import type { AssetRecordChanges } from './contract';
 import { DEPUTY_GRAND_KNIGHT_ROLE, GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
 import { isDriveFileId } from './drive-vault';
+import { isFileRepositoryRef } from './file-repository';
 import { assertMayAuditCouncilExpenses, assertText, BusinessRuleError, mayAuditCouncilExpenses, type MemberWriteActor } from './rules';
 import type { CouncilAssetsInventory, CouncilAssetStatus, ExpenseReport } from './types';
 import { ASSET_NAME_MAX_LENGTH, COUNCIL_ASSET_STATUSES } from './workflow';
@@ -60,8 +61,9 @@ export function cleanAssetRecordChanges(input: AssetRecordChanges): AssetRecordC
  */
 export function cleanAssetPhotoUrl(value: unknown): string | null {
   const photo = optionalText(value, 'Asset photo', ASSET_PHOTO_URL_MAX_LENGTH);
-  if (photo !== null && !isDriveFileId(photo)) {
-    throw new BusinessRuleError('INVALID_INPUT', 'An asset photo must be an image filed in the council Google Drive.', { field: 'photo_url' });
+  // Sprint 10 Revision 3.1: or a photo on the council's network file server (file-repository.ts).
+  if (photo !== null && !isDriveFileId(photo) && !isFileRepositoryRef(photo)) {
+    throw new BusinessRuleError('INVALID_INPUT', 'An asset photo must be an image filed in the council Google Drive or on its network file server.', { field: 'photo_url' });
   }
   return photo;
 }

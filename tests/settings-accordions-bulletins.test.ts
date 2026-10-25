@@ -108,10 +108,10 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     const page = read('apps/web/app/system-settings/council-settings/page.tsx');
     const tab = (id: string, next?: string) => page.slice(page.indexOf(`'${id}': (`), next ? page.indexOf(`'${next}': (`) : page.indexOf('}}', page.indexOf(`'${id}': (`)));
     const placement: Record<string, string[]> = {
-      'bank-accounts': ['BANK_ACCOUNT_SETTINGS_PAGES', 'CouncilInstanceRecord'],
+      'bank-accounts': ['BANK_ACCOUNT_SETTINGS_PAGES', 'AccountOwnersMatrix', 'CouncilInstanceRecord'],
       'access-roster': ['MeetingCheckInCard', 'InactivitySweepCard', 'RankThresholdsCard'],
-      'system-settings': ['GroupedSettingsCards', 'CustomGuidesCard'],
-      'feature-controls': ['ParishSplitSettingsCard', 'LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES'],
+      'system-settings': ['GroupedSettingsCards', 'FileRepositoryCard', 'CustomGuidesCard'],
+      'feature-controls': ['LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES'],
       'feature-matrix': ['FeatureDeploymentMatrix'],
     };
     const ids = Object.keys(placement);
@@ -120,14 +120,14 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     });
     for (const card of Object.values(placement).flat()) expect(page.split(`<${card}`).length + page.split(`pages={${card}}`).length - 2, card).toBe(1);
     // Gone from the page: the Global Revenue Splits tab, the Reference Archives links and the planning banner.
-    expect(page).not.toMatch(/pages=\{SYSTEM_REFERENCE_PAGES\}|title="Reference Archives"|'revenue-splits': \(|<FraternalPlanningWorkflow/);
+    expect(page).not.toMatch(/pages=\{SYSTEM_REFERENCE_PAGES\}|title="Reference Archives"|'revenue-splits': \(|<FraternalPlanningWorkflow|<ParishSplitSettingsCard/);
     expect(read('apps/web/components/AnnualBudgetCenter.tsx')).toContain('<FraternalPlanningWorkflow');
   });
 
   it("names the drawer in each capability's 'where it is switched' column", () => {
     const rows = councilFeatureDeployment({ id: 1 } as Parameters<typeof councilFeatureDeployment>[0]).filter((r) => r.group === 'capability');
     const where = Object.fromEntries(rows.map((r) => [r.id, r.managedOn]));
-    expect(where['parish-split']).toBe('This page, Feature Controls drawer: Parish Fundraiser Split');
+    expect(where['parish-split']).toBe('Treasurer Desk: Revenue account split profiles (the Parish Fundraiser Split card is retired)');
     expect(where['geofence']).toBe('This page, User Access & Roster Control drawer: Meeting Check-In');
     expect(where['biometric']).toBe('This page, Council Feature Deployment Matrix drawer: the switch in this row');
     expect(where['loaner-library']).toBe('This page, Feature Controls drawer: Cross-Council Loaner Library Sharing');

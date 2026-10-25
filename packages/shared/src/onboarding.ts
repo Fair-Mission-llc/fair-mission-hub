@@ -172,6 +172,15 @@ export function assertMaySyncSupremeRoster(actor: MemberWriteActor, councilId: n
   assertMayImportSupremeRoster(actor, councilId);
 }
 
+/**
+ * Sprint 10 Revision 3.1: who sends a member a fresh setup code (members.resendWelcome) - the council's Active Financial
+ * Secretary on their own, as well as the council's Active Admins and any Active Super Admin.
+ */
+export function assertMayResendSetupCode(actor: MemberWriteActor, councilId: number, action = 'send a new setup code'): void {
+  if (actor.active && actor.councilId === councilId && (actor.roles ?? []).includes('Financial Secretary')) return;
+  assertMayImportSupremeRoster(actor, councilId, action);
+}
+
 /** The roster export's columns, by their header with case, spaces and punctuation ignored. */
 const ROSTER_HEADERS: Record<string, keyof SupremeRosterRow> = {
   membernumber: 'MemberNumber',

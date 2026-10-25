@@ -15,7 +15,7 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [Category] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [Category] TEXT NOT NULL,\n  [CategoryDescription] TEXT NOT NULL,\n  [SupremeMissionArea] TEXT\n);",
   "CREATE TABLE IF NOT EXISTS [LessonsLearnedCategory] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [LessonsLearnedCategory] TEXT NOT NULL\n);",
   "CREATE TABLE IF NOT EXISTS [MeetingType] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [Type] TEXT,\n  [Description] TEXT\n);",
-  "CREATE TABLE IF NOT EXISTS [Council] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilNumber] INTEGER NOT NULL,\n  [CouncilName] TEXT NOT NULL,\n  [State] TEXT NOT NULL,\n  [Phone] TEXT,\n  [Email] TEXT,\n  [flag_mobile_elections] INTEGER NOT NULL DEFAULT 1,\n  [flag_fundraising_inflow] INTEGER NOT NULL DEFAULT 1,\n  [flag_charity_proposals] INTEGER NOT NULL DEFAULT 1,\n  [flag_complex_shifts] INTEGER NOT NULL DEFAULT 1,\n  [flag_meeting_management] INTEGER NOT NULL DEFAULT 1,\n  [BylawsMarkdown] TEXT,\n  [BylawsUpdatedAt] TEXT,\n  [EmailProvider] TEXT,\n  [SmtpHost] TEXT,\n  [SmtpPort] INTEGER,\n  [SmtpUsername] TEXT,\n  [tenant_type] TEXT NOT NULL DEFAULT 'KOFC',\n  [base_dues_rate] REAL NOT NULL DEFAULT 40,\n  [ein_number] TEXT,\n  [feature_expense_reporting] INTEGER NOT NULL DEFAULT 1,\n  [feature_faith_center] INTEGER NOT NULL DEFAULT 1,\n  [feature_constitutional_advisor] INTEGER NOT NULL DEFAULT 1,\n  [feature_council_bylaws] INTEGER NOT NULL DEFAULT 1,\n  [feature_council_history] INTEGER NOT NULL DEFAULT 1,\n  [feature_live_meeting_console] INTEGER NOT NULL DEFAULT 1,\n  [rank_threshold_hours] INTEGER NOT NULL DEFAULT 100,\n  [rank_threshold_events] INTEGER NOT NULL DEFAULT 10,\n  [feature_volunteer_quarantine] INTEGER NOT NULL DEFAULT 1,\n  [quarantine_max_daily_activities] INTEGER NOT NULL DEFAULT 5,\n  [quarantine_max_single_hours] REAL NOT NULL DEFAULT 5,\n  [max_shift_padding_hours] REAL NOT NULL DEFAULT 1,\n  [inactivity_threshold_days] INTEGER NOT NULL DEFAULT 365,\n  [er_submission_window_days] INTEGER NOT NULL DEFAULT 30,\n  [volunteer_logging_window_days] INTEGER NOT NULL DEFAULT 90,\n  [reminder_delay_days] INTEGER NOT NULL DEFAULT 5,\n  [reminder_cadence_days] INTEGER NOT NULL DEFAULT 7,\n  [expense_draft_expiry_days] INTEGER NOT NULL DEFAULT 90,\n  [charity_proposal_voting_days] INTEGER NOT NULL DEFAULT 14,\n  [shift_signup_lock_hours] REAL NOT NULL DEFAULT 2,\n  [officer_signature_reminder_days] INTEGER NOT NULL DEFAULT 3,\n  [meeting_minutes_due_days] INTEGER NOT NULL DEFAULT 7,\n  [special_election_notice_days] INTEGER NOT NULL DEFAULT 60,\n  [meeting_latitude] REAL,\n  [meeting_longitude] REAL,\n  [meeting_geofence_radius_meters] INTEGER NOT NULL DEFAULT 100,\n  [meeting_pin_token] TEXT NOT NULL DEFAULT '0000',\n  [is_loaner_library_enabled] INTEGER NOT NULL DEFAULT 0,\n  [district_number] INTEGER,\n  [parish_split_enabled] INTEGER NOT NULL DEFAULT 0,\n  [parish_split_percentage] REAL NOT NULL DEFAULT 50,\n  [parish_split_gl_line_id] INTEGER,\n  [biometric_login_enabled] INTEGER NOT NULL DEFAULT 1,\n  FOREIGN KEY ([parish_split_gl_line_id]) REFERENCES [GLAccount]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [Council] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilNumber] INTEGER NOT NULL,\n  [CouncilName] TEXT NOT NULL,\n  [State] TEXT NOT NULL,\n  [Phone] TEXT,\n  [Email] TEXT,\n  [flag_mobile_elections] INTEGER NOT NULL DEFAULT 1,\n  [flag_fundraising_inflow] INTEGER NOT NULL DEFAULT 1,\n  [flag_charity_proposals] INTEGER NOT NULL DEFAULT 1,\n  [flag_complex_shifts] INTEGER NOT NULL DEFAULT 1,\n  [flag_meeting_management] INTEGER NOT NULL DEFAULT 1,\n  [BylawsMarkdown] TEXT,\n  [BylawsUpdatedAt] TEXT,\n  [EmailProvider] TEXT,\n  [SmtpHost] TEXT,\n  [SmtpPort] INTEGER,\n  [SmtpUsername] TEXT,\n  [tenant_type] TEXT NOT NULL DEFAULT 'KOFC',\n  [base_dues_rate] REAL NOT NULL DEFAULT 40,\n  [ein_number] TEXT,\n  [feature_expense_reporting] INTEGER NOT NULL DEFAULT 1,\n  [feature_faith_center] INTEGER NOT NULL DEFAULT 1,\n  [feature_constitutional_advisor] INTEGER NOT NULL DEFAULT 1,\n  [feature_council_bylaws] INTEGER NOT NULL DEFAULT 1,\n  [feature_council_history] INTEGER NOT NULL DEFAULT 1,\n  [feature_live_meeting_console] INTEGER NOT NULL DEFAULT 1,\n  [rank_threshold_hours] INTEGER NOT NULL DEFAULT 100,\n  [rank_threshold_events] INTEGER NOT NULL DEFAULT 10,\n  [feature_volunteer_quarantine] INTEGER NOT NULL DEFAULT 1,\n  [quarantine_max_daily_activities] INTEGER NOT NULL DEFAULT 5,\n  [quarantine_max_single_hours] REAL NOT NULL DEFAULT 5,\n  [max_shift_padding_hours] REAL NOT NULL DEFAULT 1,\n  [inactivity_threshold_days] INTEGER NOT NULL DEFAULT 365,\n  [er_submission_window_days] INTEGER NOT NULL DEFAULT 30,\n  [volunteer_logging_window_days] INTEGER NOT NULL DEFAULT 90,\n  [reminder_delay_days] INTEGER NOT NULL DEFAULT 5,\n  [reminder_cadence_days] INTEGER NOT NULL DEFAULT 7,\n  [expense_draft_expiry_days] INTEGER NOT NULL DEFAULT 90,\n  [charity_proposal_voting_days] INTEGER NOT NULL DEFAULT 14,\n  [shift_signup_lock_hours] REAL NOT NULL DEFAULT 2,\n  [officer_signature_reminder_days] INTEGER NOT NULL DEFAULT 3,\n  [meeting_minutes_due_days] INTEGER NOT NULL DEFAULT 7,\n  [special_election_notice_days] INTEGER NOT NULL DEFAULT 60,\n  [meeting_latitude] REAL,\n  [meeting_longitude] REAL,\n  [meeting_geofence_radius_meters] INTEGER NOT NULL DEFAULT 100,\n  [meeting_pin_token] TEXT NOT NULL DEFAULT '0000',\n  [is_loaner_library_enabled] INTEGER NOT NULL DEFAULT 0,\n  [district_number] INTEGER,\n  [parish_split_enabled] INTEGER NOT NULL DEFAULT 0,\n  [parish_split_percentage] REAL NOT NULL DEFAULT 50,\n  [parish_split_gl_line_id] INTEGER,\n  [biometric_login_enabled] INTEGER NOT NULL DEFAULT 1,\n  [file_repository_mode] TEXT NOT NULL DEFAULT 'CLOUD',\n  [file_server_path] TEXT,\n  [file_server_username] TEXT,\n  FOREIGN KEY ([parish_split_gl_line_id]) REFERENCES [GLAccount]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [AffiliatedCouncils] (\n  [PrimaryCouncilID] INTEGER NOT NULL,\n  [AffiliatedCouncilID] INTEGER NOT NULL,\n  PRIMARY KEY ([PrimaryCouncilID], [AffiliatedCouncilID])\n);",
   "CREATE TABLE IF NOT EXISTS [Parish] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [Name] TEXT NOT NULL,\n  [StreetAddress1] TEXT NOT NULL,\n  [StreetAddress2] TEXT,\n  [City] TEXT NOT NULL,\n  [State] TEXT NOT NULL,\n  [Phone] TEXT,\n  [CouncilID] INTEGER NOT NULL,\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [Pastor] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [FirstName] TEXT NOT NULL,\n  [LastName] TEXT NOT NULL,\n  [Phone] TEXT,\n  [Email] TEXT,\n  [ParishID] INTEGER NOT NULL,\n  FOREIGN KEY ([ParishID]) REFERENCES [Parish]([id])\n);",
@@ -105,6 +105,9 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [ParishDisbursementRequest] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [event_id] INTEGER NOT NULL,\n  [gross_collections] REAL NOT NULL,\n  [split_percentage] REAL NOT NULL,\n  [amount] REAL NOT NULL,\n  [gl_account_id] INTEGER NOT NULL,\n  [status] TEXT NOT NULL DEFAULT 'PENDING' CHECK ([status] IN ('PENDING', 'PAID')),\n  [requested_by_member_id] INTEGER NOT NULL,\n  [requested_at] TEXT NOT NULL,\n  [paid_by_member_id] INTEGER,\n  [paid_at] TEXT,\n  [check_number] TEXT,\n  [transaction_id] TEXT,\n  [settlement_method] TEXT NOT NULL DEFAULT 'CHECK' CHECK ([settlement_method] IN ('CHECK', 'PARISH_HELD')),\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([event_id]) REFERENCES [Event]([id]),\n  FOREIGN KEY ([gl_account_id]) REFERENCES [GLAccount]([id]),\n  FOREIGN KEY ([requested_by_member_id]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([paid_by_member_id]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [TransactionAttachments] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [donation_id] INTEGER NOT NULL,\n  [file_path] TEXT NOT NULL,\n  [captured_at] TEXT NOT NULL,\n  FOREIGN KEY ([donation_id]) REFERENCES [Donation]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [GLAccountSplitAllocation] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [source_gl_account_id] INTEGER NOT NULL,\n  [destination_gl_account_id] INTEGER NOT NULL,\n  [split_percentage] REAL NOT NULL,\n  FOREIGN KEY ([source_gl_account_id]) REFERENCES [GLAccount]([id]),\n  FOREIGN KEY ([destination_gl_account_id]) REFERENCES [GLAccount]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [AccountOwners] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [account_name] TEXT NOT NULL,\n  [contact_name] TEXT,\n  [contact_number] TEXT,\n  [contact_email] TEXT,\n  [ein_number] TEXT,\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [AdvisoryPanelMeetings] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [meeting_date] TEXT NOT NULL,\n  [title] TEXT NOT NULL,\n  [location] TEXT,\n  [agenda] TEXT,\n  [created_by_member_id] INTEGER NOT NULL,\n  FOREIGN KEY ([created_by_member_id]) REFERENCES [Member]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [AdvisoryFeedback] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [member_id] INTEGER NOT NULL,\n  [council_id] INTEGER NOT NULL,\n  [topic] TEXT NOT NULL,\n  [body] TEXT NOT NULL,\n  [submitted_at] TEXT NOT NULL,\n  FOREIGN KEY ([member_id]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id])\n);",
   "CREATE INDEX IF NOT EXISTS [Member_CouncilID_Idx] ON [Member] ([CouncilID]);",
   "CREATE INDEX IF NOT EXISTS [Council_Sort_Idx] ON [Council] ([CouncilNumber], [CouncilName]);",
   "CREATE INDEX IF NOT EXISTS [Member_Name_Idx] ON [Member] ([MemberLastName], [MemberFirstName]);",
@@ -186,6 +189,7 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE INDEX IF NOT EXISTS [Donation_Coding_Idx] ON [Donation] ([CouncilID], [revenue_gl_account_id]);",
   "CREATE INDEX IF NOT EXISTS [TransactionAttachments_Donation_Idx] ON [TransactionAttachments] ([donation_id]);",
   "CREATE UNIQUE INDEX IF NOT EXISTS [GLAccountSplitAllocation_Source_Destination_Idx] ON [GLAccountSplitAllocation] ([source_gl_account_id], [destination_gl_account_id]);",
+  "CREATE UNIQUE INDEX IF NOT EXISTS [AccountOwners_Council_Name_Idx] ON [AccountOwners] ([council_id], [account_name]);",
   "DROP VIEW IF EXISTS [view_Member];",
   "CREATE VIEW [view_Member] AS\nSELECT\n[Council].[CouncilNumber],\n[Council].[CouncilName],\n[Member].[MemberNumber],\n[Member].[MemberFirstName],\n[Member].[MemberLastName],\n[Member].[Phone],\n[Member].[Email],\n[Member].[StreetAddress1],\n[Member].[City],\n[Member].[State],\n[Member].[ZipCode],\n[Role].[Role],\n[Degree].[Degree],\n[MemberStatus].[Status]\nFROM [Member]\nINNER JOIN [Degree] ON [Member].[DegreeID] = [Degree].[id]\nINNER JOIN [Council] ON [Member].[CouncilID] = [Council].[id]\nINNER JOIN [MemberStatus] ON [Member].[StatusID] = [MemberStatus].[id]\nINNER JOIN [MemberRoles] ON [Member].[id] = [MemberRoles].[MemberID]\nINNER JOIN [Role] ON [MemberRoles].[RoleID] = [Role].[id];",
   "DROP VIEW IF EXISTS [view_Event];",
@@ -303,7 +307,10 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
     "parish_split_enabled",
     "parish_split_percentage",
     "parish_split_gl_line_id",
-    "biometric_login_enabled"
+    "biometric_login_enabled",
+    "file_repository_mode",
+    "file_server_path",
+    "file_server_username"
   ],
   "AffiliatedCouncils": [
     "PrimaryCouncilID",
@@ -1187,6 +1194,31 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
     "source_gl_account_id",
     "destination_gl_account_id",
     "split_percentage"
+  ],
+  "AccountOwners": [
+    "id",
+    "council_id",
+    "account_name",
+    "contact_name",
+    "contact_number",
+    "contact_email",
+    "ein_number"
+  ],
+  "AdvisoryPanelMeetings": [
+    "id",
+    "meeting_date",
+    "title",
+    "location",
+    "agenda",
+    "created_by_member_id"
+  ],
+  "AdvisoryFeedback": [
+    "id",
+    "member_id",
+    "council_id",
+    "topic",
+    "body",
+    "submitted_at"
   ]
 };
 
@@ -1194,7 +1226,7 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
 export const SEED_STATEMENTS: readonly string[] = [
   "INSERT INTO [Category] ([Category], [CategoryDescription], [SupremeMissionArea]) VALUES\n('Fellowship', 'Social Knights events', 'Family'),\n('Service', 'Providing help to parish, parishioners or community', 'Community'),\n('Faith Building', 'Events focussed on increasing the faith or Knights and/or parishioners', 'Faith'),\n('Parish Community', 'Events that involve parishioners in getting to know each other better or contributing to the parish', 'Community'),\n('Fundraising', 'Generating income/donations for Knights council or parish', 'Community'),\n('Evangelization', 'Promoting Catholic faith to non-Catholics', 'Faith'),\n('Life', 'Events that protect and honor human life from conception to natural death', 'Life');",
   "INSERT INTO [Degree] ([Degree]) VALUES\n('First'),\n('Second'),\n('Third'),\n('Fourth');",
-  "INSERT INTO [Role] ([Role], [Officer]) VALUES\n('Grand Knight', 1),\n('Deputy Grand Knight', 1),\n('Chancellor', 1),\n('Recorder', 1),\n('Financial Secretary', 1),\n('Treasurer', 1),\n('Warden', 1),\n('Advocate', 1),\n('Inside Guard', 1),\n('Outside Guard', 1),\n('Lecturer', 0),\n('Trustee 1', 1),\n('Trustee 2', 1),\n('Trustee 3', 1),\n('Membership Director', 0),\n('Community Director', 0),\n('Program Director', 0),\n('Family Director', 0),\n('Chaplain', 0),\n('Member', 0),\n('Council Historian', 0);",
+  "INSERT INTO [Role] ([Role], [Officer]) VALUES\n('Grand Knight', 1),\n('Deputy Grand Knight', 1),\n('Chancellor', 1),\n('Recorder', 1),\n('Financial Secretary', 1),\n('Treasurer', 1),\n('Warden', 1),\n('Advocate', 1),\n('Inside Guard', 1),\n('Outside Guard', 1),\n('Lecturer', 0),\n('Trustee 1', 1),\n('Trustee 2', 1),\n('Trustee 3', 1),\n('Membership Director', 0),\n('Community Director', 0),\n('Program Director', 0),\n('Family Director', 0),\n('Chaplain', 0),\n('Member', 0),\n('Council Historian', 0),\n('Application Advisory Panelist', 0);",
   "INSERT INTO [MemberType] ([Type]) VALUES\n('Super Admin'),\n('Admin'),\n('Member');",
   "INSERT INTO [MemberStatus] ([Status]) VALUES\n('Active'),\n('Inactive'),\n('Former'),\n('Deceased');",
   "INSERT INTO [NoShowReason] ([NoShowReasonCode], [NoShowReasonDescription]) VALUES\n('A', 'Something came up'),\n('B', 'Went to wrong location'),\n('C', 'Had the wrong date'),\n('D', 'Had the wrong time'),\n('E', 'Forgot');",

@@ -1,8 +1,8 @@
 'use client';
 // Sprint 8M Core - parametric parish splits (parish-split.ts). Three cards share one read, finance.getParishSplitConsole:
-//  - ParishSplitSettingsCard (System Settings > Council Wide Settings): the split's switch, the parish's percentage and the
-//    GL line its share is charged to. The front-end gate: the moment the switch is on without a GL line, the card says so
-//    and Save stays disabled (parishSplitGateMessage); the drivers refuse the same save (PARISH_SPLIT_GL_LINE_REQUIRED).
+//  - (ParishSplitSettingsCard, the switch card on Council Wide Settings, was deleted in Sprint 10 Revision 3.1: revenue
+//    splits are driven by the Chart of Accounts split profiles on the Treasurer Desk. The engine keeps the council's saved
+//    split; councils.setParishSplitSettings remains in the drivers with no screen.)
 //  - ParishSplitConsoleCard (Treasurer Desk): each event's live collections, the percentage share, what is already
 //    requested and '[ 📋 Issue Church Disbursement Request ]', which holds the rest as a PENDING payment request against
 //    the GL line for the Financial Secretary.
@@ -12,10 +12,8 @@
 // Revenue Held by Parish Settlement Notice under its row instead of the check-cutting steps, and its button becomes
 // '[ ⛪ Log Parish-Held Settlement Credit ]': the defensive tracking credit, settled at once with no check and no posting.
 // Only what the parish does not already hold goes on to the Financial Secretary as a check request.
-import Link from 'next/link';
 import { Fragment, useState } from 'react';
 import {
-  canEditCouncilWideSettings,
   canIssueChurchDisbursement,
   canPayChurchDisbursement,
   CHURCH_DISBURSEMENT_QUEUE_TITLE,
@@ -26,127 +24,16 @@ import {
   parishHeldNoticeText,
   PARISH_SPLIT_CONSOLE_TITLE,
   settlementMethodOf,
-  PARISH_SPLIT_SETTINGS_TITLE,
-  parishSplitGateMessage,
   RECORD_CHURCH_PAYMENT_LABEL,
-  type Council,
   type ParishDisbursementDetail,
   type SessionUser,
 } from '@kofc/shared';
-import { Button, Empty, Field, Input, Notice, Panel, Pill, Select, Switch, Table, Td } from '@/components/ui';
-import { formatMoney, parseNumberField } from '@/lib/format';
+import { Button, Empty, Input, Notice, Panel, Pill, Table, Td } from '@/components/ui';
+import { formatMoney } from '@/lib/format';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 const percent = (n: number) => `${Number(n.toFixed(2))}%`;
-
-/** The settings card on Council Wide Settings. */
-export function ParishSplitSettingsCard({ user, council, onSaved }: { user: SessionUser; council: Council; onSaved: () => Promise<void> }) {
-  const view = useLoad(() => db.finance.getParishSplitConsole(user.memberId, council.id), [user.memberId, council.id]);
-  return (
-    <Panel title={PARISH_SPLIT_SETTINGS_TITLE} className="mt-6">
-      {view.error ? <Notice tone="error">{view.error}</Notice> : null}
-      {view.data ? (
-        <ParishSplitSettingsForm
-          key={`${council.id}-${view.data.settings.parish_split_enabled}-${view.data.settings.parish_split_percentage}-${view.data.settings.parish_split_gl_line_id}`}
-          user={user}
-          council={council}
-          initial={view.data.settings}
-          lines={view.data.lineOptions.map((a) => ({ id: a.id, name: a.AccountName }))}
-          onSaved={async () => {
-            await Promise.all([view.reload(), onSaved()]);
-          }}
-        />
-      ) : view.loading ? (
-        <p className="text-sm text-muted">Loading the parish split…</p>
-      ) : null}
-    </Panel>
-  );
-}
-
-function ParishSplitSettingsForm({
-  user,
-  council,
-  initial,
-  lines,
-  onSaved,
-}: {
-  user: SessionUser;
-  council: Council;
-  initial: { parish_split_enabled: number; parish_split_percentage: number; parish_split_gl_line_id: number | null };
-  lines: { id: number; name: string }[];
-  onSaved: () => Promise<void>;
-}) {
-  const [enabled, setEnabled] = useState(initial.parish_split_enabled === 1);
-  const [percentage, setPercentage] = useState(String(initial.parish_split_percentage));
-  const [lineId, setLineId] = useState<number | null>(initial.parish_split_gl_line_id);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
-  // The front-end gate: on without a GL line is never saved.
-  const gate = parishSplitGateMessage(enabled, lineId);
-
-  const save = async () => {
-    setMessage(null);
-    let pct: number | null;
-    try {
-      pct = parseNumberField(percentage, 'Parish share');
-    } catch (err) {
-      return setMessage({ tone: 'error', text: describeError(err) });
-    }
-    if (pct === null) return setMessage({ tone: 'error', text: 'Enter the parish share as a percentage, e.g. 50.' });
-    if (gate) return setMessage({ tone: 'error', text: gate });
-    setBusy(true);
-    try {
-      const saved = await db.councils.setParishSplitSettings(user.memberId, council.id, { enabled, percentage: pct, glLineId: lineId });
-      await onSaved();
-      setMessage({ tone: 'info', text: `Saved for council ${saved.CouncilNumber}. The split is ${saved.parish_split_enabled === 1 ? 'on' : 'off'}.` });
-    } catch (err) {
-      setMessage({ tone: 'error', text: describeError(err) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-3">
-      <p className="text-sm">
-        When the parish is owed a share of a fundraiser (for example the parking lot), the Treasurer splits each event&apos;s collections on the Treasurer Desk
-        and the Financial Secretary pays the parish&apos;s share by check.
-      </p>
-      <Switch
-        checked={enabled}
-        disabled={busy}
-        onChange={setEnabled}
-        label={enabled ? 'The parish split is on' : 'The parish split is off'}
-        description="Switching it on needs a general ledger line for the parish's share."
-      />
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Field label="Parish share (%)" hint="From 0.01 to 100. Default 50.">
-          {(id) => <Input id={id} inputMode="decimal" value={percentage} onChange={(e) => setPercentage(e.target.value)} disabled={busy} />}
-        </Field>
-        <Field label="General ledger line for the parish share" hint="A revenue or expense line of your council's chart of accounts.">
-          {(id) => (
-            <Select id={id} value={lineId ?? ''} onChange={(e) => setLineId(e.target.value === '' ? null : Number(e.target.value))} disabled={busy}>
-              <option value="">Choose the GL line</option>
-              {lines.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
-      </div>
-      {gate ? <Notice tone="error">{gate}</Notice> : null}
-      <div>
-        <Button onClick={() => void save()} disabled={busy || gate !== null}>
-          {busy ? 'Saving…' : 'Save parish split'}
-        </Button>
-      </div>
-      {message ? <Notice tone={message.tone}>{message.text}</Notice> : null}
-    </div>
-  );
-}
 
 function RequestRows({ rows }: { rows: readonly ParishDisbursementDetail[] }) {
   return (
@@ -224,12 +111,8 @@ export function ParishSplitConsoleCard({ user, councilId }: { user: SessionUser;
               </>
             ) : (
               <>
-                The parish split is off. An officer switches it on and picks its GL line under System Settings: Council Wide Settings.{' '}
-                {canEditCouncilWideSettings(user) ? (
-                  <Link href="/system-settings/council-settings" className="font-bold underline">
-                    Switch it on in Council Wide Settings
-                  </Link>
-                ) : null}
+                The parish split is off for this council. Revenue splits now come from the Chart of Accounts split profiles on the Treasurer Desk
+                (Edit split on a Revenue account).
               </>
             )}
           </p>

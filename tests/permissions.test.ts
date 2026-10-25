@@ -161,6 +161,7 @@ describe('portal permissions', () => {
       'member-center',
       'inventory/loaner-library',
       'navigation-guide',
+      'advisory-panel',
     ]);
     expect(portalAreas(admin)).toEqual([
       'home',
@@ -255,7 +256,7 @@ describe('portal permissions', () => {
       expect(filed as string[]).not.toContain('gallery');
       const everyArea = portalAreas(superAdmin).filter(
         (a) =>
-          a !== 'profile' && a !== 'messages' && a !== 'distribution-lists' && a !== 'navigation-guide' && a !== 'expenses/queue' && a !== 'home' && a !== 'gallery',
+          a !== 'profile' && a !== 'messages' && a !== 'distribution-lists' && a !== 'navigation-guide' && a !== 'expenses/queue' && a !== 'home' && a !== 'gallery' && a !== 'advisory-panel',
       );
       expect([...everyArea].sort()).toEqual([...filed].sort());
       expect(PORTAL_NAV_GROUPS.map((g) => g.label)).toEqual(['Governance', 'Faith In Action', 'Finances', 'Performance', 'Resources', 'Answers', 'System Settings']);

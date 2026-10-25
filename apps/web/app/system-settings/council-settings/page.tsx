@@ -51,6 +51,10 @@
 // library sharing and the module pages) and the Council Feature Deployment Matrix on its own. The Global Revenue Splits
 // tab and the Reference Archives links are gone; the Fraternal Planning & Budgeting Workflow banner moved to the Annual
 // Budget Center (/budget).
+//
+// Sprint 10 Revision 3.1: the Parish Fundraiser Split card is deleted (revenue splits come from the Chart of Accounts split
+// profiles on the Treasurer Desk). Standard Bank Accounts gains the Account Owners Matrix (AccountOwnersMatrix); System
+// Settings gains the File Repository Mode card (FileRepositoryCard: Cloud or Local Network Server).
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -79,7 +83,8 @@ import {
 } from '@/components/FeatureDeploymentParts';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
-import { ParishSplitSettingsCard } from '@/components/ParishSplitParts';
+import { AccountOwnersMatrix } from '@/components/AccountOwnersMatrix';
+import { FileRepositoryCard } from '@/components/FileRepositoryCard';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
@@ -212,6 +217,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
         'bank-accounts': (
           <>
             <SettingsLinkCards title="Payment & Account Settings" pages={BANK_ACCOUNT_SETTINGS_PAGES} />
+            <AccountOwnersMatrix council={council} />
             <CouncilInstanceRecord council={council} />
           </>
         ),
@@ -236,12 +242,12 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
               groups={COUNCIL_SETTING_GROUP_ORDER}
               onSave={save}
             />
+            <FileRepositoryCard key={`files-${council.id}`} council={council} onSaved={onSaved} />
             <CustomGuidesCard council={council} />
           </>
         ),
         'feature-controls': (
           <>
-            <ParishSplitSettingsCard user={user} council={council} onSaved={onSaved} />
             <LoanerLibrarySharingCard user={user} council={council} onSaved={onSaved} />
             <SettingsLinkCards title="Module & Platform Switches" pages={PLATFORM_SWITCH_PAGES} />
           </>

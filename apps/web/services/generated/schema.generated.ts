@@ -776,6 +776,30 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 1
         }
+      },
+      {
+        "name": "file_repository_mode",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "CLOUD"
+        }
+      },
+      {
+        "name": "file_server_path",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "file_server_username",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -8085,6 +8109,194 @@ export const TABLES: Record<string, TableMeta> = {
         "destination_gl_account_id"
       ]
     ]
+  },
+  "AccountOwners": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "account_name",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "contact_name",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "contact_number",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "contact_email",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "ein_number",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "council_id",
+        "account_name"
+      ]
+    ]
+  },
+  "AdvisoryPanelMeetings": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "meeting_date",
+        "kind": "date",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "title",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "location",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "agenda",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "created_by_member_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "created_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
+  },
+  "AdvisoryFeedback": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "member_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "topic",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "body",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "submitted_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
   }
 };
 
@@ -8232,6 +8444,10 @@ export const SEED_DATA: readonly SeedTable[] = [
       },
       {
         "Role": "Council Historian",
+        "Officer": 0
+      },
+      {
+        "Role": "Application Advisory Panelist",
         "Officer": 0
       }
     ]

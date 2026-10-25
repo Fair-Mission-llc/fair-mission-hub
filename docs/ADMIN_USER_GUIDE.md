@@ -278,6 +278,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 
 ### 5.2 Connect the council email, Google Drive, Microsoft Co-Pilot and receipt reading
 > **Prerequisite (who can do this):** You must be a council Admin or a Super Admin to save or remove a connection. Seated officers see the status lines only. Other members do not see the **Credentials Vault**.
+> **Note:** the page opens only your own home council's keys. The portal server refuses any other council's keys with **403 Forbidden**, for Super Admins too.
 > **Warning:** **Remove** deletes the saved password or key at once. The council goes back to the portal default.
 
 **Goal:** Connect the council's own mail account, Google Drive, Copilot Studio agent and Azure receipt reader.
@@ -295,6 +296,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 8. For receipt reading, open the council's Azure Document Intelligence resource in the Azure portal. Go to **Keys and Endpoint**.
 9. Paste the endpoint in **Azure endpoint**. Select **Save**. The endpoint looks like `https://name.cognitiveservices.azure.com/`.
 10. Paste **KEY 1** in **Azure key**. Select **Save**.
+11. For a council file server (8.9), type the service account password in **Service account password** in the **Network file server** panel. Select **Save**.
 
 **Expected result:** The status line of each saved connection shows ✓. **Receipt reading** shows ✓ only when both Azure values are saved. The page never shows a saved password or key again.
 
@@ -443,10 +445,10 @@ A number that you typed but did not save stays in its card when you close the dr
 
 | Drawer | What the drawer holds |
 | --- | --- |
-| **Standard Bank Accounts** | The **Payment & Account Settings** links and the read-only **Council Instance Record**. |
+| **Standard Bank Accounts** | The **Payment & Account Settings** links, the **Account Owners Matrix** (8.10) and the read-only **Council Instance Record**. |
 | **User Access & Roster Control** | The **Meeting Check-In**, **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. |
-| **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3) and the **Custom User Guides** card. |
-| **Feature Controls** | The **Parish Fundraiser Split** card, the **Cross-Council Loaner Library Sharing** card and the **Module & Platform Switches** links. |
+| **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **File Repository Mode** card (8.9) and the **Custom User Guides** card. |
+| **Feature Controls** | The **Cross-Council Loaner Library Sharing** card and the **Module & Platform Switches** links. The **Parish Fundraiser Split** card is retired. |
 | **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
 
 The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances).
@@ -469,7 +471,7 @@ The **Council Feature Deployment Matrix** has its own drawer. The matrix shows w
 
 | Row | 🟢 DEPLOYED when | Where it is switched |
 | --- | --- | --- |
-| **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, in the **Feature Controls** drawer |
+| **Parametric Parish Splits** | The parish split is on. | Retired card. Revenue splits use split profiles on the **Treasurer Desk** |
 | **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, in the **Feature Controls** drawer |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Council Lookups** → **Email Gateway** |
@@ -631,6 +633,52 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 | The Faith Center and the Supreme Council Sync left the sidebar. | The tenant type is a white-labelled organization. | Choose the Knights of Columbus tenant type again. |
 
 ---
+
+### 8.9 Choose where uploaded files are kept
+> **Who can do this:** council Admins and Super Admins. Other readers of the page see the mode only.
+> **Warning:** the change applies to new uploads only. Files already uploaded stay where they are.
+
+**Goal:** Send the council's uploads to its own file server instead of Google Drive.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **System Settings** drawer → **File Repository Mode**.
+
+**Steps:**
+1. Choose **Local Network Server** in **File Repository Mode**.
+2. Type the share in **Server Network Address (UNC/IP Path)**, for example `\\hall-server\kofc` or `\\192.168.1.20\kofc`.
+3. Type the account in **Service Account Username**, for example `HALL\kofc-portal`. Leave it blank when the portal server's own Windows account can write to the share.
+4. Select **Save file repository**.
+5. Select **Open the Credentials Vault**. Save the service account password in the **Network file server** panel (5.2).
+
+**Expected result:** The message **Saved. New uploads go to the council file server.** shows. Receipts, minutes, gallery and meeting photos, oral histories, asset photos and check photos are written by the portal server to the share. Nothing is kept on the uploader's computer or phone. A record keeps a portal link to the file, which only signed-in members of the council and Super Admins can open.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"Enter the server network address as a UNC path"* | The address does not start with two backslashes, a server and a share. | Type it like `\\hall-server\kofc`. |
+| An upload fails with *"The council file server did not accept the file."* | The server cannot reach the share, or the account cannot write to it. | Check the address, the username and the saved password. Check that the portal server is on the council network. |
+| The password line says **Saved in that council's own Credentials Vault**. | You are a Super Admin looking at another council. | The council's own Admin saves the password. |
+
+### 8.10 Keep the Account Owners Matrix
+> **Who can do this:** council Admins and Super Admins.
+
+**Goal:** Record each electronic account the council keeps, and who to call about it.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Standard Bank Accounts** drawer → **Account Owners Matrix**.
+
+**Steps:**
+1. Select **Add account**.
+2. Type the **Account name**, for example `Venmo`.
+3. Type the **Contact name**, **Contact number** and **Contact email**.
+4. Type the account holder's **EIN**, for example `12-3456789`.
+5. Select **Save**. To change a row, select **Edit**. To remove it, select **Delete**.
+
+**Expected result:** The row shows in the matrix. Each council sees only its own rows.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"The council already has an account named …"* | Each account name is used once in a council. | Edit the existing row. |
+| *"… is not an email address."* | The contact email is not in name@domain form. | Correct the email. |
 
 ## 9. Access requests, impersonation and remote help
 
@@ -883,6 +931,36 @@ Under the folders, the desk has four drawers. Select a drawer's title to open or
 | A module switch has no effect on a council. | The council's members must reload the portal. | Ask the members to reload the page. |
 
 ---
+
+### 10.4 Use the Application Advisory Panel
+> **Who can do this:** Super Admins and the members of any council who hold the **Application Advisory Panelist** role.
+
+**Goal:** Share the roadmap and the coming releases with the advisory panel, set its meeting dates and read its feedback.
+
+**Start point:** Sidebar → **🔊 Application Advisory Panel** (under **Navigation Guide**).
+
+The panel has four views:
+
+| View | What it holds |
+| --- | --- |
+| **Development Roadmap** | Where the platform is heading, by phase, with a status for each item. |
+| **Future Feature Releases** | What is planned, in testing or released, for the panel to review. |
+| **Panel Meeting Dates** | The panel's meetings. Super Admins add, edit and delete them. |
+| **Consultation Feedback** | The notes panelists send. Every panelist and Super Admin reads them. |
+
+**Steps:**
+1. Select a view.
+2. To add a meeting, select **Add meeting** on **Panel Meeting Dates**. Enter the date and the title. Select **Save meeting**.
+3. To send feedback, open **Consultation Feedback**. Type the **Topic** and **Your feedback**. Select **Send feedback**.
+4. To add a panelist (Super Admins), choose the **Council** and the **Member** under **Panelists**. Select **Add panelist**.
+
+**Expected result:** The meeting shows in the list. The feedback shows at the top of **Feedback received**. A new panelist sees the panel after the next sign-in.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The sidebar has no **🔊 Application Advisory Panel** link. | You are not a panelist or a Super Admin, or you signed in before you were added. | Ask a Super Admin. Sign out and sign in again. |
+| **Add meeting** is missing. | Only Super Admins keep the meeting dates. | Ask a Super Admin. |
 
 ## 11. Run a room pilot on the hub laptop
 

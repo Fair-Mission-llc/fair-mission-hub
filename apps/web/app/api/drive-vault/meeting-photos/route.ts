@@ -7,9 +7,12 @@
 // portal session of anyone who keeps the scrapbook (mayKeepScrapbook: the Active Historian, Admins, Super Admins): 401
 // without a session, 403 otherwise. Live uploads still need the council's Drive credentials AND DRIVE_VAULT_LIVE=1;
 // otherwise the route answers 503 { archived: false } and the desk keeps the photo as a browser blob link.
+// Sprint 10 Revision 3.1: when the council keeps its files on a Local Network Server, the upload is written there first
+// (fileIntoRepository) and the answer carries the portal link to store; Google Drive is not touched.
 import { NextResponse } from 'next/server';
 import { assertDriveVaultUpload, describeError, MEETING_PHOTO_DRIVE_FOLDER, mayKeepScrapbook } from '@kofc/shared';
 import { councilDriveCredentials, councilDriveOffReason, driveVaultClient } from '@/services/server/credentials-vault';
+import { fileIntoRepository } from '@/services/server/file-repository';
 import { requirePortalSession } from '@/services/server/session';
 
 export async function POST(req: Request) {
@@ -25,6 +28,15 @@ export async function POST(req: Request) {
     assertDriveVaultUpload({ kind: 'media', name: file.name, mimeType: file.type || 'application/octet-stream', size: file.size });
   } catch (err) {
     return NextResponse.json({ archived: false, message: describeError(err) }, { status: 400 });
+  }
+
+  // Sprint 10 Revision 3.1: the council's Local Network Server, when it keeps its files there.
+  try {
+    const ref = await fileIntoRepository(session.claims.councilId, { folder: 'Meeting_Photos', prefix: 'meeting', originalName: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+    if (ref) return NextResponse.json({ archived: true, fileId: ref });
+  } catch (err) {
+    console.error('[file-repository] network share write failed:', describeError(err));
+    return NextResponse.json({ archived: false, message: 'The council file server did not accept the file. Check the server network address and the service account.' }, { status: 502 });
   }
 
   const creds = councilDriveCredentials(session.claims.councilId);

@@ -51,7 +51,9 @@ describe('the Council Historian role', () => {
   it('is seeded as an appointed, non-officer role and bumps the phone database to 49', () => {
     const roles = SEED_DATA.find((t) => t.table === 'Role')!.rows as { Role: string; Officer: number }[];
     expect(roles.find((r) => r.Role === COUNCIL_HISTORIAN_ROLE)).toEqual({ Role: 'Council Historian', Officer: 0 });
-    expect(roles.findIndex((r) => r.Role === COUNCIL_HISTORIAN_ROLE)).toBe(roles.length - 1);
+    // Sprint 10 Revision 3.1 seeds the Application Advisory Panelist role after it.
+    expect(roles.findIndex((r) => r.Role === COUNCIL_HISTORIAN_ROLE)).toBe(roles.length - 2);
+    expect(roles[roles.length - 1]).toEqual({ Role: 'Application Advisory Panelist', Officer: 0 });
     expect(APPOINTED_ROLE_NAMES).toContain('Council Historian');
     expect(officeKind(COUNCIL_HISTORIAN_ROLE)).toBe('appointed');
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (49|[5-9]\d|\d{3});/);

@@ -7,9 +7,12 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+// Sprint 10 Revision 3.1: when the council keeps its files on a Local Network Server, the upload is written there first
+// (fileIntoRepository) and the answer carries the portal link to store; Google Drive is not touched.
 import { NextResponse } from 'next/server';
-import { HUB_PHOTO_ROUTE } from '@kofc/shared';
+import { describeError, HUB_PHOTO_ROUTE } from '@kofc/shared';
 import { hubDataDir, hubModeOn } from '@/services/server/hub/hub-vault';
+import { fileIntoRepository } from '@/services/server/file-repository';
 import { readPortalSession } from '@/services/server/session';
 
 export const runtime = 'nodejs';
@@ -33,6 +36,14 @@ export async function POST(req: Request) {
   const bytes = new Uint8Array(await req.arrayBuffer());
   if (bytes.length === 0) return message('The photo is empty.', 400);
   if (bytes.length > HUB_PHOTO_MAX_BYTES) return message(`The photo is larger than ${HUB_PHOTO_MAX_BYTES / (1024 * 1024)} MB.`, 413);
+  // Sprint 10 Revision 3.1: a council on a Local Network Server keeps its check photos there, not beside the vault.
+  try {
+    const ref = await fileIntoRepository(claims.councilId, { folder: 'Check_Photos', prefix: `deposit-${claims.memberId}`, originalName: `photo.${extension}`, bytes });
+    if (ref) return NextResponse.json({ path: ref }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
+  } catch (err) {
+    console.error('[file-repository] network share write failed:', describeError(err));
+    return message('The council file server did not accept the photo.', 502);
+  }
   const name = `deposit-${claims.memberId}-${Date.now()}-${randomBytes(8).toString('hex')}.${extension}`;
   mkdirSync(photosDir(), { recursive: true });
   writeFileSync(join(/*turbopackIgnore: true*/ photosDir(), name), bytes);

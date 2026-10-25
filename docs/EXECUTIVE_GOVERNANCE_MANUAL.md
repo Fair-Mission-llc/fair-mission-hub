@@ -1631,7 +1631,7 @@ The portal has no status badge strip and no **Oversight Desk**. Each queue shows
 The **Bible Verse of the Day**, the **Liturgical Feast Day Tracker** and the **📿 Community Prayer Request List** show only while the council's **Faith Center** module is on. A white-label organization does not see the three faith cards. **Home** then shows the other four cards.
 
 ### 14.3 Concept: the desks
-A desk holds the work of one seat. Every officer desk is a desk blotter of drawers (section 14.3.2). You sign, code and pay inside a drawer on the desk. The **Member Desk** has no drawers.
+A desk holds the work of one seat. Every officer desk is a desk blotter of drawers (section 14.3.2). When nobody holds the desk's office, an Admin who opens the desk sees the card **Seat Vacant — Open Council Roster to Assign this Officer Position** above the drawers, with links to the **Member Roster** and the **Appointed Leadership Matrix**. If part of a desk cannot load, the desk shows a short message in its place instead of a blank page. You sign, code and pay inside a drawer on the desk. The **Member Desk** has no drawers.
 
 The portal shows a desk tab only to a reader who may do the desk's work.
 
@@ -2526,26 +2526,26 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 
 ## 18. Parish fundraiser split setup
 
-### 18.1 Set up the parish split
-> **Who can do this:** the council's officers, the council's Admins and Super Admins.
+### 18.1 Share fundraiser revenue with a split profile
+> **Who can do this:** the council's Treasurer and Super Admins.
 
-**Goal:** Switch the parish split on with a percentage and a ledger line.
+**Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages. The **Parish Fundraiser Split** card is retired.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Feature Controls** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on the Revenue account.
 
 **Steps:**
-1. Select the switch. The switch shows **The parish split is on**.
-2. Enter the percentage in **Parish share (%)**, for example `50`.
-3. Select the line in **General ledger line for the parish share**.
-4. Select **Save parish split**.
+1. Select **Edit split** on the Revenue account that receives the fundraiser's money.
+2. Add a destination account and its percentage for each share, for example **Parish Fundraiser Share** at `50`.
+3. Make the percentages total exactly 100.
+4. Save the split.
 
-**Expected result:** The message **Saved for council … The split is on.** shows. The Treasurer's console names the line and the percentage.
+**Expected result:** The account shows as a split account. Every posting to it is shared out to the destination accounts.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| A red message shows and **Save parish split** is unavailable. | The split is on, but no ledger line is chosen. | Select a line in **General ledger line for the parish share**. |
-| The line you want is not in the list. | Only revenue lines and expense lines of your council show. | Ask the Treasurer to add the line to the chart of accounts. |
+| Council Wide Settings has no parish split switch. | The **Parish Fundraiser Split** card is retired. | Use a split profile on the Revenue account. |
+| **Edit split** is missing on an account. | Only Revenue accounts can split. | Choose a Revenue account. |
 
 ---
 
