@@ -167,7 +167,6 @@ import { BulletinBody, LatestBulletinsFeed } from '@/components/BulletinParts';
 import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
-import { InboundMailCenter, readAccessRequests } from '@/components/PlatformAccessParts';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { DeskRow } from '@/components/WorkspaceTabs';
@@ -679,7 +678,8 @@ function FlaggedHoursDrawer({ user, councilId }: { user: SessionUser; councilId:
  * Workflow, the Council Election Workflow (the Council Election Tracker until Sprint 8S Revision 2), the Shared Loaner Library, Affiliation Invites, Connected Councils, the
  * Constitutional Advisor Panels and the Operations Knowledge Archive. Sprint 8P Stage 3: the dissolved Oversight Desk's
  * audits join it - the Flagged Hours Review (lit while an entry is held), Shifts Awaiting Hours (lit while one is
- * overdue) and, for Super Admins, the Inbound Council Mail Center (lit while a request is pending).
+ * overdue) and, for Super Admins, the Inbound Council Mail Center (lit while a request is pending). Sprint 10 Revision
+ * 1.0 removed the Inbound Council Mail Center drawer: access requests are read on the Super Admin Desk only.
  */
 export function GrandKnightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
@@ -688,15 +688,13 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   const has = (id: DeskDrawerId) => drawers.some((d) => d.id === id);
   const reviewHeld = has('flagged-hours') && flags.feature_volunteer_quarantine;
   const readsHours = has('shifts-awaiting-hours');
-  const readsMail = has('access-requests');
   const charity = useCharityPipeline(user, councilId, 'grand-knight', has('donation-workflow') || has('charity-endorsements'));
   const queue = useLoad(() => db.expenses.listAuthorizationQueue(user.memberId, councilId), [user.memberId, councilId]);
   const audits = useLoad(async () => {
-    const [held, awaiting, council, requests] = await Promise.all([
+    const [held, awaiting, council] = await Promise.all([
       reviewHeld ? settled(() => db.volunteerQuarantine.listPending(user.memberId, councilId)) : null,
       readsHours ? settled(() => db.reports.listShiftsAwaitingHours(councilId)) : null,
       readsHours ? settled(() => db.councils.get(councilId)) : null,
-      readsMail ? settled(() => readAccessRequests()) : null,
     ]);
     const delay = hoursReminderCadence(council).delayDays;
     const open = (awaiting ?? []).filter((r) => !r.closed);
@@ -704,9 +702,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
       held: held ? held.length : null,
       hours: awaiting ? open.length : null,
       overdue: open.filter((r) => r.daysSinceShift >= delay).length,
-      requests: requests ? requests.filter((r) => r.status === 'PENDING').length : null,
     };
-  }, [user.memberId, councilId, reviewHeld, readsHours, readsMail]);
+  }, [user.memberId, councilId, reviewHeld, readsHours]);
   usePolling(queue.reload);
   usePolling(audits.reload);
   const rows = queue.data ?? [];
@@ -727,8 +724,6 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return { count: a?.held ?? null, alert: (a?.held ?? 0) > 0, alertText: 'Time entries held for your review' };
             case 'shifts-awaiting-hours':
               return { count: a?.hours ?? null, alert: (a?.overdue ?? 0) > 0, alertText: `${a?.overdue ?? 0} past the first reminder` };
-            case 'access-requests':
-              return { count: a?.requests ?? null, alert: (a?.requests ?? 0) > 0, alertText: 'Access requests to review' };
             case 'charity-endorsements':
               return charity.status;
             case 'donation-workflow':
@@ -750,8 +745,6 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return <FlaggedHoursDrawer user={user} councilId={councilId} />;
             case 'shifts-awaiting-hours':
               return <AwaitingHours councilId={councilId} />;
-            case 'access-requests':
-              return <InboundMailCenter />;
             case 'vetting-board':
               return <CharityVettingBoard />;
             case 'charity-endorsements':

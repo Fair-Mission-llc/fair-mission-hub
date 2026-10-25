@@ -64,7 +64,7 @@ describe('schema version 79', () => {
     for (const col of ['[entry_id] INT NOT NULL IDENTITY', '[council_id] INT NOT NULL', '[category_tag] VARCHAR(20) NOT NULL', '[entry_text] TEXT NOT NULL', '[officer_signature] VARCHAR(255) NOT NULL', '[date_logged] DATETIME NOT NULL']) {
       expect(schema).toContain(col);
     }
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (79|8\d|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (79|8\d|9\d|\d{3});/);
     expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('CREATE TABLE IF NOT EXISTS [CouncilOperationsKnowledge]');
     expect(read('Seed.sql')).toContain('INSERT INTO [CouncilOperationsKnowledge]');
   });

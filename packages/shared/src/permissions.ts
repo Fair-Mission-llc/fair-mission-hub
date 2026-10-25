@@ -792,7 +792,9 @@ export interface PortalNavGroup {
  */
 export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
-  { id: 'faith', label: 'Faith In Action', items: ['activities', 'home', 'member-actions', 'events', 'calendar', 'faith-center'] },
+  // Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it), and the gallery is the sidebar's own
+  // top-level '📸 Council Photo Gallery' node (Sidebar.tsx) instead of a Resources link.
+  { id: 'faith', label: 'Faith In Action', items: ['activities', 'member-actions', 'events', 'calendar', 'faith-center'] },
   {
     id: 'finances',
     label: 'Finances',
@@ -814,7 +816,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
     ],
   },
   { id: 'performance', label: 'Performance', items: ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry'] },
-  { id: 'resources', label: 'Resources', items: ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library'] },
+  { id: 'resources', label: 'Resources', items: ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library'] },
   { id: 'answers', label: 'Answers', items: ['help', 'answers/help', 'answers/sop'] },
   {
     id: 'setup',

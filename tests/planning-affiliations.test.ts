@@ -95,7 +95,7 @@ describe('schema version 78', () => {
     for (const col of ['requesting_council_id', 'target_council_id', 'status', 'date_established']) expect(schema).toContain(`[${col}]`);
     expect(schema).toContain("ALTER TABLE [CouncilGoals] ADD [budget_status] VARCHAR(20) NOT NULL DEFAULT 'DRAFT';");
     expect(schema).toContain("ALTER TABLE [CouncilBudgetForecast] ADD [budget_status] VARCHAR(20) NOT NULL DEFAULT 'DRAFT';");
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[8-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[8-9]|[8-9]\d|\d{3});/);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 78 | 8G/8H |');
   });
 });

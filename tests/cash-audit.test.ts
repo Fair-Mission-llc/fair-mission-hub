@@ -235,7 +235,7 @@ describe.each(drivers)('$name driver: batch coding and cash box audits', (d) => 
 
 describe('Sprint 8N: schema 84, the desk panels and the phone button', () => {
   it('bumps the phone database to 84 and records the release', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[4-9]|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[4-9]|9\d|\d{3});/);
     const schema = read('Schema.sql');
     expect(schema).toContain('(schema version 84)');
     expect(schema).toContain('ALTER TABLE [Event] ADD [verified_cash_amount] DECIMAL(18,2) NULL;');

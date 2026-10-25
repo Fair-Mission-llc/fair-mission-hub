@@ -102,14 +102,16 @@ describe('the Oversight Desk is dissolved', () => {
   it('puts its audits on the Grand Knight Desk as alerting drawers', () => {
     const gk = ids(seat(['Grand Knight']), 'grand-knight');
     expect(gk).toEqual(expect.arrayContaining(['flagged-hours', 'shifts-awaiting-hours']));
-    expect(ids(seat([], 'Super Admin'), 'grand-knight')).toContain('access-requests');
-    for (const id of ['flagged-hours', 'shifts-awaiting-hours', 'access-requests'] as const) expect(DESK_DRAWERS.find((d) => d.id === id)).toMatchObject({ desk: 'grand-knight', alerts: true });
-    for (const key of ['quarantine', 'hours', 'access'] as const) expect(DESK_FOCUS_TARGETS[key].anchor).toBe('grand-knight');
+    // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left the desk (the Super Admin Desk keeps it).
+    expect(ids(seat([], 'Super Admin'), 'grand-knight') as string[]).not.toContain('access-requests');
+    for (const id of ['flagged-hours', 'shifts-awaiting-hours'] as const) expect(DESK_DRAWERS.find((d) => d.id === id)).toMatchObject({ desk: 'grand-knight', alerts: true });
+    for (const key of ['quarantine', 'hours'] as const) expect(DESK_FOCUS_TARGETS[key].anchor).toBe('grand-knight');
   });
 
-  it('keeps the Shifts Awaiting Hours audit on the Executive Dashboard for every audit reader', () => {
+  it('keeps the Shifts Awaiting Hours audit on the Grand Knight Desk only (Sprint 10 Revision 1.0 took it off the Executive Dashboard)', () => {
     const page = read('apps/web/app/executive-dashboard/page.tsx');
-    expect(page).toContain('<AwaitingHours councilId={councilId} />');
+    expect(page).not.toContain('<AwaitingHours');
+    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<AwaitingHours councilId={councilId} />');
     expect(page).not.toContain('is on the Oversight Desk');
   });
 });
@@ -186,7 +188,7 @@ describe('the archive and diary readers', () => {
 
 describe('docs and phone schema', () => {
   it('moves the phone database to version 89 and documents the stage', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (89|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (89|9\d|\d{3});/);
     expect(read('Schema.sql')).toContain('(schema version 89)');
     const admin = readOfficerManuals();
     expect(admin).toContain('### 14.8.1 Read the Historical Meeting Minutes Archive');

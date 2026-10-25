@@ -68,7 +68,7 @@ const DGK = seat({ roles: ['Deputy Grand Knight'] });
 describe('schema version 75', () => {
   it('records the no-table-change version and bumps the phone database', () => {
     expect(read('Schema.sql')).toContain('(schema version 75)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[5-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[5-9]|[8-9]\d|\d{3});/);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 75 | 8C |');
   });
 });
@@ -123,9 +123,10 @@ describe('the Reports Desk merged into Home', () => {
     expect(page).toContain('<ExecutiveSummary councilId={scope.councilId} />');
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<ExecutiveSummary');
     const summary = page.slice(page.indexOf('function ExecutiveSummary('));
-    for (const part of ['<Scorecards s={s} compact />', '<EngagementCards', '<BudgetTracking', '<MissionTracking', 'title="Financial ledger"', '<NoShowAudit']) expect(summary).toContain(part);
-    // Sprint 8P Stage 3: the Shifts Awaiting Hours audit is back here for every executive-audit reader.
-    expect(page).toContain('<AwaitingHours councilId={councilId} />');
+    for (const part of ['<Scorecards s={s} compact />', '<EngagementCards', '<BudgetTracking', '<MissionTracking', '<NoShowAudit']) expect(summary).toContain(part);
+    // Sprint 10 Revision 1.0: the financial ledger grid and the Shifts Awaiting Hours audit left this page.
+    expect(summary).not.toContain('title="Financial ledger"');
+    expect(page).not.toContain('<AwaitingHours');
     expect(page).not.toContain("shown === 'reports'");
   });
 
@@ -226,11 +227,12 @@ describe('the left navigation cleanup', () => {
     expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<ExpenseRoutingTrack />');
   });
 
-  it('locks the Inbound Council Mail Center drawer to global Super Admins', () => {
-    // Sprint 8P Stage 3: a Grand Knight Desk drawer gated 'super-admin'.
-    expect(DESK_DRAWERS.find((d) => d.id === 'access-requests')).toMatchObject({ desk: 'grand-knight', gate: 'super-admin' });
-    expect(deskDrawersFor(seat({ memberType: 'Admin' }), 'grand-knight', OWN).map((d) => d.id)).not.toContain('access-requests');
-    expect(deskDrawersFor(seat({ memberType: 'Super Admin' }), 'grand-knight', OWN).map((d) => d.id)).toContain('access-requests');
+  it('keeps the Inbound Council Mail Center off the Grand Knight Desk (Sprint 10 Revision 1.0)', () => {
+    // Sprint 8P Stage 3 made it a Grand Knight Desk drawer for Super Admins; Sprint 10 Revision 1.0 removed the drawer.
+    // The access requests stay on the Super Admin Desk's approval queue.
+    expect(DESK_DRAWERS.map((d) => d.id as string)).not.toContain('access-requests');
+    expect(deskDrawersFor(seat({ memberType: 'Super Admin' }), 'grand-knight', OWN).map((d) => d.id as string)).not.toContain('access-requests');
+    expect(read('apps/web/components/SuperAdminDesk.tsx')).toContain('<InboundMailCenter />');
   });
 });
 
@@ -245,7 +247,7 @@ describe('the click-through desk badges', () => {
     // Sprint 8P Stage 3: the Oversight Desk is dissolved; its audits are Grand Knight Desk drawers.
     expect(DESK_FOCUS_TARGETS.quarantine.anchor).toBe('grand-knight');
     expect(DESK_FOCUS_TARGETS.hours.anchor).toBe('grand-knight');
-    expect(DESK_FOCUS_TARGETS.access.anchor).toBe('grand-knight');
+    expect(Object.keys(DESK_FOCUS_TARGETS)).not.toContain('access');
     expect(new Set(Object.values(DESK_FOCUS_TARGETS).map((t) => t.rowId)).size).toBe(Object.keys(DESK_FOCUS_TARGETS).length);
   });
 

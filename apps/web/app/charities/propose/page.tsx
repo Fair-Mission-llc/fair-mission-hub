@@ -9,14 +9,23 @@
 // for a status report). My requests (charities.listMyCharitableRequests) follows each request along that track.
 // Sprint 6H: each request's "Request More Info" button opens the private thread its vetting officer started with the
 // Shepherd, to read and answer it. The officers' "Request Officer Input" forum is never shown here.
+// Sprint 10 Revision 1.0 (schema 100): Section 1 opens with a State dropdown and an Organization dropdown that lists the
+// state's verified registry charities (charities.searchGlobalRegistry with verified: true). Picking one fills the
+// name, mission, mailing address, EIN and the Section 2 contact fields from the registry row (charityGrantAutoFill).
+// 'Another organization' leaves the fields blank to type in, for a charity not yet verified.
 import { useState, type ReactNode } from 'react';
 import {
   CHARITABLE_FORM_TEXT_MAX_LENGTH,
   CHARITABLE_TRUSTEE_FOLLOWUP_MONTHS,
   CHARITY_NAME_MAX_LENGTH,
+  CHARITY_SEARCH_MAX_LIMIT,
   charitableTrusteeFollowUpDate,
+  charityGrantAutoFill,
   describeError,
   dispatchCharitableTrackingNotice,
+  verifiedCharitiesInState,
+  verifiedCharityStates,
+  type GlobalCharityRegistry,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { TrackingSteps } from '@/components/IntakeParts';
@@ -69,6 +78,9 @@ const EMPTY: Draft = {
 
 type Message = { tone: 'error' | 'info'; text: string };
 
+/** An empty registry row: charityGrantAutoFill of it blanks every field a pick fills. */
+const BLANK_CHARITY: GlobalCharityRegistry = { id: 0, Name: '', Description: '', State: '', IsCatholic: 0, CharityType: '', IsAnnual: 0, IsVerified: 0 };
+
 /** A numbered section of the paper form: a gold-edged card with the section's number and title. */
 function Section({ number, title, children }: { number: number; title: string; children: ReactNode }) {
   return (
@@ -101,7 +113,30 @@ function GrantProposal() {
   const types = useLoad(() => db.charities.listCouncilRelationshipTypes(user.councilId), [user.councilId]);
   const areas = useLoad(() => db.charities.listCouncilMissionAreas(user.councilId), [user.councilId]);
   const mine = useLoad(() => db.charities.listMyCharitableRequests(user.memberId), [user.memberId]);
+  const verified = useLoad(() => db.charities.searchGlobalRegistry(user.memberId, { verified: true, limit: CHARITY_SEARCH_MAX_LIMIT }), [user.memberId]);
   const [draft, setDraft] = useState<Draft>(EMPTY);
+  // Sprint 10 Revision 1.0: the cascading pickers. charityId '' = nothing picked yet, 'other' = typed in by hand.
+  const [pickState, setPickState] = useState('');
+  const [charityId, setCharityId] = useState('');
+  const registry = verified.data ?? [];
+  const states = verifiedCharityStates(registry);
+  const inState = pickState ? verifiedCharitiesInState(registry, pickState) : [];
+  const picked = registry.find((c) => String(c.id) === charityId) ?? null;
+  const chooseState = (state: string) => {
+    setPickState(state);
+    setCharityId('');
+  };
+  const chooseCharity = (value: string) => {
+    setCharityId(value);
+    const charity = registry.find((c) => String(c.id) === value);
+    // A verified charity fills the form from its registry row; 'Another organization' clears what a pick filled in.
+    setDraft((d) => ({ ...d, ...charityGrantAutoFill(charity ?? BLANK_CHARITY) }));
+  };
+  const resetForm = () => {
+    setDraft(EMPTY);
+    setPickState('');
+    setCharityId('');
+  };
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
   const [threadId, setThreadId] = useState<number | null>(null);
@@ -141,7 +176,7 @@ function GrantProposal() {
           `It moves through Vetting, Presentation and Payment Made; follow it under My requests. ` +
           `The Trustees will ask for a status report on ${formatFullDate(notice.trusteeFollowUpDate)}.`,
       });
-      setDraft(EMPTY);
+      resetForm();
       await mine.reload();
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
@@ -168,8 +203,39 @@ function GrantProposal() {
           ) : null}
           {types.error ? <Notice tone="error">{types.error}</Notice> : null}
           {areas.error ? <Notice tone="error">{areas.error}</Notice> : null}
+          {verified.error ? <Notice tone="error">{verified.error}</Notice> : null}
 
           <Section number={1} title="Organization / Ministry">
+            <Field label="State" hint="Where the organization is registered">
+              {(id) => (
+                <Select id={id} value={pickState} onChange={(e) => chooseState(e.target.value)}>
+                  <option value="">{states.length === 0 ? 'No verified charities yet' : 'Choose a state…'}</option>
+                  {states.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+            <Field label="Organization" hint="Verified charities fill in the rest of the form">
+              {(id) => (
+                <Select id={id} value={charityId} disabled={pickState === ''} onChange={(e) => chooseCharity(e.target.value)}>
+                  <option value="">{pickState === '' ? 'Choose a state first' : 'Choose an organization…'}</option>
+                  {inState.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.Name}
+                    </option>
+                  ))}
+                  {pickState !== '' ? <option value="other">Another organization (type it in)</option> : null}
+                </Select>
+              )}
+            </Field>
+            {picked ? (
+              <p className="text-xs text-muted md:col-span-2" role="status">
+                Filled in from the Global Charities Registry entry for {picked.Name}. Check the details and change anything that is out of date.
+              </p>
+            ) : null}
             <Field label="Organization or ministry name" className="md:col-span-2">
               {(id) => <Input id={id} required maxLength={CHARITY_NAME_MAX_LENGTH} value={text('OrganizationName')} onChange={(e) => set('OrganizationName', e.target.value)} />}
             </Field>
@@ -263,7 +329,7 @@ function GrantProposal() {
             <Button type="submit" disabled={busy || draft.OrganizationName.trim() === '' || draft.AmountRequested.trim() === ''}>
               {busy ? 'Saving…' : 'Save and submit for vetting'}
             </Button>
-            <Button variant="secondary" disabled={busy} onClick={() => setDraft(EMPTY)}>
+            <Button variant="secondary" disabled={busy} onClick={resetForm}>
               Clear form
             </Button>
           </div>

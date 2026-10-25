@@ -248,8 +248,12 @@ describe('portal permissions', () => {
       expect(filed as string[]).not.toContain('distribution-lists');
       // Sprint 8C: the Leadership Auditing Queue left the sidebar; its page stays an area.
       expect(filed as string[]).not.toContain('expenses/queue');
+      // Sprint 10 Revision 1.0: Home is opened from the Home tab, and the gallery is the sidebar's own top-level node.
+      expect(filed as string[]).not.toContain('home');
+      expect(filed as string[]).not.toContain('gallery');
       const everyArea = portalAreas(superAdmin).filter(
-        (a) => a !== 'profile' && a !== 'messages' && a !== 'distribution-lists' && a !== 'navigation-guide' && a !== 'expenses/queue',
+        (a) =>
+          a !== 'profile' && a !== 'messages' && a !== 'distribution-lists' && a !== 'navigation-guide' && a !== 'expenses/queue' && a !== 'home' && a !== 'gallery',
       );
       expect([...everyArea].sort()).toEqual([...filed].sort());
       expect(PORTAL_NAV_GROUPS.map((g) => g.label)).toEqual(['Governance', 'Faith In Action', 'Finances', 'Performance', 'Resources', 'Answers', 'System Settings']);
@@ -305,13 +309,13 @@ describe('portal permissions', () => {
     it('shows a council Admin everything but the global tables, councils, appointments and the check ledgers', () => {
       expect(shape(admin)).toEqual([
         ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor']],
-        ['Faith In Action', ['activities', 'home', 'member-actions', 'events', 'calendar', 'faith-center']],
+        ['Faith In Action', ['activities', 'member-actions', 'events', 'calendar', 'faith-center']],
         [
           'Finances',
           [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/audit', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
+        ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/feedback', 'system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'members', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
       ]);
@@ -320,13 +324,13 @@ describe('portal permissions', () => {
     it('shows a Treasurer the full finances and the donation lookups', () => {
       expect(shape(actor({ isOfficer: true, roles: ['Treasurer'] }))).toEqual([
         ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor']],
-        ['Faith In Action', ['home', 'member-actions', 'calendar', 'faith-center']],
+        ['Faith In Action', ['member-actions', 'calendar', 'faith-center']],
         [
           'Finances',
           [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/disbursements', 'charities/vetting', 'charities/propose', 'charities/queue', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
+        ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault']],
       ]);
@@ -335,10 +339,10 @@ describe('portal permissions', () => {
     it('files the Council Lookups (agenda templates, Sprint 5Y-6) under Setup and the Appointed Leadership Matrix under Governance for a Grand Knight who is a plain Member', () => {
       expect(shape(actor({ isOfficer: true, roles: ['Grand Knight'] }))).toEqual([
         ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor']],
-        ['Faith In Action', ['home', 'member-actions', 'calendar', 'faith-center']],
+        ['Faith In Action', ['member-actions', 'calendar', 'faith-center']],
         ['Finances', [...FIN_READ, 'expenses', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'financials/budget']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
+        ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'council-lookups', 'credentials-vault']],
       ]);
@@ -348,22 +352,22 @@ describe('portal permissions', () => {
       expect(shape(officer)).toEqual([
         // Sprint 5Z-10: officers run the live console.
         ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor']],
-        ['Faith In Action', ['home', 'member-actions', 'calendar', 'faith-center']],
+        ['Faith In Action', ['member-actions', 'calendar', 'faith-center']],
         // Sprint 5Z-2: officers (Trustees included) vet charitable requests; Sprint 5Z-8: they read the general ledger.
         ['Finances', [...FIN_READ, 'expenses', 'charities/vetting', 'charities/propose', 'financials/budget']],
         // Sprint 5Z-2.5: officers read the executive dashboard.
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
+        ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
         ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'credentials-vault']],
       ]);
       expect(shape(member)).toEqual([
         // Sprint 6L Extension: the Constitutional Advisor is an officer tool.
         ['Governance', ['meetings', 'elections', 'governance/bylaws']],
-        ['Faith In Action', ['home', 'member-actions', 'calendar', 'faith-center']],
+        ['Faith In Action', ['member-actions', 'calendar', 'faith-center']],
         ['Finances', ['expenses', 'charities/propose', 'financials/budget']],
         ['Performance', ['member-center', 'history', 'ledger']],
-        ['Resources', ['gallery', 'resources/bulletins', 'inventory/loaner-library']],
+        ['Resources', ['resources/bulletins', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
       ]);
     });

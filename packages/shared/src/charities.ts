@@ -20,6 +20,7 @@ import type {
   CharityProposalDetail,
   CharityProposalInput,
   CharitySearchFilters,
+  CharityVerificationColumn,
   CouncilCharityLedgerEntry,
   MissionAreaFootprint,
   MissionAreaFootprintEntry,
@@ -115,7 +116,7 @@ export const CHARITY_COLUMNS = [
 /** The optional registry columns hydrateAndDisburse may fill in on an existing entry, never overwrite. */
 export const CHARITY_FILLABLE_COLUMNS = ['EIN', 'Phone', 'ContactName', 'ContactEmail', 'Address', 'ZipCode'] as const satisfies readonly (keyof GlobalCharityRegistry)[];
 
-export type CleanGlobalCharity = Omit<GlobalCharityRegistry, 'id'>;
+export type CleanGlobalCharity = Omit<GlobalCharityRegistry, 'id' | CharityVerificationColumn>;
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 
@@ -233,6 +234,7 @@ export interface CleanCharitySearch {
   state: string | null;
   ein: string | null;
   isCatholic: boolean | null;
+  verified: boolean | null;
   limit: number;
 }
 
@@ -244,6 +246,9 @@ export function cleanCharitySearchFilters(filters: CharitySearchFilters | undefi
   if (f.isCatholic !== undefined && f.isCatholic !== null && typeof f.isCatholic !== 'boolean') {
     throw invalid(`isCatholic must be true or false; received ${JSON.stringify(f.isCatholic)}.`);
   }
+  if (f.verified !== undefined && f.verified !== null && typeof f.verified !== 'boolean') {
+    throw invalid(`verified must be true or false; received ${JSON.stringify(f.verified)}.`);
+  }
   const limit = f.limit ?? CHARITY_SEARCH_DEFAULT_LIMIT;
   if (!isId(limit) || limit > CHARITY_SEARCH_MAX_LIMIT) {
     throw invalid(`Limit must be a whole number from 1 to ${CHARITY_SEARCH_MAX_LIMIT}; received ${JSON.stringify(f.limit)}.`);
@@ -254,6 +259,7 @@ export function cleanCharitySearchFilters(filters: CharitySearchFilters | undefi
     state: state === null ? null : normalizeStateCode(state),
     ein: ein === null ? null : normalizeEin(ein),
     isCatholic: f.isCatholic ?? null,
+    verified: f.verified ?? null,
     limit,
   };
 }
@@ -273,7 +279,8 @@ export function searchCharityRegistry(rows: readonly GlobalCharityRegistry[], se
         (type === null || r.CharityType.trim().toLowerCase() === type) &&
         (search.state === null || r.State === search.state) &&
         (search.ein === null || r.EIN === search.ein) &&
-        (search.isCatholic === null || r.IsCatholic === (search.isCatholic ? 1 : 0)),
+        (search.isCatholic === null || r.IsCatholic === (search.isCatholic ? 1 : 0)) &&
+        (search.verified === null || isVerifiedCharity(r) === search.verified),
     )
     .sort(compareCharities)
     .slice(0, search.limit);
@@ -289,6 +296,72 @@ export function suggestLocalCharities(
   return rows
     .filter((r) => r.State === stateCode && !linked.has(r.id))
     .sort((a, b) => b.IsCatholic - a.IsCatholic || compareCharities(a, b));
+}
+
+// ---- verified charities and the grant form auto-fill (Sprint 10 Revision 1.0, schema 100) ----
+
+/** True for a registry entry an Admin or Super Admin verified. */
+export const isVerifiedCharity = (charity: Pick<GlobalCharityRegistry, 'IsVerified'>): boolean => charity.IsVerified === 1;
+
+/** The verification columns charities.setCharityVerified writes: stamped when set, all cleared when unset. */
+export function charityVerificationStamp(
+  verified: unknown,
+  actorId: number,
+  now: Date,
+): Pick<GlobalCharityRegistry, 'IsVerified' | 'VerifiedAt' | 'VerifiedByMemberID'> {
+  if (typeof verified !== 'boolean') throw invalid(`verified must be true or false; received ${JSON.stringify(verified)}.`);
+  return verified
+    ? { IsVerified: 1, VerifiedAt: toTimestamp(now), VerifiedByMemberID: actorId }
+    : { IsVerified: 0, VerifiedAt: null, VerifiedByMemberID: null };
+}
+
+/** The states that hold at least one verified charity, A-Z: the Propose Charity Grant form's State dropdown. */
+export function verifiedCharityStates(rows: readonly GlobalCharityRegistry[]): string[] {
+  return [...new Set(rows.filter(isVerifiedCharity).map((r) => r.State))].sort();
+}
+
+/** The verified charities of one state, Name A-Z: the form's Organization dropdown once a state is chosen. */
+export function verifiedCharitiesInState(rows: readonly GlobalCharityRegistry[], stateCode: string): GlobalCharityRegistry[] {
+  return rows.filter((r) => isVerifiedCharity(r) && r.State === stateCode).sort(compareCharities);
+}
+
+/** A registry entry's mailing address on one line: 'Street, City, ST 97213'. Blank when no street is on file. */
+export function charityMailingAddress(charity: Pick<GlobalCharityRegistry, 'Address' | 'State' | 'ZipCode'>): string {
+  const street = charity.Address?.trim() ?? '';
+  if (street === '') return '';
+  const zip = charity.ZipCode?.trim() ?? '';
+  return `${street}, ${charity.State}${zip ? ` ${zip}` : ''}`;
+}
+
+/** The Propose Charity Grant fields a verified charity fills in, as the form holds them (text, blank for none). */
+export interface CharityGrantAutoFill {
+  OrganizationName: string;
+  OrgMission: string;
+  MailingAddress: string;
+  Is501c3: boolean;
+  EIN: string;
+  ContactName: string;
+  ContactPhone: string;
+  ContactEmail: string;
+}
+
+/**
+ * What picking `charity` in the Organization dropdown writes into the grant form: name, mission (the registry
+ * Description), mailing address, contact name, phone and email, and the EIN. An entry with an EIN on file ticks the
+ * 501(c)(3) box so the EIN field shows.
+ */
+export function charityGrantAutoFill(charity: GlobalCharityRegistry): CharityGrantAutoFill {
+  const ein = charity.EIN ?? '';
+  return {
+    OrganizationName: charity.Name,
+    OrgMission: charity.Description,
+    MailingAddress: charityMailingAddress(charity),
+    Is501c3: ein !== '',
+    EIN: ein,
+    ContactName: charity.ContactName ?? '',
+    ContactPhone: charity.Phone ?? '',
+    ContactEmail: charity.ContactEmail ?? '',
+  };
 }
 
 // ---- proposals and checks ----------------------------------------------------

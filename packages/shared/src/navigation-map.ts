@@ -15,7 +15,7 @@ import type { SessionUser } from './contract';
 import { deskDrawersFor, type DrawerDeskId } from './desk-drawers';
 import { PHONE_TABS, type PhoneTab } from './docs';
 import { ALL_FEATURES_ON, mobileTabEnabled, type FeatureFlags, type MobileTab } from './features';
-import { isNavigationLeader, navigationGuide } from './navigation-guide';
+import { isNavigationLeader, navigationGuide, PINNED_SIDEBAR_LABEL } from './navigation-guide';
 import { dashboardTabsFor, HOME_UNIVERSAL_CARDS, MEMBER_DESK_SECTIONS, type DashboardTabId } from './officer-desks';
 import type { PortalNavItem } from './permissions';
 import { SUPER_ADMIN_DESK_FOLDERS } from './super-admin-desk';
@@ -167,7 +167,8 @@ export function navigationGuideMap(u: Viewer, flags: FeatureFlags = ALL_FEATURES
   const categories: NavigationMapCategory[] = NAVIGATION_MAP_CATEGORIES.map(({ id, label }) => ({
     id,
     label,
-    entries: guide.groups.flatMap((g) =>
+    // Sprint 10 Revision 1.0: the pinned links (the Council Photo Gallery) first, then the pillars' links.
+    entries: [{ label: PINNED_SIDEBAR_LABEL, entries: guide.pinned }, ...guide.groups].flatMap((g) =>
       g.entries
         .filter((e) => NAVIGATION_ITEM_CATEGORY[e.item] === id)
         .map((e) => (full ? { item: e.item, explanation: e.explanation, pillar: g.label } : { item: e.item, explanation: e.explanation })),

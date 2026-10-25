@@ -90,7 +90,7 @@ describe('schema 55', () => {
     expect(TABLES.MediaSmartAlbums.columns.map((c) => c.name)).toEqual(expect.arrayContaining(['council_id', 'album_name', 'album_criteria_json']));
     expect(TABLES.EventPlanningTime.columns.map((c) => c.name)).toEqual(['id', 'event_id', 'member_id', 'planning_date', 'hours', 'notes', 'logged_at']);
     expect(TABLES.CouncilAssetsInventory.columns.map((c) => c.name)).toEqual(expect.arrayContaining(['serial_number', 'storage_location']));
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[5-9]|[6-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[5-9]|[6-9]\d|\d{3});/);
     for (const table of ['CouncilLeadershipSnapshot', 'EventPlanningTime', 'CouncilMediaVault', 'MediaSmartAlbums']) {
       expect(read('data_dictionary.md')).toContain(`[${table}]`);
     }

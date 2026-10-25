@@ -3954,3 +3954,26 @@ GO
 
 ALTER TABLE [CouncilDonationMethod] ADD [account_identity_label] VARCHAR(100) NULL;
 GO
+
+-- =========================================================================
+-- Sprint 10 Revision 1.0: VERIFIED CHARITIES FOR THE GRANT FORM AUTO-FILL (schema version 100)
+--
+-- GlobalCharityRegistry already holds what the Propose Charity Grant form needs: Name, State, Address, ZipCode,
+-- ContactName, Phone, ContactEmail and EIN. It gains a verification mark: IsVerified (0 or 1), when it was set
+-- (VerifiedAt) and by whom (VerifiedByMemberID). An Active Admin or Super Admin sets or clears it on the Global
+-- Charities Registry page (charities.setCharityVerified). The form's State and Organization dropdowns list only
+-- verified charities, and picking one fills the form's address, contact and EIN fields from the registry row.
+-- No backfill: an entry registered before schema 100 stays unverified until an Admin verifies it.
+-- The phone database version moves to 100.
+-- =========================================================================
+ALTER TABLE [GlobalCharityRegistry] ADD [IsVerified] BIT NOT NULL DEFAULT 0;
+GO
+ALTER TABLE [GlobalCharityRegistry] ADD [VerifiedAt] DATETIME NULL;
+GO
+ALTER TABLE [GlobalCharityRegistry] ADD [VerifiedByMemberID] INTEGER NULL;
+GO
+ALTER TABLE [GlobalCharityRegistry]
+ADD FOREIGN KEY([VerifiedByMemberID])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO

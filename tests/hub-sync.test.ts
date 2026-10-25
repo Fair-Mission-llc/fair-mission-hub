@@ -14,6 +14,7 @@ import {
   HUB_ACTOR_FIRST_METHODS,
   HUB_PUBLIC_METHODS,
   HUB_VAULT_RELATIVE_PATH,
+  PLATFORM_SCHEMA_VERSION,
   SecurityPrivilegeError,
   toIsoDate,
   type HubCall,
@@ -169,7 +170,7 @@ describe('/api/sync/replicate and /api/sync/photo', () => {
 
   it('signs a device in, runs its calls as that member only, and refuses the rest', async () => {
     expect(hubModeOn()).toBe(true);
-    expect(await (await replicateGet()).json()).toMatchObject({ hub: true, schemaVersion: 99 });
+    expect(await (await replicateGet()).json()).toMatchObject({ hub: true, schemaVersion: PLATFORM_SCHEMA_VERSION });
 
     const signIn = await post({ method: 'auth.signIn', args: ['testmember@kofc.org', 'dev-pass-secure-9912'] });
     const cookie = signIn.headers.get('set-cookie')!.split(';')[0];

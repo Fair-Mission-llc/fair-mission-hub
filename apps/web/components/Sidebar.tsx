@@ -11,11 +11,18 @@
 // member-center link is labelled Council Dashboard, and a click on Executive Dashboard always resets the Active Desks
 // to the Home landing deck (EXECUTIVE_DASHBOARD_HOME_HREF), even on /dashboard itself.
 // Sprint 8D/8E: Executive Dashboard is a plain link again, to the Executive Summary's own page (EXECUTIVE_DASHBOARD_HREF).
+// Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it). The '📸 Council Photo Gallery' node is
+// pinned under the Navigation Guide with its two views, Browse Albums and Gallery Management Center (GALLERY_VIEWS). The
+// sidebar collapses: the hamburger button at its top hides or shows the links, and this browser remembers the choice.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
   canOpenArchiveVault,
+  COUNCIL_PHOTO_GALLERY_TITLE,
   EXECUTIVE_DASHBOARD_HREF,
+  GALLERY_VIEWS,
+  galleryViewFromAnchor,
+  portalAreas,
   portalSidebar,
   whiteLabel,
   type FeatureFlags,
@@ -62,7 +69,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     restrictedTo: 'council officers and Admins',
   },
   elections: { href: '/elections', label: 'Council Officer Nominations', hint: 'Nominate brother Knights for elected office' },
-  gallery: { href: '/gallery', label: 'Fraternal Photo Gallery', hint: 'Event photos and slideshows' },
+  gallery: { href: '/gallery', label: COUNCIL_PHOTO_GALLERY_TITLE, hint: 'Event photos, Smart Albums, slideshows and photo uploads' },
   ledger: { href: '/ledger', label: 'Post-event Ledger', hint: 'Spend, funds raised, hours, lessons' },
   'lessons-registry': { href: '/lessons-registry', label: 'Lessons Registry', hint: 'Lessons learned across councils' },
   'distribution-lists': { href: '/distribution-lists', label: 'My Distribution Lists', hint: 'Your private member segments and the council-wide lists' },
@@ -280,35 +287,119 @@ function NavLink({ item, current, tenant }: { item: PortalNavItem | 'navigation-
   );
 }
 
+/** Sprint 10 Revision 1.0: where this browser keeps the sidebar's collapsed state. */
+const SIDEBAR_COLLAPSED_KEY = 'kofc.sidebarCollapsed';
+
+/** The sidebar's collapsed state, remembered in this browser (storage may be blocked; the sidebar then starts open). */
+function useCollapsed(): [boolean, () => void] {
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    try {
+      setCollapsed(window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1');
+    } catch {
+      // Storage blocked: stay open.
+    }
+  }, []);
+  const toggle = () =>
+    setCollapsed((now) => {
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, now ? '0' : '1');
+      } catch {
+        // Storage blocked: the choice lasts for this page only.
+      }
+      return !now;
+    });
+  return [collapsed, toggle];
+}
+
+/**
+ * The top-level '📸 Council Photo Gallery' node (Sprint 10 Revision 1.0): the gallery link and its two views. On the
+ * gallery page a view link changes only the anchor, which the page hears as a hashchange.
+ */
+function GalleryNode({ pathname, hash, tenant }: { pathname: string; hash: string; tenant: TenantType }) {
+  const onGallery = pathname === NAV.gallery.href;
+  const open = galleryViewFromAnchor(hash);
+  return (
+    <ul aria-label="Council Photo Gallery" className="flex flex-col border-t border-t-gold pb-2 pt-1">
+      <NavLink item="gallery" current={onGallery && hash === ''} tenant={tenant} />
+      {GALLERY_VIEWS.map((v) => {
+        const current = onGallery && hash !== '' && open === v.id;
+        return (
+          <li key={v.id}>
+            <Link
+              href={`${NAV.gallery.href}#${v.id}`}
+              title={whiteLabel(v.hint, tenant)}
+              aria-current={current ? 'page' : undefined}
+              onClick={(e) => {
+                if (!onGallery) return;
+                e.preventDefault();
+                window.location.hash = v.id;
+              }}
+              className={cx(navLinkClass(current), 'pl-10 text-xs')}
+            >
+              {whiteLabel(v.label, tenant)}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export function Sidebar({ user, pathname, features, tenant }: { user: SessionUser; pathname: string; features: FeatureFlags; tenant: TenantType }) {
   const groups = portalSidebar(user, features, tenant);
   const hash = useHash();
+  const [collapsed, toggle] = useCollapsed();
+  const hasGallery = portalAreas(user, features, tenant).includes('gallery');
   return (
-    <nav data-surface="navy" aria-label="Portal sections" className="w-64 shrink-0 bg-navy py-3 text-white">
-      {/* Sprint 7C Extension: every member's Navigation Guide, pinned above the pillars. */}
-      <ul aria-label="Navigation help" className="flex flex-col pb-2">
-        <NavLink item="navigation-guide" current={isCurrent(pathname, 'navigation-guide')} tenant={tenant} />
-      </ul>
-      {groups.map((group) => {
-        const headingId = `nav-group-${group.id}`;
-        return (
-          <div key={group.id} className="border-t border-t-gold pb-2 pt-1 first:border-t-0 first:pt-0">
-            <h2 id={headingId} className="px-4 py-2 text-xs font-bold uppercase tracking-wide">
-              {whiteLabel(group.label, tenant)}
-            </h2>
-            <ul aria-labelledby={headingId} className="flex flex-col">
-              {group.entries.map(({ item }) => (
-                <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
-              ))}
-              {(EXTERNAL_NAV[group.id] ?? [])
-                .filter((link) => !link.visible || link.visible(user))
-                .map(({ href, label, hint }) => (
-                  <ExternalNavLink key={href} href={href} label={whiteLabel(label, tenant)} hint={whiteLabel(hint, tenant)} />
+    <nav
+      data-surface="navy"
+      aria-label="Portal sections"
+      className={cx('shrink-0 overflow-hidden bg-navy py-3 text-white motion-safe:transition-[width] motion-safe:duration-200', collapsed ? 'w-14' : 'w-64')}
+    >
+      {/* Sprint 10 Revision 1.0: the persistent hamburger that hides or shows the sidebar's links. */}
+      <div className={cx('flex pb-2', collapsed ? 'justify-center' : 'justify-end px-3')}>
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={!collapsed}
+          aria-controls="portal-sidebar-links"
+          aria-label={collapsed ? 'Show the sidebar' : 'Hide the sidebar'}
+          title={collapsed ? 'Show the sidebar' : 'Hide the sidebar'}
+          className="rounded border-2 border-gold p-1.5 hover:bg-white/10"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+      <div id="portal-sidebar-links" hidden={collapsed} className="w-64">
+        {/* Sprint 7C Extension: every member's Navigation Guide, pinned above the pillars. */}
+        <ul aria-label="Navigation help" className="flex flex-col pb-2">
+          <NavLink item="navigation-guide" current={isCurrent(pathname, 'navigation-guide')} tenant={tenant} />
+        </ul>
+        {hasGallery ? <GalleryNode pathname={pathname} hash={hash} tenant={tenant} /> : null}
+        {groups.map((group) => {
+          const headingId = `nav-group-${group.id}`;
+          return (
+            <div key={group.id} className="border-t border-t-gold pb-2 pt-1 first:border-t-0 first:pt-0">
+              <h2 id={headingId} className="px-4 py-2 text-xs font-bold uppercase tracking-wide">
+                {whiteLabel(group.label, tenant)}
+              </h2>
+              <ul aria-labelledby={headingId} className="flex flex-col">
+                {group.entries.map(({ item }) => (
+                  <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
                 ))}
-            </ul>
-          </div>
-        );
-      })}
+                {(EXTERNAL_NAV[group.id] ?? [])
+                  .filter((link) => !link.visible || link.visible(user))
+                  .map(({ href, label, hint }) => (
+                    <ExternalNavLink key={href} href={href} label={whiteLabel(label, tenant)} hint={whiteLabel(hint, tenant)} />
+                  ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
     </nav>
   );
 }

@@ -195,7 +195,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Council History** | Performance | Every member | Annals, the diary, oral histories and the In Memoriam roll | 5 |
 | **Operations Knowledge Archive** | System Settings | Officers, Admins | Every lesson the councils filed | 17.3 |
 | **Lessons Registry** | Performance | Officers, Admins | Lessons from past events | 5.5 |
-| **Fraternal Photo Gallery** | Resources | Every member | Event and meeting photos | 6.2 |
+| **📸 Council Photo Gallery** (**Browse Albums**, **Gallery Management Center**) | Top of the sidebar | Every member | Event and meeting photos, Smart Albums and photo uploads | 6.2 |
 | **Council Artifacts** | Resources | Every member | Flyers, minutes and photo albums filed in Google Drive | 6.2 |
 | **Constitutional Bylaws** | Governance | Every member | The council's bylaws | 2.8 |
 | **SOP Center** | Answers | Every member | The standard operating procedures | 4.2 (Administrator User Guide) |
@@ -257,14 +257,21 @@ The categories group the links by the work you do. A link can sit in a different
 | Pillar | Links, in sidebar order |
 | --- | --- |
 | **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
-| **Faith In Action** | Standalone Activities, Home, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
+| **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
 | **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Trustee Audit Desk, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Projections |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
-| **Resources** | Fraternal Photo Gallery, Council Artifacts, Marketing Factory, Cross-Council Loaner Library |
+| **Resources** | Council Artifacts, Marketing Factory, Cross-Council Loaner Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
 | **System Settings** | Councils, Feature Flags Control Center, Global System Parameters, Remote Assistance Desk, View-As Member Lookup, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Archive, Affiliated Roster, Supreme Council Sync, Council Lookup Tables, Credentials Vault, Global Charities Registry, Global Governance Matrices, Parish & Pastors Linkage |
 
 The **System Settings** pillar had the name **Setup** in earlier versions of the portal.
+
+Two changes came with Sprint 10:
+
+- The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page.
+- **📸 Council Photo Gallery** sits above the pillars, under **Navigation Guide**. Its two links are **Browse Albums** and **Gallery Management Center**.
+
+The menu button (three lines) at the top of the sidebar hides the sidebar. Select the menu button again to show the sidebar. The portal remembers the choice on each computer.
 
 </details>
 
@@ -276,7 +283,7 @@ The **System Settings** pillar had the name **Setup** in earlier versions of the
 | --- | --- | --- | --- |
 | **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, [ 📅 Upcoming Event Agenda ], Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 14.2 |
 | **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
-| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Inbound Council Mail Center, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, [ 📈 Council Goals & Targets ], Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **[ 📖 Reference Workflows ]**: Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ] | 14.5 |
+| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, [ 📈 Council Goals & Targets ], Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **[ 📖 Reference Workflows ]**: Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ] | 14.5 |
 | **Financial Secretary Desk** | The FS, Admins, Super Admins | Auditing & Return Queue, Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, FS/GK Compliance Endorsements, Charity Check Issuance Console, Excel Roster Imports; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
 | **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window, Parish Fundraiser Revenue Split Console; **[ 🔧 Accounting Configuration ]**: Chart of Accounts & GL Setup; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.8 |
@@ -1060,7 +1067,7 @@ The platform sends no message when an expense report changes status. The member 
 | --- | --- | --- | --- |
 | A shift starts in 24 hours | A reminder email with a calendar file | Every volunteer on the shift | The event's shift roster |
 | A meeting starts in 24 hours | A reminder email with a calendar file and the agenda | Every invitee | **Meeting Center** |
-| Day 5 after a shift with no hours (the council can change the day, section 11.2) | A text reminder | The volunteer | **Active Desks** row → **Grand Knight Desk** → **Shifts Awaiting Hours** drawer, or the **Executive Dashboard** page |
+| Day 5 after a shift with no hours (the council can change the day, section 11.2) | A text reminder | The volunteer | **Active Desks** row → **Grand Knight Desk** → **Shifts Awaiting Hours** drawer |
 | Every 7 days after that (the council can change the days, section 11.2) | A follow-up text, until the shift is older than the logging window (90 days by default) | The volunteer | Same panel. The row shows **Closed** when the window ends. |
 | An officer sends an urgent alert | A phone push alert and a bell entry, kept 6 months | Members with the chosen skills or shifts | **Council Messages & Alerts** → **Dispatch High-Priority Push Notification Alert** |
 | A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on **Affiliated Roster** or **Supreme Council Sync** |
@@ -1172,14 +1179,14 @@ The thresholds are the Canonization Rank benchmarks. You change the benchmarks o
 **Steps:**
 1. Choose the **Month** and the **Year**.
 2. Read the navy **Monthly activity overview** card.
-3. Read the **Top 5 Volunteers Leaderboard** beside the overview.
+3. To read the **Top 5 Volunteers Leaderboard**, open Sidebar → Performance → **Council Dashboard**.
 
 **Expected result:** The overview shows the volunteer count, the cash collected, the hours served and each volunteer's name.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The cash collected differs from the deposits. | The overview counts the cash raised at the month's events. | Check the **Financial ledger** panel on the same page. |
+| The cash collected differs from the deposits. | The overview counts the cash raised at the month's events. | Check the **Net balance** tile on the same page. |
 
 ---
 
@@ -1614,7 +1621,7 @@ Every sign-in opens **Home**. The portal goes to `/dashboard#home`, so the tab t
 | **Top 5 Fraternal Volunteers** | A navy card with a gold edge. The 5 active members of the council with the most hours logged at council events and activities in the current month, with their hours. |
 | **📿 Community Prayer Request List** | The council's open prayer intentions, newest first. Each intention shows who asked and how many brothers prayed. Select **[ 🙏 Praying Hands ]** to pray for an intention. You can pray once a day for each intention; the button is then grey until tomorrow. Add an intention on the **Faith Center** page. |
 
-The **Top 5 Fraternal Volunteers** card counts only the current month. The card starts empty on the first day of each month. Members with equal hours share a place. The **Top 5 Volunteers Leaderboard** on the **Executive Dashboard** and the **Council Dashboard** counts all hours ever logged.
+The **Top 5 Fraternal Volunteers** card counts only the current month. The card starts empty on the first day of each month. Members with equal hours share a place. The **Top 5 Volunteers Leaderboard** on the **Council Dashboard** counts all hours ever logged.
 
 **Home** has no status badges, roadmap ribbon or **Executive Summary**. The roadmap ribbon and the **Executive Summary** are on the **Executive Dashboard** page (section 14.11).
 
@@ -1682,7 +1689,6 @@ To close a folder, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the
 | **Grand Knight Desk** | **Flagged Hours Review** | A time entry is held for review (section 10). |
 | **Grand Knight Desk** | **Shifts Awaiting Hours** | A volunteer is past the first hours reminder and has not logged time. |
 | **Grand Knight Desk** and **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | An approved charity grant waits for your endorsement, and you do not shepherd it. |
-| **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: an access request is pending (section 12). |
 | **Treasurer Desk** | **Ledger Line Coder** | A signed sheet waits for your ledger account, and you may code it. |
 | **Treasurer Desk** | **Expense Report (ER) Settlement** | A fully signed sheet waits for your check, and you may pay it. Your own sheet does not light the border. |
 | **Treasurer Desk** | **Charitable Contribution Matches** | A charity request or gift waits for its check. |
@@ -1697,7 +1703,6 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Approved Expenses** | Select **✍️ Final Release for Payment** on each sheet. |
 | **Grand Knight Desk** | **Flagged Hours Review** | Approve or reject the held time entries (section 10). |
 | **Grand Knight Desk** | **Shifts Awaiting Hours** | Read the volunteers who served but have not logged time, with their phone numbers. |
-| **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: approve council access requests (section 12). |
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2). |
 | **Grand Knight Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 4.3.1). |
 | **Grand Knight Desk** | **[ 📈 Council Goals & Targets ]** | Read the Star Council objectives of this fraternal year: Membership Intake, Charitable Dollars (funds raised) and Volunteer Hours, each against its target. |
@@ -1748,7 +1753,7 @@ A tile shows only to a reader who may open its module. An Admin who does not hol
 
 **Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **[ 🔀 Back to Desk Blotter ]** bar shows under the tab row. Select the bar to go back to your desk.
 
-**The Oversight Desk is gone.** Its three audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review**, **Shifts Awaiting Hours** and, for Super Admins, the **Inbound Council Mail Center**. The **Shifts awaiting hours** audit is also on the **Executive Dashboard** page for every officer (section 14.11). A saved `/dashboard#oversight` address opens your first tab.
+**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Super Admins read council access requests on the **Super Admin Desk** only. A saved `/dashboard#oversight` address opens your first tab.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -2068,21 +2073,30 @@ The portal removes spaces at the end of each line and closes up a run of blank l
 **Start point:** Sidebar → Performance → **Executive Dashboard**. The address is `/executive-dashboard`.
 
 **Steps:**
-1. Read the roadmap ribbon at the top. The gold step is next. A red step is overdue. Select **Full roadmap ↓** to scroll to the full **Annual Fraternal Roadmap** card.
+1. Read the roadmap ribbon at the top. The gold step is next. A red step is overdue.
 2. Choose the **Month** and the **Year** of the **Executive Summary**.
-3. Read the four stat tiles, the monthly activity overview and the **Top 5 Volunteers Leaderboard**.
-4. Read the **Faith-in-Action Mission Tracking** card and the **Budget tracking** gauges.
-5. Read the **Financial ledger** table and the **Monthly highlights**.
-6. Read the no-show audit under **Executive audits**.
-7. Read the **Annual Council Goals Progress Center** and the **Year-over-Year Trends** under the roadmap. See sections 14.12 to 14.14.
+3. Read the four stat tiles and the monthly activity overview.
+4. Open a drawer under the overview to read its panel. Select the drawer title again to close the drawer.
+5. Read the **Faith-in-Action Mission Tracking** card and the **Budget tracking** gauges.
+6. Read the **Monthly highlights**.
 
-**Expected result:** The page shows the whole **Executive Summary** for the month. The page scrolls like any other page. The **Active Desks** row stays under the header.
+The drawers, in order:
+
+| Drawer | What it holds | Who sees it |
+| --- | --- | --- |
+| **Annual Fraternal Roadmap** | Nominations, elections, the July 1 term and the Three-Signature Expense Flow. **Full roadmap ↓** on the ribbon opens this drawer. | Every reader of the page |
+| **Annual Council Goals Progress Center** | The progress wheels (section 14.12) | Readers of the general ledger |
+| **Year-over-Year Trends** | This fraternal year against the two before it (section 14.14) | Readers of the general ledger |
+| **No-Show Audits** | Missed shifts in the last 6 months and their reasons | Officers, Admins and Super Admins |
+
+**Expected result:** The page shows the **Executive Summary** for the month. Each drawer opens in place. The **Active Desks** row stays under the header.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The **Executive Dashboard** link does not show. | You do not hold an officer seat or the Council Historian role, and you are not an Admin. | Ask a council Admin. |
-| The **Shifts awaiting hours** audit is not on the page. | Only the council's officers and Admins, and Super Admins, read the audit. | Ask an officer. |
+| The **Shifts awaiting hours** audit is not on the page. | The audit moved to the **Grand Knight Desk**. | Open **Active Desks** → **Grand Knight Desk** → **Shifts Awaiting Hours**. |
+| The **Top 5 Volunteers Leaderboard** or the **Financial ledger** table is not on the page. | Sprint 10 removed both from this page. | Read the leaderboard on the **Council Dashboard**. Read the month's funds on the **Net balance** tile. |
 | The budget gauges do not show. | Your seat does not review the budget. | Ask the Grand Knight or the Financial Secretary. |
 
 ### 14.12 Concept: the Annual Council Goals Progress Center
@@ -2090,7 +2104,7 @@ The **Annual Council Goals Progress Center** is a card on the **Executive Dashbo
 
 | Wheel | Target | What the portal counts |
 | --- | --- | --- |
-| **Funds raised** | Dollars | The funds raised at the council's events in the fraternal year. The count matches the **Total raised** line of the **Financial ledger**. |
+| **Funds raised** | Dollars | The funds raised at the council's events in the fraternal year. The count matches the funds raised on the **Net balance** tile, month by month. |
 | **New members** | Members | The council's members whose join date falls in the fraternal year. |
 | **Service hours** | Hours | The hours members logged at council events and activities in the fraternal year. |
 | **Rosaries** | Rosaries | The rosaries that the council's members logged in the **Faith Center** tally. |

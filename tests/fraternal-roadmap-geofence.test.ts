@@ -71,7 +71,7 @@ describe('Schema 68', () => {
     ]) {
       expect(schema).toContain(line);
     }
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[8-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[8-9]|[7-9]\d|\d{3});/);
     const council = TABLES.Council;
     expect(council.columns.find((c) => c.name === 'meeting_pin_token')).toMatchObject({ notNull: true });
     expect(TABLES.LiveAttendance.columns.some((c) => c.name === 'photo_url')).toBe(true);

@@ -72,7 +72,7 @@ describe('schema version 77', () => {
     expect(schema).toContain('ALTER TABLE [CouncilAssetsInventory] ADD [borrower_name] VARCHAR(255) NULL;');
     expect(schema).toContain('ALTER TABLE [CouncilAssetsInventory] ADD [borrower_council] VARCHAR(255) NULL;');
     expect(schema).toContain('ALTER TABLE [CouncilAssetsInventory] ADD [expected_return_date] DATE NULL;');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[7-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[7-9]|[8-9]\d|\d{3});/);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 77 | 8F |');
   });
 });

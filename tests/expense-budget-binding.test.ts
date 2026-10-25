@@ -69,7 +69,7 @@ describe('schema 45: ExpenseReport.budget_line_id and charity_request_id', () =>
     expect(columns.find((c) => c.name === 'budget_line_id')).toMatchObject({ notNull: false });
     expect(columns.find((c) => c.name === 'charity_request_id')).toMatchObject({ notNull: false });
     expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('[budget_line_id] INTEGER');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[5-9]|[5-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[5-9]|[5-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toContain('budget_line_id');
   });
 });

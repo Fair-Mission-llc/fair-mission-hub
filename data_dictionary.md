@@ -471,6 +471,9 @@ One charity in the registry every council shares. Any member may search it; only
 •	IsCatholic (BIT, NOT NULL, DEFAULT 0) — Whether the charity is a Catholic ministry; Catholic charities are suggested first.
 •	CharityType (VARCHAR(100), NOT NULL) — The charity's cause, one of the six core types (Sprint 5V-2): Food Security, Women and Children, Faith, Protecting Life, Homelessness or Parish.
 •	IsAnnual (BIT, NOT NULL, DEFAULT 0) — Sprint 5Y: councils give to the charity every fraternal year. budget.prePopulateNextYear gives each annual charity a council paid last year a Donation budget line.
+•	IsVerified (BIT, NOT NULL, DEFAULT 0) — Sprint 10 Revision 1.0 (schema 100): an Active Admin or Super Admin verified the entry (charities.setCharityVerified). Only verified entries fill the Propose Charity Grant form's State and Organization dropdowns, which auto-fill the form from the row. A registry write never sets it.
+•	VerifiedAt (DATETIME, NULL) — When the entry was verified; NULL while unverified (cleared with IsVerified).
+•	VerifiedByMemberID (INTEGER, NULL) — Foreign Key references Member(id). The Admin or Super Admin who verified the entry; NULL while unverified.
 [CouncilCharityLink]
 A council's connection to a registry charity. Made by council leadership (charities.connectCouncilToCharity) or automatically when a charity check is paid.
 •	CouncilID (INTEGER, NOT NULL) — Composite Primary Key; Foreign Key references Council(id).

@@ -244,7 +244,9 @@ describe('the Council Historian inherits the member links', () => {
 
   it('shows Home, the Member Actions Hub and the Visual Master Calendar', () => {
     expect(MEMBER_BASE_AREAS).toEqual(expect.arrayContaining(['home', 'member-actions', 'calendar']));
-    for (const item of ['home', 'member-actions', 'calendar']) expect(links(historian)).toContain(item);
+    // Sprint 10 Revision 1.0: Home opens from the Home tab, so it is an area but not a sidebar link.
+    expect(portalAreas(historian)).toContain('home');
+    for (const item of ['member-actions', 'calendar']) expect(links(historian)).toContain(item);
   });
 
   it('keeps every link a plain member has', () => {

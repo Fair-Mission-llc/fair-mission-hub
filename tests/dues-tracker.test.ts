@@ -57,7 +57,7 @@ describe('schema 41: Council.base_dues_rate', () => {
     expect(read('Schema.sql')).toMatch(/ALTER TABLE \[Council\] ADD \[base_dues_rate\] DECIMAL\(10,2\) NOT NULL DEFAULT 40\.00;/);
     expect(TABLES.Council.columns.find((c) => c.name === 'base_dues_rate')).toMatchObject({ notNull: true, default: { kind: 'literal', value: 40 } });
     expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('[base_dues_rate] REAL NOT NULL DEFAULT 40');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[1-9]|[5-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[1-9]|[5-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toContain('base_dues_rate (DECIMAL(10,2), NOT NULL, DEFAULT 40.00)');
   });
 

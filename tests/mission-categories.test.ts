@@ -50,7 +50,7 @@ describe('schema 54 taxonomy', () => {
     expect(columns('Category')).toContain('SupremeMissionArea');
     expect(columns('Meeting')).not.toContain('CategoryID');
     expect(columns('CharitableRequest')).not.toContain('CategoryID');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[4-9]|[6-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[4-9]|[6-9]\d|\d{3});/);
   });
 });
 

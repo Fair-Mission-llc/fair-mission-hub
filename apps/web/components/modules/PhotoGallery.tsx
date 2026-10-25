@@ -16,6 +16,10 @@
 // Christmas party, a campout) or nothing at all. Only events and meetings that have already started are offered.
 // Standalone photos are open to every member of the council (canUploadStandaloneMedia) and carry a year and an
 // optional location tag of their own.
+// Sprint 10 Revision 1.0: the page is the sidebar's top-level '📸 Council Photo Gallery' node, split into two views
+// (GALLERY_VIEWS, chosen by the '#browse' or '#manage' anchor): Browse Albums - the photos, the Smart Albums to open and
+// the filters - and the Gallery Management Center - the upload block, whose drop zone now comes first, above the
+// fields that tag the photos, then the Smart Album name field, the filters it saves and the albums to delete.
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import {
   canAttachEventMedia,
@@ -23,7 +27,10 @@ import {
   canDeleteSmartAlbum,
   canLinkMeetingDrive,
   canUploadStandaloneMedia,
+  COUNCIL_PHOTO_GALLERY_TITLE,
   describeError,
+  GALLERY_VIEWS,
+  galleryViewFromAnchor,
   EMPTY_ALBUM_CRITERIA,
   filterMediaLibrary,
   formatDate,
@@ -33,6 +40,7 @@ import {
   SMART_ALBUM_NAME_MAX_LENGTH,
   toIsoDate,
   type Event as CouncilEvent,
+  type GalleryViewId,
   type MediaAlbumCriteria,
   type MediaLibrary,
   type MediaLibraryItem,
@@ -273,7 +281,10 @@ function AlbumsPanel({
   activeId,
   onOpen,
   onChanged,
+  manage,
 }: {
+  /** Sprint 10 Revision 1.0: true in the Gallery Management Center (save and delete), false in Browse Albums (open only). */
+  manage: boolean;
   councilId: number;
   albums: SmartAlbum[];
   criteria: MediaAlbumCriteria;
@@ -313,14 +324,24 @@ function AlbumsPanel({
     });
 
   return (
-    <Panel title="Smart Albums">
+    <Panel title={manage ? 'Save a Smart Album' : 'Smart Albums'}>
       <div className="flex flex-col gap-3">
         {message ? (
           <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
             {message.text}
           </Notice>
         ) : null}
-        {albums.length === 0 ? <p className="text-sm text-muted">No albums yet. Pick filters, then save them here.</p> : null}
+        {manage ? (
+          <>
+            <Field label="Album name" hint={isEmptyAlbumCriteria(criteria) ? 'Pick at least one filter first.' : 'Saves the filters you picked under this name.'}>
+              {(id) => <Input id={id} value={name} maxLength={SMART_ALBUM_NAME_MAX_LENGTH} placeholder="For example: Fish Fry 2026" onChange={(e) => setName(e.target.value)} />}
+            </Field>
+            <Button size="sm" disabled={busy || !name.trim() || isEmptyAlbumCriteria(criteria)} onClick={() => void save()}>
+              Save Smart Album
+            </Button>
+          </>
+        ) : null}
+        {albums.length === 0 ? <p className="text-sm text-muted">{manage ? 'No albums yet.' : 'No albums yet. Save one in the Gallery Management Center.'}</p> : null}
         <ul className="flex flex-col gap-1">
           {albums.map((a) => (
             <li key={a.id} className="flex items-center gap-2">
@@ -332,7 +353,7 @@ function AlbumsPanel({
               >
                 {a.album_name}
               </button>
-              {canDeleteSmartAlbum(user, a) ? (
+              {manage && canDeleteSmartAlbum(user, a) ? (
                 <button type="button" disabled={busy} onClick={() => void remove(a)} aria-label={`Delete the Smart Album ${a.album_name}`} className="rounded px-2 text-sm font-bold">
                   ×
                 </button>
@@ -340,12 +361,6 @@ function AlbumsPanel({
             </li>
           ))}
         </ul>
-        <Field label="Save the current filters as" hint={isEmptyAlbumCriteria(criteria) ? 'Pick at least one filter first.' : undefined}>
-          {(id) => <Input id={id} value={name} maxLength={SMART_ALBUM_NAME_MAX_LENGTH} placeholder="For example: Fish Fry 2026" onChange={(e) => setName(e.target.value)} />}
-        </Field>
-        <Button size="sm" disabled={busy || !name.trim() || isEmptyAlbumCriteria(criteria)} onClick={() => void save()}>
-          Save Smart Album
-        </Button>
       </div>
     </Panel>
   );
@@ -442,6 +457,52 @@ function UploadPhotos({
             {message.text}
           </Notice>
         ) : null}
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          className={cx('flex flex-col items-center gap-2 rounded border-2 border-dashed p-6 text-center', dragging ? 'border-gold bg-white' : 'border-navy')}
+        >
+          <p className="text-sm font-bold">Drag and drop photos here</p>
+          <p className="text-xs text-muted">JPEG, PNG, HEIC or any other image</p>
+          <Button variant="secondary" size="sm" onClick={() => input.current?.click()}>
+            Choose photos…
+          </Button>
+          <input
+            ref={input}
+            type="file"
+            accept="image/*"
+            multiple
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden="true"
+            onChange={(e) => {
+              add(e.target.files);
+              e.target.value = '';
+            }}
+          />
+        </div>
+        {files.length > 0 ? (
+          <ul className="grid grid-cols-4 gap-2">
+            {files.map((f, i) => (
+              <li key={f.url} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
+                <img src={f.url} alt={f.file.name} className="aspect-square w-full rounded object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setFiles((now) => now.filter((_, j) => j !== i))}
+                  aria-label={`Remove ${f.file.name}`}
+                  className="absolute right-1 top-1 rounded-full bg-navy px-1.5 text-xs font-bold text-white"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <div className="flex flex-col gap-1">
           <span id="upload-mode-label" className="text-sm font-bold">
             Tag these photos to
@@ -484,56 +545,10 @@ function UploadPhotos({
         <Field label="Location tag" hint={mode === 'standalone' ? 'Optional: where the photos were taken.' : "Left blank, the event's or meeting's location is used."}>
           {(id) => <Input id={id} value={locationTag} maxLength={MEDIA_LOCATION_MAX_LENGTH} placeholder={target?.location ?? ''} onChange={(e) => setLocationTag(e.target.value)} />}
         </Field>
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
-          className={cx('flex flex-col items-center gap-2 rounded border-2 border-dashed p-6 text-center', dragging ? 'border-gold bg-white' : 'border-navy')}
-        >
-          <p className="text-sm font-bold">Drag and drop photos here</p>
-          <p className="text-xs text-muted">JPEG, PNG, HEIC or any other image</p>
-          <Button variant="secondary" size="sm" onClick={() => input.current?.click()}>
-            Choose photos…
-          </Button>
-          <input
-            ref={input}
-            type="file"
-            accept="image/*"
-            multiple
-            className="sr-only"
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={(e) => {
-              add(e.target.files);
-              e.target.value = '';
-            }}
-          />
-        </div>
         {files.length > 0 ? (
-          <>
-            <ul className="grid grid-cols-4 gap-2">
-              {files.map((f, i) => (
-                <li key={f.url} className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
-                  <img src={f.url} alt={f.file.name} className="aspect-square w-full rounded object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setFiles((now) => now.filter((_, j) => j !== i))}
-                    aria-label={`Remove ${f.file.name}`}
-                    className="absolute right-1 top-1 rounded-full bg-navy px-1.5 text-xs font-bold text-white"
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <Button onClick={() => void upload()} disabled={busy || (mode !== 'standalone' && !target)}>
-              {busy ? 'Uploading…' : `Upload ${files.length} photo${files.length === 1 ? '' : 's'}`}
-            </Button>
-          </>
+          <Button onClick={() => void upload()} disabled={busy || (mode !== 'standalone' && !target)}>
+            {busy ? 'Uploading…' : `Upload ${files.length} photo${files.length === 1 ? '' : 's'}`}
+          </Button>
         ) : null}
         <p className="text-xs text-muted">In this preview build, photos added here last until the page is reloaded.</p>
       </div>
@@ -561,10 +576,24 @@ function groupItems(items: readonly MediaLibraryItem[], by: Grouping): PhotoGrou
   return [...groups.values()];
 }
 
+/** The view the URL anchor names, kept current as the sidebar's gallery links change it (Sprint 10 Revision 1.0). */
+function useGalleryView(): [GalleryViewId, (view: GalleryViewId) => void] {
+  const [view, setView] = useState<GalleryViewId>('browse');
+  useEffect(() => {
+    const read = () => setView(galleryViewFromAnchor(window.location.hash));
+    read();
+    window.addEventListener('hashchange', read);
+    return () => window.removeEventListener('hashchange', read);
+  }, []);
+  // Changing the anchor lets the sidebar mark the open view; the hashchange listener above then sets the state.
+  return [view, (next) => (window.location.hash = next)];
+}
+
 export function PhotoGallery() {
   const user = useUser();
   const scope = useCouncilScope();
   const councilId = scope.councilId;
+  const [view, setView] = useGalleryView();
   const [grouping, setGrouping] = useState<Grouping>('source');
   const [criteria, setCriteria] = useState<MediaAlbumCriteria>(EMPTY_ALBUM_CRITERIA);
   const [albumId, setAlbumId] = useState<number | null>(null);
@@ -610,77 +639,97 @@ export function PhotoGallery() {
   const standaloneAllowed = canUploadStandaloneMedia(user, councilId);
   const activeAlbum = albums.data?.find((a) => a.id === albumId) ?? null;
 
+  const albumsPanel = (manage: boolean) =>
+    albums.data ? (
+      <AlbumsPanel
+        key={`albums-${councilId}-${manage ? 'manage' : 'browse'}`}
+        manage={manage}
+        councilId={councilId}
+        albums={albums.data}
+        criteria={criteria}
+        activeId={albumId}
+        onOpen={(a) => {
+          setCriteria(a.criteria);
+          setAlbumId(a.id);
+        }}
+        onChanged={() => albums.reload()}
+      />
+    ) : null;
+  const filtersPanel = library.data ? <FiltersPanel library={library.data} criteria={criteria} onChange={changeCriteria} /> : null;
+  const mayUpload = !!targets.data && (targets.data.length > 0 || standaloneAllowed);
+
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Fraternal Photo Gallery</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{COUNCIL_PHOTO_GALLERY_TITLE}</PageTitle>
       {library.error ?? albums.error ? <Notice tone="error">{library.error ?? albums.error}</Notice> : null}
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <section aria-label="Photos" className="flex min-w-0 flex-col gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <Tabs tabs={GROUPINGS} value={grouping} onChange={setGrouping} label="Group photos" idPrefix="gallery" />
-            <div className="flex items-center gap-2">
-              {activeAlbum ? <Pill tone="gold">Album: {activeAlbum.album_name}</Pill> : null}
-              <Pill tone="outline">{shown.length === total ? `${total} photo${total === 1 ? '' : 's'}` : `${shown.length} of ${total} photos`}</Pill>
-            </div>
-          </div>
-          <div id="gallery-panel" role="tabpanel" aria-labelledby={`gallery-tab-${grouping}`} className="flex flex-col gap-6">
-            {library.loading && !library.data ? <p className="text-sm text-muted">Loading photos…</p> : null}
-            {library.data && total === 0 ? (
-              <Empty>No photos yet. {(targets.data?.length ?? 0) > 0 || standaloneAllowed ? 'Add some with the Upload Photos block.' : 'Event owners and council officers add them.'}</Empty>
-            ) : null}
-            {library.data && total > 0 && shown.length === 0 ? <Empty>No photos match these filters.</Empty> : null}
-            {groups.map((group) => (
-              <section key={group.key} aria-labelledby={`${group.key}-title`}>
-                <h2 id={`${group.key}-title`} className="mb-2 flex items-baseline gap-2 border-b-2 border-gold pb-1 font-serif text-lg font-bold">
-                  {group.label}
-                  <span className="font-sans text-xs font-normal text-muted">
-                    {group.items.length} photo{group.items.length === 1 ? '' : 's'}
-                  </span>
-                </h2>
-                <ul className="columns-2 gap-2 sm:columns-3 lg:columns-4 2xl:columns-5">
-                  {group.items.map((item) => (
-                    <li key={item.key} className="mb-2 break-inside-avoid">
-                      <button
-                        type="button"
-                        onClick={() => setViewer({ index: ordered.indexOf(item), autoplay: false })}
-                        className="group block w-full overflow-hidden rounded border border-line text-left"
-                        aria-label={`Open photo from ${sourceName(item)}`}
-                      >
-                        <Photo item={item} className="block w-full transition-transform duration-200 motion-safe:group-hover:scale-105" />
-                        <span className="block truncate px-2 py-1 text-xs">
-                          {grouping === 'year' ? <span className="font-bold">{sourceName(item)}</span> : null}
-                          {grouping === 'year' && item.locationTag ? ' · ' : ''}
-                          {item.locationTag ?? ''}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
-        </section>
-        <aside className="flex flex-col gap-4">
-          {albums.data ? (
-            <AlbumsPanel
-              key={`albums-${councilId}`}
-              councilId={councilId}
-              albums={albums.data}
-              criteria={criteria}
-              activeId={albumId}
-              onOpen={(a) => {
-                setCriteria(a.criteria);
-                setAlbumId(a.id);
-              }}
-              onChanged={() => albums.reload()}
-            />
-          ) : null}
-          {library.data ? <FiltersPanel library={library.data} criteria={criteria} onChange={changeCriteria} /> : null}
-          {targets.data && (targets.data.length > 0 || standaloneAllowed) ? (
-            <UploadPhotos key={`upload-${councilId}`} targets={targets.data} councilId={councilId} standaloneAllowed={standaloneAllowed} onUploaded={reloadAll} />
-          ) : null}
-        </aside>
+      <div className="mb-4">
+        <Tabs tabs={GALLERY_VIEWS} value={view} onChange={setView} label="Gallery views" idPrefix="gallery-view" />
       </div>
+      {view === 'browse' ? (
+        <div id="gallery-view-panel" role="tabpanel" aria-labelledby="gallery-view-tab-browse" className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <section aria-label="Photos" className="flex min-w-0 flex-col gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <Tabs tabs={GROUPINGS} value={grouping} onChange={setGrouping} label="Group photos" idPrefix="gallery" />
+              <div className="flex items-center gap-2">
+                {activeAlbum ? <Pill tone="gold">Album: {activeAlbum.album_name}</Pill> : null}
+                <Pill tone="outline">{shown.length === total ? `${total} photo${total === 1 ? '' : 's'}` : `${shown.length} of ${total} photos`}</Pill>
+              </div>
+            </div>
+            <div id="gallery-panel" role="tabpanel" aria-labelledby={`gallery-tab-${grouping}`} className="flex flex-col gap-6">
+              {library.loading && !library.data ? <p className="text-sm text-muted">Loading photos…</p> : null}
+              {library.data && total === 0 ? (
+                <Empty>No photos yet. {(targets.data?.length ?? 0) > 0 || standaloneAllowed ? 'Add some in the Gallery Management Center.' : 'Event owners and council officers add them.'}</Empty>
+              ) : null}
+              {library.data && total > 0 && shown.length === 0 ? <Empty>No photos match these filters.</Empty> : null}
+              {groups.map((group) => (
+                <section key={group.key} aria-labelledby={`${group.key}-title`}>
+                  <h2 id={`${group.key}-title`} className="mb-2 flex items-baseline gap-2 border-b-2 border-gold pb-1 font-serif text-lg font-bold">
+                    {group.label}
+                    <span className="font-sans text-xs font-normal text-muted">
+                      {group.items.length} photo{group.items.length === 1 ? '' : 's'}
+                    </span>
+                  </h2>
+                  <ul className="columns-2 gap-2 sm:columns-3 lg:columns-4 2xl:columns-5">
+                    {group.items.map((item) => (
+                      <li key={item.key} className="mb-2 break-inside-avoid">
+                        <button
+                          type="button"
+                          onClick={() => setViewer({ index: ordered.indexOf(item), autoplay: false })}
+                          className="group block w-full overflow-hidden rounded border border-line text-left"
+                          aria-label={`Open photo from ${sourceName(item)}`}
+                        >
+                          <Photo item={item} className="block w-full transition-transform duration-200 motion-safe:group-hover:scale-105" />
+                          <span className="block truncate px-2 py-1 text-xs">
+                            {grouping === 'year' ? <span className="font-bold">{sourceName(item)}</span> : null}
+                            {grouping === 'year' && item.locationTag ? ' · ' : ''}
+                            {item.locationTag ?? ''}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </section>
+          <aside className="flex flex-col gap-4">
+            {albumsPanel(false)}
+            {filtersPanel}
+          </aside>
+        </div>
+      ) : (
+        <div id="gallery-view-panel" role="tabpanel" aria-labelledby="gallery-view-tab-manage" className="grid max-w-6xl items-start gap-4 xl:grid-cols-2">
+          <div className="flex flex-col gap-4">
+            {mayUpload ? (
+              <UploadPhotos key={`upload-${councilId}`} targets={targets.data ?? []} councilId={councilId} standaloneAllowed={standaloneAllowed} onUploaded={reloadAll} />
+            ) : (
+              <Notice tone="info">Event owners, council officers and the Council Historian upload photos. You can still save Smart Albums here.</Notice>
+            )}
+            {albumsPanel(true)}
+          </div>
+          {filtersPanel}
+        </div>
+      )}
       {viewer && ordered[viewer.index] ? <Slideshow items={ordered} index={viewer.index} onIndex={setIndex} autoplay={viewer.autoplay} onClose={closeViewer} /> : null}
     </>
   );

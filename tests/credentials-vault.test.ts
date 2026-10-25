@@ -39,7 +39,7 @@ describe('schema 40', () => {
     expect(TABLES.CouncilCredentialsVault.foreignKeys).toContainEqual(expect.objectContaining({ column: 'council_id', refTable: 'Council' }));
     expect(TABLES.CouncilCredentialsVault.uniqueKeys).toContainEqual(['council_id', 'credential_key']);
     expect(TABLES.Council.columns.map((c) => c.name)).not.toContain('EmailPasswordEncrypted');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4\d|[5-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4\d|[5-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toContain('credential_value_encrypted (TEXT, NOT NULL)');
   });
 

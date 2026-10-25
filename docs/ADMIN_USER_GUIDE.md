@@ -344,6 +344,33 @@ The base dues rate, the tenant type and the **Platform Settings** are not on **G
 | --- | --- | --- |
 | Finance officers lost access. | A role named Treasurer or Financial Secretary was renamed. | Restore the exact role name. |
 
+### 5.4 Concept: verified charities
+A verified charity is a **Global Charities Registry** entry that an Admin trusts. Only verified charities show on the **Propose Charity Grant** form.
+On that form, a member selects a **State** and then an **Organization**. The form then fills in the charity's name, mission, mailing address, Employer Identification Number (EIN) and contact details from the registry.
+The registry keeps the date of each verification and the Admin who verified the charity.
+
+### 5.5 Verify a charity for the grant form
+> **Who can do this:** council Admins and Super Admins. Other members do not see the **Global Charities Registry**.
+
+**Goal:** Let members pick a charity on the **Propose Charity Grant** form, with its details filled in.
+
+**Start point:** Sidebar → System Settings → **Global Charities Registry** → **Search the registry**.
+
+**Steps:**
+1. Type the charity's name or EIN in **Name or EIN**.
+2. Select **Search**.
+3. Check the charity's address, contact and EIN. Correct an empty field when the council pays the charity.
+4. In the **Verified** column, select **Verify**.
+5. To take a charity off the form, select **Remove verification**.
+
+**Expected result:** The row shows **✓ Verified**. Members see the charity in the **Organization** list for its state.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The charity is not in the registry. | No council added the charity yet. | Select **Can't find it? Add a new charity**. Then verify the new entry. |
+| Members see the charity under the wrong state. | The registry entry has the wrong state. | Ask a Super Admin to correct the entry. |
+
 ---
 
 ## 6. Data protection rules
@@ -611,7 +638,7 @@ A council that is not on the platform can ask for access from the sign-in page. 
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
-The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests in the **Inbound Council Mail Center** drawer on the **Grand Knight Desk** of the dashboard.
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. The platform owner reads the requests on the **Super Admin Desk**, in the **[ 🔑 Council Access Request Approval Queue ]** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
 
 Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
 
@@ -624,11 +651,11 @@ Approving a request marks the request as reviewed. Approving does not create the
 > The web portal keeps requests on the portal server. A server restart clears them until the production database is connected. A request sent from the phone stays on that phone.
 
 ### 9.2 Approve a council access request
-> **Who can do this:** Super Admins. Other members do not see the Inbound Council Mail Center.
+> **Who can do this:** the platform owner (the Super Admin who owns the **Super Admin Desk**). Other members do not see the **Inbound Council Mail Center**.
 
 **Goal:** Mark a council's access request as reviewed.
 
-**Start point:** **Active Desks** row → **Grand Knight Desk** → **Inbound Council Mail Center** drawer. The tile has a red border while a request is pending.
+**Start point:** **Active Desks** row → **Super Admin Desk** → **[ 🔑 Council Access Request Approval Queue ]**.
 
 **Steps:**
 1. Read the council name, the city, the state and the contact email of the request.

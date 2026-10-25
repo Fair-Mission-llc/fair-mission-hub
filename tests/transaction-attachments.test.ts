@@ -26,8 +26,8 @@ describe('Schema 98', () => {
     expect(TABLES.TransactionAttachments.columns.map((c) => c.name)).toEqual(['id', 'donation_id', 'file_path', 'captured_at']);
     expect(TABLES.VolunteerQuarantine.columns.map((c) => c.name)).toContain('return_explanation');
     // Sprint 9 Revision 6.0 moved the platform on to schema 99.
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 99;');
-    expect(PLATFORM_SCHEMA_VERSION).toBe(99);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (99|\d{3});/);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(99);
     // The string-prefix workaround is gone.
     expect(read('packages/shared/src/volunteer-quarantine.ts')).not.toContain('QUARANTINE_RETURN_PREFIX');
   });

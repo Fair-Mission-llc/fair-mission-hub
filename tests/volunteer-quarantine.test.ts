@@ -30,7 +30,7 @@ describe('Schema 61', () => {
       expect(schema).toContain(column);
     }
     expect(schema).toContain('ALTER TABLE [Council] ADD [feature_volunteer_quarantine] BIT NOT NULL DEFAULT 1;');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[1-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[1-9]|[7-9]\d|\d{3});/);
     expect(FEATURE_FLAG_NAMES).toContain('feature_volunteer_quarantine');
   });
 });

@@ -121,7 +121,7 @@ describe('schema 37', () => {
     expect(schema).toMatch(/ALTER TABLE \[Council\] ADD \[SmtpPort\] INT NULL;/);
     expect(schema).toMatch(/ALTER TABLE \[Council\] ADD \[SmtpUsername\] VARCHAR\(255\) NULL;/);
     expect(schema).not.toMatch(/ADD \[EmailPasswordEncrypted\]/);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (3[7-9]|[4-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (3[7-9]|[4-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).not.toContain('EmailPasswordEncrypted (TEXT, NULL)');
   });
 });

@@ -274,7 +274,7 @@ describe('All-Hands shifts', () => {
 
   it('adds the column in schema 38', () => {
     expect(read('Schema.sql')).toMatch(/ALTER TABLE \[Shift\] ADD \[IsAllHands\] BIT NOT NULL DEFAULT 0;/);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (3[8-9]|[4-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (3[8-9]|[4-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toContain('IsAllHands (BIT, NOT NULL, DEFAULT 0)');
   });
 });

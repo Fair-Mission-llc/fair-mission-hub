@@ -76,7 +76,7 @@ describe('schema 42: CouncilBudgetForecast.quantity, unit_cost and budget_versio
     const sqlite = read('apps/mobile/services/generated/schema.sqlite.ts');
     expect(sqlite).toContain('[quantity] INTEGER NOT NULL DEFAULT 1');
     expect(sqlite).toContain('([CouncilID], [FraternalYear], [CategoryType], [ReferenceSourceID], [LineItemName], [budget_version])');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[2-9]|[5-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[2-9]|[5-9]\d|\d{3});/);
     const dictionary = read('data_dictionary.md');
     for (const col of ['quantity (INT', 'unit_cost (DECIMAL(18,2)', 'budget_version (INT']) expect(dictionary).toContain(col);
   });

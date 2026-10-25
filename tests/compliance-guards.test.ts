@@ -38,7 +38,7 @@ describe('schema version 80', () => {
     const schema = read('Schema.sql');
     expect(schema).toContain('(schema version 80)');
     expect(schema).toContain("ALTER TABLE [CouncilOperationsKnowledge] ADD [origin_council_stamp] VARCHAR(255) NOT NULL DEFAULT '';");
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (80|8[1-9]|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (80|8[1-9]|9\d|\d{3});/);
     expect(read('apps/mobile/services/generated/schema.sqlite.ts')).toContain('[origin_council_stamp]');
   });
 

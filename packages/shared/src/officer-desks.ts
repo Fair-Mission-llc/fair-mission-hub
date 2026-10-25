@@ -211,7 +211,8 @@ export const deskModulesFor = (desk: DashboardTabId): DeskModuleSpec[] => DESK_M
  * sat at the top of the Oversight Desk. Sprint 8P Stage 3: the badge strip is gone - each queue is now the count and the
  * Alert Boundary Accent on its own desk drawer (desk-drawers.ts), and DESK_FOCUS_TARGETS names those drawers' rows.
  */
-export type DeskBadgeKey = 'vouchers' | 'orders' | 'coding' | 'minutes' | 'quarantine' | 'access' | 'hours' | 'mine';
+// Sprint 10 Revision 1.0: no 'access' key - access requests left the Grand Knight Desk for the Super Admin Desk.
+export type DeskBadgeKey = 'vouchers' | 'orders' | 'coding' | 'minutes' | 'quarantine' | 'hours' | 'mine';
 
 /**
  * Sprint 8C click-through badges: the Active Desk each Home badge switches to and the id of the workspace row on that desk
@@ -224,7 +225,6 @@ export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; 
   minutes: { anchor: 'recorder', rowId: 'desk-row-minutes' },
   // Sprint 8P Stage 3: the Oversight Desk is dissolved; its three audits are drawers on the Grand Knight Desk.
   quarantine: { anchor: 'grand-knight', rowId: 'desk-row-quarantine' },
-  access: { anchor: 'grand-knight', rowId: 'desk-row-mail-center' },
   hours: { anchor: 'grand-knight', rowId: 'desk-row-awaiting-hours' },
   mine: { anchor: 'member', rowId: 'desk-row-my-sheets' },
 };

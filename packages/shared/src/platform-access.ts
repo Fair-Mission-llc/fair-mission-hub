@@ -3,7 +3,7 @@
 // Pure helpers behind:
 //   - accessRequests.*: a council that is not on the platform asks for access from the sign-in page
 //     (CouncilAccessRequests). Anyone may file one; each is emailed to ACCESS_REQUEST_NOTIFY_EMAIL, and Super Admins
-//     read and approve them in the Inbound Council Mail Center on the Executive Dashboard.
+//     read and approve them on the Super Admin Desk (Sprint 10 Revision 1.0; the Grand Knight Desk drawer is gone).
 //   - JournalEntry.payment_method_id (Sprint 7F Extension): a DonationMethod the council enabled; a Check carries its number.
 //   - auth.impersonate and /api/admin/impersonate: an Active Super Admin views the portal as another member. The view is
 //     read-only (guardViewAsWrites) and never reaches another Super Admin.
@@ -68,7 +68,7 @@ export function accessRequestEmail(request: Pick<CouncilAccessRequest, 'id' | 'c
       `Received: ${request.submitted_at}`,
       `Request number: ${request.id}`,
       '',
-      'A Super Admin reviews it in the Inbound Council Mail Center on the Executive Dashboard.',
+      'A Super Admin reviews it in the Council Access Request Approval Queue on the Super Admin Desk.',
     ].join('\n'),
     attachments: [],
   };

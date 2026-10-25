@@ -29,7 +29,7 @@ describe('schema version 69', () => {
     expect(read('Seed.sql')).toContain("VALUES (15295, 'St. Mary''s Cathedral Council',");
     expect(read('Seed.sql')).not.toContain("'St. Jude Council'");
     expect(read('Schema.sql')).toContain('(schema version 69)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (69|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (69|[7-9]\d|\d{3});/);
   });
 
   // Sprint 8R: Expo tooling keeps writing a root tsconfig.json stub ({ "extends": "expo/tsconfig.base" }). It is ignored

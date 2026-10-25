@@ -137,7 +137,7 @@ describe('the desks mount their modules in place', () => {
 
 describe('phone schema', () => {
   it('moves the phone database to version 88', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[8-9]|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[8-9]|9\d|\d{3});/);
   });
 });
 

@@ -3892,9 +3892,39 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 0
         }
+      },
+      {
+        "name": "IsVerified",
+        "kind": "bit",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "VerifiedAt",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "VerifiedByMemberID",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "VerifiedByMemberID",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": [
       [
         "EIN"
@@ -9638,7 +9668,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
       {
         "Name": "St. Mary's Cathedral Parish Food Pantry",
         "Description": "Weekly groceries for families in the parish boundaries",
-        "EIN": null,
+        "EIN": "93-0000101",
         "State": "OR",
         "Phone": "503-555-0210",
         "ContactName": "Maria Santos",
@@ -9647,12 +9677,15 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "ZipCode": "97213",
         "IsCatholic": 1,
         "CharityType": "Food Security",
-        "IsAnnual": 1
+        "IsAnnual": 1,
+        "IsVerified": 1,
+        "VerifiedAt": "2025-09-15 18:00:00",
+        "VerifiedByMemberID": 1
       },
       {
         "Name": "Holy Family Pregnancy Resource Center",
         "Description": "Free ultrasounds, diapers and parenting classes for expectant mothers",
-        "EIN": null,
+        "EIN": "93-0000102",
         "State": "OR",
         "Phone": "503-555-0233",
         "ContactName": "Ann Kelly",
@@ -9661,12 +9694,15 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "ZipCode": "97214",
         "IsCatholic": 1,
         "CharityType": "Protecting Life",
-        "IsAnnual": 1
+        "IsAnnual": 1,
+        "IsVerified": 1,
+        "VerifiedAt": "2025-09-15 18:00:00",
+        "VerifiedByMemberID": 1
       },
       {
         "Name": "Rose City Warming Shelter",
         "Description": "Overnight winter shelter and hot meals",
-        "EIN": null,
+        "EIN": "93-0000103",
         "State": "OR",
         "Phone": "503-555-0247",
         "ContactName": "David Lee",
@@ -9675,12 +9711,15 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "ZipCode": "97209",
         "IsCatholic": 0,
         "CharityType": "Homelessness",
-        "IsAnnual": 0
+        "IsAnnual": 0,
+        "IsVerified": 1,
+        "VerifiedAt": "2025-11-03 18:30:00",
+        "VerifiedByMemberID": 1
       },
       {
         "Name": "Cathedral School Tuition Assistance Fund",
         "Description": "Need-based tuition aid for Catholic school families",
-        "EIN": null,
+        "EIN": "93-0000104",
         "State": "OR",
         "Phone": "503-555-0259",
         "ContactName": "Sr. Theresa Nolan",
@@ -9689,7 +9728,10 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "ZipCode": "97209",
         "IsCatholic": 1,
         "CharityType": "Faith",
-        "IsAnnual": 1
+        "IsAnnual": 1,
+        "IsVerified": 1,
+        "VerifiedAt": "2026-01-12 19:00:00",
+        "VerifiedByMemberID": 1
       },
       {
         "Name": "Mothers of Hope Transitional Housing",
@@ -9703,7 +9745,10 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "ZipCode": "97227",
         "IsCatholic": 0,
         "CharityType": "Women and Children",
-        "IsAnnual": 0
+        "IsAnnual": 0,
+        "IsVerified": 0,
+        "VerifiedAt": null,
+        "VerifiedByMemberID": null
       }
     ]
   },

@@ -285,3 +285,19 @@ export function assertMayDeleteSmartAlbum(actor: MemberWriteActor, album: Pick<M
 /** assertMayDeleteSmartAlbum as a yes/no. */
 export const mayDeleteSmartAlbum = (actor: MemberWriteActor, album: Pick<MediaSmartAlbums, 'id' | 'council_id' | 'created_by_member_id'>): boolean =>
   albumDeleteDenial(actor, album) === null;
+
+// ---- the Council Photo Gallery's two views (Sprint 10 Revision 1.0) ----
+
+/** The sidebar's top-level gallery node and the gallery page's title. */
+export const COUNCIL_PHOTO_GALLERY_TITLE = '📸 Council Photo Gallery';
+
+/** The gallery's two views: looking at photos and albums, or adding photos and saving albums. */
+export type GalleryViewId = 'browse' | 'manage';
+
+export const GALLERY_VIEWS: readonly { id: GalleryViewId; label: string; hint: string }[] = [
+  { id: 'browse', label: 'Browse Albums', hint: 'Look through the council photos, open a Smart Album and play a slideshow' },
+  { id: 'manage', label: 'Gallery Management Center', hint: 'Upload photos and save filters as Smart Albums' },
+];
+
+/** The view a /gallery URL anchor opens ('#manage' or '#browse'); anything else opens Browse Albums. */
+export const galleryViewFromAnchor = (hash: string): GalleryViewId => (hash.replace(/^#/, '') === 'manage' ? 'manage' : 'browse');

@@ -93,6 +93,9 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
+- **📸 Council Photo Gallery** sits under **Navigation Guide**, above the pillars. Its two links open **Browse Albums** and the **Gallery Management Center**.
+- The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
+- Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
 
 </details>
 
@@ -101,7 +104,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Home** | Faith In Action | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **[ 🙏 Praying Hands ]** |
+| **Home** tab (tab row above every page) | None | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **[ 🙏 Praying Hands ]** |
 | **Member Actions Hub** | Faith In Action | Its own page: your active shifts, sign-ups, the roster and your hours |
 | **Council Dashboard** | Performance | Your impact and the council's engagement |
 
@@ -145,7 +148,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Fraternal Photo Gallery** | Resources | Event and meeting photos |
+| **📸 Council Photo Gallery** → **Browse Albums** | Top of the sidebar | Event and meeting photos, Smart Albums and slideshows |
+| **📸 Council Photo Gallery** → **Gallery Management Center** | Top of the sidebar | Photo uploads and new Smart Albums |
 | **Council Artifacts** | Resources | Flyers, minutes and photo albums |
 | **Constitutional Bylaws** | Governance | The council's bylaws |
 | **Online Help Center** | Answers | Answers to common questions |
@@ -1373,6 +1377,12 @@ Any member can bring an organization's request to the council. The member who fi
 The request moves through three steps: **Vetting**, **Presentation** at a council meeting, and **Payment Made** by check.
 The Trustees ask the Shepherd for a status report 6 months after the filing date.
 
+### Concept: verified charities fill in the form
+
+An Admin verifies trusted charities in the **Global Charities Registry**. The form lists only verified charities in its **Organization** list.
+When you select a verified charity, the form fills in the name, mission, mailing address, Employer Identification Number (EIN) and contact details.
+For an organization that is not on the list, select **Another organization (type it in)** and type the details.
+
 ### 8.1 File a charity grant request
 
 > **Who can do this:** any active member.
@@ -1383,10 +1393,13 @@ The Trustees ask the Shepherd for a status report 6 months after the filing date
 **Start point:** Sidebar → Finances → **Propose Charity Grant**.
 
 **Steps:**
-1. Fill in **Organization / Ministry**: the name, the mission and the mailing address.
-2. Fill in **Contact Details**.
-3. Fill in **The Request**: the amount, the date and the specific use.
-4. Select **Save and submit for vetting**.
+1. In **Organization / Ministry**, select the organization's **State**.
+2. Select the organization in **Organization**. The form fills in the name, mission, address, EIN and contact details.
+3. Check the filled-in details. Change any detail that is out of date.
+4. If the organization is not in the list, select **Another organization (type it in)**. Type the name, mission and mailing address.
+5. Fill in **Contact Details** if the form did not fill them in.
+6. Fill in **The Request**: the amount, the date and the specific use.
+7. Select **Save and submit for vetting**.
 
 **Expected result:** A tracking message names the three steps and the follow-up date. The request shows in **My requests**.
 
@@ -1394,6 +1407,8 @@ The Trustees ask the Shepherd for a status report 6 months after the filing date
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The request stops at one step. | Vetting declined the request, or the council voted no. | Read the step in **My requests**. |
+| The **State** list shows **No verified charities yet**. | No Admin has verified a charity yet. | Select **Another organization (type it in)** after you choose a state, or ask an Admin to verify the charity. |
+| The organization is not in the **Organization** list. | The charity is not verified, or it is in another state. | Select **Another organization (type it in)** and type the details. |
 
 ---
 

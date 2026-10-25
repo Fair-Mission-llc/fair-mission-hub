@@ -57,8 +57,8 @@ describe('schema 99', () => {
     expect(TABLES.GLAccount.columns.map((c) => c.name)).toContain('is_split_account');
     expect(TABLES.GLAccountSplitAllocation.columns.map((c) => c.name)).toEqual(['id', 'source_gl_account_id', 'destination_gl_account_id', 'split_percentage']);
     expect(TABLES.CouncilDonationMethod.columns.map((c) => c.name)).toContain('account_identity_label');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 99;');
-    expect(PLATFORM_SCHEMA_VERSION).toBe(99);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (99|\d{3});/);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(99);
   });
 });
 

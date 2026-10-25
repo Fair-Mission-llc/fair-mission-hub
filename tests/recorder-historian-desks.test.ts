@@ -54,7 +54,7 @@ describe('schema version 74', () => {
     expect(schema).toContain('CREATE UNIQUE INDEX [CouncilHistorianBulletin_Month_Idx] ON [CouncilHistorianBulletin] ([council_id], [bulletin_month]);');
     expect(TABLES.CouncilHistorianBulletin.columns.map((c) => c.name)).toEqual(['id', 'council_id', 'bulletin_month', 'body', 'author_member_id', 'updated_at', 'headline', 'body_format']);
     expect(TABLES.Meeting.columns.map((c) => c.name)).toEqual(expect.arrayContaining(['minutes_text', 'minutes_published_at']));
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[4-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[4-9]|[8-9]\d|\d{3});/);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 74 | 8B |');
     expect(read('data_dictionary.md')).toContain('[CouncilHistorianBulletin]');
   });

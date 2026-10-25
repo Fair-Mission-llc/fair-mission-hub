@@ -974,6 +974,11 @@ export interface GlobalCharityRegistry {
   IsCatholic: number; // BIT
   CharityType: string;
   IsAnnual: number; // BIT (Sprint 5Y): councils give every fraternal year, so budget.prePopulateNextYear forecasts it
+  // Sprint 10 Revision 1.0 (schema 100): an Admin or Super Admin verified the entry (charities.setCharityVerified). Only
+  // verified entries fill the Propose Charity Grant form's State and Organization dropdowns.
+  IsVerified: number; // BIT
+  VerifiedAt?: string | null; // DATETIME, set with IsVerified and cleared with it
+  VerifiedByMemberID?: number | null; // FK Member.id
 }
 
 /** A council's connection to a registry charity; one row per council and charity. */

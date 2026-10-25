@@ -86,7 +86,9 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     leader: 'Shows the results of past events and records them: funds raised, hours and lessons learned.',
   },
   'lessons-registry': { member: 'Searches the lessons learned that councils recorded after their events.' },
-  gallery: { member: 'Shows event photos and slideshows. Add your own photos here.' },
+  gallery: {
+    member: 'Opens the Council Photo Gallery. Browse Albums shows the photos, Smart Albums and slideshows; the Gallery Management Center is where you upload photos and save albums.',
+  },
   'resources/bulletins': { member: "Opens the council's Google Drive files and the reports the portal prepares." },
   'resources/marketing': { member: 'Turns an event into a printable flyer with photos from past events.' },
   'inventory/loaner-library': {
@@ -168,12 +170,19 @@ export interface NavigationGuideGroup extends Pick<PortalNavGroup, 'id' | 'label
   entries: NavigationGuideEntry[];
 }
 
+/** Sprint 10 Revision 1.0: the links pinned at the top of the sidebar, outside the seven pillars. */
+export const PINNED_SIDEBAR_ITEMS: readonly PortalNavItem[] = ['gallery'];
+/** The name the full-depth map gives the pinned links' place in the sidebar. */
+export const PINNED_SIDEBAR_LABEL = 'Top of the sidebar';
+
 export interface NavigationGuide {
   persona: NavigationPersona;
   /** The Role names the viewer holds, sorted, e.g. ['Grand Knight']. */
   roles: string[];
   summary: string;
   groups: NavigationGuideGroup[];
+  /** Sprint 10 Revision 1.0: the pinned links (PINNED_SIDEBAR_ITEMS) the viewer may open. */
+  pinned: NavigationGuideEntry[];
   topBar: { item: keyof typeof TOP_BAR_EXPLANATIONS; explanation: string }[];
 }
 
@@ -256,6 +265,10 @@ export function navigationGuide(u: Viewer, flags: FeatureFlags = ALL_FEATURES_ON
         return { item, explanation: (leader && text.leader) || text.member };
       }),
     })),
+    pinned: PINNED_SIDEBAR_ITEMS.filter((item) => allowed.has(item)).map((item) => {
+      const text = NAVIGATION_EXPLANATIONS[item];
+      return { item, explanation: (leader && text.leader) || text.member };
+    }),
     topBar: (Object.keys(TOP_BAR_EXPLANATIONS) as (keyof typeof TOP_BAR_EXPLANATIONS)[])
       .filter((item) => allowed.has(item))
       .map((item) => ({ item, explanation: TOP_BAR_EXPLANATIONS[item] })),

@@ -61,7 +61,7 @@ describe('schema 58', () => {
     expect(TABLES.ExpenseLineItem.columns.find((c) => c.name === 'receipt_id')).toMatchObject({ notNull: false });
     expect(TABLES.ExpenseReport.columns.find((c) => c.name === 'flag_missing_receipt')).toMatchObject({ kind: 'bit', notNull: true });
     expect(TABLES.ExpenseReport.columns.find((c) => c.name === 'missing_receipt_reason')).toMatchObject({ kind: 'text', notNull: false });
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[8-9]|[6-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[8-9]|[6-9]\d|\d{3});/);
   });
 });
 

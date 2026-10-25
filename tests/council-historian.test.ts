@@ -54,7 +54,7 @@ describe('the Council Historian role', () => {
     expect(roles.findIndex((r) => r.Role === COUNCIL_HISTORIAN_ROLE)).toBe(roles.length - 1);
     expect(APPOINTED_ROLE_NAMES).toContain('Council Historian');
     expect(officeKind(COUNCIL_HISTORIAN_ROLE)).toBe('appointed');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (49|[5-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (49|[5-9]\d|\d{3});/);
   });
 
   it('keeps the annals without an officer seat or Admin type, but only while Active and in their own council', () => {

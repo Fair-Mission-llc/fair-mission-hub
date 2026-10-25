@@ -5,6 +5,8 @@
 // Catholic ones first), each with a Connect button (charities.connectCouncilToCharity). A search box filters the whole
 // registry by name or EIN, with a type filter. When a charity is missing, the "add a charity" form mints a new entry
 // (charities.addGlobalCharity), filed under one of the six core types; a duplicate is refused naming the entry.
+// Sprint 10 Revision 1.0 (schema 100): the search table's Verified column marks or clears each entry's verification
+// (charities.setCharityVerified). Only verified charities appear in the Propose Charity Grant form's auto-fill dropdowns.
 import { useState } from 'react';
 import {
   CHARITY_TYPES,
@@ -13,6 +15,7 @@ import {
   charityFromDraft,
   charitySearchFromText,
   describeError,
+  isVerifiedCharity,
   US_STATE_CODES,
   type CharityDraft,
   type CharitySearchFilters,
@@ -84,6 +87,32 @@ function Registry() {
       setBusy(false);
     }
   };
+
+  const toggleVerified = async (charity: GlobalCharityRegistry) => {
+    setMessage(null);
+    const verify = !isVerifiedCharity(charity);
+    try {
+      await db.charities.setCharityVerified(user.memberId, charity.id, verify);
+      setMessage({
+        tone: 'info',
+        text: verify
+          ? `${charity.Name} is verified. Members can now pick it on the Propose Charity Grant form.`
+          : `${charity.Name} is no longer verified. It leaves the Propose Charity Grant dropdowns.`,
+      });
+      await results.reload();
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    }
+  };
+
+  const verifiedCell = (charity: GlobalCharityRegistry) => (
+    <div className="flex flex-col items-start gap-1">
+      {isVerifiedCharity(charity) ? <Pill tone="navy">✓ Verified</Pill> : <Pill tone="outline">Not verified</Pill>}
+      <Button size="sm" variant="secondary" onClick={() => void toggleVerified(charity)}>
+        {isVerifiedCharity(charity) ? 'Remove verification' : 'Verify'}
+      </Button>
+    </div>
+  );
 
   const connectCell = (charity: GlobalCharityRegistry) =>
     !mayConnect ? null : linked.has(charity.id) ? (
@@ -174,7 +203,7 @@ function Registry() {
             ) : rows.length === 0 ? (
               <Empty>No charity in the registry matches. If it is missing, add it below.</Empty>
             ) : (
-              <Table caption="Registry charities matching the search" head={['Charity', 'Type', 'State', 'EIN', 'Catholic', '']}>
+              <Table caption="Registry charities matching the search" head={['Charity', 'Type', 'State', 'EIN', 'Catholic', 'Verified', '']}>
                 {rows.map((c) => (
                   <tr key={c.id}>
                     <Td className="font-bold">
@@ -185,6 +214,7 @@ function Registry() {
                     <Td>{c.State}</Td>
                     <Td className="whitespace-nowrap">{c.EIN ?? <span className="text-muted">None</span>}</Td>
                     <Td>{c.IsCatholic ? 'Yes' : 'No'}</Td>
+                    <Td>{verifiedCell(c)}</Td>
                     <Td className="text-right">{connectCell(c)}</Td>
                   </tr>
                 ))}

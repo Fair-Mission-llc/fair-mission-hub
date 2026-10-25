@@ -232,6 +232,7 @@ import {
   seatHolderId,
   seatHolderIdByName,
   assertMayAddGlobalCharity,
+  charityVerificationStamp,
   assertMayReviewCharityProposals,
   assertMayVetCharitableRequests,
   mayOverrideVettingClaim,
@@ -5516,6 +5517,19 @@ export class MemoryDataService implements DataService {
         const existing = findRegisteredCharity(this.charityRows(s), clean);
         if (existing) throw charityAlreadyRegistered(existing);
         return s.insert('GlobalCharityRegistry', { ...clean });
+      });
+      return { ...row } as unknown as GlobalCharityRegistry;
+    },
+
+    setCharityVerified: async (actorId, charityId, verified) => {
+      const stamp = charityVerificationStamp(verified, actorId, this.now());
+      const s = await this.ready();
+      const row = s.transaction(() => {
+        assertMayAddGlobalCharity(this.memberWriteActor(s, actorId));
+        // Inside a transaction the store works on copied rows, so the entry found here is the one to change.
+        const charity = this.requireCharity(s, charityId);
+        if ((charity.IsVerified === 1) !== verified) Object.assign(charity, stamp);
+        return charity;
       });
       return { ...row } as unknown as GlobalCharityRegistry;
     },

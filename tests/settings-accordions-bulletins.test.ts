@@ -54,7 +54,7 @@ describe('schema version 90', () => {
     expect(schema).toContain("CHECK ([body_format] IN ('STRUCTURED', 'PLAIN'))");
     expect(TABLES.Council.columns.map((c) => c.name)).toContain('biometric_login_enabled');
     expect(TABLES.CouncilHistorianBulletin.columns.map((c) => c.name)).toEqual(expect.arrayContaining(['headline', 'body_format']));
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9\d|\d{3});/);
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain(`const SCHEMA_VERSION = ${PLATFORM_SCHEMA_VERSION};`);
   });
 });

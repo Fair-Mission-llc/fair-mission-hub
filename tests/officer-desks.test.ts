@@ -32,7 +32,7 @@ const ids = (u: ReturnType<typeof member>, councilId = 1) => dashboardTabsFor(u,
 describe('schema version 71', () => {
   it('records the no-table-change version and bumps the phone database', () => {
     expect(read('Schema.sql')).toContain('(schema version 71)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[1-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[1-9]|[8-9]\d|\d{3});/);
   });
 });
 
@@ -159,7 +159,7 @@ describe('Sprint 7J screens', () => {
 describe('Sprint 7J Extension 2 global workspace tabs and root redirect', () => {
   it('moves the phone database to 72 and records the change', () => {
     expect(read('Schema.sql')).toContain('(schema version 72)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[2-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[2-9]|[8-9]\d|\d{3});/);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 72 | 7J Ext 2 |');
   });
 
@@ -191,7 +191,7 @@ describe('Sprint 7J Extension 2 global workspace tabs and root redirect', () => 
 describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
   it('moves the phone database to 73 and records the change', () => {
     expect(read('Schema.sql')).toContain('(schema version 73)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[3-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[3-9]|[8-9]\d|\d{3});/);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 73 | 8A |');
   });
 

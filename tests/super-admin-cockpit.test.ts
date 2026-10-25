@@ -305,7 +305,7 @@ describe('Super Admin Desk', () => {
 
 describe('Sprint 8O: schema 85 and the split console', () => {
   it('bumps the phone database to 86 and records both releases', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[6-9]|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[6-9]|9\d|\d{3});/);
     expect(read('Schema.sql')).toContain('(schema version 86)');
     expect(read('Schema.sql')).toContain("ALTER TABLE [Donation] ADD [historical_account_owner_entity] VARCHAR(20) NOT NULL DEFAULT 'COUNCIL'");
     const schema = read('Schema.sql');

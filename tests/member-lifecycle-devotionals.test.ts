@@ -75,7 +75,7 @@ describe('schema 59', () => {
     expect(TABLES.Member.columns.find((c) => c.name === 'flag_charter_member')).toMatchObject({ kind: 'bit', notNull: true });
     expect(TABLES.Council.columns.find((c) => c.name === 'rank_threshold_hours')).toMatchObject({ notNull: true });
     expect(TABLES.Council.columns.find((c) => c.name === 'rank_threshold_events')).toMatchObject({ notNull: true });
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (59|[6-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (59|[6-9]\d|\d{3});/);
   });
 
   it('stores flag_charter_member with the member, as an Admin-only field', () => {

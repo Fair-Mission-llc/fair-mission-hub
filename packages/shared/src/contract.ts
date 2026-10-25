@@ -1084,6 +1084,8 @@ export interface CharitySearchFilters {
   state?: string | null;
   ein?: string | null;
   isCatholic?: boolean | null;
+  /** Sprint 10 Revision 1.0: true for verified entries only, false for unverified only; null or absent for both. */
+  verified?: boolean | null;
   /** At most this many rows, 1 to CHARITY_SEARCH_MAX_LIMIT; default CHARITY_SEARCH_DEFAULT_LIMIT. */
   limit?: number | null;
 }
@@ -1092,7 +1094,13 @@ export interface CharitySearchFilters {
  * A registry entry for charities.addGlobalCharity and hydrateAndDisburse. State is folded to upper case and EIN to
  * 'NN-NNNNNNN'; blank optional text is stored as NULL.
  */
-export type NewGlobalCharity = Omit<GlobalCharityRegistry, 'id' | 'IsCatholic' | 'IsAnnual'> & { IsCatholic?: boolean; IsAnnual?: boolean };
+export type NewGlobalCharity = Omit<GlobalCharityRegistry, 'id' | 'IsCatholic' | 'IsAnnual' | CharityVerificationColumn> & { IsCatholic?: boolean; IsAnnual?: boolean };
+
+/**
+ * Sprint 10 Revision 1.0: the verification columns. A registry write never sets them; only charities.setCharityVerified
+ * does.
+ */
+export type CharityVerificationColumn = 'IsVerified' | 'VerifiedAt' | 'VerifiedByMemberID';
 
 /**
  * A member's gift proposal for charities.proposeDonation. Name a registry entry with ExistingCharityID, a charity not
@@ -3706,6 +3714,13 @@ export interface DataService {
      * CHARITY_ALREADY_REGISTERED (details.charityId names the entry) for a duplicate, and INVALID_INPUT for a bad field.
      */
     addGlobalCharity(actorId: number, globalCharityData: NewGlobalCharity): Promise<GlobalCharityRegistry>;
+    /**
+     * Sprint 10 Revision 1.0: marks a registry entry verified (stamping VerifiedAt and the actor as VerifiedByMemberID)
+     * or clears the mark (both stamps go back to NULL). Only verified entries fill the Propose Charity Grant form's
+     * dropdowns. An Active Admin or Super Admin (ADMIN_REQUIRED). Rejects RECORD_NOT_FOUND for an unknown charity and
+     * INVALID_INPUT for a `verified` that is not true or false. Setting the mark it already has changes nothing.
+     */
+    setCharityVerified(actorId: number, charityId: number, verified: boolean): Promise<GlobalCharityRegistry>;
     /**
      * Pays a 'Pending' proposal in one transaction: resolves the charity (from `globalCharityData` when given - an
      * existing duplicate is reused with its blank fields filled in, otherwise the entry is registered - else from the

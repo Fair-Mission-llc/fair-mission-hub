@@ -33,7 +33,7 @@ const sidebarItems = (u: ReturnType<typeof seat>) => portalSidebar(u).flatMap((g
 describe('schema version 76', () => {
   it('records the no-table-change version and bumps the phone database', () => {
     expect(read('Schema.sql')).toContain('(schema version 76)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[6-9]|[8-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (7[6-9]|[8-9]\d|\d{3});/);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 76 | 8D/8E |');
   });
 });
@@ -167,9 +167,12 @@ describe('the Executive Dashboard page', () => {
     const page = read('apps/web/app/executive-dashboard/page.tsx');
     expect(page).toContain('<RequireArea area="dashboard">');
     expect(page).toContain('isAdmin(user) || canViewExecutiveDashboard(user, scope.councilId) || canOpenHistorianDesk(user, scope.councilId)');
-    for (const part of ['<RoadmapRibbon', '<FraternalRoadmap', '<Scorecards s={s} compact />', '<EngagementCards', '<MissionTracking', '<BudgetTracking', 'title="Financial ledger"', '<NoShowAudit']) {
+    for (const part of ['<RoadmapRibbon', '<FraternalRoadmap', '<Scorecards s={s} compact />', '<EngagementCards', '<MissionTracking', '<BudgetTracking', '<NoShowAudit']) {
       expect(page).toContain(part);
     }
+    // Sprint 10 Revision 1.0: no monthly financial ledger table and no Top 5 leaderboard on this page.
+    expect(page).not.toContain('title="Financial ledger"');
+    expect(page).toContain('showLeaderboard={false}');
   });
 
   it('links the sidebar Executive Dashboard to the page for executive readers and the Council Historian', () => {

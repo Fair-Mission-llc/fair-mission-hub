@@ -83,7 +83,7 @@ describe('schema 48: council history annals and the spiritual diary', () => {
         { column: 'user_id', refTable: 'Member', refColumn: 'id' },
       ]),
     );
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[8-9]|[5-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[8-9]|[5-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toContain('[CouncilHistoryAnnals]');
     expect(read('data_dictionary.md')).toContain('[CouncilSpiritualDiary]');
   });

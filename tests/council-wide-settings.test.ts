@@ -40,7 +40,7 @@ describe('Schema 62', () => {
     // Sprint 7E (schema 64) appends three more PlatformSettings columns after these.
     expect(TABLES.PlatformSettings.columns.map((c) => c.name).slice(0, 4)).toEqual(['id', 'oral_history_max_seconds', 'diary_text_max_length', 'prayer_intention_max_length']);
     expect(read('Seed.sql')).toMatch(/INSERT INTO \[PlatformSettings\][^;]*VALUES \(1, 900, 4000, 500[,)]/);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[2-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[2-9]|[7-9]\d|\d{3});/);
   });
 });
 

@@ -59,7 +59,7 @@ describe('schema 56', () => {
     expect(TABLES.JournalEntry.columns.find((c) => c.name === 'LinkedActivityID')).toMatchObject({ notNull: false });
     expect(schema).toMatch(/ADD FOREIGN KEY\(\[general_ledger_account_id\]\)\s+REFERENCES \[GLAccount\]\(\[id\]\)/);
     expect(schema).toMatch(/ADD FOREIGN KEY\(\[TreasurerMemberID\]\)\s+REFERENCES \[Member\]\(\[id\]\)/);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[6-9]|[6-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[6-9]|[6-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toContain('general_ledger_account_id');
     // An activity named by an expense sheet or a ledger posting cannot be deleted out from under it.
     expect(RECORD_REFERENCES.Activities).toEqual(

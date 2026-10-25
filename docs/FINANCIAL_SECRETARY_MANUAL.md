@@ -802,7 +802,6 @@ To close a folder, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the
 | **Grand Knight Desk** | **Flagged Hours Review** | A time entry is held for review (section 10 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **Shifts Awaiting Hours** | A volunteer is past the first hours reminder and has not logged time. |
 | **Grand Knight Desk** and **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | An approved charity grant waits for your endorsement, and you do not shepherd it. |
-| **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: an access request is pending (section 4). |
 | **Treasurer Desk** | **Ledger Line Coder** | A signed sheet waits for your ledger account, and you may code it. |
 | **Treasurer Desk** | **Expense Report (ER) Settlement** | A fully signed sheet waits for your check, and you may pay it. Your own sheet does not light the border. |
 | **Treasurer Desk** | **Charitable Contribution Matches** | A charity request or gift waits for its check. |
@@ -817,7 +816,6 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Approved Expenses** | Select **✍️ Final Release for Payment** on each sheet. |
 | **Grand Knight Desk** | **Flagged Hours Review** | Approve or reject the held time entries (section 10 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **Shifts Awaiting Hours** | Read the volunteers who served but have not logged time, with their phone numbers. |
-| **Grand Knight Desk** | **Inbound Council Mail Center** | Super Admins only: approve council access requests (section 4). |
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 1.7.1). |
 | **Grand Knight Desk** | **[ 📈 Council Goals & Targets ]** | Read the Star Council objectives of this fraternal year: Membership Intake, Charitable Dollars (funds raised) and Volunteer Hours, each against its target. |
@@ -868,7 +866,7 @@ A tile shows only to a reader who may open its module. An Admin who does not hol
 
 **Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **[ 🔀 Back to Desk Blotter ]** bar shows under the tab row. Select the bar to go back to your desk.
 
-**The Oversight Desk is gone.** Its three audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review**, **Shifts Awaiting Hours** and, for Super Admins, the **Inbound Council Mail Center**. The **Shifts awaiting hours** audit is also on the **Executive Dashboard** page for every officer (section 14.11 of the Executive Governance Manual). A saved `/dashboard#oversight` address opens your first tab.
+**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Council access requests are on the **Super Admin Desk** only (section 14.11 of the Executive Governance Manual). A saved `/dashboard#oversight` address opens your first tab.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 

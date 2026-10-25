@@ -440,13 +440,16 @@ VALUES
 GO
 
 -- Five local charities the council gives to, with the eight checks it paid them (1111-1118).
-INSERT INTO [GlobalCharityRegistry] ([Name], [Description], [EIN], [State], [Phone], [ContactName], [ContactEmail], [Address], [ZipCode], [IsCatholic], [CharityType], [IsAnnual])
+-- Sprint 10 Revision 1.0 (schema 100): the sample EINs are made up (93- is an Oregon IRS prefix), and four of the five
+-- are verified by the Super Admin (member 1), so the Propose Charity Grant dropdowns have entries to auto-fill from.
+-- Mothers of Hope stays unverified to show that only verified charities are offered.
+INSERT INTO [GlobalCharityRegistry] ([Name], [Description], [EIN], [State], [Phone], [ContactName], [ContactEmail], [Address], [ZipCode], [IsCatholic], [CharityType], [IsAnnual], [IsVerified], [VerifiedAt], [VerifiedByMemberID])
 VALUES
-('St. Mary''s Cathedral Parish Food Pantry', 'Weekly groceries for families in the parish boundaries', NULL, 'OR', '503-555-0210', 'Maria Santos', 'pantry@stmaryscathedral.org', '5200 NE Alameda St, Portland', '97213', 1, 'Food Security', 1),
-('Holy Family Pregnancy Resource Center', 'Free ultrasounds, diapers and parenting classes for expectant mothers', NULL, 'OR', '503-555-0233', 'Ann Kelly', 'director@holyfamilyprc.org', '1820 SE 39th Ave, Portland', '97214', 1, 'Protecting Life', 1),
-('Rose City Warming Shelter', 'Overnight winter shelter and hot meals', NULL, 'OR', '503-555-0247', 'David Lee', 'info@rosecitywarming.org', '640 NW Glisan St, Portland', '97209', 0, 'Homelessness', 0),
-('Cathedral School Tuition Assistance Fund', 'Need-based tuition aid for Catholic school families', NULL, 'OR', '503-555-0259', 'Sr. Theresa Nolan', 'aid@cathedralschoolpdx.org', '110 NW 17th Ave, Portland', '97209', 1, 'Faith', 1),
-('Mothers of Hope Transitional Housing', 'Transitional housing for single mothers and their children', NULL, 'OR', '503-555-0266', 'Linda Park', 'office@mothersofhope.org', '3345 N Vancouver Ave, Portland', '97227', 0, 'Women and Children', 0);
+('St. Mary''s Cathedral Parish Food Pantry', 'Weekly groceries for families in the parish boundaries', '93-0000101', 'OR', '503-555-0210', 'Maria Santos', 'pantry@stmaryscathedral.org', '5200 NE Alameda St, Portland', '97213', 1, 'Food Security', 1, 1, '2025-09-15 18:00:00', 1),
+('Holy Family Pregnancy Resource Center', 'Free ultrasounds, diapers and parenting classes for expectant mothers', '93-0000102', 'OR', '503-555-0233', 'Ann Kelly', 'director@holyfamilyprc.org', '1820 SE 39th Ave, Portland', '97214', 1, 'Protecting Life', 1, 1, '2025-09-15 18:00:00', 1),
+('Rose City Warming Shelter', 'Overnight winter shelter and hot meals', '93-0000103', 'OR', '503-555-0247', 'David Lee', 'info@rosecitywarming.org', '640 NW Glisan St, Portland', '97209', 0, 'Homelessness', 0, 1, '2025-11-03 18:30:00', 1),
+('Cathedral School Tuition Assistance Fund', 'Need-based tuition aid for Catholic school families', '93-0000104', 'OR', '503-555-0259', 'Sr. Theresa Nolan', 'aid@cathedralschoolpdx.org', '110 NW 17th Ave, Portland', '97209', 1, 'Faith', 1, 1, '2026-01-12 19:00:00', 1),
+('Mothers of Hope Transitional Housing', 'Transitional housing for single mothers and their children', NULL, 'OR', '503-555-0266', 'Linda Park', 'office@mothersofhope.org', '3345 N Vancouver Ave, Portland', '97227', 0, 'Women and Children', 0, 0, NULL, NULL);
 GO
 INSERT INTO [CouncilCharityLink] ([CouncilID], [CharityID], [ConnectedAt])
 VALUES

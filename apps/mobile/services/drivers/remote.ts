@@ -264,6 +264,7 @@ export function createRemoteDataService(): DataService {
       connectCouncilToCharity: notImplemented('charities.connectCouncilToCharity'),
       proposeDonation: notImplemented('charities.proposeDonation'),
       addGlobalCharity: notImplemented('charities.addGlobalCharity'),
+      setCharityVerified: notImplemented('charities.setCharityVerified'),
       hydrateAndDisburse: notImplemented('charities.hydrateAndDisburse'),
       listMyProposals: notImplemented('charities.listMyProposals'),
       listCouncilProposals: notImplemented('charities.listCouncilProposals'),

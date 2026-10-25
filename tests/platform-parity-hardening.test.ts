@@ -40,7 +40,7 @@ describe('schema 47: legacy Event money columns purged', () => {
     const createEvent = SCHEMA_STATEMENTS.find((sql) => sql.startsWith('CREATE TABLE IF NOT EXISTS [Event] ('))!;
     expect(createEvent).not.toMatch(/\[(Budget|Spend)\]/);
     expect(read('Seed.sql')).not.toMatch(/\[Event\][^;]*\[(Budget|Spend)\]/);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[7-9]|[5-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (4[7-9]|[5-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toMatch(/Sprint 6I \(schema version 47\)/);
   });
 

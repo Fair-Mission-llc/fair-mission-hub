@@ -28,7 +28,7 @@ const ADMIN_DESKS = ['councils', 'feature-flags', 'system-settings/global-settin
 
 describe('Schema 63', () => {
   it('bumps the phone schema version and records the release without a table change', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[3-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[3-9]|[7-9]\d|\d{3});/);
     expect(read('Schema.sql')).toContain('Sprint 7C Extension: SYSTEM SETTINGS (schema version 63)');
   });
 });

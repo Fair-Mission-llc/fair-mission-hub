@@ -129,12 +129,15 @@ export function EngagementCards({
   month,
   monthLabel,
   summary,
+  showLeaderboard = true,
 }: {
   councilId: number;
   year: number;
   month: number;
   monthLabel: string;
   summary: MonthlySummary;
+  /** Sprint 10 Revision 1.0: false on the Executive Dashboard, which no longer shows the Top 5 Volunteers Leaderboard. */
+  showLeaderboard?: boolean;
 }) {
   const user = useUser();
   const engagement = useLoad(() => db.reports.councilEngagement(user.memberId, councilId, year, month), [user.memberId, councilId, year, month]);
@@ -143,7 +146,7 @@ export function EngagementCards({
   const totalHours = e ? e.volunteers.reduce((sum, v) => sum + v.hours, 0) : 0;
 
   return (
-    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
+    <div className={showLeaderboard ? 'grid grid-cols-1 items-start gap-4 xl:grid-cols-2' : 'grid grid-cols-1 gap-4'}>
       <section aria-label="Monthly activity overview" className="rounded border-4 border-gold bg-navy px-5 py-4 text-white">
         <h2 className="font-serif text-xl font-bold">Monthly activity overview · {monthLabel}</h2>
         {engagement.error ? <Notice tone="error">{engagement.error}</Notice> : null}
@@ -173,13 +176,15 @@ export function EngagementCards({
             ))}
           </ul>
         ) : null}
-        <p className="mt-3 text-xs">Cash collected is the month&apos;s cash raised at the council&apos;s events, as in the financial ledger below.</p>
+        <p className="mt-3 text-xs">Cash collected is the month&apos;s cash raised at the council&apos;s events.</p>
       </section>
 
-      <Leaderboard entries={e?.leaderboard ?? null}>
-        <p className="mt-3 text-xs text-muted">Shield levels: {CANONIZATION_LEVELS.join(' → ')}.</p>
-        {council.data ? <RankThresholdsInfo council={council.data} /> : null}
-      </Leaderboard>
+      {showLeaderboard ? (
+        <Leaderboard entries={e?.leaderboard ?? null}>
+          <p className="mt-3 text-xs text-muted">Shield levels: {CANONIZATION_LEVELS.join(' → ')}.</p>
+          {council.data ? <RankThresholdsInfo council={council.data} /> : null}
+        </Leaderboard>
+      ) : null}
     </div>
   );
 }

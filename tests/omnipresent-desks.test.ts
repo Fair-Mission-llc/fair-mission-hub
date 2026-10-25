@@ -17,7 +17,7 @@ const PASSWORD = 'dev-pass-secure-9912';
 
 describe('schema version 82', () => {
   it('bumps the phone database and notes the sprint in Schema.sql', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[2-9]|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[2-9]|9\d|\d{3});/);
     expect(read('Schema.sql')).toContain('(schema version 82)');
     // No second prayer table: the card reads CouncilPrayerIntention.
     expect(read('Schema.sql')).not.toContain('CREATE TABLE [CouncilPrayers]');

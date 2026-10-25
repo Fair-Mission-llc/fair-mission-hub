@@ -22,6 +22,12 @@
 // Progress Center (GoalsProgressCenter, reports.getCouncilGoals) - progress wheels for the fraternal year's fundraising,
 // recruitment, service-hour and devotional targets, which the Grand Knight or Deputy Grand Knight sets in place - and the
 // Year-over-Year Trends (YearOverYearTrends), the trend lines GET /api/analytics/trends serves.
+//
+// Sprint 10 Revision 1.0 (the visual declutter): under the stat tiles and the monthly activity overview, the Annual
+// Fraternal Roadmap, the Goals Progress Center, the Year-over-Year Trends and the no-show audit are closed drawers
+// stacked one under another (DashboardDrawer); each loads only when opened. The Top 5 Volunteers Leaderboard (still on
+// the Council Dashboard), the Shifts Awaiting Hours audit (still a Grand Knight Desk drawer) and the monthly financial
+// ledger table are gone from this page; the net balance tile keeps the month's raised and spent figures.
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
@@ -37,7 +43,6 @@ import {
 } from '@kofc/shared';
 import { BudgetAlertTag, BudgetGauge, formatPercent } from '@/components/BudgetParts';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { AwaitingHours } from '@/components/DashboardDesks';
 import { EngagementCards } from '@/components/EngagementParts';
 import { MissionTracking } from '@/components/MissionTracking';
 import { FraternalRoadmap, RoadmapRibbon } from '@/components/RoadmapParts';
@@ -200,8 +205,37 @@ function NoShowAudit({ councilId }: { councilId: number }) {
   );
 }
 
-/** The id of the full roadmap card (the ribbon's "Full roadmap" scrolls to it). */
+/** The id of the full roadmap drawer (the ribbon's "Full roadmap" opens it and scrolls to it). */
 const SUMMARY_ROADMAP_ID = 'executive-summary-roadmap';
+
+/**
+ * Sprint 10 Revision 1.0: one compact drawer of the Executive Dashboard - a closed navy-edged row naming its panel,
+ * opened in place. The body mounts only while the drawer is open, so a closed drawer reads no data.
+ */
+function DashboardDrawer({ id, title, summary, children }: { id?: string; title: string; summary: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details id={id} className="group scroll-mt-2 rounded border-2 border-navy bg-white" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="flex cursor-pointer list-none items-center gap-3 border-l-8 border-gold px-4 py-3 [&::-webkit-details-marker]:hidden">
+        <span aria-hidden="true" className="font-bold text-navy motion-safe:transition-transform group-open:rotate-90">
+          ›
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="font-serif text-lg font-bold leading-tight">{title}</span>
+          <span className="text-xs text-muted">{summary}</span>
+        </span>
+      </summary>
+      {open ? <div className="border-t border-line p-4">{children}</div> : null}
+    </details>
+  );
+}
+
+/** Opens the roadmap drawer and scrolls to it. */
+const openRoadmapDrawer = () => {
+  const drawer = document.getElementById(SUMMARY_ROADMAP_ID);
+  if (drawer instanceof HTMLDetailsElement) drawer.open = true;
+  drawer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 function ExecutiveDashboard() {
   const user = useUser();
@@ -220,7 +254,7 @@ function ExecutiveDashboard() {
               <button
                 type="button"
                 className="font-bold underline"
-                onClick={() => document.getElementById(SUMMARY_ROADMAP_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                onClick={openRoadmapDrawer}
               >
                 Full roadmap ↓
               </button>
@@ -244,6 +278,7 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
   const summary = useLoad(() => db.reports.monthlySummary(councilId, year, month), [councilId, year, month]);
   const years = Array.from({ length: 7 }, (_, i) => now.getFullYear() + 1 - i);
   const s = summary.data;
+  const fraternalYear = currentFraternalYear(new Date(year, month - 1, 1));
 
   return (
     <section aria-labelledby="executive-summary-title">
@@ -276,82 +311,57 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
           </Field>
         </div>
       </div>
-      <div id={SUMMARY_ROADMAP_ID} className="mb-4 scroll-mt-2">
-        <FraternalRoadmap user={user} councilId={councilId} />
-      </div>
-      {canReadCouncilGoals(user, councilId) ? (
-        <div className="mb-4 flex flex-col gap-4">
-          <GoalsProgressCenter user={user} councilId={councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
-          <YearOverYearTrends user={user} councilId={councilId} />
-        </div>
-      ) : null}
       {summary.error ? <Notice tone="error">{summary.error}</Notice> : null}
       {!s ? (
         <p className="text-sm text-muted">Loading the month…</p>
       ) : (
         <div className="flex flex-col gap-4">
           <Scorecards s={s} compact />
-          <EngagementCards councilId={councilId} year={year} month={month} monthLabel={`${MONTHS[month - 1]} ${year}`} summary={s} />
+          <EngagementCards councilId={councilId} year={year} month={month} monthLabel={`${MONTHS[month - 1]} ${year}`} summary={s} showLeaderboard={false} />
+          {/* Sprint 10 Revision 1.0: the compact drawers, stacked under the primary metrics. */}
+          <div className="flex flex-col gap-2" aria-label="Executive Dashboard drawers" role="group">
+            <DashboardDrawer id={SUMMARY_ROADMAP_ID} title="Annual Fraternal Roadmap" summary="Nominations, elections, the July 1 term and the Three-Signature Expense Flow">
+              <FraternalRoadmap user={user} councilId={councilId} />
+            </DashboardDrawer>
+            {canReadCouncilGoals(user, councilId) ? (
+              <>
+                <DashboardDrawer title="Annual Council Goals Progress Center" summary="Progress wheels for this fraternal year's council goals">
+                  <GoalsProgressCenter user={user} councilId={councilId} fraternalYear={fraternalYear} />
+                </DashboardDrawer>
+                <DashboardDrawer title="Year-over-Year Trends" summary="This fraternal year against the two before it">
+                  <YearOverYearTrends user={user} councilId={councilId} />
+                </DashboardDrawer>
+              </>
+            ) : null}
+            {canViewExecutiveAudits(user, councilId) ? (
+              <DashboardDrawer title="No-Show Audits" summary={`Missed shifts in the last ${NO_SHOW_AUDIT_MONTHS} months and their reasons`}>
+                <NoShowAudit councilId={councilId} />
+              </DashboardDrawer>
+            ) : null}
+          </div>
           {canReviewBudgetPerformance(user, councilId) ? (
             <>
-              <MissionTracking actorId={user.memberId} councilId={councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
-              <BudgetTracking actorId={user.memberId} councilId={councilId} fraternalYear={currentFraternalYear(new Date(year, month - 1, 1))} />
+              <MissionTracking actorId={user.memberId} councilId={councilId} fraternalYear={fraternalYear} />
+              <BudgetTracking actorId={user.memberId} councilId={councilId} fraternalYear={fraternalYear} />
             </>
           ) : null}
-          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[24rem_minmax(0,1fr)]">
-            <Panel title="Financial ledger">
-              <Table caption={`Ledger for ${MONTHS[month - 1]} ${year}`} head={['Line', 'Amount']}>
-                <tr>
-                  <Td>Cash raised</Td>
-                  <Td className="text-right">{formatMoney(s.finances.cash)}</Td>
-                </tr>
-                <tr>
-                  <Td>Electronic raised</Td>
-                  <Td className="text-right">{formatMoney(s.finances.electronic)}</Td>
-                </tr>
-                <tr className="font-bold">
-                  <Td>Total raised</Td>
-                  <Td className="text-right">{formatMoney(s.finances.raised)}</Td>
-                </tr>
-                <tr>
-                  <Td>Spend</Td>
-                  <Td className="text-right">−{formatMoney(s.finances.spend)}</Td>
-                </tr>
-                <tr className="font-bold">
-                  <Td>Net balance</Td>
-                  <Td className={cx('text-right', s.finances.net < 0 && 'text-brand-red')}>{formatMoney(s.finances.net)}</Td>
-                </tr>
-              </Table>
-              <p className="mt-2 text-xs text-muted">
-                Events starting {formatFullDate(s.fromDate)} to {formatFullDate(s.toDate)}. Funds raised come from each event&apos;s ledger, which is kept
-                in step with its recorded donations; physical items are not counted.
-              </p>
-            </Panel>
-            <Panel title={`Monthly highlights (${s.highlights.length})`}>
-              {s.highlights.length === 0 ? (
-                <Empty>No event this month has highlights recorded. Add them in the post-event ledger.</Empty>
-              ) : (
-                <ol className="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2" aria-label="Event highlights">
-                  {s.highlights.map((h) => (
-                    <li key={h.eventId} className="rounded border-l-4 border-gold bg-white px-3 py-2 ring-1 ring-line">
-                      <p className="font-serif text-base font-bold">{h.eventName}</p>
-                      <p className="text-xs text-muted">{formatFullDate(h.startDate)}</p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm">{h.text}</p>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </Panel>
-          </div>
+          <Panel title={`Monthly highlights (${s.highlights.length})`}>
+            {s.highlights.length === 0 ? (
+              <Empty>No event this month has highlights recorded. Add them in the post-event ledger.</Empty>
+            ) : (
+              <ol className="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2" aria-label="Event highlights">
+                {s.highlights.map((h) => (
+                  <li key={h.eventId} className="rounded border-l-4 border-gold bg-white px-3 py-2 ring-1 ring-line">
+                    <p className="font-serif text-base font-bold">{h.eventName}</p>
+                    <p className="text-xs text-muted">{formatFullDate(h.startDate)}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm">{h.text}</p>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </Panel>
         </div>
       )}
-      {canViewExecutiveAudits(user, councilId) ? (
-        <div className="mt-6 flex flex-col gap-4">
-          <h2 className="font-serif text-xl font-bold">Executive audits</h2>
-          <NoShowAudit councilId={councilId} />
-          <AwaitingHours councilId={councilId} />
-        </div>
-      ) : null}
     </section>
   );
 }

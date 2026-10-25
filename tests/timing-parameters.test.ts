@@ -62,7 +62,7 @@ describe('Schema 64', () => {
     expect(TABLES.PlatformSettings.columns.map((c) => c.name)).toEqual(['id', 'oral_history_max_seconds', 'diary_text_max_length', 'prayer_intention_max_length', ...NEW_PLATFORM_COLUMNS.map(([n]) => n)]);
     expect(TABLES.Council.columns.map((c) => c.name)).toEqual(expect.arrayContaining(NEW_COUNCIL_COLUMNS.map(([n]) => n)));
     expect(read('Seed.sql')).toMatch(/INSERT INTO \[PlatformSettings\][^;]*VALUES \(1, 900, 4000, 500, 5, 8, 180\);/);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[4-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[4-9]|[7-9]\d|\d{3});/);
   });
 });
 

@@ -76,7 +76,7 @@ describe('Schema 65', () => {
     expect(schema).toContain(
       "ALTER TABLE [JournalEntry] ADD [payment_method] VARCHAR(10) NULL CONSTRAINT [CK_JournalEntry_payment_method] CHECK ([payment_method] IN ('CASH', 'CARD', 'CHECK'));",
     );
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[5-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[5-9]|[7-9]\d|\d{3});/);
     expect(TABLES.CouncilAssetsInventory.columns.find((c) => c.name === 'photo_url')).toMatchObject({ kind: 'text', notNull: false });
     expect(TABLES.CouncilAccessRequests.columns.map((c) => c.name)).toEqual([
       'id',
@@ -99,7 +99,7 @@ describe('Schema 66', () => {
     expect(schema).toContain('Sprint 7F Extension: RELATIONAL PAYMENT METHODS AND SHARED ASSET PHOTOS (schema version 66)');
     expect(schema).toContain('ALTER TABLE [JournalEntry] DROP CONSTRAINT [CK_JournalEntry_payment_method];');
     expect(schema).toContain('ALTER TABLE [JournalEntry] DROP COLUMN [payment_method];');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[6-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[6-9]|[7-9]\d|\d{3});/);
     expect(TABLES.JournalEntry.columns.map((c) => c.name)).not.toContain('payment_method');
     expect(TABLES.JournalEntry.columns.find((c) => c.name === 'payment_method_id')).toMatchObject({ kind: 'int', notNull: false });
     expect(TABLES.JournalEntry.foreignKeys).toContainEqual({ column: 'payment_method_id', refTable: 'DonationMethod', refColumn: 'id' });
@@ -296,7 +296,7 @@ describe('asset photos', () => {
 describe('Schema 67: check donations', () => {
   it('adds Donation.CheckNumber and bumps the phone version', () => {
     expect(read('Schema.sql')).toContain('ALTER TABLE [Donation] ADD [CheckNumber] VARCHAR(50) NULL;');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[7-9]|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[7-9]|[7-9]\d|\d{3});/);
     expect(TABLES.Donation.columns.find((c) => c.name === 'CheckNumber')).toMatchObject({ kind: 'text', notNull: false });
     expect(DONATION_EDITABLE_COLUMNS).toContain('CheckNumber');
   });
@@ -444,10 +444,11 @@ describe('sign-in gates and the mail center', () => {
     expect(read('apps/mobile/app/sign-in.tsx')).toContain('db.accessRequests.submit(draft)');
   });
 
-  it('shows the Inbound Council Mail Center to global Super Admins only, as a Grand Knight Desk drawer (Sprint 8P Stage 3)', () => {
+  it('shows the Inbound Council Mail Center on the Super Admin Desk only (Sprint 10 Revision 1.0 took it off the Grand Knight Desk)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toContain("case 'access-requests':\n              return <InboundMailCenter />;");
-    expect(DESK_DRAWERS.find((d) => d.id === 'access-requests')?.gate).toBe('super-admin');
+    expect(desks).not.toContain('<InboundMailCenter />');
+    expect(DESK_DRAWERS.map((d) => d.id as string)).not.toContain('access-requests');
+    expect(read('apps/web/components/SuperAdminDesk.tsx')).toContain('<InboundMailCenter />');
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<InboundMailCenter />');
     expect(read('apps/web/components/PlatformAccessParts.tsx')).not.toMatch(/bg-black/);
   });

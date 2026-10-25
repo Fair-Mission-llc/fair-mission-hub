@@ -110,7 +110,7 @@ describe('Home expansion', () => {
   });
 
   it('moves the phone database to version 87', () => {
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[7-9]|9\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (8[7-9]|9\d|\d{3});/);
     expect(read('Schema.sql')).toContain('(schema version 87)');
   });
 

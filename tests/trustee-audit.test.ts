@@ -243,7 +243,7 @@ describe('schemas 50 and 51', () => {
     ]);
     expect(TABLES.CouncilAudits.columns.find((c) => c.name === 'execution_status')).toMatchObject({ default: { kind: 'literal', value: 'DRAFT' } });
     expect(TABLES.AuditVerifiedLines.columns.map((c) => c.name)).toEqual(['id', 'audit_id', 'journal_entry_id', 'verified_by_member_id', 'verified_at']);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[1-9]|[6-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (5[1-9]|[6-9]\d|\d{3});/);
     expect(read('data_dictionary.md')).toContain('[CouncilAudits]');
     expect(RECORD_REFERENCES.Council.some((r) => r.table === 'CouncilAudits')).toBe(true);
   });

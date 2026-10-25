@@ -54,7 +54,7 @@ describe('schema 60', () => {
     expect(TABLES.MemberCouncilAffiliationLog.columns.find((c) => c.name === 'date_exited')).toMatchObject({ notNull: false });
     expect(TABLES.MemberCouncilAffiliationLog.columns.find((c) => c.name === 'date_joined')).toMatchObject({ notNull: true });
     expect(read('Schema.sql')).toMatch(/ALTER TABLE \[MemberCouncilAffiliationLog\]\s+ADD FOREIGN KEY\(\[council_id\]\)\s+REFERENCES \[Council\]\(\[id\]\)/);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6\d|[7-9]\d);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6\d|[7-9]\d|\d{3});/);
   });
 });
 

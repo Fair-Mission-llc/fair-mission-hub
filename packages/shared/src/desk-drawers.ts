@@ -84,7 +84,6 @@ export type DeskDrawerId =
   | 'approved-expenses'
   | 'flagged-hours'
   | 'shifts-awaiting-hours'
-  | 'access-requests'
   | 'vetting-board'
   | 'advisor'
   | 'connected-councils'
@@ -215,7 +214,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'approved-expenses', title: 'Approved Expenses', summary: 'Counter-sign and release sheets for payment', area: 'expenses/authorize', rowId: DESK_FOCUS_TARGETS.vouchers.rowId, alerts: true },
   { desk: 'grand-knight', id: 'flagged-hours', title: 'Flagged Hours Review', summary: 'Approve or reject time entries held for review', gate: 'quarantine', rowId: DESK_FOCUS_TARGETS.quarantine.rowId, alerts: true },
   { desk: 'grand-knight', id: 'shifts-awaiting-hours', title: 'Shifts Awaiting Hours', summary: 'Volunteers who served but have not logged time', gate: 'executive-audits', rowId: DESK_FOCUS_TARGETS.hours.rowId, alerts: true },
-  { desk: 'grand-knight', id: 'access-requests', title: 'Inbound Council Mail Center', summary: 'Access requests from councils not yet on the platform', gate: 'super-admin', rowId: DESK_FOCUS_TARGETS.access.rowId, alerts: true },
+  // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left this desk; access requests live only on the Super Admin Desk.
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
   { desk: 'grand-knight', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-charity-endorsements', alerts: true },
   { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },

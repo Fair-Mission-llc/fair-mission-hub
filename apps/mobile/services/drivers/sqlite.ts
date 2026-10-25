@@ -233,6 +233,7 @@ import {
   type ElectionRows,
   type SeatTransition,
   assertMayAddGlobalCharity,
+  charityVerificationStamp,
   assertMayReviewCharityProposals,
   assertMayVetCharitableRequests,
   mayOverrideVettingClaim,
@@ -968,8 +969,10 @@ const DB_NAME = 'kofc.db';
  * 99: GLAccount.is_split_account and GLAccountSplitAllocation - Split Accounts whose batch postings are shared out to
  *     destination accounts by percentage - and CouncilDonationMethod.account_identity_label, the account name the
  *     phone's QR screen shows (Sprint 9 Revision 6.0).
+ * 100: GlobalCharityRegistry.IsVerified, VerifiedAt and VerifiedByMemberID - the verification mark an Admin sets, which
+ *     puts a charity in the Propose Charity Grant form's auto-fill dropdowns (Sprint 10 Revision 1.0).
  */
-const SCHEMA_VERSION = 99;
+const SCHEMA_VERSION = 100;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -6607,6 +6610,23 @@ export class SqliteDataService implements DataService {
         const existing = findRegisteredCharity(await this.charityCandidates(db, clean), clean);
         if (existing) throw charityAlreadyRegistered(existing);
         charityId = await this.insertCharity(db, clean);
+      });
+      return this.requireCharity(db, charityId);
+    },
+
+    setCharityVerified: async (actorId, charityId, verified) => {
+      const stamp = charityVerificationStamp(verified, actorId, this.now());
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayAddGlobalCharity(await this.memberWriteActor(db, actorId));
+        const charity = await this.requireCharity(db, charityId);
+        if ((charity.IsVerified === 1) === verified) return;
+        await db.runAsync('UPDATE [GlobalCharityRegistry] SET [IsVerified] = ?, [VerifiedAt] = ?, [VerifiedByMemberID] = ? WHERE [id] = ?', [
+          stamp.IsVerified,
+          stamp.VerifiedAt ?? null,
+          stamp.VerifiedByMemberID ?? null,
+          charityId,
+        ]);
       });
       return this.requireCharity(db, charityId);
     },

@@ -53,7 +53,7 @@ function detailsBlocks(markdown: string): { open: boolean; summary: string }[] {
 describe('schema version 91', () => {
   it('moves the phone database to 91 with no table change', () => {
     expect(read('Schema.sql')).toContain('(schema version 91)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[1-9]);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[1-9]|\d{3});/);
     expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(91);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 91 | 8R |');
   });
@@ -71,9 +71,10 @@ describe('the universal Home landing', () => {
     expect(portalAreas(plain)).not.toContain('dashboard');
   });
 
-  it('lists Home in the Faith In Action pillar of every sidebar', () => {
+  it('opens Home from the Home tab above every page, not from a sidebar link (Sprint 10 Revision 1.0)', () => {
     for (const u of READERS) {
-      expect(portalSidebar(u).find((g) => g.id === 'faith')!.entries.map((e) => e.item)).toContain('home');
+      expect(portalAreas(u)).toContain('home');
+      expect(portalSidebar(u).flatMap((g) => g.entries.map((e) => e.item as string))).not.toContain('home');
     }
   });
 
@@ -202,7 +203,7 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
     const map = navigationGuideMap(plain);
     expect(map.depth).toBe('summary');
     const items = map.categories.flatMap((c) => c.entries.map((e) => e.item as string));
-    expect(items).toEqual(expect.arrayContaining(['home', 'calendar']));
+    expect(items).toEqual(expect.arrayContaining(['calendar', 'gallery']));
     for (const desk of ['expenses/audit', 'expenses/authorize', 'finance/ledger', 'councils', 'system-settings/council-settings']) expect(items).not.toContain(desk);
     expect(map.categories.flatMap((c) => c.entries).every((e) => e.pillar === undefined)).toBe(true);
     expect(map.desks.map((d) => [d.id, d.sections])).toEqual([
@@ -244,25 +245,26 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
 describe('Sprint 8S: the Member Actions sidebar link and the read-only Home cards', () => {
   it('moves the phone database to 92', () => {
     expect(read('Schema.sql')).toContain('(schema version 92)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[2-9]);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[2-9]|\d{3});/);
     expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(92);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 92 | 8S |');
   });
 
-  it("gives every member 'Member Actions Hub' right after Home (Sprint 8S Revision: no emoji)", () => {
+  it("gives every member 'Member Actions Hub' in Faith In Action (Sprint 8S Revision: no emoji; Sprint 10 Revision 1.0: no Home link)", () => {
     expect(MEMBER_ACTIONS_NAV_LABEL).toBe('Member Actions Hub');
     expect(MEMBER_ACTIONS_HREF).toBe('/member-actions');
     expect(portalAreaHref('member-actions')).toBe(MEMBER_ACTIONS_HREF);
     for (const u of READERS) {
       const faith = portalSidebar(u).find((g) => g.id === 'faith')!.entries.map((e) => e.item as string);
-      expect(faith.indexOf('member-actions')).toBe(faith.indexOf('home') + 1);
+      expect(faith).toContain('member-actions');
+      expect(faith).not.toContain('home');
     }
     const sidebar = read('apps/web/components/Sidebar.tsx');
     expect(sidebar).toContain("'member-actions': { href: '/member-actions', label: 'Member Actions Hub'");
     expect(sidebar).toContain("home: { href: '/dashboard#home', label: 'Home'");
     expect(dashboardTabsFor(plain, 1).map((t) => t.anchor)).toContain('member');
     expect(NAVIGATION_ITEM_CATEGORY['member-actions']).toBe('dashboard');
-    expect(navigationGuideMap(plain).categories[0].entries.map((e) => e.item)).toEqual(expect.arrayContaining(['home', 'member-actions']));
+    expect(navigationGuideMap(plain).categories[0].entries.map((e) => e.item)).toEqual(expect.arrayContaining(['member-actions']));
   });
 
   it('keeps the Home reminders read only and gives the prayer card only its Praying Hands (Sprint 8S Corrected)', () => {
@@ -288,7 +290,7 @@ describe('Sprint 8S: the Member Actions sidebar link and the read-only Home card
 describe('Sprint 8S Corrected: forced Home logins', () => {
   it('moves the phone database to 93', () => {
     expect(read('Schema.sql')).toContain('(schema version 93)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[3-9]);/);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (9[3-9]|\d{3});/);
     expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(93);
     expect(read('docs/ARCHITECTURAL_HISTORY.md')).toContain('| 93 | 8S Corrected |');
   });
