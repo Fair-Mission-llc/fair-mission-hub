@@ -99,7 +99,6 @@ export type DeskDrawerId =
   | 'payment-requests'
   | 'er-routing-track'
   | 'donation-records'
-  | 'church-disbursements'
   | 'form-1295'
   | 'charity-checks'
   | 'roster-imports'
@@ -110,7 +109,6 @@ export type DeskDrawerId =
   | 'batch-coder'
   | 'budget-vs-actuals'
   | 'bank-match'
-  | 'parish-split'
   | 'chart-of-accounts'
   | 'minutes-archive'
   | 'live-meeting'
@@ -230,7 +228,6 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'financial-secretary', id: 'payment-requests', title: FS_AUDIT_FOLDER_TITLE, summary: 'Verify and sign the payment request on each sheet, or return it', area: 'expenses/audit', rowId: DESK_FOCUS_TARGETS.orders.rowId, alerts: true, cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'er-routing-track', title: 'Expense Report (ER) Routing Track', summary: 'Every open sheet and the signature it waits for', area: 'expenses/queue', rowId: 'drawer-er-routing-track', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'donation-records', title: 'Charitable Donation Records', summary: 'Record, check and correct council donations', area: 'donations', rowId: 'drawer-donation-records', cabinet: 'inbound' },
-  { desk: 'financial-secretary', id: 'church-disbursements', title: 'Church Disbursement Requests', summary: "Record the check for the parish's share", gate: 'always', rowId: 'financial-secretary-church-disbursements', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/queue', gate: 'charity-endorsement', rowId: 'drawer-fs-charity-endorsements', alerts: true, cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'charity-checks', title: 'Charity Check Issuance Console', summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'form-1295', title: 'Semiannual Audit Form 1295 Center', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
@@ -246,7 +243,6 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'treasurer', id: 'batch-coder', title: 'High-Volume Batch Transaction Coder', summary: 'Code many electronic donations to one Revenue line', gate: 'always', rowId: 'treasurer-batch-coder', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'budget-vs-actuals', title: 'Annual Budget vs Actuals Ledger Grid', summary: 'Budgeted vs actual spend and the YOY variance analyzer', area: 'finance/dashboard', rowId: 'module-budget-vs-actuals', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'bank-match', title: 'Bank Statement Match-Window', summary: 'Match a bank statement CSV against the ledger', area: 'finance/dashboard', rowId: 'module-bank-match', cabinet: 'inbound' },
-  { desk: 'treasurer', id: 'parish-split', title: 'Parish Fundraiser Revenue Split Console', summary: "Issue the parish's share of fundraiser revenue", gate: 'always', rowId: 'treasurer-parish-split', cabinet: 'outbound' },
   { desk: 'treasurer', id: 'chart-of-accounts', title: CHART_OF_ACCOUNTS_FOLDER_TITLE, summary: 'Every general ledger account, its type and its posted balance', area: 'finance/treasurer-desk', rowId: 'treasurer-chart-of-accounts', cabinet: 'accounting' },
   { desk: 'treasurer', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: ER_WORKFLOW_SUMMARY, area: 'expenses/queue', rowId: 'drawer-treasurer-er-workflow', cabinet: 'reference' },
   { desk: 'treasurer', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-treasurer-donation-workflow', cabinet: 'reference' },

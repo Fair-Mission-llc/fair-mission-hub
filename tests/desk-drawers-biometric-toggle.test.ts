@@ -72,7 +72,7 @@ describe('the drawer catalogue', () => {
     expect(ids(FS, 'grand-knight')).not.toContain('approved-expenses');
     expect(ids(FS, 'grand-knight')).not.toContain('loaner-library');
     expect(ids(FS, 'financial-secretary')).toEqual(
-      expect.arrayContaining(['payment-requests', 'er-routing-track', 'donation-records', 'church-disbursements', 'knowledge-archive', 'roster-imports']),
+      expect.arrayContaining(['payment-requests', 'er-routing-track', 'donation-records', 'knowledge-archive', 'roster-imports']),
     );
     expect(ids(GK, 'financial-secretary')).not.toContain('payment-requests');
     expect(ids(seat([]), 'grand-knight')).not.toContain('approved-expenses');

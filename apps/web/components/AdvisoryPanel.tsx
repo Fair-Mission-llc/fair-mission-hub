@@ -12,11 +12,14 @@ import {
   ADVISORY_TOPIC_MAX_LENGTH,
   councilLabel,
   describeError,
+  INVITE_PANELIST_LABEL,
+  isPlatformOwner,
   isSuperAdmin,
   sortCouncils,
   type AdvisoryPanelMeeting,
   type AdvisoryPanelViewId,
 } from '@kofc/shared';
+import { Drawer } from '@/components/Drawer';
 import { Button, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -317,11 +320,92 @@ function Panelists() {
   );
 }
 
+/**
+ * Sprint 10 Revision 3.2: the platform owner's 'Invite Panelist' drawer. Pick a council (any council) and one of its Active
+ * members; the server emails that member a signed invitation link (/api/advisory/invitations). The member accepts it on
+ * /advisory-panel/accept while signed in, which gives them the panelist role at once.
+ */
+function InvitePanelistDrawer({ onClose }: { onClose: () => void }) {
+  const councils = useLoad(async () => sortCouncils(await db.councils.list()), []);
+  const [councilId, setCouncilId] = useState<number | null>(null);
+  const members = useLoad(() => (councilId === null ? Promise.resolve([]) : db.members.listByCouncil(councilId, { activeOnly: true })), [councilId]);
+  const [memberId, setMemberId] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<Message>(null);
+  const send = async () => {
+    if (memberId === null) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/advisory/invitations', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId }),
+      });
+      const answer = (await res.json().catch(() => null)) as { name?: string; expiresOn?: string; message?: string } | null;
+      if (!res.ok) throw new Error(answer?.message ?? `The server answered HTTP ${res.status}.`);
+      setMessage({ tone: 'info', text: `Invitation emailed to ${answer?.name}. The link works until ${answer?.expiresOn}.` });
+      setMemberId(null);
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Drawer title={INVITE_PANELIST_LABEL} onClose={onClose}>
+      <p className="text-sm">
+        Invite a member of any council to the Application Advisory Panel. The portal emails them a secure link that works for them alone for 14 days. When
+        they accept it while signed in, they become a panelist at once.
+      </p>
+      <Banner message={message} onDismiss={() => setMessage(null)} />
+      <Field label="Council">
+        {(id) => (
+          <Select id={id} value={councilId ?? ''} disabled={busy} onChange={(e) => (setCouncilId(e.target.value === '' ? null : Number(e.target.value)), setMemberId(null))}>
+            <option value="">Choose a council</option>
+            {(councils.data ?? []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {councilLabel(c)}
+              </option>
+            ))}
+          </Select>
+        )}
+      </Field>
+      <Field label="Member">
+        {(id) => (
+          <Select id={id} value={memberId ?? ''} disabled={busy || councilId === null} onChange={(e) => setMemberId(e.target.value === '' ? null : Number(e.target.value))}>
+            <option value="">Choose a member</option>
+            {(members.data ?? []).map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.MemberLastName}, {m.MemberFirstName}
+              </option>
+            ))}
+          </Select>
+        )}
+      </Field>
+      <Button variant="gold" disabled={busy || memberId === null} onClick={() => void send()}>
+        {busy ? 'Sending…' : 'Send invitation'}
+      </Button>
+    </Drawer>
+  );
+}
+
 export function AdvisoryPanelWorkspace() {
   const user = useUser();
   const [view, setView] = useState<AdvisoryPanelViewId>('roadmap');
+  const [inviting, setInviting] = useState(false);
+  const owner = isPlatformOwner(user);
   return (
     <div className="flex flex-col gap-4">
+      {owner ? (
+        <div className="flex justify-end">
+          <Button variant="gold" onClick={() => setInviting(true)} aria-expanded={inviting}>
+            ✉️ {INVITE_PANELIST_LABEL}
+          </Button>
+        </div>
+      ) : null}
+      {inviting ? <InvitePanelistDrawer onClose={() => setInviting(false)} /> : null}
       <Tabs tabs={ADVISORY_PANEL_VIEWS.map((v) => ({ id: v.id, label: v.label }))} value={view} onChange={setView} label="Advisory Panel views" idPrefix="advisory" />
       <div role="tabpanel" id="advisory-panel" aria-labelledby={`advisory-tab-${view}`}>
         {view === 'roadmap' ? <Roadmap /> : view === 'releases' ? <Releases /> : view === 'meetings' ? <Meetings /> : <Feedback />}

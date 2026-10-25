@@ -59,7 +59,7 @@ describe('1. Financial Secretary onboarding and the retired split card', () => {
   });
 
   it('deletes the Parish Fundraiser Split card', () => {
-    expect(read('apps/web/components/ParishSplitParts.tsx')).not.toContain('export function ParishSplitSettingsCard');
+    expect(existsSync(join(__dirname, '..', 'apps/web/components/ParishSplitParts.tsx'))).toBe(false);
     expect(read('apps/web/app/system-settings/council-settings/page.tsx')).not.toContain('<ParishSplitSettingsCard');
   });
 });
@@ -81,16 +81,18 @@ describe('2. the Credentials Vault home-council gate', () => {
 describe('3. the Local Network Server file repository', () => {
   it('checks the mode, the UNC path and the username', () => {
     expect(cleanFileRepositorySettings({ file_repository_mode: 'LOCAL_NETWORK', file_server_path: '\\\\hall-server\\kofc', file_server_username: 'HALL\\portal' })).toEqual({
-      file_repository_mode: 'LOCAL_NETWORK',
+      file_repository_mode: 'LOCAL_NETWORK_SERVER',
       file_server_path: '\\\\hall-server\\kofc',
       file_server_username: 'HALL\\portal',
     });
     expect(cleanFileRepositorySettings({ file_repository_mode: 'LOCAL_NETWORK', file_server_path: '\\\\192.168.1.20\\share\\files' }).file_server_path).toBe('\\\\192.168.1.20\\share\\files');
     expect(() => cleanFileRepositorySettings({ file_repository_mode: 'LOCAL_NETWORK', file_server_path: '' })).toThrow(/needs the server network address/);
     expect(() => cleanFileRepositorySettings({ file_repository_mode: 'LOCAL_NETWORK', file_server_path: 'C:\\files' })).toThrow(/UNC path/);
-    expect(() => cleanFileRepositorySettings({ file_repository_mode: 'FTP' as never })).toThrow(/Cloud or Local Network Server/);
-    expect(cleanFileRepositorySettings({ file_repository_mode: 'CLOUD' }).file_repository_mode).toBe('CLOUD');
-    expect(councilFileRepository({}).file_repository_mode).toBe('CLOUD');
+    expect(() => cleanFileRepositorySettings({ file_repository_mode: 'FTP' as never })).toThrow(/Local Network Server/);
+    // Revision 3.1's stored values read as their Revision 3.2 provider keys.
+    expect(cleanFileRepositorySettings({ file_repository_mode: 'CLOUD' as never }).file_repository_mode).toBe('GOOGLE_DRIVE');
+    expect(councilFileRepository({}).file_repository_mode).toBe('GOOGLE_DRIVE');
+    expect(councilFileRepository({ file_repository_mode: 'LOCAL_NETWORK' }).file_repository_mode).toBe('LOCAL_NETWORK_SERVER');
     expect(uncShareRoot('\\\\hall-server\\kofc\\uploads')).toBe('\\\\hall-server\\kofc');
     expect(CREDENTIAL_KEYS).toContain('FILE_SERVER_PASSWORD');
   });
@@ -99,8 +101,10 @@ describe('3. the Local Network Server file repository', () => {
     const name = repositoryFileName('deposit-7', 'IMG 1.JPG', 'ab12cd', 1000);
     expect(name).toBe('deposit-7-1000-ab12cd.jpg');
     const ref = fileRepositoryRef(3, 'Check_Photos', name);
-    expect(ref).toBe('/api/file-repository?file=c3/Check_Photos/deposit-7-1000-ab12cd.jpg');
-    expect(parseFileRepositoryRef(ref)).toEqual({ councilId: 3, folder: 'Check_Photos', fileName: name });
+    expect(ref).toBe('/api/file-repository?file=c3/lan/Check_Photos/deposit-7-1000-ab12cd.jpg');
+    expect(parseFileRepositoryRef(ref)).toEqual({ councilId: 3, provider: 'LOCAL_NETWORK_SERVER', folder: 'Check_Photos', fileName: name });
+    // Revision 3.1 links carried no provider code and still read as network links.
+    expect(parseFileRepositoryRef('/api/file-repository?file=c3/Check_Photos/a.jpg')?.provider).toBe('LOCAL_NETWORK_SERVER');
     expect(isFileRepositoryRef('/api/file-repository?file=c3/../secrets.txt')).toBe(false);
     expect(isFileRepositoryRef('/api/file-repository?file=c3/Windows/x.jpg')).toBe(false);
     expect(isFileRepositoryRef('/api/file-repository?file=c3/Media/..hidden')).toBe(false);
@@ -119,7 +123,7 @@ describe('3. the Local Network Server file repository', () => {
     }
     const serve = read('apps/web/app/api/file-repository/route.ts');
     expect(serve).toContain("claims.memberType !== 'Super Admin'");
-    expect(read('apps/web/components/FileRepositoryCard.tsx')).toContain('Server Network Address (UNC/IP Path)');
+    expect(read('packages/shared/src/file-repository.ts')).toContain('Server Network Address (UNC/IP Path)');
   });
 });
 
@@ -196,12 +200,12 @@ describe.each(drivers)('$name driver: Revision 3.1 methods', ({ make }) => {
     const db = await make();
     const admin = (await db.members.get(MEMBER.admin))!;
     const saved = await db.councils.setFileRepositorySettings(MEMBER.admin, admin.CouncilID, {
-      file_repository_mode: 'LOCAL_NETWORK',
+      file_repository_mode: 'LOCAL_NETWORK_SERVER',
       file_server_path: '\\\\hall-server\\kofc',
       file_server_username: 'HALL\\portal',
     });
-    expect(councilFileRepository(saved)).toEqual({ file_repository_mode: 'LOCAL_NETWORK', file_server_path: '\\\\hall-server\\kofc', file_server_username: 'HALL\\portal' });
-    await expectRule(db.councils.setFileRepositorySettings(MEMBER.member, admin.CouncilID, { file_repository_mode: 'CLOUD', file_server_path: null, file_server_username: null }), 'ADMIN_REQUIRED');
+    expect(councilFileRepository(saved)).toEqual({ file_repository_mode: 'LOCAL_NETWORK_SERVER', file_server_path: '\\\\hall-server\\kofc', file_server_username: 'HALL\\portal' });
+    await expectRule(db.councils.setFileRepositorySettings(MEMBER.member, admin.CouncilID, { file_repository_mode: 'GOOGLE_DRIVE', file_server_path: null, file_server_username: null }), 'ADMIN_REQUIRED');
   });
 
   it('lets the council Financial Secretary send a setup code', async () => {

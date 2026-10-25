@@ -169,15 +169,16 @@ describe('the officer manuals (Sprint 9 Revision 7.1: sequential numbering, mirr
     const t = manuals['docs/TREASURER_MANUAL.md'];
     expect(t).toContain('## 1. Double-entry bookkeeping primer');
     expect(t).toContain('### 1.2 Concept: the five account types');
-    for (const title of ['Code sheets from the Treasurer Desk', 'Code electronic donations in a batch', 'Set up a split account', 'Issue a Church Disbursement Request']) {
+    for (const title of ['Code sheets from the Treasurer Desk', 'Code electronic donations in a batch', 'Set up a split account', "Share one event's gifts once in the batch coder"]) {
       expect(titles(t)).toContain(title);
     }
-    expect(titles(t)).not.toContain('Pay a Church Disbursement Request');
+    // Sprint 10 Revision 3.2: the Church Disbursement Request tasks left with the parish split engine.
+    expect(titles(t)).not.toContain('Issue a Church Disbursement Request');
   });
 
   it('gives the Financial Secretary and the GK/DGK their own books', () => {
     const f = titles(manuals['docs/FINANCIAL_SECRETARY_MANUAL.md']);
-    for (const title of ['Issue a payment request', 'Run the Supreme roster sync', 'Pay a Church Disbursement Request', 'Check for inactive members (the inactivity sweep)']) {
+    for (const title of ['Issue a payment request', 'Run the Supreme roster sync', 'Share fundraiser revenue with a split profile', 'Check for inactive members (the inactivity sweep)']) {
       expect(f).toContain(title);
     }
     const e = manuals['docs/EXECUTIVE_GOVERNANCE_MANUAL.md'];

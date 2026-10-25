@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Compiles the Conference Room Pilot kit (Phase 7I): two fillable scripts and three 11x17 wall posters.
 
-Sprint 8M Extension: no individual step waits for another persona (the Treasurer pays the pre-released report 16 and
-splits the parking collections on his own Parish Revenue Split Console), the members take Venmo and cash at a $25.00
-rate, and the group phase is six flows ending with Flow 6, the Parish Fundraiser Revenue Settlement (check 1404).
+Sprint 8M Extension: no individual step waits for another persona (the Treasurer pays the pre-released report 16), the
+members take Venmo and cash at a $25.00 rate. Sprint 10 Revision 3.2 removed the parish split engine and its console:
+the Treasurer's chapter 2 now shares the parking event's Venmo gift with the parish through the batch coder's Event
+Split Override, the chart-of-accounts split that replaced it.
 
 Sprint 8S Revision 8: the kit is one session anchored on a 6:15 PM gavel - Introduction (6:15-6:20), the Individual
 Desk Coordinate Phase (6:20-6:40, the individual scripts), the Synchronized Group Workflow (6:40-7:20, the group
@@ -21,8 +22,7 @@ another laptop, signs out or hands over a keyboard. Each laptop holds its own co
 is three seated flows on pre-seeded records: Flow 1 the expense pipeline gate by gate (FS signs 21, the Treasurer codes
 22, the GK releases 23, the Treasurer pays 13), Flow 2 the charity request (Alpha proposes; the DGK claims, questions and
 advances request 6) and Flow 3 the Flagged Hours Review gate (the DGK rejects Alpha's seeded 6.5-hour entry). The old
-Flow 6 is gone; the 50% parish split is pre-activated in Seed.sql, so the Treasurer's chapter only checks the arithmetic
-and issues the request. The phone's AMOUNT box opens filled with the session's $25.00 standard rate.
+Flow 6 is gone. The phone's AMOUNT box opens filled with the session's $25.00 standard rate.
 
 Sprint 8S Revision 10.2: the two phone tracks no longer overlap. Member Alpha alone sets up the Parish Parking Event
 session, records the gate gifts and the cash box drop and concludes the session. Member Beta starts no session and
@@ -52,8 +52,8 @@ own volunteer hours after the event; nobody checks them in on site.
     docs/POSTER_PERMISSIONS_MATRIX.pdf  11x17: which persona may do what
 
 The scripts walk through the pilot data in Seed.sql (the seven @stmarys.org personas, the Parish Parking Event,
-expense reports 13-23, charity requests 6-7, the first parking weekend's $400.00, the pre-activated 50% parish split and
-the two held time entries). Screen and button names are the web portal's and the phone app's own.
+expense reports 13-23, charity requests 6-7, the first parking weekend's $400.00 (with its un-coded $150.00 Venmo gift)
+and the two held time entries). Screen and button names are the web portal's and the phone app's own.
 The PDFs are written to disk only; nothing is sent to a printer.
 """
 from __future__ import annotations
@@ -119,7 +119,7 @@ class Persona:
     steps: tuple[Step, ...]
     # Sprint 8L: a reader with fading eyesight; his pages use the large-print styles (larger type and padding).
     large_print: bool = False
-    # Sprint 8M Extension: a second chapter after the numbered steps (the Treasurer's Parish Revenue Split Console).
+    # Sprint 8M Extension: a second chapter after the numbered steps (the Treasurer's revenue split chapter).
     # Its steps keep counting on from the first chapter's.
     chapter_title: str = ''
     chapter_intro: str = ''
@@ -189,8 +189,8 @@ PERSONAS: tuple[Persona, ...] = (
         day_in_life=(
             'Monday evening after the parking weekend. New expense reports came in with the cones and the cash box, and '
             'two older September sheets are still waiting. The Financial Secretary checks each receipt and issues the '
-            'payment request, the first of the three signatures. He also keeps the Trustees\' audit, the charity checkbook '
-            'and the parish\'s share of the fundraisers ready, each on his desk.'
+            'payment request, the first of the three signatures. He also keeps the Trustees\' audit and the charity checkbook '
+            'ready, each on his desk.'
         ),
         steps=(
             Step(SIGN_IN_WEB, 'Sign in as fs_user@stmarys.org with the pilot password.', 'The Active Desks row shows the Financial Secretary Desk tab.'),
@@ -204,8 +204,6 @@ PERSONAS: tuple[Persona, ...] = (
                  'The Trustee Audit Desk opens in the drawer with its five steps; step 5 offers the Form 1295 report as a DRAFT until the Trustees sign.'),
             Step(f'{DESKS} > Financial Secretary Desk > Charity Check Issuance Console', 'Open the drawer and read Approved requests awaiting payment.',
                  'The panel is empty until the council votes a grant at its Monthly meeting.'),
-            Step(f'{DESKS} > Financial Secretary Desk > Church Disbursement Requests', 'Open the Church Disbursement Requests drawer.',
-                 'No request is waiting on your laptop. In daily use the Treasurer\'s Church Disbursement Requests land on this card, and you record the check that pays each one.'),
         ),
     ),
     Persona(
@@ -218,7 +216,7 @@ PERSONAS: tuple[Persona, ...] = (
             'The Treasurer keeps the council\'s books honest. Every report that carries the payment request comes to him '
             'to be charged to a line of the approved 2026-2027 budget and to a general ledger account. Before he codes '
             'anything he reviews the budget sheet line by line, so he knows which lines still have room. He writes the '
-            'checks for released reports, and he works out the parish\'s share of each fundraiser. Nothing on his script '
+            'checks for released reports, and he codes the electronic gifts, sharing the parish\'s part of a fundraiser. Nothing on his script '
             'waits for another officer.'
         ),
         steps=(
@@ -238,33 +236,33 @@ PERSONAS: tuple[Persona, ...] = (
             Step(f'{DESKS} > Treasurer Desk > Expense Report (ER) Settlement', 'Report 16 (Historian User, Michaels, $46.20) is already in the queue: the Grand Knight released it on October 8. Select it, type check number 1201 and click Record Payment Made by Check.',
                  'Report 16 is Reimbursed and check 1201 appears in the payments-made history. You did not wait for anyone.'),
         ),
-        chapter_title='Chapter 2 - The Parish Revenue Split Console',
+        chapter_title='Chapter 2 - Sharing Fundraiser Revenue with the Parish',
         chapter_intro=(
-            'The parking lot belongs to the cathedral, so the parish receives a share of what the Parish Parking Event '
-            'collects. St. Mary\'s 50% agreement with the parish is already switched on in the council\'s settings and '
-            'charged to the Parish Fundraiser Share line, so you change no setting. You check the arithmetic and send the '
-            'parish\'s share to the Financial Secretary as a Church Disbursement Request.'
+            'The parking lot belongs to the cathedral, so the parish receives half of what the Parish Parking Event '
+            'collects. There is no parish split switch any more: the split comes from the chart of accounts. You code the '
+            'event\'s $150.00 Venmo gift once, with an Event Split Override that sends half to the Parking Fundraising line '
+            'and half to the Parish Fundraiser Share line.'
         ),
         chapter_diagram=(
-            ('Gross Cash Box', 'The event\'s collections: cash box drops, cards and Venmo. Parish Parking Event: $400.00.'),
-            ('Parish Split GL Line', 'The council\'s split setting charges the parish share to Parish Fundraiser Share. 50% = $200.00.'),
-            ('Church Disbursement Request', 'You issue it from the console. It goes to the Financial Secretary Desk.'),
-            ('Split Check Settlement', 'The Financial Secretary records the check for the parish\'s share on his own desk.'),
+            ('Un-coded Venmo gift', 'The Parish Parking Event\'s Venmo gift waits in the batch coder: $150.00.'),
+            ('Revenue GL line', 'You code it to Parking Fundraising, the line the money belongs to.'),
+            ('Event Split Override', 'For this one posting: 50% Parking Fundraising, 50% Parish Fundraiser Share.'),
+            ('One posting', 'The ledger gets $75.00 on each line. Nothing is typed twice.'),
         ),
         chapter_notes=(
             'The engine keeps the budget for you. You code each expense sheet once: you choose its general ledger account, and '
             'the account decides the budget line (the green Inferred Budget line). The Annual Budget vs Actuals Ledger Grid and the YOY analyzer work out every actual from that coding. '
             'You never copy an amount into a budget sheet by hand, so the same money is never entered twice.',
-            'The Revenue Split Console works out the parish share for you. It reads the event\'s collections, the split '
-            'percentage and what was already requested. You check the arithmetic; you do not type the share.',
+            'Every revenue split comes from the chart of accounts: a Revenue account\'s saved split profile, or a one-time '
+            'Event Split Override in the batch coder. You choose the shares; the coder works out the amounts.',
         ),
         chapter_steps=(
-            Step(f'{DESKS} > Treasurer Desk > Parish Fundraiser Revenue Split Console', 'Read the ⛪ Parish Fundraiser Revenue Split Console card at the foot of the desk.',
-                 'The split is already on: the card names Parish Fundraiser Share at 50%. The Parish Parking Event row shows Collections $400.00 (the first weekend\'s cash box and Venmo gifts).'),
-            Step(f'{DESKS} > Treasurer Desk > Parish Fundraiser Revenue Split Console', 'Read the Parish Parking Event row and write the calculation in Notes: Collections x Parish share = the parish\'s share.',
-                 'The card names Parish Fundraiser Share at 50%. Collections $400.00, Parish share $200.00 ($400.00 x 50%), Already requested $0.00, To request $200.00.'),
-            Step(f'{DESKS} > Treasurer Desk > Parish Fundraiser Revenue Split Console', 'Click [ 📋 Issue Church Disbursement Request ] on the Parish Parking Event row.',
-                 'A notice reads "Church Disbursement Request #1 for $200.00 is on the Financial Secretary Desk." The row now shows Already requested $200.00 and To request $0.00, and the request is listed as Pending.'),
+            Step(f'{DESKS} > Treasurer Desk > High-Volume Batch Transaction Coder', 'Open the drawer. Tick the Parish Parking Event\'s Venmo gift ($150.00) only.',
+                 'The row reads Venmo, Parish Parking Event, $150.00. The button reads Code selected to this Revenue line (1 · $150.00).'),
+            Step(f'{DESKS} > Treasurer Desk > High-Volume Batch Transaction Coder', 'Choose Parking Fundraising in Revenue GL line for the selection, then click ⚖️ Override Event Split. Set Destination 1 to Parking Fundraising at 50, click Add destination and set Destination 2 to Parish Fundraiser Share at 50.',
+                 'The ⚖️ Override Event Split: Parish Parking Event box shows the two destinations, 50% each, for this one posting of $150.00.'),
+            Step(f'{DESKS} > Treasurer Desk > High-Volume Batch Transaction Coder', 'Click Code selected to this Revenue line (1 · $150.00).',
+                 'A message reads "Coded 1 donation ($150.00) to Parking Fundraising as one posting. Event Split Override: $75.00 to Parking Fundraising, $75.00 to Parish Fundraiser Share." The gift leaves the un-coded list.'),
         ),
     ),
     Persona(
@@ -1027,7 +1025,7 @@ def poster_financial(output: Path, generated: str) -> None:
         'Phone Collect tab: Start collecting for event, then Record donation (cash, card, or check with its check number).',
         'Officers see every gift in Finances > Donations History.',
         'FS and Treasurer post deposits and transfers in the General Ledger.',
-        "Parish split: the Treasurer requests the parish's share; the FS pays it by check.",
+        "Revenue splits: coded once; the chart-of-accounts split shares the parish part.",
     ], GOLD)
     note_panel(c, side_x, side_y, side_w, None, 'Charity grants going out', [
         'After the council votes a grant, the FS or GK endorses it in the FS/GK Compliance Endorsements folder.',
@@ -1083,8 +1081,7 @@ MATRIX_ROWS: tuple[tuple[str, str], ...] = (
     ('Final release for payment (GK Expense Authorize)', '----YYV'),
     ('Pay expense checks', '--YY---'),
     ('Pay approved charity grants', '--YY---'),
-    ('Issue a church disbursement request (parish split)', '---Y--V'),
-    ('Pay a church disbursement request', '--Y---V'),
+    ('Code a gift with an event split (parish share)', '---Y--V'),
     ('Post to the general ledger', '--YY---'),
     ('Read the general ledger and dashboards', '--YYYYY'),
     ('Review held volunteer time', '----YYY'),

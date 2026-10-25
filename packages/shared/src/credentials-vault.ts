@@ -36,6 +36,9 @@ export const CREDENTIAL_KEYS = [
   'AZURE_DOCUMENT_INTELLIGENCE_KEY',
   // Sprint 10 Revision 3.1: the network file server's service account password (file-repository.ts).
   'FILE_SERVER_PASSWORD',
+  // Sprint 10 Revision 3.2: the OneDrive / SharePoint app's client secret and the Dropbox Business app's access token.
+  'ONEDRIVE_CLIENT_SECRET',
+  'DROPBOX_ACCESS_TOKEN',
 ] as const;
 export type CredentialKey = (typeof CREDENTIAL_KEYS)[number];
 
@@ -49,6 +52,8 @@ export const CREDENTIAL_LABELS: Record<CredentialKey, string> = {
   AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: 'Azure Document Intelligence endpoint',
   AZURE_DOCUMENT_INTELLIGENCE_KEY: 'Azure Document Intelligence key',
   FILE_SERVER_PASSWORD: 'Network file server service account password',
+  ONEDRIVE_CLIENT_SECRET: 'OneDrive / SharePoint app client secret',
+  DROPBOX_ACCESS_TOKEN: 'Dropbox Business app access token',
 };
 
 /**
@@ -62,6 +67,8 @@ export const CREDENTIAL_RULES: Record<CredentialKey, { maxLength: number; multiL
   AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: { maxLength: 500, multiLine: false },
   AZURE_DOCUMENT_INTELLIGENCE_KEY: { maxLength: 500, multiLine: false },
   FILE_SERVER_PASSWORD: { maxLength: 256, multiLine: false },
+  ONEDRIVE_CLIENT_SECRET: { maxLength: 500, multiLine: false },
+  DROPBOX_ACCESS_TOKEN: { maxLength: 2000, multiLine: false },
 };
 
 /** Sealed values look like `v1.<iv>.<tag>.<ciphertext>`, each part base64url. */

@@ -7,7 +7,7 @@
 // Enabled donation methods) will not save a row until its owner is chosen: the drivers refuse a missing or unknown
 // owner (cleanAccountOwnerEntity, INVALID_INPUT), and the page holds the save while any row is blank.
 //
-// The owner feeds the Parish Fundraiser Revenue Split Console (parish-split.ts): an electronic donation given through a
+// The owner once fed the Parish Fundraiser Revenue Split Console (removed in Sprint 10 Revision 3.2): an electronic donation given through a
 // PARISH-owned method is Revenue Held by Parish, settled against the parish share with no check, and the batch coder
 // (cash-audit.ts) leaves it out so it never reaches the council's books.
 //

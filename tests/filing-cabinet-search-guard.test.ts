@@ -51,7 +51,7 @@ describe('the left filing spine', () => {
     expect(ids(sections[2].drawers)).toEqual(['chart-of-accounts']);
     expect(ids(sections[3].drawers)).toEqual(['er-workflow', 'donation-workflow', 'planning-budgeting']);
     expect(ids(sections[0].drawers)).toEqual(expect.arrayContaining(['ledger-coder', 'cash-box-audit', 'batch-coder', 'bank-match']));
-    expect(ids(sections[1].drawers)).toEqual(expect.arrayContaining(['er-settlement', 'charity-matches', 'parish-split']));
+    expect(ids(sections[1].drawers)).toEqual(expect.arrayContaining(['er-settlement', 'charity-matches']));
     expect(sections.flatMap((s) => s.drawers)).toHaveLength(drawers.length);
   });
 
@@ -153,7 +153,9 @@ describe('the pilot kit', () => {
   it("draws the Treasurer's Revenue Split lifecycle and the inferred-budget training notes", () => {
     expect(kit).toContain('class LedgerFlowDiagram(Flowable)');
     expect(kit).toContain('Graphical Ledger Flow Diagram: the Revenue Split lifecycle');
-    for (const stage of ["('Gross Cash Box'", "('Parish Split GL Line'", "('Church Disbursement Request'", "('Split Check Settlement'"]) expect(kit).toContain(stage);
+    // Sprint 10 Revision 3.2: the lifecycle is the batch coder's Event Split Override, not the retired parish split console.
+    for (const stage of ["('Un-coded Venmo gift'", "('Revenue GL line'", "('Event Split Override'", "('One posting'"]) expect(kit).toContain(stage);
+    expect(kit).not.toContain("('Church Disbursement Request'");
     expect(kit).toContain('so the same money is never entered twice');
     expect(kit).not.toContain('4900');
   });

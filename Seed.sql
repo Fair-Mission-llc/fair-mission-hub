@@ -1054,7 +1054,6 @@ INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [ParentAccou
 VALUES
 (1, 'Parish Fundraiser Share', 'Revenue', NULL, 0, 0.00);
 GO
-UPDATE [Council] SET [parish_split_enabled] = 1, [parish_split_percentage] = 50.00, [parish_split_gl_line_id] = 16 WHERE [id] = 1;
 GO
 
 -- Sprint 8M Extension: the first parking weekend's collections for the Parish Parking Event (Event 9), recorded by

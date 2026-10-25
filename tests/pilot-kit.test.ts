@@ -155,16 +155,28 @@ describe.each(drivers)('$name driver: the pilot scripts hold true', (d) => {
     expect((await db.expenses.listUserReports(historian)).find((r) => r.report.id === 16)?.report.Status).toBe('Reimbursed');
   });
 
-  it("the Treasurer's chapter 2: the seeded 50% split turns $400.00 into a $200.00 request with no setting changed (Sprint 8S Revision 10)", async () => {
+  it("the Treasurer's chapter 2: the Parking Event's $150.00 Venmo is coded with a 50/50 Event Split Override (Sprint 10 Revision 3.2)", async () => {
     const db = await makePilot();
     const who = await ids(db);
-    expect((await db.finance.getParishSplitConsole(who.treasurer_user!, OWN)).settings).toEqual({ parish_split_enabled: 1, parish_split_percentage: 50, parish_split_gl_line_id: 16 });
-    const row = (await db.finance.getParishSplitConsole(who.treasurer_user!, OWN)).events.find((r) => r.eventName === 'Parish Parking Event')!;
-    expect(row).toMatchObject({ grossCollections: 400, share: 200, alreadyRequested: 0, available: 200 });
-    const issued = await db.finance.issueChurchDisbursementRequest(who.treasurer_user!, OWN, row.eventId);
-    expect(issued.request).toMatchObject({ id: 1, amount: 200, status: 'PENDING' });
-    const paid = await db.finance.recordChurchDisbursementPayment(who.fs_user!, issued.request.id, { CheckNumber: '1404' });
-    expect(paid).toMatchObject({ glAccountName: 'Parish Fundraiser Share', request: { status: 'PAID', check_number: '1404' } });
+    const queue = await db.finance.getBatchCodingQueue(who.treasurer_user!, OWN);
+    const row = queue.rows.find((r) => r.eventName === 'Parish Parking Event')!;
+    expect(row.donation.DonationAmount).toBe(150);
+    expect(row.methodName).toBe('Venmo');
+    const parking = queue.revenueAccounts.find((a) => a.AccountName === 'Parking Fundraising')!;
+    const parish = queue.revenueAccounts.find((a) => a.AccountName === 'Parish Fundraiser Share')!;
+    const done = await db.finance.batchCodeDonations(who.treasurer_user!, OWN, {
+      donationIds: [row.donation.id],
+      revenueAccountId: parking.id,
+      eventSplitOverride: [
+        { destinationAccountId: parking.id, percentage: 50 },
+        { destinationAccountId: parish.id, percentage: 50 },
+      ],
+    });
+    expect(done.overridden).toBe(true);
+    expect(done.splits.map((x) => [x.destinationAccountName, x.amount])).toEqual([
+      ['Parking Fundraising', 75],
+      ['Parish Fundraiser Share', 75],
+    ]);
   });
 
   it('the FS script returns report 15, and Flow 2 refuses an own report', async () => {
@@ -421,14 +433,15 @@ describe('Sprint 8M Extension pilot kit', () => {
   const group = kit.slice(kit.indexOf('GROUP_FLOWS: tuple'), kit.indexOf('# Sprint 8S Revision 8: the Live Meeting session'));
   const persona = (key: string, next: string) => personas.slice(personas.indexOf(`key='${key}'`), next ? personas.indexOf(`key='${next}'`) : undefined);
 
-  it("frees the Treasurer's script from the Grand Knight and adds the Parish Revenue Split Console chapter", () => {
+  it("frees the Treasurer's script from the Grand Knight and adds the revenue split chapter (Sprint 10 Revision 3.2)", () => {
     const treasurer = persona('treasurer', 'dgk');
     expect(treasurer).toContain('Report 16');
     expect(treasurer).toContain('check number 1201');
     expect(treasurer).not.toMatch(/After the Grand Knight releases|report 19/);
-    expect(treasurer).toContain("chapter_title='Chapter 2 - The Parish Revenue Split Console'");
-    expect(treasurer).toContain('[ 📋 Issue Church Disbursement Request ]');
-    expect(treasurer).toContain('$400.00 x 50%');
+    expect(treasurer).toContain("chapter_title='Chapter 2 - Sharing Fundraiser Revenue with the Parish'");
+    expect(treasurer).toContain('⚖️ Override Event Split');
+    expect(treasurer).toContain('$75.00 to Parish Fundraiser Share');
+    expect(treasurer).not.toMatch(/Church Disbursement|Revenue Split Console/);
   });
 
   it("keeps check logging off both volunteer scripts: Alpha's Venmo at $25.00 and $180 cash box drop", () => {
@@ -459,11 +472,11 @@ describe('Sprint 8M Extension pilot kit', () => {
     expect(kit).toContain("Every persona's own laptop, at his own seat");
   });
 
-  it('pre-activates the parish split for the Treasurer (Sprint 8S Revision 10)', () => {
+  it('drops the parish split engine from the seed and the scripts (Sprint 10 Revision 3.2)', () => {
     const treasurer = persona('treasurer', 'dgk');
-    expect(treasurer).not.toMatch(/Switch it on in Council Wide Settings|Save parish split|type 50 in Parish share/);
-    expect(treasurer).toContain('The split is already on');
-    expect(read('Seed.sql')).toContain('UPDATE [Council] SET [parish_split_enabled] = 1, [parish_split_percentage] = 50.00, [parish_split_gl_line_id] = 16 WHERE [id] = 1;');
+    expect(treasurer).not.toMatch(/Switch it on in Council Wide Settings|Save parish split|type 50 in Parish share|The split is already on/);
+    expect(read('Seed.sql')).not.toContain('UPDATE [Council] SET [parish_split_enabled]');
+    expect(kit).not.toMatch(/Church Disbursement Requests drawer|Issue Church Disbursement Request/);
     const historian = persona('historian', 'alpha');
     expect(historian).not.toMatch(/reports 16, 19 and 22|Charter member/);
   });

@@ -248,7 +248,7 @@ describe('Sprint 8N: schema 84, the desk panels and the phone button', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks.indexOf('<CashBoxAuditPanel')).toBeGreaterThan(0);
     expect(desks.indexOf('<CashBoxAuditPanel')).toBeLessThan(desks.indexOf('<BatchTransactionCoder'));
-    expect(desks.indexOf('<BatchTransactionCoder')).toBeLessThan(desks.indexOf('<ParishSplitConsoleCard'));
+    expect(desks).not.toContain('<ParishSplitConsoleCard');
     expect(read('apps/web/components/CashAuditParts.tsx')).toContain('SELECT_ALL_UNCODED_LABEL');
     expect(SELECT_ALL_UNCODED_LABEL).toBe('[✓ Select All Un-coded Transactions]');
   });

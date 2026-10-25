@@ -143,3 +143,43 @@ export function cleanAdvisoryFeedback(input: AdvisoryFeedbackInput): AdvisoryFee
   if (input === null || typeof input !== 'object') throw new BusinessRuleError('INVALID_INPUT', 'Send the feedback as an object.', {});
   return { topic: assertText(input.topic, 'Topic', ADVISORY_TOPIC_MAX_LENGTH), body: assertText(input.body, 'Feedback', ADVISORY_BODY_MAX_LENGTH) };
 }
+
+// ---- invitations (Sprint 10 Revision 3.2) -----------------------------------------------------------------------------
+//
+// The platform owner invites a member of any council from the panel's 'Invite Panelist' drawer. The server mints a
+// signed, expiring invitation link (services/server/advisory-invite.ts; no table - the schema stays at 101) and emails
+// it to the member's address on file. When that member opens the link while signed in and accepts, the server gives them
+// the panelist role (advisory.setPanelist in the inviter's name, so the inviter must still be an Active Super Admin) and
+// re-issues their session with the role in it, so the panel opens at once without signing in again.
+
+/** How long an invitation link stays valid. */
+export const ADVISORY_INVITE_DAYS = 14;
+/** The page an invitation link opens. */
+export const ADVISORY_INVITE_ACCEPT_PATH = '/advisory-panel/accept';
+export const INVITE_PANELIST_LABEL = 'Invite Panelist';
+
+/** The invitation email. The server fills every value from the stored member; the browser never chooses them. */
+export function advisoryInviteEmail(input: { to: string; memberName: string; inviterName: string; councilLabel: string; link: string; expiresOn: string; from: string }): {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+  attachments: [];
+} {
+  return {
+    from: input.from,
+    to: input.to,
+    subject: 'You are invited to the Application Advisory Panel',
+    text: [
+      `Dear ${input.memberName},`,
+      '',
+      `${input.inviterName} invites you to join the Application Advisory Panel of the council portal. Panelists from every council read the development roadmap, review the coming releases, see the panel meeting dates and send their feedback.`,
+      '',
+      `You are invited as a member of ${input.councilLabel}. To accept, sign in to the portal, then open this link:`,
+      input.link,
+      '',
+      `The link works for you alone and stays valid until ${input.expiresOn}. If you did not expect this invitation, you can ignore this email.`,
+    ].join('\n'),
+    attachments: [],
+  };
+}

@@ -1,7 +1,7 @@
 // Sprint 8O: Super Admin cockpit and account ownership splits (schema 85) - the account_owner_entity gate on the payment
-// method editor, the parish-held settlement credit on the Parish Fundraiser Revenue Split Console (no check, no posting,
-// never batch-coded), the Administrative Feedback Loops behind an ADMIN guard, and the platform owner's Super Admin Desk.
-import { readFileSync } from 'node:fs';
+// method editor, parish-held gifts kept out of the batch coder (Sprint 10 Revision 3.2 removed the parish split console
+// and its settlement credit), the Administrative Feedback Loops behind an ADMIN guard, and the platform owner's Super Admin Desk.
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
@@ -9,16 +9,11 @@ import {
   accountOwnerEntityOf,
   accountOwnerGateMessage,
   buildBatchCodingQueue,
-  buildParishSplitRows,
   canOpenAdministrativeFeedback,
   cleanAccountOwnerEntity,
   dashboardTabsFor,
   isParishHeldDonation,
   isPlatformOwner,
-  LOG_PARISH_HELD_CREDIT_LABEL,
-  PARISH_HELD_NOTICE_TITLE,
-  parishHeldNoticeText,
-  planChurchDisbursementRequest,
   PLATFORM_OWNER_USERNAMES,
   portalAreas,
   SUPER_ADMIN_DESK_FOLDERS,
@@ -36,7 +31,6 @@ const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
 const PASSWORD = 'dev-pass-secure-9912';
 const OWN = 1;
 const PARKING_EVENT = 9;
-const PARISH_LINE = 16;
 const PILOT_DAY = new Date(2026, 9, 12, 19, 0, 0);
 
 describe('account ownership codes', () => {
@@ -67,36 +61,7 @@ describe('account ownership codes', () => {
   });
 });
 
-describe('parish-held settlement rules', () => {
-  const events = [{ id: 9, EventName: 'Parish Parking Event', StartDate: '2026-10-10', EndDate: '2026-10-31' }];
-  const settings = { parish_split_enabled: 1, parish_split_percentage: 50, parish_split_gl_line_id: PARISH_LINE };
-
-  it('settles parish-held revenue first as a tracking credit, then a check for the rest', () => {
-    const donations = [
-      { EventID: 9, DonationAmount: 250, isItem: false },
-      { EventID: 9, DonationAmount: 150, isItem: false, parishHeld: true },
-    ];
-    const [row] = buildParishSplitRows(events, donations, [], 50);
-    expect(row).toMatchObject({ grossCollections: 400, share: 200, parishHeldCollections: 150, parishHeldCreditAvailable: 150, checkDue: 50, nextSettlement: 'PARISH_HELD' });
-    expect(planChurchDisbursementRequest(settings, [row!], 9, OWN)).toMatchObject({ amount: 150, settlement_method: 'PARISH_HELD' });
-    expect(parishHeldNoticeText(row!)).toMatch(/no check is cut/);
-
-    const [after] = buildParishSplitRows(events, donations, [{ event_id: 9, amount: 150, settlement_method: 'PARISH_HELD' }], 50);
-    expect(after).toMatchObject({ alreadyRequested: 150, parishHeldCredited: 150, parishHeldCreditAvailable: 0, checkDue: 50, nextSettlement: 'CHECK' });
-    expect(planChurchDisbursementRequest(settings, [after!], 9, OWN)).toMatchObject({ amount: 50, settlement_method: 'CHECK' });
-  });
-
-  it('cuts no check at all when the parish already holds more than its share', () => {
-    const donations = [{ EventID: 9, DonationAmount: 300, isItem: false, parishHeld: true }, { EventID: 9, DonationAmount: 100, isItem: false }];
-    const [row] = buildParishSplitRows(events, donations, [], 25);
-    expect(row).toMatchObject({ share: 100, parishHeldCreditAvailable: 100, checkDue: 0, parishHeldExcess: 200 });
-    expect(parishHeldNoticeText(row!)).toMatch(/No check is needed/);
-    expect(parishHeldNoticeText(row!)).toMatch(/\$200\.00 more than its share/);
-    const [done] = buildParishSplitRows(events, donations, [{ event_id: 9, amount: 100, settlement_method: 'PARISH_HELD' }], 25);
-    expect(done).toMatchObject({ available: 0, checkDue: 0, nextSettlement: null });
-    expect(() => planChurchDisbursementRequest(settings, [done!], 9, OWN)).toThrow(expect.objectContaining({ code: 'INVALID_INPUT' }));
-  });
-
+describe('parish-held gifts', () => {
   it('keeps parish-held gifts out of the batch coder', () => {
     const donation = (id: number): Donation =>
       ({ id, CouncilID: OWN, DonationDate: '2026-10-11', DonationAmount: 10, DonationMethodID: 5, DonationTypeID: 1 }) as Donation;
@@ -176,31 +141,6 @@ describe.each(drivers)('$name driver: account ownership splits', (d) => {
     );
   });
 
-  it('logs a parish-held tracking credit with no check and no posting, then a check request for the rest', async () => {
-    const db = await makePilot();
-    const [gk, treasurer, fs] = await Promise.all(['gk_user', 'treasurer_user', 'fs_user'].map((u) => signIn(db, u)));
-    await venmoToParish(db, treasurer);
-    await db.councils.setParishSplitSettings(gk, OWN, { enabled: true, glLineId: PARISH_LINE, percentage: 50 });
-    // Sprint 8O Extension: the seeded $150 Venmo was recorded while Venmo was the council's, and keeps that snapshot;
-    // only the $150 Venmo given after the switch is held by the parish.
-    expect((await giveByVenmo(db, treasurer, 150)).historical_account_owner_entity).toBe('PARISH');
-
-    // The seeded first weekend ($250 cash + $150 Venmo) plus the new $150 Venmo.
-    const row = (await db.finance.getParishSplitConsole(treasurer, OWN)).events.find((r) => r.eventId === PARKING_EVENT)!;
-    expect(row).toMatchObject({ grossCollections: 550, share: 275, parishHeldCollections: 150, parishHeldCreditAvailable: 150, checkDue: 125, nextSettlement: 'PARISH_HELD' });
-
-    const postings = (await db.finance.listLedgerTransactions(fs, OWN)).length;
-    const credit = await db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT);
-    expect(credit.request).toMatchObject({ settlement_method: 'PARISH_HELD', status: 'PAID', amount: 150, check_number: null, transaction_id: null, paid_by_member_id: treasurer });
-    expect((await db.finance.listLedgerTransactions(fs, OWN)).length).toBe(postings);
-    // The credit never reaches the Financial Secretary's check queue.
-    await expectRule(db.finance.recordChurchDisbursementPayment(fs, credit.request.id, { CheckNumber: '1404' }), 'ILLEGAL_STATE_TRANSITION');
-
-    const check = await db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT);
-    expect(check.request).toMatchObject({ settlement_method: 'CHECK', status: 'PENDING', amount: 125 });
-    await expectRule(db.finance.issueChurchDisbursementRequest(treasurer, OWN, PARKING_EVENT), 'INVALID_INPUT');
-  });
-
   it('never offers or codes a parish-held donation in the batch coder', async () => {
     const db = await makePilot();
     const treasurer = await signIn(db, 'treasurer_user');
@@ -216,19 +156,15 @@ describe.each(drivers)('$name driver: account ownership splits', (d) => {
 
   it('freezes the owner snapshot when the donation is recorded, so a later lookup change never rewrites it', async () => {
     const db = await makePilot();
-    const [gk, treasurer] = await Promise.all(['gk_user', 'treasurer_user'].map((u) => signIn(db, u)));
-    await db.councils.setParishSplitSettings(gk, OWN, { enabled: true, glLineId: PARISH_LINE, percentage: 50 });
+    const treasurer = await signIn(db, 'treasurer_user');
     const asCouncil = await giveByVenmo(db, treasurer, 10);
     expect(asCouncil.historical_account_owner_entity).toBe('COUNCIL');
     await setVenmoOwner(db, treasurer, 'PARISH');
     const asParish = await giveByVenmo(db, treasurer, 20);
     expect(asParish.historical_account_owner_entity).toBe('PARISH');
-    const held = async () => (await db.finance.getParishSplitConsole(treasurer, OWN)).events.find((r) => r.eventId === PARKING_EVENT)!.parishHeldCollections;
-    expect(await held()).toBe(20);
 
-    // Turning the method back to the council changes neither stored snapshot nor the reconciliation.
+    // Turning the method back to the council changes no stored snapshot.
     await setVenmoOwner(db, treasurer, 'COUNCIL');
-    expect(await held()).toBe(20);
     const history = await db.donations.listHistory(OWN, PARKING_EVENT);
     const owners = new Map(history.entries.map((r) => [r.donation.id, r.donation.historical_account_owner_entity]));
     expect(owners.get(asCouncil.id)).toBe('COUNCIL');
@@ -315,12 +251,8 @@ describe('Sprint 8O: schema 85 and the split console', () => {
     expect(schema).toContain("ALTER TABLE [ParishDisbursementRequest] ADD [settlement_method] VARCHAR(20) NOT NULL DEFAULT 'CHECK'");
   });
 
-  it('shows the parish-held notice and its credit button on the Treasurer Desk console', () => {
-    expect(PARISH_HELD_NOTICE_TITLE).toBe('Revenue Held by Parish Settlement Notice');
-    const parts = read('apps/web/components/ParishSplitParts.tsx');
-    expect(parts).toContain('PARISH_HELD_NOTICE_TITLE');
-    expect(parts).toContain('LOG_PARISH_HELD_CREDIT_LABEL');
-    expect(LOG_PARISH_HELD_CREDIT_LABEL).toContain('Parish-Held Settlement Credit');
+  it('keeps the account owner gate after the parish split console was removed (Sprint 10 Revision 3.2)', () => {
+    expect(existsSync(join(__dirname, '..', 'apps/web/components/ParishSplitParts.tsx'))).toBe(false);
     expect(read('apps/web/app/council-lookups/page.tsx')).toContain('accountOwnerGateMessage');
   });
 });

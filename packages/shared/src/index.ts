@@ -74,7 +74,6 @@ export * from './planning-workflow';
 export * from './council-affiliations';
 export * from './operations-knowledge';
 export * from './charter-compliance';
-export * from './parish-split';
 export * from './cash-audit';
 export * from './account-ownership';
 export * from './super-admin-desk';

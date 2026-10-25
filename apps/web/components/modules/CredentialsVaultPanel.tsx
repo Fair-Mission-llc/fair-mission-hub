@@ -94,6 +94,31 @@ const FILE_SERVER_CARD: SecretCard = {
   removedText: "Removed. The portal server uses its own account on the file server.",
 };
 
+const ONEDRIVE_CARD: SecretCard = {
+  credentialKey: 'ONEDRIVE_CLIENT_SECRET',
+  title: 'OneDrive / SharePoint',
+  intro:
+    "Paste the client secret of the council's Azure app registration (File Repository Mode, OneDrive / SharePoint). It is locked away once saved.",
+  label: 'Client secret',
+  placeholder: 'Client secret value',
+  multiLine: false,
+  maxLength: 500,
+  savedText: 'Saved. The portal server files uploads in SharePoint with it.',
+  removedText: 'Removed. SharePoint uploads stop until a new secret is saved.',
+};
+
+const DROPBOX_CARD: SecretCard = {
+  credentialKey: 'DROPBOX_ACCESS_TOKEN',
+  title: 'Dropbox Business',
+  intro: "Paste the access token of the council's Dropbox app (File Repository Mode, Dropbox Business). It is locked away once saved.",
+  label: 'Access token',
+  placeholder: 'Dropbox access token',
+  multiLine: false,
+  maxLength: 2000,
+  savedText: 'Saved. The portal server files uploads in Dropbox with it.',
+  removedText: 'Removed. Dropbox uploads stop until a new token is saved.',
+};
+
 const COPILOT_CARD: SecretCard = {
   credentialKey: 'COPILOT_STUDIO_DIRECT_LINE_SECRET',
   title: 'Microsoft Co-Pilot (Copilot Studio)',
@@ -231,6 +256,8 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !ho
   const ocrEndpoint = vault.data?.credentials.find((c) => c.credential_key === 'AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT');
   const ocrKey = vault.data?.credentials.find((c) => c.credential_key === 'AZURE_DOCUMENT_INTELLIGENCE_KEY');
   const fileServer = vault.data?.credentials.find((c) => c.credential_key === 'FILE_SERVER_PASSWORD');
+  const oneDrive = vault.data?.credentials.find((c) => c.credential_key === 'ONEDRIVE_CLIENT_SECRET');
+  const dropbox = vault.data?.credentials.find((c) => c.credential_key === 'DROPBOX_ACCESS_TOKEN');
   const emailOn = councilEmailGateway(council.data) !== null && (vault.data ? Boolean(vault.data.gateway.password) : true);
   const connections: Connection[] = [
     { name: 'Outbound email', connected: emailOn, on: 'Connected to the council mail account', off: 'Using the portal default' },
@@ -256,6 +283,8 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !ho
           <SecretPanel key={`ocr-endpoint-${councilId}`} card={OCR_ENDPOINT_CARD} councilId={councilId} saved={ocrEndpoint} onChanged={reload} />
           <SecretPanel key={`ocr-key-${councilId}`} card={OCR_KEY_CARD} councilId={councilId} saved={ocrKey} onChanged={reload} />
           <SecretPanel key={`file-server-${councilId}`} card={FILE_SERVER_CARD} councilId={councilId} saved={fileServer} onChanged={reload} />
+          <SecretPanel key={`onedrive-${councilId}`} card={ONEDRIVE_CARD} councilId={councilId} saved={oneDrive} onChanged={reload} />
+          <SecretPanel key={`dropbox-${councilId}`} card={DROPBOX_CARD} councilId={councilId} saved={dropbox} onChanged={reload} />
         </div>
       ) : (
         <p className="text-sm">

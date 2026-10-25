@@ -33,7 +33,7 @@ describe('drawers on every officer desk', () => {
   it('gives the Treasurer the three alerting money drawers first, beside Planning & Budgeting', () => {
     const treasurer = ids(seat(['Treasurer']), 'treasurer');
     expect(treasurer.slice(0, 3)).toEqual(['ledger-coder', 'er-settlement', 'charity-matches']);
-    expect(treasurer).toEqual(expect.arrayContaining(['planning-budgeting', 'cash-box-audit', 'batch-coder', 'budget-vs-actuals', 'bank-match', 'parish-split']));
+    expect(treasurer).toEqual(expect.arrayContaining(['planning-budgeting', 'cash-box-audit', 'batch-coder', 'budget-vs-actuals', 'bank-match']));
     for (const id of ['ledger-coder', 'er-settlement', 'charity-matches'] as const) expect(DESK_DRAWERS.find((d) => d.desk === 'treasurer' && d.id === id)?.alerts).toBe(true);
     expect(DESK_DRAWERS.find((d) => d.id === 'er-settlement')?.title).toBe('Expense Report (ER) Settlement');
     expect(DESK_DRAWERS.find((d) => d.id === 'charity-matches')?.title).toBe('Charitable Contribution Matches');

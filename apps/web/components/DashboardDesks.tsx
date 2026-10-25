@@ -42,9 +42,9 @@
 // Treasurer Desk the Annual Budget vs Actuals Ledger Grid and the Bank Statement Match-Window; the Recorder Desk the
 // Council Resolutions and Motions Ledger; the Historian Desk the Google Drive Media Gallery Sync Board. Home gains the
 // '📿 Community Prayer Request List' card (Faith Center content, like the verse and the feast tracker).
-// Sprint 8M Core: the Treasurer Desk carries the Parish Fundraiser Revenue Split Console (ParishSplitConsoleCard), whose
-// '[ 📋 Issue Church Disbursement Request ]' sends the parish's share to the Financial Secretary Desk's Church
-// Disbursement Requests card (ChurchDisbursementQueue), where the check is recorded.
+// Sprint 8M Core put a Parish Fundraiser Revenue Split Console on the Treasurer Desk and a Church Disbursement Requests
+// card on the Financial Secretary Desk. Sprint 10 Revision 3.2 removed both with the parish split engine: revenue splits
+// come only from the split profiles on the Treasurer's Chart of Accounts (gl-splits.ts).
 // Sprint 8N: the Treasurer Desk opens with the Cash Box Audit Closure Panel (its variance metrics above the fold) and the
 // High-Volume Batch Transaction Coder, which codes many un-coded electronic donations to one Revenue line at once.
 // Sprint 8P Stage 2 - Zero-Traverse Action Drawers: the Grand Knight and Financial Secretary Desks are desk blotters of
@@ -165,7 +165,6 @@ import { AuditDesk as TrusteeAuditDesk } from '@/components/modules/TrusteeAudit
 import { LoanerLibraryManager } from '@/components/LoanerLibraryParts';
 import { IncomingAffiliationInvites } from '@/components/AffiliationsParts';
 import { OperationsKnowledgeArchiveEntryForm } from '@/components/KnowledgeArchiveParts';
-import { ChurchDisbursementQueue, ParishSplitConsoleCard } from '@/components/ParishSplitParts';
 import { BatchTransactionCoder, CashBoxAuditPanel } from '@/components/CashAuditParts';
 import { BulletinBody, LatestBulletinsFeed } from '@/components/BulletinParts';
 import { TrackingSteps } from '@/components/IntakeParts';
@@ -849,7 +848,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
 /**
  * The Financial Secretary Desk. Sprint 8P Stage 2: a desk blotter of slide-out drawers - Payment Requests (verify and
  * sign in place, with the Alert Boundary Accent while a sheet waits on the reader's signature), the Expense Report (ER)
- * Routing Track, Charitable Donation Records, Church Disbursement Requests, the Charity Check Issuance Console, the
+ * Routing Track, Charitable Donation Records, the Charity Check Issuance Console, the
  * Semiannual Audit Form 1295 Center, Excel Roster Imports and the Operations Knowledge Archive. Sprint 8A moved the
  * inactivity sweep to System Settings > Council Wide Settings. Sprint 8S Revision 2: the Expense Report (ER) Workflow
  * (lit like Payment Requests) and the Charitable Donation Workflow drawers (FinanceWorkflowParts.tsx) follow Payment Requests.
@@ -902,8 +901,6 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
               return <ExpenseRoutingTrack />;
             case 'donation-records':
               return <DonationRecords />;
-            case 'church-disbursements':
-              return <ChurchDisbursementQueue user={user} councilId={councilId} />;
             case 'charity-checks':
               return <CharityCheckConsole />;
             case 'form-1295':
@@ -926,7 +923,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
  * sheet waits for the reader's coding), Expense Report (ER) Settlement (lit while a fully signed sheet waits for the
  * reader's check), Charitable Contribution Matches (lit while a charity request or gift waits for its check), the
  * Planning & Budgeting Workflow, the Cash Box Audit Closure Panel, the High-Volume Batch Transaction Coder, the Annual
- * Budget vs Actuals Ledger Grid, the Bank Statement Match-Window and the Parish Fundraiser Revenue Split Console.
+ * Budget vs Actuals Ledger Grid, the Bank Statement Match-Window. (The Parish Fundraiser Revenue Split Console was removed in Sprint 10 Revision 3.2.)
  * Sprint 8S Revision 2: the Expense Report (ER) Workflow (lit while a sheet waits for the reader's coding or check) and
  * the Charitable Donation Workflow follow the three money drawers. Sprint 8S Revision 3: the Charitable Donation Workflow
  * tracks outgoing charity checks and lights while an endorsed request waits for the reader's check.
@@ -1009,8 +1006,9 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
               return <BankStatementMatchWindow user={user} councilId={councilId} />;
             case 'chart-of-accounts':
               return <ChartOfAccountsSetup memberId={user.memberId} councilId={councilId} />;
+            // Sprint 10 Revision 3.2: the Parish Fundraiser Revenue Split Console drawer is gone.
             default:
-              return <ParishSplitConsoleCard user={user} councilId={councilId} />;
+              return null;
           }
         }}
       />

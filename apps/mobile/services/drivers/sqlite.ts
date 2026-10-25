@@ -591,14 +591,6 @@ import {
   cleanAssetPhotoUrl,
 } from '@kofc/shared';
 import {
-  buildParishSplitConsole,
-  cleanParishSplitSettings,
-  parishSplitSettings,
-  planChurchDisbursementPayment,
-  planChurchDisbursementRequest,
-  type ParishDisbursementDetail,
-  type ParishDisbursementRequest,
-  type ParishSplitConsole,
 } from '@kofc/shared';
 import {
   assertCollectionOpen,
@@ -1936,23 +1928,6 @@ export class SqliteDataService implements DataService {
         assertMayEditCouncilWideSettings(await this.memberWriteActor(db, actorId), councilId);
         await this.requireRecord(db, 'Council', councilId);
         await db.runAsync('UPDATE [Council] SET [biometric_login_enabled] = ? WHERE [id] = ?', [enabled ? 1 : 0, councilId]);
-      });
-      return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
-    },
-
-    setParishSplitSettings: async (actorId, councilId, input) => {
-      const db = await this.ready();
-      await db.withTransactionAsync(async () => {
-        assertMayEditCouncilWideSettings(await this.memberWriteActor(db, actorId), councilId);
-        await this.requireRecord(db, 'Council', councilId);
-        const council = await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]);
-        const next = cleanParishSplitSettings(input, parishSplitSettings(council), await this.glAccounts(db, councilId), councilId);
-        await db.runAsync('UPDATE [Council] SET [parish_split_enabled] = ?, [parish_split_percentage] = ?, [parish_split_gl_line_id] = ? WHERE [id] = ?', [
-          next.parish_split_enabled,
-          next.parish_split_percentage,
-          next.parish_split_gl_line_id,
-          councilId,
-        ]);
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
@@ -7859,68 +7834,6 @@ export class SqliteDataService implements DataService {
       return this.journalEntriesById(db, ids);
     },
 
-    getParishSplitConsole: async (actorId, councilId) => {
-      const db = await this.ready();
-      assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the parish split of council ${councilId}`);
-      await this.assertCouncilsExist(db, [councilId]);
-      return this.parishSplitConsole(db, councilId);
-    },
-
-    issueChurchDisbursementRequest: async (actorId, councilId, eventId) => {
-      const db = await this.ready();
-      let requestId = 0;
-      await db.withTransactionAsync(async () => {
-        assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `issue church disbursement requests for council ${councilId}`);
-        await this.assertCouncilsExist(db, [councilId]);
-        const view = await this.parishSplitConsole(db, councilId);
-        const plan = planChurchDisbursementRequest(view.settings, view.events, eventId, councilId);
-        // Sprint 8O: the parish-held tracking credit is settled at once - no check, no ledger posting.
-        const now = toTimestamp(this.now());
-        const held = plan.settlement_method === 'PARISH_HELD';
-        requestId = (
-          await db.runAsync(
-            `INSERT INTO [ParishDisbursementRequest] ([council_id], [event_id], [gross_collections], [split_percentage], [amount], [gl_account_id], [status], [requested_by_member_id], [requested_at], [paid_by_member_id], [paid_at], [settlement_method])
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              councilId,
-              plan.event_id,
-              plan.gross_collections,
-              plan.split_percentage,
-              plan.amount,
-              plan.gl_account_id,
-              held ? 'PAID' : 'PENDING',
-              actorId,
-              now,
-              held ? actorId : null,
-              held ? now : null,
-              plan.settlement_method,
-            ],
-          )
-        ).lastInsertRowId;
-      });
-      return this.parishDisbursementDetail(db, requestId);
-    },
-
-    recordChurchDisbursementPayment: async (actorId, requestId, input) => {
-      const db = await this.ready();
-      await db.withTransactionAsync(async () => {
-        const actor = await this.memberWriteActor(db, actorId);
-        const request = await db.getFirstAsync<ParishDisbursementRequest>('SELECT * FROM [ParishDisbursementRequest] WHERE [id] = ?', [requestId]);
-        if (!request) throw new BusinessRuleError('RECORD_NOT_FOUND', `No church disbursement request with id ${requestId}.`, { requestId });
-        assertMayIssueExpenseOrder(actor, request.council_id, `pay church disbursement request ${requestId}`);
-        const event = await db.getFirstAsync<{ EventName: string }>('SELECT [EventName] FROM [Event] WHERE [id] = ?', [request.event_id]);
-        const plan = planChurchDisbursementPayment(request, actor, input, await this.glAccounts(db, request.council_id), event?.EventName ?? `Event ${request.event_id}`, this.now());
-        assertLedgerPeriodsOpen(plan.lines, await this.councilAudits(db, request.council_id));
-        const ids = await this.insertJournalLines(db, request.council_id, plan.lines);
-        const posted = await db.getFirstAsync<{ TransactionID: string | null }>('SELECT [TransactionID] FROM [JournalEntry] WHERE [id] = ?', [ids[0] ?? 0]);
-        await db.runAsync(
-          "UPDATE [ParishDisbursementRequest] SET [status] = 'PAID', [paid_by_member_id] = ?, [paid_at] = ?, [check_number] = ?, [transaction_id] = ? WHERE [id] = ?",
-          [actorId, plan.paidAt, plan.checkNumber, posted?.TransactionID ?? null, requestId],
-        );
-      });
-      return this.parishDisbursementDetail(db, requestId);
-    },
-
     getBatchCodingQueue: async (actorId, councilId) => {
       const db = await this.ready();
       assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the batch coder of council ${councilId}`);
@@ -8238,41 +8151,6 @@ export class SqliteDataService implements DataService {
       memberNames: new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
       now: this.now(),
     });
-  }
-
-  /** Sprint 8M Core: the Parish Fundraiser Revenue Split Console of the council. */
-  private async parishSplitConsole(db: SQLite.SQLiteDatabase, councilId: number): Promise<ParishSplitConsole> {
-    const council = await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]);
-    const events = await db.getAllAsync<Event>(
-      'SELECT e.[id], e.[EventName], e.[StartDate], e.[EndDate] FROM [Event] e JOIN [EventCouncils] ec ON ec.[EventID] = e.[id] WHERE ec.[CouncilID] = ?',
-      [councilId],
-    );
-    const methods = await db.getAllAsync<{ id: number; DonationMethod: string }>('SELECT [id], [DonationMethod] FROM [DonationMethod]');
-    const kinds = new Map(methods.map((m) => [m.id, donationMethodKind(m.DonationMethod)]));
-    const donations = await db.getAllAsync<{ EventID: number; DonationAmount: number; DonationMethodID: number; historical_account_owner_entity: string | null }>(
-      'SELECT d.[EventID], d.[DonationAmount], d.[DonationMethodID], d.[historical_account_owner_entity] FROM [Donation] d JOIN [EventCouncils] ec ON ec.[EventID] = d.[EventID] AND ec.[CouncilID] = d.[CouncilID] WHERE d.[CouncilID] = ?',
-      [councilId],
-    );
-    const members = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string }>('SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member]');
-    return buildParishSplitConsole(
-      councilId,
-      council ?? {},
-      await this.glAccounts(db, councilId),
-      events,
-      donations.map((d) => ({
-        EventID: d.EventID,
-        DonationAmount: d.DonationAmount,
-        isItem: kinds.get(d.DonationMethodID) === 'item',
-        parishHeld: isParishHeldDonation(kinds.get(d.DonationMethodID) ?? 'other', donationAccountOwner(d)),
-      })),
-      await db.getAllAsync<ParishDisbursementRequest>('SELECT * FROM [ParishDisbursementRequest] WHERE [council_id] = ?', [councilId]),
-      new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])),
-    );
-  }
-
-  private async parishDisbursementDetail(db: SQLite.SQLiteDatabase, requestId: number): Promise<ParishDisbursementDetail> {
-    const row = (await db.getFirstAsync<ParishDisbursementRequest>('SELECT [council_id] FROM [ParishDisbursementRequest] WHERE [id] = ?', [requestId]))!;
-    return (await this.parishSplitConsole(db, row.council_id)).requests.find((d) => d.request.id === requestId)!;
   }
 
   /** Sprint 8O Extension: the account owner of a council's payment method at this moment (COUNCIL when not enabled). */

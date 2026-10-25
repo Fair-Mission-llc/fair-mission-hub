@@ -67,7 +67,6 @@ export interface FeatureDeploymentRow {
 type DeploymentCouncil = Pick<
   Council,
   | FeatureFlagName
-  | 'parish_split_enabled'
   | 'is_loaner_library_enabled'
   | 'biometric_login_enabled'
   | 'meeting_latitude'
@@ -80,20 +79,11 @@ const on = (value: number | null | undefined) => Number(value ?? 0) === 1;
 const onDrawer = (id: CouncilSettingsDrawerId, card: string) => `This page, ${COUNCIL_SETTINGS_DRAWERS.find((t) => t.id === id)!.label} drawer: ${card}`;
 
 /**
- * The matrix for one council: the advanced capabilities first (parish splits, the shared asset library, biometric sign-in,
+ * The matrix for one council: the advanced capabilities first (the shared asset library, biometric sign-in,
  * the geofenced check-in, the email gateway), then the council's twelve modules in FEATURE_FLAG_NAMES order.
  */
 export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): FeatureDeploymentRow[] {
   const capabilities: FeatureDeploymentRow[] = [
-    {
-      id: 'parish-split',
-      group: 'capability',
-      label: 'Parametric Parish Splits',
-      description: "Shares each fundraiser's collections with the parish at the council's saved percentage and GL line.",
-      deployed: on(council.parish_split_enabled),
-      // Sprint 10 Revision 3.1: the switch card is gone; splits come from the Revenue account split profiles.
-      managedOn: 'Treasurer Desk: Revenue account split profiles (the Parish Fundraiser Split card is retired)',
-    },
     {
       id: 'loaner-library',
       group: 'capability',

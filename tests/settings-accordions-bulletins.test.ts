@@ -77,14 +77,14 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
 
   it('reads each capability from the council row, then lists every module', () => {
     const off = councilFeatureDeployment({ biometric_login_enabled: 0 });
-    expect(off.slice(0, 3).map((r) => [r.label, r.deployed])).toEqual([
-      ['Parametric Parish Splits', false],
+    // Sprint 10 Revision 3.2: the Parametric Parish Splits row left with the parish split engine.
+    expect(off.slice(0, 2).map((r) => [r.label, r.deployed])).toEqual([
       ['Cross-Council Shared Asset Libraries', false],
       ['Biometric Authentication', false],
     ]);
+    expect(off.map((r) => r.id)).not.toContain('parish-split');
     expect(off.filter((r) => r.group === 'module').map((r) => r.id)).toEqual([...FEATURE_FLAG_NAMES]);
     const on = councilFeatureDeployment({
-      parish_split_enabled: 1,
       is_loaner_library_enabled: 1,
       meeting_latitude: 47.6,
       meeting_longitude: -122.3,
@@ -127,7 +127,7 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
   it("names the drawer in each capability's 'where it is switched' column", () => {
     const rows = councilFeatureDeployment({ id: 1 } as Parameters<typeof councilFeatureDeployment>[0]).filter((r) => r.group === 'capability');
     const where = Object.fromEntries(rows.map((r) => [r.id, r.managedOn]));
-    expect(where['parish-split']).toBe('Treasurer Desk: Revenue account split profiles (the Parish Fundraiser Split card is retired)');
+    expect(where['parish-split']).toBeUndefined();
     expect(where['geofence']).toBe('This page, User Access & Roster Control drawer: Meeting Check-In');
     expect(where['biometric']).toBe('This page, Council Feature Deployment Matrix drawer: the switch in this row');
     expect(where['loaner-library']).toBe('This page, Feature Controls drawer: Cross-Council Loaner Library Sharing');

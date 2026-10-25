@@ -31,7 +31,7 @@
 - [15. The Cross-Council Loaner Library and the colour-coded calendar](#15-the-cross-council-loaner-library-and-the-colour-coded-calendar)
 - [16. Planning workflows and bilateral council affiliations](#16-planning-workflows-and-bilateral-council-affiliations)
 - [17. The Operations Knowledge Archive](#17-the-operations-knowledge-archive)
-- [18. Parish fundraiser split setup](#18-parish-fundraiser-split-setup)
+- [18. Revenue split profiles](#18-revenue-split-profiles)
 - [19. The global search bar](#19-the-global-search-bar)
 - [20. The Navigation Guide screen](#20-the-navigation-guide-screen)
 - [Manual map](#manual-map)
@@ -285,8 +285,8 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, [ 📅 Upcoming Event Agenda ], Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 14.2 |
 | **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
 | **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, [ 📈 Council Goals & Targets ], Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **[ 📖 Reference Workflows ]**: Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ] | 14.5 |
-| **Financial Secretary Desk** | The FS, Admins, Super Admins | Auditing & Return Queue, Expense Report (ER) Routing Track, Charitable Donation Records, Church Disbursement Requests, FS/GK Compliance Endorsements, Charity Check Issuance Console, Excel Roster Imports; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
-| **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window, Parish Fundraiser Revenue Split Console; **[ 🔧 Accounting Configuration ]**: Chart of Accounts & GL Setup; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
+| **Financial Secretary Desk** | The FS, Admins, Super Admins | Auditing & Return Queue, Expense Report (ER) Routing Track, Charitable Donation Records, FS/GK Compliance Endorsements, Charity Check Issuance Console, Excel Roster Imports; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
+| **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **[ 🔧 Accounting Configuration ]**: Chart of Accounts & GL Setup; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.8 |
 | **Historian Desk** | The Council Historian, Admins, Super Admins | Fraternal Diary Entry Logs, Monthly Newsletters, Meeting Photos, Oral History Recordings, Google Drive Media Gallery Sync Board; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.10 |
 | **Member Desk** | Every member | **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts** side by side at the top, **[ 📥 My Charity Requests ]**, **My open expense sheets**, the **Member Roster** panel | 14.6 |
@@ -1674,7 +1674,7 @@ The spine has this order from the top:
 1. **Priority: waiting on you.** Every folder with work that waits for you moves to the top of the spine, inside a red box. Each of these folders has a thick red border.
 2. **The cabinets** (the **Financial Secretary Desk** and the **Treasurer Desk** only). Two cabinet blocks show, one above the other:
    - **[ 📥 Inbound Operations ]**: work that comes in to you. For example, payment requests, coding, cash box counts, donation records and bank matches.
-   - **[ 📤 Outbound Operations ]**: money and reports that go out. For example, checks, charity matches, Church Disbursement Requests and the Form 1295.
+   - **[ 📤 Outbound Operations ]**: money and reports that go out. For example, checks, charity matches and the Form 1295.
 3. **The other folders.** On the **Grand Knight Desk**, the **Recorder Desk** and the **Historian Desk**, the other folders show in one flat list.
 4. **[ 🔧 Accounting Configuration ]** (the **Treasurer Desk** only). This block holds the **Chart of Accounts & GL Setup** folder (section 6.4.1 of the Treasurer Manual).
 5. **[ 📖 Reference Workflows ]** (every officer desk). This block is always at the bottom of the spine. It holds the workflow drawers that you read for reference (section 14.3.3). A reference folder shows its count in grey. A reference folder never gets a red border and never moves to the top. The same sheet therefore lights only one folder: the folder where you sign.
@@ -1718,7 +1718,6 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **Auditing & Return Queue** | Select **📝 Verify & Sign Expense** on each sheet, or return a sheet to its member with a reason. The sidebar link **FS Expense Audit** opens the same queue. |
 | **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
-| **Financial Secretary Desk** | **Church Disbursement Requests** | Record the check for the parish share (section 18). |
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 4.3.1). |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
 | **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
@@ -1733,7 +1732,6 @@ The drawers on each desk:
 | **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 10 of the Treasurer Manual). |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | Read budgeted against actual spend and the variance analyzer. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. |
-| **Treasurer Desk** | **Parish Fundraiser Revenue Split Console** | Issue the parish share of fundraiser revenue (section 18). |
 | **Treasurer Desk** (accounting) | **Chart of Accounts & GL Setup** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
 | **Treasurer Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Code in **Ledger Line Coder** and pay in **Expense Report (ER) Settlement** (section 14.3.3). |
 | **Treasurer Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. Pay in **Charitable Contribution Matches** (section 2.7 of the Treasurer Manual). |
@@ -2524,12 +2522,22 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 
 ---
 
-## 18. Parish fundraiser split setup
+## 18. Revenue split profiles
 
-### 18.1 Share fundraiser revenue with a split profile
+### 18.1 Concept: revenue split profiles
+Some fundraisers use parish property, for example the cathedral parking lot. The council then shares part of the money with the parish. Since Sprint 10 Revision 3.2 every revenue split comes from the chart of accounts. The parish split engine, its **Parish Fundraiser Revenue Split Console** and its **Church Disbursement Requests** are gone.
+
+| Way to split | Where | What it does |
+| --- | --- | --- |
+| Split profile | **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
+| Event Split Override | **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **⚖️ Override Event Split** | One posting of one event's gifts is shared out by the shares you choose. Nothing is saved to the account. |
+
+The destinations of a split are other Revenue accounts of the council. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.
+
+### 18.2 Share fundraiser revenue with a split profile
 > **Who can do this:** the council's Treasurer and Super Admins.
 
-**Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages. The **Parish Fundraiser Split** card is retired.
+**Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages.
 
 **Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on the Revenue account.
 
@@ -2544,8 +2552,29 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| Council Wide Settings has no parish split switch. | The **Parish Fundraiser Split** card is retired. | Use a split profile on the Revenue account. |
 | **Edit split** is missing on an account. | Only Revenue accounts can split. | Choose a Revenue account. |
+| You want to split one event's gifts only once. | A split profile applies to every posting. | Use **⚖️ Override Event Split** in the batch coder (18.3). |
+
+### 18.3 Share one event's gifts once in the batch coder
+> **Who can do this:** the council's Treasurer and Super Admins.
+
+**Goal:** Code one event's electronic gifts and share that one posting, without saving a split on the account.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **High-Volume Batch Transaction Coder**.
+
+**Steps:**
+1. Tick the gifts of one event.
+2. Choose the line in **Revenue GL line for the selection**, for example **Parking Fundraising**.
+3. Select **⚖️ Override Event Split**.
+4. Set each **Destination** and its **Share (%)**, for example **Parking Fundraising** at `50` and **Parish Fundraiser Share** at `50`. Select **Add destination** for another share.
+5. Select **Code selected to this Revenue line**.
+
+**Expected result:** The message names each share, for example *"Event Split Override: $75.00 to Parking Fundraising, $75.00 to Parish Fundraiser Share."*
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **⚖️ Override Event Split** is unavailable. | The ticked gifts belong to more than one event, or no Revenue line is chosen. | Tick one event's gifts and choose the line. |
 
 ---
 
@@ -2728,7 +2757,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 6. The Active Desks and the Financial Secretary Desk
 - 7. The budget review and vote
 - 8. The Operations Knowledge Archive
-- 9. Parish fundraiser splits and Church Disbursement Requests
+- 9. Revenue split profiles
 - 10. Payment account ownership
 - 11. Budget categories and payment account names
 

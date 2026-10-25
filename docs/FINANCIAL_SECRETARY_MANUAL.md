@@ -2,7 +2,7 @@
 
 **Audience:** the council Financial Secretary (FS).
 
-**Covers:** the Financial Secretary Desk, payment requests, returned reports, donations and checks, receipts and Honorary Expenses, the roster and its imports, setup codes, the Supreme roster sync, Forms 1728 and 1295, and Church Disbursement Requests.
+**Covers:** the Financial Secretary Desk, payment requests, returned reports, donations and checks, receipts and Honorary Expenses, the roster and its imports, setup codes, the Supreme roster sync, Forms 1728 and 1295, and revenue split profiles.
 
 > **Open this manual from your desk.** The Financial Secretary Desk header has **📘 Financial Secretary Manual (PDF)** and a **How do I…** search that answers from this manual only.
 > Signing up, logging hours and taking donations are in the [Member User Guide](MEMBER_USER_GUIDE.md).
@@ -21,7 +21,7 @@
 - [6. The Active Desks and the Financial Secretary Desk](#6-the-active-desks-and-the-financial-secretary-desk)
 - [7. The budget review and vote](#7-the-budget-review-and-vote)
 - [8. The Operations Knowledge Archive](#8-the-operations-knowledge-archive)
-- [9. Parish fundraiser splits and Church Disbursement Requests](#9-parish-fundraiser-splits-and-church-disbursement-requests)
+- [9. Revenue split profiles](#9-revenue-split-profiles)
 - [10. Payment account ownership](#10-payment-account-ownership)
 - [11. Budget categories and payment account names](#11-budget-categories-and-payment-account-names)
 - [Manual map](#manual-map)
@@ -788,7 +788,7 @@ The spine has this order from the top:
 1. **Priority: waiting on you.** Every folder with work that waits for you moves to the top of the spine, inside a red box. Each of these folders has a thick red border.
 2. **The cabinets** (the **Financial Secretary Desk** and the **Treasurer Desk** only). Two cabinet blocks show, one above the other:
    - **[ 📥 Inbound Operations ]**: work that comes in to you. For example, payment requests, coding, cash box counts, donation records and bank matches.
-   - **[ 📤 Outbound Operations ]**: money and reports that go out. For example, checks, charity matches, Church Disbursement Requests and the Form 1295.
+   - **[ 📤 Outbound Operations ]**: money and reports that go out. For example, checks, charity matches and the Form 1295.
 3. **The other folders.** On the **Grand Knight Desk**, the **Recorder Desk** and the **Historian Desk**, the other folders show in one flat list.
 4. **[ 🔧 Accounting Configuration ]** (the **Treasurer Desk** only). This block holds the **Chart of Accounts & GL Setup** folder (section 6.4.1 of the Treasurer Manual).
 5. **[ 📖 Reference Workflows ]** (every officer desk). This block is always at the bottom of the spine. It holds the workflow drawers that you read for reference (section 6.2.3). A reference folder shows its count in grey. A reference folder never gets a red border and never moves to the top. The same sheet therefore lights only one folder: the folder where you sign.
@@ -832,7 +832,6 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **Auditing & Return Queue** | Select **📝 Verify & Sign Expense** on each sheet, or return a sheet to its member with a reason. The sidebar link **FS Expense Audit** opens the same queue. |
 | **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
-| **Financial Secretary Desk** | **Church Disbursement Requests** | Record the check for the parish share (section 9). |
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 1.7.1). |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
 | **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
@@ -847,7 +846,6 @@ The drawers on each desk:
 | **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 10 of the Treasurer Manual). |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | Read budgeted against actual spend and the variance analyzer. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. |
-| **Treasurer Desk** | **Parish Fundraiser Revenue Split Console** | Issue the parish share of fundraiser revenue (section 9). |
 | **Treasurer Desk** (accounting) | **Chart of Accounts & GL Setup** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
 | **Treasurer Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Code in **Ledger Line Coder** and pay in **Expense Report (ER) Settlement** (section 6.2.3). |
 | **Treasurer Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. Pay in **Charitable Contribution Matches** (section 1.8). |
@@ -1056,35 +1054,22 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 ---
 
-## 9. Parish fundraiser splits and Church Disbursement Requests
+## 9. Revenue split profiles
 
-### 9.1 Concept: the parish fundraiser split
-Some fundraisers use parish property, for example the cathedral parking lot. The council then owes the parish a share of the money collected. The parish split calculates that share and pays it by check.
+### 9.1 Concept: revenue split profiles
+Some fundraisers use parish property, for example the cathedral parking lot. The council then shares part of the money with the parish. Since Sprint 10 Revision 3.2 every revenue split comes from the chart of accounts. The parish split engine, its **Parish Fundraiser Revenue Split Console** and its **Church Disbursement Requests** are gone.
 
-Since Sprint 10 Revision 3.1 the **Parish Fundraiser Split** card is retired. Council Wide Settings has no parish split switch. Revenue splits come from the chart of accounts: the Treasurer gives a Revenue account a split profile (**Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split**), and every posting to that account is shared out by its percentages.
+| Way to split | Where | What it does |
+| --- | --- | --- |
+| Split profile | **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
+| Event Split Override | **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **⚖️ Override Event Split** | One posting of one event's gifts is shared out by the shares you choose. Nothing is saved to the account. |
 
-A council that switched the parish split on before the card was retired keeps its saved percentage and ledger line. The console below still issues Church Disbursement Requests for it.
+The destinations of a split are other Revenue accounts of the council. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.
 
-A revenue line takes the parish share back out of the fundraiser's revenue. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for this purpose.
-
-### 9.2 Concept: the Church Disbursement Request
-The split moves in two signatures:
-
-| Step | Who | Where | What happens |
-| --- | --- | --- | --- |
-| 1 | Treasurer | **Treasurer Desk** → **⛪ Parish Fundraiser Revenue Split Console** | The Treasurer issues a **Church Disbursement Request** for the parish share. The request is **Pending**. The ledger does not change yet. |
-| 2 | Financial Secretary (FS) | **Financial Secretary Desk** → **⛪ Church Disbursement Requests** | The FS enters the check number and records the payment. The request is **Paid**. |
-
-The console counts each event's money donations. Physical items do not count. The **To request** amount is the parish share less the shares already requested for the event. New collections at a later date make a new amount available.
-
-When the FS records the payment, the ledger gets one posting. The posting is a debit to the split's ledger line and a credit to the council's first cash account. Both lines carry the check number.
-
-The officer who issues a request cannot also pay the request.
-
-### 9.3 Share fundraiser revenue with a split profile
+### 9.2 Share fundraiser revenue with a split profile
 > **Who can do this:** the council's Treasurer and Super Admins.
 
-**Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages. The **Parish Fundraiser Split** card is retired.
+**Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages.
 
 **Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on the Revenue account.
 
@@ -1099,29 +1084,29 @@ The officer who issues a request cannot also pay the request.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| Council Wide Settings has no parish split switch. | The **Parish Fundraiser Split** card is retired. | Use a split profile on the Revenue account. |
 | **Edit split** is missing on an account. | Only Revenue accounts can split. | Choose a Revenue account. |
+| You want to split one event's gifts only once. | A split profile applies to every posting. | Use **⚖️ Override Event Split** in the batch coder (9.3). |
 
-### 9.4 Pay a Church Disbursement Request
-> **Who can do this:** the council's Financial Secretary and Super Admins. The officer who issued the request cannot pay the request.
-> **Warning:** Recording the payment posts money to the general ledger. You cannot undo the payment.
+### 9.3 Share one event's gifts once in the batch coder
+> **Who can do this:** the council's Treasurer and Super Admins.
 
-**Goal:** Record the check that pays the parish share.
+**Goal:** Code one event's electronic gifts and share that one posting, without saving a split on the account.
 
-**Start point:** **Active Desks** row → **Financial Secretary Desk** → **⛪ Church Disbursement Requests**.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **High-Volume Batch Transaction Coder**.
 
 **Steps:**
-1. Find the request. Check the event, the amount, the ledger line and the issuer.
-2. Write the check to the parish.
-3. Enter the check number in **Check number**.
-4. Select **Record Payment Made**. You cannot undo the payment.
+1. Tick the gifts of one event.
+2. Choose the line in **Revenue GL line for the selection**, for example **Parking Fundraising**.
+3. Select **⚖️ Override Event Split**.
+4. Set each **Destination** and its **Share (%)**, for example **Parking Fundraising** at `50` and **Parish Fundraiser Share** at `50`. Select **Add destination** for another share.
+5. Select **Code selected to this Revenue line**.
 
-**Expected result:** The message **Check … for $… is recorded against …** shows. The request leaves the card. The Treasurer's console shows **Paid · check …**.
+**Expected result:** The message names each share, for example *"Event Split Override: $75.00 to Parking Fundraising, $75.00 to Parish Fundraiser Share."*
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| **Record Payment Made** is unavailable. | The check number is empty, or you issued the request. | Enter the check number, or ask another finance officer to pay. |
+| **⚖️ Override Event Split** is unavailable. | The ticked gifts belong to more than one event, or no Revenue line is chosen. | Tick one event's gifts and choose the line. |
 
 ---
 
@@ -1163,7 +1148,7 @@ An edit that moves a donation to a different payment method takes that method's 
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | **Save changes** is unavailable and a red message says *"Choose who owns the account each payment method pays into (Council, Parish or Third party) before you save."* | A changed row shows **Choose…** in **Account owner**. | Choose the owner on each row with a red border. |
-| A parish fundraiser shows no parish-held revenue. | The parish's giving method was set to **Council account** when the donations were recorded. | Set the method to **Parish account** before the next event. Past donations keep their recorded owner. |
+| A parish gift shows in the batch coder. | The parish's giving method was set to **Council account** when the gift was recorded. | Set the method to **Parish account** before the next event. Past donations keep their recorded owner. |
 | You changed the owner, but past events did not change. | Each donation keeps the owner it was recorded under. | No fix is needed. Only new donations use the new owner. |
 
 ---
@@ -1284,7 +1269,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 6. The Active Desks and the Financial Secretary Desk
 - 7. The budget review and vote
 - 8. The Operations Knowledge Archive
-- 9. Parish fundraiser splits and Church Disbursement Requests
+- 9. Revenue split profiles
 - 10. Payment account ownership
 - 11. Budget categories and payment account names
 

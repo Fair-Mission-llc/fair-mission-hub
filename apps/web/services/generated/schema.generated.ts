@@ -13568,18 +13568,6 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
     ]
   },
   {
-    "table": "Council",
-    "rows": [],
-    "update": {
-      "id": 1,
-      "set": {
-        "parish_split_enabled": 1,
-        "parish_split_percentage": 50,
-        "parish_split_gl_line_id": 16
-      }
-    }
-  },
-  {
     "table": "Donation",
     "rows": [
       {

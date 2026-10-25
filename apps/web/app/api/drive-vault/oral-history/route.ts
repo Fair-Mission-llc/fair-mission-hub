@@ -7,8 +7,9 @@
 // member's portal session: 401 without one, 403 for an inactive member. Live uploads still need the council's Drive
 // credentials AND DRIVE_VAULT_LIVE=1; otherwise the route answers 503 { archived: false } and the page keeps the
 // recording as a browser blob link.
-// Sprint 10 Revision 3.1: when the council keeps its files on a Local Network Server, the upload is written there first
-// (fileIntoRepository) and the answer carries the portal link to store; Google Drive is not touched.
+// Sprint 10 Revision 3.1/3.2: when the council keeps its files with OneDrive / SharePoint, Dropbox Business or a Local
+// Network Server, the upload is filed there first (fileIntoRepository) and the answer carries the portal link to store;
+// Google Drive is not touched.
 import { NextResponse } from 'next/server';
 import { assertDriveVaultUpload, describeError } from '@kofc/shared';
 import { councilDriveCredentials, councilDriveOffReason, driveVaultClient } from '@/services/server/credentials-vault';
@@ -30,13 +31,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ archived: false, message: describeError(err) }, { status: 400 });
   }
 
-  // Sprint 10 Revision 3.1: the council's Local Network Server, when it keeps its files there.
+  // Sprint 10 Revision 3.1: the council's file repository (OneDrive / SharePoint, Dropbox Business or a Local Network
+  // Server since Revision 3.2), when it keeps its files there.
   try {
     const ref = await fileIntoRepository(session.claims.councilId, { folder: 'Oral_Histories', prefix: 'oral-history', originalName: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
     if (ref) return NextResponse.json({ archived: true, fileId: ref });
   } catch (err) {
-    console.error('[file-repository] network share write failed:', describeError(err));
-    return NextResponse.json({ archived: false, message: 'The council file server did not accept the file. Check the server network address and the service account.' }, { status: 502 });
+    console.error('[file-repository] repository write failed:', describeError(err));
+    return NextResponse.json({ archived: false, message: 'The council file repository did not accept the file. Check the File Repository Mode settings and the key saved in the Credentials Vault.' }, { status: 502 });
   }
 
   const creds = councilDriveCredentials(session.claims.councilId);
