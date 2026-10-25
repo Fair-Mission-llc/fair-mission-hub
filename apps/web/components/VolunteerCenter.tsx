@@ -41,9 +41,10 @@ import {
   type Shift,
   VOLUNTEER_CENTER_TITLE,
 } from '@kofc/shared';
+import { MemberRosterDirectory } from '@/components/MemberRosterDirectory';
 import { useCouncilTimings } from '@/components/SettingsParts';
-import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
-import { formatFullDate, formatPersonName, formatPhone } from '@/lib/format';
+import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
+import { formatFullDate } from '@/lib/format';
 import { useFeatureFlags, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -224,66 +225,7 @@ function RegistrationDesk() {
 }
 
 // ---- fraternal roster ----------------------------------------------------------------
-
-function FraternalRoster() {
-  const councils = useFraternalCouncils();
-  const [councilId, setCouncilId] = useState<number | null>(null);
-  const [query, setQuery] = useState('');
-  const ids = councilId === null ? (councils.data ?? []).map((c) => c.id) : [councilId];
-  const roster = useLoad(async () => {
-    const [lists, degrees] = await Promise.all([Promise.all(ids.map((id) => db.members.listByCouncil(id, { activeOnly: true }))), db.lookups.list('Degree')]);
-    return { members: lists.flat(), degree: new Map(degrees.map((d) => [d.id, d.Degree])) };
-  }, [ids.join(',')]);
-  const byId = new Map((councils.data ?? []).map((c) => [c.id, c]));
-  const q = query.trim().toLowerCase();
-  const shown = (roster.data?.members ?? [])
-    .filter((m) => !q || `${m.MemberFirstName} ${m.MemberLastName} ${m.MemberNumber}`.toLowerCase().includes(q))
-    .sort((a, b) => a.MemberLastName.localeCompare(b.MemberLastName) || a.MemberFirstName.localeCompare(b.MemberFirstName));
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-end gap-4">
-        <CouncilFilter councils={councils.data ?? []} value={councilId} onChange={setCouncilId} />
-        <Field label="Search by name or number" className="w-72">
-          {(id) => <Input id={id} type="search" value={query} onChange={(e) => setQuery(e.target.value)} />}
-        </Field>
-      </div>
-      {roster.error || councils.error ? <Notice tone="error">{roster.error ?? councils.error}</Notice> : null}
-      <Panel title={`Brother Knights (${shown.length})`}>
-        {roster.data && shown.length === 0 ? <Empty>{q ? 'Nobody matches the search.' : 'No active members in this council yet.'}</Empty> : null}
-        {shown.length > 0 ? (
-          <Table caption="Fraternal roster" head={['Name', 'Member #', 'Council', 'Phone', 'Email', 'Degree']}>
-            {shown.map((m) => {
-              const council = byId.get(m.CouncilID);
-              return (
-                <tr key={m.id}>
-                  <Td className="font-bold">
-                    {formatPersonName(m.MemberFirstName, m.MemberLastName)}
-                    <NewMemberBadge member={m} />
-                  </Td>
-                  <Td>{m.MemberNumber}</Td>
-                  <Td>{council ? councilLabel(council) : m.CouncilID}</Td>
-                  <Td className="whitespace-nowrap">{formatPhone(m.Phone)}</Td>
-                  <Td>
-                    {m.Email ? (
-                      <a href={`mailto:${m.Email}`} className="break-all underline">
-                        {m.Email}
-                      </a>
-                    ) : (
-                      '–'
-                    )}
-                  </Td>
-                  <Td>{roster.data?.degree.get(m.DegreeID) ?? '–'}</Td>
-                </tr>
-              );
-            })}
-          </Table>
-        ) : null}
-        <p className="mt-2 text-xs text-muted">Active members only. You can also reach a Brother Knight through the Communications Hub.</p>
-      </Panel>
-    </div>
-  );
-}
+// Sprint 10 Revision 2.0: the tab shows the shared Member Roster directory (MemberRosterDirectory, members.listRoster).
 
 // ---- hour ledger -------------------------------------------------------------------------
 
@@ -548,7 +490,7 @@ export function VolunteerCenter({ className }: { className?: string }) {
     <section id={VOLUNTEER_CENTER_ID} aria-label={VOLUNTEER_CENTER_TITLE} className={cx('scroll-mt-4 rounded border-2 border-navy bg-white p-4', className)}>
       <Tabs tabs={tabs} value={tab} onChange={setTab} label="Volunteer center" idPrefix="volunteer-center" />
       <div id="volunteer-center-panel" role="tabpanel" aria-labelledby={`volunteer-center-tab-${tab}`} className="pt-4">
-        {tab === 'shifts' ? <ActiveShifts /> : tab === 'desk' ? <RegistrationDesk /> : tab === 'roster' ? <FraternalRoster /> : <HourLedger />}
+        {tab === 'shifts' ? <ActiveShifts /> : tab === 'desk' ? <RegistrationDesk /> : tab === 'roster' ? <MemberRosterDirectory /> : <HourLedger />}
       </div>
     </section>
   );

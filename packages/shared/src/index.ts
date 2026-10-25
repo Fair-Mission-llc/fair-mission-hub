@@ -52,6 +52,7 @@ export * from './planning-time';
 export * from './media-vault';
 export * from './treasurer-desk';
 export * from './member-lifecycle';
+export * from './member-roster';
 export * from './volunteer-quarantine';
 export * from './gl-splits';
 export * from './budget-category-charts';

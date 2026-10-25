@@ -49,6 +49,7 @@ export interface NavEntry {
 export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue', NavEntry> = {
   home: { href: '/dashboard#home', label: 'Home', hint: 'Newsletters, feast days, reminders, the prayer list and the honor board' },
   'member-actions': { href: '/member-actions', label: 'Member Actions Hub', hint: 'My shifts, sign-ups, charity requests, sheets, roster and hours' },
+  roster: { href: '/roster', label: 'Member Roster', hint: 'Brother Knights of your council and sister councils, with phone and email' },
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },

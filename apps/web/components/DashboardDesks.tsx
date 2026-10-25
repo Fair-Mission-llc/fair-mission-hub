@@ -168,6 +168,7 @@ import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
+import { MemberRosterDirectory } from '@/components/MemberRosterDirectory';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { DeskRow } from '@/components/WorkspaceTabs';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
@@ -770,6 +771,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
           }
         }}
       />
+      {/* Sprint 10 Revision 2.0: the Member Roster directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
+      <MemberRosterDirectory compact />
     </div>
   );
 }
@@ -843,6 +846,8 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
           }
         }}
       />
+      {/* Sprint 10 Revision 2.0: the Member Roster directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
+      <MemberRosterDirectory compact />
     </div>
   );
 }
@@ -1117,6 +1122,8 @@ export function MemberDesk({ user }: { user: SessionUser }) {
           </Panel>
         </DeskRow>
       </div>
+      {/* Sprint 10 Revision 2.0: the Member Roster directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
+      <MemberRosterDirectory compact />
     </div>
   );
 }

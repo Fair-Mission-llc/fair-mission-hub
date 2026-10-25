@@ -30,6 +30,7 @@ type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOffi
 export type PortalArea =
   | 'home'
   | 'member-actions'
+  | 'roster'
   | 'calendar'
   | 'gallery'
   | 'lookups'
@@ -672,8 +673,9 @@ export const canDesignateBudgetDirector = (u: Actor, member: Pick<Member, 'Counc
  * Visual Master Calendar (with its phone calendar sync card) and the photo gallery. portalAreas opens every signed-in
  * member's list with them, so every seat - the Council Historian, who holds no officer seat, included - inherits them.
  * Only a council feature flag or the white-label tenant gate can take one away, for every role alike.
+ * Sprint 10 Revision 2.0: the read-only Member Roster directory (/roster, member-roster.ts) joins them for every member.
  */
-export const MEMBER_BASE_AREAS = ['home', 'member-actions', 'calendar', 'gallery'] as const satisfies readonly PortalArea[];
+export const MEMBER_BASE_AREAS = ['home', 'member-actions', 'roster', 'calendar', 'gallery'] as const satisfies readonly PortalArea[];
 
 /**
  * Sections shown in the portal's navigation. The ledger is open to everyone because event owners use it, and the
@@ -793,8 +795,9 @@ export interface PortalNavGroup {
 export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
   // Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it), and the gallery is the sidebar's own
-  // top-level '📸 Council Photo Gallery' node (Sidebar.tsx) instead of a Resources link.
-  { id: 'faith', label: 'Faith In Action', items: ['activities', 'member-actions', 'events', 'calendar', 'faith-center'] },
+  // top-level '📸 Council Photo Gallery' node (Sidebar.tsx) instead of a Resources link. Sprint 10 Revision 2.0: the
+  // Member Roster directory heads the pillar, directly under its header, for every member.
+  { id: 'faith', label: 'Faith In Action', items: ['roster', 'activities', 'member-actions', 'events', 'calendar', 'faith-center'] },
   {
     id: 'finances',
     label: 'Finances',

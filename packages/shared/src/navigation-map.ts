@@ -49,6 +49,7 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   'meetings/cadence': 'calendars',
   'meetings/live': 'calendars',
   members: 'rosters',
+  roster: 'rosters',
   'supreme-sync': 'rosters',
   elections: 'rosters',
   'elections/appointments': 'rosters',

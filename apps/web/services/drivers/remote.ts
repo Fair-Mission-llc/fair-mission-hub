@@ -97,6 +97,7 @@ export function createRemoteDataService(): DataService {
       get: notImplemented('members.get'),
       getByEmail: notImplemented('members.getByEmail'),
       listByCouncil: notImplemented('members.listByCouncil'),
+      listRoster: notImplemented('members.listRoster'),
       listRoles: notImplemented('members.listRoles'),
       create: notImplemented('members.create'),
       update: notImplemented('members.update'),

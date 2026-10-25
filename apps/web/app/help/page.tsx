@@ -175,7 +175,7 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
     topics: [
       {
         q: 'How do I reach another Brother Knight?',
-        a: ['Member Actions → Fraternal roster lists active members of your council and its sister councils with phone and email. You can also message them through the Communications Hub.'],
+        a: ['Sidebar → Faith In Action → Member Roster lists active members of your council and its sister councils with phone and email. The same list is on the Member Desk and the Member Actions Hub Fraternal roster tab. You can also message them through the Communications Hub.'],
       },
       {
         q: 'What is the bell next to my name?',

@@ -785,7 +785,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate } from '@kofc/shared';
+import { memberRosterCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -2451,6 +2451,29 @@ export class SqliteDataService implements DataService {
         [councilId],
       );
       return rows.map(withoutPushToken);
+    },
+    // Sprint 10 Revision 2.0: the scope comes from the stored actor, never from the client (member-roster.ts).
+    listRoster: async (actorId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const scope = memberRosterScope(actor);
+      const all = await db.getAllAsync<Council>('SELECT * FROM [Council] ORDER BY [CouncilNumber], [CouncilName]');
+      const links = await db.getAllAsync<{ PrimaryCouncilID: number; AffiliatedCouncilID: number }>(
+        'SELECT [PrimaryCouncilID], [AffiliatedCouncilID] FROM [AffiliatedCouncils] WHERE [PrimaryCouncilID] = ? OR [AffiliatedCouncilID] = ?',
+        [actor.councilId, actor.councilId],
+      );
+      const affiliated = new Set(links.map((l) => (l.PrimaryCouncilID === actor.councilId ? l.AffiliatedCouncilID : l.PrimaryCouncilID)));
+      const ids = memberRosterCouncilIds(
+        scope,
+        actor.councilId,
+        all.filter((c) => affiliated.has(c.id)).map((c) => c.id),
+        all.map((c) => c.id),
+      );
+      const covered = new Set(ids);
+      const home = all.filter((c) => c.id === actor.councilId);
+      const councils = [...home, ...all.filter((c) => c.id !== actor.councilId && covered.has(c.id))].map(withoutMeetingPin);
+      const rows = await db.getAllAsync<Member>("SELECT * FROM [Member] WHERE [StatusID] = (SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active')");
+      return { scope, councils, members: sortRosterMembers(rows.filter((m) => covered.has(m.CouncilID)).map(withoutPushToken)) };
     },
     listRoles: async (memberId) => this.rolesFor(await this.ready(), memberId),
 

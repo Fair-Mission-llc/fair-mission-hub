@@ -777,7 +777,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate } from '@kofc/shared';
+import { memberRosterCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -2046,6 +2046,33 @@ export class MemoryDataService implements DataService {
       return rows.sort(
         (a, b) => a.MemberLastName.localeCompare(b.MemberLastName) || a.MemberFirstName.localeCompare(b.MemberFirstName),
       );
+    },
+    // Sprint 10 Revision 2.0: the scope comes from the stored actor, never from the client (member-roster.ts).
+    listRoster: async (actorId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const scope = memberRosterScope(actor);
+      const all = this.sortedCouncils(s);
+      const affiliated = new Set<number>();
+      for (const a of s.rows('AffiliatedCouncils')) {
+        if (a.PrimaryCouncilID === actor.councilId) affiliated.add(a.AffiliatedCouncilID as number);
+        if (a.AffiliatedCouncilID === actor.councilId) affiliated.add(a.PrimaryCouncilID as number);
+      }
+      const ids = memberRosterCouncilIds(
+        scope,
+        actor.councilId,
+        all.filter((c) => affiliated.has(c.id)).map((c) => c.id),
+        all.map((c) => c.id),
+      );
+      const covered = new Set(ids);
+      const home = all.filter((c) => c.id === actor.councilId);
+      const councils = [...home, ...all.filter((c) => c.id !== actor.councilId && covered.has(c.id))].map(withoutMeetingPin);
+      const activeId = this.activeStatusId(s);
+      const members = s
+        .rows('Member')
+        .filter((m) => covered.has(m.CouncilID as number) && m.StatusID === activeId)
+        .map((m) => withoutPushToken({ ...m })) as unknown as Member[];
+      return { scope, councils, members: sortRosterMembers(members) };
     },
     listRoles: async (memberId) => this.rolesFor(await this.ready(), memberId),
 

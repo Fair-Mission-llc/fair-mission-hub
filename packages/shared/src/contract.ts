@@ -117,6 +117,7 @@ import type { CadenceConfigInput } from './meetings';
 import type { DistributionGroup } from './messaging';
 import type { FeatureFlagChanges, FeatureFlagName } from './features';
 import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
+import type { MemberRosterResult } from './member-roster';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
@@ -2682,6 +2683,13 @@ export interface DataService {
     getByEmail(email: string): Promise<Member | null>;
     /** Ordered by last name, then first name. */
     listByCouncil(councilId: number, options?: { activeOnly?: boolean }): Promise<Member[]>;
+    /**
+     * Sprint 10 Revision 2.0: the Member Roster directory for the signed-in member `actorId` (member-roster.ts). An
+     * Active Super Admin gets every Active member of every council (scope 'global'); everyone else gets the Active members
+     * of their home council and its affiliated councils (scope 'fraternal'). Councils come home council first; members
+     * are sorted by last name, then first name. Rejects MEMBER_NOT_FOUND for an unknown actor.
+     */
+    listRoster(actorId: number): Promise<MemberRosterResult>;
     listRoles(memberId: number): Promise<Role[]>;
     /**
      * Adds a member together with a placeholder Credentials row (UNREGISTERED_PASSWORD) they claim

@@ -59,6 +59,10 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   'member-actions': { member: 'Your Member Actions Hub: the Volunteer Check-In & Service Center - your active shifts, the registration desk, the member roster and your logged service hours.' },
   events: { member: 'Plans an event: its dates, shifts, sign-up targets and linked councils.' },
   calendar: { member: 'Shows every event, shift and meeting on a monthly calendar.' },
+  roster: {
+    member: 'Lists the Active members of your council and its sister councils with their phone, email and degree.',
+    leader: 'Lists the Active members of your council and its sister councils with their phone, email and degree. A Super Admin sees every council at once.',
+  },
   'faith-center': { member: "Shows today's feast day, the daily Bible verse and the Council Prayer Intentions List." },
   'finance/ledger': { member: 'Shows the chart of accounts and every posting to the general ledger.' },
   'finance/balance-sheet': { member: "Shows the council's assets against its liabilities and equity." },
