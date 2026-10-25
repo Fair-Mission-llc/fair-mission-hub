@@ -446,7 +446,7 @@ A number that you typed but did not save stays in its card when you close the dr
 | Drawer | What the drawer holds |
 | --- | --- |
 | **Standard Bank Accounts** | The **Payment & Account Settings** links, the **Account Owners Matrix** (8.10) and the read-only **Council Instance Record**. |
-| **User Access & Roster Control** | The **Meeting Check-In**, **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. |
+| **User Access & Roster Control** | The **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. The meeting PIN is on the **Recorder Desk** (and the **Grand Knight Desk** when the Recorder is absent). |
 | **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **File Repository Mode** card (8.9) and the **Custom User Guides** card. |
 | **Feature Controls** | The **Cross-Council Loaner Library Sharing** card and the **Module & Platform Switches** links. |
 | **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
@@ -688,6 +688,25 @@ The card shows only the settings of the provider you choose:
 | --- | --- | --- |
 | *"The council already has an account named …"* | Each account name is used once in a council. | Edit the existing row. |
 | *"… is not an email address."* | The contact email is not in name@domain form. | Correct the email. |
+
+### 8.11 Print a council's custom guides
+> **Who can do this:** the council's Admins and officers, and Super Admins.
+
+**Goal:** Print a user guide or a role manual with the council's own numbers, and keep a copy in the council's file repository.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **System Settings** drawer → **Custom User Guides**.
+
+**Steps:**
+1. Save any changed card first.
+2. Select the guide's button, for example **📥 Generate Custom Treasurer Manual PDF**.
+3. Wait a few seconds while the server compiles the PDF.
+
+**Expected result:** The PDF downloads. The server also files a copy in the **Official Manuals** folder of the council's file repository (8.9): Google Drive, OneDrive / SharePoint, Dropbox Business or the Local Network Server. A newer copy of the same guide replaces the older one where the provider allows it. The message names the place, or says why the copy was not filed.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The message says the copy was not filed. | The repository has no key or location saved, or Google Drive is not connected. | Check **File Repository Mode** (8.9) and the key in the Credentials Vault. The download still works. |
 
 ## 9. Access requests, impersonation and remote help
 
@@ -962,18 +981,18 @@ The panel has four views:
 2. To add a meeting, select **Add meeting** on **Panel Meeting Dates**. Enter the date and the title. Select **Save meeting**.
 3. To send feedback, open **Consultation Feedback**. Type the **Topic** and **Your feedback**. Select **Send feedback**.
 4. To add a panelist (Super Admins), choose the **Council** and the **Member** under **Panelists**. Select **Add panelist**.
-5. To invite a member of any council (the platform owner), select **✉️ Invite Panelist**. Choose the **Council** and the **Member**. Select **Send invitation**. The member gets an email with a secure link that works for 14 days.
-6. The invited member signs in, opens the link and selects **Accept invitation**. The member becomes a panelist at once and the panel opens.
+5. To invite a member of any council (the platform owner), select **✉️ Invite Panelist**. Choose the **Council** and the **Member**. Select **Post invitation**. No email is sent: the invitation card appears on the member's alert bell and **Home**, and on their phone's **Home**. It stays open for 14 days.
+6. The invited member selects **Accept** on the card. The member becomes a panelist at once, and **🔊 Application Advisory Panel** appears in the sidebar.
 
-**Expected result:** The meeting shows in the list. The feedback shows at the top of **Feedback received**. A panelist added under **Panelists** sees the panel after the next sign-in; a member who accepts an invitation sees it at once.
+**Expected result:** The meeting shows in the list. The feedback shows at the top of **Feedback received**. A panelist added under **Panelists** sees the panel after the next sign-in; a member who selects **Accept** on an invitation sees it at once.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The sidebar has no **🔊 Application Advisory Panel** link. | You are not a panelist or a Super Admin, or you signed in before you were added. | Ask a Super Admin. Sign out and sign in again. |
 | **Add meeting** is missing. | Only Super Admins keep the meeting dates. | Ask a Super Admin. |
-| *"This invitation link is not valid or has expired."* | The link is older than 14 days, or it was changed. | Ask the platform owner for a new invitation. |
-| *"This invitation was sent to another member."* | You are signed in with another account. | Sign in with your own account, then open the link again. |
+| *"This invitation is older than 14 days."* | The invitation expired. | Ask the platform owner for a new invitation. |
+| An alert cannot use the title **Advisory Panel invitation**. | The title is reserved for invitations. | Choose another title for the alert. |
 
 ## 11. Run a room pilot on the hub laptop
 

@@ -778,7 +778,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -6312,6 +6312,54 @@ export class SqliteDataService implements DataService {
       if (designated && !held) await db.runAsync('INSERT INTO [MemberRoles] ([RoleID], [MemberID]) VALUES (?, ?)', [role.id, memberId]);
       if (!designated && held) await db.runAsync('DELETE FROM [MemberRoles] WHERE [MemberID] = ? AND [RoleID] = ?', [memberId, role.id]);
       return this.advisoryPanelists(db);
+    },
+    // Sprint 10 Revision 4.0: in-app invitations - a NotificationLog row with the reserved title, never an email.
+    inviteMember: async (actorId, memberId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const actorRow = await db.getFirstAsync<{ MemberFirstName: string; MemberLastName: string; Username: string | null }>(
+        'SELECT m.[MemberFirstName], m.[MemberLastName], c.[Username] FROM [Member] m LEFT JOIN [Credentials] c ON c.[id] = m.[CredentialID] WHERE m.[id] = ?',
+        [actorId],
+      );
+      assertMayInviteAdvisoryPanelist(actor, actorRow?.Username);
+      const target = await db.getFirstAsync<Member & { ExpoPushToken: string | null }>('SELECT * FROM [Member] WHERE [id] = ?', [memberId]);
+      if (!target) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
+      const active = await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active'");
+      if (target.StatusID !== active?.id) throw new BusinessRuleError('INVALID_INPUT', 'Only an Active member can be invited to the Advisory Panel.', { memberId });
+      if ((await this.rolesFor(db, memberId)).some((r) => r.Role === ADVISORY_PANELIST_ROLE)) {
+        throw new BusinessRuleError('INVALID_INPUT', `${target.MemberFirstName} ${target.MemberLastName} is already a panelist.`, { memberId });
+      }
+      const id = (
+        await db.runAsync('INSERT INTO [NotificationLog] ([CouncilID], [TargetMemberID], [Title], [MessageBody], [Priority], [SentAt], [IsRead]) VALUES (?, ?, ?, ?, ?, ?, 0)', [
+          target.CouncilID,
+          memberId,
+          ADVISORY_INVITE_TITLE,
+          advisoryInviteBody(actorId, `${actorRow?.MemberFirstName ?? ''} ${actorRow?.MemberLastName ?? ''}`.trim()),
+          'High',
+          toTimestamp(this.now()),
+        ])
+      ).lastInsertRowId;
+      const log = (await db.getFirstAsync<NotificationLog>('SELECT * FROM [NotificationLog] WHERE [id] = ?', [id]))!;
+      deliverAlertsByStub([{ ...log, MessageBody: alertDisplayBody(log.MessageBody) }], new Map([[memberId, target.ExpoPushToken ?? null]]), this.log);
+      return log;
+    },
+    acceptInvitation: async (actorId, alertId) => {
+      const db = await this.ready();
+      await this.memberWriteActor(db, actorId);
+      const row = await db.getFirstAsync<NotificationLog>('SELECT * FROM [NotificationLog] WHERE [id] = ? AND [TargetMemberID] = ?', [alertId, actorId]);
+      const invite = row ? advisoryInviteOf(row, this.now()) : null;
+      assertInviteAcceptable(invite, alertId);
+      if (!invite.accepted) {
+        await db.withTransactionAsync(async () => {
+          assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, invite.inviterId));
+          const role = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Role] WHERE [Role] = ?', [ADVISORY_PANELIST_ROLE]);
+          if (!role) throw new BusinessRuleError('INVALID_INPUT', `The ${ADVISORY_PANELIST_ROLE} role is missing from the Role table.`, {});
+          const held = await db.getFirstAsync<{ RoleID: number }>('SELECT [RoleID] FROM [MemberRoles] WHERE [MemberID] = ? AND [RoleID] = ?', [actorId, role.id]);
+          if (!held) await db.runAsync('INSERT INTO [MemberRoles] ([RoleID], [MemberID]) VALUES (?, ?)', [role.id, actorId]);
+          await db.runAsync('UPDATE [NotificationLog] SET [MessageBody] = ?, [IsRead] = 1 WHERE [id] = ?', [acceptedInviteBody(row!.MessageBody), alertId]);
+        });
+      }
+      return { roles: (await this.rolesFor(db, actorId)).map((r) => r.Role) };
     },
   };
 

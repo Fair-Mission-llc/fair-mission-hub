@@ -30,7 +30,7 @@ import type { Council } from './types';
  */
 export const COUNCIL_SETTINGS_DRAWERS = [
   { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: "Payment methods, the Account Owners Matrix, sealed keys and the council's record." },
-  { id: 'access-roster', label: 'User Access & Roster Control', hint: 'Meeting check-in, the inactivity sweep and the member rank benchmarks.' },
+  { id: 'access-roster', label: 'User Access & Roster Control', hint: 'The inactivity sweep and the member rank benchmarks.' },
   { id: 'system-settings', label: 'System Settings', hint: 'Time limits, windows and reminders, where uploaded files are kept, and the printable custom guides.' },
   { id: 'feature-controls', label: 'Feature Controls', hint: 'Loaner library sharing and the module switch pages.' },
   { id: 'feature-matrix', label: 'Council Feature Deployment Matrix', hint: 'Which advanced capabilities and modules are on for the council, and where each switch lives.' },
@@ -106,7 +106,8 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Geofenced Meeting Check-In',
       description: 'Checks members in by GPS inside the meeting circle. Without a meeting point only the PIN works.',
       deployed: council.meeting_latitude != null && council.meeting_longitude != null,
-      managedOn: onDrawer('access-roster', 'Meeting Check-In'),
+      // Sprint 10 Revision 4.0: the check-in card moved to the Recorder Desk.
+      managedOn: 'Recorder Desk: Meeting Check-In PIN (Grand Knight Desk when the Recorder is absent)',
     },
     {
       id: 'email-gateway',

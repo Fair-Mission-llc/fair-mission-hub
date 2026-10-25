@@ -171,6 +171,8 @@ import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
+import { AdvisoryInviteCard } from '@/components/AdvisoryInviteCard';
+import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { MemberRosterDirectory } from '@/components/modules/MemberRosterDirectory';
 import { SupremeRosterUploader } from '@/components/modules/SupremeRosterUploader';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
@@ -539,6 +541,8 @@ export function HomeWidgets({ user, councilId, faithOn }: { user: SessionUser; c
   const today = toIsoDate(new Date());
   return (
     <div className={cx('grid grid-cols-1 gap-6 lg:grid-cols-2', faithOn ? '2xl:grid-cols-3' : '2xl:grid-cols-2')}>
+      {/* Sprint 10 Revision 4.0: an open Advisory Panel invitation leads Home (nothing shows without one). */}
+      <AdvisoryInviteCard className="col-span-full" />
       <LatestBulletinsFeed memberId={user.memberId} councilId={councilId} className="col-span-full" />
       {faithOn ? <VerseOfTheDay today={today} /> : null}
       <ReminderStream user={user} councilId={councilId} />
@@ -834,6 +838,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
               return <ConnectedCouncils />;
             case 'advisor':
               return <ConstitutionalAdvisor />;
+            case 'meeting-pin':
+              return <MeetingCheckInCard user={user} councilId={councilId} />;
             default:
               return <KnowledgeArchiveDrawer user={user} councilId={councilId} />;
           }
@@ -1637,6 +1643,8 @@ export function RecorderDesk({ user, councilId }: { user: SessionUser; councilId
               return <MinutesArchive councilId={councilId} />;
             case 'minutes-entry':
               return <MinutesEntryDrawer user={user} rows={rows} dueDays={data.data?.dueDays ?? null} onSaved={() => void data.reload()} />;
+            case 'meeting-pin':
+              return <MeetingCheckInCard user={user} councilId={councilId} />;
             case 'live-meeting':
               return <LiveMeetingDrawer user={user} rows={rows} />;
             case 'election-workflow':

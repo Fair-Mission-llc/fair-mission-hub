@@ -6,6 +6,7 @@
 // credentials exist yet, so the drivers print the Expo requests with
 // console.log instead of sending them (the same stub as the .ics emails).
 // =========================================================================
+import { isReservedAlertTitle } from './advisory-panel';
 import type { AlertDispatchResult, AlertFilters, AlertPayload, ExpoPushMessage, ExpoPushRequest } from './contract';
 import { assertText, BusinessRuleError } from './rules';
 import { toTimestamp } from './messaging';
@@ -66,6 +67,10 @@ export function cleanAlertPayload(payload: AlertPayload): { title: string; body:
   const priority = payload?.priority ?? 'High';
   if (!NOTIFICATION_PRIORITIES.includes(priority)) {
     throw invalid(`Priority must be one of ${NOTIFICATION_PRIORITIES.join(', ')}; received ${String(priority)}.`, { priority });
+  }
+  // Sprint 10 Revision 4.0: an Advisory Panel invitation's title is reserved for advisory.inviteMember.
+  if (typeof payload?.title === 'string' && isReservedAlertTitle(payload.title)) {
+    throw invalid(`"${payload.title.trim()}" is reserved for Advisory Panel invitations. Choose another title.`, { field: 'title' });
   }
   return {
     title: assertText(payload?.title, 'Title', ALERT_TITLE_MAX_LENGTH),

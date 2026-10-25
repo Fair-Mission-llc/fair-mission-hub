@@ -67,6 +67,12 @@ interface SessionValue {
   tenantType: TenantType;
   /** Call after a Super Admin changes feature flags, so the sidebar and pages catch up at once. */
   featuresChanged(): void;
+  /**
+   * Sprint 10 Revision 4.0: call with the member's role names after the data service changed them (accepting an Advisory
+   * Panel invitation). The sidebar and pages take the new roles at once, and the server cookie is re-issued with the roles
+   * the server reads from its own data (PATCH /api/auth/session).
+   */
+  rolesChanged(roles: string[]): void;
 }
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -149,6 +155,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [impersonator, adoptCouncil]);
   const [profileVersion, setProfileVersion] = useState(0);
   const profileChanged = useCallback(() => setProfileVersion((v) => v + 1), []);
+  const rolesChanged = useCallback((roles: string[]) => {
+    setUser((u) => (u ? { ...u, roles } : u));
+    void fetch('/api/auth/session', { method: 'PATCH', credentials: 'same-origin' }).catch(() => undefined);
+  }, []);
   const [alertsVersion, setAlertsVersion] = useState(0);
   const alertsChanged = useCallback(() => setAlertsVersion((v) => v + 1), []);
   const [messagesVersion, setMessagesVersion] = useState(0);
@@ -197,8 +207,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       featuresLoaded,
       tenantType,
       featuresChanged,
+      rolesChanged,
     }),
-    [user, ready, startupError, signIn, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged],
+    [user, ready, startupError, signIn, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged, rolesChanged],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

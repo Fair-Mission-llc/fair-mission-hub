@@ -1534,25 +1534,26 @@ Members check in to a live meeting from the phone with the 4-digit **meeting PIN
 
 - After 5 wrong PINs, the PIN box locks for that member and that meeting. An officer then checks the member in on the **Live Meeting Console**.
 - The default meeting PIN is `0000`. Change the PIN before the first meeting.
-- Only the Grand Knight, the council's Admins and Super Admins see or change the PIN. The PIN is not sent to members' phones.
+- The Recorder keeps the PIN on the **Recorder Desk**. When the Recorder is absent, the Grand Knight, the Deputy Grand Knight or a council Admin sets it from the **Grand Knight Desk**. Super Admins may too. The PIN is not sent to members' phones.
 
 ### 13.5 Set the meeting PIN
-> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Admins, and Super Admins. Other officers do not see the **🔢 Meeting Check-In** card.
+> **Who can do this:** the council's Recorder, Grand Knight, Deputy Grand Knight and Admins, and Super Admins. Other officers do not see the **🔢 Meeting Check-In** card.
 > **Warning:** a new PIN takes effect at once. Members who know only the old PIN cannot check in.
 
 **Goal:** Set the 4-digit PIN that members type to check in to a meeting.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **User Access & Roster Control** → **🔢 Meeting Check-In**.
+**Start point:** **Active Desks** row → **Recorder Desk** → **Meeting Check-In PIN**. When the Recorder is absent: **Active Desks** row → **Grand Knight Desk** → **Meeting PIN (Recorder Absent)**.
 
 **Steps:**
-1. Enter 4 digits in **Meeting PIN**.
-2. Select **Save meeting check-in**.
+1. Select **🔢 Generate new PIN**. The card makes a random 4-digit PIN, never `0000`, and saves it at once.
+2. Or enter 4 digits in **Meeting PIN** and select **Save meeting check-in**.
+3. Read the PIN out at the meeting.
 
 <!-- KEEP_IMAGE: meeting check-in card on council settings -->
 ![Meeting Check-In card with the default PIN warning (/setup/council-settings)](../generated/dashboard_visual_catalog/council_settings_meeting_check_in.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The card says *"Saved. Members check in with this PIN."*
+**Expected result:** The card says *"New meeting PIN … saved."* or *"Saved. Members check in with this PIN."* The Council Wide Settings page no longer holds this card.
 
 **Common problems:**
 | Problem | Cause | Fix |

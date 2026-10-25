@@ -12,12 +12,19 @@
 // when Python or ReportLab is missing on the server (pip install -r scripts/requirements.txt). The interpreter is
 // FORM_1295_PYTHON, as for the Form 1295 report. The script runs without a shell, asynchronously, and the copy is handed
 // over in a file, never on the command line.
+//
+// Sprint 10 Revision 4.0: the compiled PDF is also filed in the 'Official Manuals' folder of the council's selected file
+// repository - Google Drive, OneDrive / SharePoint, Dropbox Business or the Local Network Server
+// (fileManualIntoRepository), replacing an older copy of the same guide where the provider allows it. The answer's
+// X-Official-Manuals header says where it went ('saved; <place>') or why not ('skipped; <reason>'); a repository that
+// refuses never stops the download.
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { NextResponse } from 'next/server';
 import { cleanCustomManualPayload, customizeManualMarkdown, customManualFileName, CUSTOM_MANUAL_SOURCES, describeError, mayCompileCustomManual, toIsoDate } from '@kofc/shared';
 import { pythonCommand, repoRoot, runPythonScript, scriptFailureAnswer } from '@/services/server/reportlab';
+import { fileManualIntoRepository } from '@/services/server/file-repository';
 import { requirePortalSession } from '@/services/server/session';
 
 export const runtime = 'nodejs';
@@ -65,12 +72,17 @@ export async function POST(req: Request) {
       .then(() => copyFile(output, join(keep, fileName)))
       .catch((err) => console.error(`[custom-manual] could not save generated/custom_manuals/${fileName}:`, describeError(err)));
     console.log(`[custom-manual] member ${session.claims.memberId} compiled the ${payload.guide} guide for council ${payload.council.id}`);
+    const filed = await fileManualIntoRepository(payload.council.id, fileName, new Uint8Array(pdf));
+    // Header values must be plain ASCII; the place and the reason are written in plain words.
+    const archive = (filed.saved ? `saved; ${filed.location}` : `skipped; ${filed.reason}`).replace(/[^\x20-\x7e]/g, '-');
     return new NextResponse(new Uint8Array(pdf), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${fileName}"`,
         'Cache-Control': 'no-store',
+        'X-Official-Manuals': archive,
+        'Access-Control-Expose-Headers': 'X-Official-Manuals',
       },
     });
   } finally {

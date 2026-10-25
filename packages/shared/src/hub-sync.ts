@@ -111,7 +111,7 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'meetings.setMeetingPhoto', 'meetings.startLiveAssemblyConsole', 'members.create', 'members.listAffiliations', 'members.listRoster', 'members.getViewAsMirror',
   'councils.listAccountOwners', 'councils.saveAccountOwner', 'councils.removeAccountOwner', 'councils.setFileRepositorySettings',
   'advisory.listMeetings', 'advisory.saveMeeting', 'advisory.removeMeeting', 'advisory.listFeedback', 'advisory.submitFeedback',
-  'advisory.listPanelists', 'advisory.setPanelist',
+  'advisory.listPanelists', 'advisory.setPanelist', 'advisory.inviteMember', 'advisory.acceptInvitation',
   'members.resendWelcome', 'members.sweepInactive', 'members.update', 'notifications.dispatchHighPriorityAlert',
   'notifications.listMemberAlerts', 'notifications.markAsRead', 'notifications.registerDeviceToken',
   'parishes.create', 'parishes.remove', 'parishes.update', 'pastors.create', 'pastors.remove', 'pastors.update',

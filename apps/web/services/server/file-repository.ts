@@ -29,14 +29,17 @@ import {
   FILE_SERVER_PASSWORD_KEY,
   fileRepositoryRef,
   parseFileRepositoryRef,
+  OFFICIAL_MANUALS_FOLDER,
+  DRIVE_VAULT_ROOT,
   repositoryFileName,
+  repositoryFolderName,
   sharePointSiteParts,
   uncShareRoot,
   type FileRepositoryFolder,
   type FileRepositoryMode,
   type FileRepositorySettings,
 } from '@kofc/shared';
-import { credentialsVault } from '@/services/server/credentials-vault';
+import { councilDriveCredentials, councilDriveOffReason, credentialsVault, driveVaultClient } from '@/services/server/credentials-vault';
 import { memberDirectory } from '@/services/server/session';
 
 const run = promisify(execFile);
@@ -90,7 +93,7 @@ async function graphToken(councilId: number, settings: FileRepositorySettings): 
 
 const graphItemUrl = (settings: FileRepositorySettings, folder: FileRepositoryFolder, fileName: string) => {
   const { host, sitePath } = sharePointSiteParts(settings.file_server_path!);
-  return `https://graph.microsoft.com/v1.0/sites/${host}:${sitePath}:/drive/root:/${folder}/${encodeURIComponent(fileName)}:/content`;
+  return `https://graph.microsoft.com/v1.0/sites/${host}:${sitePath}:/drive/root:/${encodeURIComponent(repositoryFolderName(folder))}/${encodeURIComponent(fileName)}:/content`;
 };
 
 // ---- Dropbox Business ----------------------------------------------------------------------------------------------
@@ -104,15 +107,15 @@ function dropboxToken(councilId: number): string {
   return token;
 }
 
-const dropboxPath = (settings: FileRepositorySettings, folder: FileRepositoryFolder, fileName: string) => `${settings.file_server_path!.replace(/\/+$/, '')}/${folder}/${fileName}`;
+const dropboxPath = (settings: FileRepositorySettings, folder: FileRepositoryFolder, fileName: string) => `${settings.file_server_path!.replace(/\/+$/, '')}/${repositoryFolderName(folder)}/${fileName}`;
 
 // ---- filing and reading ----------------------------------------------------------------------------------------------
 
-async function store(councilId: number, provider: RemoteProvider, settings: FileRepositorySettings, folder: FileRepositoryFolder, name: string, bytes: Uint8Array): Promise<void> {
+async function store(councilId: number, provider: RemoteProvider, settings: FileRepositorySettings, folder: FileRepositoryFolder, name: string, bytes: Uint8Array, overwrite = false): Promise<void> {
   switch (provider) {
     case 'LOCAL_NETWORK_SERVER': {
       await connectShare(councilId, settings);
-      const dir = join(/*turbopackIgnore: true*/ settings.file_server_path!, folder);
+      const dir = join(/*turbopackIgnore: true*/ settings.file_server_path!, repositoryFolderName(folder));
       await mkdir(dir, { recursive: true });
       await writeFile(join(/*turbopackIgnore: true*/ dir, name), bytes);
       return;
@@ -132,7 +135,7 @@ async function store(councilId: number, provider: RemoteProvider, settings: File
         headers: {
           Authorization: `Bearer ${dropboxToken(councilId)}`,
           'Content-Type': 'application/octet-stream',
-          'Dropbox-API-Arg': dropboxArg({ path: dropboxPath(settings, folder, name), mode: 'add', autorename: false, mute: true }),
+          'Dropbox-API-Arg': dropboxArg({ path: dropboxPath(settings, folder, name), mode: overwrite ? 'overwrite' : 'add', autorename: false, mute: true }),
         },
         body: new Blob([new Uint8Array(bytes)]),
       });
@@ -159,6 +162,34 @@ export async function fileIntoRepository(
   return fileRepositoryRef(councilId, file.folder, name, provider);
 }
 
+/** Where a compiled guide went: the provider and the place in words, or why it was not filed. */
+export type ManualFilingResult = { saved: true; provider: FileRepositoryMode; location: string } | { saved: false; reason: string };
+
+/**
+ * Sprint 10 Revision 4.0: files a council's compiled custom guide in the 'Official Manuals' folder of its selected
+ * provider, under the guide's own file name, replacing an older copy where the provider allows it. Google Drive uses the
+ * council's Drive vault ('manual' kind); without Drive credentials nothing is filed and the reason is returned. Never
+ * throws: a provider that refuses the file is reported, and the download goes on.
+ */
+export async function fileManualIntoRepository(councilId: number, fileName: string, pdf: Uint8Array): Promise<ManualFilingResult> {
+  try {
+    const settings = await councilRepositorySettings(councilId);
+    const provider = settings.file_repository_mode;
+    if (provider === 'GOOGLE_DRIVE') {
+      const creds = councilDriveCredentials(councilId);
+      if (!creds) return { saved: false, reason: councilDriveOffReason(councilId) };
+      await driveVaultClient(creds).upload('manual', { name: fileName, mimeType: 'application/pdf', data: pdf });
+      return { saved: true, provider, location: `Google Drive / ${DRIVE_VAULT_ROOT} / ${OFFICIAL_MANUALS_FOLDER} / ${fileName}` };
+    }
+    if (!settings.file_server_path) return { saved: false, reason: 'The file repository has no location saved yet.' };
+    await store(councilId, provider, settings, 'Official_Manuals', fileName, pdf, true);
+    return { saved: true, provider, location: `${OFFICIAL_MANUALS_FOLDER} / ${fileName}` };
+  } catch (err) {
+    console.error(`[file-repository] council ${councilId} could not file ${fileName}:`, describeError(err));
+    return { saved: false, reason: 'The council file repository did not accept the guide.' };
+  }
+}
+
 /** The bytes behind a stored link, or null when the link is malformed or the provider's settings are gone. */
 export async function readFromRepository(ref: string): Promise<{ councilId: number; fileName: string; bytes: Buffer } | null> {
   const parts = parseFileRepositoryRef(ref);
@@ -168,7 +199,7 @@ export async function readFromRepository(ref: string): Promise<{ councilId: numb
   switch (parts.provider) {
     case 'LOCAL_NETWORK_SERVER': {
       await connectShare(parts.councilId, settings);
-      return { ...parts, bytes: await readFile(join(/*turbopackIgnore: true*/ settings.file_server_path, parts.folder, parts.fileName)) };
+      return { ...parts, bytes: await readFile(join(/*turbopackIgnore: true*/ settings.file_server_path, repositoryFolderName(parts.folder), parts.fileName)) };
     }
     case 'ONEDRIVE_SHAREPOINT': {
       const res = await fetch(graphItemUrl(settings, parts.folder, parts.fileName), { headers: { Authorization: `Bearer ${await graphToken(parts.councilId, settings)}` } });

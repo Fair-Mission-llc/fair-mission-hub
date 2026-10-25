@@ -109,7 +109,7 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     const tab = (id: string, next?: string) => page.slice(page.indexOf(`'${id}': (`), next ? page.indexOf(`'${next}': (`) : page.indexOf('}}', page.indexOf(`'${id}': (`)));
     const placement: Record<string, string[]> = {
       'bank-accounts': ['BANK_ACCOUNT_SETTINGS_PAGES', 'AccountOwnersMatrix', 'CouncilInstanceRecord'],
-      'access-roster': ['MeetingCheckInCard', 'InactivitySweepCard', 'RankThresholdsCard'],
+      'access-roster': ['InactivitySweepCard', 'RankThresholdsCard'],
       'system-settings': ['GroupedSettingsCards', 'FileRepositoryCard', 'CustomGuidesCard'],
       'feature-controls': ['LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES'],
       'feature-matrix': ['FeatureDeploymentMatrix'],
@@ -128,7 +128,7 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     const rows = councilFeatureDeployment({ id: 1 } as Parameters<typeof councilFeatureDeployment>[0]).filter((r) => r.group === 'capability');
     const where = Object.fromEntries(rows.map((r) => [r.id, r.managedOn]));
     expect(where['parish-split']).toBeUndefined();
-    expect(where['geofence']).toBe('This page, User Access & Roster Control drawer: Meeting Check-In');
+    expect(where['geofence']).toBe('Recorder Desk: Meeting Check-In PIN (Grand Knight Desk when the Recorder is absent)');
     expect(where['biometric']).toBe('This page, Council Feature Deployment Matrix drawer: the switch in this row');
     expect(where['loaner-library']).toBe('This page, Feature Controls drawer: Cross-Council Loaner Library Sharing');
     expect(JSON.stringify(rows)).not.toContain('Operational Configuration');

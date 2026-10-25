@@ -347,8 +347,9 @@ describe('Sprint 7G screens and manuals', () => {
     expect(parts).toContain('Three-Signature Expense Flow');
   });
 
-  it('adds the meeting check-in card to Council Wide Settings and the meeting photo to the live console', () => {
-    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('<MeetingCheckInCard');
+  it('keeps the meeting check-in card on the Recorder and Grand Knight Desks (Sprint 10 Revision 4.0) and the meeting photo on the live console', () => {
+    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).not.toContain('<MeetingCheckInCard');
+    expect(read('apps/web/components/DashboardDesks.tsx').match(/<MeetingCheckInCard user=\{user\} councilId=\{councilId\} \/>/g)).toHaveLength(2);
     const live = read('apps/web/app/meetings/live/page.tsx');
     expect(live).toContain('MEETING_PHOTO_DRIVE_FOLDER');
     expect(live).toContain('setMeetingPhoto');

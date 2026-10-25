@@ -770,7 +770,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -5278,6 +5278,52 @@ export class MemoryDataService implements DataService {
       if (designated && !held) s.insert('MemberRoles', { RoleID: role.id as number, MemberID: memberId });
       if (!designated && held) s.remove('MemberRoles', (r) => r.MemberID === memberId && r.RoleID === role.id);
       return this.advisoryPanelists(s);
+    },
+    // Sprint 10 Revision 4.0: in-app invitations - a NotificationLog row with the reserved title, never an email.
+    inviteMember: async (actorId, memberId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const actorRow = this.requireMember(s, actorId);
+      const username = s.rows('Credentials').find((c) => c.id === actorRow.CredentialID)?.Username as string | undefined;
+      assertMayInviteAdvisoryPanelist(actor, username);
+      const target = this.requireMember(s, memberId);
+      if (target.StatusID !== this.activeStatusId(s)) throw new BusinessRuleError('INVALID_INPUT', 'Only an Active member can be invited to the Advisory Panel.', { memberId });
+      if (this.rolesFor(s, memberId).some((r) => r.Role === ADVISORY_PANELIST_ROLE)) {
+        throw new BusinessRuleError('INVALID_INPUT', `${target.MemberFirstName} ${target.MemberLastName} is already a panelist.`, { memberId });
+      }
+      const row = s.insert('NotificationLog', {
+        CouncilID: target.CouncilID as number,
+        TargetMemberID: memberId,
+        Title: ADVISORY_INVITE_TITLE,
+        MessageBody: advisoryInviteBody(actorId, `${actorRow.MemberFirstName} ${actorRow.MemberLastName}`),
+        Priority: 'High',
+        SentAt: toTimestamp(this.now()),
+        IsRead: 0,
+      });
+      const log = { ...row } as unknown as NotificationLog;
+      deliverAlertsByStub([{ ...log, MessageBody: alertDisplayBody(log.MessageBody) }], new Map([[memberId, (target.ExpoPushToken as string | null) ?? null]]), this.log);
+      return log;
+    },
+    acceptInvitation: async (actorId, alertId) => {
+      const s = await this.ready();
+      this.requireMember(s, actorId);
+      const row = s.rows('NotificationLog').find((n) => n.id === alertId && n.TargetMemberID === actorId);
+      const invite = row ? advisoryInviteOf(row as unknown as NotificationLog, this.now()) : null;
+      assertInviteAcceptable(invite, alertId);
+      if (!invite.accepted) {
+        return s.transaction(() => {
+          // The role is given in the inviter's name: setPanelist's rule, so the inviter must still be an Active Super Admin.
+          assertMayKeepAdvisoryPanel(this.memberWriteActor(s, invite.inviterId));
+          const role = s.rows('Role').find((r) => r.Role === ADVISORY_PANELIST_ROLE);
+          if (!role) throw new BusinessRuleError('INVALID_INPUT', `The ${ADVISORY_PANELIST_ROLE} role is missing from the Role table.`, {});
+          if (!s.rows('MemberRoles').some((r) => r.MemberID === actorId && r.RoleID === role.id)) s.insert('MemberRoles', { RoleID: role.id as number, MemberID: actorId });
+          // Re-read inside the transaction: the store works on its own copy while a transaction is open.
+          const live = s.rows('NotificationLog').find((n) => n.id === alertId)!;
+          Object.assign(live, { MessageBody: acceptedInviteBody(live.MessageBody as string), IsRead: 1 });
+          return { roles: this.rolesFor(s, actorId).map((r) => r.Role) };
+        });
+      }
+      return { roles: this.rolesFor(s, actorId).map((r) => r.Role) };
     },
   };
 

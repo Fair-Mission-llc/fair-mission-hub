@@ -97,6 +97,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - **📸 Council Photo Gallery** sits under **Navigation Guide**, above the pillars. Its two links open **Browse Albums** and the **Gallery Management Center**.
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
 - Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
+- If the platform owner invites you to the **Application Advisory Panel**, an invitation card shows at the top of **Home**, on your alert bell and on your phone's **Home**. Select **Accept** to join.
 - **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **⚖** to read them.
 - If a Super Admin made you an **Application Advisory Panelist**, **🔊 Application Advisory Panel** shows under **Navigation Guide**.
 
@@ -961,7 +962,7 @@ The **Agenda** sub-tab opens on the live meeting by default. With no live meetin
 
 You check in to a live council meeting from the phone. Checking in marks you present. Only members who checked in may vote on a secret ballot.
 
-- The Grand Knight reads out a 4-digit meeting PIN at the meeting.
+- The Recorder (or, when the Recorder is absent, the Grand Knight) reads out a 4-digit meeting PIN at the meeting.
 - You type the PIN in the **CHECK IN** box on the phone.
 - The phone does not ask for your location.
 - After 5 wrong PINs, the PIN box locks for that meeting. An officer can then check you in from the console.

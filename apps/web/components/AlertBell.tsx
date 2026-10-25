@@ -4,7 +4,8 @@
 // newest first, with unread alerts on a soft gold wash; opening one marks it read (notifications.markAsRead), so its
 // wash fades and the count drops at once. The log reloads when the session says alerts changed and once a minute.
 import { useEffect, useState } from 'react';
-import { ALERT_HISTORY_MONTHS, countUnreadAlerts, describeError, formatTimestamp, type NotificationLog } from '@kofc/shared';
+import { alertDisplayBody, ALERT_HISTORY_MONTHS, countUnreadAlerts, describeError, formatTimestamp, pendingAdvisoryInvites, type NotificationLog } from '@kofc/shared';
+import { AcceptInvitationButton } from '@/components/AdvisoryInviteCard';
 import { Drawer } from '@/components/Drawer';
 import { cx, Empty, Notice, Pill } from '@/components/ui';
 import { useSession, useUser } from '@/lib/session';
@@ -42,12 +43,18 @@ function AlertRow({ alert, read, onOpen }: { alert: NotificationLog; read: boole
           <span className={cx('text-sm', !read && 'font-bold')}>{alert.Title}</span>
           <Pill tone={PRIORITY_TONE[alert.Priority]}>{alert.Priority}</Pill>
         </span>
-        <span className="mt-1 block whitespace-pre-wrap text-sm">{alert.MessageBody}</span>
+        <span className="mt-1 block whitespace-pre-wrap text-sm">{alertDisplayBody(alert.MessageBody)}</span>
         <span className="mt-1 block text-xs text-muted">
           {formatTimestamp(alert.SentAt)}
           {read ? ' · Read' : ' · New'}
         </span>
       </button>
+      {/* Sprint 10 Revision 4.0: an open Advisory Panel invitation is accepted right here. */}
+      {pendingAdvisoryInvites([alert]).length > 0 ? (
+        <div className="mt-1 flex justify-end">
+          <AcceptInvitationButton alert={alert} />
+        </div>
+      ) : null}
     </li>
   );
 }

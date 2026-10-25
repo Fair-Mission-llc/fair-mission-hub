@@ -1,4 +1,7 @@
 'use client';
+// Sprint 10 Revision 4.0: the card left Council Wide Settings. It is the Recorder Desk's 'Meeting Check-In PIN' drawer and,
+// for a night the Recorder is absent, the Grand Knight Desk's drawer (the GK, the DGK and the council's Admins open that
+// desk). The Recorder may set the PIN now, and 'Generate new PIN' makes and saves a random one in one click.
 // Meeting Check-In (Sprint 7G): the card on Council Wide Settings where the Grand Knight, the council's Admins and Super
 // Admins set where the council meets, how close a phone must be to check in by GPS, and the 4-digit meeting PIN for
 // members outside the circle (councils.getMeetingGeofence / setMeetingGeofence, geofence.ts). Other readers of the page
@@ -17,14 +20,20 @@ import {
   type MeetingGeofence,
   type MeetingGeofenceChanges,
   type SessionUser,
+  generateMeetingPin,
+  MEETING_PIN_KEEPER_ROLE,
 } from '@kofc/shared';
 import { Button, Field, Input, Notice } from '@/components/ui';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-/** The council's Grand Knight, Deputy Grand Knight (Sprint 8C) or Admins, or a Super Admin (mayManageMeetingGeofence on the session). */
+/**
+ * The council's Recorder (Sprint 10 Revision 4.0), Grand Knight, Deputy Grand Knight (Sprint 8C) or Admins, or a Super
+ * Admin (mayManageMeetingGeofence on the session).
+ */
 export const mayManageMeetingCheckIn = (user: SessionUser, councilId: number) =>
-  user.memberType === 'Super Admin' || (user.councilId === councilId && (user.memberType === 'Admin' || holdsGrandKnightSeat(user)));
+  user.memberType === 'Super Admin' ||
+  (user.councilId === councilId && (user.memberType === 'Admin' || holdsGrandKnightSeat(user) || (user.roles ?? []).includes(MEETING_PIN_KEEPER_ROLE)));
 
 function CheckInForm({ user, councilId, fence, onSaved }: { user: SessionUser; councilId: number; fence: MeetingGeofence; onSaved: () => Promise<void> }) {
   const [latitude, setLatitude] = useState(fence.latitude === null ? '' : String(fence.latitude));
@@ -34,18 +43,20 @@ function CheckInForm({ user, councilId, fence, onSaved }: { user: SessionUser; c
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'info' | 'error'; text: string } | null>(null);
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
+  const submit = async (e: FormEvent | null, pinOverride?: string) => {
+    e?.preventDefault();
     setBusy(true);
     setMessage(null);
     try {
       const point = latitude.trim() === '' && longitude.trim() === '' ? { latitude: null, longitude: null } : { latitude: Number(latitude), longitude: Number(longitude) };
-      const changes: MeetingGeofenceChanges = { ...point, radiusMeters: Number(radius), pinToken: pin.trim() };
+      const changes: MeetingGeofenceChanges = { ...point, radiusMeters: Number(radius), pinToken: (pinOverride ?? pin).trim() };
       const saved = await db.councils.setMeetingGeofence(user.memberId, councilId, changes);
       await onSaved();
       setMessage({
         tone: 'info',
-        text: GPS_UI_SUPPRESSED
+        text: pinOverride
+          ? `New meeting PIN ${pinOverride} saved. Read it out at the meeting; members type it on the phone to check in.`
+          : GPS_UI_SUPPRESSED
           ? 'Saved. Members check in with this PIN.'
           : hasMeetingPoint(saved)
           ? `Saved. Phones within ${saved.radiusMeters} m of the meeting point can check in by GPS; others use the PIN.`
@@ -82,9 +93,23 @@ function CheckInForm({ user, councilId, fence, onSaved }: { user: SessionUser; c
         <Notice tone="error">The PIN is still the default 0000, which any member can guess. Choose a new PIN before the next meeting.</Notice>
       ) : null}
       {message ? <Notice tone={message.tone}>{message.text}</Notice> : null}
-      <Button type="submit" disabled={busy} className="self-start">
-        {busy ? 'Saving…' : 'Save meeting check-in'}
-      </Button>
+      <div className="flex flex-wrap gap-3">
+        {/* Sprint 10 Revision 4.0: one click makes and saves a fresh random PIN, never 0000. */}
+        <Button
+          variant="gold"
+          disabled={busy}
+          onClick={() => {
+            const next = generateMeetingPin(() => globalThis.crypto.getRandomValues(new Uint32Array(1))[0]! % 10_000);
+            setPin(next);
+            void submit(null, next);
+          }}
+        >
+          🔢 Generate new PIN
+        </Button>
+        <Button type="submit" disabled={busy}>
+          {busy ? 'Saving…' : 'Save meeting check-in'}
+        </Button>
+      </div>
     </form>
   );
 }

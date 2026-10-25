@@ -5,9 +5,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
-  ADVISORY_INVITE_ACCEPT_PATH,
+  ADVISORY_INVITE_TITLE,
   ADVISORY_PANELIST_ROLE,
-  advisoryInviteEmail,
+  advisoryInviteBody,
+  advisoryInviteOf,
+  alertDisplayBody,
+  cleanAlertPayload,
   cleanFileRepositorySettings,
   CREDENTIAL_KEYS,
   councilFileRepository,
@@ -15,90 +18,68 @@ import {
   fileRepositoryFields,
   fileRepositoryRef,
   parseFileRepositoryRef,
+  pendingAdvisoryInvites,
   sharePointSiteParts,
+  deskDrawersFor,
+  generateMeetingPin,
+  OFFICIAL_MANUALS_FOLDER,
+  repositoryFolderName,
+  DRIVE_VAULT_FOLDERS,
+  type DataService,
 } from '@kofc/shared';
-import { signAdvisoryInvite, verifyAdvisoryInvite } from '../apps/web/services/server/advisory-invite';
-import { portalSessionSecret } from '../apps/web/services/server/secrets';
-import { signInOnServer } from '../apps/web/services/server/session';
-import { POST as invitePost } from '../apps/web/app/api/advisory/invitations/route';
-import { POST as acceptPost } from '../apps/web/app/api/advisory/invitations/accept/route';
-import { GET as sessionGet } from '../apps/web/app/api/auth/session/route';
+import { MemoryDataService } from '../apps/web/services/drivers/memory';
+import { drivers, expectRule, MEMBER, NOW } from './helpers';
+import { openDatabases } from './shims/expo-sqlite';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
-const SECRET = 'x'.repeat(40);
 
 beforeAll(() => {
   vi.spyOn(console, 'log').mockImplementation(() => {});
   vi.spyOn(console, 'info').mockImplementation(() => {});
-  vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 afterAll(() => vi.restoreAllMocks());
 
-async function cookieFor(username: string): Promise<string> {
-  const outcome = await signInOnServer(username, 'dev-pass-secure-9912');
-  if (!outcome.ok) throw new Error(`${username} could not sign in: ${outcome.message}`);
-  return outcome.cookie.split(';')[0];
-}
-const post = (handler: (req: Request) => Promise<Response>, url: string, body: unknown, cookie?: string) =>
-  handler(new Request(`http://localhost${url}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) }));
-const whoIs = async (cookie: string) => (await (await sessionGet(new Request('http://localhost/api/auth/session', { headers: { cookie } }))).json()) as { memberId: number; roles: string[] };
-
-describe('1. Advisory Panel invitation links', () => {
-  it('verify only genuine, unexpired links', async () => {
-    const future = Math.floor(Date.now() / 1000) + 3600;
-    const token = await signAdvisoryInvite({ memberId: 3, inviterId: 1, expires: future }, SECRET);
-    expect(await verifyAdvisoryInvite(token, SECRET)).toEqual({ memberId: 3, inviterId: 1, expires: future });
-    expect(await verifyAdvisoryInvite(token, 'y'.repeat(40))).toBeNull();
-    expect(await verifyAdvisoryInvite(token.replace(/^3\./, '4.'), SECRET)).toBeNull();
-    const old = await signAdvisoryInvite({ memberId: 3, inviterId: 1, expires: Math.floor(Date.now() / 1000) - 10 }, SECRET);
-    expect(await verifyAdvisoryInvite(old, SECRET)).toBeNull();
-    expect(await verifyAdvisoryInvite('nonsense', SECRET)).toBeNull();
+describe('1. in-app Advisory Panel invitations (Sprint 10 Revision 4.0)', () => {
+  it('marks an invitation in its body, hides the marker and expires it after 14 days', () => {
+    const body = advisoryInviteBody(1, 'Pat Owner');
+    const alert = { Title: ADVISORY_INVITE_TITLE, MessageBody: body, SentAt: '2026-10-20 10:00:00' };
+    expect(advisoryInviteOf(alert, new Date('2026-10-25T10:00:00'))).toEqual({ inviterId: 1, accepted: false, expired: false });
+    expect(advisoryInviteOf(alert, new Date('2026-11-10T10:00:00'))?.expired).toBe(true);
+    expect(alertDisplayBody(body)).not.toContain('[advisory-invite');
+    expect(pendingAdvisoryInvites([alert, { ...alert, Title: 'Something else' }], new Date('2026-10-25T10:00:00'))).toHaveLength(1);
   });
 
-  it('writes the email from the stored member, with the accept link', () => {
-    const mail = advisoryInviteEmail({ to: 'a@b.org', memberName: 'Tom Lee', inviterName: 'Pat Owner', councilLabel: '15295 St. Mary', link: `https://x${ADVISORY_INVITE_ACCEPT_PATH}?token=t`, expiresOn: '2026-11-08', from: 'no-reply@x' });
-    expect(mail.subject).toBe('You are invited to the Application Advisory Panel');
-    expect(mail.text).toContain(`${ADVISORY_INVITE_ACCEPT_PATH}?token=t`);
-    expect(mail.text).toContain('until 2026-11-08');
+  it('reserves the invitation title, so no other alert can pose as one', () => {
+    expect(() => cleanAlertPayload({ title: 'advisory panel invitation ', body: 'x' })).toThrow(/reserved/);
   });
 
-  it('lets only the platform owner send an invitation', async () => {
-    const admin = await cookieFor('testadmin@kofc.org');
-    const owner = await cookieFor('testsuperadmin@kofc.org');
-    const member = await whoIs(await cookieFor('testmember@kofc.org'));
-    expect((await post(invitePost, '/api/advisory/invitations', { memberId: member.memberId })).status).toBe(401);
-    expect((await post(invitePost, '/api/advisory/invitations', { memberId: member.memberId }, admin)).status).toBe(403);
-    expect((await post(invitePost, '/api/advisory/invitations', { memberId: 999_999 }, owner)).status).toBe(404);
-    const sent = await post(invitePost, '/api/advisory/invitations', { memberId: member.memberId }, owner);
-    expect(sent.status).toBe(200);
-    expect(await sent.json()).toMatchObject({ sent: true, expiresOn: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) });
-  });
-
-  it('adds the panelist role to the invited member and re-issues the session at once', async () => {
-    const owner = await whoIs(await cookieFor('testsuperadmin@kofc.org'));
-    const memberCookie = await cookieFor('testmember@kofc.org');
-    const member = await whoIs(memberCookie);
-    const token = await signAdvisoryInvite({ memberId: member.memberId, inviterId: owner.memberId, expires: Math.floor(Date.now() / 1000) + 600 }, portalSessionSecret());
-
-    expect((await post(acceptPost, '/api/advisory/invitations/accept', { token }, await cookieFor('testadmin@kofc.org'))).status).toBe(403);
-    expect((await post(acceptPost, '/api/advisory/invitations/accept', { token: 'forged.token' }, memberCookie)).status).toBe(400);
-    const res = await post(acceptPost, '/api/advisory/invitations/accept', { token }, memberCookie);
-    expect(res.status).toBe(200);
-    const refreshed = (res.headers.get('Set-Cookie') ?? '').split(';')[0]!;
-    expect(refreshed).toMatch(/^kofc_portal_session=/);
-    expect((await whoIs(refreshed)).roles).toContain(ADVISORY_PANELIST_ROLE);
-    // A link from someone who is no longer a Super Admin is refused.
-    const bad = await signAdvisoryInvite({ memberId: member.memberId, inviterId: member.memberId, expires: Math.floor(Date.now() / 1000) + 600 }, portalSessionSecret());
-    expect((await post(acceptPost, '/api/advisory/invitations/accept', { token: bad }, memberCookie)).status).toBe(403);
-  });
-
-  it('puts the Invite Panelist drawer on the panel for the platform owner, and the accept page outside the panel gate', () => {
+  it('sends nothing by email', () => {
+    for (const path of ['apps/web/app/api/advisory', 'apps/web/services/server/advisory-invite.ts', 'apps/web/app/advisory-panel/accept']) expect(existsSync(join(__dirname, '..', path)), path).toBe(false);
     const panel = read('apps/web/components/AdvisoryPanel.tsx');
-    expect(panel).toContain('<InvitePanelistDrawer');
-    expect(panel).toContain('isPlatformOwner(user)');
-    const accept = read('apps/web/app/advisory-panel/accept/page.tsx');
-    expect(accept).toContain("fetch('/api/advisory/invitations/accept'");
-    expect(accept).not.toContain('RequireArea');
+    expect(panel).toContain('db.advisory.inviteMember(user.memberId, memberId)');
+    expect(panel).not.toMatch(/fetch\(|\/api\/advisory|sendEmail|deliverServerEmail/);
+    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<AdvisoryInviteCard className="col-span-full" />');
+    expect(read('apps/web/components/AlertBell.tsx')).toContain('<AcceptInvitationButton alert={alert} />');
+    expect(read('apps/mobile/app/(app)/index.tsx')).toContain('<AdvisoryInviteCard version={prayerVersion} />');
+    expect(read('apps/web/app/api/auth/session/route.ts')).toContain('export async function PATCH(');
+  });
+});
+
+describe.each(drivers)('$name driver: in-app invitations', ({ make }) => {
+  it('lets only the platform owner invite, and gives the role the moment the member accepts', async () => {
+    const db = await make();
+    await expectRule(db.advisory.inviteMember(MEMBER.admin, MEMBER.member), 'SUPER_ADMIN_REQUIRED');
+    const invite = await db.advisory.inviteMember(MEMBER.superAdmin, MEMBER.member);
+    expect(invite).toMatchObject({ TargetMemberID: MEMBER.member, Title: ADVISORY_INVITE_TITLE, Priority: 'High' });
+    const mine = await db.notifications.listMemberAlerts(MEMBER.member);
+    expect(pendingAdvisoryInvites(mine, NOW).map((a) => a.id)).toEqual([invite.id]);
+    await expectRule(db.advisory.acceptInvitation(MEMBER.admin, invite.id), 'RECORD_NOT_FOUND');
+    const { roles } = await db.advisory.acceptInvitation(MEMBER.member, invite.id);
+    expect(roles).toContain(ADVISORY_PANELIST_ROLE);
+    expect((await db.members.listRoles(MEMBER.member)).map((r) => r.Role)).toContain(ADVISORY_PANELIST_ROLE);
+    expect(pendingAdvisoryInvites(await db.notifications.listMemberAlerts(MEMBER.member), NOW)).toEqual([]);
+    expect((await db.advisory.acceptInvitation(MEMBER.member, invite.id)).roles).toContain(ADVISORY_PANELIST_ROLE);
+    await expectRule(db.advisory.inviteMember(MEMBER.superAdmin, MEMBER.member), 'INVALID_INPUT');
   });
 });
 
@@ -161,5 +142,50 @@ describe('3. the four storage providers', () => {
     const server = read('apps/web/services/server/file-repository.ts');
     expect(server).toContain('https://graph.microsoft.com/v1.0/sites/');
     expect(server).toContain('https://content.dropboxapi.com/2/files/upload');
+  });
+});
+
+describe('4. the meeting PIN on the Recorder Desk (Sprint 10 Revision 4.0)', () => {
+  it('never generates the default 0000', () => {
+    const rolls = [0, 0, 1234];
+    expect(generateMeetingPin(() => rolls.shift()!)).toBe('1234');
+    expect(generateMeetingPin(() => 7)).toBe('0007');
+  });
+
+  it('puts the PIN drawer on the Recorder Desk and, for an absent Recorder, the Grand Knight Desk', () => {
+    const recorder = { memberId: 9, councilId: 1, memberType: 'Member' as const, isOfficer: true, roles: ['Recorder'] };
+    const gk = { memberId: 8, councilId: 1, memberType: 'Member' as const, isOfficer: true, roles: ['Grand Knight'] };
+    expect(deskDrawersFor(recorder, 'recorder', 1).map((d) => d.id)).toContain('meeting-pin');
+    expect(deskDrawersFor(gk, 'grand-knight', 1).map((d) => d.id)).toContain('meeting-pin');
+    expect(read('apps/web/components/MeetingCheckInCard.tsx')).toContain('🔢 Generate new PIN');
+  });
+});
+
+describe.each(drivers)('$name driver: the Recorder sets the meeting PIN', (d) => {
+  it('lets the council Recorder change the PIN, and still refuses a plain member', async () => {
+    const db: DataService = await d.make();
+    await expectRule(db.councils.setMeetingGeofence(MEMBER.member, 1, { radiusMeters: 100, pinToken: '4821' }), 'GRAND_KNIGHT_REQUIRED');
+    if (d.name === 'memory') (db as MemoryDataService).debugStore.insert('MemberRoles', { RoleID: 4, MemberID: MEMBER.member });
+    else openDatabases.at(-1)!.prepare('INSERT INTO [MemberRoles] ([RoleID], [MemberID]) VALUES (?, ?)').run(4, MEMBER.member);
+    expect((await db.councils.setMeetingGeofence(MEMBER.member, 1, { radiusMeters: 100, pinToken: '4821' })).pinToken).toBe('4821');
+  });
+});
+
+describe('5. custom manuals filed in the repository (Sprint 10 Revision 4.0)', () => {
+  it("names the 'Official Manuals' folder on every provider", () => {
+    expect(OFFICIAL_MANUALS_FOLDER).toBe('Official Manuals');
+    expect(repositoryFolderName('Official_Manuals')).toBe('Official Manuals');
+    expect(repositoryFolderName('Vouchers')).toBe('Vouchers');
+    expect(DRIVE_VAULT_FOLDERS.manual).toBe('Official Manuals');
+  });
+
+  it('files every compiled guide and reports where it went', () => {
+    const route = read('apps/web/app/api/council/compile-manual/route.ts');
+    expect(route).toContain('await fileManualIntoRepository(payload.council.id, fileName, new Uint8Array(pdf))');
+    expect(route).toContain("'X-Official-Manuals': archive");
+    const server = read('apps/web/services/server/file-repository.ts');
+    expect(server).toContain("upload('manual', { name: fileName, mimeType: 'application/pdf', data: pdf })");
+    expect(server).toContain("mode: overwrite ? 'overwrite' : 'add'");
+    expect(read('apps/web/services/custom-manual-transport.ts')).toContain("res.headers.get('X-Official-Manuals')");
   });
 });

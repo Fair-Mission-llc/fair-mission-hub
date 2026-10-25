@@ -11,6 +11,7 @@
 // The roadmap and release lists are kept here, in code, by the development team; meetings and feedback are data.
 // The drivers check every read and write (assertMayReadAdvisoryPanel, assertMayKeepAdvisoryPanel).
 // =========================================================================
+import { isPlatformOwner } from './super-admin-desk';
 import { assertIsoDate, assertText, BusinessRuleError, describeActor, hasSuperAdminRights, optionalText, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 
 export const ADVISORY_PANEL_TITLE = '🔊 Application Advisory Panel';
@@ -144,42 +145,74 @@ export function cleanAdvisoryFeedback(input: AdvisoryFeedbackInput): AdvisoryFee
   return { topic: assertText(input.topic, 'Topic', ADVISORY_TOPIC_MAX_LENGTH), body: assertText(input.body, 'Feedback', ADVISORY_BODY_MAX_LENGTH) };
 }
 
-// ---- invitations (Sprint 10 Revision 3.2) -----------------------------------------------------------------------------
+// ---- in-app invitations (Sprint 10 Revision 4.0; emailed links in Revision 3.2, now removed) ----------------------------
 //
-// The platform owner invites a member of any council from the panel's 'Invite Panelist' drawer. The server mints a
-// signed, expiring invitation link (services/server/advisory-invite.ts; no table - the schema stays at 101) and emails
-// it to the member's address on file. When that member opens the link while signed in and accepts, the server gives them
-// the panelist role (advisory.setPanelist in the inviter's name, so the inviter must still be an Active Super Admin) and
-// re-issues their session with the role in it, so the panel opens at once without signing in again.
+// The platform owner invites a member of any council from the panel's 'Invite Panelist' drawer
+// (advisory.inviteMember). Nothing is emailed: the invitation is one row of NotificationLog addressed to that member -
+// the schema stays at 101, so the row is recognized by its reserved title (ADVISORY_INVITE_TITLE, which no other alert
+// may use: cleanAlertPayload refuses it) and a marker line in its body naming the inviter. It shows as an invitation
+// card on the member's web Home, in the header's alert bell and on the phone's Home, and it is pushed to the phone.
+// Selecting Accept (advisory.acceptInvitation) gives the member the 'Application Advisory Panelist' role at once, in the
+// inviter's name - the inviter must still be an Active Super Admin - and marks the invitation accepted. The web session
+// takes the role on the spot (SessionValue.rolesChanged, then PATCH /api/auth/session re-reads it for the cookie).
 
-/** How long an invitation link stays valid. */
+/** How long an invitation can be accepted, counted from when it was posted. */
 export const ADVISORY_INVITE_DAYS = 14;
-/** The page an invitation link opens. */
-export const ADVISORY_INVITE_ACCEPT_PATH = '/advisory-panel/accept';
 export const INVITE_PANELIST_LABEL = 'Invite Panelist';
+/** The reserved alert title of an invitation. */
+export const ADVISORY_INVITE_TITLE = 'Advisory Panel invitation';
 
-/** The invitation email. The server fills every value from the stored member; the browser never chooses them. */
-export function advisoryInviteEmail(input: { to: string; memberName: string; inviterName: string; councilLabel: string; link: string; expiresOn: string; from: string }): {
-  from: string;
-  to: string;
-  subject: string;
-  text: string;
-  attachments: [];
-} {
-  return {
-    from: input.from,
-    to: input.to,
-    subject: 'You are invited to the Application Advisory Panel',
-    text: [
-      `Dear ${input.memberName},`,
-      '',
-      `${input.inviterName} invites you to join the Application Advisory Panel of the council portal. Panelists from every council read the development roadmap, review the coming releases, see the panel meeting dates and send their feedback.`,
-      '',
-      `You are invited as a member of ${input.councilLabel}. To accept, sign in to the portal, then open this link:`,
-      input.link,
-      '',
-      `The link works for you alone and stays valid until ${input.expiresOn}. If you did not expect this invitation, you can ignore this email.`,
-    ].join('\n'),
-    attachments: [],
-  };
+const MARKER = /\n?\n?\[advisory-invite:(\d+)(:accepted)?\]\s*$/;
+
+/** The invitation's body: the words the member reads, then the marker line the drivers check. */
+export function advisoryInviteBody(inviterId: number, inviterName: string): string {
+  return (
+    `${inviterName} invites you to join the Application Advisory Panel. Panelists from every council read the development roadmap, ` +
+    `review the coming releases, see the panel meeting dates and send their feedback. Select Accept to join. ` +
+    `The invitation stays open for ${ADVISORY_INVITE_DAYS} days.\n\n[advisory-invite:${inviterId}]`
+  );
+}
+
+/** Whether a title is the reserved invitation title (compared without case or surrounding space). */
+export const isReservedAlertTitle = (title: string): boolean => title.trim().toLowerCase() === ADVISORY_INVITE_TITLE.toLowerCase();
+
+export interface AdvisoryInviteState {
+  inviterId: number;
+  accepted: boolean;
+  expired: boolean;
+}
+
+/** The invitation an alert carries, or null when the alert is not one. */
+export function advisoryInviteOf(alert: { Title: string; MessageBody: string; SentAt: string }, now: Date = new Date()): AdvisoryInviteState | null {
+  if (alert.Title !== ADVISORY_INVITE_TITLE) return null;
+  const m = MARKER.exec(alert.MessageBody);
+  if (!m) return null;
+  const sent = new Date(String(alert.SentAt).replace(' ', 'T')).getTime();
+  return { inviterId: Number(m[1]), accepted: Boolean(m[2]), expired: !Number.isFinite(sent) || now.getTime() - sent > ADVISORY_INVITE_DAYS * 86_400_000 };
+}
+
+/** The invitations a member may still accept: not accepted, not expired. */
+export function pendingAdvisoryInvites<T extends { Title: string; MessageBody: string; SentAt: string }>(alerts: readonly T[], now: Date = new Date()): T[] {
+  return alerts.filter((a) => {
+    const invite = advisoryInviteOf(a, now);
+    return invite !== null && !invite.accepted && !invite.expired;
+  });
+}
+
+/** The body with its marker marked accepted. */
+export const acceptedInviteBody = (body: string): string => body.replace(MARKER, (_m, id: string) => `\n\n[advisory-invite:${id}:accepted]`);
+
+/** An alert body as a member reads it: an invitation's marker line is never shown. */
+export const alertDisplayBody = (body: string): string => body.replace(MARKER, '').trimEnd();
+
+/** Sending an invitation: the platform owner's own Active Super Admin account (isPlatformOwner). */
+export function assertMayInviteAdvisoryPanelist(actor: MemberWriteActor, username: string | null | undefined): void {
+  if (hasSuperAdminRights(actor) && isPlatformOwner({ memberType: 'Super Admin', username })) return;
+  throw new SecurityPrivilegeError('SUPER_ADMIN_REQUIRED', `Only the platform owner sends Advisory Panel invitations; you are ${describeActor(actor)}.`, { memberId: actor.memberId });
+}
+
+/** Accepting: the member the invitation names, before it expires and before it is accepted; INVALID_INPUT otherwise. */
+export function assertInviteAcceptable(invite: AdvisoryInviteState | null, alertId: number): asserts invite is AdvisoryInviteState {
+  if (!invite) throw new BusinessRuleError('RECORD_NOT_FOUND', `Alert ${alertId} is not an Advisory Panel invitation.`, { id: alertId });
+  if (invite.expired) throw new BusinessRuleError('INVALID_INPUT', `This invitation is older than ${ADVISORY_INVITE_DAYS} days. Ask the platform owner for a new one.`, { id: alertId });
 }

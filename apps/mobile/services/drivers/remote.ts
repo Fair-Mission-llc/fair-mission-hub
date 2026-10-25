@@ -259,6 +259,8 @@ export function createRemoteDataService(): DataService {
       submitFeedback: notImplemented('advisory.submitFeedback'),
       listPanelists: notImplemented('advisory.listPanelists'),
       setPanelist: notImplemented('advisory.setPanelist'),
+      inviteMember: notImplemented('advisory.inviteMember'),
+      acceptInvitation: notImplemented('advisory.acceptInvitation'),
     },
     elections: {
       listOfficerSeats: notImplemented('elections.listOfficerSeats'),

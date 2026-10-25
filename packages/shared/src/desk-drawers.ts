@@ -111,6 +111,7 @@ export type DeskDrawerId =
   | 'bank-match'
   | 'chart-of-accounts'
   | 'minutes-archive'
+  | 'meeting-pin'
   | 'live-meeting'
   | 'minutes-entry'
   | 'motions-ledger'
@@ -219,6 +220,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
   { desk: 'grand-knight', id: 'affiliation-invites', title: 'Affiliation Invites', summary: 'Accept or decline invites from nearby councils', gate: 'affiliations', rowId: 'grand-knight-affiliations' },
   { desk: 'grand-knight', id: 'connected-councils', title: 'Connected Councils', summary: 'Invite and answer nearby councils', area: 'system-settings/affiliations', rowId: 'module-connected-councils' },
+  { desk: 'grand-knight', id: 'meeting-pin', title: 'Meeting PIN (Recorder Absent)', summary: 'Set the check-in PIN yourself when the Recorder is away', gate: 'always', rowId: 'drawer-gk-meeting-pin' },
   { desk: 'grand-knight', id: 'advisor', title: 'Constitutional Advisor Panels', summary: 'Ask a parliamentary or bylaws question', area: 'governance/advisor', rowId: 'module-advisor' },
   { desk: 'grand-knight', id: 'knowledge-archive', title: ARCHIVE, summary: ARCHIVE_SUMMARY, area: 'system-settings/knowledge-archive', rowId: 'drawer-gk-knowledge-archive' },
   { desk: 'grand-knight', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-donation-workflow', cabinet: 'reference' },
@@ -250,6 +252,9 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   // ---- Recorder Desk
   { desk: 'recorder', id: 'minutes-archive', title: 'Historical Meeting Minutes Archive', summary: "Read every meeting's published minutes before you open the session", gate: 'always', rowId: 'drawer-minutes-archive', featured: true },
   { desk: 'recorder', id: 'minutes-entry', title: 'Meeting Minutes Entry Desk', summary: 'The business calendar, the minutes countdown and the editor', gate: 'always', rowId: DESK_FOCUS_TARGETS.minutes.rowId, alerts: true },
+  // Sprint 10 Revision 4.0: the meeting check-in PIN lives on the Recorder Desk, with the Grand Knight Desk's copy for a
+  // night the Recorder is absent (the GK, the DGK and the council's Admins open that desk).
+  { desk: 'recorder', id: 'meeting-pin', title: 'Meeting Check-In PIN', summary: 'Generate or change the 4-digit PIN members type to check in', gate: 'always', rowId: 'drawer-recorder-meeting-pin' },
   { desk: 'recorder', id: 'live-meeting', title: 'Start Live Meeting Sequence', summary: 'Open the live console and show the check-in PIN', gate: 'always', rowId: 'drawer-live-meeting' },
   { desk: 'recorder', id: 'motions-ledger', title: 'Council Resolutions and Motions Ledger', summary: "Every motion of this fraternal year's meetings and its result", area: 'meetings', rowId: 'module-motions-ledger' },
   { desk: 'recorder', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-recorder-election-workflow', cabinet: 'reference' },

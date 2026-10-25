@@ -2,10 +2,15 @@
 //   POST   { username, password }  checks the credentials on the server and sets the HttpOnly session cookie
 //   GET                            answers who the cookie belongs to (401 without one)
 //   DELETE                         clears the cookie (sign-out)
+//   PATCH                          Sprint 10 Revision 4.0: re-reads the member's roles from the server's data and re-issues
+//                                  the cookie with them (after accepting an Advisory Panel invitation). The browser
+//                                  sends nothing: the roles always come from the data, never from the request.
 // The browser's own sign-in (the memory driver) runs alongside; this cookie is what the Drive vault, Supreme and email
 // routes trust. Five failed attempts for one username within 15 minutes are refused with 429.
 import { NextResponse } from 'next/server';
-import { readPortalSession, signInOnServer, signOutCookie } from '@/services/server/session';
+import { memberDirectory, readPortalSession, requirePortalSession, signInOnServer, signOutCookie } from '@/services/server/session';
+import { portalSessionSecret } from '@/services/server/secrets';
+import { PORTAL_SESSION_COOKIE, secureCookies, sessionCookieHeader, signSessionToken } from '@/services/server/session-token';
 
 /** Longest username or password read; anything longer is refused before hashing. */
 const MAX_FIELD_LENGTH = 256;
@@ -34,6 +39,17 @@ export async function GET(req: Request) {
     roles: claims.roles,
     expiresAt: new Date(claims.exp * 1000).toISOString(),
   });
+}
+
+export async function PATCH(req: Request) {
+  const session = await requirePortalSession(req, (actor) => actor.active, { signedIn: true });
+  if ('denied' in session) return session.denied;
+  const held = await (await memberDirectory()).members.listRoles(session.claims.memberId);
+  const roles = held.map((r) => r.Role);
+  const token = await signSessionToken({ ...session.claims, roles, isOfficer: held.some((r) => r.Officer === 1) }, portalSessionSecret());
+  const res = NextResponse.json({ signedIn: true, roles });
+  res.headers.set('Set-Cookie', sessionCookieHeader(token, secureCookies(), PORTAL_SESSION_COOKIE));
+  return res;
 }
 
 export async function DELETE() {

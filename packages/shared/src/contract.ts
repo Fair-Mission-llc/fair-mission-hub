@@ -3662,6 +3662,20 @@ export interface DataService {
     listPanelists(actorId: number): Promise<AdvisoryPanelist[]>;
     /** Gives (true) or takes away (false) the panelist role; resolves to the new list. Super Admins only. */
     setPanelist(actorId: number, memberId: number, designated: boolean): Promise<AdvisoryPanelist[]>;
+    /**
+     * Sprint 10 Revision 4.0: posts an in-app invitation (a NotificationLog row with the reserved ADVISORY_INVITE_TITLE)
+     * to `memberId`, a member of any council, and pushes it to their phone. Nothing is emailed. The platform owner only
+     * (assertMayInviteAdvisoryPanelist: SUPER_ADMIN_REQUIRED); MEMBER_NOT_FOUND for an unknown member, INVALID_INPUT for
+     * one who is already a panelist or not Active.
+     */
+    inviteMember(actorId: number, memberId: number): Promise<NotificationLog>;
+    /**
+     * Sprint 10 Revision 4.0: the invited member accepts invitation `alertId`. Gives them the panelist role at once in the
+     * inviter's name (the inviter must still be an Active Super Admin) and marks the invitation accepted; accepting again
+     * changes nothing. Resolves to the actor's role names. RECORD_NOT_FOUND for another member's alert or one that is not
+     * an invitation, INVALID_INPUT for an expired invitation.
+     */
+    acceptInvitation(actorId: number, alertId: number): Promise<{ roles: string[] }>;
   };
 
   elections: {

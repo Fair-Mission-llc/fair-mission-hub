@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { canAttachAssetPhoto, isUrgent, MY_ACTIVE_SHIFTS_TITLE, toIsoDate, withoutEndedShifts } from '@kofc/shared';
+import { AdvisoryInviteCard } from '@/components/AdvisoryInviteCard';
 import { LiturgicalBanner } from '@/components/FaithCenter';
 import { DevotionalTracker } from '@/components/DevotionalTracker';
 import { PrayerIntentions } from '@/components/PrayerIntentions';
@@ -57,6 +58,8 @@ export default function DashboardScreen() {
         void Promise.all([state.reload(), refreshFeatures()]);
       }}>
       {state.error ? <Notice tone="error" message={state.error} /> : null}
+      {/* Sprint 10 Revision 4.0: an open Advisory Panel invitation leads Home (nothing shows without one). */}
+      <AdvisoryInviteCard version={prayerVersion} />
       {/* Sprint 8S Revision 4: the volunteer's next shifts come first, before anything else on Home. */}
       {shiftsOn ? (
         <Section title={MY_ACTIVE_SHIFTS_TITLE}>

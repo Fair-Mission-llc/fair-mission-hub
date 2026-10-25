@@ -11,7 +11,7 @@
 // =========================================================================
 import { BusinessRuleError } from './rules';
 
-export type DriveVaultKind = 'minutes' | 'voucher' | 'media' | 'flyer' | 'oral_history' | 'asset';
+export type DriveVaultKind = 'minutes' | 'voucher' | 'media' | 'flyer' | 'oral_history' | 'asset' | 'manual';
 
 export const DRIVE_VAULT_ROOT = 'Fraternal Enterprise Suite';
 export const DRIVE_VAULT_FOLDERS: Readonly<Record<DriveVaultKind, string>> = {
@@ -23,6 +23,8 @@ export const DRIVE_VAULT_FOLDERS: Readonly<Record<DriveVaultKind, string>> = {
   oral_history: 'Oral Histories',
   // Sprint 7F Extension 2: council asset photos, one folder per asset (Assets / <asset name>).
   asset: 'Assets',
+  // Sprint 10 Revision 4.0: the council's custom-branded guides, filed by /api/council/compile-manual.
+  manual: 'Official Manuals',
 };
 /** Largest file the vault accepts (25 MB). */
 export const DRIVE_VAULT_MAX_BYTES = 25 * 1024 * 1024;
@@ -36,6 +38,7 @@ const ACCEPTED: Readonly<Record<DriveVaultKind, (mime: string) => boolean>> = {
   flyer: (m) => m === 'text/html' || m === PDF,
   oral_history: (m) => m.startsWith('audio/'),
   asset: (m) => m.startsWith('image/'),
+  manual: (m) => m === PDF,
 };
 
 /** Longest event folder name under Media (Event.EventName is VARCHAR(100)). */

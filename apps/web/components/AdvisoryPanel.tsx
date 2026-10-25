@@ -321,11 +321,12 @@ function Panelists() {
 }
 
 /**
- * Sprint 10 Revision 3.2: the platform owner's 'Invite Panelist' drawer. Pick a council (any council) and one of its Active
- * members; the server emails that member a signed invitation link (/api/advisory/invitations). The member accepts it on
- * /advisory-panel/accept while signed in, which gives them the panelist role at once.
+ * The platform owner's 'Invite Panelist' drawer (Sprint 10 Revision 3.2; in-app only since Revision 4.0). Pick a council
+ * (any council) and one of its Active members; advisory.inviteMember posts an invitation card to that member's alert bell
+ * and Home and pushes it to their phone. Nothing is emailed. The member becomes a panelist the moment they select Accept.
  */
 function InvitePanelistDrawer({ onClose }: { onClose: () => void }) {
+  const user = useUser();
   const councils = useLoad(async () => sortCouncils(await db.councils.list()), []);
   const [councilId, setCouncilId] = useState<number | null>(null);
   const members = useLoad(() => (councilId === null ? Promise.resolve([]) : db.members.listByCouncil(councilId, { activeOnly: true })), [councilId]);
@@ -337,15 +338,9 @@ function InvitePanelistDrawer({ onClose }: { onClose: () => void }) {
     setBusy(true);
     setMessage(null);
     try {
-      const res = await fetch('/api/advisory/invitations', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId }),
-      });
-      const answer = (await res.json().catch(() => null)) as { name?: string; expiresOn?: string; message?: string } | null;
-      if (!res.ok) throw new Error(answer?.message ?? `The server answered HTTP ${res.status}.`);
-      setMessage({ tone: 'info', text: `Invitation emailed to ${answer?.name}. The link works until ${answer?.expiresOn}.` });
+      await db.advisory.inviteMember(user.memberId, memberId);
+      const m = (members.data ?? []).find((x) => x.id === memberId);
+      setMessage({ tone: 'info', text: `Invitation posted to ${m ? `${m.MemberFirstName} ${m.MemberLastName}` : 'the member'}: it is on their alert bell and Home, and on their phone.` });
       setMemberId(null);
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
@@ -356,8 +351,8 @@ function InvitePanelistDrawer({ onClose }: { onClose: () => void }) {
   return (
     <Drawer title={INVITE_PANELIST_LABEL} onClose={onClose}>
       <p className="text-sm">
-        Invite a member of any council to the Application Advisory Panel. The portal emails them a secure link that works for them alone for 14 days. When
-        they accept it while signed in, they become a panelist at once.
+        Invite a member of any council to the Application Advisory Panel. The invitation appears in the portal: on the member&apos;s alert bell and Home,
+        and on their phone. No email is sent. The member becomes a panelist the moment they select Accept; the invitation stays open for 14 days.
       </p>
       <Banner message={message} onDismiss={() => setMessage(null)} />
       <Field label="Council">
@@ -385,7 +380,7 @@ function InvitePanelistDrawer({ onClose }: { onClose: () => void }) {
         )}
       </Field>
       <Button variant="gold" disabled={busy || memberId === null} onClick={() => void send()}>
-        {busy ? 'Sending…' : 'Send invitation'}
+        {busy ? 'Posting…' : 'Post invitation'}
       </Button>
     </Drawer>
   );

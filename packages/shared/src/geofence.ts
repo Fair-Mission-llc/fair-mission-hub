@@ -167,7 +167,20 @@ export function cleanMeetingGeofence(input: unknown): Partial<Pick<Council, 'mee
 export function mayManageMeetingGeofence(actor: MemberWriteActor, councilId: number): boolean {
   if (hasSuperAdminRights(actor)) return true;
   if (actor.councilId !== councilId) return false;
-  return hasAdminRights(actor) || (actor.active && holdsGrandKnightAuthority(actor.roles));
+  // Sprint 10 Revision 4.0: the Recorder keeps the meeting check-in PIN on the Recorder Desk; the Grand Knight, the Deputy
+  // Grand Knight and the council's Admins can still set it from their own desks when the Recorder is absent.
+  return hasAdminRights(actor) || (actor.active && (holdsGrandKnightAuthority(actor.roles) || (actor.roles ?? []).includes(MEETING_PIN_KEEPER_ROLE)));
+}
+
+/** Sprint 10 Revision 4.0: the office whose desk holds the meeting check-in PIN. */
+export const MEETING_PIN_KEEPER_ROLE = 'Recorder';
+
+/** A new random 4-digit PIN, never the default 0000. `random` returns an integer in [0, 10000). */
+export function generateMeetingPin(random: () => number = () => Math.floor(Math.random() * 10_000)): string {
+  for (;;) {
+    const pin = String(random() % 10_000).padStart(4, '0');
+    if (pin !== '0000') return pin;
+  }
 }
 
 /** Rejects GRAND_KNIGHT_REQUIRED for anyone else, COUNCIL_ACCESS_DENIED for a Grand Knight or Admin of another council. */
@@ -182,7 +195,7 @@ export function assertMayManageMeetingGeofence(actor: MemberWriteActor, councilI
   }
   throw new SecurityPrivilegeError(
     'GRAND_KNIGHT_REQUIRED',
-    `Only the council's Grand Knight or Deputy Grand Knight, an Admin of the council or a Super Admin can set the meeting location and PIN; member ${actor.memberId} is ${describeActor(actor)}.`,
+    `Only the council's Recorder, Grand Knight or Deputy Grand Knight, an Admin of the council or a Super Admin can set the meeting location and PIN; member ${actor.memberId} is ${describeActor(actor)}.`,
     { actorId: actor.memberId, councilId },
   );
 }

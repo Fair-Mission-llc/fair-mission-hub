@@ -55,6 +55,8 @@
 // Sprint 10 Revision 3.1: the Parish Fundraiser Split card is deleted (revenue splits come from the Chart of Accounts split
 // profiles on the Treasurer Desk). Standard Bank Accounts gains the Account Owners Matrix (AccountOwnersMatrix); System
 // Settings gains the File Repository Mode card (FileRepositoryCard: Cloud or Local Network Server).
+// Sprint 10 Revision 4.0: the Meeting Check-In card moved to the Recorder Desk (and the Grand Knight Desk for a night the
+// Recorder is absent).
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -81,7 +83,6 @@ import {
   SettingsDrawers,
   SettingsLinkCards,
 } from '@/components/FeatureDeploymentParts';
-import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
 import { AccountOwnersMatrix } from '@/components/AccountOwnersMatrix';
 import { FileRepositoryCard } from '@/components/FileRepositoryCard';
@@ -160,7 +161,7 @@ function CustomGuidesCard({ council }: { council: Council }) {
     setBusy(guide);
     setMessage(null);
     try {
-      const pdf = await compileCustomManual({
+      const { pdf, filed } = await compileCustomManual({
         guide,
         council: { id: council.id, number: council.CouncilNumber, name: council.CouncilName },
         settings: councilWideSettings(council),
@@ -171,7 +172,9 @@ function CustomGuidesCard({ council }: { council: Council }) {
       a.download = customManualFileName(guide, council.CouncilNumber);
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      setMessage({ tone: 'info', text: `The ${CUSTOM_MANUAL_SOURCES[guide].title} for council ${council.CouncilNumber} is downloading.` });
+      // Sprint 10 Revision 4.0: the server also files the guide in the repository's Official Manuals folder.
+      const where = filed ? (filed.saved ? ` A copy is filed in the council repository: ${filed.text}.` : ` It was not filed in the council repository: ${filed.text}`) : '';
+      setMessage({ tone: 'info', text: `The ${CUSTOM_MANUAL_SOURCES[guide].title} for council ${council.CouncilNumber} is downloading.${where}` });
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     } finally {
@@ -223,7 +226,6 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
         ),
         'access-roster': (
           <>
-            <MeetingCheckInCard user={user} councilId={council.id} />
             <InactivitySweepCard council={council} />
             <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
           </>

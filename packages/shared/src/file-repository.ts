@@ -95,8 +95,18 @@ export const FILE_SERVER_USERNAME_MAX_LENGTH = 100;
 export const FILE_REPOSITORY_ROUTE = '/api/file-repository';
 
 /** The folders a repository is split into, one per kind of upload. */
-export const FILE_REPOSITORY_FOLDERS = ['Minutes', 'Vouchers', 'Media', 'Flyers', 'Meeting_Photos', 'Oral_Histories', 'Assets', 'Check_Photos'] as const;
+export const FILE_REPOSITORY_FOLDERS = ['Minutes', 'Vouchers', 'Media', 'Flyers', 'Meeting_Photos', 'Oral_Histories', 'Assets', 'Check_Photos', 'Official_Manuals'] as const;
 export type FileRepositoryFolder = (typeof FILE_REPOSITORY_FOLDERS)[number];
+
+/**
+ * Sprint 10 Revision 4.0: the folder every provider files the council's compiled custom guides in - 'Official Manuals' at
+ * the top of the repository (Google Drive: Fraternal Enterprise Suite / Official Manuals). A new copy of a guide replaces
+ * the old one of the same name where the provider allows it.
+ */
+export const OFFICIAL_MANUALS_FOLDER = 'Official Manuals';
+
+/** The folder's name on the provider: 'Official Manuals' (with its space) for the guides, the folder id otherwise. */
+export const repositoryFolderName = (folder: FileRepositoryFolder): string => (folder === 'Official_Manuals' ? OFFICIAL_MANUALS_FOLDER : folder);
 
 export interface FileRepositorySettings {
   file_repository_mode: FileRepositoryMode;
