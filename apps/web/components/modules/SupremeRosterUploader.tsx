@@ -7,8 +7,8 @@
 // sent the welcome email with a one-time setup code. The council's Financial Secretary, its Admins and Super Admins
 // (canSyncSupremeRoster; the server: assertMaySyncSupremeRoster).
 import { useState } from 'react';
-import { describeError, parseSupremeRosterCsv, type SupremeRosterRow, type SupremeRosterSyncResult } from '@kofc/shared';
-import { Button, Field, NewMemberBadge, Notice, Panel } from '@/components/ui';
+import { describeError, IMPORT_SUPREME_ROSTER_TITLE, parseSupremeRosterCsv, type SupremeRosterRow, type SupremeRosterSyncResult } from '@kofc/shared';
+import { Button, cx, NewMemberBadge, Notice, Panel } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { db } from '@/services/db';
 import { readRosterOnServer } from '@/services/roster-transport';
@@ -21,6 +21,7 @@ export function SupremeRosterUploader({ councilId }: { councilId: number }) {
   const [result, setResult] = useState<SupremeRosterSyncResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   const read = (text: string) => {
     setCsv(text);
@@ -47,38 +48,48 @@ export function SupremeRosterUploader({ councilId }: { councilId: number }) {
     }
   };
 
+  const take = (file: File | undefined) => {
+    if (file) void file.text().then(read);
+  };
+
   return (
-    <Panel title="Supreme roster CSV upload">
+    <Panel title={IMPORT_SUPREME_ROSTER_TITLE}>
       <div className="flex flex-col gap-3">
-        <p className="text-sm">
-          Load Supreme Headquarters&apos; roster export (CSV: Member Number, First Name, Last Name, Email, Phone, Street, Street 2, City, State, Zip,
-          Birth Date, Degree, Date Joined, Charter Member). New members are added with their join date and wear the [🆕 New Member] badge for 180 days;
-          each is sent the welcome email with the Expo Go download steps and a one-time setup code the moment the roster is stored, and joins the
-          council-wide distribution lists.
-        </p>
-        <p className="text-sm">
-          Building the roster by hand?{' '}
+        {/* Sprint 10 Revision 5.0: one drop zone. The 14-column mapping, the 180-day New Member badge and the welcome
+            emails all happen behind it, on the server. */}
+        <label
+          htmlFor="supreme-roster-file"
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            take(e.dataTransfer.files?.[0]);
+          }}
+          className={cx(
+            'flex cursor-pointer flex-col items-center gap-2 rounded border-4 border-dashed px-4 py-8 text-center',
+            dragging ? 'border-gold bg-gold/20' : 'border-navy bg-white hover:bg-gold/10',
+          )}
+        >
+          <span className="text-3xl" aria-hidden="true">
+            📥
+          </span>
+          <span className="font-serif text-lg font-bold text-navy">Drop the Supreme roster CSV here, or click to choose it</span>
+          <span className="text-sm text-muted">
+            {rows ? `${rows.length} roster row${rows.length === 1 ? '' : 's'} read. New members get the New Member badge and the welcome email.` : "Supreme Headquarters' export, or the Excel roster template saved as CSV."}
+          </span>
+          <input id="supreme-roster-file" type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => take(e.target.files?.[0])} />
+        </label>
+        <p className="text-xs text-muted">
+          Building it by hand?{' '}
           <a className="font-bold underline" href="/templates/roster_import_template.xlsx" download>
             Download the Excel roster template
-          </a>{' '}
-          (drop-down lists for Role, Degree and Charter Member, and a sample row), fill it in, then save the Roster sheet as CSV and load it here.
+          </a>
+          .
         </p>
-        <div className="flex flex-wrap items-end gap-3">
-          <Field label="Roster file">
-            {(id) => (
-              <input
-                id={id}
-                type="file"
-                accept=".csv,text/csv"
-                className="text-sm"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void file.text().then(read);
-                }}
-              />
-            )}
-          </Field>
-        </div>
         {error ? (
           <Notice tone="error" onDismiss={() => setError(null)}>
             {error}

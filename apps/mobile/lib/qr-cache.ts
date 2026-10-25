@@ -6,7 +6,7 @@
 //   - which images were already prefetched into the platform's image cache.
 // The Donate screen warms every channel as it loads (warmCollectionQrs), so the code is ready before the tile is tapped.
 import { Image, type ImageSourcePropType } from 'react-native';
-import { isLoadableQrUrl } from '@/components/DonationQr';
+import { isLoadableQrUrl, resolveQrUrl } from '@/components/DonationQr';
 
 /** Bundled codes resolved to their file and pixel size, keyed by the bundled module. */
 const resolvedBundled = new Map<ImageSourcePropType, ImageSourcePropType>();
@@ -41,7 +41,8 @@ export const markQrUploadFailed = (url: string | null): void => {
 };
 
 /** The council's upload when it can be shown (and has not failed before), else the bundled code from memory. */
-export function cachedQrSource(uploadedUrl: string | null, fallback: ImageSourcePropType): { source: ImageSourcePropType; uploaded: boolean } {
+export function cachedQrSource(stored: string | null, fallback: ImageSourcePropType): { source: ImageSourcePropType; uploaded: boolean } {
+  const uploadedUrl = resolveQrUrl(stored);
   if (isLoadableQrUrl(uploadedUrl) && !qrUploadFailed(uploadedUrl)) {
     prefetch(uploadedUrl.trim());
     return { source: { uri: uploadedUrl.trim() }, uploaded: true };
@@ -51,8 +52,9 @@ export function cachedQrSource(uploadedUrl: string | null, fallback: ImageSource
 
 /** Resolves and prefetches every channel's code ahead of the tap. Safe to call on every load; repeats are free. */
 export function warmCollectionQrs(channels: readonly { uploadedUrl: string | null; fallback: ImageSourcePropType | null }[]): void {
-  for (const { uploadedUrl, fallback } of channels) {
+  for (const { uploadedUrl: stored, fallback } of channels) {
+    const uploadedUrl = resolveQrUrl(stored);
     if (fallback !== null) bundledSource(fallback);
-    if (isLoadableQrUrl(uploadedUrl) && !qrUploadFailed(uploadedUrl)) prefetch(uploadedUrl.trim());
+    if (isLoadableQrUrl(uploadedUrl) && !qrUploadFailed(stored)) prefetch(uploadedUrl.trim());
   }
 }

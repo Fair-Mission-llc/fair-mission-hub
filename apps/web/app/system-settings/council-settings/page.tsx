@@ -57,6 +57,8 @@
 // Settings gains the File Repository Mode card (FileRepositoryCard: Cloud or Local Network Server).
 // Sprint 10 Revision 4.0: the Meeting Check-In card moved to the Recorder Desk (and the Grand Knight Desk for a night the
 // Recorder is absent).
+// Sprint 10 Revision 5.0: Standard Bank Accounts gains the Payment QR Codes card (PaymentQrUploader): a '📁 Upload QR Code
+// Image' drop zone per enabled donation method.
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -85,6 +87,7 @@ import {
 } from '@/components/FeatureDeploymentParts';
 import { LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
 import { AccountOwnersMatrix } from '@/components/AccountOwnersMatrix';
+import { PaymentQrUploader } from '@/components/PaymentQrUploader';
 import { FileRepositoryCard } from '@/components/FileRepositoryCard';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
@@ -221,6 +224,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
           <>
             <SettingsLinkCards title="Payment & Account Settings" pages={BANK_ACCOUNT_SETTINGS_PAGES} />
             <AccountOwnersMatrix council={council} />
+            <PaymentQrUploader council={council} />
             <CouncilInstanceRecord council={council} />
           </>
         ),

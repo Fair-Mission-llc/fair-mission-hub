@@ -95,7 +95,7 @@ export const FILE_SERVER_USERNAME_MAX_LENGTH = 100;
 export const FILE_REPOSITORY_ROUTE = '/api/file-repository';
 
 /** The folders a repository is split into, one per kind of upload. */
-export const FILE_REPOSITORY_FOLDERS = ['Minutes', 'Vouchers', 'Media', 'Flyers', 'Meeting_Photos', 'Oral_Histories', 'Assets', 'Check_Photos', 'Official_Manuals'] as const;
+export const FILE_REPOSITORY_FOLDERS = ['Minutes', 'Vouchers', 'Media', 'Flyers', 'Meeting_Photos', 'Oral_Histories', 'Assets', 'Check_Photos', 'Official_Manuals', 'Payment_QR_Codes'] as const;
 export type FileRepositoryFolder = (typeof FILE_REPOSITORY_FOLDERS)[number];
 
 /**
@@ -106,7 +106,29 @@ export type FileRepositoryFolder = (typeof FILE_REPOSITORY_FOLDERS)[number];
 export const OFFICIAL_MANUALS_FOLDER = 'Official Manuals';
 
 /** The folder's name on the provider: 'Official Manuals' (with its space) for the guides, the folder id otherwise. */
-export const repositoryFolderName = (folder: FileRepositoryFolder): string => (folder === 'Official_Manuals' ? OFFICIAL_MANUALS_FOLDER : folder);
+export const repositoryFolderName = (folder: FileRepositoryFolder): string =>
+  folder === 'Official_Manuals' ? OFFICIAL_MANUALS_FOLDER : folder === 'Payment_QR_Codes' ? PAYMENT_QR_FOLDER : folder;
+
+/**
+ * Sprint 10 Revision 5.0: payment QR code images an Admin uploads for a donation method (Venmo, Zelle, Square...) on the
+ * Standard Bank Accounts drawer. The link is saved in CouncilDonationMethod.DonationMethodURL. A council with its own
+ * repository keeps them there ('Payment QR Codes'); a Google Drive council keeps them on the portal server, because a
+ * Drive file would need a Google sign-in for the phone to show it to a donor.
+ */
+export const PAYMENT_QR_FOLDER = 'Payment QR Codes';
+export const PAYMENT_QR_ROUTE = '/api/council/payment-qr';
+export const PAYMENT_QR_MAX_BYTES = 5 * 1024 * 1024;
+export const PAYMENT_QR_TYPES: Readonly<Record<string, string>> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
+export const UPLOAD_QR_CODE_LABEL = '📁 Upload QR Code Image';
+
+/** A link to a QR image kept on the portal server: c<council>/<file>. */
+export const paymentQrServerUrl = (councilId: number, fileName: string): string => `${PAYMENT_QR_ROUTE}?file=c${councilId}/${fileName}`;
+
+/** The council and file of a portal-server QR link, or null. */
+export function parsePaymentQrServerUrl(url: string): { councilId: number; fileName: string } | null {
+  const m = /^\/api\/council\/payment-qr\?file=c(\d+)\/(qr-[a-z0-9-]+\.(png|jpg|webp))$/.exec(url);
+  return m ? { councilId: Number(m[1]), fileName: m[2]! } : null;
+}
 
 export interface FileRepositorySettings {
   file_repository_mode: FileRepositoryMode;

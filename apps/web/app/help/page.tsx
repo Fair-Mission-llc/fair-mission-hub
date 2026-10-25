@@ -309,7 +309,7 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
       },
       {
         q: 'A Treasurer lost access to Donations after a role was renamed.',
-        a: ['Finance access follows the role names “Treasurer” and “Financial Secretary”. A Super Admin should restore the exact name under Global Governance Matrices → Role.'],
+        a: ['Finance access follows the role names “Treasurer” and “Financial Secretary”. A Super Admin should restore the exact name under Global Lookup Tables → Role.'],
       },
     ],
   },

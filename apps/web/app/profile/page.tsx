@@ -5,6 +5,7 @@
 // and status belong to the council's admins and are shown read-only.
 // Sprint 6C: the Display settings panel holds the member's Large Text Layout Mode switch (Member.flag_large_text_mode),
 // saved at once; it redraws the phone app in large bold white type on black with 140-point tap areas.
+import { enrollFaceId, faceIdSupported, forgetRememberedPasskey, rememberedPasskey } from '@/lib/webauthn-client';
 import { useEffect, useState } from 'react';
 import { describeError, LARGE_TEXT_TOGGLE_LABEL, MEMBER_BIOGRAPHY_MAX_LENGTH, prefersLargeText, type Member } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
@@ -342,6 +343,9 @@ function Profile() {
           <p className="mt-4 text-xs text-muted">Your name, member number, degree and type are kept by your council&apos;s admins. Ask them to correct these.</p>
         </Panel>
         <div className="flex flex-col gap-4">
+          <Panel title="Sign in with FaceID">
+            <FaceIdSetup />
+          </Panel>
           <Panel title="Display settings">
             <DisplaySettings member={m} onSaved={reloadOwn} />
           </Panel>
@@ -357,6 +361,66 @@ function Profile() {
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * Sprint 10 Revision 5.0: sets 'Sign in with FaceID' up on this browser (lib/webauthn-client.ts). The device's face or
+ * fingerprint check (Face ID, Touch ID, Windows Hello) creates a passkey whose public key the server keeps; the sign-in
+ * card then signs the member in with it. 'Forget on this computer' only drops the browser's reminder.
+ */
+function FaceIdSetup() {
+  const [supported, setSupported] = useState(false);
+  const [remembered, setRemembered] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+  useEffect(() => {
+    setSupported(faceIdSupported());
+    setRemembered(rememberedPasskey()?.username ?? null);
+  }, []);
+  if (!supported) return <p className="text-sm text-muted">This browser cannot use FaceID or fingerprint sign-in.</p>;
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm">
+        Sign in next time with this computer&apos;s face or fingerprint check (Face ID, Touch ID or Windows Hello) instead of typing your password.
+      </p>
+      {remembered ? <p className="text-sm font-bold">✓ FaceID sign-in is set up on this computer.</p> : null}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="gold"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            setMessage(null);
+            enrollFaceId()
+              .then((r) => {
+                setRemembered(r.username);
+                setMessage({ tone: 'info', text: 'FaceID sign-in is ready. Use Sign in with FaceID on the sign-in page.' });
+              })
+              .catch((err: unknown) => setMessage({ tone: 'error', text: err instanceof Error ? err.message : String(err) }))
+              .finally(() => setBusy(false));
+          }}
+        >
+          {busy ? 'Waiting for FaceID…' : remembered ? 'Set FaceID up again' : '🔐 Set up FaceID sign-in'}
+        </Button>
+        {remembered ? (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              forgetRememberedPasskey();
+              setRemembered(null);
+            }}
+          >
+            Forget on this computer
+          </Button>
+        ) : null}
+      </div>
+      {message ? (
+        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+          {message.text}
+        </Notice>
+      ) : null}
+    </div>
   );
 }
 

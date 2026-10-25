@@ -126,6 +126,7 @@ describe('portal permissions', () => {
       'expenses',
       'charities/propose',
       'expenses/queue',
+      'expenses/assets',
       'expenses/audit',
       'expenses/authorize',
       'finance/treasurer-desk',
@@ -184,6 +185,7 @@ describe('portal permissions', () => {
       'expenses',
       'charities/propose',
       'expenses/queue',
+      'expenses/assets',
       'expenses/audit',
       'expenses/authorize',
       'finance/treasurer-desk',
@@ -234,7 +236,7 @@ describe('portal permissions', () => {
       expect(portalAreas(u).filter((a) => a.startsWith('expenses/'))).toEqual([]);
     }
     // Sprint 5Z-4: the Grand Knight counter-signs on the authorization desk, and sees no other expense desk.
-    expect(portalAreas(actor({ isOfficer: true, roles: ['Grand Knight'] })).filter((a) => a.startsWith('expenses/'))).toEqual(['expenses/authorize']);
+    expect(portalAreas(actor({ isOfficer: true, roles: ['Grand Knight'] })).filter((a) => a.startsWith('expenses/'))).toEqual(['expenses/assets', 'expenses/authorize']);
   });
 
   describe('sidebar pillars (Sprint 5S, election desks Sprint 5U, lockable desks Sprint 5Z-10, seven pillars Sprint 6Z)', () => {
@@ -320,7 +322,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/view-as-member', 'system-settings/feedback', 'system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault', 'charities/registry', 'parishes']],
+        ['System Settings', ['system-settings/view-as-member', 'system-settings/feedback', 'system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault', 'expenses/assets', 'charities/registry', 'parishes']],
       ]);
     });
 
@@ -335,7 +337,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault', 'expenses/assets']],
       ]);
     });
 
@@ -347,7 +349,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'council-lookups', 'credentials-vault']],
+        ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'council-lookups', 'credentials-vault', 'expenses/assets']],
       ]);
     });
 
@@ -525,6 +527,7 @@ describe('portal permissions', () => {
         'expenses',
         'charities/propose',
           'expenses/queue',
+          'expenses/assets',
         // Sprint 5Z-4: the Financial Secretary alone issues written orders on the audit desk.
         ...(role === 'Financial Secretary' ? ['expenses/audit'] : []),
         ...(role === 'Treasurer' ? ['finance/treasurer-desk'] : []),

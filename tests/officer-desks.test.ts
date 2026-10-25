@@ -144,7 +144,8 @@ describe('Sprint 7J screens', () => {
     for (const title of ['Bible Verse of the Day', 'Live Actionable Reminders', 'Liturgical Feast Day Tracker', "Today's Event Agenda"]) expect(desks).toContain(title);
     expect(desks).toContain('db.expenses.listAuthorizationQueue');
     expect(desks).toContain('db.expenses.listTreasurerQueue');
-    expect(desks).toContain('/templates/roster_import_template.xlsx');
+    // Sprint 10 Revision 5.0: the template link lives in the single 'Import Supreme Roster CSV' drop zone.
+    expect(read('apps/web/components/modules/SupremeRosterUploader.tsx')).toContain('/templates/roster_import_template.xlsx');
     // Sprint 8A: the sweep left the Financial Secretary Desk for System Settings.
     expect(desks).not.toContain('db.members.sweepInactive');
     // The desks summarize; the signatures stay on the full desk pages behind their own gates.

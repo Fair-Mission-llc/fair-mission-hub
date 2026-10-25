@@ -2,7 +2,7 @@
 // The role-manual bar on top of an officer desk (Sprint 9 Master Hardening Pass). Each desk passes its seat's manual
 // token - TREASURER_MANUAL, FINANCIAL_SECRETARY_MANUAL or EXECUTIVE_GOVERNANCE_MANUAL (role-manuals.ts) - and gets:
 //   - '📘 <title> (PDF)', the compiled print edition opened in a new tab (GET /api/manuals/pdf);
-//   - '📋 Copy link', which copies that PDF's full address to share with a brother officer;
+//   (Sprint 10 Revision 5.0 removed the '📋 Copy link' button beside the PDF.)
 //   - 'How do I…', a search over that one manual's task workflows (GET /api/manuals). The best matches open in place
 //     with their steps, so the officer never leaves the desk. Nothing outside the seat's own manual is searched.
 import { useState } from 'react';
@@ -68,17 +68,7 @@ export function DeskManualHeader({ manual: token }: { manual: RoleManualToken })
   const tasks = useLoad(() => readManualTasks(roleManualTasksHref(manual.key)), [manual.key]);
   const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
   const answers = searchRoleManual(tasks.data ?? [], query);
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(new URL(pdfHref, window.location.origin).href);
-      setCopied('Link copied.');
-    } catch {
-      setCopied('Copy failed. Open the PDF and copy its address.');
-    }
-  };
 
   return (
     <section data-role-manual={manual.token} aria-label={`${manual.title} help`} className="flex flex-col gap-2 rounded border-2 border-gold bg-white p-3 text-navy">
@@ -86,10 +76,6 @@ export function DeskManualHeader({ manual: token }: { manual: RoleManualToken })
         <a href={pdfHref} target="_blank" rel="noopener noreferrer" className="rounded border-2 border-navy bg-navy px-3 py-1 text-sm font-bold text-white">
           📘 {manual.title} (PDF)
         </a>
-        <Button variant="secondary" size="sm" onClick={copyLink}>
-          📋 Copy link
-        </Button>
-        {copied ? <span role="status" className="text-xs">{copied}</span> : null}
         <label className="ml-auto flex min-w-[16rem] flex-1 items-center gap-2 text-sm font-bold">
           How do I…
           <Input

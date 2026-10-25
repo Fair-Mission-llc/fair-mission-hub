@@ -303,7 +303,7 @@ function CouncilAssets() {
 
 export default function CouncilAssetsPage() {
   return (
-    <RequireArea area="expenses">
+    <RequireArea area="expenses/assets">
       <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
         <CouncilAssets />
       </Suspense>

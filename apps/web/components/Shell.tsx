@@ -7,6 +7,7 @@
 // Sprint 8S Revision 8: the boot sequence shows the launch splash (LaunchSplash: the emblem and the official app name,
 // held at least SPLASH_MIN_MS once per browser tab), and every sign-in view carries the About / Terms of Service /
 // Privacy Policy footer (LegalFooter.tsx). The development login hint is gone from the sign-in card.
+import { faceIdSupported, rememberedPasskey } from '@/lib/webauthn-client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -355,6 +356,45 @@ function PasswordReset({ initialEmail, onDone, onCancel }: { initialEmail: strin
   );
 }
 
+/**
+ * Sprint 10 Revision 5.0: the 'Sign in with FaceID' row on the sign-in card, like the phone's welcome screen. It shows
+ * when the browser can use WebAuthn; the device's face or fingerprint check signs in a member who set FaceID up on
+ * My Profile (lib/webauthn-client.ts, verified by the server).
+ */
+function FaceIdSignIn({ onError }: { onError: (message: string) => void }) {
+  const { signInWithFaceId } = useSession();
+  const [available, setAvailable] = useState(false);
+  const [remembered, setRemembered] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    setAvailable(faceIdSupported());
+    setRemembered(rememberedPasskey()?.username ?? null);
+  }, []);
+  if (!available) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <Button
+        variant="gold"
+        disabled={busy}
+        onClick={() => {
+          setBusy(true);
+          signInWithFaceId()
+            .catch((err: unknown) => onError(err instanceof Error ? err.message : String(err)))
+            .finally(() => setBusy(false));
+        }}
+      >
+        {busy ? 'Waiting for FaceID…' : '🔐 Sign in with FaceID'}
+      </Button>
+      <p className="text-center text-xs text-muted">{remembered ? `Set up on this computer for ${remembered}.` : 'Set FaceID up on My Profile after you sign in.'}</p>
+      <div className="flex items-center gap-2 text-xs text-muted" aria-hidden="true">
+        <span className="h-px flex-1 bg-line" />
+        or
+        <span className="h-px flex-1 bg-line" />
+      </div>
+    </div>
+  );
+}
+
 function SignIn() {
   const { signIn } = useSession();
   const [username, setUsername] = useState('');
@@ -435,6 +475,7 @@ function SignIn() {
     <form onSubmit={(e) => void submit(e)} className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
       {brand}
       {error ? <Notice tone="error">{error}</Notice> : null}
+      <FaceIdSignIn onError={setError} />
       <Field label="Email">{(id) => <Input id={id} type="email" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required />}</Field>
       <Field label="Password">
         {(id) => <PasswordInput id={id} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />}

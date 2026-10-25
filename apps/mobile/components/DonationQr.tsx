@@ -3,6 +3,7 @@
 // council uploads one (the dev seed stores placeholder:// links), or if it fails to load, a framed notice
 // says so instead of an empty box, so the member knows to take the payment another way.
 // Sprint 9 Revision 6.0: under the heading, the account the donor pays into (payee, merchantAccountLine).
+import { HUB_DATA_DRIVER } from '@kofc/shared';
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { AppText } from '@/components/ui';
@@ -10,10 +11,22 @@ import { useTheme } from '@/lib/layout-mode';
 
 const LOADABLE = /^(https?:|data:image\/|file:)/i;
 
+/**
+ * Sprint 10 Revision 5.0: a QR code uploaded on the web is stored as a portal link ('/api/council/payment-qr?...' or
+ * '/api/file-repository?...'). On the pilot hub the phone loads it from the hub laptop; otherwise it cannot be shown.
+ */
+export function resolveQrUrl(url: string | null, hubUrl: string = (process.env.EXPO_PUBLIC_HUB_URL ?? '').replace(/\/+$/, '')): string | null {
+  if (url === null) return null;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('/api/')) return hubUrl && (process.env.EXPO_PUBLIC_DATA_DRIVER ?? 'sqlite') === HUB_DATA_DRIVER ? `${hubUrl}${trimmed}` : null;
+  return trimmed;
+}
+
 /** True when a council's QR link is one the phone can load: not null, blank or a dev-seed placeholder:// link. */
 export const isLoadableQrUrl = (url: string | null): url is string => url !== null && LOADABLE.test(url.trim());
 
-export function DonationQr({ url, methodName, payee }: { url: string | null; methodName: string; payee: string }) {
+export function DonationQr({ url: stored, methodName, payee }: { url: string | null; methodName: string; payee: string }) {
+  const url = resolveQrUrl(stored);
   const { color, radius, space } = useTheme();
   const [failed, setFailed] = useState(false);
   const usable = isLoadableQrUrl(url) && !failed;

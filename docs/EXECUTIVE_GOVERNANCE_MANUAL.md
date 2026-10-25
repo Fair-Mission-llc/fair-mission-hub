@@ -240,7 +240,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Global System Parameters** | Super Admins | Dues, organization type and platform settings | 8.5 (Administrator User Guide) |
 | **Councils** | Super Admins | The council list | 5.3 (Administrator User Guide) |
 | **Global Charities Registry** | Super Admins | The shared charity list | 5.3 (Administrator User Guide) |
-| **Global Governance Matrices** | Super Admins | The global lookup tables | 5.3 (Administrator User Guide) |
+| **Global Lookup Tables** | Super Admins | The global lookup tables | 5.3 (Administrator User Guide) |
 | **Parish & Pastors Linkage** | Admins | Parishes and their pastors | 5.3 (Administrator User Guide) |
 | **Remote Assistance Desk** | Super Admins | Co-watching help sessions | 12.3 |
 | **Impersonate Council Admin** | Super Admins | View the portal as a council Admin you are helping | 9.4 (Administrator User Guide) |
@@ -263,7 +263,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
 | **Resources** | Council Artifacts, Marketing Factory, Cross-Council Loaner Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
-| **System Settings** | Councils, Feature Flags Control Center, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Archive, Supreme Council Sync, Council Lookup Tables, Credentials Vault, Global Charities Registry, Global Governance Matrices, Parish & Pastors Linkage |
+| **System Settings** | Councils, Feature Flags Control Center, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Archive, Supreme Council Sync, Council Lookup Tables, Credentials Vault, 🛠️ Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |
 
 The **System Settings** pillar had the name **Setup** in earlier versions of the portal.
 
@@ -1407,7 +1407,7 @@ On the phone, the **Council assets** button on the **Home** tab opens a list of 
 
 **Goal:** File a photo of the item in the council Google Drive and attach the photo to its asset record.
 
-**Start point:** Sidebar → Finances → **My Expense Reports** → **Council assets** → **Edit** (or **Add photo**) on the asset row.
+**Start point:** Sidebar → System Settings → **🛠️ Council Asset Management** → **Edit** (or **Add photo**) on the asset row. The **Council assets** link on **My Expense Reports** opens the same page.
 
 **Steps:**
 1. Select **Upload photo** in the **Asset photo** box.

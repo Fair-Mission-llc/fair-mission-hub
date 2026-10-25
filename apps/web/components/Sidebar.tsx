@@ -129,7 +129,8 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'elections/appointments': { href: '/elections/appointments', label: 'Appointed Leadership Matrix', hint: "The Grand Knight's appointments and vacant seats" },
   'supreme-sync': { href: '/supreme-sync', label: 'Supreme Council Sync', hint: 'Audit and file Forms 1728 and 1295' },
-  lookups: { href: '/lookups', label: 'Global Governance Matrices', hint: 'Maintain the global lookup tables' },
+  lookups: { href: '/lookups', label: 'Global Lookup Tables', hint: 'Maintain the global lookup tables' },
+  'expenses/assets': { href: '/expenses/assets', label: '🛠️ Council Asset Management', hint: "The council's capital assets: serial numbers, locations and photos" },
   parishes: { href: '/parishes', label: 'Parish & Pastors Linkage', hint: 'Parishes and their pastors' },
   councils: { href: '/councils', label: 'Councils', hint: 'Add, edit and delete councils and their registration profiles' },
   'feature-flags': {

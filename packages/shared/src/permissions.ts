@@ -50,6 +50,7 @@ export type PortalArea =
   | 'ledger'
   | 'expenses'
   | 'expenses/queue'
+  | 'expenses/assets'
   | 'expenses/audit'
   | 'expenses/authorize'
   | 'expenses/disbursements'
@@ -734,6 +735,9 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   // Grant (Sprint 5Z-2; the separate intake sheet folded into it in Sprint 5Z-Member-Charity, so there is no other entry path).
   areas.push('ledger', 'expenses', 'charities/propose');
   if (isAdmin(u) || isFinanceOfficer(u)) areas.push('expenses/queue');
+  // Sprint 10 Revision 5.0: '🛠️ Council Asset Management' (/expenses/assets) in the System Settings pillar - the asset
+  // managers (expense leadership, the Grand Knight and Deputy Grand Knight) and the Trustees, who add photos.
+  if (isAdmin(u) || canAttachAssetPhoto(u, u.councilId)) areas.push('expenses/assets');
   if (isAdmin(u) || isFinancialSecretary(u)) areas.push('expenses/audit');
   if (isAdmin(u) || holdsGrandKnightSeat(u)) areas.push('expenses/authorize');
   // Sprint 6Q: the Treasurer codes each ordered sheet to a budget line and a ledger account before the Grand Knight signs.
@@ -856,6 +860,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'supreme-sync',
       'council-lookups',
       'credentials-vault',
+      'expenses/assets',
       'charities/registry',
       'lookups',
       'parishes',

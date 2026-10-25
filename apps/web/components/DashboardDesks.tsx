@@ -696,28 +696,11 @@ function LoanerLibraryDrawer({ user, councilId }: { user: SessionUser; councilId
  * Admins (canSyncSupremeRoster).
  */
 function RosterImportsDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
-  return (
-    <>
-      <p className="text-sm">
-        <span className="font-bold">Building the roster by hand?</span>{' '}
-        <a className="font-bold underline" href="/templates/roster_import_template.xlsx" download>
-          Download the Excel roster template
-        </a>
-        , fill it in, then save the Roster sheet as CSV and upload it below.
-      </p>
-      {canSyncSupremeRoster(user, councilId) ? (
-        <SupremeRosterUploader councilId={councilId} />
-      ) : (
-        <p className="text-sm text-muted">Only the council&apos;s Financial Secretary, its Admins and Super Admins upload the roster.</p>
-      )}
-      <p className="text-xs text-muted">
-        Looking for the inactivity sweep? It is on{' '}
-        <Link href="/system-settings/council-settings" className="font-bold underline">
-          System Settings: Council Wide Settings
-        </Link>
-        , for the council&apos;s Admins.
-      </p>
-    </>
+  // Sprint 10 Revision 5.0: flattened to the one 'Import Supreme Roster CSV' drop zone.
+  return canSyncSupremeRoster(user, councilId) ? (
+    <SupremeRosterUploader councilId={councilId} />
+  ) : (
+    <p className="text-sm text-muted">Only the council&apos;s Financial Secretary, its Admins and Super Admins import the roster.</p>
   );
 }
 

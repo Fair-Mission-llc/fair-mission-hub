@@ -259,7 +259,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 **Steps:**
 1. Open the tab: **Activities**, **Donation types**, **Enabled donation methods**, **Budget categories** or **Meeting Agenda Templates**.
 2. Edit the rows. Each changed row shows **Edited**.
-3. For a QR method, paste the image link in **QR code image URL**.
+3. For a QR method, upload the image on **Council Wide Settings** → **Standard Bank Accounts** → **Payment QR Codes** (8.12), or paste an image link in **QR code image URL**.
 4. Select **Save changes**.
 
 <!-- KEEP_IMAGE: council lookup tables capture -->
@@ -309,7 +309,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 | A message says the endpoint must be a cognitiveservices.azure.com address. | The value is not the Azure endpoint. | Copy **Endpoint** from **Keys and Endpoint**. |
 
 ### 5.3 Keep the global lists, councils, parishes and charities
-> **Prerequisite (who can do this):** You must be a Super Admin for **Global Governance Matrices** and **Councils**. You must be a council Admin or a Super Admin for **Parish & Pastors Linkage**. You must be a charity registry keeper for **Global Charities Registry**.
+> **Prerequisite (who can do this):** You must be a Super Admin for **Global Lookup Tables** and **Councils**. You must be a council Admin or a Super Admin for **Parish & Pastors Linkage**. You must be a charity registry keeper for **Global Charities Registry**.
 > **Warning:** a value marked **Built in** cannot be renamed or deleted.
 
 **Goal:** Keep the lists that every council shares.
@@ -322,7 +322,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 3. Save.
 
 <!-- KEEP_IMAGE: global governance matrices capture -->
-![Global Governance Matrices (/lookups)](../generated/dashboard_visual_catalog/lookups.png)
+![Global Lookup Tables (/lookups)](../generated/dashboard_visual_catalog/lookups.png)
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: councils capture -->
@@ -337,7 +337,7 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 ![Global Charities Registry (/charities/registry)](../generated/dashboard_visual_catalog/charities_registry.png)
 <!-- /KEEP_IMAGE -->
 
-The base dues rate, the tenant type and the **Platform Settings** are not on **Global Governance Matrices**. A Super Admin sets them on **Global System Parameters** (sections 8.5 to 8.8).
+The base dues rate, the tenant type and the **Platform Settings** are not on **Global Lookup Tables**. A Super Admin sets them on **Global System Parameters** (sections 8.5 to 8.8).
 
 **Expected result:** Every council sees the new value.
 
@@ -571,7 +571,7 @@ The **Global System Parameters** page holds the numbers that sit above the setti
 | **Global Council Parameters Dashboard** | The base dues rate and the tenant type (Knights of Columbus council or a white-labelled organization) | One council at a time |
 | **Platform Settings** | Three cards of numbers (section 8.6) | Every council at once |
 
-The **Platform Settings** card had the name **Platform Limits** in earlier versions. The cards were on **Global Governance Matrices** before that. The **Feature Flags Control Center** holds only the on/off module switches.
+The **Platform Settings** card had the name **Platform Limits** in earlier versions. The cards were on **Global Lookup Tables** before that. The **Feature Flags Control Center** holds only the on/off module switches.
 
 ### 8.6 Concept: the platform settings
 | Card | On-screen label | Default | Allowed values | What the setting controls |
@@ -707,6 +707,26 @@ The card shows only the settings of the provider you choose:
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The message says the copy was not filed. | The repository has no key or location saved, or Google Drive is not connected. | Check **File Repository Mode** (8.9) and the key in the Credentials Vault. The download still works. |
+
+### 8.12 Upload a payment QR code image
+> **Who can do this:** council Admins, the Financial Secretary and the Treasurer, and Super Admins.
+
+**Goal:** Give donors the council's own Venmo, Zelle or Square QR code on the phone.
+
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Standard Bank Accounts** drawer → **Payment QR Codes**.
+
+**Steps:**
+1. Find the payment method's row, for example **Venmo**.
+2. Drag the QR code image onto **📁 Upload QR Code Image**, or click the box and choose the image (PNG, JPEG or WebP, up to 5 MB).
+3. Wait for the message.
+
+**Expected result:** The new code shows in the row. The phone's collection screen shows it to donors. The image is kept in the council's file repository, or on the portal server for a Google Drive council.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"Upload the QR code as a PNG, JPEG or WebP image."* | The file is another type. | Save the code as a PNG or JPEG image. |
+| The method is not in the list. | The council has not enabled the method. | Enable it on **Council Lookup Tables** → **Enabled donation methods** (5.1). |
 
 ## 9. Access requests, impersonation and remote help
 

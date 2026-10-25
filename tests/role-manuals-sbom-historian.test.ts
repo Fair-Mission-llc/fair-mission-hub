@@ -214,7 +214,9 @@ describe('the desk manual headers', () => {
     }
     const header = read('apps/web/components/DeskManualHeader.tsx');
     expect(header).toContain('How do I…');
-    expect(header).toContain('navigator.clipboard.writeText');
+    // Sprint 10 Revision 5.0: the '📋 Copy link' button is gone.
+    expect(header).not.toContain('navigator.clipboard.writeText');
+    expect(header).not.toContain('onClick={copyLink}');
   });
 
   it('serves the tasks and the PDF to signed-in members only', () => {

@@ -457,13 +457,13 @@ The platform has no background scheduler. The Financial Secretary or an Admin ru
 
 **Goal:** Bring the Supreme roster into the platform.
 
-**Start point:** **Active Desks** row → **Financial Secretary Desk** → **Excel Roster Imports** → **Supreme roster CSV upload**.
+**Start point:** **Active Desks** row → **Financial Secretary Desk** → **Excel Roster Imports** → **Import Supreme Roster CSV**.
 
 **Steps:**
 1. Save the Supreme Excel export as a CSV file.
-2. Choose the file in **Roster file**.
-3. Check the row count on the button.
-4. Select **Sync *n* roster rows from Supreme**.
+2. Drag the file onto **Import Supreme Roster CSV**, or click the box and choose the file. The 14 columns are matched for you.
+3. Check the row count in the box and on the button.
+4. Select **Sync *n* roster rows from Supreme**. New members get the **🆕 New Member** badge for 180 days and the welcome email.
 5. Read the skipped rows and the reasons.
 
 <!-- KEEP_IMAGE: supreme sync capture -->
@@ -546,7 +546,7 @@ The platform keeps a history of every council that a member belongs to. The hist
 
 **Goal:** Build a roster file by hand in Excel and load the file.
 
-**Start point:** **Active Desks** row → **Financial Secretary Desk** → **Excel Roster Imports** → **Supreme roster CSV upload**.
+**Start point:** **Active Desks** row → **Financial Secretary Desk** → **Excel Roster Imports** → **Import Supreme Roster CSV**.
 
 **Steps:**
 1. Select **Download the Excel roster template**.
@@ -554,7 +554,7 @@ The platform keeps a history of every council that a member belongs to. The hist
 3. Fill one row for each member. Use the drop-down lists for **Role**, **Degree** and **Charter Member**.
 4. Read the **Instructions** sheet for the rules of each column.
 5. Save the **Roster** sheet as CSV (File → Save As → CSV UTF-8).
-6. Load the CSV file in **Roster file**.
+6. Drag the CSV file onto **Import Supreme Roster CSV**, or click the box and choose the file.
 7. Select **Sync *n* roster rows from Supreme**. Each new member gets a welcome email at once.
 
 **Expected result:** A message counts the new members, the updated join dates and the skipped rows.
@@ -656,7 +656,7 @@ A donation by check now records the number printed on the check. The number help
 
 **Goal:** File a photo of the item in the council Google Drive and attach the photo to its asset record.
 
-**Start point:** Sidebar → Finances → **My Expense Reports** → **Council assets** → **Edit** (or **Add photo**) on the asset row.
+**Start point:** Sidebar → System Settings → **🛠️ Council Asset Management** → **Edit** (or **Add photo**) on the asset row. The **Council assets** link on **My Expense Reports** opens the same page.
 
 **Steps:**
 1. Select **Upload photo** in the **Asset photo** box.
@@ -946,7 +946,7 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 6. To follow a sheet, select the **Expense Report (ER) Workflow** folder under **[ 📖 Reference Workflows ]**, or the **Expense Report (ER) Routing Track** folder. To record a donation, select the **Charitable Donation Records** tile. To endorse an approved charity grant, select the **FS/GK Compliance Endorsements** folder (section 1.7.1).
 7. Select the **Excel Roster Imports** tile. Select **Download the Excel roster template**.
 8. Fill in the template. Save the **Roster** sheet as CSV.
-9. In the same drawer, choose the CSV file in **Roster file**. Select **Sync *n* roster rows from Supreme**. Each new member gets a welcome email.
+9. In the same drawer, drag the CSV file onto **Import Supreme Roster CSV**. Select **Sync *n* roster rows from Supreme**. Each new member gets a welcome email.
 
 **Expected result:** The signed sheets move to the Treasurer. The count on the **Auditing & Return Queue** folder drops when you close the folder. The new members show in the roster.
 

@@ -93,6 +93,7 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   'system-settings/remote-assistance': 'settings',
   'system-settings/impersonate': 'settings',
   'system-settings/view-as-member': 'settings',
+  'expenses/assets': 'ledgers',
   'system-settings/feedback': 'settings',
 };
 

@@ -2,6 +2,7 @@
 // Signed-in member and startup state for the admin portal.
 // The memory driver lives in the browser tab (see services/db.ts), so a reload starts a fresh seeded
 // database and asks for sign-in again. That is the mock; the remote driver will hold real sessions.
+import { signInWithFaceIdOnServer } from '@/lib/webauthn-client';
 import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
@@ -27,6 +28,11 @@ interface SessionValue {
   startupError: string | null;
   /** Resolves true when the credentials were accepted. */
   signIn(username: string, password: string): Promise<boolean>;
+  /**
+   * Sprint 10 Revision 5.0: 'Sign in with FaceID' - the device's face or fingerprint check, verified by the server
+   * (lib/webauthn-client.ts), which sets the session cookie. Rejects with the reason in plain words.
+   */
+  signInWithFaceId(): Promise<void>;
   signOut(): void;
   /**
    * Sprint 7F: the Super Admin behind a read-only view of the portal as `user`, or null on an ordinary session. While it
@@ -108,6 +114,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     },
     [router],
   );
+  const signInWithFaceId = useCallback(async () => {
+    const found = await signInWithFaceIdOnServer();
+    setUser(found);
+    router.replace(HOME_LANDING_ROUTE);
+  }, [router]);
   const [impersonator, setImpersonator] = useState<SessionUser | null>(null);
   const [viewAsCouncil, setViewAsCouncil] = useState<{ label: string; crossCouncil: boolean } | null>(null);
   const [loadedFeatures, setLoadedFeatures] = useState<{ councilId: number; flags: FeatureFlags; tenantType: TenantType } | null>(null);
@@ -192,6 +203,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       ready,
       startupError,
       signIn,
+      signInWithFaceId,
       signOut,
       impersonator,
       viewAsCouncil,
@@ -209,7 +221,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       featuresChanged,
       rolesChanged,
     }),
-    [user, ready, startupError, signIn, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged, rolesChanged],
+    [user, ready, startupError, signIn, signInWithFaceId, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged, rolesChanged],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

@@ -366,6 +366,28 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 | *"That email and password do not match a registered member."* | The email or the password is wrong. | Check both fields. |
 | You never created a password. | You create the password in the phone app only. | Do task 2.2 on your phone first. |
 
+### 2.5.1 Sign in to the web portal with Face ID or a fingerprint
+
+> **Who can do this:** any member whose council allows biometric sign-in, on a computer or tablet with Face ID, Touch ID or Windows Hello.
+
+**Goal:** Sign in to the web portal without typing your password.
+
+**Start point:** My Profile (header member menu) → **Sign in with FaceID** card, once; then the portal's sign-in page.
+
+**Steps:**
+1. Sign in with your password (2.5). Open **My Profile**.
+2. Select **🔐 Set up FaceID sign-in**. Look at the camera or touch the sensor when the computer asks.
+3. Next time, select **🔐 Sign in with FaceID** on the sign-in page. Look at the camera or touch the sensor.
+
+**Expected result:** The portal opens with the sidebar on the left. Your password is not asked.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The sign-in page has no **Sign in with FaceID** button. | The browser cannot use Face ID or fingerprint sign-in. | Use a current browser, or sign in with your password. |
+| *"FaceID sign-in is no longer set up for this account."* | Your login changed, or your council switched biometric sign-in off. | Sign in with your password. Set FaceID up again on **My Profile**. |
+| *"Your council has switched biometric sign-in off."* | The council turned off biometric sign-in. | Sign in with your password. |
+
 ### 2.6 Reset a forgotten password
 
 > **Who can do this:** any member with a password.

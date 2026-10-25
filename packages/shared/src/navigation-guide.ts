@@ -114,6 +114,9 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   'system-settings/impersonate': {
     member: 'Finds a council Admin in any council by typing a name, or by opening a council. Click Impersonate to see the portal as that Admin, read-only, while you help them.',
   },
+  'expenses/assets': {
+    member: "Lists the council's long-term assets with their serial numbers, locations and photos. Asset managers edit the details; Trustees add photos.",
+  },
   'system-settings/view-as-member': {
     member: "Shows what one member of your own council sees: their sidebar links, their desks and their coming shifts. Read-only; you stay signed in as yourself.",
   },

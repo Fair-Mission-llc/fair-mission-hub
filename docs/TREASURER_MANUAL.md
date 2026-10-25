@@ -508,7 +508,7 @@ The Financial Dashboard has no **💰 Log Concluded Event Revenues** card. Use t
 
 **Goal:** File a photo of the item in the council Google Drive and attach the photo to its asset record.
 
-**Start point:** Sidebar → Finances → **My Expense Reports** → **Council assets** → **Edit** (or **Add photo**) on the asset row.
+**Start point:** Sidebar → System Settings → **🛠️ Council Asset Management** → **Edit** (or **Add photo**) on the asset row. The **Council assets** link on **My Expense Reports** opens the same page.
 
 **Steps:**
 1. Select **Upload photo** in the **Asset photo** box.

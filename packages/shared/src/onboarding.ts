@@ -181,6 +181,9 @@ export function assertMayResendSetupCode(actor: MemberWriteActor, councilId: num
   assertMayImportSupremeRoster(actor, councilId, action);
 }
 
+/** Sprint 10 Revision 5.0: the Financial Secretary Desk's single roster drop zone. */
+export const IMPORT_SUPREME_ROSTER_TITLE = 'Import Supreme Roster CSV';
+
 /** The roster export's columns, by their header with case, spaces and punctuation ignored. */
 const ROSTER_HEADERS: Record<string, keyof SupremeRosterRow> = {
   membernumber: 'MemberNumber',
