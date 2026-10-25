@@ -95,7 +95,7 @@ describe('roster import template', () => {
     expect(existsSync(join(__dirname, '..', 'apps/web/public/templates/roster_import_template.xlsx'))).toBe(true);
     expect(script).toContain('from openpyxl');
     expect(read('scripts/requirements.txt')).toMatch(/^openpyxl/m);
-    expect(read('apps/web/app/supreme-sync/page.tsx')).toContain('/templates/roster_import_template.xlsx');
+    expect(read('apps/web/components/modules/SupremeRosterUploader.tsx')).toContain('/templates/roster_import_template.xlsx');
   });
 
   it('pulls the Role drop-down from the election lookup definitions', () => {
@@ -383,7 +383,7 @@ describe('Sprint 7A screens', () => {
   });
 
   it('gives Admins the charter flag on the roster and the inactivity sweep on Council Wide Settings (Sprint 8A)', () => {
-    const roster = read('apps/web/app/members/page.tsx');
+    const roster = read('apps/web/components/modules/MemberRecordForm.tsx');
     expect(roster).not.toContain('db.members.sweepInactive');
     expect(roster).toContain('Charter member');
     expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('db.members.sweepInactive');

@@ -136,6 +136,7 @@ import {
   type Meeting,
   type MinutesCountdown,
   type SessionUser,
+  canSyncSupremeRoster,
 } from '@kofc/shared';
 import { BankStatementMatchWindow, BudgetVsActualsModule, MotionsLedgerModule } from '@/components/DeskModules';
 import { DeskBlotter } from '@/components/DeskDrawers';
@@ -168,7 +169,8 @@ import { TrackingSteps } from '@/components/IntakeParts';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
-import { MemberRosterDirectory } from '@/components/MemberRosterDirectory';
+import { MemberRosterDirectory } from '@/components/modules/MemberRosterDirectory';
+import { SupremeRosterUploader } from '@/components/modules/SupremeRosterUploader';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { DeskRow } from '@/components/WorkspaceTabs';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
@@ -618,26 +620,26 @@ function LoanerLibraryDrawer({ user, councilId }: { user: SessionUser; councilId
   );
 }
 
-/** The Excel Roster Imports drawer on the Financial Secretary Desk. */
-function RosterImportsDrawer() {
+/**
+ * The Excel Roster Imports drawer on the Financial Secretary Desk. Sprint 10 Revision 3.0: the Supreme roster CSV
+ * uploader lives here, and only here (SupremeRosterUploader), for the council's Financial Secretary, Admins and Super
+ * Admins (canSyncSupremeRoster).
+ */
+function RosterImportsDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
   return (
     <>
-      <ul className="flex flex-col gap-3 text-sm">
-        <li>
-          <span className="font-bold">1. Build the roster.</span>{' '}
-          <a className="font-bold underline" href="/templates/roster_import_template.xlsx" download>
-            Download the Excel roster template
-          </a>
-          , fill it in, then save the Roster sheet as CSV.
-        </li>
-        <li>
-          <span className="font-bold">2. Import it.</span> Load the CSV on the{' '}
-          <Link href="/supreme-sync" className="font-bold underline">
-            Supreme roster sync
-          </Link>{' '}
-          card. New members get the welcome email and a one-time setup code.
-        </li>
-      </ul>
+      <p className="text-sm">
+        <span className="font-bold">Building the roster by hand?</span>{' '}
+        <a className="font-bold underline" href="/templates/roster_import_template.xlsx" download>
+          Download the Excel roster template
+        </a>
+        , fill it in, then save the Roster sheet as CSV and upload it below.
+      </p>
+      {canSyncSupremeRoster(user, councilId) ? (
+        <SupremeRosterUploader councilId={councilId} />
+      ) : (
+        <p className="text-sm text-muted">Only the council&apos;s Financial Secretary, its Admins and Super Admins upload the roster.</p>
+      )}
       <p className="text-xs text-muted">
         Looking for the inactivity sweep? It is on{' '}
         <Link href="/system-settings/council-settings" className="font-bold underline">
@@ -840,7 +842,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
             case 'form-1295':
               return <TrusteeAuditDesk />;
             case 'roster-imports':
-              return <RosterImportsDrawer />;
+              return <RosterImportsDrawer user={user} councilId={councilId} />;
             default:
               return <KnowledgeArchiveDrawer user={user} councilId={councilId} />;
           }

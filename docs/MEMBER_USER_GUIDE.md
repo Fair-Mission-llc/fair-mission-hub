@@ -140,7 +140,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 | **Member Actions Hub** → **Hour ledger** tab | Faith In Action | Your logged service hours |
 | **My Expense Reports** | Finances | Your expense reports and their status |
 | **Propose Charity Grant** | Finances | The charity proposal form |
-| **Annual Budget Projections** | Finances | The council's annual budget |
+| **Annual Budget Center** | Finances | The council's annual budget |
 | **Post-event Ledger** | Performance | Event results (event owners record them here) |
 
 </details>

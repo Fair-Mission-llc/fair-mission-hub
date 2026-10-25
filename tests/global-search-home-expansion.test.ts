@@ -83,7 +83,7 @@ describe('searchGlobal', () => {
     expect(items).not.toContain('members');
     const code = read('apps/web/components/GlobalSearch.tsx');
     expect(code).toContain('navigationGuide(user, features, tenantType)');
-    expect(code).toContain("memberHref: areas.has('members') ? '/members' : undefined");
+    expect(code).toContain("memberHref: areas.has('roster') ? '/roster' : undefined");
   });
 });
 

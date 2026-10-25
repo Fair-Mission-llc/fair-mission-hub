@@ -20,22 +20,24 @@
 //   - Sprint 6Q: the '💰 Log Concluded Event Revenues' card (finance.logConcludedRevenue, RevenueParts) lets the
 //     Treasurer (or a Super Admin; canLogConcludedRevenue) post what a past event or an activity raised straight into the
 //     ledger. The Treasurer Ledger Audit Desk (/finance/treasurer-desk) is linked from the title bar.
+//   - Sprint 10 Revision 3.0: the Log Concluded Event Revenues card and the bank statement table are gone from this
+//     page. Lump-sum revenue and corrected cash bag counts are posted from the Treasurer Desk's batch coder (the
+//     Lump-Sum Financial Override row, CashAuditParts); bank statements are matched in the Treasurer Desk's Bank
+//     Statement Match-Window. The quick-action hub keeps only the asset transfer drawer.
 import Link from 'next/link';
 import { useState } from 'react';
 import {
   buildDuesForecast,
   buildLiquidityGauges,
-  canLogConcludedRevenue,
   canManageBudgetForecast,
   canOpenTreasurerDesk,
   canPostGeneralLedger,
   currentFraternalYear,
 } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { BalanceScale, BankStatementUploader, LiquidityGaugeCard, TransferDrawer } from '@/components/FinanceParts';
+import { BalanceScale, LiquidityGaugeCard, TransferDrawer } from '@/components/FinanceParts';
 import { BudgetAnalyzerCard } from '@/components/BudgetAnalyzerParts';
 import { NetWorthCard } from '@/components/NetWorthParts';
-import { ConcludedRevenueCard } from '@/components/RevenueParts';
 import { ConcludedPerformanceGrid, DuesForecastCard } from '@/components/DuesParts';
 import { Button, Empty, Notice, PageTitle, Panel } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';
@@ -114,8 +116,6 @@ function FinanceDashboard() {
         </Panel>
       </div>
 
-      {canLogConcludedRevenue(user, councilId) && chart.data ? <ConcludedRevenueCard councilId={councilId} chart={chart.data} onDone={reload} /> : null}
-
       {worth.error ? <Notice tone="error">{worth.error}</Notice> : null}
       {worth.data ? <NetWorthCard worth={worth.data} /> : worth.loading ? <p className="text-sm">Loading…</p> : null}
 
@@ -150,15 +150,14 @@ function FinanceDashboard() {
       >
         {!canPost ? (
           <Notice tone="info">
-            Posting transfers and reconciling bank statements belongs to the council&apos;s Financial Secretary and Treasurer (and Super Admins). You can read every figure on this
-            page.
+            Posting transfers belongs to the council&apos;s Financial Secretary and Treasurer (and Super Admins). You can read every figure on this page.
           </Notice>
-        ) : chart.data ? (
-          <div className="flex flex-col gap-2">
-            <h3 className="font-serif text-lg font-bold">Electronic bank statement audit</h3>
-            <BankStatementUploader councilId={councilId} chart={chart.data} onDone={reload} />
-          </div>
-        ) : null}
+        ) : (
+          <p className="text-sm">
+            Lump-sum revenue and cash bag corrections are posted from the Treasurer Desk&apos;s batch coder; bank statements are matched in its Bank Statement
+            Match-Window.
+          </p>
+        )}
       </Panel>
 
       {transferring && chart.data ? <TransferDrawer councilId={councilId} chart={chart.data} onClose={() => setTransferring(false)} onDone={reload} /> : null}

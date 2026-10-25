@@ -13,7 +13,7 @@ import {
   cleanBulletinLayout,
   cleanHistorianBulletin,
   COUNCIL_HISTORIAN_ROLE,
-  COUNCIL_SETTINGS_CABINET_TABS,
+  COUNCIL_SETTINGS_DRAWERS,
   councilFeatureDeployment,
   FEATURE_DEPLOYED_BADGE,
   FEATURE_FLAG_NAMES,
@@ -71,8 +71,8 @@ describe('the Honorary Expense lexicon', () => {
 });
 
 describe('the Council Feature Deployment Matrix (pure)', () => {
-  it('names the four cabinet tabs (Sprint 8S Revision 10.1)', () => {
-    expect(COUNCIL_SETTINGS_CABINET_TABS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'Global Revenue Splits', 'User Access & Roster Control', 'System Flags & Toggles']);
+  it('names the five settings drawers (Sprint 10 Revision 3.0)', () => {
+    expect(COUNCIL_SETTINGS_DRAWERS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'User Access & Roster Control', 'System Settings', 'Feature Controls', 'Council Feature Deployment Matrix']);
   });
 
   it('reads each capability from the council row, then lists every module', () => {
@@ -104,28 +104,33 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     expect(biometricLoginEnabled({ biometric_login_enabled: 0 })).toBe(false);
   });
 
-  it('files every settings card in exactly one cabinet tab (Sprint 8S Revision 10.1)', () => {
+  it('files every settings card in exactly one drawer (Sprint 10 Revision 3.0)', () => {
     const page = read('apps/web/app/system-settings/council-settings/page.tsx');
     const tab = (id: string, next?: string) => page.slice(page.indexOf(`'${id}': (`), next ? page.indexOf(`'${next}': (`) : page.indexOf('}}', page.indexOf(`'${id}': (`)));
     const placement: Record<string, string[]> = {
       'bank-accounts': ['BANK_ACCOUNT_SETTINGS_PAGES', 'CouncilInstanceRecord'],
-      'revenue-splits': ['ParishSplitSettingsCard', 'FraternalPlanningWorkflow'],
       'access-roster': ['MeetingCheckInCard', 'InactivitySweepCard', 'RankThresholdsCard'],
-      'flags-toggles': ['GroupedSettingsCards', 'FeatureDeploymentMatrix', 'LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES', 'SYSTEM_REFERENCE_PAGES', 'CustomGuidesCard'],
+      'system-settings': ['GroupedSettingsCards', 'CustomGuidesCard'],
+      'feature-controls': ['ParishSplitSettingsCard', 'LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES'],
+      'feature-matrix': ['FeatureDeploymentMatrix'],
     };
     const ids = Object.keys(placement);
     ids.forEach((id, i) => {
       for (const card of placement[id]!) expect(tab(id, ids[i + 1]), `${card} in ${id}`).toContain(card);
     });
     for (const card of Object.values(placement).flat()) expect(page.split(`<${card}`).length + page.split(`pages={${card}}`).length - 2, card).toBe(1);
+    // Gone from the page: the Global Revenue Splits tab, the Reference Archives links and the planning banner.
+    expect(page).not.toMatch(/pages=\{SYSTEM_REFERENCE_PAGES\}|title="Reference Archives"|'revenue-splits': \(|<FraternalPlanningWorkflow/);
+    expect(read('apps/web/components/AnnualBudgetCenter.tsx')).toContain('<FraternalPlanningWorkflow');
   });
 
-  it("names the cabinet tab in each capability's 'where it is switched' column", () => {
+  it("names the drawer in each capability's 'where it is switched' column", () => {
     const rows = councilFeatureDeployment({ id: 1 } as Parameters<typeof councilFeatureDeployment>[0]).filter((r) => r.group === 'capability');
     const where = Object.fromEntries(rows.map((r) => [r.id, r.managedOn]));
-    expect(where['parish-split']).toBe('This page, Global Revenue Splits tab: Parish Fundraiser Split');
-    expect(where['geofence']).toBe('This page, User Access & Roster Control tab: Meeting Check-In');
-    expect(where['biometric']).toBe('This page, System Flags & Toggles tab: the switch in this row');
+    expect(where['parish-split']).toBe('This page, Feature Controls drawer: Parish Fundraiser Split');
+    expect(where['geofence']).toBe('This page, User Access & Roster Control drawer: Meeting Check-In');
+    expect(where['biometric']).toBe('This page, Council Feature Deployment Matrix drawer: the switch in this row');
+    expect(where['loaner-library']).toBe('This page, Feature Controls drawer: Cross-Council Loaner Library Sharing');
     expect(JSON.stringify(rows)).not.toContain('Operational Configuration');
   });
 });

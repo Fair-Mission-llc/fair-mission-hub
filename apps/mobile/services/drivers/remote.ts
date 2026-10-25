@@ -98,6 +98,7 @@ export function createRemoteDataService(): DataService {
       getByEmail: notImplemented('members.getByEmail'),
       listByCouncil: notImplemented('members.listByCouncil'),
       listRoster: notImplemented('members.listRoster'),
+      getViewAsMirror: notImplemented('members.getViewAsMirror'),
       listRoles: notImplemented('members.listRoles'),
       create: notImplemented('members.create'),
       update: notImplemented('members.update'),

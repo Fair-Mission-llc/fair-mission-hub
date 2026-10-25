@@ -446,7 +446,7 @@ describe('screens', () => {
   it('puts the split editor on the Treasurer chart, the category panel on the Budget page and the payee on the phone QR screens', () => {
     expect(read('apps/web/components/modules/ChartOfAccountsSetup.tsx')).toContain('db.finance.setGLSplitProfile(');
     expect(read('apps/web/components/CashAuditParts.tsx')).toContain('done.splits');
-    expect(read('apps/web/app/budget/page.tsx')).toContain('<BudgetCategoryManager');
+    expect(read('apps/web/components/AnnualBudgetCenter.tsx')).toContain('<BudgetCategoryManager');
     expect(read('apps/web/components/BudgetAnalyzerParts.tsx')).toContain('<BudgetCategoryCharts progress={progress} />');
     expect(read('apps/web/app/council-lookups/page.tsx')).toContain("key: 'account_identity_label'");
     expect(read('apps/mobile/components/CollectionQrModal.tsx')).toContain('{payee}');

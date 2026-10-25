@@ -146,7 +146,7 @@ describe('schema 52 and the screens', () => {
 
   it('names the Co-Pilot after Microsoft and drops GYST from the Marketing Factory', () => {
     expect(COPILOT_PROMPT_LABEL).toBe('🤖 Ask Microsoft Co-Pilot to Design Advanced Collateral');
-    for (const path of ['apps/web/components/CopilotPrompt.tsx', 'apps/web/app/resources/marketing/page.tsx', 'apps/web/app/credentials-vault/page.tsx', 'packages/shared/src/copilot.ts']) {
+    for (const path of ['apps/web/components/CopilotPrompt.tsx', 'apps/web/app/resources/marketing/page.tsx', 'apps/web/components/modules/CredentialsVaultPanel.tsx', 'packages/shared/src/copilot.ts']) {
       expect(read(path)).not.toMatch(/GYST/);
     }
   });

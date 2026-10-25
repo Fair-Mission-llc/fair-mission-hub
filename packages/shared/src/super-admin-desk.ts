@@ -52,6 +52,19 @@ export const SUPER_ADMIN_DESK_FOLDERS: readonly SuperAdminDeskFolder[] = [
   { id: 'feature-flags', label: '[ 🛠️ System Feature Flag Control Panel ]', hint: "Switch each active council's optional modules on and off." },
 ];
 
+/**
+ * Sprint 10 Revision 3.0: the desk's four collapsible infrastructure drawers, stacked under the folder row in this order.
+ * The Credentials Vault drawer is pinned to the Super Admin's own home council: it never requests another council's
+ * sealed keys (CredentialsVaultPanel homeCouncilOnly).
+ */
+export const SUPER_ADMIN_DESK_DRAWERS = [
+  { id: 'global-parameters', label: 'Global System Parameters', hint: "Each council's dues rate and organization type, and the limits every council shares." },
+  { id: 'global-lookups', label: 'Global Lookup Tables', hint: 'The platform-wide lookup tables: statuses, degrees, member types and more.' },
+  { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Search, verify and add the charities every council shares.' },
+  { id: 'credentials-vault', label: 'Credentials Vault', hint: "Your own home council's sealed connection keys only." },
+] as const;
+export type SuperAdminDeskDrawerId = (typeof SUPER_ADMIN_DESK_DRAWERS)[number]['id'];
+
 /** The folder a stored or typed id names, else the first folder. */
 export const superAdminDeskFolder = (id: string | null | undefined): SuperAdminDeskFolderId =>
   SUPER_ADMIN_DESK_FOLDERS.find((f) => f.id === id)?.id ?? 'feedback';

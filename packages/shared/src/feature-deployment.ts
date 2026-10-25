@@ -1,16 +1,15 @@
 // =========================================================================
 // THE COUNCIL FEATURE DEPLOYMENT MATRIX (Sprint 8Q, schema version 90)
 //
-// Sprint 8S Revision 10.1: Council Wide Settings (/system-settings/council-settings) is a filing cabinet - a 25% left
-// rail of four flat text tabs (COUNCIL_SETTINGS_CABINET_TABS) beside a 75% canvas that shows the chosen tab's cards:
+// Sprint 10 Revision 3.0: Council Wide Settings (/system-settings/council-settings) is a stack of collapsible drawer
+// panels (COUNCIL_SETTINGS_DRAWERS), replacing the Sprint 8S Revision 10.1 filing cabinet of four tabs:
 //   - Standard Bank Accounts        the payment and account pages (Council Lookups, Credentials Vault) and the read-only
 //                                   Council Instance Record (EIN, dues, email gateway, schema version);
-//   - Global Revenue Splits         the parish split and the Annual Budget Planner banner;
 //   - User Access & Roster Control  meeting check-in, the inactivity sweep and the rank benchmarks;
-//   - System Flags & Toggles        the timing and limit cards, this matrix (with the biometric sign-in switch), loaner
-//                                   library sharing, the module and platform pages, the reference archives and the
-//                                   custom user guides.
-// (Sprint 8Q's two accordion buckets, Operational Configuration and System Information, are gone.)
+//   - System Settings               the timing and limit cards and the custom user guides;
+//   - Feature Controls              the parish fundraiser split, loaner library sharing and the module switch pages;
+//   - Council Feature Deployment Matrix   this matrix alone (with the biometric sign-in switch).
+// The Global Revenue Splits tab and the Reference Archives links are gone.
 //
 // The matrix (councilFeatureDeployment) is one scannable row per advanced capability and per council module, each with
 // a '🟢 DEPLOYED' or '⚪ AVAILABLE / OFF' badge read from the council row itself, and where the switch lives. Nothing
@@ -22,14 +21,21 @@
 import { councilFeatureFlags, FEATURE_FLAG_LABELS, FEATURE_FLAG_NAMES, type FeatureFlagName } from './features';
 import type { Council } from './types';
 
-/** The four flat tabs of the Council Wide Settings filing cabinet (Sprint 8S Revision 10.1), in rail order. */
-export const COUNCIL_SETTINGS_CABINET_TABS = [
+/**
+ * Sprint 10 Revision 3.0: the Council Wide Settings page is a stack of collapsible drawer panels, in this order. The
+ * Council Feature Deployment Matrix has its own drawer; the old 'System Flags & Toggles' tab is split into 'System
+ * Settings' (the timing and limit cards and the custom guides) and 'Feature Controls' (the switches a council flips: the
+ * parish split, loaner library sharing and the module pages). The 'Global Revenue Splits' tab and the 'Reference
+ * Archives' links are gone; the Annual Budget Planner banner moved to the Annual Budget Center.
+ */
+export const COUNCIL_SETTINGS_DRAWERS = [
   { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: "Payment methods, account owners and sealed keys, and the council's record." },
-  { id: 'revenue-splits', label: 'Global Revenue Splits', hint: "The parish's share of fundraisers and the year's budget planning steps." },
   { id: 'access-roster', label: 'User Access & Roster Control', hint: 'Meeting check-in, the inactivity sweep and the member rank benchmarks.' },
-  { id: 'flags-toggles', label: 'System Flags & Toggles', hint: 'Time limits and windows, which features are on, sharing switches and printable guides.' },
+  { id: 'system-settings', label: 'System Settings', hint: 'Time limits, windows and reminders, and the printable custom guides.' },
+  { id: 'feature-controls', label: 'Feature Controls', hint: 'The parish fundraiser split, loaner library sharing and the module switch pages.' },
+  { id: 'feature-matrix', label: 'Council Feature Deployment Matrix', hint: 'Which advanced capabilities and modules are on for the council, and where each switch lives.' },
 ] as const;
-export type CouncilSettingsTabId = (typeof COUNCIL_SETTINGS_CABINET_TABS)[number]['id'];
+export type CouncilSettingsDrawerId = (typeof COUNCIL_SETTINGS_DRAWERS)[number]['id'];
 
 /** The matrix section's title. */
 export const FEATURE_DEPLOYMENT_MATRIX_TITLE = 'Council Feature Deployment Matrix';
@@ -70,8 +76,8 @@ type DeploymentCouncil = Pick<
 >;
 
 const on = (value: number | null | undefined) => Number(value ?? 0) === 1;
-/** Where on this page a capability's switch lives: the cabinet tab, then the card (Sprint 8S Revision 10.1). */
-const onTab = (id: CouncilSettingsTabId, card: string) => `This page, ${COUNCIL_SETTINGS_CABINET_TABS.find((t) => t.id === id)!.label} tab: ${card}`;
+/** Where on this page a capability's switch lives: the drawer, then the card (Sprint 10 Revision 3.0). */
+const onDrawer = (id: CouncilSettingsDrawerId, card: string) => `This page, ${COUNCIL_SETTINGS_DRAWERS.find((t) => t.id === id)!.label} drawer: ${card}`;
 
 /**
  * The matrix for one council: the advanced capabilities first (parish splits, the shared asset library, biometric sign-in,
@@ -85,7 +91,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Parametric Parish Splits',
       description: "Shares each fundraiser's collections with the parish at the council's saved percentage and GL line.",
       deployed: on(council.parish_split_enabled),
-      managedOn: onTab('revenue-splits', 'Parish Fundraiser Split'),
+      managedOn: onDrawer('feature-controls', 'Parish Fundraiser Split'),
     },
     {
       id: 'loaner-library',
@@ -93,7 +99,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Cross-Council Shared Asset Libraries',
       description: "Lends the council's listed assets to its connected councils in the Cross-Council Loaner Library.",
       deployed: on(council.is_loaner_library_enabled),
-      managedOn: onTab('flags-toggles', 'Cross-Council Loaner Library Sharing'),
+      managedOn: onDrawer('feature-controls', 'Cross-Council Loaner Library Sharing'),
     },
     {
       id: 'biometric',
@@ -101,7 +107,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Biometric Authentication',
       description: "Lets the council's members sign in on the phone app with FaceID or a fingerprint.",
       deployed: biometricLoginEnabled(council),
-      managedOn: onTab('flags-toggles', 'the switch in this row'),
+      managedOn: onDrawer('feature-matrix', 'the switch in this row'),
     },
     {
       id: 'geofence',
@@ -109,7 +115,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Geofenced Meeting Check-In',
       description: 'Checks members in by GPS inside the meeting circle. Without a meeting point only the PIN works.',
       deployed: council.meeting_latitude != null && council.meeting_longitude != null,
-      managedOn: onTab('access-roster', 'Meeting Check-In'),
+      managedOn: onDrawer('access-roster', 'Meeting Check-In'),
     },
     {
       id: 'email-gateway',

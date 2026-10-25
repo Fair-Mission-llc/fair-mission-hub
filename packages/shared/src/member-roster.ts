@@ -8,14 +8,25 @@
 // Who sees which rows (members.listRoster enforces it in every driver):
 //   - a member, officer or Admin: Active members of their own council and its affiliated (sister) councils, with a
 //     council picker to narrow the list;
-//   - an Active Super Admin: every Active member of every council - one global list, and no council picker.
+//   - an Active Super Admin: every Active member of every council. Sprint 10 Revision 3.0 put the council picker back
+//     for the Super Admin ('All councils' or one council), to filter the global list quickly.
 // Phone and email show for every reader, as on the council's shared roster sheet (Sprint 5M). Street address and date
 // of birth never do.
+//
+// Sprint 10 Revision 3.0: /roster is also where member records are kept - the Affiliated Roster page (/members) is gone.
+// A council Admin (their own council) or a Super Admin (any council) gets 'Add Member' and a row 'Edit' button, and asks
+// listRoster for every status ({ allStatuses: true }) so Inactive members can be edited too. The driver widens the rows
+// only for the councils the reader may administer (memberRosterManagedCouncilIds); everyone else still gets Active only.
 // =========================================================================
 import type { Council, Member } from './types';
 
 export const MEMBER_ROSTER_HREF = '/roster';
 export const MEMBER_ROSTER_TITLE = 'Member Roster';
+
+/** Sprint 10 Revision 3.0: the budget page's name (the Annual Budget Forecast Center / Annual Budget Projections before). */
+export const ANNUAL_BUDGET_CENTER_TITLE = 'Annual Budget Center';
+/** The Annual Budget Center row that sets Member.IsBudgetDirector - the only place it is set. */
+export const ASSIGN_BUDGET_DIRECTOR_LABEL = 'Assign Designated Budget Director';
 
 /** 'global' for an Active Super Admin; 'fraternal' (home council and its affiliated councils) for everyone else. */
 export type MemberRosterScope = 'global' | 'fraternal';
@@ -34,9 +45,34 @@ export function memberRosterScope(viewer: MemberRosterViewer): MemberRosterScope
   return viewer.memberType === 'Super Admin' && viewer.active !== false ? 'global' : 'fraternal';
 }
 
-/** Only the fraternal list offers a council picker; the Super Admin's global list never does. */
-export function rosterShowsCouncilPicker(scope: MemberRosterScope): boolean {
-  return scope === 'fraternal';
+/** Every roster offers a council picker (Sprint 10 Revision 3.0 restored it for the Super Admin's global list). */
+export function rosterShowsCouncilPicker(_scope: MemberRosterScope): boolean {
+  return true;
+}
+
+/** The picker's 'all' choice, in words. */
+export function rosterAllCouncilsLabel(scope: MemberRosterScope): string {
+  return scope === 'global' ? 'All councils on the platform' : 'All: my council and sister councils';
+}
+
+/** members.listRoster's options. */
+export interface MemberRosterOptions {
+  /** Every status, not only Active - honoured only for the councils the reader may administer. */
+  allStatuses?: boolean;
+}
+
+/**
+ * The councils whose Inactive and Former members a reader may list (and whose records they keep): every covered council
+ * for an Active Super Admin, the home council for an Active council Admin, none for anyone else.
+ */
+export function memberRosterManagedCouncilIds(
+  viewer: MemberRosterViewer,
+  homeCouncilId: number,
+  coveredIds: readonly number[],
+): number[] {
+  if (memberRosterScope(viewer) === 'global') return [...coveredIds];
+  if (viewer.memberType === 'Admin' && viewer.active !== false) return coveredIds.includes(homeCouncilId) ? [homeCouncilId] : [];
+  return [];
 }
 
 /** The councils a roster covers: every council for 'global', else the home council followed by its affiliated councils. */

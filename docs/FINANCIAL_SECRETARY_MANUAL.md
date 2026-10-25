@@ -143,7 +143,7 @@ A shared transaction id groups the lines.
 | --- | --- |
 | **General Ledger Spreadsheet** | The chart of accounts with every posting |
 | **Balance Sheet** | Assets against liabilities and equity |
-| **Financial Dashboard** | Cash flow liquidity, the balance sheet summary, **Quick actions** and the **Electronic bank statement audit** |
+| **Financial Dashboard** | Cash flow liquidity, the balance sheet summary and **Quick actions** (the transfer between accounts) |
 
 Seated officers and Admins read the three pages. Only the FS, the Treasurer and Super Admins post, transfer or upload bank statements.
 
@@ -170,7 +170,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 **Steps:**
 1. To post: choose the debit account and the credit account. Enter the amount and the description. Save.
 2. To transfer: choose two asset accounts. Enter the amount. Save.
-3. To reconcile: open **Electronic bank statement audit**. Upload the bank CSV file.
+3. To reconcile: open **Active Desks** → **Treasurer Desk** → **Bank Statement Match-Window**. Upload the bank CSV file. The Financial Dashboard has no bank statement table.
 4. Read the matched rows and the unmatched rows.
 
 **Expected result:** The dashboard shows **✓ Ledger Balanced (Zero Leaks)** when debits equal credits.
@@ -307,10 +307,11 @@ The budget covers one fraternal year, July 1 to June 30.
 
 - Every member reads the budget. Non-editors see a **Transparency view** marked **Read only**.
 - Editors are the council Admins, the Treasurer, the FS, the **Designated Budget Director** and Super Admins.
+- A council Admin or a Super Admin assigns the **Designated Budget Director** in **Assign Designated Budget Director** at the top of the **Annual Budget Center**. Choose a member, or **Nobody**. The choice saves at once. The roster form has no Budget Director box.
 - Only a Super Admin override changes a budget outside the window. No override reopens an approved budget.
 
 <!-- KEEP_IMAGE: annual budget projections capture -->
-![Annual Budget Projections (/budget)](../generated/dashboard_visual_catalog/budget.png)
+![Annual Budget Center (/budget)](../generated/dashboard_visual_catalog/budget.png)
 <!-- /KEEP_IMAGE -->
 
 ### 1.11 Prepare the budget with the rollup
@@ -318,7 +319,7 @@ The budget covers one fraternal year, July 1 to June 30.
 
 **Goal:** Fill the next year's budget from last year's actual spend.
 
-**Start point:** Sidebar → Finances → **Annual Budget Projections**.
+**Start point:** Sidebar → Finances → **Annual Budget Center**.
 
 **Steps:**
 1. Choose the **Fraternal year**.
@@ -350,7 +351,7 @@ A new rollup refreshes the baselines only. The rollup never changes proposed amo
 
 **Goal:** Record the council's vote on the budget.
 
-**Start point:** Sidebar → Finances → **Annual Budget Projections**.
+**Start point:** Sidebar → Finances → **Annual Budget Center**.
 
 **Steps:**
 1. Check every proposed amount.
@@ -387,21 +388,22 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 
 ### 2.1 Add a member
 > **Prerequisite (who can do this):** You must have council Admin privileges for the council, or Super Admin privileges.
-> **Warning:** **Add member** sends a welcome email with a setup code at once.
+> **Warning:** **Add Member** sends a welcome email with a setup code at once.
 
 **Goal:** Put a new Brother Knight on the roster.
 
-**Start point:** Sidebar → System Settings → **Affiliated Roster**.
+**Start point:** Sidebar → Faith In Action → **Member Roster**.
 
 **Steps:**
-1. Select **Add member**.
+1. Select **Add Member** at the top of the roster. The form opens in a drawer. A Super Admin first chooses the council in **Council**.
 2. Fill in the form. **Email (also the login)** is the member's sign-in name.
 3. Choose the **Member type**. Admins grant Admin or Member. Only a Super Admin grants Super Admin.
-4. Optional: tick **Designated Budget Director**.
-5. Select **Add member**.
+4. Select **Add member**.
+
+The form has no **Designated Budget Director** box. An Admin assigns the Budget Director on the **Annual Budget Center** (section 1.10).
 
 <!-- KEEP_IMAGE: affiliated roster capture -->
-![Affiliated Roster (/members)](../generated/dashboard_visual_catalog/members.png)
+![Member records (captured before the records moved to the Member Roster, /roster)](../generated/dashboard_visual_catalog/members.png)
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** A message confirms that a welcome email was queued. The member shows a **🆕 New Member** badge for 180 days.
@@ -418,10 +420,10 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 
 **Goal:** Help a member who lost or used up the setup code.
 
-**Start point:** Sidebar → System Settings → **Affiliated Roster** → the member.
+**Start point:** Sidebar → Faith In Action → **Member Roster** → **Edit** on the member's row.
 
 **Steps:**
-1. Open the member's record.
+1. Select **Edit** on the member's row. The record opens in a drawer.
 2. Select **Send new setup code**.
 
 **Expected result:** The member gets a new welcome email. The new code is valid for 14 days.
@@ -436,7 +438,7 @@ The sync reads the roster export from Supreme Headquarters. The sync adds new me
 
 - The input is a CSV file with a header row. Save the Supreme Excel export as CSV first.
 - The columns are Member Number, First Name, Last Name, Email, Phone, Street, Street 2, City, State, Zip, Birth Date, Degree, Date Joined and Charter Member.
-- Admins can download a ready Excel roster template with drop-down lists (3.3).
+- The Financial Secretary and Admins can download a ready Excel roster template with drop-down lists (3.3).
 - Header case and spacing do not matter.
 - The file must have the member number, the names, the email and the join date columns.
 
@@ -447,19 +449,19 @@ The sync reads the roster export from Supreme Headquarters. The sync adds new me
 | A row that fails a check | Skips the row. The result names the reason. |
 
 A setup code has 20 characters, expires after 14 days and works one time. The platform stores only a hash of the code.
-The platform has no background scheduler. An Admin runs the sync by hand.
+The platform has no background scheduler. The Financial Secretary or an Admin runs the sync by hand, from the **Financial Secretary Desk**.
 
 ### 2.4 Run the Supreme roster sync
-> **Prerequisite (who can do this):** You must have council Admin privileges for the council, or Super Admin privileges. The Treasurer and the FS see the page but not the roster panel.
+> **Prerequisite (who can do this):** You must be the council's Financial Secretary, a council Admin or a Super Admin.
 > **Warning:** each new row sends a welcome email at once.
 
 **Goal:** Bring the Supreme roster into the platform.
 
-**Start point:** Sidebar → System Settings → **Supreme Council Sync** → **Supreme roster sync - new member onboarding**.
+**Start point:** **Active Desks** row → **Financial Secretary Desk** → **Excel Roster Imports** → **Supreme roster CSV upload**.
 
 **Steps:**
 1. Save the Supreme Excel export as a CSV file.
-2. Choose the file in **Roster file**. You can also paste the rows in **…or paste the export**.
+2. Choose the file in **Roster file**.
 3. Check the row count on the button.
 4. Select **Sync *n* roster rows from Supreme**.
 5. Read the skipped rows and the reasons.
@@ -524,10 +526,10 @@ The platform keeps a history of every council that a member belongs to. The hist
 
 **Goal:** See every council a member belonged to.
 
-**Start point:** Sidebar → System Settings → **Affiliated Roster** → the member.
+**Start point:** Sidebar → Faith In Action → **Member Roster** → **Edit** on the member's row.
 
 **Steps:**
-1. Select the member's name in the roster.
+1. Select **Edit** on the member's row.
 2. Read the **Council membership history** card under the member form.
 
 **Expected result:** The card lists each council, oldest first, with the status, the date joined and the date left. The current membership shows **current**.
@@ -539,12 +541,12 @@ The platform keeps a history of every council that a member belongs to. The hist
 | The join date shows **Not recorded**. | The member has no join date. | Enter the **Date joined council** on the member form. |
 
 ### 3.3 Download the Excel roster template
-> **Prerequisite (who can do this):** You must have council Admin privileges for the council, or Super Admin privileges.
+> **Prerequisite (who can do this):** You must be the council's Financial Secretary, a council Admin or a Super Admin.
 > **Warning:** each new row sends a welcome email at once when you sync the roster.
 
 **Goal:** Build a roster file by hand in Excel and load the file.
 
-**Start point:** Sidebar → System Settings → **Supreme Council Sync** → **Supreme roster sync - new member onboarding**.
+**Start point:** **Active Desks** row → **Financial Secretary Desk** → **Excel Roster Imports** → **Supreme roster CSV upload**.
 
 **Steps:**
 1. Select **Download the Excel roster template**.
@@ -834,7 +836,7 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 1.7.1). |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
 | **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
-| **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Open the Supreme roster sync. |
+| **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Upload the Supreme roster CSV. |
 | **Financial Secretary Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 8). |
 | **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **Auditing & Return Queue** (section 6.2.3). |
 | **Financial Secretary Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
@@ -946,7 +948,7 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 6. To follow a sheet, select the **Expense Report (ER) Workflow** folder under **[ 📖 Reference Workflows ]**, or the **Expense Report (ER) Routing Track** folder. To record a donation, select the **Charitable Donation Records** tile. To endorse an approved charity grant, select the **FS/GK Compliance Endorsements** folder (section 1.7.1).
 7. Select the **Excel Roster Imports** tile. Select **Download the Excel roster template**.
 8. Fill in the template. Save the **Roster** sheet as CSV.
-9. Select **Supreme roster sync**. Load the CSV file on that page. Each new member gets a welcome email.
+9. In the same drawer, choose the CSV file in **Roster file**. Select **Sync *n* roster rows from Supreme**. Each new member gets a welcome email.
 
 **Expected result:** The signed sheets move to the Treasurer. The count on the **Auditing & Return Queue** folder drops when you close the folder. The new members show in the roster.
 
@@ -989,7 +991,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record that leadership reviewed the drafted budget in June.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Global Revenue Splits** → **Annual Budget Planner** → **Annual budget**.
+**Start point:** Sidebar → Finances → **Annual Budget Center** → **Annual Budget Planner** → **Annual budget**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**.
@@ -1010,7 +1012,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record the council's vote on the budget at the July meeting.
 
-**Start point:** Sidebar → Finances → **Annual Budget Projections**.
+**Start point:** Sidebar → Finances → **Annual Budget Center**.
 
 **Steps:**
 1. Choose the fraternal year.
@@ -1059,7 +1061,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 ### 9.1 Concept: the parish fundraiser split
 Some fundraisers use parish property, for example the cathedral parking lot. The council then owes the parish a share of the money collected. The parish split calculates that share and pays it by check.
 
-Each council sets its own split on **Council Wide Settings** → **Global Revenue Splits** → **Parish Fundraiser Split**:
+Each council sets its own split on **Council Wide Settings** → **Feature Controls** → **Parish Fundraiser Split**:
 
 | Setting | What it does | Default |
 | --- | --- | --- |
@@ -1090,7 +1092,7 @@ The officer who issues a request cannot also pay the request.
 
 **Goal:** Switch the parish split on with a percentage and a ledger line.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Global Revenue Splits** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Feature Controls** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
 
 **Steps:**
 1. Select the switch. The switch shows **The parish split is on**.
@@ -1198,7 +1200,7 @@ A table under the charts lists each category with its figures. The first eight c
 1. To add a category, enter the name in **New category**. Select **Add category**.
 2. To rename a category, change its name. Select **Rename**.
 3. To delete a category, select **Delete**. You cannot undo this.
-4. In **Annual Budget Projections**, choose the category on each line.
+4. In **Annual Budget Center**, choose the category on each line.
 
 **Expected result:** A message confirms the change. The category list and the line pickers show the change.
 

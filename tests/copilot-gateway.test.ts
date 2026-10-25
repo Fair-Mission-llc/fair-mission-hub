@@ -141,7 +141,7 @@ describe('portal wiring', () => {
     const box = read('apps/web/components/CopilotPrompt.tsx');
     expect(box).toContain('label={COPILOT_PROMPT_LABEL}');
     expect(box).toContain("'/api/marketing/copilot'");
-    expect(read('apps/web/app/credentials-vault/page.tsx')).toContain("credentialKey: 'COPILOT_STUDIO_DIRECT_LINE_SECRET'");
+    expect(read('apps/web/components/modules/CredentialsVaultPanel.tsx')).toContain("credentialKey: 'COPILOT_STUDIO_DIRECT_LINE_SECRET'");
     const route = read('apps/web/app/api/marketing/copilot/route.ts');
     expect(route).toContain('canOpenMarketingFactory(claims)');
     expect(route).toContain('session.claims.councilId');

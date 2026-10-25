@@ -436,17 +436,20 @@ Some fields show a red **Not used yet** tag. The portal saves the number for a f
 
 The screenshot above shows the page before the cards were added. The fields and their labels are the same.
 
-### 8.2.1 Concept: the settings filing cabinet
-**Council Wide Settings** is a filing cabinet. A rail of four tabs is on the left. The cards of the selected tab show on the right. The page opens on **Standard Bank Accounts**. Select a tab to show its cards. On a narrow screen, the tabs are above the cards.
+### 8.2.1 Concept: the settings drawers
+**Council Wide Settings** is a stack of five drawers. Select a drawer's title to open or close it. The **Standard Bank Accounts** drawer is open when the page opens. More than one drawer can be open at the same time.
 
-A number that you typed but did not save stays in its card when you select a different tab. Save each card before you leave the page.
+A number that you typed but did not save stays in its card when you close the drawer. Save each card before you leave the page.
 
-| Tab | What the tab holds |
+| Drawer | What the drawer holds |
 | --- | --- |
 | **Standard Bank Accounts** | The **Payment & Account Settings** links and the read-only **Council Instance Record**. |
-| **Global Revenue Splits** | The **Parish Fundraiser Split** card and the **Annual Budget Planner** banner. |
 | **User Access & Roster Control** | The **Meeting Check-In**, **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. |
-| **System Flags & Toggles** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **Council Feature Deployment Matrix** (section 8.2.2), the **Cross-Council Loaner Library Sharing** card, the **Module & Platform Switches** links, the **Reference Archives** links and the **Custom User Guides** card. |
+| **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3) and the **Custom User Guides** card. |
+| **Feature Controls** | The **Parish Fundraiser Split** card, the **Cross-Council Loaner Library Sharing** card and the **Module & Platform Switches** links. |
+| **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
+
+The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances).
 
 The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
@@ -454,10 +457,8 @@ The **Payment & Account Settings** links show only the pages that you may open: 
 
 The **Council Instance Record** shows the council number and name, the organization type, the district, the EIN, the base dues rate, the email gateway, the date the bylaws were last saved and the database schema version. You cannot change these facts here. Each fact changes on its own page.
 
-The **Reference Archives** links show only the pages that you may open: **Operations Knowledge Archive**, **System Lookups** and **Supreme Sync**.
-
 ### 8.2.2 Concept: the Council Feature Deployment Matrix
-The **Council Feature Deployment Matrix** is on the **System Flags & Toggles** tab. The matrix shows which advanced capabilities and modules are on for the council. Each row has a status badge.
+The **Council Feature Deployment Matrix** has its own drawer. The matrix shows which advanced capabilities and modules are on for the council. Each row has a status badge.
 
 | Badge | Meaning |
 | --- | --- |
@@ -468,8 +469,8 @@ The **Council Feature Deployment Matrix** is on the **System Flags & Toggles** t
 
 | Row | 🟢 DEPLOYED when | Where it is switched |
 | --- | --- | --- |
-| **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, on the **Global Revenue Splits** tab |
-| **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, on the **System Flags & Toggles** tab |
+| **Parametric Parish Splits** | The parish split is on. | **Parish Fundraiser Split** card, in the **Feature Controls** drawer |
+| **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, in the **Feature Controls** drawer |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Council Lookups** → **Email Gateway** |
 
@@ -522,7 +523,7 @@ The logging window also ends the hours reminders. A shift older than the window 
 
 **Steps:**
 1. Super Admins only: choose the council in **Council** at the top of the page.
-2. Select the **System Flags & Toggles** tab. Find the card that holds the setting (section 8.3).
+2. Open the **System Settings** drawer. Find the card that holds the setting (section 8.3).
 3. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
 4. Enter the new number.
 5. Select the save button of the card, for example **Save Financial Submissions**.
@@ -545,7 +546,7 @@ The logging window also ends the hours reminders. A shift older than the window 
 
 **Goal:** Allow or stop Face ID and fingerprint sign-in on the phones of the council's members.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **System Flags & Toggles** → **Council Feature Deployment Matrix**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Council Feature Deployment Matrix** drawer.
 
 **Steps:**
 1. Super Admins only: choose the council in **Council** at the top of the page.
@@ -677,7 +678,7 @@ A Super Admin can see the portal exactly as one member sees the portal. Use this
 | Rule | Value |
 | --- | --- |
 | Who can start the view | Active Super Admins only |
-| Who can be viewed | Any member except yourself and other Super Admins |
+| Who can be viewed | Council Admins only. Use **View As Member** (9.4.2) to see what any other member sees |
 | Saving in the view | Not possible. Every save is refused. |
 | Longest view | 60 minutes, or until your own sign-in ends |
 | Record | The portal server logs each start and stop |
@@ -693,55 +694,76 @@ The view uses the member's own council. The member can belong to a council other
 
 The gold bar names the member's council. When you select **Return to my account**, the portal switches back to your own council.
 
-Super Admins find members in two places. The **Affiliated Roster** shows one council at a time. The **View-As Member Lookup** page shows every council in one tree.
+Impersonation is only for a Super Admin who helps a local council Admin. Super Admins find the Admin in two places. The **Member Roster** shows the **👥 Impersonate Admin** button on each council Admin's row. The **Impersonate Council Admin** page shows the Admins of every council in one tree.
 
-### 9.4 View the portal as another member
-> **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate User** button.
+### 9.4 View the portal as a council Admin
+> **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate Admin** button.
 
-**Goal:** See the portal with one member's sidebar, pages and permissions.
+**Goal:** See the portal with one council Admin's sidebar, pages and permissions while you help the Admin.
 
-**Start point:** Sidebar → System Settings → **Affiliated Roster**.
+**Start point:** Sidebar → Faith In Action → **Member Roster**.
 
 **Steps:**
-1. Find the member in the roster table.
-2. Select **👥 Impersonate User** in the **Actions** column.
-3. Look at the pages. The portal opens on the member's hub.
-4. Select **Return to my account** in the gold bar to end the view.
+1. Choose the Admin's council in **Council**, or keep **All councils on the platform**.
+2. Find the Admin in the roster table.
+3. Select **👥 Impersonate Admin** in the **Actions** column.
+4. Look at the pages. The portal opens on the Admin's **Home**.
+5. Select **Return to my account** in the gold bar to end the view.
 
-**Expected result:** The gold bar says "You are viewing the portal as" and the member's name. After **Return to my account**, your own sidebar comes back.
+**Expected result:** The gold bar says "You are viewing the portal as" and the Admin's name. After **Return to my account**, your own sidebar comes back.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A save fails with "You are viewing the portal as another member, so nothing can be saved." | The view is read-only. | Select **Return to my account**, then make the change as yourself. |
-| The row has no **👥 Impersonate User** button. | The member is you or another Super Admin. | You cannot view as a Super Admin. |
+| The row has no **👥 Impersonate Admin** button. | The member is not a council Admin, or is you. | Impersonate council Admins only. To see a member's view, ask the council's Admin to use **View As Member**. |
 | An error says "The server did not answer, so the view could not start." | The portal server cannot see the member or your session ended. | Sign out, sign in again, then try again. |
 
-### 9.4.1 Find a member in any council and view as that member
+### 9.4.1 Find a council Admin in any council and impersonate the Admin
 > **Who can do this:** Super Admins. Other members do not see this page.
 
-**Goal:** Find one member among all councils without a long scroll, then view the portal as that member.
+**Goal:** Find one council Admin among all councils without a long scroll, then view the portal as that Admin.
 
-**Start point:** Sidebar → System Settings → **View-As Member Lookup**.
+**Start point:** Sidebar → System Settings → **Impersonate Council Admin**.
 
 **Steps:**
 1. Type part of a name, member number, email, role or council number in the search box.
 2. Read the suggested names under the box. Names that start with your text come first.
-3. Select **👥 View as** beside the member. Go to step 7.
+3. Select **👥 Impersonate** beside the Admin. Go to step 7.
 4. To browse without a search, select a council in the **Council directory**. The council opens.
-5. Select a group in the council: **Executive Officers**, **Finance Officers**, **Recorder & Historian**, **Other Officers**, **Council Admins**, **Appointed Seats** or **Members**.
-6. Select **👥 View as** beside the member.
-7. Look at the pages. The portal opens on the member's hub, with the member's council settings.
+5. Select a group in the council. Each group lists only the council's Admins.
+6. Select **👥 Impersonate** beside the Admin.
+7. Look at the pages. The portal opens on the Admin's **Home**, with the Admin's council settings.
 8. Select **Return to my account** in the gold bar to end the view.
 
-**Expected result:** The gold bar names the member and the member's council. The sidebar, desks and settings are the member's own.
+**Expected result:** The gold bar names the Admin and the Admin's council. The sidebar, desks and settings are the Admin's own.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| A member is not in the tree. | The member is you or another Super Admin. | You cannot view as a Super Admin. |
-| *"Nobody you may view as matches"* | No member matches every word you typed. | Type fewer words. |
-| A member shows in one group only. | Each member shows in the group of the highest seat. A Grand Knight who is also an Admin shows under **Executive Officers**. | Look in the group of the member's highest seat. |
+| A member is not in the tree. | The member is not a council Admin, or is you. | Impersonate council Admins only. |
+| *"No council Admin matches"* | No Admin matches every word you typed. | Type fewer words. |
+| An Admin shows in one group only. | Each Admin shows in the group of the highest seat. A Grand Knight who is also an Admin shows under **Executive Officers**. | Look in the group of the Admin's highest seat. |
+
+### 9.4.2 See what a member of your council sees (View As Member)
+> **Who can do this:** council Admins and Super Admins, for members of their own council only.
+
+**Goal:** Check which pages and desks one member of your council gets, without signing in as the member.
+
+**Start point:** Sidebar → System Settings → **View As Member**.
+
+**Steps:**
+1. Type part of the member's name or number in **Search by name or number**.
+2. Select the member in **Members of your council**.
+3. Read **Their sidebar**, **Their Active Desks** and **Their coming shifts**.
+
+**Expected result:** A read-only picture of the member's portal shows. You stay signed in as yourself. Nothing on the page changes the member's account.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| A member of another council is not in the list. | **View As Member** shows only your own council. | Ask that council's Admin. |
+| The message says "View As Member shows only members of your own council." | The member belongs to another council. | Ask that council's Admin. |
 
 ### 9.5 Concept: co-watching remote assistance
 An officer or Admin who needs help can share a copy of the screen with the Super Admins. The officer starts and stops the sharing. Nothing is shared until the officer selects **Share my screen**.
@@ -838,11 +860,21 @@ The desk has three folders across the top:
 | **[ 🔑 Council Access Request Approval Queue ]** | Shows the councils that ask to join the platform. Each pending request has an **Approve** button. |
 | **[ 🛠️ System Feature Flag Control Panel ]** | Shows each council's modules. A checkbox switches a module on or off at once. |
 
+Under the folders, the desk has four drawers. Select a drawer's title to open or close it:
+
+| Drawer | What it holds |
+| --- | --- |
+| **Global System Parameters** | Each council's base dues rate and organization type, and the platform settings every council shares. |
+| **Global Lookup Tables** | The platform-wide lookup tables, one tab for each table. |
+| **Global Charities Registry** | The registry every council shares: search, verify and add charities. |
+| **Credentials Vault** | The sealed connection keys of your own home council only. The drawer never opens another council's keys. |
+
 **Steps:**
 1. Select a folder.
 2. Read the notes, or select **Approve** on a request, or select a module checkbox.
+3. To change a platform setting, a lookup table, a registry entry or your council's keys, open its drawer.
 
-**Expected result:** The folder opens under the folder row. The browser remembers the last folder you opened.
+**Expected result:** The folder opens under the folder row. The browser remembers the last folder you opened. A drawer shows its page when you open it.
 
 **Common problems:**
 | Problem | Cause | Fix |

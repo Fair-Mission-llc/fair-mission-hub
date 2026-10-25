@@ -492,6 +492,7 @@ import {
   summarizeLedgerTransactions,
   assertAgendaSectionKey,
   assertMayImportSupremeRoster,
+  assertMaySyncSupremeRoster,
   cleanAgendaLineKey,
   cleanRosterJoinDate,
   cleanSupremeRosterRow,
@@ -785,7 +786,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { memberRosterCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -2453,7 +2454,7 @@ export class SqliteDataService implements DataService {
       return rows.map(withoutPushToken);
     },
     // Sprint 10 Revision 2.0: the scope comes from the stored actor, never from the client (member-roster.ts).
-    listRoster: async (actorId) => {
+    listRoster: async (actorId, options) => {
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
       const scope = memberRosterScope(actor);
@@ -2472,8 +2473,29 @@ export class SqliteDataService implements DataService {
       const covered = new Set(ids);
       const home = all.filter((c) => c.id === actor.councilId);
       const councils = [...home, ...all.filter((c) => c.id !== actor.councilId && covered.has(c.id))].map(withoutMeetingPin);
-      const rows = await db.getAllAsync<Member>("SELECT * FROM [Member] WHERE [StatusID] = (SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active')");
-      return { scope, councils, members: sortRosterMembers(rows.filter((m) => covered.has(m.CouncilID)).map(withoutPushToken)) };
+      // Sprint 10 Revision 3.0: every status, but only for the councils the actor may administer.
+      const managed = new Set(options?.allStatuses ? memberRosterManagedCouncilIds(actor, actor.councilId, ids) : []);
+      const activeRow = await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active'");
+      const rows = await db.getAllAsync<Member>('SELECT * FROM [Member]');
+      const shown = rows.filter((m) => covered.has(m.CouncilID) && (m.StatusID === activeRow?.id || managed.has(m.CouncilID)));
+      return { scope, councils, members: sortRosterMembers(shown.map(withoutPushToken)) };
+    },
+    getViewAsMirror: async (actorId, memberId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const member = await db.getFirstAsync<Member>('SELECT * FROM [Member] WHERE [id] = ?', [memberId]);
+      if (!member) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
+      assertMayViewAsMember(actor, { memberId, councilId: member.CouncilID });
+      const [type, council] = await Promise.all([
+        db.getFirstAsync<{ Type: string }>('SELECT [Type] FROM [MemberType] WHERE [id] = ?', [member.MemberTypeID]),
+        db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [member.CouncilID]),
+      ]);
+      return {
+        member: withoutPushToken(member),
+        roles: await this.rolesFor(db, memberId),
+        memberType: type?.Type,
+        council: council ? withoutMeetingPin(council) : null,
+      };
     },
     listRoles: async (memberId) => this.rolesFor(await this.ready(), memberId),
 
@@ -6010,7 +6032,7 @@ export class SqliteDataService implements DataService {
       const db = await this.ready();
       let result: SupremeRosterSyncResult = { created: [], updated: [], skipped: [] };
       await db.withTransactionAsync(async () => {
-        assertMayImportSupremeRoster(await this.memberWriteActor(db, actorId), councilId);
+        assertMaySyncSupremeRoster(await this.memberWriteActor(db, actorId), councilId);
         await this.assertCouncilsExist(db, [councilId]);
         await this.assertFraternalCouncil(db, councilId, 'import the Supreme Council roster');
         const ids = {

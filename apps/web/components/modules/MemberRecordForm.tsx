@@ -1,37 +1,24 @@
 'use client';
-// Member roster: a split screen. The council's members are on the left, filterable by name and status; the
-// selected member (or a blank "add member" form) opens on the right. The Skills drawer lists every skill held
-// in the council and messages everyone with one; "Skills & training" opens the selected member's skills and
-// training classes for editing. Admins work on their own council, Super Admins pick any.
-// The member type choices come from grantableMemberTypes, and the drivers enforce the same tiers
-// (ADMIN_REQUIRED, SUPER_ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED), so a refusal is reported, never hidden.
-// Sprint 7A: Admins mark charter members on the form. (The inactivity sweep that sat in the page header moved to
-// System Settings > Council Wide Settings in Sprint 8A.)
-// Sprint 7F: Super Admins get an "Impersonate User" button on each row (mayImpersonateMember: never themselves or another
-// Super Admin). It opens a read-only view of the portal as that member, which the gold banner ends.
+// The member record form (Sprint 10 Revision 3.0): the add / edit form that used to sit on the Affiliated Roster page
+// (/members, now removed). The Member Roster (/roster) opens it in a drawer from 'Add Member' and each row's 'Edit'
+// button, for the council's Admins (their own council) and Super Admins (any council). Every field is text; numbers
+// and ids are converted on save and validated again by the driver, which enforces the same tiers (ADMIN_REQUIRED,
+// SUPER_ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED), so a refusal is reported, never hidden. The Designated Budget Director
+// flag is no longer set here: the Annual Budget Center assigns it, and an edit keeps the stored value.
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   canCreateMembers,
-  canDesignateBudgetDirector,
   canEditMember,
   describeError,
   grantableMemberTypes,
-  mayImpersonateMember,
   type Degree,
   type Member,
   type MemberStatus,
   type MemberType,
   type NewMember,
 } from '@kofc/shared';
-import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { Drawer } from '@/components/Drawer';
-import { AffiliationHistoryCard } from '@/components/EngagementParts';
-import { ProfileExtensionsEditor } from '@/components/ProfileExtensionsEditor';
-import { SkillFilterDrawer } from '@/components/SkillFilterDrawer';
-import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
-import { useSession, useUser } from '@/lib/session';
-import { useLoad } from '@/lib/use-load';
+import { Button, Field, Input, Notice, Panel, Pill, Select } from '@/components/ui';
+import { useUser } from '@/lib/session';
 import { db } from '@/services/db';
 
 type Message = { tone: 'error' | 'info'; text: string };
@@ -60,7 +47,7 @@ const Banner = ({ message, onDismiss }: { message: Message | null; onDismiss: ()
     </Notice>
   ) : null;
 
-interface Lookups {
+export interface Lookups {
   statuses: MemberStatus[];
   degrees: Degree[];
   types: MemberType[];
@@ -138,7 +125,8 @@ function draftFrom(member: Member | null, councilId: number, lookups: Lookups): 
   };
 }
 
-function toNewMember(d: Draft, budgetDirector: boolean, charter: boolean): NewMember {
+/** IsBudgetDirector is left out, so an edit keeps the stored flag; the Annual Budget Center assigns it (Sprint 10 Revision 3.0). */
+function toNewMember(d: Draft, charter: boolean): NewMember {
   return {
     CouncilID: Number(d.CouncilID),
     MemberNumber: Number(d.MemberNumber),
@@ -156,12 +144,11 @@ function toNewMember(d: Draft, budgetDirector: boolean, charter: boolean): NewMe
     StatusID: Number(d.StatusID),
     DegreeID: Number(d.DegreeID),
     MemberTypeID: Number(d.MemberTypeID),
-    IsBudgetDirector: budgetDirector ? 1 : 0,
     flag_charter_member: charter ? 1 : 0,
   };
 }
 
-function MemberForm({
+export function MemberForm({
   member,
   councilId,
   lookups,
@@ -177,15 +164,11 @@ function MemberForm({
   const [draft, setDraft] = useState<Draft>(() => draftFrom(member, councilId, lookups));
   const [busy, setBusy] = useState(false);
   const { message, setMessage, run } = useAction();
-  // Sprint 5Y-3: the Designated Budget Director flag, set only by the council's Admins and Super Admins.
-  const [director, setDirector] = useState(member?.IsBudgetDirector === 1);
   useEffect(() => setDraft(draftFrom(member, councilId, lookups)), [member, councilId, lookups]);
-  useEffect(() => setDirector(member?.IsBudgetDirector === 1), [member]);
   // Sprint 7A: Charter Member, kept by the council's Admins and Super Admins.
   const [charter, setCharter] = useState(member?.flag_charter_member === 1);
   useEffect(() => setCharter(member?.flag_charter_member === 1), [member]);
   const mayMarkCharter = canCreateMembers(user, member?.CouncilID ?? councilId);
-  const mayDesignate = canDesignateBudgetDirector(user, member ?? { CouncilID: councilId });
 
   const typeName = (id: number) => lookups.types.find((t) => t.id === id)?.Type;
   const currentType = member ? typeName(member.MemberTypeID) : undefined;
@@ -200,7 +183,7 @@ function MemberForm({
   const save = async () => {
     setBusy(true);
     const ok = await run(async () => {
-      const values = toNewMember(draft, director, charter);
+      const values = toNewMember(draft, charter);
       if (member) {
         const saved = await db.members.update(user.memberId, member.id, values);
         onSaved(saved.id);
@@ -212,7 +195,6 @@ function MemberForm({
     setBusy(false);
     if (ok && !member) {
       setDraft(draftFrom(null, councilId, lookups));
-      setDirector(false);
       setCharter(false);
     }
   };
@@ -276,19 +258,9 @@ function MemberForm({
             }
           </Field>
         </div>
-        {mayDesignate ? (
-          <label className="flex items-start gap-3 rounded border-2 border-gold border-l-8 bg-white p-3 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5" checked={director} onChange={(e) => setDirector(e.target.checked)} />
-            <span>
-              <span className="block font-bold">Designated Budget Director</span>
-              <span className="block text-xs text-muted">
-                Lets this member prepare the council&apos;s annual budget (rollup, custom lines, approved amounts) during the May 1 - June 30 drafting window, alongside the Admins, Financial Secretary and Treasurer. Saved with the member.
-              </span>
-            </span>
-          </label>
-        ) : member?.IsBudgetDirector === 1 ? (
+        {member?.IsBudgetDirector === 1 ? (
           <p className="text-sm">
-            <Pill tone="gold">Designated Budget Director</Pill>
+            <Pill tone="gold">Designated Budget Director</Pill> <span className="text-xs text-muted">Assigned on the Annual Budget Center.</span>
           </p>
         ) : null}
         {mayMarkCharter ? (
@@ -335,170 +307,3 @@ function MemberForm({
   );
 }
 
-// ---- the page ----------------------------------------------------------------
-
-function Roster() {
-  const user = useUser();
-  const scope = useCouncilScope();
-  const [selected, setSelected] = useState<number | 'new' | null>(null);
-  const [filter, setFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<number | 'all'>('all');
-  const [skillsOpen, setSkillsOpen] = useState(false);
-  const [extensionsOpen, setExtensionsOpen] = useState(false);
-  const [sweepMessage, setSweepMessage] = useState<Message | null>(null);
-  const { impersonate } = useSession();
-  const router = useRouter();
-  const canImpersonate = user.memberType === 'Super Admin';
-  const viewAs = async (memberId: number) => {
-    setSweepMessage(null);
-    try {
-      await impersonate(memberId);
-      // The member may not have this page, so the view opens on everyone's Home (Sprint 8R; '#home' since 8S Corrected).
-      router.push('/dashboard#home');
-    } catch (err) {
-      setSweepMessage({ tone: 'error', text: describeError(err) });
-    }
-  };
-
-  const lookups = useLoad(async (): Promise<Lookups> => {
-    const [statuses, degrees, types] = await Promise.all([db.lookups.list('MemberStatus'), db.lookups.list('Degree'), db.lookups.list('MemberType')]);
-    return { statuses, degrees, types };
-  }, []);
-  const members = useLoad(async () => {
-    const list = await db.members.listByCouncil(scope.councilId);
-    const roles = await Promise.all(list.map((m) => db.members.listRoles(m.id)));
-    return list.map((member, i) => ({ member, roles: roles[i] }));
-  }, [scope.councilId]);
-
-  useEffect(() => setSelected(null), [scope.councilId]);
-  useEffect(() => setExtensionsOpen(false), [selected]);
-
-  const statusName = new Map((lookups.data?.statuses ?? []).map((s) => [s.id, s.Status]));
-  const typeName = new Map((lookups.data?.types ?? []).map((t) => [t.id, t.Type]));
-  const degreeName = new Map((lookups.data?.degrees ?? []).map((d) => [d.id, d.Degree]));
-  const needle = filter.trim().toLowerCase();
-  const rows = (members.data ?? []).filter(
-    ({ member: m }) =>
-      (statusFilter === 'all' || m.StatusID === statusFilter) &&
-      (needle === '' || `${m.MemberFirstName} ${m.MemberLastName} ${m.Email} ${m.MemberNumber}`.toLowerCase().includes(needle)),
-  );
-  const current = typeof selected === 'number' ? members.data?.find((r) => r.member.id === selected)?.member ?? null : null;
-  const failure = lookups.error ?? members.error;
-
-  return (
-    <>
-      <PageTitle
-        actions={
-          <div className="flex items-end gap-3">
-            <CouncilSelect scope={scope} />
-            <Button variant="secondary" onClick={() => setSkillsOpen(true)} aria-expanded={skillsOpen}>
-              Skills
-            </Button>
-            {canCreateMembers(user, scope.councilId) ? <Button onClick={() => setSelected('new')}>Add member</Button> : null}
-          </div>
-        }
-      >
-        Member roster
-      </PageTitle>
-      {failure ? <Notice tone="error">{failure}</Notice> : null}
-      <Banner message={sweepMessage} onDismiss={() => setSweepMessage(null)} />
-
-      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_34rem] items-start gap-4">
-        <Panel title={`Members (${rows.length} of ${members.data?.length ?? 0})`}>
-          <div className="mb-3 flex gap-3">
-            <Field label="Search" className="flex-1">
-              {(id) => <Input id={id} type="search" placeholder="Name, email or member number" value={filter} onChange={(e) => setFilter(e.target.value)} />}
-            </Field>
-            <Field label="Status" className="w-40">
-              {(id) => (
-                <Select id={id} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
-                  <option value="all">All</option>
-                  {(lookups.data?.statuses ?? []).map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.Status}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-          </div>
-          {members.data && rows.length === 0 ? <Empty>No members match. Clear the search or status filter.</Empty> : null}
-          {rows.length > 0 ? (
-            <Table caption="Council members" head={['Member', 'No.', 'Degree', 'Type', 'Status', 'Roles', ...(canImpersonate ? ['Actions'] : [])]}>
-              {rows.map(({ member: m, roles }) => {
-                const active = selected === m.id;
-                return (
-                  <tr key={m.id} className={cx(active && 'outline outline-2 -outline-offset-2 outline-gold')}>
-                    <Td>
-                      <button type="button" aria-current={active ? 'true' : undefined} onClick={() => setSelected(m.id)} className="text-left font-bold underline">
-                        {m.MemberLastName}, {m.MemberFirstName}
-                      </button>
-                      <NewMemberBadge member={m} />
-                    </Td>
-                    <Td>{m.MemberNumber}</Td>
-                    <Td>{degreeName.get(m.DegreeID) ?? ''}</Td>
-                    <Td>{typeName.get(m.MemberTypeID) === 'Member' ? 'Member' : <Pill tone="navy">{typeName.get(m.MemberTypeID) ?? ''}</Pill>}</Td>
-                    <Td>{statusName.get(m.StatusID) === 'Active' ? 'Active' : <Pill tone="outline">{statusName.get(m.StatusID) ?? ''}</Pill>}</Td>
-                    <Td className="text-xs">
-                      {roles.map((r) => (r.Officer === 1 ? <Pill key={r.id} tone="gold">{r.Role}</Pill> : <span key={r.id}>{r.Role} </span>))}
-                    </Td>
-                    {canImpersonate ? (
-                      <Td>
-                        {mayImpersonateMember(user, { memberId: m.id, memberType: typeName.get(m.MemberTypeID) }) ? (
-                          <Button size="sm" variant="secondary" onClick={() => void viewAs(m.id)} aria-label={`Impersonate ${m.MemberFirstName} ${m.MemberLastName}`}>
-                            👥 Impersonate User
-                          </Button>
-                        ) : null}
-                      </Td>
-                    ) : null}
-                  </tr>
-                );
-              })}
-            </Table>
-          ) : null}
-        </Panel>
-
-        <div>
-          {!lookups.data ? null : selected === 'new' ? (
-            <MemberForm
-              member={null}
-              councilId={scope.councilId}
-              lookups={lookups.data}
-              onSaved={(id) => void members.reload().then(() => setSelected(id))}
-            />
-          ) : current ? (
-            <div className="flex flex-col gap-3">
-              {canEditMember(user, current) ? (
-                <div className="flex justify-end">
-                  <Button variant="secondary" onClick={() => setExtensionsOpen(true)} aria-expanded={extensionsOpen}>
-                    Skills &amp; training
-                  </Button>
-                </div>
-              ) : null}
-              <MemberForm member={current} councilId={scope.councilId} lookups={lookups.data} onSaved={() => void members.reload()} />
-              {/* Sprint 7A Extension: every council the member has belonged to, kept across transfers. */}
-              <AffiliationHistoryCard key={`${current.id}-${current.CouncilID}-${current.StatusID}`} memberId={current.id} />
-            </div>
-          ) : (
-            <Empty>Choose a member to view or change their record{canCreateMembers(user, scope.councilId) ? ', or add a new one' : ''}.</Empty>
-          )}
-        </div>
-      </div>
-
-      {skillsOpen ? <SkillFilterDrawer councilId={scope.councilId} onClose={() => setSkillsOpen(false)} /> : null}
-      {extensionsOpen && current ? (
-        <Drawer title={`Skills & training: ${current.MemberFirstName} ${current.MemberLastName}`} onClose={() => setExtensionsOpen(false)} wide>
-          <ProfileExtensionsEditor memberId={current.id} showWorkingStatus={false} />
-        </Drawer>
-      ) : null}
-    </>
-  );
-}
-
-export default function MembersPage() {
-  return (
-    <RequireArea area="members">
-      <Roster />
-    </RequireArea>
-  );
-}

@@ -180,7 +180,7 @@ A shared transaction id groups the lines.
 | --- | --- |
 | **General Ledger Spreadsheet** | The chart of accounts with every posting |
 | **Balance Sheet** | Assets against liabilities and equity |
-| **Financial Dashboard** | Cash flow liquidity, the balance sheet summary, **Quick actions** and the **Electronic bank statement audit** |
+| **Financial Dashboard** | Cash flow liquidity, the balance sheet summary and **Quick actions** (the transfer between accounts) |
 
 Seated officers and Admins read the three pages. Only the FS, the Treasurer and Super Admins post, transfer or upload bank statements.
 
@@ -207,7 +207,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 **Steps:**
 1. To post: choose the debit account and the credit account. Enter the amount and the description. Save.
 2. To transfer: choose two asset accounts. Enter the amount. Save.
-3. To reconcile: open **Electronic bank statement audit**. Upload the bank CSV file.
+3. To reconcile: open **Active Desks** → **Treasurer Desk** → **Bank Statement Match-Window**. Upload the bank CSV file. The Financial Dashboard has no bank statement table.
 4. Read the matched rows and the unmatched rows.
 
 **Expected result:** The dashboard shows **✓ Ledger Balanced (Zero Leaks)** when debits equal credits.
@@ -321,10 +321,11 @@ The budget covers one fraternal year, July 1 to June 30.
 
 - Every member reads the budget. Non-editors see a **Transparency view** marked **Read only**.
 - Editors are the council Admins, the Treasurer, the FS, the **Designated Budget Director** and Super Admins.
+- A council Admin or a Super Admin assigns the **Designated Budget Director** in **Assign Designated Budget Director** at the top of the **Annual Budget Center**. Choose a member, or **Nobody**. The choice saves at once. The roster form has no Budget Director box.
 - Only a Super Admin override changes a budget outside the window. No override reopens an approved budget.
 
 <!-- KEEP_IMAGE: annual budget projections capture -->
-![Annual Budget Projections (/budget)](../generated/dashboard_visual_catalog/budget.png)
+![Annual Budget Center (/budget)](../generated/dashboard_visual_catalog/budget.png)
 <!-- /KEEP_IMAGE -->
 
 ### 2.10 Prepare the budget with the rollup
@@ -332,7 +333,7 @@ The budget covers one fraternal year, July 1 to June 30.
 
 **Goal:** Fill the next year's budget from last year's actual spend.
 
-**Start point:** Sidebar → Finances → **Annual Budget Projections**.
+**Start point:** Sidebar → Finances → **Annual Budget Center**.
 
 **Steps:**
 1. Choose the **Fraternal year**.
@@ -364,7 +365,7 @@ A new rollup refreshes the baselines only. The rollup never changes proposed amo
 
 **Goal:** Record the council's vote on the budget.
 
-**Start point:** Sidebar → Finances → **Annual Budget Projections**.
+**Start point:** Sidebar → Finances → **Annual Budget Center**.
 
 **Steps:**
 1. Check every proposed amount.
@@ -475,30 +476,32 @@ A donation by check now records the number printed on the check. The number help
 | The message says "Enter the check number printed on the check." | The **CHECK NUMBER (REQUIRED)** field is empty. | Enter the check number, then tap **Record donation** again. |
 | There is no **Check** tile. | The council did not turn Check on. | Ask an Admin to turn Check on in **Council Lookup Tables**. |
 
-### 4.2 Log revenue and its payment method
+### 4.2 Post a lump-sum revenue override
 > **Who can do this:** The council's Treasurer or a Super Admin.
 > **Warning:** The revenue posts to the general ledger at once.
 
-**Goal:** Record event or activity revenue and how the council received the money.
+**Goal:** Post a corrected cash bag count, or a block of electronic revenue taken outside the portal, in one action.
 
-**Start point:** Sidebar → Finances → **Financial Dashboard** → **💰 Log Concluded Event Revenues**.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **🧾 Lump-Sum Financial Override**.
 
 **Steps:**
-1. Select the event or activity in **Event or activity**.
-2. Enter the amount in **Funds collected**.
-3. Select the **Revenue account** and the **Deposited to** account.
-4. Select the method in **Payment method**: Cash, Credit Card, Venmo, Zelle, Zeffy, Parishsoft or Check.
-5. If you selected **Check**, enter the number in **Check number**.
-6. Select **Save to the ledger**. The revenue posts to the ledger at once.
+1. Select the type in **Override type**: **Corrected cash bag count** or **Bulk electronic revenue block**.
+2. Select the event or activity in **Event or activity**.
+3. Select the method in **Payment method**. A cash bag lists the cash methods. An electronic block lists Credit Card, Venmo, Zelle, Zeffy and Parishsoft.
+4. Select the **Revenue GL line**.
+5. Enter the amount in **Amount**.
+6. Select **Post override**. The revenue posts to the ledger at once, deposited to the batch coder's deposit account.
 
-**Expected result:** A message shows the amount and the revenue account. Both ledger lines show the payment method. A check payment also shows the check number.
+**Expected result:** A message shows the amount and the override type. Both ledger lines show the payment method.
+
+The Financial Dashboard has no **💰 Log Concluded Event Revenues** card. Use this row instead.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The message says "Enter the check number of a payment by check." | The **Check number** box is empty. | Enter the check number, then save. |
 | A method, such as Zeffy, is not in the **Payment method** list. | The council did not turn that method on. | Ask an Admin to turn the method on in **Council Lookup Tables**. |
 | The message says the method "is not one this council has enabled for payments." | An Admin turned the method off after the page opened. | Reload the page, then choose an enabled method. |
+| The row is not on the batch coder. | You are not the council's Treasurer or a Super Admin. | Ask the Treasurer. |
 
 ### 4.3 Add a photo to a council asset
 > **Who can do this:** The council's Grand Knight, Deputy Grand Knight, Trustees, Admins, Financial Secretary and Treasurer, or a Super Admin.
@@ -685,7 +688,7 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 4.3.1 of the Executive Governance Manual). |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
 | **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
-| **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Open the Supreme roster sync. |
+| **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Upload the Supreme roster CSV. |
 | **Financial Secretary Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 8). |
 | **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **Auditing & Return Queue** (section 6.2.3). |
 | **Financial Secretary Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
@@ -876,7 +879,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record that leadership reviewed the drafted budget in June.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Global Revenue Splits** → **Annual Budget Planner** → **Annual budget**.
+**Start point:** Sidebar → Finances → **Annual Budget Center** → **Annual Budget Planner** → **Annual budget**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**.
@@ -897,7 +900,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record the council's vote on the budget at the July meeting.
 
-**Start point:** Sidebar → Finances → **Annual Budget Projections**.
+**Start point:** Sidebar → Finances → **Annual Budget Center**.
 
 **Steps:**
 1. Choose the fraternal year.
@@ -946,7 +949,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 ### 9.1 Concept: the parish fundraiser split
 Some fundraisers use parish property, for example the cathedral parking lot. The council then owes the parish a share of the money collected. The parish split calculates that share and pays it by check.
 
-Each council sets its own split on **Council Wide Settings** → **Global Revenue Splits** → **Parish Fundraiser Split**:
+Each council sets its own split on **Council Wide Settings** → **Feature Controls** → **Parish Fundraiser Split**:
 
 | Setting | What it does | Default |
 | --- | --- | --- |
@@ -977,7 +980,7 @@ The officer who issues a request cannot also pay the request.
 
 **Goal:** Switch the parish split on with a percentage and a ledger line.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Global Revenue Splits** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Feature Controls** → **Parish Fundraiser Split**. The Treasurer can also select **Switch it on in Council Wide Settings** on the console.
 
 **Steps:**
 1. Select the switch. The switch shows **The parish split is on**.
@@ -1312,7 +1315,7 @@ A table under the charts lists each category with its figures. The first eight c
 1. To add a category, enter the name in **New category**. Select **Add category**.
 2. To rename a category, change its name. Select **Rename**.
 3. To delete a category, select **Delete**. You cannot undo this.
-4. In **Annual Budget Projections**, choose the category on each line.
+4. In **Annual Budget Center**, choose the category on each line.
 
 **Expected result:** A message confirms the change. The category list and the line pickers show the change.
 

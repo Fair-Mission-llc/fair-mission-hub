@@ -302,7 +302,7 @@ describe('Azure Document Intelligence receipt reader', () => {
       expect(() => resolveDocumentIntelligenceEndpoint(bad), bad).toThrow(/Document Intelligence endpoint/);
     }
     expect(documentIntelligenceAnalyzeUrl(ENDPOINT)).toBe(`${ENDPOINT}/documentintelligence/documentModels/prebuilt-receipt:analyze?api-version=2024-11-30`);
-    const page = read('apps/web/app/credentials-vault/page.tsx');
+    const page = read('apps/web/components/modules/CredentialsVaultPanel.tsx');
     expect(page).toContain("credentialKey: 'AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT'");
     expect(page).toContain("credentialKey: 'AZURE_DOCUMENT_INTELLIGENCE_KEY'");
   });

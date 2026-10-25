@@ -112,7 +112,10 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member: 'Shows the screens officers and Admins share when they click Request Remote Officer Assistance, so you can guide them.',
   },
   'system-settings/impersonate': {
-    member: 'Finds any member in any council by typing a name, or by opening a council, then a role group. Click View as to see the portal as that member, read-only.',
+    member: 'Finds a council Admin in any council by typing a name, or by opening a council. Click Impersonate to see the portal as that Admin, read-only, while you help them.',
+  },
+  'system-settings/view-as-member': {
+    member: "Shows what one member of your own council sees: their sidebar links, their desks and their coming shifts. Read-only; you stay signed in as yourself.",
   },
   'system-settings/feedback': {
     member: "Sends a note or bug report from your council's Admins to the platform owner. Super Admins also read every note here.",
@@ -129,8 +132,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member:
       "Shows the signed operating notes your council's leaders saved in the Operations Knowledge Archive. Filter by tag and fraternal year, or type words to search. Read-only.",
   },
-  members: { member: "Keeps the council's member roster: member types, roles and skills." },
-  'supreme-sync': { member: 'Checks and files the Supreme Council reports (Forms 1728 and 1295) and syncs the roster.' },
+  'supreme-sync': { member: 'Checks and files the Supreme Council reports (Forms 1728 and 1295). The roster sync is on the Financial Secretary Desk.' },
   'council-lookups': { member: "Keeps the council's own lists: activities, donation types, payment methods and agenda templates." },
   'credentials-vault': { member: "Connects the council's email account and Google Drive." },
   'charities/registry': { member: 'Searches the shared list of charities and adds new ones.' },

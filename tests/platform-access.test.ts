@@ -187,8 +187,10 @@ describe.each(drivers)('Sprint 7F ($name driver)', (d) => {
 
   it("builds a member's session for a Super Admin's view, and refuses anyone else or a Super Admin target", async () => {
     const db = await d.make();
-    const view = await db.auth.impersonate(MEMBER.superAdmin, MEMBER.member);
-    expect(view).toMatchObject({ memberId: MEMBER.member, memberType: 'Member' });
+    // Sprint 10 Revision 3.0: only a council Admin may be impersonated.
+    const view = await db.auth.impersonate(MEMBER.superAdmin, MEMBER.admin);
+    expect(view).toMatchObject({ memberId: MEMBER.admin, memberType: 'Admin' });
+    await expectRule(db.auth.impersonate(MEMBER.superAdmin, MEMBER.member), 'IMPERSONATION_REFUSED');
     await expectRule(db.auth.impersonate(MEMBER.admin, MEMBER.member), 'SUPER_ADMIN_REQUIRED');
     await expectRule(db.auth.impersonate(MEMBER.superAdmin, MEMBER.superAdmin), 'IMPERSONATION_REFUSED');
     await expectRule(db.auth.impersonate(MEMBER.superAdmin, 99999), 'RECORD_NOT_FOUND');
@@ -337,14 +339,16 @@ describe.each(drivers)('Sprint 7F Extension 2 ($name driver)', (d) => {
 });
 
 describe('impersonation', () => {
-  it('lets only an Active Super Admin view as a member who is not a Super Admin', () => {
-    expect(() => assertMayImpersonate(superAdmin, { memberId: 9, memberType: 'Member' })).not.toThrow();
-    expect(() => assertMayImpersonate(admin, { memberId: 9, memberType: 'Member' })).toThrow(BusinessRuleError);
-    expect(() => assertMayImpersonate({ ...superAdmin, active: false }, { memberId: 9, memberType: 'Member' })).toThrow(/Super Admin/);
+  it('lets only an Active Super Admin impersonate, and only a council Admin (Sprint 10 Revision 3.0)', () => {
+    expect(() => assertMayImpersonate(superAdmin, { memberId: 9, memberType: 'Admin' })).not.toThrow();
+    expect(() => assertMayImpersonate(superAdmin, { memberId: 9, memberType: 'Member' })).toThrow(/View As Member/);
+    expect(() => assertMayImpersonate(admin, { memberId: 9, memberType: 'Admin' })).toThrow(BusinessRuleError);
+    expect(() => assertMayImpersonate({ ...superAdmin, active: false }, { memberId: 9, memberType: 'Admin' })).toThrow(/Super Admin/);
     expect(() => assertMayImpersonate(superAdmin, { memberId: 7, memberType: 'Super Admin' })).toThrow(/cannot be impersonated/);
-    expect(mayImpersonateMember({ memberId: 1, memberType: 'Super Admin' }, { memberId: 3, memberType: 'Member' })).toBe(true);
+    expect(mayImpersonateMember({ memberId: 1, memberType: 'Super Admin' }, { memberId: 3, memberType: 'Admin' })).toBe(true);
+    expect(mayImpersonateMember({ memberId: 1, memberType: 'Super Admin' }, { memberId: 3, memberType: 'Member' })).toBe(false);
     expect(mayImpersonateMember({ memberId: 1, memberType: 'Super Admin' }, { memberId: 1, memberType: 'Super Admin' })).toBe(false);
-    expect(mayImpersonateMember({ memberId: 2, memberType: 'Admin' }, { memberId: 3, memberType: 'Member' })).toBe(false);
+    expect(mayImpersonateMember({ memberId: 2, memberType: 'Admin' }, { memberId: 3, memberType: 'Admin' })).toBe(false);
   });
 
   it('refuses writes, never reads, while the view is on', async () => {
@@ -387,7 +391,7 @@ describe('impersonation', () => {
     expect(route).toContain("actor.memberType !== 'Super Admin'");
     expect(route).toContain('db.auth.impersonate(claims.memberId, memberId)');
     expect(read('apps/web/services/server/session.ts')).toContain("claims.impersonatorId !== undefined && req.method !== 'GET'");
-    expect(read('apps/web/app/members/page.tsx')).toContain('👥 Impersonate User');
+    expect(read('apps/web/components/modules/MemberRosterDirectory.tsx')).toContain('👥 Impersonate Admin');
     expect(read('apps/web/services/db.ts')).toContain('guardViewAsWrites(createDataService(), () => viewAsActive)');
   });
 });

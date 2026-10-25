@@ -2,10 +2,10 @@
 // (Sprint 6Z-Engine-Upgrade) and answers { rows } (SupremeRosterRow values) for supreme.syncSupremeRoster.
 //
 // Only a portal session that may bring in the council's roster gets an answer: an Active Admin of that council or a
-// Super Admin (assertMayImportSupremeRoster; 401 without a session, 403 otherwise). The Supreme Sync page's preview still
+// Super Admin (assertMaySyncSupremeRoster; 401 without a session, 403 otherwise). The Supreme Sync page's preview still
 // reads the file in the browser as it is typed; the rows it syncs are the ones this route returns.
 import { NextResponse } from 'next/server';
-import { assertMayImportSupremeRoster, describeError, parseSupremeRosterCsv } from '@kofc/shared';
+import { assertMaySyncSupremeRoster, describeError, parseSupremeRosterCsv } from '@kofc/shared';
 import { requirePortalSession } from '@/services/server/session';
 
 /** Largest roster export accepted (about 20,000 members). */
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   }
   const session = await requirePortalSession(req, (actor) => {
     try {
-      assertMayImportSupremeRoster(actor, councilId);
+      assertMaySyncSupremeRoster(actor, councilId);
       return true;
     } catch {
       return false;

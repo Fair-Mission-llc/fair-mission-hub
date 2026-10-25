@@ -265,7 +265,7 @@ describe('Sprint 7A Extension screens and guide', () => {
     expect(page).toContain('<CanonizationShield');
     expect(page).not.toMatch(/formatMoney|monthlySummary|finances/);
     expect(read('apps/web/components/Sidebar.tsx')).toContain("'member-center': {");
-    expect(read('apps/web/app/members/page.tsx')).toContain('<AffiliationHistoryCard');
+    expect(read('apps/web/components/modules/MemberRosterDirectory.tsx')).toContain('<AffiliationHistoryCard');
   });
 
   it('serves the Shared Member Center on the phone from a Home card', () => {

@@ -407,8 +407,8 @@ function matcher(query: string, labels: ReadonlyMap<number, string>) {
   };
 }
 
-/** Who a Super Admin may view as: never themselves, never another Super Admin (assertMayImpersonate). */
-const viewable = (viewerId: number) => (p: ImpersonationCandidate) => p.memberId !== viewerId && p.memberType !== 'Super Admin';
+/** Who a Super Admin may impersonate: a council Admin, never themselves (assertMayImpersonate, Sprint 10 Revision 3.0). */
+const viewable = (viewerId: number) => (p: ImpersonationCandidate) => p.memberId !== viewerId && p.memberType === 'Admin';
 
 export interface ImpersonationTreeGroup {
   id: ClearanceGroupId;

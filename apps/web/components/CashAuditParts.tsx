@@ -28,6 +28,15 @@ import {
   maySplitAccount,
   OVERRIDE_EVENT_SPLIT_LABEL,
   SELECT_ALL_UNCODED_LABEL,
+  canLogConcludedRevenue,
+  eventHasConcluded,
+  journalPaymentOptions,
+  lumpSumMethodChoices,
+  LUMP_SUM_OVERRIDE_MODES,
+  LUMP_SUM_OVERRIDE_TITLE,
+  toIsoDate,
+  type LumpSumOverrideMode,
+  type GLAccount,
   type CashAuditRow,
   type SessionUser,
 } from '@kofc/shared';
@@ -213,6 +222,153 @@ export function CashBoxAuditPanel({ user, councilId }: { user: SessionUser; coun
   );
 }
 
+/**
+ * Sprint 10 Revision 3.0: the Lump-Sum Financial Override row (cash-audit.ts LUMP_SUM_OVERRIDE_MODES) - one corrected
+ * cash bag count or one bulk electronic revenue block, posted in a single action through finance.logConcludedRevenue.
+ * The council's Treasurer or a Super Admin (canLogConcludedRevenue; the drivers check again).
+ */
+function LumpSumOverrideRow({ user, councilId, revenueAccounts, depositAccount }: { user: SessionUser; councilId: number; revenueAccounts: readonly GLAccount[]; depositAccount: GLAccount | null }) {
+  const today = toIsoDate(new Date());
+  const sources = useLoad(async () => {
+    const [events, activities, methods] = await Promise.all([db.events.listByCouncil(councilId), db.activities.listByCouncil(councilId), db.donations.listMethods(councilId)]);
+    return {
+      events: events.filter((e) => eventHasConcluded(e, today)).sort((a, b) => String(b.StartDate).localeCompare(String(a.StartDate))),
+      activities,
+      methods: journalPaymentOptions(methods),
+    };
+  }, [councilId, today]);
+  const [mode, setMode] = useState<LumpSumOverrideMode>('cash-bag');
+  const [source, setSource] = useState('');
+  const [amount, setAmount] = useState('');
+  const [lineId, setLineId] = useState('');
+  const [method, setMethod] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<Message>(null);
+  const choices = lumpSumMethodChoices(sources.data?.methods ?? [], mode);
+  const methodValue = method || String(choices[0]?.method.id ?? '');
+  const ready = source !== '' && amount.trim() !== '' && lineId !== '' && depositAccount !== null;
+
+  const post = async () => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const value = parseNumberField(amount, 'Amount');
+      if (value === null) throw new Error('Enter the amount.');
+      const m = /^(event|activity):(\d+)$/.exec(source);
+      const label = LUMP_SUM_OVERRIDE_MODES.find((x) => x.id === mode)!.label;
+      await db.finance.logConcludedRevenue(user.memberId, councilId, {
+        LinkedEventID: m?.[1] === 'event' ? Number(m[2]) : null,
+        LinkedActivityID: m?.[1] === 'activity' ? Number(m[2]) : null,
+        Amount: value,
+        RevenueAccountID: Number(lineId),
+        DepositAccountID: depositAccount?.id ?? null,
+        DateLogged: today,
+        Description: `${label} (lump-sum override)`,
+        payment_method_id: methodValue ? Number(methodValue) : null,
+        CheckNumber: null,
+      });
+      setMessage({ tone: 'info', text: `Posted ${formatMoney(value)} as one ${label.toLowerCase()} to the ledger.` });
+      setAmount('');
+      setSource('');
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section aria-labelledby="lump-sum-override" className="flex flex-col gap-3 rounded border-2 border-gold border-l-8 p-3">
+      <h3 id="lump-sum-override" className="font-serif text-base font-bold">
+        {LUMP_SUM_OVERRIDE_TITLE}
+      </h3>
+      <p className="text-sm">
+        Post a corrected cash bag count, or a block of electronic revenue taken outside the portal, in one action. It goes straight into the ledger as income
+        {depositAccount ? <> deposited to {depositAccount.AccountName}</> : null}.
+      </p>
+      {sources.error ? <Notice tone="error">{sources.error}</Notice> : null}
+      {message ? (
+        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+          {message.text}
+        </Notice>
+      ) : null}
+      <form
+        className="flex flex-wrap items-end gap-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (ready) void post();
+        }}
+      >
+        <Field label="Override type">
+          {(id) => (
+            <Select
+              id={id}
+              value={mode}
+              disabled={busy}
+              onChange={(e) => {
+                setMode(e.target.value as LumpSumOverrideMode);
+                setMethod('');
+              }}
+            >
+              {LUMP_SUM_OVERRIDE_MODES.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label="Event or activity">
+          {(id) => (
+            <Select id={id} value={source} required disabled={busy} onChange={(e) => setSource(e.target.value)}>
+              <option value="">Choose a past event or an activity</option>
+              {(sources.data?.events ?? []).map((e) => (
+                <option key={e.id} value={`event:${e.id}`}>
+                  {e.EventName} · {formatDate(String(e.StartDate).slice(0, 10))}
+                </option>
+              ))}
+              {(sources.data?.activities ?? []).map((a) => (
+                <option key={a.id} value={`activity:${a.id}`}>
+                  {a.ActivityName}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label="Payment method">
+          {(id) => (
+            <Select id={id} value={methodValue} disabled={busy} onChange={(e) => setMethod(e.target.value)}>
+              {choices.map((o) => (
+                <option key={o.method.id} value={o.method.id}>
+                  {o.method.DonationMethod}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label="Revenue GL line">
+          {(id) => (
+            <Select id={id} value={lineId} required disabled={busy} onChange={(e) => setLineId(e.target.value)}>
+              <option value="">Choose the Revenue line</option>
+              {revenueAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.AccountName}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label="Amount">
+          {(id) => <Input id={id} inputMode="decimal" required value={amount} placeholder="0.00" disabled={busy} onChange={(e) => setAmount(e.target.value)} />}
+        </Field>
+        <Button type="submit" variant="gold" disabled={busy || !ready}>
+          {busy ? 'Posting…' : 'Post override'}
+        </Button>
+      </form>
+    </section>
+  );
+}
+
 /** The Treasurer Desk's High-Volume Batch Transaction Coder. */
 export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; councilId: number }) {
   const view = useLoad(() => db.finance.getBatchCodingQueue(user.memberId, councilId), [user.memberId, councilId]);
@@ -285,6 +441,9 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
       ) : null}
       {view.data ? (
         <div className="flex flex-col gap-3">
+          {canLogConcludedRevenue(user, councilId) ? (
+            <LumpSumOverrideRow user={user} councilId={councilId} revenueAccounts={view.data.revenueAccounts} depositAccount={view.data.depositAccount} />
+          ) : null}
           <p className="text-sm">
             Card and QR-code gifts (Venmo, Zelle, Zeffy, ParishSoft) wait here until they are coded to a Revenue line. Un-coded total:{' '}
             <strong>{formatMoney(view.data.uncodedTotal)}</strong>

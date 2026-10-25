@@ -144,6 +144,9 @@ export const IMPERSONATION_MAX_MINUTES = 60;
 /**
  * May `actor` view the portal as `target`? Only an Active Super Admin (SUPER_ADMIN_REQUIRED), never as themself and
  * never as another Super Admin (IMPERSONATION_REFUSED), so the view never holds more power than the actor's own.
+ * Sprint 10 Revision 3.0: token-level impersonation is only for a Super Admin assisting a local council Admin - the
+ * target must be an 'Admin' (IMPERSONATION_REFUSED otherwise). A council Admin who wants to see a member's view uses the
+ * read-only View As Member mirror instead (assertMayViewAsMember), which never swaps a session token.
  */
 export function assertMayImpersonate(actor: MemberWriteActor, target: { memberId: number; memberType: string | undefined }): void {
   if (!hasSuperAdminRights(actor)) {
@@ -155,11 +158,44 @@ export function assertMayImpersonate(actor: MemberWriteActor, target: { memberId
   if (target.memberType === 'Super Admin') {
     throw new BusinessRuleError('IMPERSONATION_REFUSED', 'A Super Admin cannot be impersonated.', { memberId: target.memberId });
   }
+  if (target.memberType !== IMPERSONATION_TARGET_TYPE) {
+    throw new BusinessRuleError(
+      'IMPERSONATION_REFUSED',
+      'Impersonation is only for helping a council Admin. To see what a member sees, use View As Member, which is read-only.',
+      { memberId: target.memberId },
+    );
+  }
 }
 
-/** The member grid's "Impersonate User" button: shown to Super Admins beside every member but themselves and other Super Admins. */
+/** Sprint 10 Revision 3.0: the only member type a Super Admin may impersonate - a local council Admin. */
+export const IMPERSONATION_TARGET_TYPE = 'Admin';
+
+/**
+ * Sprint 10 Revision 3.0: may `actor` open the read-only View As Member mirror of `target`? An Active council Admin or
+ * Super Admin (ADMIN_REQUIRED), and only for a member of the actor's own home council (COUNCIL_ACCESS_DENIED) - a
+ * Super Admin included, so the mirror never crosses a council border.
+ */
+export function assertMayViewAsMember(actor: MemberWriteActor, target: { memberId: number; councilId: number }): void {
+  if (!hasAdminRights(actor)) {
+    throw new SecurityPrivilegeError('ADMIN_REQUIRED', `Only an active council Admin or a Super Admin may use View As Member; you are ${describeActor(actor)}.`, {
+      memberId: actor.memberId,
+    });
+  }
+  if (target.councilId !== actor.councilId) {
+    throw new SecurityPrivilegeError('COUNCIL_ACCESS_DENIED', 'View As Member shows only members of your own council.', {
+      actorCouncilId: actor.councilId,
+      councilId: target.councilId,
+    });
+  }
+}
+
+/** Whether View As Member offers `target` to `viewer`: an Admin or Super Admin, a member of the viewer's own council. */
+export const mayViewAsMember = (viewer: { councilId: number; memberType: string | undefined }, target: { councilId: number }): boolean =>
+  (viewer.memberType === 'Admin' || viewer.memberType === 'Super Admin') && viewer.councilId === target.councilId;
+
+/** The roster's "Impersonate Admin" button: shown to Super Admins beside each council Admin (Sprint 10 Revision 3.0). */
 export const mayImpersonateMember = (viewer: { memberId: number; memberType: string | undefined }, target: { memberId: number; memberType: string | undefined }): boolean =>
-  viewer.memberType === 'Super Admin' && target.memberId !== viewer.memberId && target.memberType !== 'Super Admin';
+  viewer.memberType === 'Super Admin' && target.memberId !== viewer.memberId && target.memberType === IMPERSONATION_TARGET_TYPE;
 
 /** Data-service methods a view-as session may call: reads only. Anything else is refused (VIEW_AS_READ_ONLY). */
 const VIEW_AS_READ_METHOD = /^(get|list|search|count|preview)([A-Z]|$)|^(monthlySummary|missionAreaFootprint|memberCenter|memberHours|councilEngagement)$/;

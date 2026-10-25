@@ -54,7 +54,6 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },
   activities: { href: '/activities', label: 'Standalone Activities', hint: 'Standing council activities' },
-  members: { href: '/members', label: 'Affiliated Roster', hint: 'Members, types and skills' },
   events: { href: '/events', label: 'Event Planner', hint: 'Events, shifts and councils' },
   meetings: { href: '/meetings', label: 'Meeting Center', hint: 'Meetings, invitations, minutes' },
   'meetings/cadence': {
@@ -114,7 +113,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Claim, audit and advance intake requests',
     restrictedTo: 'council officers, Trustees and Admins',
   },
-  'financials/budget': { href: '/budget', label: 'Annual Budget Projections', hint: 'Draft the council budget May 1 - June 30' },
+  'financials/budget': { href: '/budget', label: 'Annual Budget Center', hint: 'Draft the council budget May 1 - June 30 and assign its Budget Director' },
   'council-lookups': { href: '/council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types, methods' },
   'credentials-vault': {
     href: '/credentials-vault',
@@ -147,9 +146,15 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'system-settings/impersonate': {
     href: '/system-settings/impersonate',
-    label: 'View-As Member Lookup',
-    hint: 'Find any member of any council and view the portal as them',
+    label: 'Impersonate Council Admin',
+    hint: 'Find a council Admin and view the portal as them while you help',
     restrictedTo: 'Super Admins',
+  },
+  'system-settings/view-as-member': {
+    href: '/system-settings/view-as-member',
+    label: 'View As Member',
+    hint: 'A read-only picture of what one member of your council sees',
+    restrictedTo: 'council Admins and Super Admins',
   },
   'system-settings/feedback': {
     href: '/system-settings/feedback',

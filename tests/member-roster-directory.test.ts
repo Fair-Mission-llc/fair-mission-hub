@@ -45,8 +45,8 @@ describe('roster scope', () => {
     for (const t of ['Member', 'Admin', null]) expect(memberRosterScope({ memberType: t })).toBe('fraternal');
   });
 
-  it('drops the council picker for the global list', () => {
-    expect(rosterShowsCouncilPicker('global')).toBe(false);
+  it('offers the council picker on every list, the Super Admin global list included (Sprint 10 Revision 3.0)', () => {
+    expect(rosterShowsCouncilPicker('global')).toBe(true);
     expect(rosterShowsCouncilPicker('fraternal')).toBe(true);
   });
 

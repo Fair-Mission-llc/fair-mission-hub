@@ -151,7 +151,7 @@ describe('verified charities and the grant form auto-fill', () => {
   });
 
   it('lets an Admin verify a registry entry on the Global Charities Registry page', () => {
-    const page = read('apps/web/app/charities/registry/page.tsx');
+    const page = read('apps/web/components/modules/GlobalCharitiesRegistry.tsx');
     expect(page).toContain('db.charities.setCharityVerified(user.memberId, charity.id, verify)');
     expect(page).toContain("'Verified'");
   });

@@ -177,13 +177,13 @@ describe('the cross-council view-as lookup (pure)', () => {
   });
   const people = [
     person(1, 1, 'Sam', 'Super', { memberType: 'Super Admin' }),
-    person(2, 1, 'Greg', 'Knight', { roles: ['Grand Knight'], isOfficer: true }),
+    person(2, 1, 'Greg', 'Knight', { memberType: 'Admin', roles: ['Grand Knight'], isOfficer: true }),
     person(3, 1, 'Fran', 'Secretary', { roles: ['Financial Secretary'], isOfficer: true }),
     person(4, 1, 'Ray', 'Recorder', { roles: ['Recorder'], isOfficer: true }),
     person(5, 1, 'Ada', 'Admin', { memberType: 'Admin' }),
     person(6, 1, 'Tom', 'Smith'),
-    person(7, 2, 'Tim', 'Smithers', { roles: ['Warden'], isOfficer: true }),
-    person(8, 2, 'Hal', 'Story', { roles: [COUNCIL_HISTORIAN_ROLE] }),
+    person(7, 2, 'Tim', 'Smithers', { memberType: 'Admin', roles: ['Warden'], isOfficer: true }),
+    person(8, 2, 'Hal', 'Story', { memberType: 'Admin', roles: [COUNCIL_HISTORIAN_ROLE] }),
   ];
 
   it('sorts each person into one clearance group by their highest seat', () => {
@@ -196,25 +196,23 @@ describe('the cross-council view-as lookup (pure)', () => {
     expect(clearanceGroupOf({ memberType: 'Member', roles: [], isOfficer: false })).toBe('members');
   });
 
-  it('drills down Council -> group -> person, in CouncilNumber order, never listing the viewer or a Super Admin', () => {
+  it('drills down Council -> group -> person, in CouncilNumber order, listing only council Admins (Sprint 10 Revision 3.0)', () => {
     const tree = buildImpersonationTree(councils, people, '', 1);
-    expect(tree.matches).toBe(7);
+    expect(tree.matches).toBe(4);
     expect(tree.councils.map((c) => [c.councilId, c.count])).toEqual([
-      [1, 5],
+      [1, 2],
       [2, 2],
     ]);
     expect(tree.councils[0].groups.map((g) => [g.id, g.people.map((p) => p.memberId)])).toEqual([
       ['executive', [2]],
-      ['finance', [3]],
-      ['records', [4]],
       ['admins', [5]],
-      ['members', [6]],
     ]);
     expect(tree.councils[0].label).toBe(councilLabel(councils[1]));
   });
 
   it('filters the tree by every word typed, across name, role and council', () => {
-    expect(buildImpersonationTree(councils, people, 'smi', 1).councils.map((c) => c.groups.flatMap((g) => g.people.map((p) => p.memberId)))).toEqual([[6], [7]]);
+    // Tom Smith (6) is a plain Member, so only Tim Smithers, an Admin, is offered.
+    expect(buildImpersonationTree(councils, people, 'smi', 1).councils.map((c) => c.groups.flatMap((g) => g.people.map((p) => p.memberId)))).toEqual([[7]]);
     expect(buildImpersonationTree(councils, people, '16000 smith', 1).matches).toBe(1);
     expect(buildImpersonationTree(councils, people, 'grand knight', 1).councils[0].groups[0].people[0].memberId).toBe(2);
     expect(buildImpersonationTree(councils, people, 'super', 2).matches).toBe(0);
@@ -222,8 +220,8 @@ describe('the cross-council view-as lookup (pure)', () => {
 
   it('suggests name-prefix matches first', () => {
     expect(impersonationSuggestions(councils, people, 'sto', 1).map((p) => p.memberId)).toEqual([8]);
-    // 'Recorder' starts with 're'; Greg and Secretary only contain it.
-    expect(impersonationSuggestions(councils, people, 're', 1).map((p) => p.memberId)).toEqual([4, 2, 3]);
+    // The Recorder and the Financial Secretary are plain Members now left out; Greg only contains 're'.
+    expect(impersonationSuggestions(councils, people, 're', 1).map((p) => p.memberId)).toEqual([2]);
     expect(impersonationSuggestions(councils, people, '', 1)).toEqual([]);
     expect(impersonationSuggestions(councils, people, 'm', 1, 2)).toHaveLength(2);
   });

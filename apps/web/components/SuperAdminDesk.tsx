@@ -6,14 +6,88 @@
 //   [ 🔑 Council Access Request Approval Queue ] the councils asking to join the platform (InboundMailCenter)
 //   [ 🛠️ System Feature Flag Control Panel ]      every council's module switches (FeatureFlagControlPanel)
 // The chosen folder is remembered in this browser only (a per-viewer convenience).
+// Sprint 10 Revision 3.0: under the folders, four collapsible infrastructure drawers (SUPER_ADMIN_DESK_DRAWERS): Global
+// System Parameters, Global Lookup Tables, Global Charities Registry and the Credentials Vault. A drawer's body mounts
+// only while it is open. The Credentials Vault drawer is pinned to the Super Admin's own home council.
 import { useEffect, useState } from 'react';
-import { isPlatformOwner, SUPER_ADMIN_DESK_FOLDERS, superAdminDeskFolder, type SessionUser, type SuperAdminDeskFolderId } from '@kofc/shared';
+import {
+  isPlatformOwner,
+  SUPER_ADMIN_DESK_DRAWERS,
+  SUPER_ADMIN_DESK_FOLDERS,
+  superAdminDeskFolder,
+  type SessionUser,
+  type SuperAdminDeskDrawerId,
+  type SuperAdminDeskFolderId,
+} from '@kofc/shared';
 import { FeatureFlagControlPanel } from '@/components/FeatureFlagParts';
 import { FeedbackInbox } from '@/components/FeedbackParts';
+import { GlobalParametersCard } from '@/components/GlobalParametersCard';
+import { CredentialsVaultPanel } from '@/components/modules/CredentialsVaultPanel';
+import { GlobalCharitiesRegistry } from '@/components/modules/GlobalCharitiesRegistry';
+import { GlobalLookupTables } from '@/components/modules/GlobalLookupTables';
 import { InboundMailCenter } from '@/components/PlatformAccessParts';
+import { PlatformSettingsCard } from '@/components/SettingsParts';
 import { cx, Notice } from '@/components/ui';
 
 const LAST_FOLDER_KEY = 'kofc.superAdminDesk.folder';
+
+function DrawerBody({ id }: { id: SuperAdminDeskDrawerId }) {
+  switch (id) {
+    case 'global-parameters':
+      return (
+        <>
+          <GlobalParametersCard />
+          <PlatformSettingsCard />
+        </>
+      );
+    case 'global-lookups':
+      return <GlobalLookupTables embedded />;
+    case 'charities-registry':
+      return <GlobalCharitiesRegistry embedded />;
+    case 'credentials-vault':
+      return <CredentialsVaultPanel homeCouncilOnly />;
+  }
+}
+
+/** The four infrastructure drawers; each body mounts only while its drawer is open. */
+function InfrastructureDrawers() {
+  const [open, setOpen] = useState<ReadonlySet<SuperAdminDeskDrawerId>>(new Set());
+  return (
+    <section aria-label="Platform infrastructure drawers" className="flex flex-col gap-3">
+      {SUPER_ADMIN_DESK_DRAWERS.map((d) => {
+        const isOpen = open.has(d.id);
+        return (
+          <details
+            key={d.id}
+            id={`super-admin-drawer-${d.id}`}
+            open={isOpen}
+            onToggle={(e) => {
+              const now = (e.currentTarget as HTMLDetailsElement).open;
+              setOpen((prev) => {
+                const next = new Set(prev);
+                if (now) next.add(d.id);
+                else next.delete(d.id);
+                return next;
+              });
+            }}
+            className="group rounded border-2 border-navy bg-white"
+          >
+            <summary className="flex cursor-pointer list-none flex-col gap-0.5 border-l-8 border-l-gold px-4 py-3 hover:bg-gold/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold">
+              <span className="font-serif text-lg font-bold text-navy">
+                <span aria-hidden="true" className="mr-2 inline-block transition-transform group-open:rotate-90">
+                  ▸
+                </span>
+                {d.label}
+              </span>
+              <span className="text-sm text-muted">{d.hint}</span>
+            </summary>
+            <div className="min-w-0 border-t-2 border-navy px-4 pb-4 pt-2">{isOpen ? <DrawerBody id={d.id} /> : null}</div>
+          </details>
+        );
+      })}
+    </section>
+  );
+}
 
 function readLastFolder(): string | null {
   try {
@@ -80,6 +154,7 @@ export function SuperAdminDesk({ user }: { user: SessionUser }) {
           <FeatureFlagControlPanel title="System Feature Flag Control Panel" />
         )}
       </div>
+      <InfrastructureDrawers />
     </div>
   );
 }

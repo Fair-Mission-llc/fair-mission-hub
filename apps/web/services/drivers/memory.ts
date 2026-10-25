@@ -489,6 +489,7 @@ import {
   summarizeLedgerTransactions,
   assertAgendaSectionKey,
   assertMayImportSupremeRoster,
+  assertMaySyncSupremeRoster,
   cleanAgendaLineKey,
   cleanRosterJoinDate,
   cleanSupremeRosterRow,
@@ -777,7 +778,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { memberRosterCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -2048,7 +2049,7 @@ export class MemoryDataService implements DataService {
       );
     },
     // Sprint 10 Revision 2.0: the scope comes from the stored actor, never from the client (member-roster.ts).
-    listRoster: async (actorId) => {
+    listRoster: async (actorId, options) => {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
       const scope = memberRosterScope(actor);
@@ -2068,11 +2069,27 @@ export class MemoryDataService implements DataService {
       const home = all.filter((c) => c.id === actor.councilId);
       const councils = [...home, ...all.filter((c) => c.id !== actor.councilId && covered.has(c.id))].map(withoutMeetingPin);
       const activeId = this.activeStatusId(s);
+      // Sprint 10 Revision 3.0: every status, but only for the councils the actor may administer.
+      const managed = new Set(options?.allStatuses ? memberRosterManagedCouncilIds(actor, actor.councilId, ids) : []);
       const members = s
         .rows('Member')
-        .filter((m) => covered.has(m.CouncilID as number) && m.StatusID === activeId)
+        .filter((m) => covered.has(m.CouncilID as number) && (m.StatusID === activeId || managed.has(m.CouncilID as number)))
         .map((m) => withoutPushToken({ ...m })) as unknown as Member[];
       return { scope, councils, members: sortRosterMembers(members) };
+    },
+    getViewAsMirror: async (actorId, memberId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const row = s.rows('Member').find((m) => m.id === memberId);
+      if (!row) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
+      assertMayViewAsMember(actor, { memberId, councilId: row.CouncilID as number });
+      const council = s.rows('Council').find((c) => c.id === row.CouncilID);
+      return {
+        member: withoutPushToken({ ...row }) as unknown as Member,
+        roles: this.rolesFor(s, memberId),
+        memberType: this.memberTypeName(s, row.MemberTypeID as number),
+        council: council ? (withoutMeetingPin({ ...council } as unknown as Council)) : null,
+      };
     },
     listRoles: async (memberId) => this.rolesFor(await this.ready(), memberId),
 
@@ -5022,7 +5039,7 @@ export class MemoryDataService implements DataService {
     syncSupremeRoster: async (actorId, councilId, rows) => {
       const s = await this.ready();
       const result = s.transaction((): SupremeRosterSyncResult => {
-        assertMayImportSupremeRoster(this.memberWriteActor(s, actorId), councilId);
+        assertMaySyncSupremeRoster(this.memberWriteActor(s, actorId), councilId);
         this.assertCouncilsExist(s, [councilId]);
         this.assertFraternalCouncil(s, councilId, 'import the Supreme Council roster');
         const memberTypeId = s.rows('MemberType').find((t) => t.Type === 'Member')?.id as number;

@@ -38,7 +38,6 @@ export type PortalArea =
   | 'feature-flags'
   | 'council-lookups'
   | 'parishes'
-  | 'members'
   | 'activities'
   | 'events'
   | 'meetings'
@@ -80,6 +79,7 @@ export type PortalArea =
   | 'system-settings/global-settings'
   | 'system-settings/remote-assistance'
   | 'system-settings/impersonate'
+  | 'system-settings/view-as-member'
   | 'system-settings/feedback'
   | 'system-settings/affiliations'
   | 'system-settings/knowledge-archive'
@@ -204,6 +204,20 @@ export const canOpenRemoteAssistanceDesk = (u: Actor): boolean => isSuperAdmin(u
  * /api/admin/impersonate and auth.impersonate enforce. Council -> clearance group -> person, across every council.
  */
 export const canOpenImpersonationLookup = (u: Actor): boolean => isSuperAdmin(u);
+
+/**
+ * Sprint 10 Revision 3.0: the read-only View As Member mirror (/system-settings/view-as-member) - a council Admin's (or a
+ * Super Admin's) picture of what one member of their OWN council sees: the sidebar, the desks and the coming shifts. No
+ * session token changes hands (members.getViewAsMirror, assertMayViewAsMember).
+ */
+export const canOpenViewAsMember = (u: Actor): boolean => isAdmin(u);
+
+/**
+ * Sprint 10 Revision 3.0: who sees the Supreme roster CSV uploader, which now lives only on the Financial Secretary Desk -
+ * the council's Financial Secretary, its Admins, or a Super Admin (onboarding.ts assertMaySyncSupremeRoster on the server).
+ */
+export const canSyncSupremeRoster = (u: Actor, councilId: number): boolean =>
+  canAdministerCouncil(u, councilId) || ((u.roles ?? []).includes('Financial Secretary') && u.councilId === councilId);
 
 /**
  * System Settings > Administrative Feedback Loops (Sprint 8O, /system-settings/feedback): a session whose clearance is
@@ -698,10 +712,12 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canOpenGlobalSystemParameters(u)) areas.push('system-settings/global-settings');
   if (canOpenRemoteAssistanceDesk(u)) areas.push('system-settings/remote-assistance');
   if (canOpenImpersonationLookup(u)) areas.push('system-settings/impersonate');
+  if (canOpenViewAsMember(u)) areas.push('system-settings/view-as-member');
   if (canOpenAdministrativeFeedback(u)) areas.push('system-settings/feedback');
   if (canOpenCouncilLookups(u)) areas.push('council-lookups');
   if (canAppointOfficers(u)) areas.push('elections/appointments');
-  if (isAdmin(u)) areas.push('parishes', 'members', 'activities');
+  // Sprint 10 Revision 3.0: the Affiliated Roster page ('members') is gone; member records are kept on /roster.
+  if (isAdmin(u)) areas.push('parishes', 'activities');
   if (canPlanEvents(u)) areas.push('events');
   areas.push('meetings');
   // Sprint 5Z-6: the Cadence Engine belongs to the agenda-template keepers - Admins, the Grand Knight (and since Sprint 8C
@@ -830,11 +846,11 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'system-settings/global-settings',
       'system-settings/remote-assistance',
       'system-settings/impersonate',
+      'system-settings/view-as-member',
       'system-settings/feedback',
       'system-settings/council-settings',
       'system-settings/affiliations',
       'system-settings/knowledge-archive',
-      'members',
       'supreme-sync',
       'council-lookups',
       'credentials-vault',

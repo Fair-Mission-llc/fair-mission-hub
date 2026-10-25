@@ -233,14 +233,14 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
       {
         q: 'How do I find members with a particular trade?',
         a: [
-          'Affiliated Roster → Skills opens the Council skills drawer with every skill and how many members hold it. Choose one to see the holders.',
+          'Member Roster → Skills opens the Council skills drawer with every skill and how many members hold it. Choose one to see the holders.',
           'Write a note and select Send to message all of them at once. Only active members receive it, never you, and replies arrive in the Communications Hub.',
         ],
       },
       {
         q: 'How do I add a new member?',
         a: [
-          'Affiliated Roster → Add member. The email you enter is the member’s login; they then create their password on the phone.',
+          'Member Roster → Add Member (council Admins and Super Admins). The email you enter is the member’s login; they then create their password on the phone.',
           'Admins may grant Admin or Member; only a Super Admin may grant Super Admin.',
         ],
       },

@@ -41,7 +41,7 @@ import {
   type Shift,
   VOLUNTEER_CENTER_TITLE,
 } from '@kofc/shared';
-import { MemberRosterDirectory } from '@/components/MemberRosterDirectory';
+import { MemberRosterDirectory } from '@/components/modules/MemberRosterDirectory';
 import { useCouncilTimings } from '@/components/SettingsParts';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';

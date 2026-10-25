@@ -45,9 +45,12 @@
 // Sprint 8S Revision: the page canvas is exactly the two accordion groups. The Fraternal Planning & Budgeting Workflow
 // banner, which sat above them, now leads '🔧 Operational Configuration', so nothing renders outside the buckets.
 //
-// Sprint 8S Revision 10.1: the accordions are gone. The page is a filing cabinet (SettingsCabinet): a 25% left rail of
-// four flat text tabs - Standard Bank Accounts, Global Revenue Splits, User Access & Roster Control, System Flags &
-// Toggles - beside a 75% canvas showing the chosen tab's cards. Every card above keeps its place in one tab.
+// Sprint 8S Revision 10.1: the accordions became a filing cabinet of four tabs. Sprint 10 Revision 3.0: the page is a
+// stack of collapsible drawer panels (SettingsDrawers, COUNCIL_SETTINGS_DRAWERS) - Standard Bank Accounts, User Access &
+// Roster Control, System Settings (the timing cards and custom guides), Feature Controls (the parish split, loaner
+// library sharing and the module pages) and the Council Feature Deployment Matrix on its own. The Global Revenue Splits
+// tab and the Reference Archives links are gone; the Fraternal Planning & Budgeting Workflow banner moved to the Annual
+// Budget Center (/budget).
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -71,12 +74,11 @@ import {
   CouncilInstanceRecord,
   FeatureDeploymentMatrix,
   PLATFORM_SWITCH_PAGES,
-  SettingsCabinet,
+  SettingsDrawers,
   SettingsLinkCards,
-  SYSTEM_REFERENCE_PAGES,
 } from '@/components/FeatureDeploymentParts';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
-import { FraternalPlanningWorkflow, LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
+import { LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
 import { ParishSplitSettingsCard } from '@/components/ParishSplitParts';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
@@ -113,7 +115,7 @@ function InactivitySweepCard({ council }: { council: Council }) {
     <Panel title="Roster Inactivity Sweep" className="mt-6">
       <p className="mb-3 text-base">
         Marks Inactive every active plain member of {council.CouncilName} with no logged service in more than <strong>{days} days</strong> (the inactivity
-        window on the System Flags &amp; Toggles tab). There is no scheduler, so an Admin runs it here.
+        window in the System Settings drawer). There is no scheduler, so an Admin runs it here.
       </p>
       {canAdministerCouncil(user, council.id) ? (
         <Button variant="secondary" disabled={sweeping} onClick={() => void sweep()}>
@@ -204,19 +206,13 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
     return `Saved for council ${saved.CouncilNumber}. The new numbers apply from now on.`;
   };
   return (
-    <SettingsCabinet
+    <SettingsDrawers
       key={council.id}
       panels={{
         'bank-accounts': (
           <>
             <SettingsLinkCards title="Payment & Account Settings" pages={BANK_ACCOUNT_SETTINGS_PAGES} />
             <CouncilInstanceRecord council={council} />
-          </>
-        ),
-        'revenue-splits': (
-          <>
-            <ParishSplitSettingsCard user={user} council={council} onSaved={onSaved} />
-            <FraternalPlanningWorkflow key={council.id} user={user} council={council} />
           </>
         ),
         'access-roster': (
@@ -226,7 +222,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
             <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
           </>
         ),
-        'flags-toggles': (
+        'system-settings': (
           <>
             <p className="mb-4 text-base">
               Each card saves on its own. Click <strong>(i)</strong> beside a field to see where and how the number changes the portal. A field marked{' '}
@@ -240,11 +236,19 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
               groups={COUNCIL_SETTING_GROUP_ORDER}
               onSave={save}
             />
-            <FeatureDeploymentMatrix council={council} onSaved={onSaved} />
+            <CustomGuidesCard council={council} />
+          </>
+        ),
+        'feature-controls': (
+          <>
+            <ParishSplitSettingsCard user={user} council={council} onSaved={onSaved} />
             <LoanerLibrarySharingCard user={user} council={council} onSaved={onSaved} />
             <SettingsLinkCards title="Module & Platform Switches" pages={PLATFORM_SWITCH_PAGES} />
-            <SettingsLinkCards title="Reference Archives" pages={SYSTEM_REFERENCE_PAGES} />
-            <CustomGuidesCard council={council} />
+          </>
+        ),
+        'feature-matrix': (
+          <>
+            <FeatureDeploymentMatrix council={council} onSaved={onSaved} />
           </>
         ),
       }}

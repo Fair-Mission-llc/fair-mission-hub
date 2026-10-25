@@ -117,7 +117,7 @@ import type { CadenceConfigInput } from './meetings';
 import type { DistributionGroup } from './messaging';
 import type { FeatureFlagChanges, FeatureFlagName } from './features';
 import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
-import type { MemberRosterResult } from './member-roster';
+import type { MemberRosterOptions, MemberRosterResult } from './member-roster';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
@@ -736,6 +736,14 @@ export interface ExpenseLedgerCoding {
    * property account (isPhysicalPropertyAccount).
    */
   generalLedgerAccountId: number;
+}
+
+/** members.getViewAsMirror (Sprint 10 Revision 3.0): what the View As Member page draws its read-only picture from. */
+export interface ViewAsMirror {
+  member: Member;
+  roles: Role[];
+  memberType: string | undefined;
+  council: Council | null;
 }
 
 /** finance.logConcludedRevenue's input (Sprint 6Q): the money one past event or one activity raised. */
@@ -2688,8 +2696,16 @@ export interface DataService {
      * Active Super Admin gets every Active member of every council (scope 'global'); everyone else gets the Active members
      * of their home council and its affiliated councils (scope 'fraternal'). Councils come home council first; members
      * are sorted by last name, then first name. Rejects MEMBER_NOT_FOUND for an unknown actor.
+     * Sprint 10 Revision 3.0: `{ allStatuses: true }` adds the Inactive, Former and Deceased members of the councils the
+     * actor may administer (memberRosterManagedCouncilIds); other councils stay Active only.
      */
-    listRoster(actorId: number): Promise<MemberRosterResult>;
+    listRoster(actorId: number, options?: MemberRosterOptions): Promise<MemberRosterResult>;
+    /**
+     * Sprint 10 Revision 3.0: the read-only View As Member mirror - the member, their roles, their type name and their
+     * council. An Active council Admin or Super Admin, for a member of the actor's own home council only
+     * (assertMayViewAsMember: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED). MEMBER_NOT_FOUND for an unknown actor or member.
+     */
+    getViewAsMirror(actorId: number, memberId: number): Promise<ViewAsMirror>;
     listRoles(memberId: number): Promise<Role[]>;
     /**
      * Adds a member together with a placeholder Credentials row (UNREGISTERED_PASSWORD) they claim

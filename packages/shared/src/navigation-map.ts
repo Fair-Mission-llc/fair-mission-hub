@@ -48,7 +48,6 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   meetings: 'calendars',
   'meetings/cadence': 'calendars',
   'meetings/live': 'calendars',
-  members: 'rosters',
   roster: 'rosters',
   'supreme-sync': 'rosters',
   elections: 'rosters',
@@ -93,6 +92,7 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   parishes: 'settings',
   'system-settings/remote-assistance': 'settings',
   'system-settings/impersonate': 'settings',
+  'system-settings/view-as-member': 'settings',
   'system-settings/feedback': 'settings',
 };
 

@@ -9,7 +9,7 @@ import {
   buildExpenseWorkflow,
   CHARITABLE_DONATION_WORKFLOW_TITLE,
   COUNCIL_ELECTION_WORKFLOW_TITLE,
-  COUNCIL_SETTINGS_CABINET_TABS,
+  COUNCIL_SETTINGS_DRAWERS,
   DESK_DRAWERS,
   deskDrawersFor,
   electionPhaseOf,
@@ -51,15 +51,21 @@ describe('1. Council Wide Settings: two accordions, no text spill', () => {
   const page = read('apps/web/app/system-settings/council-settings/page.tsx');
   const parts = read('apps/web/components/FeatureDeploymentParts.tsx');
 
-  it('keeps exactly the four flat cabinet tabs (Sprint 8S Revision 10.1, was two accordions)', () => {
-    expect(COUNCIL_SETTINGS_CABINET_TABS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'Global Revenue Splits', 'User Access & Roster Control', 'System Flags & Toggles']);
-    expect(page.match(/^ {8}'[a-z-]+': \(/gm)).toEqual(["        'bank-accounts': (", "        'revenue-splits': (", "        'access-roster': (", "        'flags-toggles': ("]);
-    for (const t of COUNCIL_SETTINGS_CABINET_TABS) expect(t.label, t.id).not.toMatch(/[^\x20-\x7E]/);
+  it('keeps exactly the five drawer panels (Sprint 10 Revision 3.0; four cabinet tabs in 8S Revision 10.1)', () => {
+    expect(COUNCIL_SETTINGS_DRAWERS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'User Access & Roster Control', 'System Settings', 'Feature Controls', 'Council Feature Deployment Matrix']);
+    expect(page.match(/^ {8}'[a-z-]+': \(/gm)).toEqual([
+      "        'bank-accounts': (",
+      "        'access-roster': (",
+      "        'system-settings': (",
+      "        'feature-controls': (",
+      "        'feature-matrix': (",
+    ]);
+    for (const t of COUNCIL_SETTINGS_DRAWERS) expect(t.label, t.id).not.toMatch(/[^\x20-\x7E]/);
   });
 
   it('lets each bucket body shrink and wrap, and gives the matrix columns floor widths', () => {
-    expect(parts).toContain("SETTINGS_CABINET_CANVAS_CLASS = 'min-w-0 break-words'");
-    expect(parts).toContain('<div className={SETTINGS_CABINET_CANVAS_CLASS}>');
+    expect(parts).toContain("SETTINGS_DRAWER_BODY_CLASS = 'min-w-0 break-words'");
+    expect(parts).toContain('cx(SETTINGS_DRAWER_BODY_CLASS,');
     expect(parts.match(/<Td className=\{FEATURE_MATRIX_COLUMN_CLASSES\[\d\]\}>/g)).toHaveLength(3);
     expect(read('apps/web/components/ui.tsx')).toContain('flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2');
   });

@@ -94,7 +94,7 @@ describe('Member Actions folded into Home', () => {
     expect(page).toContain('<PageTitle>{MEMBER_ACTIONS_HUB_HEADING}</PageTitle>');
     expect(read('apps/web/app/calendar/page.tsx')).toContain('<Link href="/member-actions"');
     // A view-as session opens on Home with the anchor, like a sign-in.
-    for (const file of ['apps/web/app/members/page.tsx', 'apps/web/app/system-settings/impersonate/page.tsx']) expect(read(file)).toContain("router.push('/dashboard#home')");
+    for (const file of ['apps/web/components/modules/MemberRosterDirectory.tsx', 'apps/web/app/system-settings/impersonate/page.tsx']) expect(read(file)).toContain("router.push('/dashboard#home')");
   });
 
   it('keeps the twin shift trackers on the Member Desk and the Volunteer Center off it (Sprint 8S Revision)', () => {
@@ -332,12 +332,12 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
     }
   });
 
-  it('renders Council Wide Settings as only its filing cabinet (Sprint 8S Revision 10.1, was two accordions)', () => {
+  it('renders Council Wide Settings as only its drawer panels (Sprint 10 Revision 3.0; a filing cabinet in 8S Revision 10.1)', () => {
     const page = read('apps/web/app/system-settings/council-settings/page.tsx');
     const panels = page.slice(page.indexOf('function SettingsPanels('), page.indexOf('function CouncilWideSettings('));
     const body = panels.slice(panels.indexOf('return ('));
     const topLevel = [...body.matchAll(/^ {4}<(\w+)/gm)].map((m) => m[1]);
-    expect(topLevel).toEqual(['SettingsCabinet']);
+    expect(topLevel).toEqual(['SettingsDrawers']);
     expect(page).not.toContain('<SettingsBucket');
   });
 

@@ -162,6 +162,16 @@ export function assertMayImportSupremeRoster(actor: MemberWriteActor, councilId:
   );
 }
 
+/**
+ * Sprint 10 Revision 3.0: who runs the Supreme roster CSV sync, which now lives only on the Financial Secretary Desk -
+ * the council's Active Financial Secretary, as well as everyone assertMayImportSupremeRoster admits (the council's
+ * Active Admins and any Active Super Admin). A fresh setup code (members.resendWelcome) stays with Admins.
+ */
+export function assertMaySyncSupremeRoster(actor: MemberWriteActor, councilId: number): void {
+  if (actor.active && actor.councilId === councilId && (actor.roles ?? []).includes('Financial Secretary')) return;
+  assertMayImportSupremeRoster(actor, councilId);
+}
+
 /** The roster export's columns, by their header with case, spaces and punctuation ignored. */
 const ROSTER_HEADERS: Record<string, keyof SupremeRosterRow> = {
   membernumber: 'MemberNumber',

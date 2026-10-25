@@ -1,5 +1,7 @@
 'use client';
-// View-As Member Lookup (Sprint 8B): the Super Admin's cascading directory for "Login As" across every council. A
+// Impersonate Council Admin (Sprint 8B as the View-As Member Lookup; Sprint 10 Revision 3.0 limits it to council Admins):
+// the Super Admin's cascading directory for "Login As" a local council Admin they are assisting, across every council.
+// buildImpersonationTree offers only Admins (assertMayImpersonate refuses anyone else on the server). A
 // predictive search box offers names as they are typed (impersonationSuggestions); under it the tree drills down Council
 // -> clearance group (Executive Officers, Finance Officers, Recorder & Historian, Other Officers, Council Admins, Appointed
 // Seats, Members) -> person (buildImpersonationTree), so no council's roster has to be scrolled. Typing filters the tree
@@ -85,7 +87,7 @@ function Directory() {
 
   const ViewAsButton = ({ p }: { p: ImpersonationCandidate }) => (
     <Button size="sm" variant="secondary" disabled={busy !== null} onClick={() => void viewAs(p)} aria-label={`View the portal as ${p.firstName} ${p.lastName}`}>
-      {busy === p.memberId ? 'Opening…' : '👥 View as'}
+      {busy === p.memberId ? 'Opening…' : '👥 Impersonate'}
     </Button>
   );
 
@@ -113,7 +115,7 @@ function Directory() {
         </Field>
         {searching ? (
           suggestions.length === 0 ? (
-            <p className="mt-2 text-sm text-muted">Nobody you may view as matches “{query.trim()}”.</p>
+            <p className="mt-2 text-sm text-muted">No council Admin matches “{query.trim()}”.</p>
           ) : (
             <ul id="view-as-suggestions" aria-label="Suggested members" className="mt-2 flex flex-col divide-y divide-line rounded border-2 border-navy">
               {suggestions.map((p) => (
@@ -206,10 +208,11 @@ function Directory() {
 export default function ImpersonationLookupPage() {
   return (
     <RequireArea area="system-settings/impersonate">
-      <PageTitle>View-As Member Lookup</PageTitle>
+      <PageTitle>Impersonate Council Admin</PageTitle>
       <p className="mb-4 text-sm text-muted">
-        Find any member of any council, then click View as to see the portal exactly as they do: their own council&apos;s settings, modules and branding. The view is
-        read-only, lasts at most one hour, and never reaches another Super Admin.
+        Impersonation is only for helping a local council Admin. Find the Admin, then click Impersonate to see the portal exactly as they do: their own
+        council&apos;s settings, modules and branding. The view is read-only and lasts at most one hour. To see what an ordinary member sees, a council Admin
+        uses View As Member instead.
       </p>
       <Directory />
     </RequireArea>

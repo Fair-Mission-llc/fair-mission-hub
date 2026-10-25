@@ -239,7 +239,7 @@ describe('Sprint 8A Active Desks, no-scroll Home and officer landing', () => {
     const settings = read('apps/web/app/system-settings/council-settings/page.tsx');
     expect(settings).toContain('<InactivitySweepCard council={council} />');
     expect(settings).toContain('canAdministerCouncil(user, council.id)');
-    expect(read('apps/web/app/members/page.tsx')).not.toContain('sweepInactive');
+    expect(read('apps/web/components/modules/MemberRosterDirectory.tsx')).not.toContain('sweepInactive');
     expect(read('apps/web/components/DashboardDesks.tsx')).not.toContain('sweepInactive');
   });
 });

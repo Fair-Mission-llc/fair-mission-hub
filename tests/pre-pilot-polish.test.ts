@@ -70,7 +70,7 @@ describe('officer tools leave ordinary members', () => {
 
 describe('Credentials Vault page', () => {
   it('holds the email gateway and the Drive key behind a plain status banner, with no port field', () => {
-    const page = read('apps/web/app/credentials-vault/page.tsx');
+    const page = read('apps/web/components/modules/CredentialsVaultPanel.tsx');
     expect(page).toContain('<EmailGatewayPanel');
     expect(page).toContain("credentialKey: 'GOOGLE_DRIVE_PRIVATE_KEY'");
     expect(page).toContain('aria-label="Connection status"');

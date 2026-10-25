@@ -30,6 +30,26 @@ import { defineWorkflow, nextWorkflowState } from './workflow';
 
 export const CONCLUDE_EVENT_SESSION_LABEL = '[ 🛑 Conclude Event Session & Lock Logs ]';
 export const BATCH_CODER_TITLE = '🧮 High-Volume Batch Transaction Coder';
+
+/**
+ * Sprint 10 Revision 3.0: the Lump-Sum Financial Override row at the top of the batch coder. The Treasurer posts one
+ * corrected cash bag count, or one block of electronic revenue taken outside the portal (Venmo, Zelle, card), in a single
+ * action: finance.logConcludedRevenue (a debit to the deposit account, a credit to the Revenue line, tied to a past event
+ * or an activity, with the payment method on both lines). It replaces the '💰 Log Concluded Event Revenues' card that
+ * sat on the Financial Management Center.
+ */
+export const LUMP_SUM_OVERRIDE_TITLE = '🧾 Lump-Sum Financial Override';
+export const LUMP_SUM_OVERRIDE_MODES = [
+  { id: 'cash-bag', label: 'Corrected cash bag count', kinds: ['cash'] },
+  { id: 'electronic-block', label: 'Bulk electronic revenue block', kinds: ['card', 'qr'] },
+] as const satisfies readonly { id: string; label: string; kinds: readonly DonationMethodKind[] }[];
+export type LumpSumOverrideMode = (typeof LUMP_SUM_OVERRIDE_MODES)[number]['id'];
+
+/** The payment methods a mode offers: cash methods for a cash bag, card and QR-code methods for an electronic block. */
+export function lumpSumMethodChoices<T extends { kind: DonationMethodKind }>(options: readonly T[], mode: LumpSumOverrideMode): T[] {
+  const kinds: readonly DonationMethodKind[] = LUMP_SUM_OVERRIDE_MODES.find((m) => m.id === mode)!.kinds;
+  return options.filter((o) => kinds.includes(o.kind));
+}
 export const SELECT_ALL_UNCODED_LABEL = '[✓ Select All Un-coded Transactions]';
 export const BATCH_CODE_BUTTON_LABEL = 'Code selected to this Revenue line';
 export const CASH_AUDIT_PANEL_TITLE = '💵 Cash Box Audit Closure Panel';

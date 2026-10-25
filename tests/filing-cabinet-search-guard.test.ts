@@ -119,7 +119,7 @@ describe('the role-scoped search guard', () => {
   });
 
   it('passes the reader mask from the header search on every query', () => {
-    expect(read('apps/web/components/GlobalSearch.tsx')).toMatch(/memberHref: areas\.has\('members'\) \? '\/members' : undefined,\s+areas,/);
+    expect(read('apps/web/components/GlobalSearch.tsx')).toMatch(/memberHref: areas\.has\('roster'\) \? '\/roster' : undefined,\s+areas,/);
   });
 });
 

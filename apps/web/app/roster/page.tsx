@@ -4,7 +4,7 @@
 // and its sister councils, or to every council for a Super Admin.
 import { MEMBER_ROSTER_TITLE } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
-import { MemberRosterDirectory } from '@/components/MemberRosterDirectory';
+import { MemberRosterDirectory } from '@/components/modules/MemberRosterDirectory';
 import { PageTitle } from '@/components/ui';
 
 export default function MemberRosterPage() {

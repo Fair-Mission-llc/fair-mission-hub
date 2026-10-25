@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { COUNCIL_SETTINGS_CABINET_TABS } from '@kofc/shared';
+import { COUNCIL_SETTINGS_DRAWERS } from '@kofc/shared';
 
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 
@@ -28,31 +28,30 @@ describe('the desk folder viewport snap', () => {
   });
 });
 
-describe('the Council Wide Settings filing cabinet', () => {
+describe('the Council Wide Settings drawer panels (Sprint 10 Revision 3.0, was a filing cabinet)', () => {
   const parts = read('apps/web/components/FeatureDeploymentParts.tsx');
-  const cabinet = parts.slice(parts.indexOf('export function SettingsCabinet('), parts.indexOf('function StatusBadge('));
+  const drawers = parts.slice(parts.indexOf('export function SettingsDrawers('), parts.indexOf('function StatusBadge('));
 
-  it('has four flat text tabs in rail order', () => {
-    expect(COUNCIL_SETTINGS_CABINET_TABS.map((t) => [t.id, t.label])).toEqual([
+  it('has five drawers in order, the matrix on its own', () => {
+    expect(COUNCIL_SETTINGS_DRAWERS.map((t) => [t.id, t.label])).toEqual([
       ['bank-accounts', 'Standard Bank Accounts'],
-      ['revenue-splits', 'Global Revenue Splits'],
       ['access-roster', 'User Access & Roster Control'],
-      ['flags-toggles', 'System Flags & Toggles'],
+      ['system-settings', 'System Settings'],
+      ['feature-controls', 'Feature Controls'],
+      ['feature-matrix', 'Council Feature Deployment Matrix'],
     ]);
   });
 
-  it('lays a 25% vertical tab rail beside a 75% canvas', () => {
-    expect(cabinet).toContain('md:grid-cols-[1fr_3fr]');
-    expect(cabinet).toContain('role="tablist" aria-orientation="vertical"');
-    expect(cabinet).toContain('role="tab"');
-    expect(cabinet).toContain('aria-selected={selected}');
-    expect(cabinet).toContain('role="tabpanel"');
-    // One level only: no accordion or nested group inside the rail.
-    expect(cabinet).not.toMatch(/<details|<summary|role="group"/);
+  it('stacks collapsible drawers, the first open on arrival', () => {
+    expect(drawers).toContain('<details');
+    expect(drawers).toContain('<summary');
+    expect(drawers).toContain('open={i === 0}');
+    expect(parts).not.toContain('export function SettingsCabinet(');
   });
 
-  it('shows only the chosen tab and keeps the others mounted, so unsaved numbers survive a switch', () => {
-    expect(cabinet).toContain('hidden={tab.id !== active}');
-    expect(cabinet).toContain('onClick={() => setActive(tab.id)}');
+  it('keeps every drawer body mounted, so unsaved numbers survive closing a drawer', () => {
+    expect(drawers).toContain('{panels[drawer.id]}');
+    expect(drawers).not.toMatch(/open \? panels|isOpen \?/);
   });
 });
+
