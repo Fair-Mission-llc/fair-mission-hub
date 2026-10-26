@@ -1,12 +1,25 @@
 // Sprint 8S Revision 8: the About, Terms of Service and Privacy Policy notices behind the sign-in footer
 // (apps/web/components/LegalFooter.tsx). Plain text, one paragraph per entry; the About notice ends with its signature.
 
-/** The official name of the platform, shown on the launch splash. */
-export const PLATFORM_APP_NAME = 'Fraternal Council Archives';
+/** The official name of the platform, shown on the launch splash. Sprint 11 Revision 1.0: carries its trademark sign. */
+export const PLATFORM_APP_NAME = 'Fraternal Council Archives™';
 /** The company that built the platform, closing the About notice. */
 export const PLATFORM_ENGINEERED_BY = 'Engineered by Fair Mission, LLC';
 
 export type LegalNoticeId = 'about' | 'terms' | 'privacy';
+
+/**
+ * Sprint 11 Revision 1.0: the Terms of Service and Privacy Policy are Markdown files under docs/legal/, effective
+ * October 26, 2026. The sidebar's legal footer reads them through LEGAL_DOCUMENT_ROUTE (GET ?notice=terms|privacy) and
+ * draws them with the markdown renderer; the paragraphs below stay as the fallback when the file cannot be read.
+ */
+export const LEGAL_DOCUMENT_FILES: Partial<Record<LegalNoticeId, string>> = {
+  terms: 'legal/TERMS_OF_SERVICE.md',
+  privacy: 'legal/PRIVACY_POLICY.md',
+};
+export const LEGAL_DOCUMENTS_EFFECTIVE_DATE = '2026-10-26';
+export const LEGAL_DOCUMENT_ROUTE = '/api/legal';
+export const isLegalDocumentId = (value: unknown): value is 'terms' | 'privacy' => value === 'terms' || value === 'privacy';
 
 export interface LegalNotice {
   id: LegalNoticeId;

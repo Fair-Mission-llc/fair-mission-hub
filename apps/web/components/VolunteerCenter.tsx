@@ -17,6 +17,7 @@
 // Sprint 8Q: the council's newest newsletters (LatestBulletinsFeed) led the page; since Sprint 8R they lead Home.
 import { useState, type ReactNode } from 'react';
 import {
+  isActiveLookupRow,
   councilLabel,
   describeError,
   feedWindow,
@@ -299,7 +300,8 @@ function HourLedger() {
     const activityEntries = logs
       .flatMap((log) => log.entries.filter((e) => e.row.MemberID === user.memberId).map((e) => ({ ...e.row, activityName: log.activity.ActivityName })))
       .sort((a, b) => b.ActivityDate.localeCompare(a.ActivityDate) || b.id - a.id);
-    return { shifts: [...shifts].reverse(), activities, activityEntries };
+    // Sprint 11 Revision 1.0: past entries keep every activity; an Inactive one is no longer offered for new hours.
+    return { shifts: [...shifts].reverse(), activities: activities.filter(isActiveLookupRow), activityEntries };
   }, [user.memberId, user.councilId]);
 
   const loggable = (data.data?.shifts ?? []).filter((s) => s.signup.NoShow !== 1 && s.shift.ShiftDate >= shiftWall);

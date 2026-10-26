@@ -1,4 +1,4 @@
-# Knights of Columbus Tracking Platform — Executive Governance Manual
+# Fraternal Council Archives™ — Executive Governance Manual
 
 **Audience:** the Grand Knight (GK) and the Deputy Grand Knight (DGK). Recorders, Historians, Trustees and other seated officers use the chapters on their own desks.
 
@@ -113,7 +113,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Council Officer Nominations** | Governance | Every member | Nominations for elected offices | 2.7 |
+| **Council Election Center** | Governance | Every member | Election progress, nominations and the secret ballot at a live meeting | 2.7 |
 | **Appointed Leadership Matrix** | Governance | The GK, the DGK, Admins | The appointed seats | 2.7 |
 | **Connected Councils** | System Settings | The GK, the DGK, Admins | Affiliation invites and the connected councils | 16.5 |
 
@@ -257,7 +257,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Pillar | Links, in sidebar order |
 | --- | --- |
-| **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Officer Nominations, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
+| **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Election Center, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
 | **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
 | **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Trustee Audit Desk, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Center |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
@@ -530,12 +530,16 @@ Invitations are released 5 days before each meeting by default. A Super Admin se
 
 **Goal:** Fill the council's elected and appointed seats.
 
-**Start point:** Sidebar → Governance → **Council Officer Nominations** or **Appointed Leadership Matrix**.
+**Start point:** Sidebar → Governance → **Council Election Center** or **Appointed Leadership Matrix**.
 
 **Steps:**
-1. Open **Council Officer Nominations** to nominate a Brother Knight for office.
-2. Open **Appointed Leadership Matrix** to fill an appointed seat.
-3. Choose the member for each vacant seat. Save.
+1. Open **Council Election Center**. The election progress bar is at the top of the page. It always shows the current step.
+2. Open the **📋 Election Positions** drawer to see each elected office, its officer and its ballot status. All drawers are closed when the page opens.
+3. Open the **✍️ Candidate Nominations** drawer to nominate a Brother Knight for office.
+4. Open **Appointed Leadership Matrix** to fill an appointed seat.
+5. Choose the member for each vacant seat. Save.
+
+At a live meeting, members vote in the **🗳️ Cast Active Ballot** drawer. Each member types the meeting PIN to check in, then votes by secret ballot on the motion that the chair opened (section 5.7 of the Member User Guide).
 
 <!-- KEEP_IMAGE: nominations and elections capture -->
 ![Nominations and elections (/elections)](../generated/dashboard_visual_catalog/elections.png)
@@ -1715,7 +1719,7 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Operations Knowledge Archive** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 17). |
 | **Grand Knight Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
 | **Grand Knight Desk** (reference) | **Planning & Budgeting Workflow** | Read the planning steps, the goals and the budget status. Read only. Set and review the goals on **Council Wide Settings** (section 16). |
-| **Grand Knight Desk** (reference) | **[ 🗳️ Council Election Workflow ]** | Read the four election steps, the progress wheels and the nominees. Read only. Nominate on the **Officer Nominations Desk** (section 14.3.3). |
+| **Grand Knight Desk** (reference) | **[ 🗳️ Council Election Workflow ]** | Read the four election steps, the progress wheels and the nominees. Read only. Nominate in the **Council Election Center** (section 14.3.3). |
 | **Financial Secretary Desk** | **Auditing & Return Queue** | Select **📝 Verify & Sign Expense** on each sheet, or return a sheet to its member with a reason. The sidebar link **FS Expense Audit** opens the same queue. |
 | **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
@@ -1785,7 +1789,7 @@ Three drawers show a whole workflow in one place. Each workflow drawer uses the 
 | --- | --- | --- | --- |
 | **Expense Report (ER) Workflow** | **Financial Secretary Desk** and **Treasurer Desk** (in **[ 📖 Reference Workflows ]**) | 1. **Payment request** (FS). 2. **Ledger coding** (Treasurer). 3. **GK approval** (Grand Knight). 4. **Check issued** (Treasurer). | Read **Every open sheet**: each sheet, its total, the step it waits at and who acts. The Financial Secretary signs in **Auditing & Return Queue**. The Treasurer codes in **Ledger Line Coder** and pays in **Expense Report (ER) Settlement**. |
 | **Charitable Donation Workflow** | **Financial Secretary Desk**, **Treasurer Desk** and **Grand Knight Desk** (in **[ 📖 Reference Workflows ]**) | 1. **[ 📋 Member Charity Request ]** (Knight Shepherd, vetters, council vote). 2. **[ ✍️ FS/GK Compliance Endorsement ]** (FS, GK or DGK). 3. **[ ⛪ Treasurer Check Settlement ]** (Treasurer). | Read where each outgoing charity grant waits. The FS, GK and DGK endorse in **FS/GK Compliance Endorsements**. The Treasurer pays in **Charitable Contribution Matches** (the FS in **Charity Check Issuance Console**). Gifts coming in stay on the batch coder and cash box drawers. |
-| **[ 🗳️ Council Election Workflow ]** | **Grand Knight Desk**, **Recorder Desk** and **Historian Desk** (in **[ 📖 Reference Workflows ]**) | 1. **Open the ballot** (before May 1). 2. **Nominations** (May 1 - 31). 3. **Election** (June). 4. **New term** (July 1). | Read the wheels **Offices on the ballot** and **Offices with a nominee**, and the nominees of each office. Nominate on the **Officer Nominations Desk** (Sidebar). Admins set the ballot on **Council Lookups**. |
+| **[ 🗳️ Council Election Workflow ]** | **Grand Knight Desk**, **Recorder Desk** and **Historian Desk** (in **[ 📖 Reference Workflows ]**) | 1. **Open the ballot** (before May 1). 2. **Nominations** (May 1 - 31). 3. **Election** (June). 4. **New term** (July 1). | Read the wheels **Offices on the ballot** and **Offices with a nominee**, and the nominees of each office. Nominate in the **Council Election Center** (Sidebar). Admins set the ballot on **Council Lookups**. |
 
 The workflow drawers have no fields and no buttons. They read the same records as the working folders, so a sheet signed in **Auditing & Return Queue**, **Ledger Line Coder** or **Expense Report (ER) Settlement** moves to its next step in the workflow drawer.
 

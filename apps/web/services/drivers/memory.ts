@@ -1439,6 +1439,13 @@ export class MemoryDataService implements DataService {
         const plan = planCouncilLookupSave(table, councilId, s.rows(table).filter((r) => r.CouncilID === councilId), records);
         for (const values of [...plan.inserts, ...plan.updates.map((u) => u.values)]) {
           for (const fk of COUNCIL_LOOKUP_META[table].foreignKeys) this.assertRowExists(s, fk.table, values[fk.column] as number, fk.label);
+          // Sprint 11 Revision 1.0: an account a payment method pays into must be one of this council's AccountOwners rows.
+          for (const key of COUNCIL_LOOKUP_META[table].councilScopedKeys ?? []) {
+            const value = values[key.column];
+            if (value !== null && value !== undefined && !s.rows(key.table).some((r) => r.id === value && r[key.councilColumn] === councilId)) {
+              throw new BusinessRuleError('INVALID_INPUT', `Council ${councilId} has no ${key.label} ${String(value)}.`, { field: key.column, value, councilId });
+            }
+          }
         }
         for (const { id, values } of plan.updates) Object.assign(s.rows(table).find((r) => r.id === id)!, values);
         for (const values of plan.inserts) s.insert(table, { ...values, CouncilID: councilId });
@@ -1582,6 +1589,10 @@ export class MemoryDataService implements DataService {
     removeAccountOwner: async (actorId, councilId, id) => {
       const s = await this.ready();
       assertMayManageAccountOwners(this.memberWriteActor(s, actorId), councilId);
+      // Sprint 11 Revision 1.0: deletes never cascade - an account a payment method still pays into stays.
+      if (s.rows('CouncilDonationMethod').some((r) => r.account_owner_id === id)) {
+        throw new BusinessRuleError('RECORD_IN_USE', `Account ${id} is still linked to a payment method. Pick another account on Council Lookups first.`, { id });
+      }
       if (s.remove('AccountOwners', (r) => r.id === id && r.council_id === councilId) === 0) {
         throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
       }

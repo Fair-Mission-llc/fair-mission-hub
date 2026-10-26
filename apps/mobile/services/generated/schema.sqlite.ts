@@ -29,7 +29,7 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [EventSignup] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [ShiftID] INTEGER NOT NULL,\n  [MemberID] INTEGER NOT NULL,\n  [NoShow] INTEGER NOT NULL DEFAULT 0,\n  [NoShowReasonID] INTEGER,\n  [SignupNotes] TEXT,\n  FOREIGN KEY ([ShiftID]) REFERENCES [Shift]([id]),\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([NoShowReasonID]) REFERENCES [NoShowReason]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [EventTime] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [ShiftID] INTEGER NOT NULL,\n  [MemberID] INTEGER NOT NULL,\n  [Hours] REAL NOT NULL,\n  [ShiftNotes] TEXT,\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([ShiftID]) REFERENCES [Shift]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [LessonsLearned] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [EventID] INTEGER NOT NULL,\n  [LeassonsLearnedCategoryID] INTEGER NOT NULL,\n  [LessonsLearnedDescription] TEXT NOT NULL,\n  FOREIGN KEY ([LeassonsLearnedCategoryID]) REFERENCES [LessonsLearnedCategory]([id]),\n  FOREIGN KEY ([EventID]) REFERENCES [Event]([id])\n);",
-  "CREATE TABLE IF NOT EXISTS [Activities] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [ActivityName] TEXT NOT NULL,\n  [ActivityDescription] TEXT NOT NULL,\n  [CategoryID] INTEGER NOT NULL,\n  [CouncilID] INTEGER NOT NULL,\n  FOREIGN KEY ([CategoryID]) REFERENCES [Category]([id]),\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [Activities] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [ActivityName] TEXT NOT NULL,\n  [ActivityDescription] TEXT NOT NULL,\n  [CategoryID] INTEGER NOT NULL,\n  [CouncilID] INTEGER NOT NULL,\n  [lookup_status] TEXT NOT NULL DEFAULT 'Active' CHECK ([lookup_status] IN ('Active', 'Inactive')),\n  FOREIGN KEY ([CategoryID]) REFERENCES [Category]([id]),\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [ActivityTime] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [MemberID] INTEGER NOT NULL,\n  [ActivityID] INTEGER NOT NULL,\n  [ActivityDate] TEXT NOT NULL,\n  [Hours] REAL NOT NULL,\n  [ActivityNotes] TEXT,\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([ActivityID]) REFERENCES [Activities]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [DistributionLists] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [ListName] TEXT,\n  [CouncilID] INTEGER,\n  [CreatedBy] INTEGER,\n  [CreatedAt] TEXT DEFAULT CURRENT_TIMESTAMP,\n  [IsCouncilWide] INTEGER NOT NULL DEFAULT 1\n);",
   "CREATE TABLE IF NOT EXISTS [DistributionListMembers] (\n  [ListID] INTEGER NOT NULL,\n  [MemberID] INTEGER NOT NULL,\n  PRIMARY KEY ([ListID], [MemberID]),\n  FOREIGN KEY ([ListID]) REFERENCES [DistributionLists]([id]),\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id])\n);",
@@ -40,13 +40,13 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [WorkingStatus] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [WorkingStatus] TEXT NOT NULL\n);",
   "CREATE TABLE IF NOT EXISTS [Donation] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [DonationDate] TEXT NOT NULL,\n  [DonationMethodID] INTEGER NOT NULL,\n  [DonationTypeID] INTEGER NOT NULL,\n  [Donor] TEXT,\n  [DonationDesciption] TEXT,\n  [EventID] INTEGER,\n  [DonationAmount] REAL NOT NULL,\n  [DonationPhotoURL] TEXT,\n  [RecordedBy] INTEGER,\n  [CheckNumber] TEXT,\n  [revenue_gl_account_id] INTEGER,\n  [coding_batch_id] TEXT,\n  [coded_by_member_id] INTEGER,\n  [coded_at] TEXT,\n  [historical_account_owner_entity] TEXT NOT NULL DEFAULT 'COUNCIL' CHECK ([historical_account_owner_entity] IN ('COUNCIL', 'PARISH', 'THIRD_PARTY')),\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([EventID]) REFERENCES [Event]([id]),\n  FOREIGN KEY ([DonationMethodID]) REFERENCES [DonationMethod]([id]),\n  FOREIGN KEY ([DonationTypeID]) REFERENCES [DonationType]([id]),\n  FOREIGN KEY ([RecordedBy]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([revenue_gl_account_id]) REFERENCES [GLAccount]([id]),\n  FOREIGN KEY ([coded_by_member_id]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [DonationMethod] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [DonationMethod] TEXT NOT NULL\n);",
-  "CREATE TABLE IF NOT EXISTS [DonationType] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [DonationType] TEXT NOT NULL,\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [DonationType] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [DonationType] TEXT NOT NULL,\n  [lookup_status] TEXT NOT NULL DEFAULT 'Active' CHECK ([lookup_status] IN ('Active', 'Inactive')),\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [Skill] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [SkillName] TEXT NOT NULL\n);",
   "CREATE TABLE IF NOT EXISTS [SkillLevel] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [SkillLevel] TEXT NOT NULL\n);",
   "CREATE TABLE IF NOT EXISTS [MemberSkill] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [SkillID] INTEGER NOT NULL,\n  [SkillLevelID] INTEGER NOT NULL,\n  [MemberID] INTEGER NOT NULL,\n  FOREIGN KEY ([SkillID]) REFERENCES [Skill]([id]),\n  FOREIGN KEY ([SkillLevelID]) REFERENCES [SkillLevel]([id]),\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [KOCTrainingClasses] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [ClassName] TEXT NOT NULL\n);",
   "CREATE TABLE IF NOT EXISTS [MemberTraining] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [MemberID] INTEGER NOT NULL,\n  [TrainingClassID] INTEGER NOT NULL,\n  [YearTaken] TEXT NOT NULL,\n  FOREIGN KEY ([TrainingClassID]) REFERENCES [KOCTrainingClasses]([id]),\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id])\n);",
-  "CREATE TABLE IF NOT EXISTS [CouncilDonationMethod] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [DonationMethodID] INTEGER NOT NULL,\n  [DonationMethodURL] TEXT,\n  [account_owner_entity] TEXT NOT NULL DEFAULT 'COUNCIL' CHECK ([account_owner_entity] IN ('COUNCIL', 'PARISH', 'THIRD_PARTY')),\n  [account_identity_label] TEXT,\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([DonationMethodID]) REFERENCES [DonationMethod]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [CouncilDonationMethod] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [DonationMethodID] INTEGER NOT NULL,\n  [DonationMethodURL] TEXT,\n  [account_owner_entity] TEXT NOT NULL DEFAULT 'COUNCIL' CHECK ([account_owner_entity] IN ('COUNCIL', 'PARISH', 'THIRD_PARTY')),\n  [account_identity_label] TEXT,\n  [lookup_status] TEXT NOT NULL DEFAULT 'Active' CHECK ([lookup_status] IN ('Active', 'Inactive')),\n  [account_owner_id] INTEGER,\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([DonationMethodID]) REFERENCES [DonationMethod]([id]),\n  FOREIGN KEY ([account_owner_id]) REFERENCES [AccountOwners]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [SystemFeedback] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [MemberID] INTEGER NOT NULL,\n  [SubmittedAt] TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  [FeedbackText] TEXT NOT NULL,\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [ExpenseDisbursement] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [CheckNumber] TEXT NOT NULL,\n  [PayoutDate] TEXT NOT NULL,\n  [TotalAmount] REAL NOT NULL,\n  [Notes] TEXT,\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [ExpenseReport] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [SubmitterMemberID] INTEGER NOT NULL,\n  [Status] TEXT NOT NULL,\n  [LinkedEventID] INTEGER,\n  [LinkedMeetingID] INTEGER,\n  [DisbursementID] INTEGER,\n  [RejectionReason] TEXT,\n  [FinancialSecretaryMemberID] INTEGER,\n  [FinancialSecretaryApprovedAt] TEXT,\n  [GrandKnightMemberID] INTEGER,\n  [GrandKnightApprovedAt] TEXT,\n  [is_long_term_asset] INTEGER NOT NULL DEFAULT 0,\n  [budget_line_id] INTEGER,\n  [charity_request_id] INTEGER,\n  [TreasurerMemberID] INTEGER,\n  [TreasurerReviewedAt] TEXT,\n  [general_ledger_account_id] INTEGER,\n  [LinkedActivityID] INTEGER,\n  [flag_missing_receipt] INTEGER NOT NULL DEFAULT 0,\n  [missing_receipt_reason] TEXT,\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([SubmitterMemberID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([LinkedEventID]) REFERENCES [Event]([id]),\n  FOREIGN KEY ([LinkedMeetingID]) REFERENCES [Meeting]([id]),\n  FOREIGN KEY ([DisbursementID]) REFERENCES [ExpenseDisbursement]([id]),\n  FOREIGN KEY ([FinancialSecretaryMemberID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([GrandKnightMemberID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([budget_line_id]) REFERENCES [CouncilBudgetForecast]([id]),\n  FOREIGN KEY ([charity_request_id]) REFERENCES [CharitableRequest]([id]),\n  FOREIGN KEY ([TreasurerMemberID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([general_ledger_account_id]) REFERENCES [GLAccount]([id]),\n  FOREIGN KEY ([LinkedActivityID]) REFERENCES [Activities]([id])\n);",
@@ -475,7 +475,8 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
     "ActivityName",
     "ActivityDescription",
     "CategoryID",
-    "CouncilID"
+    "CouncilID",
+    "lookup_status"
   ],
   "ActivityTime": [
     "id",
@@ -557,7 +558,8 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
   "DonationType": [
     "id",
     "CouncilID",
-    "DonationType"
+    "DonationType",
+    "lookup_status"
   ],
   "Skill": [
     "id",
@@ -589,7 +591,9 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
     "DonationMethodID",
     "DonationMethodURL",
     "account_owner_entity",
-    "account_identity_label"
+    "account_identity_label",
+    "lookup_status",
+    "account_owner_id"
   ],
   "SystemFeedback": [
     "id",

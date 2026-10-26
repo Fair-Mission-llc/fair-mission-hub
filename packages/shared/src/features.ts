@@ -57,7 +57,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   },
   flag_charity_proposals: { label: 'Charity proposals', hint: 'Member charity grant proposals and the vetting desk that tracks them' },
   flag_complex_shifts: { label: 'Event shifts', hint: 'The event planner, shift sign-ups and shift hour reports' },
-  flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager, live console and the phone app Meetings tab' },
+  flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager and the phone app Meetings tab' },
   feature_expense_reporting: {
     label: 'Expense reporting',
     hint: 'Member expense reports, the FS, Treasurer and GK signature desks, check payments made and the phone app expense screen',

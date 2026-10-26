@@ -268,7 +268,7 @@ describe.each(drivers)('expense reporting ($name driver)', (d) => {
     it('links an event or meeting of the council, and refuses unknown or foreign ones', async () => {
       const db = await d.make();
       const [event] = await db.events.listByCouncil(OWN);
-      const [meeting] = await db.meetings.listUpcoming(OWN);
+      const [meeting] = await db.meetings.listUpcoming(OWN, { fromDate: '2026-01-01' });
       const linked = await db.expenses.submitReport(MEMBER.member, { Status: 'Draft', LinkedEventID: event.id, LinkedMeetingID: meeting.id }, [receipt()]);
       expect(linked.report).toMatchObject({ LinkedEventID: event.id, LinkedMeetingID: meeting.id });
 

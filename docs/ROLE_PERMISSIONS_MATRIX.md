@@ -1,6 +1,6 @@
 # Role Permissions Matrix
 
-A governance guide for the council's trustees. It shows what each council rank may do in five parts of the Knights of Columbus tracking platform. Every entry below matches a rule the data service enforces, or the screen that offers the control. The notes name the rule so it can be checked in the code (`packages/shared/src/permissions.ts` for the screens, `rules.ts` and the module files for the data service).
+A governance guide for the council's trustees. It shows what each council rank may do in five parts of the Fraternal Council Archives™ platform. Every entry below matches a rule the data service enforces, or the screen that offers the control. The notes name the rule so it can be checked in the code (`packages/shared/src/permissions.ts` for the screens, `rules.ts` and the module files for the data service).
 
 Current as of Sprint 5Z-6.
 

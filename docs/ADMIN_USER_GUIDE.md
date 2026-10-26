@@ -1,4 +1,4 @@
-# Knights of Columbus Tracking Platform — Administrator User Guide
+# Fraternal Council Archives™ — Administrator User Guide
 
 **Audience:** Super Admins, council Admins and the pilot facilitator who keeps the platform running.
 
@@ -91,7 +91,7 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 
 | Flag column | Label in the Feature Flags Control Center | Web pages hidden when off | Phone items hidden when off |
 | --- | --- | --- | --- |
-| `flag_mobile_elections` | **Officer elections** | Council Officer Nominations, Appointed Leadership Matrix | None |
+| `flag_mobile_elections` | **Officer elections** | Council Election Center, Appointed Leadership Matrix | None |
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
 | `flag_complex_shifts` | **Event shifts** | Event Planner, the shift tabs of the Member Actions Hub | **Signup**, and the shift mode of **Report** |
@@ -249,7 +249,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 ## 5. Lookup tables, service connections and global lists
 
 ### 5.1 Keep the council lookup tables
-> **Prerequisite (who can do this):** You must be a council Admin or a Super Admin for every tab. The Treasurer and the FS may edit the donation tabs and **Budget categories** only.
+> **Prerequisite (who can do this):** You must be a council Admin or a Super Admin for every tab. The Treasurer and the FS may edit the donation tabs only.
 > **Warning:** **Save changes** saves every row together. One refused row saves nothing.
 
 **Goal:** Keep the council's own lists.
@@ -257,16 +257,20 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 **Start point:** Sidebar → System Settings → **Council Lookup Tables**.
 
 **Steps:**
-1. Open the tab: **Activities**, **Donation types**, **Enabled donation methods**, **Budget categories** or **Meeting Agenda Templates**.
-2. Edit the rows. Each changed row shows **Edited**.
-3. For a QR method, upload the image on **Council Wide Settings** → **Standard Bank Accounts** → **Payment QR Codes** (8.12), or paste an image link in **QR code image URL**.
-4. Select **Save changes**.
+1. Open the tab: **Activities**, **Donation types**, **Enabled donation methods** or **Meeting Agenda Templates**.
+2. Edit the rows. Each changed row shows **Edited** under its ID.
+3. In **Status**, select **Active** or **Inactive**. An **Inactive** row stays for the old records, but members cannot pick it for new hours or new donations.
+4. On **Enabled donation methods**, select the **Account**. **Council Account** is the default. The other choices are the rows of the **Account Owners Matrix** (8.10).
+5. For a QR method, select the **QR code** check box. Select **Upload** and choose the image. A small preview shows the code. The check box is disabled for **Cash**, **Check**, **Credit Card** and **Physical Items**.
+6. Select **Save changes**.
 
 <!-- KEEP_IMAGE: council lookup tables capture -->
 ![Council Lookup Tables (/council-lookups)](../generated/dashboard_visual_catalog/council-lookups.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The changes save. Phones show the new values on the next load.
+**Expected result:** The changes save. Phones show the new values on the next load. If **Account Name Members See** is empty, it takes the name of the selected account.
+
+Budget categories are not on this page. Keep them on the **Annual Budget Center** (Sidebar → Finances → **Budget**). On **Meeting Agenda Templates**, the **Preview** box under the outline shows the agenda with its formatting while you type.
 
 The outbound email settings are not on this page. Set them on the **Credentials Vault** page (5.2). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (8.8).
 
@@ -439,13 +443,13 @@ Some fields show a red **Not used yet** tag. The portal saves the number for a f
 The screenshot above shows the page before the cards were added. The fields and their labels are the same.
 
 ### 8.2.1 Concept: the settings drawers
-**Council Wide Settings** is a stack of five drawers. Select a drawer's title to open or close it. The **Standard Bank Accounts** drawer is open when the page opens. More than one drawer can be open at the same time.
+The read-only **Council Instance Record** is at the top of **Council Wide Settings**. It always shows, and you cannot close it. Under it is a stack of five drawers. Select a drawer's title to open or close it. All the drawers are closed when the page opens. More than one drawer can be open at the same time.
 
 A number that you typed but did not save stays in its card when you close the drawer. Save each card before you leave the page.
 
 | Drawer | What the drawer holds |
 | --- | --- |
-| **Standard Bank Accounts** | The **Payment & Account Settings** links, the **Account Owners Matrix** (8.10) and the read-only **Council Instance Record**. |
+| **Standard Bank Accounts** | The **Account Owners Matrix** (8.10) and the **Payment QR Codes** card (8.12). |
 | **User Access & Roster Control** | The **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. The meeting PIN is on the **Recorder Desk** (and the **Grand Knight Desk** when the Recorder is absent). |
 | **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **File Repository Mode** card (8.9) and the **Custom User Guides** card. |
 | **Feature Controls** | The **Cross-Council Loaner Library Sharing** card and the **Module & Platform Switches** links. |
@@ -455,7 +459,7 @@ The page has no **Global Revenue Splits** tab and no **Reference Archives** link
 
 The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
-The **Payment & Account Settings** links show only the pages that you may open: **Council Lookups** (payment methods and their account owners, and the email gateway) and **Credentials Vault**. The **Module & Platform Switches** links show **Feature Flags Control Center** and **Global System Parameters** to Super Admins.
+The page has no links to **Council Lookups** or the **Credentials Vault**. Open them from the sidebar (System Settings). The **Module & Platform Switches** links show **Feature Flags Control Center** and **Global System Parameters** to Super Admins.
 
 The **Council Instance Record** shows the council number and name, the organization type, the district, the EIN, the base dues rate, the email gateway, the date the bylaws were last saved and the database schema version. You cannot change these facts here. Each fact changes on its own page.
 
@@ -473,7 +477,7 @@ The **Council Feature Deployment Matrix** has its own drawer. The matrix shows w
 | --- | --- | --- |
 | **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, in the **Feature Controls** drawer |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
-| **Council Email Gateway** | The council has an outgoing mail server. | **Council Lookups** → **Email Gateway** |
+| **Council Email Gateway** | The council has an outgoing mail server. | **Credentials Vault** → **Email Gateway** (the link opens the vault) |
 
 **Council modules** rows: one row for each of the twelve module switches (section 2). A Super Admin changes them on the **Feature Flags Control Center**.
 

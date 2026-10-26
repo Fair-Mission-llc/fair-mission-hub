@@ -385,7 +385,7 @@ describe.each(drivers)('$name driver: lessons learned and minutes', (d) => {
 
   it('attaches, replaces and removes meeting minutes', async () => {
     const db = await d.make();
-    const [meeting] = await db.meetings.listUpcoming(OWN);
+    const [meeting] = await db.meetings.listUpcoming(OWN, { fromDate: '2026-01-01' });
     const set = await db.meetings.setMinutes(meeting.id, 'blob:minutes-2026-09.pdf');
     expect(set.MinutesURL).toBe('blob:minutes-2026-09.pdf');
     expect((await db.meetings.get(meeting.id))?.MinutesURL).toBe('blob:minutes-2026-09.pdf');

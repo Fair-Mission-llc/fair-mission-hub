@@ -105,7 +105,7 @@ def role_choices() -> list:
 def build() -> bytes:
     roles = role_choices()
     wb = Workbook()
-    wb.properties.creator = 'KofC Tracking Platform'
+    wb.properties.creator = 'Fraternal Council Archives™'
     wb.properties.title = 'Roster import template'
     wb.properties.created = BUILT_AT
     wb.properties.modified = BUILT_AT

@@ -36,7 +36,7 @@ const viewer = (memberType: string, roles: string[] = [], councilId = 1) => ({ m
 
 describe('schema 101', () => {
   it('adds AccountOwners, the file repository columns and the advisory tables', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(101);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(101);
     expect(TABLES.AccountOwners.columns.map((c) => c.name)).toEqual(['id', 'council_id', 'account_name', 'contact_name', 'contact_number', 'contact_email', 'ein_number']);
     const council = TABLES.Council.columns.map((c) => c.name);
     expect(council).toEqual(expect.arrayContaining(['file_repository_mode', 'file_server_path', 'file_server_username']));

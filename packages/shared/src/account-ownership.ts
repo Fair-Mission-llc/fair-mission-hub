@@ -39,7 +39,23 @@ export const ACCOUNT_OWNER_COLUMN_LABEL = 'Account owner';
  * Sprint 9 Revision 6.0 (schema 99): CouncilDonationMethod.account_identity_label - the account's name as the donor sees
  * it in the payment app - its editor heading and length (VARCHAR(100)).
  */
-export const ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL = 'Account name donors see';
+export const ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL = 'Account Name Members See';
+
+/**
+ * Sprint 11 Revision 1.0 (schema 102): the Council Lookups account picker. Its first, default choice is the built-in
+ * 'Council Account' token (account_owner_id NULL: the council's own account); the others are the council's AccountOwners
+ * rows. A blank 'Account Name Members See' takes the picked account's name when the row is saved.
+ */
+export const COUNCIL_ACCOUNT_TOKEN_LABEL = 'Council Account';
+export const ACCOUNT_PICKER_COLUMN_LABEL = 'Account';
+
+/** The name a payment method shows members: its own label, else the picked AccountOwners row's name, else null. */
+export function defaultAccountIdentityLabel(label: string | null | undefined, accountName: string | null | undefined): string | null {
+  const own = (label ?? '').trim();
+  if (own !== '') return own;
+  const fallback = (accountName ?? '').trim();
+  return fallback === '' ? null : fallback;
+}
 export const ACCOUNT_IDENTITY_LABEL_MAX_LENGTH = 100;
 
 /** The owner as the phone's QR screen says it: 'the council', 'the parish' or 'a third party'. */

@@ -18,7 +18,7 @@ import { escapeIcsText, foldIcsLine } from './notifications';
 import type { Meeting, MeetingResponseStatus } from './types';
 
 /** The feed's product id (PRODID) and the UID domain. */
-export const CALENDAR_FEED_PRODUCT_ID = '-//Knights of Columbus Tracking Platform//Personal Schedule 1.0//EN';
+export const CALENDAR_FEED_PRODUCT_ID = '-//Fraternal Council Archives™//Personal Schedule 1.0//EN';
 export const CALENDAR_FEED_UID_DOMAIN = 'kofc-tracking-platform';
 /** The calendar name members see in their calendar app. */
 export const CALENDAR_FEED_NAME = 'Knights of Columbus - My Schedule';

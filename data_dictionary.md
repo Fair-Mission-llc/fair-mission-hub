@@ -1274,3 +1274,10 @@ Sprint 10 Revision 3.2 removed the parish split engine. Council.parish_split_ena
 ________________________________________
 Sprint 10 Revision 4.0 (schema stays 101). Advisory Panel invitations are in-app only: a NotificationLog row addressed to the invited member with the reserved Title 'Advisory Panel invitation' (no other alert may use it: cleanAlertPayload) and a last body line [advisory-invite:<inviter id>] (':accepted' once accepted), which the screens never show (alertDisplayBody). advisory.inviteMember is the platform owner's; advisory.acceptInvitation gives the member the 'Application Advisory Panelist' MemberRoles row in the inviter's name, within 14 days of SentAt. The emailed signed links of Revision 3.2 are gone. Compiled custom guides are also filed in the 'Official Manuals' folder of the council's file repository (FILE_REPOSITORY_FOLDERS 'Official_Manuals'; Drive vault kind 'manual'). The Recorder may set the meeting PIN (mayManageMeetingGeofence).
 ________________________________________
+# 57. Unified Council Lookup Records (Sprint 11 Revision 1.0)
+Schema version 102; the phone database version moves to 102.
+Activities, DonationType and CouncilDonationMethod each gain one column.
+•	lookup_status (VARCHAR(10), NOT NULL, DEFAULT 'Active') — CHECK IN ('Active', 'Inactive'). An Inactive row stays for the records that already point at it, but the entry screens (phone Log and Donate, the web Volunteer Center) no longer offer it. Edited in the Status column of Council Lookups (cleanLookupStatus; a record saved without a status is Active).
+CouncilDonationMethod gains one more column.
+•	account_owner_id (INTEGER, NULL) — Foreign Key references AccountOwners(id): the account the payment method pays into. NULL is the built-in 'Council Account' token, the council's own account and the picker's default. The drivers refuse an account of another council (councilScopedKeys), and removeAccountOwner refuses an account a method still uses (RECORD_IN_USE).
+account_identity_label is now headed 'Account Name Members See'; when it is left blank, Council Lookups saves the picked account's name in it (defaultAccountIdentityLabel).

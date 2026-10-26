@@ -108,12 +108,15 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     const page = read('apps/web/app/system-settings/council-settings/page.tsx');
     const tab = (id: string, next?: string) => page.slice(page.indexOf(`'${id}': (`), next ? page.indexOf(`'${next}': (`) : page.indexOf('}}', page.indexOf(`'${id}': (`)));
     const placement: Record<string, string[]> = {
-      'bank-accounts': ['BANK_ACCOUNT_SETTINGS_PAGES', 'AccountOwnersMatrix', 'CouncilInstanceRecord'],
+      // Sprint 11 Revision 1.0: the lookups and vault link cards left; the Council Instance Record is the page header.
+      'bank-accounts': ['AccountOwnersMatrix', 'PaymentQrUploader'],
       'access-roster': ['InactivitySweepCard', 'RankThresholdsCard'],
       'system-settings': ['GroupedSettingsCards', 'FileRepositoryCard', 'CustomGuidesCard'],
       'feature-controls': ['LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES'],
       'feature-matrix': ['FeatureDeploymentMatrix'],
     };
+    expect(page).not.toContain('BANK_ACCOUNT_SETTINGS_PAGES');
+    expect(page.indexOf('<CouncilInstanceRecord')).toBeLessThan(page.indexOf('<SettingsDrawers'));
     const ids = Object.keys(placement);
     ids.forEach((id, i) => {
       for (const card of placement[id]!) expect(tab(id, ids[i + 1]), `${card} in ${id}`).toContain(card);

@@ -10,7 +10,9 @@
 // Sprint 8S Revision 2: renamed from ElectionTracker.tsx. The Grand Knight Desk drawer mounts CouncilElectionWorkflow:
 // the same grid under the Planning & Budgeting Workflow's step-by-step layout (desk-workflows.ts buildElectionWorkflow).
 // Sprint 8S Revision 10.6: that drawer is a read-only Reference Workflows scoreboard - no Nominate buttons, nomination
-// form or Set the ballot link. Members nominate on the Officer Nominations Desk (/elections).
+// form or Set the ballot link. Members nominate in the Council Election Center (/elections).
+// Sprint 11 Revision 1.0: /elections is the Council Election Center (CouncilElectionCenter): a pinned election progress
+// bar, then closed drawers for the positions table, the nominations and the PIN-unlocked Cast Active Ballot drawer.
 import { useMemo, useState } from 'react';
 import {
   buildElectionWorkflow,
@@ -22,7 +24,8 @@ import {
   type OfficerSeat,
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
-import { Button, cx, Field, Notice, PageTitle, Pill, Select } from '@/components/ui';
+import { Button, cx, Field, Notice, PageTitle, Pill, Select, Table, Td } from '@/components/ui';
+import { CAST_ACTIVE_BALLOT_TITLE, CastActiveBallot } from '@/components/modules/CastActiveBallot';
 import { stepsWheel, WorkflowActionBar, WorkflowStepRow, WorkflowWheels } from '@/components/WorkflowParts';
 import { formatPersonName } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -208,7 +211,7 @@ function NominationsBody({ councilId, data, onReload, readOnly = false }: { coun
           </p>
         ))}
         <p className="text-xs text-muted">
-          {readOnly ? 'This folder is for reference. Nominate a brother Knight on the Officer Nominations Desk.' : 'Pick an open office, then choose the brother Knight you are nominating.'}
+          {readOnly ? 'This folder is for reference. Nominate a brother Knight in the Council Election Center.' : 'Pick an open office, then choose the brother Knight you are nominating.'}
         </p>
       </div>
       {message ? (
@@ -246,17 +249,95 @@ function NominationsBody({ councilId, data, onReload, readOnly = false }: { coun
   );
 }
 
-/** The /elections page: the Officer Nominations Desk. */
-export function NominationsDesk() {
+/** The Election Center's title (Sprint 11 Revision 1.0). */
+export const COUNCIL_ELECTION_CENTER_TITLE = 'Council Election Center';
+
+/** The Election Center's drawers, in order; every one lands closed. */
+export const ELECTION_CENTER_DRAWERS = [
+  { id: 'positions', label: '📋 Election Positions', hint: 'Each elected office, its sitting officer and whether it is on the ballot.' },
+  { id: 'nominations', label: '✍️ Candidate Nominations', hint: 'Nominate a brother Knight while a window is open, and see who is nominated.' },
+  { id: 'ballot', label: CAST_ACTIVE_BALLOT_TITLE, hint: 'At a live meeting: unlock with the meeting PIN and cast a secret ballot.' },
+] as const;
+type ElectionCenterDrawerId = (typeof ELECTION_CENTER_DRAWERS)[number]['id'];
+
+/** The Election Positions table: the elected seats, read only (the ballot is set on Council Lookups). */
+function ElectionPositions({ data }: { data: ElectionData }) {
+  return (
+    <Table caption="Elected offices and their ballot status" head={['Office', 'Sitting officer', 'Ballot', 'Nominees']}>
+      {data.seats.map((seat) => {
+        const ballot = data.ballot.find((b) => b.roleId === seat.roleId);
+        return (
+          <tr key={seat.roleId} className="border-t border-line">
+            <Td className="font-bold">{seat.roleName}</Td>
+            <Td>{seat.holder ? `${seat.holder.firstName} ${seat.holder.lastName}` : <span className="text-muted">Vacant</span>}</Td>
+            <Td>
+              <SeatStatus ballot={ballot} />
+            </Td>
+            <Td>{ballot ? ballot.nominees.length : 0}</Td>
+          </tr>
+        );
+      })}
+    </Table>
+  );
+}
+
+/**
+ * The /elections page (Sprint 11 Revision 1.0): the Council Election Center. The election progress bar - the action bar
+ * and the four steps of buildElectionWorkflow - is pinned to the top of the screen and never collapses. Under it, the
+ * Election Positions table, the Candidate Nominations blocks and the Cast Active Ballot drawer each sit in a collapsible
+ * drawer that lands closed.
+ */
+export function CouncilElectionCenter() {
   const scope = useCouncilScope();
   const councilId = scope.councilId;
   const data = useElectionData(councilId);
+  const today = useMemo(() => new Date(), []);
+  const [open, setOpen] = useState<Record<ElectionCenterDrawerId, boolean>>({ positions: false, nominations: false, ballot: false });
+  const flow = data.data ? buildElectionWorkflow({ today, electedSeats: data.data.seats.length, ballot: data.data.ballot }) : null;
+  const body = (id: ElectionCenterDrawerId) => {
+    if (id === 'ballot') return <CastActiveBallot councilId={councilId} active={open.ballot} />;
+    if (!data.data) return <p className="text-sm text-muted">Loading the ballot…</p>;
+    return id === 'positions' ? <ElectionPositions data={data.data} /> : <NominationsBody councilId={councilId} data={data.data} onReload={data.reload} />;
+  };
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Officer Nominations Desk</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{COUNCIL_ELECTION_CENTER_TITLE}</PageTitle>
       {data.error ? <Notice tone="error">{data.error}</Notice> : null}
-      {!data.data && !data.error ? <p className="text-sm text-muted">Loading the ballot…</p> : null}
-      {data.data ? <NominationsBody councilId={councilId} data={data.data} onReload={data.reload} /> : null}
+      <section aria-label="Election progress" className="sticky top-0 z-10 mb-4 flex flex-col gap-3 border-b-2 border-navy bg-white pb-3 pt-1">
+        {flow ? (
+          <>
+            <WorkflowActionBar headline={flow.headline} />
+            <WorkflowStepRow steps={flow.steps} label="Election steps" />
+          </>
+        ) : (
+          <p className="text-sm text-muted">Loading the election progress…</p>
+        )}
+      </section>
+      <div className="flex flex-col gap-3">
+        {ELECTION_CENTER_DRAWERS.map((drawer) => (
+          <details
+            key={drawer.id}
+            id={`election-drawer-${drawer.id}`}
+            open={open[drawer.id]}
+            onToggle={(e) => {
+              const isOpen = (e.currentTarget as HTMLDetailsElement).open;
+              setOpen((o) => (o[drawer.id] === isOpen ? o : { ...o, [drawer.id]: isOpen }));
+            }}
+            className="group rounded border-2 border-navy bg-white"
+          >
+            <summary className="flex cursor-pointer list-none flex-col gap-0.5 border-l-8 border-l-gold px-4 py-3 hover:bg-gold/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold">
+              <span className="font-serif text-lg font-bold text-navy">
+                <span aria-hidden="true" className="mr-2 inline-block transition-transform group-open:rotate-90">
+                  ▸
+                </span>
+                {drawer.label}
+              </span>
+              <span className="text-sm text-muted">{drawer.hint}</span>
+            </summary>
+            <div className="min-w-0 break-words border-t-2 border-navy px-4 pb-4 pt-3">{body(drawer.id)}</div>
+          </details>
+        ))}
+      </div>
     </>
   );
 }

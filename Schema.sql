@@ -4061,3 +4061,30 @@ ADD FOREIGN KEY([council_id])
 REFERENCES [Council]([id])
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO
+
+-- =========================================================================
+-- Sprint 11 Revision 1.0: UNIFIED COUNCIL LOOKUP RECORDS (schema version 102)
+--
+-- Every council lookup row now carries a strict two-state status, lookup_status 'Active' or 'Inactive' (DEFAULT
+-- 'Active'). An Inactive row is kept for the records that already point at it but is no longer offered on the entry
+-- screens (logging hours, recording a donation). The three tables are Activities, DonationType and
+-- CouncilDonationMethod; budget categories left the Council Lookups screen (the Annual Budget Center keeps them).
+--
+-- CouncilDonationMethod.account_owner_id links a payment method to one of the council's AccountOwners rows. NULL is
+-- the built-in 'Council Account' token: the council's own account. The drivers refuse an account of another council.
+-- The phone version moves to 102.
+-- =========================================================================
+ALTER TABLE [Activities] ADD [lookup_status] VARCHAR(10) NOT NULL DEFAULT 'Active' CONSTRAINT [CK_Activities_lookup_status] CHECK ([lookup_status] IN ('Active', 'Inactive'));
+GO
+ALTER TABLE [DonationType] ADD [lookup_status] VARCHAR(10) NOT NULL DEFAULT 'Active' CONSTRAINT [CK_DonationType_lookup_status] CHECK ([lookup_status] IN ('Active', 'Inactive'));
+GO
+ALTER TABLE [CouncilDonationMethod] ADD [lookup_status] VARCHAR(10) NOT NULL DEFAULT 'Active' CONSTRAINT [CK_CouncilDonationMethod_lookup_status] CHECK ([lookup_status] IN ('Active', 'Inactive'));
+GO
+ALTER TABLE [CouncilDonationMethod] ADD [account_owner_id] INTEGER NULL;
+GO
+
+ALTER TABLE [CouncilDonationMethod]
+ADD FOREIGN KEY([account_owner_id])
+REFERENCES [AccountOwners]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO

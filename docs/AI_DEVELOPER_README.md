@@ -1,6 +1,6 @@
 # AI Developer Onboarding and Succession Guide
 
-Knights of Columbus Event Tracking and Fraternal Management Platform. Written at Sprint 7D Extension, 2026-10-11, at schema version 63.
+Fraternal Council Archives™. Written at Sprint 7D Extension, 2026-10-11, at schema version 63.
 
 This guide is for an engineer who takes over the platform, alone or with an AI coding assistant. It tells you how to install the repository, how the code is organized, how tenancy works, and how to give a new AI session the project's history in one paste.
 
@@ -224,8 +224,8 @@ If your tool cannot read files, paste `docs/ARCHITECTURAL_HISTORY.md` and this g
 Copy everything inside the box.
 
 ```text
-You are joining an existing project as a senior engineer: the Knights of Columbus Event
-Tracking and Fraternal Management Platform. It is a TypeScript npm-workspaces monorepo with
+You are joining an existing project as a senior engineer: Fraternal Council Archives™.
+It is a TypeScript npm-workspaces monorepo with
 a Next.js App Router web portal (apps/web), an Expo Router phone app (apps/mobile), and a
 shared core package (packages/shared). The database schema is at version 63. Azure SQL
 Server (T-SQL, Schema.sql) is the production target, but today the web runs on an

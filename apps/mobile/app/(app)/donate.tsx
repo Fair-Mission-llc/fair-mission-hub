@@ -38,6 +38,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import {
+  isActiveLookupRow,
   CONCLUDE_EVENT_SESSION_LABEL,
   councilWideSettings,
   DEPOSIT_PHOTO_QUALITY,
@@ -373,7 +374,8 @@ function DonateScreenBody() {
     const nearby = events.filter((e) => e.StartDate <= toIsoDate(new Date(now.getTime() + ahead)) && e.EndDate >= toIsoDate(new Date(now.getTime() - 86_400_000)));
     const shifts = await Promise.all(nearby.map((e) => db.events.listShifts(e.id)));
     // Sprint 8N: a concluded collection takes no more donations, so it is not offered.
-    return { methods, types, leadHours, events: nearby.filter((e, i) => isCollectionOpen(e) && isEventAtGate(e, shifts[i], now, leadHours)) };
+    // Sprint 11 Revision 1.0: an Inactive payment method or donation type is not offered.
+    return { methods: methods.filter((m) => isActiveLookupRow(m.link)), types: types.filter(isActiveLookupRow), leadHours, events: nearby.filter((e, i) => isCollectionOpen(e) && isEventAtGate(e, shifts[i], now, leadHours)) };
   }, [user.councilId]);
 
   const stream = useLoad(

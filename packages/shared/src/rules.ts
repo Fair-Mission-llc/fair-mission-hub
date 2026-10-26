@@ -439,6 +439,15 @@ const DONATION_METHOD_KINDS: Record<string, DonationMethodKind> = {
 export const donationMethodKind = (methodName: string): DonationMethodKind =>
   DONATION_METHOD_KINDS[methodName.trim().toLowerCase()] ?? 'other';
 
+/**
+ * Sprint 11 Revision 1.0: the kinds of payment method that never show a QR code - Cash, Check, card readers and Physical
+ * Items. Their QR controls are blocked and disabled on Council Lookups and on the Payment QR Codes card.
+ */
+export const QR_BLOCKED_METHOD_KINDS: readonly DonationMethodKind[] = ['cash', 'check', 'card', 'item'];
+
+/** Whether a payment method may carry a QR code image. */
+export const methodAcceptsQrCode = (methodName: string): boolean => !QR_BLOCKED_METHOD_KINDS.includes(donationMethodKind(methodName));
+
 /** Trimmed optional text; undefined, null or blank becomes null. */
 export const optionalText = (value: unknown, label: string, maxLength: number): string | null => {
   if (value === undefined || value === null) return null;

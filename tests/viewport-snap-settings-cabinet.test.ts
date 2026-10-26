@@ -42,10 +42,11 @@ describe('the Council Wide Settings drawer panels (Sprint 10 Revision 3.0, was a
     ]);
   });
 
-  it('stacks collapsible drawers, the first open on arrival', () => {
+  it('stacks collapsible drawers, every one closed on arrival (Sprint 11 Revision 1.0; the first opened until then)', () => {
     expect(drawers).toContain('<details');
     expect(drawers).toContain('<summary');
-    expect(drawers).toContain('open={i === 0}');
+    expect(drawers).toContain('open={false}');
+    expect(drawers).not.toContain('open={i === 0}');
     expect(parts).not.toContain('export function SettingsCabinet(');
   });
 

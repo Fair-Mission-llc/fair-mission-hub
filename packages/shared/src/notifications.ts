@@ -201,7 +201,7 @@ export function buildMeetingReminder(input: {
  * labelled placeholders; replace them when the apps ship.
  */
 export const APP_DISTRIBUTION = {
-  appName: 'Knights of Columbus Tracking Platform',
+  appName: 'Fraternal Council Archives™',
   iosStore: '[App Store listing - not yet published]',
   androidStore: '[Google Play listing - not yet published]',
   webPortal: '[Web portal address - not yet published]',

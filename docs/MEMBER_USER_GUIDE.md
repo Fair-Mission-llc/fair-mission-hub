@@ -1,4 +1,4 @@
-# Knights of Columbus Tracking Platform — Member User Guide
+# Fraternal Council Archives™ — Member User Guide
 
 **Audience:** Brother Knights who volunteer, log service hours, attend meetings, file expenses and take donations.
 
@@ -98,7 +98,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
 - Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
 - If the platform owner invites you to the **Application Advisory Panel**, an invitation card shows at the top of **Home**, on your alert bell and on your phone's **Home**. Select **Accept** to join.
-- **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **⚖** to read them.
+- **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **⚖** to read them. Both are dated October 26, 2026.
 - If a Super Admin made you an **Application Advisory Panelist**, **🔊 Application Advisory Panel** shows under **Navigation Guide**.
 
 </details>
@@ -131,7 +131,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 | --- | --- | --- |
 | **Member Roster** | Faith In Action (first link) | The phone, email and degree of active brothers of your council and its sister councils. The same list is on the **Member Desk** tab |
 | **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | The same list as **Member Roster** |
-| **Council Officer Nominations** | Governance | Nominations for elected offices |
+| **Council Election Center** | Governance | Election progress, nominations and the secret ballot at a live meeting |
 
 </details>
 
@@ -1051,6 +1051,32 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 | --- | --- | --- |
 | *"Camera access is turned off for KofC Tracker. Allow it in your phone settings, then try again."* | You did not allow the camera. | Allow the camera in your phone settings. |
 | The photo is not in the web portal. | The phone keeps your photo on the phone. | Send the photo to an Admin. An Admin files meeting photos in the council's Google Drive. |
+
+### 5.7 Cast a secret ballot in the Council Election Center
+
+> **Who can do this:** any active member of the council who is in the meeting room.
+
+**Goal:** Vote by secret ballot on a motion at a live meeting.
+
+**Start point:** Web portal on your phone or computer → Sidebar → Governance → **Council Election Center** → **🗳️ Cast Active Ballot**.
+
+**Steps:**
+1. Select **🗳️ Cast Active Ballot** to open the drawer.
+2. Listen for the meeting PIN. The chair reads out the PIN.
+3. Type the 4 digits in **Enter the meeting PIN**.
+4. Select **🔓 Unlock Ballot**. This checks you in to the meeting.
+5. Wait for the chair to open the ballot. The motion shows in the drawer.
+6. Select **Approve**, **Deny** or **Abstain**.
+
+**Expected result:** The drawer shows *"Your secret ballot is cast. It is counted without your name."* The motion shows **🔒 Your ballot on this motion is recorded.**
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"No council meeting is in session."* | The meeting is not live yet. | Wait for the chair to start the meeting. Select **Check again**. |
+| **🔓 Unlock Ballot** stays grey. | The PIN has fewer than 4 digits. | Type all 4 digits. |
+| *"No ballot is open right now."* | The chair has not opened the ballot. | Keep the drawer open. The ballot shows when the chair opens it. |
+| You cannot vote again. | You can vote one time on each motion. | No action. Your first ballot counts. |
 
 ---
 

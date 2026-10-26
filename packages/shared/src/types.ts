@@ -358,6 +358,8 @@ export interface Activities {
   ActivityDescription: string;
   CategoryID: number;
   CouncilID: number;
+  /** Sprint 11 Revision 1.0 (schema 102): 'Inactive' keeps the row for history but leaves it off the entry screens. */
+  lookup_status?: LookupStatus;
 }
 
 export interface ActivityTime {
@@ -661,7 +663,12 @@ export interface DonationType {
   id: number;
   CouncilID: number;
   DonationType: string;
+  /** Sprint 11 Revision 1.0 (schema 102): Active or Inactive. */
+  lookup_status?: LookupStatus;
 }
+
+/** Sprint 11 Revision 1.0 (schema 102): the two states every council lookup row may hold. */
+export type LookupStatus = 'Active' | 'Inactive';
 
 /** A donation method a council has enabled, with the QR image that routes digital payments to its account. */
 export interface CouncilDonationMethod {
@@ -673,6 +680,10 @@ export interface CouncilDonationMethod {
   account_owner_entity?: 'COUNCIL' | 'PARISH' | 'THIRD_PARTY';
   /** Sprint 9 Revision 6.0 (schema 99): the account's name as the donor sees it in the payment app; NULL shows the owner only. */
   account_identity_label?: string | null;
+  /** Sprint 11 Revision 1.0 (schema 102): Active or Inactive. */
+  lookup_status?: LookupStatus;
+  /** Sprint 11 Revision 1.0 (schema 102): the AccountOwners row it pays into; NULL is the built-in 'Council Account' token. */
+  account_owner_id?: number | null;
 }
 
 export interface Donation {

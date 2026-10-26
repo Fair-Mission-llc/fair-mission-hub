@@ -34,9 +34,12 @@ import {
   ADVISORY_PANEL_HREF,
   ADVISORY_PANEL_TITLE,
   LEGAL_NOTICES,
+  LEGAL_DOCUMENT_ROUTE,
+  isLegalDocumentId,
   type LegalNoticeId,
 } from '@kofc/shared';
 import { Drawer } from '@/components/Drawer';
+import { Markdown } from '@/components/Markdown';
 import { cx } from '@/components/ui';
 
 export interface NavEntry {
@@ -74,7 +77,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Run a meeting live: agenda, check-ins, secret ballots and the hand-vote recorder',
     restrictedTo: 'council officers and Admins',
   },
-  elections: { href: '/elections', label: 'Council Officer Nominations', hint: 'Nominate brother Knights for elected office' },
+  elections: { href: '/elections', label: 'Council Election Center', hint: 'Election progress, nominations and the secret ballot at a live meeting' },
   gallery: { href: '/gallery', label: COUNCIL_PHOTO_GALLERY_TITLE, hint: 'Event photos, Smart Albums, slideshows and photo uploads' },
   ledger: { href: '/ledger', label: 'Post-event Ledger', hint: 'Spend, funds raised, hours, lessons' },
   'lessons-registry': { href: '/lessons-registry', label: 'Lessons Registry', hint: 'Lessons learned across councils' },
@@ -366,11 +369,34 @@ const SIDEBAR_LEGAL_NOTICES: readonly LegalNoticeId[] = ['terms', 'privacy'];
  * The sidebar's persistent legal footer (Sprint 10 Revision 3.1): Terms of Service and Privacy Policy, always at the foot of
  * the rail - as text links while the sidebar is open, as one ⚖ button while it is collapsed. Each opens its notice
  * (legal-notices.ts) in a drawer over the page.
+ *
+ * Sprint 11 Revision 1.0: the drawer reads the October 26, 2026 Terms of Service and Privacy Policy files (docs/legal/,
+ * LEGAL_DOCUMENT_ROUTE) and draws them with the markdown renderer; the built-in paragraphs show only if a file cannot be read.
  */
+function useLegalDocument(id: LegalNoticeId | null): { markdown: string | null; loading: boolean } {
+  const [docs, setDocs] = useState<Partial<Record<LegalNoticeId, string | null>>>({});
+  useEffect(() => {
+    if (!isLegalDocumentId(id) || id in docs) return;
+    let current = true;
+    void fetch(`${LEGAL_DOCUMENT_ROUTE}?notice=${id}`)
+      .then(async (res) => (res.ok ? ((await res.json()) as { markdown?: string }).markdown ?? null : null))
+      .catch(() => null)
+      .then((markdown) => {
+        if (current) setDocs((d) => ({ ...d, [id]: markdown }));
+      });
+    return () => {
+      current = false;
+    };
+  }, [id, docs]);
+  if (!isLegalDocumentId(id)) return { markdown: null, loading: false };
+  return { markdown: docs[id] ?? null, loading: !(id in docs) };
+}
+
 function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
   const [open, setOpen] = useState<LegalNoticeId | null>(null);
   const notice = LEGAL_NOTICES.find((n) => n.id === open);
   const items = LEGAL_NOTICES.filter((n) => SIDEBAR_LEGAL_NOTICES.includes(n.id));
+  const legalFile = useLegalDocument(open);
   return (
     <footer aria-label="Legal" className="mt-auto border-t border-t-gold px-3 pt-2 text-xs">
       {collapsed ? (
@@ -392,10 +418,18 @@ function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
         ? createPortal(
         <Drawer title={notice.title} onClose={() => setOpen(null)}>
           <div className="flex flex-col gap-3 text-sm leading-relaxed text-navy">
-            {notice.paragraphs.map((text) => (
-              <p key={text}>{text}</p>
-            ))}
-            {notice.signature ? <p className="font-bold">{notice.signature}</p> : null}
+            {legalFile.markdown ? (
+              <Markdown source={legalFile.markdown} idPrefix={`legal-${notice.id}`} />
+            ) : legalFile.loading ? (
+              <p className="text-muted">Loading…</p>
+            ) : (
+              <>
+                {notice.paragraphs.map((text) => (
+                  <p key={text}>{text}</p>
+                ))}
+                {notice.signature ? <p className="font-bold">{notice.signature}</p> : null}
+              </>
+            )}
             <div className="flex flex-wrap gap-4 border-t border-line pt-3">
               {items
                 .filter((n) => n.id !== notice.id)

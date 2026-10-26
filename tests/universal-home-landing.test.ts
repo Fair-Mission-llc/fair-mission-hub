@@ -339,7 +339,9 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
     const panels = page.slice(page.indexOf('function SettingsPanels('), page.indexOf('function CouncilWideSettings('));
     const body = panels.slice(panels.indexOf('return ('));
     const topLevel = [...body.matchAll(/^ {4}<(\w+)/gm)].map((m) => m[1]);
-    expect(topLevel).toEqual(['SettingsDrawers']);
+    // Sprint 11 Revision 1.0: the Council Instance Record is pinned above the drawers as the permanent header.
+    expect(topLevel).toEqual(['div', 'SettingsDrawers']);
+    expect(body.slice(0, body.indexOf('<SettingsDrawers'))).toContain('<CouncilInstanceRecord');
     expect(page).not.toContain('<SettingsBucket');
   });
 

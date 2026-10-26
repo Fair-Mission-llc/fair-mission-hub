@@ -425,7 +425,7 @@ function SignIn() {
       <BrandMark size={52} />
       <div>
         <h1 className="font-serif text-xl font-bold leading-tight">Knights of Columbus</h1>
-        <p className="text-sm text-muted">Council administration portal</p>
+        <p className="text-sm text-muted">{PLATFORM_APP_NAME}</p>
       </div>
     </div>
   );

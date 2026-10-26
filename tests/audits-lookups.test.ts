@@ -176,8 +176,8 @@ describe('council lookup save planning', () => {
 
   it('splits records into trimmed inserts and updates', () => {
     expect(planCouncilLookupSave('DonationType', OWN, rows, [{ DonationType: '  Raffle ' }, { id: 2, DonationType: 'Dinners', CouncilID: OWN }])).toEqual({
-      inserts: [{ DonationType: 'Raffle' }],
-      updates: [{ id: 2, values: { DonationType: 'Dinners' } }],
+      inserts: [{ DonationType: 'Raffle', lookup_status: 'Active' }],
+      updates: [{ id: 2, values: { DonationType: 'Dinners', lookup_status: 'Active' } }],
     });
   });
 
@@ -206,7 +206,10 @@ describe('council lookup save planning', () => {
     expect(
       planCouncilLookupSave('CouncilDonationMethod', OWN, methods, [{ DonationMethodID: 3, DonationMethodURL: ' ', account_owner_entity: 'PARISH' }]).inserts,
     // Sprint 9 Revision 6.0 (schema 99): the account name donors see rides along, blank as null.
-    ).toEqual([{ DonationMethodID: 3, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: null }]);
+    ).toEqual([
+      // Sprint 11 Revision 1.0 (schema 102): every row is Active unless marked otherwise; no account is the 'Council Account' token.
+      { DonationMethodID: 3, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: null, lookup_status: 'Active', account_owner_id: null },
+    ]);
   });
 });
 

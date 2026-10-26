@@ -47,7 +47,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member: 'Shows upcoming meetings. Answer your invitations here and read the minutes after a meeting.',
     leader: 'Shows upcoming meetings. Schedule a meeting, send invitations, answer your own and read or file the minutes.',
   },
-  elections: { member: 'Nominates a brother Knight for an elected council office.' },
+  elections: { member: 'Follows the election progress, nominates a brother Knight and casts a secret ballot at a live meeting.' },
   'elections/appointments': { member: "Shows the Grand Knight's appointed positions and fills the empty seats." },
   'governance/bylaws': {
     member: "Reads the council's own bylaws, article by article.",

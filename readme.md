@@ -1,5 +1,5 @@
-🟦 Knights of Columbus Unified Tracking Platform
-Welcome to the Knights of Columbus Event Tracking and Fraternal Management Platform. This full-stack monorepo houses a phone-optimized mobile application for individual Brother Knights and a dense administrative desktop web dashboard for Council Officers and Super Admins.
+🟦 Fraternal Council Archives™
+Welcome to the Fraternal Council Archives™. This full-stack monorepo houses a phone-optimized mobile application for individual Brother Knights and a dense administrative desktop web dashboard for Council Officers and Super Admins.
 The architecture is built completely around a central database service abstraction layer, allowing for local offline-first development using Expo SQLite and In-Memory arrays, while maintaining a 1:1 translation mapping layer ready for deployment to Microsoft Azure SQL Server via T-SQL.
 ________________________________________
 🎨 1. Corporate Identity & Branding Guardrails

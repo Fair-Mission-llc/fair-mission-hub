@@ -1,13 +1,15 @@
 'use client';
 // Sprint 8Q: what sits on Council Wide Settings. Sprint 10 Revision 3.0: the page is a stack of drawer panels.
-//   SettingsDrawers          one collapsible drawer per COUNCIL_SETTINGS_DRAWERS group (the first open on arrival); a
-//                            closed drawer keeps its cards mounted, so an unsaved number survives.
+//   SettingsDrawers          one collapsible drawer per COUNCIL_SETTINGS_DRAWERS group, every one closed on arrival
+//                            (Sprint 11 Revision 1.0); a closed drawer keeps its cards mounted, so an unsaved number
+//                            survives.
 //   FeatureDeploymentMatrix  the Council Feature Deployment Matrix (feature-deployment.ts councilFeatureDeployment): one
 //                            row per advanced capability and per council module, a '🟢 DEPLOYED' or '⚪ AVAILABLE / OFF'
 //                            badge and where its switch lives. The Biometric Authentication row carries its own switch
 //                            (councils.setBiometricLoginEnabled) for the page's editors. Sprint 9 Revision 5.0: the
 //                            Geofenced Meeting Check-In row is hidden while GPS_UI_SUPPRESSED is on.
-//   CouncilInstanceRecord    the council's record, read only, with the platform schema version (Standard Bank Accounts).
+//   CouncilInstanceRecord    the council's record, read only, with the platform schema version. Sprint 11 Revision 1.0:
+//                            pinned above the drawers as the page's permanent header; it never collapses.
 //   SettingsLinkCards        the System Settings pages a drawer points to, as far as the reader may open them: the
 //                            payment and account pages (BANK_ACCOUNT_SETTINGS_PAGES) and the module and platform switches
 //                            (PLATFORM_SWITCH_PAGES). The Reference Archives links are gone (Sprint 10 Revision 3.0).
@@ -46,14 +48,14 @@ export const FEATURE_MATRIX_COLUMN_CLASSES = ['min-w-[16rem]', 'min-w-[11rem] wh
 
 /**
  * The Council Wide Settings drawer panels (Sprint 10 Revision 3.0, COUNCIL_SETTINGS_DRAWERS): one collapsible <details>
- * drawer per group, stacked top to bottom; the first opens on arrival. A closed drawer keeps its cards mounted, so an
- * unsaved number survives closing and reopening it.
+ * drawer per group, stacked top to bottom. Sprint 11 Revision 1.0: every drawer lands closed. A closed drawer keeps its
+ * cards mounted, so an unsaved number survives closing and reopening it.
  */
 export function SettingsDrawers({ panels }: { panels: Record<CouncilSettingsDrawerId, ReactNode> }) {
   return (
     <div className="flex flex-col gap-3">
-      {COUNCIL_SETTINGS_DRAWERS.map((drawer, i) => (
-        <details key={drawer.id} id={`settings-drawer-${drawer.id}`} open={i === 0} className="group rounded border-2 border-navy bg-white">
+      {COUNCIL_SETTINGS_DRAWERS.map((drawer) => (
+        <details key={drawer.id} id={`settings-drawer-${drawer.id}`} open={false} className="group rounded border-2 border-navy bg-white">
           <summary className="flex cursor-pointer list-none flex-col gap-0.5 border-l-8 border-l-gold px-4 py-3 hover:bg-gold/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold">
             <span className="font-serif text-lg font-bold text-navy">
               <span aria-hidden="true" className="mr-2 inline-block transition-transform group-open:rotate-90">
@@ -164,7 +166,7 @@ export function FeatureDeploymentMatrix({ council, onSaved }: { council: Council
   );
 }
 
-/** The council's record as the Standard Bank Accounts tab shows it, read only. */
+/** The council's record, read only: the permanent header of Council Wide Settings (Sprint 11 Revision 1.0). */
 export function CouncilInstanceRecord({ council }: { council: Council }) {
   const tenant = councilTenantType(council);
   const facts: [string, ReactNode][] = [
@@ -178,7 +180,7 @@ export function CouncilInstanceRecord({ council }: { council: Council }) {
     ['Database schema version', PLATFORM_SCHEMA_VERSION],
   ];
   return (
-    <Panel title="Council Instance Record">
+    <Panel title="Council Instance Record" className="border-t-8 border-t-gold">
       <p className="mb-3 text-sm text-muted">Read only. These facts change on their own pages, not here.</p>
       <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
         {facts.map(([label, value]) => (

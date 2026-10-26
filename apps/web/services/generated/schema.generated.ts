@@ -2092,6 +2092,20 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "lookup_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "Active"
+        },
+        "allowed": [
+          "Active",
+          "Inactive"
+        ]
       }
     ],
     "foreignKeys": [
@@ -2748,6 +2762,20 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "lookup_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "Active"
+        },
+        "allowed": [
+          "Active",
+          "Inactive"
+        ]
       }
     ],
     "foreignKeys": [
@@ -2983,6 +3011,27 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "lookup_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "Active"
+        },
+        "allowed": [
+          "Active",
+          "Inactive"
+        ]
+      },
+      {
+        "name": "account_owner_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -2994,6 +3043,11 @@ export const TABLES: Record<string, TableMeta> = {
       {
         "column": "DonationMethodID",
         "refTable": "DonationMethod",
+        "refColumn": "id"
+      },
+      {
+        "column": "account_owner_id",
+        "refTable": "AccountOwners",
         "refColumn": "id"
       }
     ],

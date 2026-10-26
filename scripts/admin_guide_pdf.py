@@ -55,7 +55,7 @@ DEFAULT_INPUT = ROOT / 'docs' / 'ADMIN_USER_GUIDE.md'
 DEFAULT_OUTPUT = ROOT / 'docs' / 'ADMIN_USER_GUIDE.pdf'
 
 DOCUMENT_TITLE = 'Administrator User Guide'
-DOCUMENT_SUBTITLE = 'Knights of Columbus Tracking Platform'
+DOCUMENT_SUBTITLE = 'Fraternal Council Archives™'
 # The Markdown file the title page names (Sprint 7G: scripts/compile_all_manuals.py sets it for each guide).
 SOURCE_LABEL = 'docs/ADMIN_USER_GUIDE.md'
 # Sprint 7H: a council's custom copy names the council on the title page ('' for the standard edition).
@@ -63,7 +63,7 @@ PREPARED_FOR = ''
 
 # The closing footnote of the print edition. Kept here, in one place, so it can be replaced word for word.
 DISCLAIMER = (
-    'Informational notice. This guide describes the Knights of Columbus Tracking Platform for the council officers '
+    'Informational notice. This guide describes the Fraternal Council Archives™ for the council officers '
     'and administrators who run it. It is provided for information only. It is not an official publication of the '
     'Knights of Columbus Supreme Council, and it does not replace the Charter, Constitution and Laws of the Order, the '
     "council's bylaws, the forms the Supreme Council prescribes, or the advice of a qualified accountant, auditor or "
@@ -550,7 +550,7 @@ class GuideDocument(BaseDocTemplate):
             topMargin=MARGIN,
             bottomMargin=MARGIN,
             title=f'{DOCUMENT_TITLE} - {DOCUMENT_SUBTITLE}',
-            author='Knights of Columbus Tracking Platform',
+            author='Fraternal Council Archives™',
             subject=f'Offline print edition of the {DOCUMENT_TITLE}',
             creator='scripts/admin_guide_pdf.py (ReportLab)',
         )

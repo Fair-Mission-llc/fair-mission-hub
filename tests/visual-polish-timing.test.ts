@@ -60,7 +60,8 @@ describe('the launch splash and the sign-in footer', () => {
   const shell = read('apps/web/components/Shell.tsx');
 
   it('boots behind a splash with the emblem and the official app name', () => {
-    expect(PLATFORM_APP_NAME).toBe('Fraternal Council Archives');
+    // Sprint 11 Revision 1.0: the name carries its trademark sign.
+    expect(PLATFORM_APP_NAME).toBe('Fraternal Council Archives™');
     expect(shell).toContain('function LaunchSplash()');
     expect(shell).toContain('<BrandMark size={128} />');
     expect(shell).toContain('{PLATFORM_APP_NAME}');

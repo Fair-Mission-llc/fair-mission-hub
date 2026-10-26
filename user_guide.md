@@ -1,4 +1,4 @@
-🟦 Knights of Columbus Platform: User Guide & Admin Manual
+🟦 Fraternal Council Archives™: User Guide & Admin Manual
 This manual explains how to use and administer the tracking platform. The application adapts its user interface based on the security clearances defined in your member profile.
 ________________________________________
 🗂️ Table of Contents

@@ -29,7 +29,7 @@ import type { Council } from './types';
  * Archives' links are gone; the Annual Budget Planner banner moved to the Annual Budget Center.
  */
 export const COUNCIL_SETTINGS_DRAWERS = [
-  { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: "Payment methods, the Account Owners Matrix, sealed keys and the council's record." },
+  { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: 'The Account Owners Matrix and the payment QR codes.' },
   { id: 'access-roster', label: 'User Access & Roster Control', hint: 'The inactivity sweep and the member rank benchmarks.' },
   { id: 'system-settings', label: 'System Settings', hint: 'Time limits, windows and reminders, where uploaded files are kept, and the printable custom guides.' },
   { id: 'feature-controls', label: 'Feature Controls', hint: 'Loaner library sharing and the module switch pages.' },
@@ -115,8 +115,9 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Council Email Gateway',
       description: "Sends the council's portal email through its own outgoing mail server.",
       deployed: (council.SmtpHost ?? '').trim() !== '',
-      managedOn: 'Council Lookups: Email Gateway',
-      href: '/council-lookups',
+      // Sprint 11 Revision 1.0: the gateway's server and sealed password live in the Credentials Vault.
+      managedOn: 'Credentials Vault: Email Gateway',
+      href: '/credentials-vault',
     },
   ];
   const flags = councilFeatureFlags(council);
@@ -139,4 +140,4 @@ export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed
  * The platform's database schema version, shown under System Information. It moves with the phone database's
  * SCHEMA_VERSION (apps/mobile/services/drivers/sqlite.ts) and the Schema.sql sprint headers.
  */
-export const PLATFORM_SCHEMA_VERSION = 101;
+export const PLATFORM_SCHEMA_VERSION = 102;

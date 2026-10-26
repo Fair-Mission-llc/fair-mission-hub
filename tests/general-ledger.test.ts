@@ -359,7 +359,7 @@ describe.each(drivers)('general ledger ($name driver)', (d) => {
     await expectRule(db.finance.logDoubleEntryTransaction(MEMBER.superAdmin, [dues(10)[0], { ...dues(10)[1], GLAccountID: foreign }]), 'INVALID_INPUT');
     await expectRule(db.finance.logDoubleEntryTransaction(MEMBER.admin, dues(10, { LinkedEventID: 99999 })), 'INVALID_INPUT');
     await expectRule(db.finance.logDoubleEntryTransaction(MEMBER.admin, dues(10, { LinkedMeetingID: 99999 })), 'INVALID_INPUT');
-    const meeting = (await db.meetings.listUpcoming(OWN))[0];
+    const meeting = (await db.meetings.listUpcoming(OWN, { fromDate: '2026-01-01' }))[0];
     const posted = await db.finance.logDoubleEntryTransaction(MEMBER.admin, dues(10, { LinkedMeetingID: meeting.id }));
     expect(posted.every((l) => l.LinkedMeetingID === meeting.id)).toBe(true);
     expect(d.count(db, 'JournalEntry')).toBe(2);

@@ -742,7 +742,7 @@ def feedback_appendix(prefix: str, st) -> list:
 class ScriptDocument(BaseDocTemplate):
     def __init__(self, path: str, title: str, generated: str):
         super().__init__(path, pagesize=LETTER, leftMargin=0.75 * inch, rightMargin=0.75 * inch, topMargin=0.8 * inch,
-                         bottomMargin=0.75 * inch, title=title, author='Knights of Columbus Tracking Platform', subject=f'Conference Room Pilot - {COUNCIL}')
+                         bottomMargin=0.75 * inch, title=title, author='Fraternal Council Archives™', subject=f'Conference Room Pilot - {COUNCIL}')
         self.label, self.generated = title, generated
         frame = Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id='body')
         self.addPageTemplates([PageTemplate(id='page', frames=[frame], onPage=self.decorate)])
@@ -929,7 +929,7 @@ def poster_frame(c, title: str, subtitle: str, generated: str) -> None:
     c.setFont('Helvetica', 11)
     # Sprint 9 Revision 4.0: where the room's data lives.
     c.drawString(PM, 0.5 * inch, HUB_POSTER_LINE)
-    c.drawString(PM, 0.28 * inch, f'Knights of Columbus Tracking Platform  |  Conference Room Pilot  |  {COUNCIL}')
+    c.drawString(PM, 0.28 * inch, f'Fraternal Council Archives™  |  Conference Room Pilot  |  {COUNCIL}')
     c.drawRightString(PW - PM, 0.28 * inch, f'Compiled {generated}  |  11 x 17 in')
 
 
@@ -987,7 +987,7 @@ def note_panel(c, x: float, y_top: float, w: float, h: float | None, heading: st
 def poster_financial(output: Path, generated: str) -> None:
     c = pdfcanvas.Canvas(str(output), pagesize=TABLOID)
     c.setTitle('Financial Workflow Poster')
-    c.setAuthor('Knights of Columbus Tracking Platform')
+    c.setAuthor('Fraternal Council Archives™')
     poster_frame(c, 'Financial Workflow', 'Three signatures before any check  |  every gift on the record', generated)
     col_w = PW * 0.58
     x = PM
@@ -1040,7 +1040,7 @@ def poster_financial(output: Path, generated: str) -> None:
 def poster_charity(output: Path, generated: str) -> None:
     c = pdfcanvas.Canvas(str(output), pagesize=TABLOID)
     c.setTitle('Charity Lifecycle Poster')
-    c.setAuthor('Knights of Columbus Tracking Platform')
+    c.setAuthor('Fraternal Council Archives™')
     poster_frame(c, 'Charity Grant Lifecycle', 'Vetting  >  Presentation  >  Payment Made', generated)
     w = PW - 2 * PM
     x, y = PM, PH - 2.55 * inch
@@ -1099,7 +1099,7 @@ MATRIX_ROWS: tuple[tuple[str, str], ...] = (
 def poster_permissions(output: Path, generated: str) -> None:
     c = pdfcanvas.Canvas(str(output), pagesize=TABLOID)
     c.setTitle('Permissions Matrix Poster')
-    c.setAuthor('Knights of Columbus Tracking Platform')
+    c.setAuthor('Fraternal Council Archives™')
     poster_frame(c, 'Who Can Do What', 'The pilot personas and their seats', generated)
     left = PM
     label_w = 300

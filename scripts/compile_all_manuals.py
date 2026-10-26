@@ -45,7 +45,7 @@ import pilot_kit_pdf  # noqa: E402  (Phase 7I: the pilot scripts and posters)
 ROOT = Path(__file__).resolve().parent.parent
 
 MEMBER_DISCLAIMER = (
-    'Informational notice. This guide describes the Knights of Columbus Tracking Platform for the Brother Knights who '
+    'Informational notice. This guide describes the Fraternal Council Archives™ for the Brother Knights who '
     'use it. It is provided for information only. It is not an official publication of the Knights of Columbus Supreme '
     "Council, and it does not replace the Charter, Constitution and Laws of the Order or the council's bylaws. Screens, "
     'roles and rules can change between releases. Where this guide and the portal differ, the portal and the governing '

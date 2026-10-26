@@ -16,7 +16,8 @@
 //
 // Meeting Agenda Templates (Sprint 5Y-6): the council's Admins, its Grand Knight and Super Admins pick one of the
 // council's own meeting types (CouncilMeetingType) and write its default agenda outline (meetings.saveAgendaTemplate,
-// CouncilAgendaTemplate). The Meeting center's schedule form pre-fills its agenda from it.
+// CouncilAgendaTemplate). The Meeting center's schedule form pre-fills its agenda from it. Sprint 11 Revision 1.0: a live
+// preview under the editor draws the outline through the markdown renderer (components/Markdown.tsx).
 //
 // Sprint 6L Extension: the Outbound Email Gateway tab moved to the Credentials Vault page (/credentials-vault), and the
 // Base Dues Rate tab is gone - Council.base_dues_rate is set only on the Global Parameters Dashboard (/lookups).
@@ -24,8 +25,20 @@
 // Sprint 8O: the Enabled donation methods grid is the payment configuration drawer. Each method names who owns the account
 // it pays into - Council, Parish or Third party (account-ownership.ts). A new row starts with no owner, and the save is
 // held, with the gate's message, until every edited row has one; the drivers refuse a missing owner too (INVALID_INPUT).
-import { useEffect, useState } from 'react';
+//
+// Sprint 11 Revision 1.0 (schema 102): every grid has a Status column bound to Active or Inactive (lookup_status); an
+// Inactive row stays for history but leaves the entry screens. Budget categories left this screen (the Annual Budget
+// Center keeps them). On the payment methods grid the QR code is a checkbox that reveals a small upload button and a
+// compact thumbnail - the text URL column is gone - and it is disabled for Cash, Check, card readers and Physical Items
+// (methodAcceptsQrCode). The Account column lists the council's AccountOwners rows after the default 'Council Account'
+// token, and a blank 'Account Name Members See' takes the picked account's name when the row is saved.
+import { useEffect, useRef, useState } from 'react';
 import {
+  ACCOUNT_PICKER_COLUMN_LABEL,
+  COUNCIL_ACCOUNT_TOKEN_LABEL,
+  defaultAccountIdentityLabel,
+  LOOKUP_STATUSES,
+  methodAcceptsQrCode,
   ACCOUNT_OWNER_COLUMN_LABEL,
   ACCOUNT_OWNER_ENTITIES,
   ACCOUNT_OWNER_LABELS,
@@ -42,6 +55,8 @@ import {
   type CouncilLookupTableName,
 } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
+import { QrThumbnail, uploadPaymentQrImage } from '@/components/PaymentQrUploader';
+import { Markdown } from '@/components/Markdown';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -56,6 +71,12 @@ interface Column {
   options?: { value: number; label: string }[];
   /** Sprint 8O: a drop-down of text codes that starts blank, so the choice must be made explicitly. */
   choices?: { value: string; label: string }[];
+  /** Sprint 11 Revision 1.0: with `options`, a first choice stored as null (the 'Council Account' token), and the default. */
+  emptyOption?: string;
+  /** Sprint 11 Revision 1.0: 'status' is the Active/Inactive select; 'qr' the QR checkbox and upload button. */
+  kind?: 'status' | 'qr';
+  /** Sprint 11 Revision 1.0: placeholder text for a free-text cell, from the row's values. */
+  placeholderFor?: (values: Values) => string | undefined;
 }
 
 type Values = Record<string, string>;
@@ -82,30 +103,117 @@ const NOUNS: Record<CouncilLookupTableName, string> = {
   CouncilBudgetCategory: 'budget category',
 };
 
-function useColumns(table: CouncilLookupTableName): { columns: Column[] | null; error: string | null } {
+/** The Status column every grid ends with (Sprint 11 Revision 1.0): Active or Inactive. */
+const STATUS_COLUMN: Column = { key: 'lookup_status', label: 'Status', kind: 'status' };
+
+interface ColumnData {
+  columns: Column[] | null;
+  error: string | null;
+  /** AccountOwners names by id, for the payment methods grid's account picker and name default. */
+  accountNames: Map<number, string>;
+}
+
+function useColumns(table: CouncilLookupTableName, councilId: number): ColumnData {
+  const user = useUser();
   const options = useLoad(async () => {
-    if (table === 'Activities') return (await db.lookups.list('Category')).map((c) => ({ value: c.id, label: c.Category }));
-    if (table === 'CouncilDonationMethod') return (await db.donations.listAllMethods()).map((m) => ({ value: m.id, label: m.DonationMethod }));
-    return [];
-  }, [table]);
-  if (!options.data) return { columns: null, error: options.error };
+    if (table === 'Activities') return { options: (await db.lookups.list('Category')).map((c) => ({ value: c.id, label: c.Category })), owners: [] };
+    if (table === 'CouncilDonationMethod') {
+      const methods = (await db.donations.listAllMethods()).map((m) => ({ value: m.id, label: m.DonationMethod }));
+      // The account list is read by the council's Admins and Super Admins; a finance officer sees only the token.
+      const owners = await db.councils.listAccountOwners(user.memberId, councilId).catch(() => []);
+      return { options: methods, owners: owners.map((o) => ({ value: o.id, label: o.account_name })) };
+    }
+    return { options: [], owners: [] };
+  }, [table, councilId, user.memberId]);
+  const accountNames = new Map((options.data?.owners ?? []).map((o) => [o.value, o.label]));
+  if (!options.data) return { columns: null, error: options.error, accountNames };
   const columns: Record<CouncilLookupTableName, Column[]> = {
     Activities: [
       { key: 'ActivityName', label: 'Activity name', maxLength: 100 },
       { key: 'ActivityDescription', label: 'Description', maxLength: 255 },
-      { key: 'CategoryID', label: 'Category', options: options.data },
+      { key: 'CategoryID', label: 'Category', options: options.data.options },
+      STATUS_COLUMN,
     ],
-    DonationType: [{ key: 'DonationType', label: 'Donation type', maxLength: 100 }],
+    DonationType: [{ key: 'DonationType', label: 'Donation type', maxLength: 100 }, STATUS_COLUMN],
     CouncilDonationMethod: [
-      { key: 'DonationMethodID', label: 'Method', options: options.data },
-      { key: 'DonationMethodURL', label: 'QR code image URL', maxLength: 255, optional: true },
+      { key: 'DonationMethodID', label: 'Method', options: options.data.options },
+      { key: 'account_owner_id', label: ACCOUNT_PICKER_COLUMN_LABEL, options: options.data.owners, emptyOption: COUNCIL_ACCOUNT_TOKEN_LABEL },
       { key: 'account_owner_entity', label: ACCOUNT_OWNER_COLUMN_LABEL, choices: ACCOUNT_OWNER_ENTITIES.map((o) => ({ value: o, label: ACCOUNT_OWNER_LABELS[o] })) },
-      // Sprint 9 Revision 6.0: the name the phone's QR screen shows the donor.
-      { key: 'account_identity_label', label: ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL, maxLength: ACCOUNT_IDENTITY_LABEL_MAX_LENGTH, optional: true },
+      // Sprint 9 Revision 6.0: the name the phone's QR screen shows. Sprint 11 Revision 1.0: blank takes the account's name.
+      {
+        key: 'account_identity_label',
+        label: ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL,
+        maxLength: ACCOUNT_IDENTITY_LABEL_MAX_LENGTH,
+        optional: true,
+        placeholderFor: (v) => (v.account_owner_id ? accountNames.get(Number(v.account_owner_id)) : undefined),
+      },
+      { key: 'DonationMethodURL', label: 'QR code', kind: 'qr', optional: true },
+      STATUS_COLUMN,
     ],
     CouncilBudgetCategory: [{ key: 'CategoryName', label: 'Budget category (fund)', maxLength: 255 }],
   };
-  return { columns: columns[table], error: options.error };
+  return { columns: columns[table], error: options.error, accountNames };
+}
+
+/**
+ * The QR code cell (Sprint 11 Revision 1.0): a checkbox that reveals a small upload button and a compact thumbnail.
+ * Unticking clears the image. Disabled for the payment methods that never show a QR code.
+ */
+function QrCodeCell({ councilId, methodName, value, onChange }: { councilId: number; methodName: string; value: string; onChange: (url: string) => void }) {
+  const accepts = methodAcceptsQrCode(methodName);
+  const [enabled, setEnabled] = useState(value !== '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const on = accepts && (enabled || value !== '');
+  const upload = async (file: File | undefined) => {
+    if (!file) return;
+    setBusy(true);
+    setError(null);
+    try {
+      onChange(await uploadPaymentQrImage(councilId, file));
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setBusy(false);
+      if (input.current) input.current.value = '';
+    }
+  };
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <label className={cx('flex items-center gap-1 text-sm', !accepts && 'cursor-not-allowed text-muted')} title={accepts ? undefined : 'This payment method takes no QR code.'}>
+          <input
+            type="checkbox"
+            checked={on}
+            disabled={!accepts || busy}
+            onChange={(e) => {
+              setEnabled(e.target.checked);
+              if (!e.target.checked) onChange('');
+            }}
+          />
+          <span>{accepts ? 'QR code' : 'No QR'}</span>
+        </label>
+        {on ? (
+          <>
+            <QrThumbnail url={value || null} name={methodName} />
+            <Button size="sm" variant="secondary" disabled={busy} onClick={() => input.current?.click()}>
+              {busy ? 'Uploading…' : value ? 'Replace' : 'Upload'}
+            </Button>
+            <input
+              ref={input}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="sr-only"
+              aria-label={`Upload the ${methodName} QR code`}
+              onChange={(e) => void upload(e.target.files?.[0])}
+            />
+          </>
+        ) : null}
+      </div>
+      {error ? <span className="text-xs text-brand-red">{error}</span> : null}
+    </div>
+  );
 }
 
 const toValues = (row: Record<string, unknown>, columns: Column[]): Values =>
@@ -113,11 +221,15 @@ const toValues = (row: Record<string, unknown>, columns: Column[]): Values =>
 
 const isChanged = (row: DraftRow) => row.saved === null || Object.keys(row.values).some((k) => row.values[k] !== row.saved![k]);
 
-function toRecord(row: DraftRow, columns: Column[]): Record<string, unknown> {
+function toRecord(row: DraftRow, columns: Column[], accountNames: Map<number, string>): Record<string, unknown> {
   const out: Record<string, unknown> = row.id === null ? {} : { id: row.id };
   for (const c of columns) {
     const text = row.values[c.key] ?? '';
     out[c.key] = c.options ? (text === '' ? null : Number(text)) : c.choices ? (text === '' ? null : text) : c.optional && text.trim() === '' ? null : text;
+  }
+  // Sprint 11 Revision 1.0: a blank name members see takes the picked account's name.
+  if ('account_identity_label' in out && 'account_owner_id' in out) {
+    out.account_identity_label = defaultAccountIdentityLabel(out.account_identity_label as string | null, accountNames.get(out.account_owner_id as number));
   }
   return out;
 }
@@ -126,7 +238,7 @@ let nextLocalKey = 0;
 
 function LookupEditor({ councilId, table }: { councilId: number; table: CouncilLookupTableName }) {
   const user = useUser();
-  const { columns, error: columnsError } = useColumns(table);
+  const { columns, error: columnsError, accountNames } = useColumns(table, councilId);
   const rows = useLoad(
     async () => (await db.lookups.listCouncilSpecific(user.memberId, councilId, table)) as unknown as Record<string, unknown>[],
     [user.memberId, councilId, table],
@@ -154,7 +266,14 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
   const addRow = () =>
     setDrafts((ds) => [
       ...ds,
-      { key: `new-${nextLocalKey++}`, id: null, saved: null, values: Object.fromEntries(columns.map((c) => [c.key, c.options?.[0] ? String(c.options[0].value) : ''])) },
+      {
+        key: `new-${nextLocalKey++}`,
+        id: null,
+        saved: null,
+        values: Object.fromEntries(
+          columns.map((c) => [c.key, c.kind === 'status' ? 'Active' : c.emptyOption !== undefined ? '' : c.options?.[0] ? String(c.options[0].value) : '']),
+        ),
+      },
     ]);
 
   const act = async (action: () => Promise<void>, done: string) => {
@@ -174,7 +293,7 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
 
   const save = () =>
     void act(async () => {
-      const records = pending.map((d) => toRecord(d, columns)) as CouncilLookupRecord<typeof table>[];
+      const records = pending.map((d) => toRecord(d, columns, accountNames)) as CouncilLookupRecord<typeof table>[];
       await db.lookups.saveCouncilSpecific(user.memberId, councilId, table, records);
     }, `Saved ${pending.length} ${noun} row${pending.length === 1 ? '' : 's'}.`);
 
@@ -203,16 +322,40 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
       </div>
       {gate ? <Notice tone="error">{gate}</Notice> : null}
 
-      <Table caption={`${TAB_LABELS[table]} for the council`} head={['ID', ...columns.map((c) => (c.optional ? `${c.label} (optional)` : c.label)), 'Status', 'Actions']}>
+      <Table caption={`${TAB_LABELS[table]} for the council`} head={['ID', ...columns.map((c) => (c.optional && !c.kind ? `${c.label} (optional)` : c.label)), 'Actions']}>
         {drafts.map((d) => {
           const changed = isChanged(d);
           return (
             <tr key={d.key} className={cx(changed && 'outline outline-2 -outline-offset-2 outline-gold')}>
-              <Td className="text-muted">{d.id ?? 'new'}</Td>
+              <Td className="text-muted">
+                <span className="flex flex-col items-start gap-1">
+                  {d.id ?? 'new'}
+                  {d.id === null ? <Pill tone="gold">New</Pill> : changed ? <Pill tone="gold">Edited</Pill> : null}
+                </span>
+              </Td>
               {columns.map((c) => (
                 <Td key={c.key}>
-                  {c.options ? (
+                  {c.kind === 'status' ? (
+                    <Select aria-label={c.label} value={d.values[c.key] || 'Active'} onChange={(e) => set(d.key, c.key, e.target.value)}>
+                      {LOOKUP_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </Select>
+                  ) : c.kind === 'qr' ? (
+                    <QrCodeCell
+                      councilId={councilId}
+                      methodName={columns[0].options?.find((o) => String(o.value) === d.values.DonationMethodID)?.label ?? ''}
+                      value={d.values[c.key]}
+                      onChange={(url) => set(d.key, c.key, url)}
+                    />
+                  ) : c.options ? (
                     <Select aria-label={c.label} value={d.values[c.key]} onChange={(e) => set(d.key, c.key, e.target.value)}>
+                      {c.emptyOption !== undefined ? <option value="">{c.emptyOption}</option> : null}
+                      {c.emptyOption !== undefined && d.values[c.key] !== '' && !c.options.some((o) => String(o.value) === d.values[c.key]) ? (
+                        <option value={d.values[c.key]}>Account {d.values[c.key]}</option>
+                      ) : null}
                       {c.options.map((o) => (
                         <option key={o.value} value={o.value}>
                           {o.label}
@@ -235,11 +378,16 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
                       ))}
                     </Select>
                   ) : (
-                    <Input aria-label={c.label} value={d.values[c.key]} maxLength={c.maxLength} onChange={(e) => set(d.key, c.key, e.target.value)} />
+                    <Input
+                      aria-label={c.label}
+                      value={d.values[c.key]}
+                      maxLength={c.maxLength}
+                      placeholder={c.placeholderFor?.(d.values)}
+                      onChange={(e) => set(d.key, c.key, e.target.value)}
+                    />
                   )}
                 </Td>
               ))}
-              <Td>{d.id === null ? <Pill tone="gold">New</Pill> : changed ? <Pill tone="gold">Edited</Pill> : null}</Td>
               <Td>
                 {d.id === null ? (
                   <Button size="sm" variant="secondary" onClick={() => setDrafts((ds) => ds.filter((x) => x.key !== d.key))}>
@@ -429,6 +577,11 @@ function AgendaTemplates({ councilId }: { councilId: number }) {
           />
         )}
       </Field>
+      {/* Sprint 11 Revision 1.0: the outline as it will read, styled live by the markdown renderer as each line is typed. */}
+      <section aria-label="Agenda preview" className="rounded border-2 border-navy border-t-8 border-t-gold bg-white px-4 py-3">
+        <p className="mb-2 text-xs uppercase tracking-wide text-muted">Preview</p>
+        <Markdown source={text.trim() === '' ? AGENDA_PLACEHOLDER : text} idPrefix="agenda-preview" />
+      </section>
       <div className="flex flex-wrap items-center gap-2">
         <Button disabled={busy || !dirty} onClick={() => void save(text)}>
           {busy ? 'Saving…' : 'Save template'}
@@ -450,7 +603,8 @@ type LookupTab = CouncilLookupTableName | 'elections' | 'agenda';
 function CouncilLookups() {
   const user = useUser();
   const scope = useCouncilScope();
-  const tables = councilLookupTablesFor(user, scope.councilId);
+  // Sprint 11 Revision 1.0: budget categories are kept on the Annual Budget Center, not here.
+  const tables = councilLookupTablesFor(user, scope.councilId).filter((t) => t !== 'CouncilBudgetCategory');
   const tabs: { id: LookupTab; label: string }[] = [
     ...tables.map((t) => ({ id: t, label: TAB_LABELS[t] })),
     ...(canConfigureBallot(user, scope.councilId) ? [{ id: 'elections' as const, label: 'Officer Election Parameters' }] : []),
@@ -462,7 +616,7 @@ function CouncilLookups() {
   return (
     <>
       <PageTitle actions={<CouncilSelect scope={scope} />}>Council lookups</PageTitle>
-      {tables.length > 0 && tables.length < 3 ? (
+      {tables.length > 0 && !tables.includes('Activities') ? (
         <p className="mb-3 text-sm text-muted">As your council&apos;s finance officer you maintain its donation types and enabled donation methods.</p>
       ) : null}
       {table ? (

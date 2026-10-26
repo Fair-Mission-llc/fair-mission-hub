@@ -6,6 +6,7 @@
 // Column names here are the only ones a driver may interpolate into SQL.
 // =========================================================================
 import type { CouncilLookupTableName, LookupTableName, LookupValues } from './contract';
+import type { LookupStatus } from './types';
 import { OFFICE_ROLE_NAMES } from './elections';
 import { cleanBudgetCategory } from './budget';
 import { FIXED_CATEGORY_NAMES } from './mission-categories';
@@ -224,31 +225,67 @@ export interface CouncilLookupTableMeta {
   keyField: string;
   /** Columns pointing at another table's id, which the driver checks exist. */
   foreignKeys: readonly { column: string; table: 'Category' | 'DonationMethod'; label: string }[];
+  /**
+   * Sprint 11 Revision 1.0: optional columns pointing at a row that must belong to the same council (the driver checks
+   * `table`.id = value AND `councilColumn` = the council). Null skips the check.
+   */
+  councilScopedKeys?: readonly { column: string; table: 'AccountOwners'; councilColumn: 'council_id'; label: string }[];
   /** Validates one record's fields (without id and CouncilID). */
   clean(record: Record<string, unknown>, councilId: number): Record<string, string | number | null>;
 }
 
+/**
+ * Sprint 11 Revision 1.0 (schema 102): the strict two states of a council lookup row's lookup_status. A record saved
+ * without one is Active.
+ */
+export const LOOKUP_STATUSES: readonly LookupStatus[] = ['Active', 'Inactive'];
+
+export function cleanLookupStatus(value: unknown): LookupStatus {
+  if (value === undefined || value === null || value === '') return 'Active';
+  if ((LOOKUP_STATUSES as readonly unknown[]).includes(value)) return value as LookupStatus;
+  throw new BusinessRuleError('INVALID_INPUT', `A lookup row is Active or Inactive; received ${JSON.stringify(value)}.`, { field: 'lookup_status', value });
+}
+
+/** Whether a lookup row may be offered on an entry screen: anything not marked Inactive. */
+export const isActiveLookupRow = (row: { lookup_status?: string | null }): boolean => row.lookup_status !== 'Inactive';
+
+/** Splits lookup_status off a record so the table's own cleaner sees only its own fields. */
+function withStatus(record: Record<string, unknown>, clean: (fields: Record<string, unknown>) => Record<string, string | number | null>) {
+  const { lookup_status, ...fields } = record;
+  return { ...clean(fields), lookup_status: cleanLookupStatus(lookup_status) };
+}
+
 export const COUNCIL_LOOKUP_META: Record<CouncilLookupTableName, CouncilLookupTableMeta> = {
   Activities: {
-    columns: ['ActivityName', 'ActivityDescription', 'CategoryID'],
+    columns: ['ActivityName', 'ActivityDescription', 'CategoryID', 'lookup_status'],
     keyField: 'ActivityName',
     foreignKeys: [{ column: 'CategoryID', table: 'Category', label: 'activity category' }],
-    clean: (record, councilId) => {
-      const { CouncilID: _council, ...fields } = cleanActivity({ ...record, CouncilID: councilId } as never);
-      return fields;
-    },
+    clean: (record, councilId) =>
+      withStatus(record, (fields) => {
+        const { CouncilID: _council, ...rest } = cleanActivity({ ...fields, CouncilID: councilId } as never);
+        return rest;
+      }),
   },
   DonationType: {
-    columns: ['DonationType'],
+    columns: ['DonationType', 'lookup_status'],
     keyField: 'DonationType',
     foreignKeys: [],
-    clean: (record) => cleanDonationType(record),
+    clean: (record) => withStatus(record, (fields) => cleanDonationType(fields)),
   },
   CouncilDonationMethod: {
-    columns: ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity', 'account_identity_label'],
+    columns: ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity', 'account_identity_label', 'lookup_status', 'account_owner_id'],
     keyField: 'DonationMethodID',
     foreignKeys: [{ column: 'DonationMethodID', table: 'DonationMethod', label: 'donation method' }],
-    clean: (record) => cleanCouncilDonationMethod(record),
+    councilScopedKeys: [{ column: 'account_owner_id', table: 'AccountOwners', councilColumn: 'council_id', label: 'account' }],
+    clean: (record) =>
+      withStatus(record, (fields) => {
+        const { account_owner_id, ...rest } = fields;
+        return {
+          ...cleanCouncilDonationMethod(rest),
+          // Null is the built-in 'Council Account' token.
+          account_owner_id: account_owner_id === undefined || account_owner_id === null || account_owner_id === '' ? null : assertInteger(account_owner_id, 'Account', 1),
+        };
+      }),
   },
   CouncilBudgetCategory: {
     columns: ['CategoryName'],

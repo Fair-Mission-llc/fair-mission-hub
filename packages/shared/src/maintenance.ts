@@ -261,7 +261,7 @@ export function cleanCouncilDonationMethod(input: {
     DonationMethodURL: optionalText(input.DonationMethodURL, 'Donation method URL', 255),
     account_owner_entity: cleanAccountOwnerEntity(input.account_owner_entity),
     // Sprint 9 Revision 6.0 (schema 99): the account's name as the donor sees it in the payment app.
-    account_identity_label: optionalText(input.account_identity_label, 'Account name donors see', ACCOUNT_IDENTITY_LABEL_MAX_LENGTH),
+    account_identity_label: optionalText(input.account_identity_label, 'Account Name Members See', ACCOUNT_IDENTITY_LABEL_MAX_LENGTH),
   };
 }
 

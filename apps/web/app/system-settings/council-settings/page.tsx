@@ -59,6 +59,9 @@
 // Recorder is absent).
 // Sprint 10 Revision 5.0: Standard Bank Accounts gains the Payment QR Codes card (PaymentQrUploader): a '📁 Upload QR Code
 // Image' drop zone per enabled donation method.
+// Sprint 11 Revision 1.0: the Council Instance Record is pinned above the drawers as the page's permanent header, every
+// drawer lands closed, and the Council Lookups and Credentials Vault link cards are gone from Standard Bank Accounts (the
+// matrix's email gateway row links to the Credentials Vault).
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -78,7 +81,6 @@ import {
 import { RequireArea } from '@/components/CouncilScope';
 import { RankThresholdsCard } from '@/components/EngagementParts';
 import {
-  BANK_ACCOUNT_SETTINGS_PAGES,
   CouncilInstanceRecord,
   FeatureDeploymentMatrix,
   PLATFORM_SWITCH_PAGES,
@@ -217,15 +219,17 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
     return `Saved for council ${saved.CouncilNumber}. The new numbers apply from now on.`;
   };
   return (
+    <>
+    <div className="mb-4">
+      <CouncilInstanceRecord council={council} />
+    </div>
     <SettingsDrawers
       key={council.id}
       panels={{
         'bank-accounts': (
           <>
-            <SettingsLinkCards title="Payment & Account Settings" pages={BANK_ACCOUNT_SETTINGS_PAGES} />
             <AccountOwnersMatrix council={council} />
             <PaymentQrUploader council={council} />
-            <CouncilInstanceRecord council={council} />
           </>
         ),
         'access-roster': (
@@ -265,6 +269,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
         ),
       }}
     />
+    </>
   );
 }
 

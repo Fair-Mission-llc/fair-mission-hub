@@ -966,8 +966,10 @@ const DB_NAME = 'kofc.db';
  *     puts a charity in the Propose Charity Grant form's auto-fill dropdowns (Sprint 10 Revision 1.0).
  * 101: AccountOwners, Council.file_repository_mode / file_server_path / file_server_username, AdvisoryPanelMeetings and
  *     AdvisoryFeedback, and the 'Application Advisory Panelist' role (Sprint 10 Revision 3.1).
+ * 102: lookup_status ('Active' / 'Inactive') on Activities, DonationType and CouncilDonationMethod, and
+ *     CouncilDonationMethod.account_owner_id, the AccountOwners row a payment method pays into (Sprint 11 Revision 1.0).
  */
-const SCHEMA_VERSION = 101;
+const SCHEMA_VERSION = 102;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1679,6 +1681,13 @@ export class SqliteDataService implements DataService {
         const plan = planCouncilLookupSave(table, councilId, current, records);
         for (const values of [...plan.inserts, ...plan.updates.map((u) => u.values)]) {
           for (const fk of meta.foreignKeys) await this.assertRowExists(db, fk.table, values[fk.column] as number, fk.label);
+          // Sprint 11 Revision 1.0: an account a payment method pays into must be one of this council's AccountOwners rows.
+          for (const key of meta.councilScopedKeys ?? []) {
+            const value = values[key.column];
+            if (value === null || value === undefined) continue;
+            const hit = await db.getFirstAsync(`SELECT [id] FROM [${key.table}] WHERE [id] = ? AND [${key.councilColumn}] = ?`, [value, councilId]);
+            if (!hit) throw new BusinessRuleError('INVALID_INPUT', `Council ${councilId} has no ${key.label} ${String(value)}.`, { field: key.column, value, councilId });
+          }
         }
         for (const { id, values } of plan.updates) {
           await db.runAsync(`UPDATE [${table}] SET ${meta.columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
@@ -2048,6 +2057,10 @@ export class SqliteDataService implements DataService {
     removeAccountOwner: async (actorId, councilId, id) => {
       const db = await this.ready();
       assertMayManageAccountOwners(await this.memberWriteActor(db, actorId), councilId);
+      // Sprint 11 Revision 1.0: deletes never cascade - an account a payment method still pays into stays.
+      if (await db.getFirstAsync('SELECT [id] FROM [CouncilDonationMethod] WHERE [account_owner_id] = ?', [id])) {
+        throw new BusinessRuleError('RECORD_IN_USE', `Account ${id} is still linked to a payment method. Pick another account on Council Lookups first.`, { id });
+      }
       const done = await db.runAsync('DELETE FROM [AccountOwners] WHERE [id] = ? AND [council_id] = ?', [id, councilId]);
       if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
     },

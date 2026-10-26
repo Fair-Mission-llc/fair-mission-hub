@@ -20,6 +20,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, View } from 'react-native';
 import {
+  isActiveLookupRow,
   eventExpenseSpan,
   expenseWindowLockMessage,
   formatDate,
@@ -195,7 +196,8 @@ function useActivityTracker(onToast: (toast: Toast) => void) {
   const user = useUser();
   const [today] = useState(() => toIsoDate(new Date()));
   const state = useLoad(async () => {
-    const activities = await db.activities.listByCouncil(user.councilId);
+    // Sprint 11 Revision 1.0: an Inactive activity is not offered.
+    const activities = (await db.activities.listByCouncil(user.councilId)).filter(isActiveLookupRow);
     const logs = await Promise.all(activities.map((a) => db.activityTime.listByActivity(a.id)));
     const totals = new Map(
       logs.map((log) => [
