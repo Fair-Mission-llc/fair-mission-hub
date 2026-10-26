@@ -75,6 +75,24 @@ describe.each(drivers)('$name driver: payment method accounts', ({ make }) => {
     await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_owner_id: null }]);
     await db.councils.removeAccountOwner(MEMBER.admin, councilId, account.id);
   });
+
+  // Sprint 11 Revision 2.1: the picker lists only this council's AccountOwners rows, and the save refuses a real account of
+  // another council - the link is checked against the table on every save, not against a fixed list.
+  it("refuses another council's account and lists only this council's accounts", async () => {
+    const db = await make();
+    const councilId = (await db.members.get(MEMBER.admin))!.CouncilID;
+    const other = (await db.councils.list()).find((c) => c.id !== councilId)!;
+    const own = await db.councils.saveAccountOwner(MEMBER.admin, councilId, { account_name: 'Council Zeffy' });
+    const foreign = await db.councils.saveAccountOwner(MEMBER.superAdmin, other.id, { account_name: 'Parish ParishSoft' });
+    expect((await db.councils.listAccountOwners(MEMBER.admin, councilId)).map((r) => r.id)).toEqual([own.id]);
+    const [link] = await db.lookups.listCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod');
+    const base = { id: link.id, DonationMethodID: link.DonationMethodID, DonationMethodURL: null, account_owner_entity: 'COUNCIL' };
+    await expectRule(db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_owner_id: foreign.id }]), 'INVALID_INPUT');
+    const [saved] = (await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_owner_id: own.id }])).filter(
+      (r) => r.id === link.id,
+    );
+    expect(saved.account_owner_id).toBe(own.id);
+  });
 });
 
 describe('Council Wide Settings and Council Lookups', () => {

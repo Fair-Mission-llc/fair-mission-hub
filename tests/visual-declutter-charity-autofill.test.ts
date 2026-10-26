@@ -199,7 +199,7 @@ describe('the collapsible sidebar and the Council Photo Gallery node', () => {
     expect(filed).not.toContain('gallery');
   });
 
-  it('pins the gallery node with its two views and a persistent hamburger toggle', () => {
+  it('pins the gallery node with its two views and a persistent arrow toggle', () => {
     expect(COUNCIL_PHOTO_GALLERY_TITLE).toBe('📸 Council Photo Gallery');
     // Sprint 11 Revision 2.0: renamed.
     expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['📸 Browse Gallery', 'Gallery Administration Hub']);
@@ -213,6 +213,11 @@ describe('the collapsible sidebar and the Council Photo Gallery node', () => {
     expect(sidebar).toContain("const SIDEBAR_COLLAPSED_KEY = 'kofc.sidebarCollapsed';");
     // The toggle sits outside the hidden links, so it stays on screen when the sidebar is collapsed.
     expect(sidebar.indexOf('onClick={toggle}')).toBeLessThan(sidebar.indexOf('<div id="portal-sidebar-links" hidden={collapsed}'));
+    // Sprint 11 Revision 2.1: arrows replace the hamburger - ◀ hides the open rail, ▶ on the slim left-edge strip shows it.
+    expect(sidebar).not.toContain('M4 6h16M4 12h16M4 18h16');
+    expect(sidebar).toContain("const SIDEBAR_HIDE_GLYPH = '◀';");
+    expect(sidebar).toContain("const SIDEBAR_SHOW_GLYPH = '▶';");
+    expect(sidebar).toContain('{collapsed ? SIDEBAR_SHOW_GLYPH : SIDEBAR_HIDE_GLYPH}');
   });
 
   it('lists the gallery in the Navigation Guide as a pinned link', () => {

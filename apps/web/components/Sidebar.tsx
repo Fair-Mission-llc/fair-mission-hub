@@ -17,6 +17,8 @@
 // Sprint 11 Revision 2.0: a text-only rail. Every link label is drawn through plainNavLabel, which strips icon glyphs
 // ('📸 Council Photo Gallery' reads 'Council Photo Gallery'); external links lost their arrow and the collapsed legal
 // button reads 'Legal'. The Admin Desk link heads the System Settings pillar for Admins and Super Admins.
+// Sprint 11 Revision 2.1: no hamburger. An open rail shows a left arrow (◀, SIDEBAR_HIDE_GLYPH) at its top right that
+// hides it; the hidden rail shrinks to a slim strip on the left edge whose right arrow (▶, SIDEBAR_SHOW_GLYPH) brings it back.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -317,6 +319,10 @@ function NavLink({ item, current, tenant }: { item: PortalNavItem | 'navigation-
 /** Sprint 10 Revision 1.0: where this browser keeps the sidebar's collapsed state. */
 const SIDEBAR_COLLAPSED_KEY = 'kofc.sidebarCollapsed';
 
+/** Sprint 11 Revision 2.1: the arrow that hides the open rail, and the one on the left edge that brings it back. */
+const SIDEBAR_HIDE_GLYPH = '◀';
+const SIDEBAR_SHOW_GLYPH = '▶';
+
 /** The sidebar's collapsed state, remembered in this browser (storage may be blocked; the sidebar then starts open). */
 function useCollapsed(): [boolean, () => void] {
   const [collapsed, setCollapsed] = useState(false);
@@ -409,7 +415,7 @@ function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
   const items = LEGAL_NOTICES.filter((n) => SIDEBAR_LEGAL_NOTICES.includes(n.id));
   const legalFile = useLegalDocument(open);
   return (
-    <footer aria-label="Legal" className="mt-auto border-t border-t-gold px-3 pt-2 text-xs">
+    <footer aria-label="Legal" className={cx('mt-auto border-t border-t-gold pt-2 text-xs', collapsed ? 'px-1' : 'px-3')}>
       {collapsed ? (
         <button type="button" onClick={() => setOpen('terms')} title="Terms of Service and Privacy Policy" aria-label="Terms of Service and Privacy Policy" className="w-full text-center text-[0.625rem] font-bold uppercase hover:text-gold">
           Legal
@@ -470,10 +476,10 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
     <nav
       data-surface="navy"
       aria-label="Portal sections"
-      className={cx('flex shrink-0 flex-col overflow-hidden bg-navy py-3 text-white motion-safe:transition-[width] motion-safe:duration-200', collapsed ? 'w-14' : 'w-64')}
+      className={cx('flex shrink-0 flex-col overflow-hidden bg-navy py-3 text-white motion-safe:transition-[width] motion-safe:duration-200', collapsed ? 'w-12' : 'w-64')}
     >
-      {/* Sprint 10 Revision 1.0: the persistent hamburger that hides or shows the sidebar's links. */}
-      <div className={cx('flex pb-2', collapsed ? 'justify-center' : 'justify-end px-3')}>
+      {/* Sprint 11 Revision 2.1: ◀ at the open rail's top right hides it; ▶ on the slim strip's left edge brings it back. */}
+      <div className={cx('flex pb-2', collapsed ? 'justify-start pl-1' : 'justify-end px-3')}>
         <button
           type="button"
           onClick={toggle}
@@ -481,11 +487,9 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
           aria-controls="portal-sidebar-links"
           aria-label={collapsed ? 'Show the sidebar' : 'Hide the sidebar'}
           title={collapsed ? 'Show the sidebar' : 'Hide the sidebar'}
-          className="rounded border-2 border-gold p-1.5 hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded border-2 border-gold text-base leading-none hover:bg-white/10"
         >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <span aria-hidden="true">{collapsed ? SIDEBAR_SHOW_GLYPH : SIDEBAR_HIDE_GLYPH}</span>
         </button>
       </div>
       <div id="portal-sidebar-links" hidden={collapsed} className="w-64">
