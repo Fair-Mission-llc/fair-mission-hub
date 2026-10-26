@@ -19,6 +19,7 @@
 // button reads 'Legal'. The Admin Desk link heads the System Settings pillar for Admins and Super Admins.
 // Sprint 11 Revision 2.1: no hamburger. An open rail shows a left arrow (◀, SIDEBAR_HIDE_GLYPH) at its top right that
 // hides it; the hidden rail shrinks to a slim strip on the left edge whose right arrow (▶, SIDEBAR_SHOW_GLYPH) brings it back.
+// The strip keeps the legal documents as vertical tabs (schema 103 pass).
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -417,9 +418,21 @@ function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
   return (
     <footer aria-label="Legal" className={cx('mt-auto border-t border-t-gold pt-2 text-xs', collapsed ? 'px-1' : 'px-3')}>
       {collapsed ? (
-        <button type="button" onClick={() => setOpen('terms')} title="Terms of Service and Privacy Policy" aria-label="Terms of Service and Privacy Policy" className="w-full text-center text-[0.625rem] font-bold uppercase hover:text-gold">
-          Legal
-        </button>
+        // Sprint 11 Revision 2.1: the slim strip keeps one vertical tab per legal document.
+        <ul aria-label="Legal documents" className="flex flex-col items-center gap-2">
+          {items.map((n) => (
+            <li key={n.id}>
+              <button
+                type="button"
+                onClick={() => setOpen(n.id)}
+                title={n.title}
+                className="rounded border border-gold/60 px-0.5 py-2 text-[0.625rem] font-bold uppercase [writing-mode:vertical-rl] hover:text-gold"
+              >
+                {n.title}
+              </button>
+            </li>
+          ))}
+        </ul>
       ) : (
         <ul className="flex flex-col gap-1">
           {items.map((n) => (

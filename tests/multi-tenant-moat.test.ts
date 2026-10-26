@@ -12,7 +12,7 @@ import {
   assertMayResendSetupCode,
   canOpenAdvisoryPanel,
   canResendSetupCode,
-  cleanAccountOwner,
+  cleanCouncilAccount,
   cleanFileRepositorySettings,
   CREDENTIAL_KEYS,
   councilFileRepository,
@@ -35,9 +35,11 @@ const writer = (over: Partial<MemberWriteActor> = {}): MemberWriteActor => ({ me
 const viewer = (memberType: string, roles: string[] = [], councilId = 1) => ({ memberId: 50, councilId, memberType: memberType as never, isOfficer: false, roles });
 
 describe('schema 101', () => {
-  it('adds AccountOwners, the file repository columns and the advisory tables', () => {
+  it('adds the file repository columns and the advisory tables (AccountOwners merged into GLAccount at 103)', () => {
     expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(101);
-    expect(TABLES.AccountOwners.columns.map((c) => c.name)).toEqual(['id', 'council_id', 'account_name', 'contact_name', 'contact_number', 'contact_email', 'ein_number']);
+    // Sprint 11 Revision 2.1: the AccountOwners columns now live on GLAccount.
+    expect(TABLES.AccountOwners).toBeUndefined();
+    expect(TABLES.GLAccount.columns.map((c) => c.name)).toEqual(expect.arrayContaining(['contact_name', 'contact_number', 'contact_email', 'ein_number']));
     const council = TABLES.Council.columns.map((c) => c.name);
     expect(council).toEqual(expect.arrayContaining(['file_repository_mode', 'file_server_path', 'file_server_username']));
     expect(TABLES.AdvisoryPanelMeetings.columns.map((c) => c.name)).toEqual(['id', 'meeting_date', 'title', 'location', 'agenda', 'created_by_member_id']);
@@ -129,15 +131,17 @@ describe('3. the Local Network Server file repository', () => {
 
 describe('4. the Account Owners Matrix (pure)', () => {
   it('cleans a row', () => {
-    expect(cleanAccountOwner({ account_name: ' Venmo ', contact_email: 'tr@stmarys.org', ein_number: '123456789' })).toEqual({
-      account_name: 'Venmo',
+    expect(cleanCouncilAccount({ AccountName: ' Venmo ', contact_email: 'tr@stmarys.org', ein_number: '123456789', ownership_type: 'COUNCIL' })).toEqual({
+      AccountName: 'Venmo',
+      account_display_name: null,
       contact_name: null,
       contact_number: null,
       contact_email: 'tr@stmarys.org',
       ein_number: '12-3456789',
+      ownership_type: 'COUNCIL',
     });
-    expect(() => cleanAccountOwner({ account_name: '' })).toThrow();
-    expect(() => cleanAccountOwner({ account_name: 'Zelle', contact_email: 'not-an-email' })).toThrow(/email/);
+    expect(() => cleanCouncilAccount({ AccountName: '', ownership_type: 'COUNCIL' })).toThrow();
+    expect(() => cleanCouncilAccount({ AccountName: 'Zelle', contact_email: 'not-an-email', ownership_type: 'COUNCIL' })).toThrow(/email/);
     expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('<AccountOwnersMatrix council={council} />');
   });
 });
@@ -184,16 +188,16 @@ describe.each(drivers)('$name driver: Revision 3.1 methods', ({ make }) => {
   it('keeps account owners per council for its Admins only', async () => {
     const db = await make();
     const admin = (await db.members.get(MEMBER.admin))!;
-    const row = await db.councils.saveAccountOwner(MEMBER.admin, admin.CouncilID, { account_name: 'Venmo', contact_name: 'Pat Treasurer', ein_number: '123456789' });
-    expect(row).toMatchObject({ council_id: admin.CouncilID, account_name: 'Venmo', ein_number: '12-3456789' });
-    await expectRule(db.councils.saveAccountOwner(MEMBER.admin, admin.CouncilID, { account_name: 'venmo' }), 'INVALID_INPUT');
-    const changed = await db.councils.saveAccountOwner(MEMBER.admin, admin.CouncilID, { id: row.id, account_name: 'Venmo', contact_number: '503-555-0100' });
+    const row = await db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { AccountName: 'Venmo', contact_name: 'Pat Treasurer', ein_number: '123456789', ownership_type: 'COUNCIL' });
+    expect(row).toMatchObject({ CouncilID: admin.CouncilID, AccountName: 'Venmo', AccountType: 'Asset', ein_number: '12-3456789', ownership_type: 'COUNCIL' });
+    await expectRule(db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { AccountName: 'venmo', ownership_type: 'COUNCIL' }), 'INVALID_INPUT');
+    const changed = await db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { id: row.id, AccountName: 'Venmo', contact_number: '503-555-0100', ownership_type: 'COUNCIL' });
     expect(changed.contact_number).toBe('503-555-0100');
-    expect((await db.councils.listAccountOwners(MEMBER.admin, admin.CouncilID)).map((r) => r.account_name)).toEqual(['Venmo']);
-    await expectRule(db.councils.listAccountOwners(MEMBER.member, admin.CouncilID), 'ADMIN_REQUIRED');
-    await expectRule(db.councils.listAccountOwners(MEMBER.admin, admin.CouncilID + 1), 'COUNCIL_ACCESS_DENIED');
-    await db.councils.removeAccountOwner(MEMBER.admin, admin.CouncilID, row.id);
-    await expectRule(db.councils.removeAccountOwner(MEMBER.admin, admin.CouncilID, row.id), 'RECORD_NOT_FOUND');
+    expect((await db.councils.listCouncilAccounts(MEMBER.admin, admin.CouncilID)).map((r) => r.AccountName)).toContain('Venmo');
+    await expectRule(db.councils.listCouncilAccounts(MEMBER.member, admin.CouncilID), 'ADMIN_REQUIRED');
+    await expectRule(db.councils.listCouncilAccounts(MEMBER.admin, admin.CouncilID + 1), 'COUNCIL_ACCESS_DENIED');
+    await db.councils.removeCouncilAccount(MEMBER.admin, admin.CouncilID, row.id);
+    await expectRule(db.councils.removeCouncilAccount(MEMBER.admin, admin.CouncilID, row.id), 'RECORD_NOT_FOUND');
   });
 
   it('saves the file repository mode for the council Admin', async () => {

@@ -229,7 +229,7 @@ export interface CouncilLookupTableMeta {
    * Sprint 11 Revision 1.0: optional columns pointing at a row that must belong to the same council (the driver checks
    * `table`.id = value AND `councilColumn` = the council). Null skips the check.
    */
-  councilScopedKeys?: readonly { column: string; table: 'AccountOwners'; councilColumn: 'council_id'; label: string }[];
+  councilScopedKeys?: readonly { column: string; table: 'GLAccount'; councilColumn: 'CouncilID'; label: string }[];
   /** Validates one record's fields (without id and CouncilID). */
   clean(record: Record<string, unknown>, councilId: number): Record<string, string | number | null>;
 }
@@ -273,17 +273,18 @@ export const COUNCIL_LOOKUP_META: Record<CouncilLookupTableName, CouncilLookupTa
     clean: (record) => withStatus(record, (fields) => cleanDonationType(fields)),
   },
   CouncilDonationMethod: {
-    columns: ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity', 'account_identity_label', 'lookup_status', 'account_owner_id'],
+    columns: ['DonationMethodID', 'DonationMethodURL', 'account_owner_entity', 'account_identity_label', 'lookup_status', 'account_id'],
     keyField: 'DonationMethodID',
     foreignKeys: [{ column: 'DonationMethodID', table: 'DonationMethod', label: 'donation method' }],
-    councilScopedKeys: [{ column: 'account_owner_id', table: 'AccountOwners', councilColumn: 'council_id', label: 'account' }],
+    // Sprint 11 Revision 2.1 (schema 103): the account is one of the council's own money accounts (isCouncilAccount).
+    councilScopedKeys: [{ column: 'account_id', table: 'GLAccount', councilColumn: 'CouncilID', label: 'account' }],
     clean: (record) =>
       withStatus(record, (fields) => {
-        const { account_owner_id, ...rest } = fields;
+        const { account_id, ...rest } = fields;
         return {
           ...cleanCouncilDonationMethod(rest),
           // Null is the built-in 'Council Account' token.
-          account_owner_id: account_owner_id === undefined || account_owner_id === null || account_owner_id === '' ? null : assertInteger(account_owner_id, 'Account', 1),
+          account_id: account_id === undefined || account_id === null || account_id === '' ? null : assertInteger(account_id, 'Account', 1),
         };
       }),
   },

@@ -1281,3 +1281,18 @@ Activities, DonationType and CouncilDonationMethod each gain one column.
 CouncilDonationMethod gains one more column.
 •	account_owner_id (INTEGER, NULL) — Foreign Key references AccountOwners(id): the account the payment method pays into. NULL is the built-in 'Council Account' token, the council's own account and the picker's default. The drivers refuse an account of another council (councilScopedKeys), and removeAccountOwner refuses an account a method still uses (RECORD_IN_USE).
 account_identity_label is now headed 'Account Name Members See'; when it is left blank, Council Lookups saves the picked account's name in it (defaultAccountIdentityLabel).
+________________________________________
+# 58. One Accounts Ledger (Sprint 11 Revision 2.1)
+Schema version 103; the phone database version moves to 103. A pilot hub vault at 102 must be archived (npm run hub:archive) before it opens again.
+AccountOwners is dropped. Its columns move onto GLAccount, so the chart of accounts is the council's one accounts table.
+GLAccount gains seven columns.
+•	account_display_name (VARCHAR(150), NULL) — the name members see. AccountName stays the ledger name, unique in the council's chart.
+•	contact_name (VARCHAR(100), NULL), contact_number (VARCHAR(50), NULL), contact_email (VARCHAR(100), NULL) — who to call about the account.
+•	ein_number (VARCHAR(20), NULL) — the account holder's EIN, stored as NN-NNNNNNN.
+•	ownership_type (VARCHAR(10), NOT NULL, DEFAULT 'COUNCIL') — CHECK IN ('COUNCIL', 'PARISH'). A payment method linked to a PARISH account records its gifts as parish-held (Donation.historical_account_owner_entity), so the batch coder never codes them.
+•	due_to_council_id (INTEGER, NULL) — Foreign Key references Council(id). Set only on a 'Due to Sister Council - Council N' Liability clearing account: the ACTIVE affiliate the council owes.
+CouncilDonationMethod.account_owner_id is dropped and replaced by:
+•	account_id (INTEGER, NULL) — Foreign Key references GLAccount(id): the money account the payment method pays into. NULL is the built-in 'Council Account' token. The drivers accept only a non-virtual Asset account of the same council that is not a clearing account (isCouncilAccount), and set account_owner_entity from the account's ownership_type on every save.
+Rules (council-accounts.ts). councils.listCouncilAccounts, saveCouncilAccount and removeCouncilAccount (the Account Owners Matrix) are open to the council's Active Admins and any Active Super Admin. A new matrix row is a new Asset account. Changing ownership_type moves every linked payment method's owner; stored donations keep their snapshot. removeCouncilAccount refuses an account any column in GL_ACCOUNT_REFERENCES still names (RECORD_IN_USE).
+Revenue splits (gl-splits.ts). A destination may name { affiliatedCouncilId } in place of an account. The council must be an ACTIVE affiliate (CouncilAffiliations). The driver swaps in the council's own clearing account for that affiliate, creating it on first use, so the share is posted in this council's books only; nothing is written to the other council. finance.listSplitSisterCouncils lists the ACTIVE affiliates and their clearing accounts for the ledger's readers. A clearing account is the one Liability account a split may send to.
+The schema generator (scripts/gen-db-assets.mjs) learns DROP TABLE, and DROP COLUMN now drops the column's foreign key with it.

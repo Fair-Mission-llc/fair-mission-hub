@@ -682,8 +682,8 @@ export interface CouncilDonationMethod {
   account_identity_label?: string | null;
   /** Sprint 11 Revision 1.0 (schema 102): Active or Inactive. */
   lookup_status?: LookupStatus;
-  /** Sprint 11 Revision 1.0 (schema 102): the AccountOwners row it pays into; NULL is the built-in 'Council Account' token. */
-  account_owner_id?: number | null;
+  /** Sprint 11 Revision 2.1 (schema 103): the council's GLAccount it pays into; NULL is the built-in 'Council Account' token. */
+  account_id?: number | null;
 }
 
 export interface Donation {
@@ -1207,6 +1207,16 @@ export interface GLAccount {
   TargetGoalAmount: number; // DECIMAL(18,2), default 0.00
   /** Sprint 9 Revision 6.0 (schema 99): BIT, default 0 - a Split Account whose postings go to its destinations (gl-splits.ts). */
   is_split_account?: number;
+  /** Sprint 11 Revision 2.1 (schema 103, council-accounts.ts): the AccountOwners columns, merged into the chart. */
+  account_display_name?: string | null;
+  contact_name?: string | null;
+  contact_number?: string | null;
+  contact_email?: string | null;
+  ein_number?: string | null;
+  /** 'COUNCIL' (default) or 'PARISH'. */
+  ownership_type?: 'COUNCIL' | 'PARISH';
+  /** Set only on a 'Due to Sister Council' Liability clearing account: the affiliated council owed. */
+  due_to_council_id?: number | null;
 }
 
 /** Sprint 9 Revision 6.0 (schema 99): one destination of a Split Account and the share of each posting it receives. */

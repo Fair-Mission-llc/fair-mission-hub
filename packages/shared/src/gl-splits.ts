@@ -25,6 +25,7 @@
 // a destination of another split account cannot become a split account. Only the council's Treasurer or a Super Admin
 // changes a profile (finance.setGLSplitProfile, assertMayCodeExpenseLedger); the ledger's readers see the profiles.
 // =========================================================================
+import { isSisterCouncilClearingAccount } from './council-accounts';
 import { BusinessRuleError } from './rules';
 import type { CleanJournalLine } from './finance';
 import type { GLAccount, GLAccountSplitAllocation } from './types';
@@ -47,9 +48,14 @@ const cents = (n: number) => Math.round(n * 100);
 const dollars = (c: number) => c / 100;
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 
-/** One destination of a split account. */
+/**
+ * One destination of a split account. Sprint 11 Revision 2.1: on input a share may name an ACTIVE affiliated council
+ * (affiliatedCouncilId) in place of an account; the driver swaps in that council's 'Due to Sister Council' clearing
+ * account (council-accounts.ts) before the checks below, so a stored destination is always an account of the council.
+ */
 export interface GLSplitDestination {
   destinationAccountId: number;
+  affiliatedCouncilId?: number | null;
   /** The share of each posting, as a percentage with at most two decimals. */
   percentage: number;
 }
@@ -111,8 +117,11 @@ export function cleanSplitDestinations(
     if (target.id === forbiddenId) throw invalid(`${target.AccountName} cannot be its own destination.`, { destinationAccountId: id });
     if (splitIds.has(target.id)) throw invalid(`${target.AccountName} is a Split Account, so it cannot receive a share.`, { destinationAccountId: id });
     if (target.IsVirtualGoal === 1) throw invalid(`${target.AccountName} is a virtual goal, so it cannot receive a share.`, { destinationAccountId: id });
-    if (target.AccountType !== GL_SPLIT_ACCOUNT_TYPE) {
-      throw invalid(`${target.AccountName} is a ${target.AccountType} account; every destination of ${whose} must be a Revenue account.`, { destinationAccountId: id });
+    // Sprint 11 Revision 2.1: a share may also go to a 'Due to Sister Council' clearing account (a Liability).
+    if (target.AccountType !== GL_SPLIT_ACCOUNT_TYPE && !isSisterCouncilClearingAccount(target)) {
+      throw invalid(`${target.AccountName} is a ${target.AccountType} account; every destination of ${whose} must be a Revenue account or a sister council's clearing account.`, {
+        destinationAccountId: id,
+      });
     }
     if (seen.has(target.id)) throw invalid(`${target.AccountName} is listed twice.`, { destinationAccountId: id });
     seen.add(target.id);

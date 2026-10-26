@@ -1,49 +1,64 @@
 'use client';
-// The Account Owners Matrix (Sprint 10 Revision 3.1, account-owners.ts): one editable grid row per electronic account the
-// council keeps - the account's name, who to call about it (name, number, email) and the account holder's EIN. It sits
-// in the Standard Bank Accounts drawer of Council Wide Settings. The council's Admins and Super Admins add, change and
-// delete rows (canAdministerCouncil; the drivers check assertMayManageAccountOwners); everyone else is told who keeps it.
+// The Account Owners Matrix (Sprint 10 Revision 3.1): one editable grid row per money account the council keeps, in
+// the Standard Bank Accounts drawer of Council Wide Settings. The council's Admins and Super Admins add, change and
+// delete rows (canAdministerCouncil; the drivers check assertMayManageCouncilAccounts); everyone else is told who keeps it.
+//
+// Sprint 11 Revision 2.1 (schema 103, council-accounts.ts): the rows are the council's own chart of accounts - its money
+// (Asset) accounts - not a separate table. Each row has the ledger name, the name members see, who owns the account
+// (Council or Parish), who to call about it and the holder's EIN. Adding a row adds an Asset account to the chart. A
+// Parish account's gifts are parish-held: they stay off the Treasurer's batch coder.
 import { useState } from 'react';
 import {
   ACCOUNT_CONTACT_EMAIL_MAX_LENGTH,
   ACCOUNT_CONTACT_NAME_MAX_LENGTH,
   ACCOUNT_CONTACT_NUMBER_MAX_LENGTH,
-  ACCOUNT_NAME_MAX_LENGTH,
+  ACCOUNT_DISPLAY_NAME_MAX_LENGTH,
   ACCOUNT_OWNERS_MATRIX_TITLE,
+  ACCOUNT_OWNERSHIP_COLUMN_LABEL,
+  ACCOUNT_OWNERSHIP_LABELS,
+  ACCOUNT_OWNERSHIP_TYPES,
   canAdministerCouncil,
   describeError,
-  type AccountOwner,
-
+  GL_ACCOUNT_NAME_MAX_LENGTH,
+  type AccountOwnershipType,
   type Council,
+  type CouncilAccount,
 } from '@kofc/shared';
-import { Button, Empty, Input, Notice, Panel, Table, Td } from '@/components/ui';
+import { Button, Empty, Input, Notice, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-type Draft = { id: number | null; account_name: string; contact_name: string; contact_number: string; contact_email: string; ein_number: string };
-const blank: Draft = { id: null, account_name: '', contact_name: '', contact_number: '', contact_email: '', ein_number: '' };
-const draftOf = (r: AccountOwner): Draft => ({
+type TextKey = 'AccountName' | 'account_display_name' | 'contact_name' | 'contact_number' | 'contact_email' | 'ein_number';
+type Draft = { id: number | null; ownership_type: AccountOwnershipType } & Record<TextKey, string>;
+const blank: Draft = { id: null, AccountName: '', account_display_name: '', ownership_type: 'COUNCIL', contact_name: '', contact_number: '', contact_email: '', ein_number: '' };
+const draftOf = (r: CouncilAccount): Draft => ({
   id: r.id,
-  account_name: r.account_name,
+  AccountName: r.AccountName,
+  account_display_name: r.account_display_name ?? '',
+  ownership_type: r.ownership_type,
   contact_name: r.contact_name ?? '',
   contact_number: r.contact_number ?? '',
   contact_email: r.contact_email ?? '',
   ein_number: r.ein_number ?? '',
 });
 
-const COLUMNS: { key: keyof Omit<Draft, 'id'>; label: string; max: number; type?: string }[] = [
-  { key: 'account_name', label: 'Account name', max: ACCOUNT_NAME_MAX_LENGTH },
+const NAME_COLUMNS: { key: TextKey; label: string; max: number }[] = [
+  { key: 'AccountName', label: 'Ledger account', max: GL_ACCOUNT_NAME_MAX_LENGTH },
+  { key: 'account_display_name', label: 'Name members see', max: ACCOUNT_DISPLAY_NAME_MAX_LENGTH },
+];
+const CONTACT_COLUMNS: { key: TextKey; label: string; max: number; type?: string }[] = [
   { key: 'contact_name', label: 'Contact name', max: ACCOUNT_CONTACT_NAME_MAX_LENGTH },
   { key: 'contact_number', label: 'Contact number', max: ACCOUNT_CONTACT_NUMBER_MAX_LENGTH, type: 'tel' },
   { key: 'contact_email', label: 'Contact email', max: ACCOUNT_CONTACT_EMAIL_MAX_LENGTH, type: 'email' },
   { key: 'ein_number', label: 'EIN', max: 10 },
 ];
+const HEAD = [...NAME_COLUMNS.map((c) => c.label), ACCOUNT_OWNERSHIP_COLUMN_LABEL, ...CONTACT_COLUMNS.map((c) => c.label), 'Actions'];
 
 export function AccountOwnersMatrix({ council }: { council: Council }) {
   const user = useUser();
   const mayEdit = canAdministerCouncil(user, council.id);
-  const rows = useLoad(() => (mayEdit ? db.councils.listAccountOwners(user.memberId, council.id) : Promise.resolve([])), [user.memberId, council.id, mayEdit]);
+  const rows = useLoad(() => (mayEdit ? db.councils.listCouncilAccounts(user.memberId, council.id) : Promise.resolve([] as CouncilAccount[])), [user.memberId, council.id, mayEdit]);
   const [editing, setEditing] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
@@ -53,8 +68,8 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
     setBusy(true);
     setMessage(null);
     try {
-      const saved = await db.councils.saveAccountOwner(user.memberId, council.id, editing);
-      setMessage({ tone: 'info', text: `Saved ${saved.account_name}.` });
+      const saved = await db.councils.saveCouncilAccount(user.memberId, council.id, editing);
+      setMessage({ tone: 'info', text: `Saved ${saved.AccountName}.` });
       setEditing(null);
       await rows.reload();
     } catch (err) {
@@ -63,12 +78,12 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
       setBusy(false);
     }
   };
-  const remove = async (row: AccountOwner) => {
+  const remove = async (row: CouncilAccount) => {
     setBusy(true);
     setMessage(null);
     try {
-      await db.councils.removeAccountOwner(user.memberId, council.id, row.id);
-      setMessage({ tone: 'info', text: `Deleted ${row.account_name}.` });
+      await db.councils.removeCouncilAccount(user.memberId, council.id, row.id);
+      setMessage({ tone: 'info', text: `Deleted ${row.AccountName}.` });
       await rows.reload();
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
@@ -77,23 +92,39 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
     }
   };
 
+  const textCell = (draft: Draft, c: { key: TextKey; label: string; max: number; type?: string }) => (
+    <Td key={c.key}>
+      <Input
+        aria-label={c.label}
+        type={c.type ?? 'text'}
+        value={draft[c.key]}
+        maxLength={c.max}
+        placeholder={c.key === 'ein_number' ? '12-3456789' : undefined}
+        onChange={(e) => setEditing({ ...draft, [c.key]: e.target.value })}
+      />
+    </Td>
+  );
+
   const editRow = (draft: Draft) => (
     <tr key={draft.id ?? 'new'} className="bg-gold/10">
-      {COLUMNS.map((c) => (
-        <Td key={c.key}>
-          <Input
-            aria-label={c.label}
-            type={c.type ?? 'text'}
-            value={draft[c.key]}
-            maxLength={c.max}
-            placeholder={c.key === 'ein_number' ? '12-3456789' : undefined}
-            onChange={(e) => setEditing({ ...draft, [c.key]: e.target.value })}
-          />
-        </Td>
-      ))}
+      {NAME_COLUMNS.map((c) => textCell(draft, c))}
+      <Td>
+        <Select
+          aria-label={ACCOUNT_OWNERSHIP_COLUMN_LABEL}
+          value={draft.ownership_type}
+          onChange={(e) => setEditing({ ...draft, ownership_type: e.target.value as AccountOwnershipType })}
+        >
+          {ACCOUNT_OWNERSHIP_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {ACCOUNT_OWNERSHIP_LABELS[t]}
+            </option>
+          ))}
+        </Select>
+      </Td>
+      {CONTACT_COLUMNS.map((c) => textCell(draft, c))}
       <Td className="whitespace-nowrap">
         <div className="flex gap-2">
-          <Button size="sm" disabled={busy || draft.account_name.trim() === ''} onClick={() => void save()}>
+          <Button size="sm" disabled={busy || draft.AccountName.trim() === ''} onClick={() => void save()}>
             {busy ? 'Saving…' : 'Save'}
           </Button>
           <Button size="sm" variant="secondary" disabled={busy} onClick={() => setEditing(null)}>
@@ -104,6 +135,7 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
     </tr>
   );
 
+  const list = rows.data ?? [];
   return (
     <Panel
       title={ACCOUNT_OWNERS_MATRIX_TITLE}
@@ -116,8 +148,11 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
         ) : undefined
       }
     >
-      <p className="mb-3 text-sm">The council&apos;s electronic accounts (Venmo, Zelle, Zeffy, the parish account) and who to call about each one.</p>
-      {!mayEdit ? <Notice tone="info">Only the council&apos;s Admins and Super Admins keep the account owners.</Notice> : null}
+      <p className="mb-3 text-sm">
+        The council&apos;s money accounts (checking, Venmo, Zelle, Zeffy, the parish account), straight from the chart of accounts: who owns each one and who to
+        call about it. Gifts paid into a Parish account are the parish&apos;s and stay off the Treasurer&apos;s batch coder.
+      </p>
+      {!mayEdit ? <Notice tone="info">Only the council&apos;s Admins and Super Admins keep the accounts.</Notice> : null}
       {rows.error ? <Notice tone="error">{rows.error}</Notice> : null}
       {message ? (
         <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
@@ -126,15 +161,19 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
       ) : null}
       {mayEdit ? (
         <div className="overflow-x-auto">
-          {rows.data && rows.data.length === 0 && editing === null ? <Empty>No accounts yet. Select Add account.</Empty> : null}
-          {(rows.data?.length ?? 0) > 0 || editing ? (
-            <Table caption={ACCOUNT_OWNERS_MATRIX_TITLE} head={[...COLUMNS.map((c) => c.label), 'Actions']}>
-              {(rows.data ?? []).map((r) =>
+          {rows.data && list.length === 0 && editing === null ? <Empty>No accounts yet. Select Add account.</Empty> : null}
+          {list.length > 0 || editing ? (
+            <Table caption={ACCOUNT_OWNERS_MATRIX_TITLE} head={HEAD}>
+              {list.map((r) =>
                 editing?.id === r.id ? (
                   editRow(editing)
                 ) : (
                   <tr key={r.id}>
-                    <Td className="font-bold">{r.account_name}</Td>
+                    <Td className="font-bold">{r.AccountName}</Td>
+                    <Td>{r.account_display_name ?? '–'}</Td>
+                    <Td>
+                      <Pill tone={r.ownership_type === 'PARISH' ? 'gold' : 'navy'}>{ACCOUNT_OWNERSHIP_LABELS[r.ownership_type]}</Pill>
+                    </Td>
                     <Td>{r.contact_name ?? '–'}</Td>
                     <Td className="whitespace-nowrap">{r.contact_number ?? '–'}</Td>
                     <Td className="break-all">{r.contact_email ?? '–'}</Td>

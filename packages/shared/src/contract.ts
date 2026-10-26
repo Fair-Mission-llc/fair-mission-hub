@@ -118,7 +118,7 @@ import type { DistributionGroup } from './messaging';
 import type { FeatureFlagChanges, FeatureFlagName } from './features';
 import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { MemberRosterOptions, MemberRosterResult } from './member-roster';
-import type { AccountOwner, AccountOwnerInput } from './account-owners';
+import type { CouncilAccount, CouncilAccountInput, SplitSisterCouncil } from './council-accounts';
 import type { FileRepositorySettings } from './file-repository';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
@@ -2514,14 +2514,23 @@ export interface DataService {
      */
     setEmailGateway(actorId: number, councilId: number, settings: EmailGatewaySettings | null): Promise<Council>;
     /**
-     * Sprint 10 Revision 3.1: the council's Account Owners Matrix (account-owners.ts), by account name. The council's
-     * Active Admins and any Active Super Admin (assertMayManageAccountOwners: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED).
+     * Sprint 11 Revision 2.1 (schema 103, council-accounts.ts): the council's money accounts - its non-virtual Asset
+     * GLAccounts that are not clearing accounts (isCouncilAccount) - by ledger name, with their owner metadata. The
+     * Account Owners Matrix and the payment method picker read this one catalog. The council's Active Admins and any
+     * Active Super Admin (assertMayManageCouncilAccounts: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED).
      */
-    listAccountOwners(actorId: number, councilId: number): Promise<AccountOwner[]>;
-    /** Adds a row (no id) or changes one of the council's rows; INVALID_INPUT for a bad field or a duplicate account name. */
-    saveAccountOwner(actorId: number, councilId: number, input: AccountOwnerInput): Promise<AccountOwner>;
-    /** Deletes one of the council's rows; RECORD_NOT_FOUND for another council's row or an unknown id. */
-    removeAccountOwner(actorId: number, councilId: number, id: number): Promise<void>;
+    listCouncilAccounts(actorId: number, councilId: number): Promise<CouncilAccount[]>;
+    /**
+     * Adds an Asset account to the chart (no id) or changes one of the council's money accounts. Changing ownership_type
+     * also moves the owner of every payment method linked to it. INVALID_INPUT for a bad field, a ledger name already in
+     * the chart or an ownership_type other than COUNCIL or PARISH; RECORD_NOT_FOUND for another council's account.
+     */
+    saveCouncilAccount(actorId: number, councilId: number, input: CouncilAccountInput): Promise<CouncilAccount>;
+    /**
+     * Deletes one of the council's money accounts. RECORD_IN_USE while anything still points at it (GL_ACCOUNT_REFERENCES:
+     * a journal entry, a payment method, a split share...); RECORD_NOT_FOUND for another council's account or an unknown id.
+     */
+    removeCouncilAccount(actorId: number, councilId: number, id: number): Promise<void>;
     /**
      * Sprint 10 Revision 3.1: where the council's uploads are filed (file-repository.ts) - the mode, the UNC path and the
      * service account username. The password goes to the Credentials Vault, never here. The council's Active Admins and
@@ -4169,6 +4178,13 @@ export interface DataService {
      * the council afterwards.
      */
     setGLSplitProfile(actorId: number, councilId: number, accountId: number, input: GLSplitProfileInput): Promise<GLSplitProfile[]>;
+    /**
+     * Sprint 11 Revision 2.1: the councils a split may send a share to - the council's ACTIVE affiliates - each with its
+     * 'Due to Sister Council' clearing account once one exists. A destination naming { affiliatedCouncilId } in
+     * setGLSplitProfile posts that share to the clearing account (created on first use) in this council's own ledger; nothing
+     * is written to the sister council. The ledger's readers (assertMayReadGeneralLedger).
+     */
+    listSplitSisterCouncils(actorId: number, councilId: number): Promise<SplitSisterCouncil[]>;
     /**
      * Sprint 8N: the Cash Box Audit Closure Panel (buildCashAuditBoard) - each event's logged cash, collection status and
      * closed count, with the variance metrics shown above the fold. The general ledger readers

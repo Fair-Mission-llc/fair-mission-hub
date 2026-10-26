@@ -4088,3 +4088,53 @@ ADD FOREIGN KEY([account_owner_id])
 REFERENCES [AccountOwners]([id])
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO
+
+-- =========================================================================
+-- Sprint 11 Revision 2.1: ONE ACCOUNTS LEDGER (schema version 103)
+--
+-- The separate AccountOwners table is gone. Its columns now sit on the council's chart of accounts (GLAccount), so a
+-- payment method, a split share and the Account Owners Matrix all read one catalog:
+--   account_display_name  the name members see (the old account_name stays the ledger name, AccountName);
+--   contact_name / contact_number / contact_email / ein_number  who to call about the account, and its holder's EIN;
+--   ownership_type        'COUNCIL' (DEFAULT) or 'PARISH' - nothing else. A parish account's money is the parish's:
+--                         gifts paid into it are kept off the Treasurer's batch coder (the parish shield);
+--   due_to_council_id     set only on a 'Due to Sister Council' Liability clearing account: the affiliated council the
+--                         council owes. A revenue split may send a share there; nothing is written to that council.
+-- CouncilDonationMethod.account_owner_id is replaced by account_id, a GLAccount of the same council (NULL is the
+-- built-in 'Council Account' token). The drivers refuse another council's account. AccountOwners rows are not carried
+-- over (the pilot seed had none). The phone version moves to 103; a hub vault at 102 must be archived first.
+-- =========================================================================
+ALTER TABLE [GLAccount] ADD [account_display_name] VARCHAR(150) NULL;
+GO
+ALTER TABLE [GLAccount] ADD [contact_name] VARCHAR(100) NULL;
+GO
+ALTER TABLE [GLAccount] ADD [contact_number] VARCHAR(50) NULL;
+GO
+ALTER TABLE [GLAccount] ADD [contact_email] VARCHAR(100) NULL;
+GO
+ALTER TABLE [GLAccount] ADD [ein_number] VARCHAR(20) NULL;
+GO
+ALTER TABLE [GLAccount] ADD [ownership_type] VARCHAR(10) NOT NULL DEFAULT 'COUNCIL' CONSTRAINT [CK_GLAccount_ownership_type] CHECK ([ownership_type] IN ('COUNCIL', 'PARISH'));
+GO
+ALTER TABLE [GLAccount] ADD [due_to_council_id] INTEGER NULL;
+GO
+
+ALTER TABLE [GLAccount]
+ADD FOREIGN KEY([due_to_council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+ALTER TABLE [CouncilDonationMethod] DROP COLUMN [account_owner_id];
+GO
+ALTER TABLE [CouncilDonationMethod] ADD [account_id] INTEGER NULL;
+GO
+
+ALTER TABLE [CouncilDonationMethod]
+ADD FOREIGN KEY([account_id])
+REFERENCES [GLAccount]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+DROP TABLE [AccountOwners];
+GO

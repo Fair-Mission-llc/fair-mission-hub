@@ -53,7 +53,7 @@ export * from './media-vault';
 export * from './treasurer-desk';
 export * from './member-lifecycle';
 export * from './member-roster';
-export * from './account-owners';
+export * from './council-accounts';
 export * from './file-repository';
 export * from './advisory-panel';
 export * from './desk-seats';

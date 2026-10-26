@@ -33,6 +33,9 @@
 // compact thumbnail - the text URL column is gone - and it is disabled for Cash, Check, card readers and Physical Items
 // (methodAcceptsQrCode). The Account column lists the council's AccountOwners rows after the default 'Council Account'
 // token, and a blank 'Account Name Members See' takes the picked account's name when the row is saved.
+// Sprint 11 Revision 2.1 (schema 103): the Account column reads the unified accounts ledger (councils.listCouncilAccounts:
+// the council's money accounts in its chart) and saves account_id. The drivers set the row's owner from the picked
+// account's ownership_type, so a Parish account makes the method parish-held.
 //
 // Sprint 11 Revision 2.0: the payment methods grid lost its legacy 'Account owner' column - a row keeps the owner it has,
 // and a new row is the council's own (DEFAULT_ACCOUNT_OWNER_ENTITY) - and the Check method is always row 3
@@ -42,6 +45,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ACCOUNT_PICKER_COLUMN_LABEL,
+  councilAccountLabel,
   COUNCIL_ACCOUNT_TOKEN_LABEL,
   defaultAccountIdentityLabel,
   LOOKUP_STATUSES,
@@ -118,23 +122,27 @@ const STATUS_COLUMN: Column = { key: 'lookup_status', label: 'Status', kind: 'st
 interface ColumnData {
   columns: Column[] | null;
   error: string | null;
-  /** AccountOwners names by id, for the payment methods grid's account picker and name default. */
+  /** The council's money account names by id (the unified accounts ledger), for the account picker and name default. */
   accountNames: Map<number, string>;
 }
 
 function useColumns(table: CouncilLookupTableName, councilId: number): ColumnData {
   const user = useUser();
   const options = useLoad(async () => {
-    if (table === 'Activities') return { options: (await db.lookups.list('Category')).map((c) => ({ value: c.id, label: c.Category })), owners: [] };
+    if (table === 'Activities') return { options: (await db.lookups.list('Category')).map((c) => ({ value: c.id, label: c.Category })), owners: [], names: [] };
     if (table === 'CouncilDonationMethod') {
       const methods = (await db.donations.listAllMethods()).map((m) => ({ value: m.id, label: m.DonationMethod }));
       // The account list is read by the council's Admins and Super Admins; a finance officer sees only the token.
-      const owners = await db.councils.listAccountOwners(user.memberId, councilId).catch(() => []);
-      return { options: methods, owners: owners.map((o) => ({ value: o.id, label: o.account_name })) };
+      const accounts = await db.councils.listCouncilAccounts(user.memberId, councilId).catch(() => []);
+      return {
+        options: methods,
+        owners: accounts.map((a) => ({ value: a.id, label: `${councilAccountLabel(a)}${a.ownership_type === 'PARISH' ? ' (Parish)' : ''}` })),
+        names: accounts.map((a) => ({ value: a.id, label: councilAccountLabel(a) })),
+      };
     }
-    return { options: [], owners: [] };
+    return { options: [], owners: [], names: [] };
   }, [table, councilId, user.memberId]);
-  const accountNames = new Map((options.data?.owners ?? []).map((o) => [o.value, o.label]));
+  const accountNames = new Map((options.data?.names ?? []).map((o) => [o.value, o.label]));
   if (!options.data) return { columns: null, error: options.error, accountNames };
   const columns: Record<CouncilLookupTableName, Column[]> = {
     Activities: [
@@ -146,7 +154,7 @@ function useColumns(table: CouncilLookupTableName, councilId: number): ColumnDat
     DonationType: [{ key: 'DonationType', label: 'Donation type', maxLength: 100 }, STATUS_COLUMN],
     CouncilDonationMethod: [
       { key: 'DonationMethodID', label: 'Method', options: options.data.options },
-      { key: 'account_owner_id', label: ACCOUNT_PICKER_COLUMN_LABEL, options: options.data.owners, emptyOption: COUNCIL_ACCOUNT_TOKEN_LABEL },
+      { key: 'account_id', label: ACCOUNT_PICKER_COLUMN_LABEL, options: options.data.owners, emptyOption: COUNCIL_ACCOUNT_TOKEN_LABEL },
       // Sprint 11 Revision 2.0: the legacy owner column is not drawn; the stored owner is kept, a new row is the council's.
       { key: 'account_owner_entity', label: 'Account owner', hidden: { fallback: DEFAULT_ACCOUNT_OWNER_ENTITY } },
       // Sprint 9 Revision 6.0: the name the phone's QR screen shows. Sprint 11 Revision 1.0: blank takes the account's name.
@@ -155,7 +163,7 @@ function useColumns(table: CouncilLookupTableName, councilId: number): ColumnDat
         label: ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL,
         maxLength: ACCOUNT_IDENTITY_LABEL_MAX_LENGTH,
         optional: true,
-        placeholderFor: (v) => (v.account_owner_id ? accountNames.get(Number(v.account_owner_id)) : undefined),
+        placeholderFor: (v) => (v.account_id ? accountNames.get(Number(v.account_id)) : undefined),
       },
       { key: 'DonationMethodURL', label: 'QR code', kind: 'qr', optional: true },
       STATUS_COLUMN,
@@ -238,8 +246,8 @@ function toRecord(row: DraftRow, columns: Column[], accountNames: Map<number, st
     out[c.key] = c.options ? (text === '' ? null : Number(text)) : c.choices ? (text === '' ? null : text) : c.optional && text.trim() === '' ? null : text;
   }
   // Sprint 11 Revision 1.0: a blank name members see takes the picked account's name.
-  if ('account_identity_label' in out && 'account_owner_id' in out) {
-    out.account_identity_label = defaultAccountIdentityLabel(out.account_identity_label as string | null, accountNames.get(out.account_owner_id as number));
+  if ('account_identity_label' in out && 'account_id' in out) {
+    out.account_identity_label = defaultAccountIdentityLabel(out.account_identity_label as string | null, accountNames.get(out.account_id as number));
   }
   return out;
 }

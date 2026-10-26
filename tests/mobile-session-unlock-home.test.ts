@@ -42,9 +42,9 @@ describe('1. no mid-session biometric prompts on the phone', () => {
   });
 
   it('moves the phone database to 97', () => {
-    // Sprint 11 Revision 1.0 moved the platform to schema 102.
-    expect(PLATFORM_SCHEMA_VERSION).toBe(102);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 102;');
+    // Sprint 11 Revision 2.1 moved the platform to schema 103.
+    expect(PLATFORM_SCHEMA_VERSION).toBe(103);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 103;');
     expect(read('Schema.sql')).toContain('(schema version 97)');
   });
 });

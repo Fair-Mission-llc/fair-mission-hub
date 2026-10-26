@@ -147,6 +147,7 @@ function parseSchema(sql) {
   const alters = [];
   const views = [];
   const dropped = [];
+  const droppedTables = [];
 
   for (const stmt of splitBatches(sql)) {
     let m;
@@ -191,7 +192,21 @@ function parseSchema(sql) {
       // As in SQL Server, a column still held by a CHECK constraint cannot be dropped; DROP CONSTRAINT it first.
       if (t.columns[at].allowed) fail(`[${name}].[${column}] still has a CHECK constraint; DROP CONSTRAINT it first`, stmt);
       t.columns.splice(at, 1);
+      // Sprint 11 Revision 2.1 (schema 103): a foreign key on the dropped column goes with it.
+      for (let i = alters.length - 1; i >= 0; i--) if (alters[i].table === name && alters[i].column === column) alters.splice(i, 1);
       dropped.push({ table: name, column, stmt });
+    } else if ((m = stmt.match(/^DROP TABLE \[([^\]]+)\]$/i))) {
+      // Sprint 11 Revision 2.1 (schema 103): a table a later sprint retires (AccountOwners). Both targets simply never
+      // create it. Its own foreign keys and indexes go with it; a key in another table still pointing at it, or a view
+      // naming it, aborts the run (drop or re-point that column first, as SQL Server requires).
+      const [, name] = m;
+      if (!tables.has(name)) fail(`DROP TABLE of unknown table [${name}]`, stmt);
+      const held = alters.find((a) => a.refTable === name && a.table !== name);
+      if (held) fail(`[${held.table}].[${held.column}] still references [${name}]; drop that column first`, stmt);
+      tables.delete(name);
+      for (let i = alters.length - 1; i >= 0; i--) if (alters[i].table === name) alters.splice(i, 1);
+      for (let i = indexes.length - 1; i >= 0; i--) if (indexes[i].table === name) indexes.splice(i, 1);
+      droppedTables.push({ table: name, stmt });
     } else if ((m = stmt.match(/^CREATE (UNIQUE )?INDEX \[([^\]]+)\]\s+ON\s+\[([^\]]+)\]\s*\(([^)]*)\)(?:\s*INCLUDE\s*\([^)]*\))?(?:\s+WHERE\s+\[([^\]]+)\]\s+IS\s+NOT\s+NULL)?$/i))) {
       // A filtered index may only skip NULLs: SQLite's partial index keeps the same rule, and the web mock already
       // lets a unique key holding a NULL repeat (SQLite semantics), so the filter needs nothing more there.
@@ -234,6 +249,8 @@ function parseSchema(sql) {
     for (const ix of indexes) if (ix.table === d.table && ix.columns.includes(ref)) fail(`Index [${ix.name}] still uses dropped column [${d.table}].[${d.column}]`, d.stmt);
     for (const v of views) if (v.body.includes(`[${d.table}].${ref}`)) fail(`View [${v.name}] still uses dropped column [${d.table}].[${d.column}]`, d.stmt);
   }
+
+  for (const d of droppedTables) for (const v of views) if (v.body.includes(`[${d.table}]`)) fail(`View [${v.name}] still uses dropped table [${d.table}]`, d.stmt);
 
   return { tables, indexes, views };
 }

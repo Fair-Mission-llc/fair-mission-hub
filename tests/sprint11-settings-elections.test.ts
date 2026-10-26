@@ -27,12 +27,13 @@ const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8')
 
 describe('schema 102: unified council lookup records', () => {
   it('adds lookup_status to the three council lookup tables and the account link to payment methods', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(102);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(102);
     for (const table of ['Activities', 'DonationType', 'CouncilDonationMethod']) {
       const status = TABLES[table].columns.find((c) => c.name === 'lookup_status');
       expect(status, table).toMatchObject({ notNull: true, allowed: ['Active', 'Inactive'] });
     }
-    expect(TABLES.CouncilDonationMethod.columns.map((c) => c.name)).toContain('account_owner_id');
+    // Sprint 11 Revision 2.1 (schema 103): account_owner_id became account_id, a GLAccount.
+    expect(TABLES.CouncilDonationMethod.columns.map((c) => c.name)).toContain('account_id');
   });
 
   it('binds the status to Active or Inactive, Active when not given', () => {
@@ -41,8 +42,8 @@ describe('schema 102: unified council lookup records', () => {
     expect(() => cleanLookupStatus('Archived')).toThrow();
     expect(isActiveLookupRow({ lookup_status: 'Inactive' })).toBe(false);
     expect(isActiveLookupRow({})).toBe(true);
-    const plan = planCouncilLookupSave('CouncilDonationMethod', 1, [], [{ DonationMethodID: 3, account_owner_entity: 'COUNCIL', account_owner_id: 4, lookup_status: 'Inactive' }]);
-    expect(plan.inserts[0]).toMatchObject({ account_owner_id: 4, lookup_status: 'Inactive' });
+    const plan = planCouncilLookupSave('CouncilDonationMethod', 1, [], [{ DonationMethodID: 3, account_owner_entity: 'COUNCIL', account_id: 4, lookup_status: 'Inactive' }]);
+    expect(plan.inserts[0]).toMatchObject({ account_id: 4, lookup_status: 'Inactive' });
   });
 
   it('defaults the account to the Council Account token and the members-see name to the account name', () => {
@@ -63,35 +64,39 @@ describe.each(drivers)('$name driver: payment method accounts', ({ make }) => {
   it("links a payment method to one of the council's own accounts and keeps a linked account", async () => {
     const db = await make();
     const councilId = (await db.members.get(MEMBER.admin))!.CouncilID;
-    const account = await db.councils.saveAccountOwner(MEMBER.admin, councilId, { account_name: 'Parish Venmo' });
+    const account = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Parish Venmo', ownership_type: 'PARISH' });
     const [link] = await db.lookups.listCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod');
     const base = { id: link.id, DonationMethodID: link.DonationMethodID, DonationMethodURL: null, account_owner_entity: 'PARISH' };
     const [saved] = (await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [
-      { ...base, account_owner_id: account.id, lookup_status: 'Inactive' },
+      { ...base, account_id: account.id, lookup_status: 'Inactive' },
     ])).filter((r) => r.id === link.id);
-    expect(saved).toMatchObject({ account_owner_id: account.id, lookup_status: 'Inactive' });
-    await expectRule(db.councils.removeAccountOwner(MEMBER.admin, councilId, account.id), 'RECORD_IN_USE');
-    await expectRule(db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_owner_id: 99_999 }]), 'INVALID_INPUT');
-    await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_owner_id: null }]);
-    await db.councils.removeAccountOwner(MEMBER.admin, councilId, account.id);
+    // The Parish account makes the method parish-held, whatever owner the row sent.
+    expect(saved).toMatchObject({ account_id: account.id, lookup_status: 'Inactive', account_owner_entity: 'PARISH' });
+    await expectRule(db.councils.removeCouncilAccount(MEMBER.admin, councilId, account.id), 'RECORD_IN_USE');
+    await expectRule(db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_id: 99_999 }]), 'INVALID_INPUT');
+    await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_id: null }]);
+    await db.councils.removeCouncilAccount(MEMBER.admin, councilId, account.id);
   });
 
-  // Sprint 11 Revision 2.1: the picker lists only this council's AccountOwners rows, and the save refuses a real account of
+  // Sprint 11 Revision 2.1: the picker lists only this council's money accounts, and the save refuses a real account of
   // another council - the link is checked against the table on every save, not against a fixed list.
   it("refuses another council's account and lists only this council's accounts", async () => {
     const db = await make();
     const councilId = (await db.members.get(MEMBER.admin))!.CouncilID;
     const other = (await db.councils.list()).find((c) => c.id !== councilId)!;
-    const own = await db.councils.saveAccountOwner(MEMBER.admin, councilId, { account_name: 'Council Zeffy' });
-    const foreign = await db.councils.saveAccountOwner(MEMBER.superAdmin, other.id, { account_name: 'Parish ParishSoft' });
-    expect((await db.councils.listAccountOwners(MEMBER.admin, councilId)).map((r) => r.id)).toEqual([own.id]);
+    const own = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Council Zeffy', ownership_type: 'COUNCIL' });
+    const foreign = await db.councils.saveCouncilAccount(MEMBER.superAdmin, other.id, { AccountName: 'Parish ParishSoft', ownership_type: 'PARISH' });
+    const listed = await db.councils.listCouncilAccounts(MEMBER.admin, councilId);
+    expect(listed.map((r) => r.id)).toContain(own.id);
+    expect(listed.every((r) => r.CouncilID === councilId && r.AccountType === 'Asset')).toBe(true);
+    expect(listed.map((r) => r.id)).not.toContain(foreign.id);
     const [link] = await db.lookups.listCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod');
     const base = { id: link.id, DonationMethodID: link.DonationMethodID, DonationMethodURL: null, account_owner_entity: 'COUNCIL' };
-    await expectRule(db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_owner_id: foreign.id }]), 'INVALID_INPUT');
-    const [saved] = (await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_owner_id: own.id }])).filter(
+    await expectRule(db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_id: foreign.id }]), 'INVALID_INPUT');
+    const [saved] = (await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [{ ...base, account_id: own.id }])).filter(
       (r) => r.id === link.id,
     );
-    expect(saved.account_owner_id).toBe(own.id);
+    expect(saved.account_id).toBe(own.id);
   });
 });
 

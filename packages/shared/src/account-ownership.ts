@@ -43,13 +43,13 @@ export const ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL = 'Account Name Members See';
 
 /**
  * Sprint 11 Revision 1.0 (schema 102): the Council Lookups account picker. Its first, default choice is the built-in
- * 'Council Account' token (account_owner_id NULL: the council's own account); the others are the council's AccountOwners
- * rows. A blank 'Account Name Members See' takes the picked account's name when the row is saved.
+ * 'Council Account' token (account_id NULL: the council's own account); the others are the council's money accounts
+ * (Sprint 11 Revision 2.1: GLAccount rows, council-accounts.ts isCouncilAccount). A blank 'Account Name Members See' takes the picked account's name when the row is saved.
  */
 export const COUNCIL_ACCOUNT_TOKEN_LABEL = 'Council Account';
 export const ACCOUNT_PICKER_COLUMN_LABEL = 'Account';
 
-/** The name a payment method shows members: its own label, else the picked AccountOwners row's name, else null. */
+/** The name a payment method shows members: its own label, else the picked account's name, else null. */
 export function defaultAccountIdentityLabel(label: string | null | undefined, accountName: string | null | undefined): string | null {
   const own = (label ?? '').trim();
   if (own !== '') return own;

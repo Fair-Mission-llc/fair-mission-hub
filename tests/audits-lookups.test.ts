@@ -208,7 +208,7 @@ describe('council lookup save planning', () => {
     // Sprint 9 Revision 6.0 (schema 99): the account name donors see rides along, blank as null.
     ).toEqual([
       // Sprint 11 Revision 1.0 (schema 102): every row is Active unless marked otherwise; no account is the 'Council Account' token.
-      { DonationMethodID: 3, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: null, lookup_status: 'Active', account_owner_id: null },
+      { DonationMethodID: 3, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: null, lookup_status: 'Active', account_id: null },
     ]);
   });
 });

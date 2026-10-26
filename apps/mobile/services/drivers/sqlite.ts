@@ -780,7 +780,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -970,8 +970,11 @@ const DB_NAME = 'kofc.db';
  *     AdvisoryFeedback, and the 'Application Advisory Panelist' role (Sprint 10 Revision 3.1).
  * 102: lookup_status ('Active' / 'Inactive') on Activities, DonationType and CouncilDonationMethod, and
  *     CouncilDonationMethod.account_owner_id, the AccountOwners row a payment method pays into (Sprint 11 Revision 1.0).
+ * 103: AccountOwners merged into GLAccount (account_display_name, contact_name / number / email, ein_number, the
+ *     COUNCIL / PARISH ownership_type and due_to_council_id for 'Due to Sister Council' clearing accounts);
+ *     CouncilDonationMethod.account_owner_id replaced by account_id; AccountOwners dropped (Sprint 11 Revision 2.1).
  */
-const SCHEMA_VERSION = 102;
+const SCHEMA_VERSION = 103;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1683,17 +1686,20 @@ export class SqliteDataService implements DataService {
         const plan = planCouncilLookupSave(table, councilId, current, records);
         for (const values of [...plan.inserts, ...plan.updates.map((u) => u.values)]) {
           for (const fk of meta.foreignKeys) await this.assertRowExists(db, fk.table, values[fk.column] as number, fk.label);
-          // Sprint 11 Revision 1.0: an account a payment method pays into must be one of this council's AccountOwners rows.
+          // Sprint 11 Revision 2.1 (schema 103): the account a payment method pays into must be one of this council's
+          // money accounts (isCouncilAccount) in the unified accounts ledger.
           for (const key of meta.councilScopedKeys ?? []) {
             const value = values[key.column];
             if (value === null || value === undefined) continue;
-            const hit = await db.getFirstAsync(`SELECT [id] FROM [${key.table}] WHERE [id] = ? AND [${key.councilColumn}] = ?`, [value, councilId]);
-            if (!hit) throw new BusinessRuleError('INVALID_INPUT', `Council ${councilId} has no ${key.label} ${String(value)}.`, { field: key.column, value, councilId });
+            const hit = await db.getFirstAsync<GLAccount>(`SELECT * FROM [${key.table}] WHERE [id] = ? AND [${key.councilColumn}] = ?`, [value, councilId]);
+            if (!hit || !isCouncilAccount(hit)) throw new BusinessRuleError('INVALID_INPUT', `Council ${councilId} has no ${key.label} ${String(value)}.`, { field: key.column, value, councilId });
           }
-          // Sprint 11 Revision 2.0: a blank 'Account Name Members See' takes the picked account's name.
-          if ('account_identity_label' in values && values.account_owner_id != null) {
-            const account = await db.getFirstAsync<{ account_name: string }>('SELECT [account_name] FROM [AccountOwners] WHERE [id] = ?', [values.account_owner_id]);
-            values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, account?.account_name);
+          if ('account_id' in values && values.account_id != null) {
+            const account = (await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ?', [values.account_id]))!;
+            // The linked account's ownership_type decides the method's owner (the parish shield reads it).
+            values.account_owner_entity = paymentMethodOwner(null, account);
+            // Sprint 11 Revision 2.0: a blank 'Account Name Members See' takes the picked account's name.
+            if ('account_identity_label' in values) values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, councilAccountLabel(account));
           }
         }
         for (const { id, values } of plan.updates) {
@@ -2029,47 +2035,53 @@ export class SqliteDataService implements DataService {
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
 
-    // Sprint 10 Revision 3.1: the Account Owners Matrix and the file repository mode.
-    listAccountOwners: async (actorId, councilId) => {
+    // Sprint 11 Revision 2.1 (schema 103): the Account Owners Matrix reads and writes the unified accounts ledger (GLAccount).
+    listCouncilAccounts: async (actorId, councilId) => {
       const db = await this.ready();
-      assertMayManageAccountOwners(await this.memberWriteActor(db, actorId), councilId);
-      return db.getAllAsync<AccountOwner>('SELECT * FROM [AccountOwners] WHERE [council_id] = ? ORDER BY [account_name] COLLATE NOCASE, [id]', [councilId]);
+      assertMayManageCouncilAccounts(await this.memberWriteActor(db, actorId), councilId);
+      return this.councilAccounts(db, councilId);
     },
-    saveAccountOwner: async (actorId, councilId, input) => {
-      const clean = cleanAccountOwner(input);
+    saveCouncilAccount: async (actorId, councilId, input) => {
+      const clean = cleanCouncilAccount(input);
       const db = await this.ready();
       let id = input.id ?? null;
       await db.withTransactionAsync(async () => {
-        assertMayManageAccountOwners(await this.memberWriteActor(db, actorId), councilId);
+        assertMayManageCouncilAccounts(await this.memberWriteActor(db, actorId), councilId);
         await this.requireRecord(db, 'Council', councilId);
-        const mine = await db.getAllAsync<AccountOwner>('SELECT [id], [account_name] FROM [AccountOwners] WHERE [council_id] = ?', [councilId]);
-        assertAccountNameFree(mine, clean.account_name, id);
-        const values = [clean.account_name, clean.contact_name, clean.contact_number, clean.contact_email, clean.ein_number];
+        assertAccountNameFree(await this.glAccounts(db, councilId), clean.AccountName, id);
+        const values = [clean.AccountName, clean.account_display_name, clean.contact_name, clean.contact_number, clean.contact_email, clean.ein_number, clean.ownership_type];
         if (id !== null) {
-          const done = await db.runAsync(
-            'UPDATE [AccountOwners] SET [account_name] = ?, [contact_name] = ?, [contact_number] = ?, [contact_email] = ?, [ein_number] = ? WHERE [id] = ? AND [council_id] = ?',
-            [...values, id, councilId],
+          const row = await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ? AND [CouncilID] = ?', [id, councilId]);
+          if (!row || !isCouncilAccount(row)) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${id}.`, { id });
+          await db.runAsync(
+            'UPDATE [GLAccount] SET [AccountName] = ?, [account_display_name] = ?, [contact_name] = ?, [contact_number] = ?, [contact_email] = ?, [ein_number] = ?, [ownership_type] = ? WHERE [id] = ?',
+            [...values, id],
           );
-          if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
+          // The payment methods paying into it follow its owner.
+          await db.runAsync('UPDATE [CouncilDonationMethod] SET [account_owner_entity] = ? WHERE [account_id] = ?', [clean.ownership_type, id]);
         } else {
           const added = await db.runAsync(
-            'INSERT INTO [AccountOwners] ([council_id], [account_name], [contact_name], [contact_number], [contact_email], [ein_number]) VALUES (?, ?, ?, ?, ?, ?)',
-            [councilId, ...values],
+            `INSERT INTO [GLAccount] ([CouncilID], [AccountType], [IsVirtualGoal], [TargetGoalAmount], [AccountName], [account_display_name], [contact_name], [contact_number], [contact_email], [ein_number], [ownership_type])
+             VALUES (?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?)`,
+            [councilId, COUNCIL_ACCOUNT_TYPE, ...values],
           );
           id = added.lastInsertRowId;
         }
       });
-      return (await db.getFirstAsync<AccountOwner>('SELECT * FROM [AccountOwners] WHERE [id] = ?', [id]))!;
+      return (await db.getFirstAsync<CouncilAccount>('SELECT * FROM [GLAccount] WHERE [id] = ?', [id]))!;
     },
-    removeAccountOwner: async (actorId, councilId, id) => {
+    removeCouncilAccount: async (actorId, councilId, id) => {
       const db = await this.ready();
-      assertMayManageAccountOwners(await this.memberWriteActor(db, actorId), councilId);
-      // Sprint 11 Revision 1.0: deletes never cascade - an account a payment method still pays into stays.
-      if (await db.getFirstAsync('SELECT [id] FROM [CouncilDonationMethod] WHERE [account_owner_id] = ?', [id])) {
-        throw new BusinessRuleError('RECORD_IN_USE', `Account ${id} is still linked to a payment method. Pick another account on Council Lookups first.`, { id });
-      }
-      const done = await db.runAsync('DELETE FROM [AccountOwners] WHERE [id] = ? AND [council_id] = ?', [id, councilId]);
-      if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
+      await db.withTransactionAsync(async () => {
+        assertMayManageCouncilAccounts(await this.memberWriteActor(db, actorId), councilId);
+        const row = await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ? AND [CouncilID] = ?', [id, councilId]);
+        if (!row || !isCouncilAccount(row)) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${id}.`, { id });
+        // Deletes never cascade: an account anything still points at stays.
+        for (const ref of GL_ACCOUNT_REFERENCES) {
+          if (await db.getFirstAsync(`SELECT 1 AS [hit] FROM [${ref.table}] WHERE [${ref.column}] = ?`, [id])) throw accountInUseError(row, ref.noun);
+        }
+        await db.runAsync('DELETE FROM [GLAccount] WHERE [id] = ?', [id]);
+      });
     },
     setFileRepositorySettings: async (actorId, councilId, settings) => {
       const clean = cleanFileRepositorySettings(settings);
@@ -7963,6 +7975,8 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `change the split accounts of council ${councilId}`);
         await this.assertCouncilsExist(db, [councilId]);
+        // Sprint 11 Revision 2.1: a share naming an affiliated council goes to this council's clearing account for it.
+        input = { ...input, destinations: (await this.resolveSisterCouncilShares(db, councilId, input?.destinations)) as GLSplitDestination[] };
         const destinations = cleanGLSplitProfile(councilId, accountId, input, await this.glAccounts(db, councilId), await this.glSplitAllocations(db, councilId));
         await db.runAsync('DELETE FROM [GLAccountSplitAllocation] WHERE [source_gl_account_id] = ?', [accountId]);
         for (const d of destinations) {
@@ -7974,6 +7988,25 @@ export class SqliteDataService implements DataService {
         await db.runAsync('UPDATE [GLAccount] SET [is_split_account] = ? WHERE [id] = ?', [destinations.length > 0 ? 1 : 0, accountId]);
       });
       return this.glSplitProfiles(db, councilId);
+    },
+
+    listSplitSisterCouncils: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the sister councils of council ${councilId}`);
+      await this.assertCouncilsExist(db, [councilId]);
+      const partners = await this.activeSisterCouncils(db, councilId);
+      const clearing = (await this.glAccounts(db, councilId)).filter(isSisterCouncilClearingAccount);
+      const councils = await db.getAllAsync<{ id: number; CouncilNumber: number; CouncilName: string | null }>('SELECT [id], [CouncilNumber], [CouncilName] FROM [Council]');
+      return councils
+        .filter((c) => partners.has(c.id))
+        .map(
+          (c): SplitSisterCouncil => ({
+            councilId: c.id,
+            label: `Council ${c.CouncilNumber}${c.CouncilName ? ` - ${c.CouncilName}` : ''}`,
+            clearingAccountId: clearing.find((a) => a.due_to_council_id === c.id)?.id ?? null,
+          }),
+        )
+        .sort((a, b) => a.label.localeCompare(b.label));
     },
 
     getCashAuditBoard: async (actorId, councilId) => {
@@ -8223,12 +8256,58 @@ export class SqliteDataService implements DataService {
 
   /** Sprint 8O Extension: the account owner of a council's payment method at this moment (COUNCIL when not enabled). */
   private async methodOwnerNow(db: SQLite.SQLiteDatabase, councilId: number, methodId: number): Promise<AccountOwnerEntity> {
-    return accountOwnerEntityOf(
-      await db.getFirstAsync<{ account_owner_entity: string | null }>('SELECT [account_owner_entity] FROM [CouncilDonationMethod] WHERE [CouncilID] = ? AND [DonationMethodID] = ?', [
-        councilId,
-        methodId,
-      ]),
+    // Sprint 11 Revision 2.1: read from the linked account's ownership_type in the unified accounts ledger when it has one.
+    const link = await db.getFirstAsync<{ account_owner_entity: string | null; account_id: number | null }>(
+      'SELECT [account_owner_entity], [account_id] FROM [CouncilDonationMethod] WHERE [CouncilID] = ? AND [DonationMethodID] = ?',
+      [councilId, methodId],
     );
+    const account = link?.account_id == null ? null : await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ? AND [CouncilID] = ?', [link.account_id, councilId]);
+    return paymentMethodOwner(link, account);
+  }
+
+  /** Sprint 11 Revision 2.1: the council's money accounts (the Account Owners Matrix), by ledger name. */
+  private async councilAccounts(db: SQLite.SQLiteDatabase, councilId: number): Promise<CouncilAccount[]> {
+    return (await this.glAccounts(db, councilId))
+      .filter(isCouncilAccount)
+      .map((a) => ({ ...a, ownership_type: a.ownership_type ?? 'COUNCIL' }))
+      .sort((a, b) => a.AccountName.localeCompare(b.AccountName) || a.id - b.id);
+  }
+
+  /** Sprint 11 Revision 2.1: the council's ACTIVE affiliates. */
+  private async activeSisterCouncils(db: SQLite.SQLiteDatabase, councilId: number): Promise<Set<number>> {
+    const rows = await db.getAllAsync<CouncilAffiliations>('SELECT * FROM [CouncilAffiliations] WHERE [requesting_council_id] = ? OR [target_council_id] = ?', [councilId, councilId]);
+    return activeAffiliatePartners(rows, councilId);
+  }
+
+  /**
+   * Sprint 11 Revision 2.1: swaps each share naming { affiliatedCouncilId } for this council's 'Due to Sister Council'
+   * clearing account for that council, adding the Liability account on first use. Refuses a council that is not an
+   * ACTIVE affiliate. Writes only to this council's chart - never to the sister council.
+   */
+  private async resolveSisterCouncilShares(db: SQLite.SQLiteDatabase, councilId: number, destinations: unknown): Promise<unknown> {
+    if (!Array.isArray(destinations)) return destinations;
+    const partners = await this.activeSisterCouncils(db, councilId);
+    const out: unknown[] = [];
+    for (const d of destinations as (GLSplitDestination | null)[]) {
+      if (d == null || d.affiliatedCouncilId == null) {
+        out.push(d);
+        continue;
+      }
+      const sisterId = assertActiveSisterCouncil(partners, councilId, d.affiliatedCouncilId);
+      let account = await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [GLAccount] WHERE [CouncilID] = ? AND [AccountType] = 'Liability' AND [due_to_council_id] = ?", [councilId, sisterId]);
+      if (!account) {
+        const sister = (await db.getFirstAsync<{ CouncilNumber: number }>('SELECT [CouncilNumber] FROM [Council] WHERE [id] = ?', [sisterId]))!;
+        const name = dueToSisterCouncilName(sister);
+        assertAccountNameFree(await this.glAccounts(db, councilId), name, null);
+        const added = await db.runAsync(
+          `INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [IsVirtualGoal], [TargetGoalAmount], [ownership_type], [due_to_council_id]) VALUES (?, ?, 'Liability', 0, 0, 'COUNCIL', ?)`,
+          [councilId, name, sisterId],
+        );
+        account = { id: added.lastInsertRowId };
+      }
+      out.push({ destinationAccountId: account.id, percentage: d.percentage });
+    }
+    return out;
   }
 
   /** Sprint 8N: the council's donations as the batch coder sees them. */

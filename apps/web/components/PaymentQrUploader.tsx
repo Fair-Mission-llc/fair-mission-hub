@@ -76,7 +76,7 @@ function QrRow({ council, row, name, onSaved }: { council: Council; row: Council
           account_owner_entity: row.account_owner_entity ?? 'COUNCIL',
           account_identity_label: row.account_identity_label ?? null,
           lookup_status: row.lookup_status ?? 'Active',
-          account_owner_id: row.account_owner_id ?? null,
+          account_id: row.account_id ?? null,
         },
       ]);
       await onSaved();

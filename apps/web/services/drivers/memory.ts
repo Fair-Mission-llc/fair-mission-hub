@@ -772,7 +772,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageAccountOwners, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanAccountOwner, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type AccountOwner, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -1441,17 +1441,22 @@ export class MemoryDataService implements DataService {
         const plan = planCouncilLookupSave(table, councilId, s.rows(table).filter((r) => r.CouncilID === councilId), records);
         for (const values of [...plan.inserts, ...plan.updates.map((u) => u.values)]) {
           for (const fk of COUNCIL_LOOKUP_META[table].foreignKeys) this.assertRowExists(s, fk.table, values[fk.column] as number, fk.label);
-          // Sprint 11 Revision 1.0: an account a payment method pays into must be one of this council's AccountOwners rows.
+          // Sprint 11 Revision 2.1 (schema 103): the account a payment method pays into must be one of this council's
+          // money accounts (isCouncilAccount) in the unified accounts ledger.
           for (const key of COUNCIL_LOOKUP_META[table].councilScopedKeys ?? []) {
             const value = values[key.column];
-            if (value !== null && value !== undefined && !s.rows(key.table).some((r) => r.id === value && r[key.councilColumn] === councilId)) {
+            if (value === null || value === undefined) continue;
+            const hit = s.rows(key.table).find((r) => r.id === value && r[key.councilColumn] === councilId);
+            if (!hit || !isCouncilAccount(hit as unknown as GLAccount)) {
               throw new BusinessRuleError('INVALID_INPUT', `Council ${councilId} has no ${key.label} ${String(value)}.`, { field: key.column, value, councilId });
             }
           }
-          // Sprint 11 Revision 2.0: a blank 'Account Name Members See' takes the picked account's name.
-          if ('account_identity_label' in values && values.account_owner_id != null) {
-            const account = s.rows('AccountOwners').find((r) => r.id === values.account_owner_id);
-            values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, account?.account_name as string | undefined);
+          if ('account_id' in values && values.account_id != null) {
+            const account = s.rows('GLAccount').find((r) => r.id === values.account_id) as unknown as GLAccount;
+            // The linked account's ownership_type decides the method's owner (the parish shield reads it).
+            values.account_owner_entity = paymentMethodOwner(null, account);
+            // Sprint 11 Revision 2.0: a blank 'Account Name Members See' takes the picked account's name.
+            if ('account_identity_label' in values) values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, councilAccountLabel(account));
           }
         }
         for (const { id, values } of plan.updates) Object.assign(s.rows(table).find((r) => r.id === id)!, values);
@@ -1566,43 +1571,44 @@ export class MemoryDataService implements DataService {
       return { ...row } as unknown as Council;
     },
 
-    // Sprint 10 Revision 3.1: the Account Owners Matrix and the file repository mode.
-    listAccountOwners: async (actorId, councilId) => {
+    // Sprint 11 Revision 2.1 (schema 103): the Account Owners Matrix reads and writes the unified accounts ledger (GLAccount).
+    listCouncilAccounts: async (actorId, councilId) => {
       const s = await this.ready();
-      assertMayManageAccountOwners(this.memberWriteActor(s, actorId), councilId);
-      return s
-        .rows('AccountOwners')
-        .filter((r) => r.council_id === councilId)
-        .map((r) => ({ ...r }) as unknown as AccountOwner)
-        .sort((a, b) => a.account_name.localeCompare(b.account_name));
+      assertMayManageCouncilAccounts(this.memberWriteActor(s, actorId), councilId);
+      return this.councilAccounts(s, councilId);
     },
-    saveAccountOwner: async (actorId, councilId, input) => {
-      const clean = cleanAccountOwner(input);
+    saveCouncilAccount: async (actorId, councilId, input) => {
+      const clean = cleanCouncilAccount(input);
       const s = await this.ready();
       return s.transaction(() => {
-        assertMayManageAccountOwners(this.memberWriteActor(s, actorId), councilId);
+        assertMayManageCouncilAccounts(this.memberWriteActor(s, actorId), councilId);
         this.requireRecord(s, 'Council', councilId);
-        const mine = s.rows('AccountOwners').filter((r) => r.council_id === councilId) as unknown as AccountOwner[];
-        assertAccountNameFree(mine, clean.account_name, input.id ?? null);
+        assertAccountNameFree(this.glAccounts(s, councilId), clean.AccountName, input.id ?? null);
         if (input.id != null) {
-          const row = s.rows('AccountOwners').find((r) => r.id === input.id && r.council_id === councilId);
-          if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${input.id}.`, { id: input.id });
+          const row = s.rows('GLAccount').find((r) => r.id === input.id && r.CouncilID === councilId);
+          if (!row || !isCouncilAccount(row as unknown as GLAccount)) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${input.id}.`, { id: input.id });
           Object.assign(row, clean);
-          return { ...row } as unknown as AccountOwner;
+          // The payment methods paying into it follow its owner.
+          for (const link of s.rows('CouncilDonationMethod')) if (link.account_id === row.id) link.account_owner_entity = clean.ownership_type;
+          return { ...row } as unknown as CouncilAccount;
         }
-        return { ...s.insert('AccountOwners', { council_id: councilId, ...clean }) } as unknown as AccountOwner;
+        return {
+          ...s.insert('GLAccount', { CouncilID: councilId, AccountType: COUNCIL_ACCOUNT_TYPE, ParentAccountID: null, IsVirtualGoal: 0, TargetGoalAmount: 0, is_split_account: 0, due_to_council_id: null, ...clean }),
+        } as unknown as CouncilAccount;
       });
     },
-    removeAccountOwner: async (actorId, councilId, id) => {
+    removeCouncilAccount: async (actorId, councilId, id) => {
       const s = await this.ready();
-      assertMayManageAccountOwners(this.memberWriteActor(s, actorId), councilId);
-      // Sprint 11 Revision 1.0: deletes never cascade - an account a payment method still pays into stays.
-      if (s.rows('CouncilDonationMethod').some((r) => r.account_owner_id === id)) {
-        throw new BusinessRuleError('RECORD_IN_USE', `Account ${id} is still linked to a payment method. Pick another account on Council Lookups first.`, { id });
-      }
-      if (s.remove('AccountOwners', (r) => r.id === id && r.council_id === councilId) === 0) {
-        throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account owner ${id}.`, { id });
-      }
+      return s.transaction(() => {
+        assertMayManageCouncilAccounts(this.memberWriteActor(s, actorId), councilId);
+        const row = s.rows('GLAccount').find((r) => r.id === id && r.CouncilID === councilId);
+        if (!row || !isCouncilAccount(row as unknown as GLAccount)) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${id}.`, { id });
+        // Deletes never cascade: an account anything still points at stays.
+        for (const ref of GL_ACCOUNT_REFERENCES) {
+          if (s.rows(ref.table).some((r) => r[ref.column] === id)) throw accountInUseError(row as unknown as GLAccount, ref.noun);
+        }
+        s.remove('GLAccount', (r) => r.id === id);
+      });
     },
     setFileRepositorySettings: async (actorId, councilId, settings) => {
       const clean = cleanFileRepositorySettings(settings);
@@ -6649,6 +6655,8 @@ export class MemoryDataService implements DataService {
       return s.transaction(() => {
         assertMayCodeExpenseLedger(this.memberWriteActor(s, actorId), councilId, `change the split accounts of council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
+        // Sprint 11 Revision 2.1: a share naming an affiliated council goes to this council's clearing account for it.
+        input = { ...input, destinations: this.resolveSisterCouncilShares(s, councilId, input?.destinations) as GLSplitDestination[] };
         const destinations = cleanGLSplitProfile(councilId, accountId, input, this.glAccounts(s, councilId), this.glSplitAllocations(s, councilId));
         s.remove('GLAccountSplitAllocation', (r) => r.source_gl_account_id === accountId);
         for (const d of destinations) {
@@ -6658,6 +6666,25 @@ export class MemoryDataService implements DataService {
         account.is_split_account = destinations.length > 0 ? 1 : 0;
         return this.glSplitProfiles(s, councilId);
       });
+    },
+
+    listSplitSisterCouncils: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayReadGeneralLedger(this.memberWriteActor(s, actorId), councilId, `read the sister councils of council ${councilId}`);
+      this.assertCouncilsExist(s, [councilId]);
+      const partners = activeAffiliatePartners(s.rows('CouncilAffiliations') as unknown as CouncilAffiliations[], councilId);
+      const clearing = this.glAccounts(s, councilId).filter(isSisterCouncilClearingAccount);
+      return s
+        .rows('Council')
+        .filter((c) => partners.has(c.id as number))
+        .map(
+          (c): SplitSisterCouncil => ({
+            councilId: c.id as number,
+            label: `Council ${c.CouncilNumber as number}${c.CouncilName ? ` - ${c.CouncilName as string}` : ''}`,
+            clearingAccountId: clearing.find((a) => a.due_to_council_id === c.id)?.id ?? null,
+          }),
+        )
+        .sort((a, b) => a.label.localeCompare(b.label));
     },
 
     getCashAuditBoard: async (actorId, councilId) => {
@@ -6882,9 +6909,54 @@ export class MemoryDataService implements DataService {
     });
   }
 
-  /** Sprint 8O Extension: the account owner of a council's payment method at this moment (COUNCIL when not enabled). */
+  /**
+   * Sprint 8O Extension: the account owner of a council's payment method at this moment (COUNCIL when not enabled).
+   * Sprint 11 Revision 2.1: read from the linked account's ownership_type in the unified accounts ledger when it has one.
+   */
   private methodOwnerNow(s: MemoryStore, councilId: number, methodId: number): AccountOwnerEntity {
-    return accountOwnerEntityOf(s.rows('CouncilDonationMethod').find((l) => l.CouncilID === councilId && l.DonationMethodID === methodId) as never);
+    const link = s.rows('CouncilDonationMethod').find((l) => l.CouncilID === councilId && l.DonationMethodID === methodId);
+    const account = link?.account_id == null ? null : s.rows('GLAccount').find((a) => a.id === link.account_id && a.CouncilID === councilId);
+    return paymentMethodOwner(link as never, (account ?? null) as unknown as GLAccount | null);
+  }
+
+  /** Sprint 11 Revision 2.1: the council's money accounts (the Account Owners Matrix), by ledger name. */
+  private councilAccounts(s: MemoryStore, councilId: number): CouncilAccount[] {
+    return this.glAccounts(s, councilId)
+      .filter(isCouncilAccount)
+      .map((a) => ({ ...a, ownership_type: a.ownership_type ?? 'COUNCIL' }))
+      .sort((a, b) => a.AccountName.localeCompare(b.AccountName) || a.id - b.id);
+  }
+
+  /**
+   * Sprint 11 Revision 2.1: swaps each share naming { affiliatedCouncilId } for this council's 'Due to Sister Council'
+   * clearing account for that council, adding the Liability account on first use. Refuses a council that is not an
+   * ACTIVE affiliate. Writes only to this council's chart - never to the sister council.
+   */
+  private resolveSisterCouncilShares(s: MemoryStore, councilId: number, destinations: unknown): unknown {
+    if (!Array.isArray(destinations)) return destinations;
+    const partners = activeAffiliatePartners(s.rows('CouncilAffiliations') as unknown as CouncilAffiliations[], councilId);
+    return destinations.map((d: GLSplitDestination | null) => {
+      if (d == null || d.affiliatedCouncilId == null) return d;
+      const sisterId = assertActiveSisterCouncil(partners, councilId, d.affiliatedCouncilId);
+      let account = s.rows('GLAccount').find((a) => a.CouncilID === councilId && a.AccountType === 'Liability' && a.due_to_council_id === sisterId);
+      if (!account) {
+        const sister = s.rows('Council').find((c) => c.id === sisterId)!;
+        const name = dueToSisterCouncilName(sister as unknown as { CouncilNumber: number });
+        assertAccountNameFree(this.glAccounts(s, councilId), name, null);
+        account = s.insert('GLAccount', {
+          CouncilID: councilId,
+          AccountName: name,
+          AccountType: 'Liability',
+          ParentAccountID: null,
+          IsVirtualGoal: 0,
+          TargetGoalAmount: 0,
+          is_split_account: 0,
+          ownership_type: 'COUNCIL',
+          due_to_council_id: sisterId,
+        });
+      }
+      return { destinationAccountId: account.id as number, percentage: d.percentage };
+    });
   }
 
   /** Sprint 8N: the council's donations as the batch coder sees them. */

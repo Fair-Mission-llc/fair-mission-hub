@@ -3,22 +3,33 @@
 // Remove, and the running total that must reach 100%. Used by the Treasurer's split profile editor
 // (ChartOfAccountsSetup) and the batch coder's one-time Event Split Override (CashAuditParts). A row left with no
 // account and no share is ignored on save (splitRowsToDestinations).
-import { GL_SPLIT_MAX_DESTINATIONS, type GLAccount, type GLSplitDestination, type GLSplitProfile } from '@kofc/shared';
+// Sprint 11 Revision 2.1: the profile editor also offers the council's ACTIVE affiliates ('sisters'). A row naming one
+// is sent as { affiliatedCouncilId }; the driver posts that share to the council's own 'Due to Sister Council' clearing
+// account, so nothing is written to the other council.
+import { GL_SPLIT_MAX_DESTINATIONS, type GLAccount, type GLSplitDestination, type GLSplitProfile, type SplitSisterCouncil } from '@kofc/shared';
 import { Button, Field, Input, Select } from '@/components/ui';
 
 export interface SplitRow {
   key: number;
   accountId: number | null;
+  /** Sprint 11 Revision 2.1: an affiliated council in place of an account. */
+  sisterCouncilId?: number | null;
   percentage: string;
 }
 
 /** The sum of the typed shares, to the cent of a percent; NaN while a share is not a number. */
 export const splitRowsTotal = (rows: readonly SplitRow[]) => rows.reduce((sum, r) => sum + Math.round(Number(r.percentage || 0) * 100), 0) / 100;
 
-/** The rows a profile starts from: its destinations, or two empty rows. */
-export function splitRowsOf(profile: Pick<GLSplitProfile, 'destinations'> | undefined): SplitRow[] {
+/** The rows a profile starts from: its destinations (a sister council's clearing account shows as that council), or two empty rows. */
+export function splitRowsOf(profile: Pick<GLSplitProfile, 'destinations'> | undefined, sisters: readonly SplitSisterCouncil[] = []): SplitRow[] {
+  const sisterOf = new Map(sisters.filter((c) => c.clearingAccountId !== null).map((c) => [c.clearingAccountId, c.councilId]));
   return profile && profile.destinations.length > 0
-    ? profile.destinations.map((d, i) => ({ key: i, accountId: d.destinationAccountId, percentage: String(d.percentage) }))
+    ? profile.destinations.map((d, i) => {
+        const sister = sisterOf.get(d.destinationAccountId);
+        return sister === undefined
+          ? { key: i, accountId: d.destinationAccountId, percentage: String(d.percentage) }
+          : { key: i, accountId: null, sisterCouncilId: sister, percentage: String(d.percentage) };
+      })
     : [
         { key: 0, accountId: null, percentage: '' },
         { key: 1, accountId: null, percentage: '' },
@@ -28,13 +39,21 @@ export function splitRowsOf(profile: Pick<GLSplitProfile, 'destinations'> | unde
 /** The rows as the server takes them; completely blank rows are dropped (an empty result ends a split). */
 export const splitRowsToDestinations = (rows: readonly SplitRow[]): GLSplitDestination[] =>
   rows
-    .filter((r) => r.accountId !== null || r.percentage.trim() !== '')
-    .map((r) => ({ destinationAccountId: r.accountId ?? 0, percentage: Number(r.percentage) }));
+    .filter((r) => r.accountId !== null || r.sisterCouncilId != null || r.percentage.trim() !== '')
+    .map((r) =>
+      r.sisterCouncilId != null
+        ? { destinationAccountId: 0, affiliatedCouncilId: r.sisterCouncilId, percentage: Number(r.percentage) }
+        : { destinationAccountId: r.accountId ?? 0, percentage: Number(r.percentage) },
+    );
+
+/** The picker's value for a row: 'a<id>' for an account, 's<id>' for a sister council, '' for none. */
+const rowValue = (r: SplitRow) => (r.sisterCouncilId != null ? `s${r.sisterCouncilId}` : r.accountId !== null ? `a${r.accountId}` : '');
 
 export function SplitShareRows({
   rows,
   onChange,
   choices,
+  sisters = [],
   disabled,
   label = 'Destination',
 }: {
@@ -42,6 +61,8 @@ export function SplitShareRows({
   onChange: (rows: SplitRow[]) => void;
   /** The Revenue accounts a row may name. */
   choices: GLAccount[];
+  /** Sprint 11 Revision 2.1: the council's ACTIVE affiliates a row may name (the profile editor only). */
+  sisters?: readonly SplitSisterCouncil[];
   disabled?: boolean;
   label?: string;
 }) {
@@ -53,13 +74,32 @@ export function SplitShareRows({
         <div key={r.key} className="flex flex-wrap items-end gap-3">
           <Field label={`${label} ${i + 1}`} className="min-w-56 flex-1">
             {(id) => (
-              <Select id={id} value={r.accountId ?? ''} onChange={(e) => change(r.key, { accountId: e.target.value === '' ? null : Number(e.target.value) })} disabled={disabled}>
-                <option value="">Choose a revenue account</option>
-                {choices.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.AccountName}
-                  </option>
-                ))}
+              <Select
+                id={id}
+                value={rowValue(r)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  change(r.key, v.startsWith('s') ? { accountId: null, sisterCouncilId: Number(v.slice(1)) } : { accountId: v === '' ? null : Number(v.slice(1)), sisterCouncilId: null });
+                }}
+                disabled={disabled}
+              >
+                <option value="">{sisters.length > 0 ? 'Choose an account or a sister council' : 'Choose a revenue account'}</option>
+                <optgroup label="This council's revenue accounts">
+                  {choices.map((a) => (
+                    <option key={a.id} value={`a${a.id}`}>
+                      {a.AccountName}
+                    </option>
+                  ))}
+                </optgroup>
+                {sisters.length > 0 ? (
+                  <optgroup label="Affiliated councils (Due to Sister Council)">
+                    {sisters.map((c) => (
+                      <option key={c.councilId} value={`s${c.councilId}`}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : null}
               </Select>
             )}
           </Field>

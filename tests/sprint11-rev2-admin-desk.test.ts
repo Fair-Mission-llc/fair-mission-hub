@@ -228,12 +228,12 @@ describe.each(drivers)('$name driver: Sprint 11 Revision 2.0', (d) => {
   it("fills a blank 'Account Name Members See' from the picked account", async () => {
     const db = await d.make();
     const councilId = (await db.members.get(MEMBER.admin))!.CouncilID;
-    const owner = await db.councils.saveAccountOwner(MEMBER.admin, councilId, { account_name: 'Parish Giving Portal' });
+    const owner = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Parish Giving Portal', ownership_type: 'PARISH' });
     const row = (await db.lookups.listCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod'))[0]!;
     const saved = await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [
-      { id: row.id, DonationMethodID: row.DonationMethodID, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: '', account_owner_id: owner.id, lookup_status: 'Active' },
+      { id: row.id, DonationMethodID: row.DonationMethodID, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: '', account_id: owner.id, lookup_status: 'Active' },
     ]);
-    expect(saved.find((r) => r.id === row.id)).toMatchObject({ account_identity_label: 'Parish Giving Portal', account_owner_id: owner.id });
+    expect(saved.find((r) => r.id === row.id)).toMatchObject({ account_identity_label: 'Parish Giving Portal', account_id: owner.id });
   });
 
   it('refuses the built-in lists to a plain member and sends them for an officer', async () => {

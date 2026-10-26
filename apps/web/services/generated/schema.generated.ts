@@ -3027,7 +3027,7 @@ export const TABLES: Record<string, TableMeta> = {
         ]
       },
       {
-        "name": "account_owner_id",
+        "name": "account_id",
         "kind": "int",
         "notNull": false,
         "identity": false,
@@ -3046,8 +3046,8 @@ export const TABLES: Record<string, TableMeta> = {
         "refColumn": "id"
       },
       {
-        "column": "account_owner_id",
-        "refTable": "AccountOwners",
+        "column": "account_id",
+        "refTable": "GLAccount",
         "refColumn": "id"
       }
     ],
@@ -5200,6 +5200,62 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 0
         }
+      },
+      {
+        "name": "account_display_name",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "contact_name",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "contact_number",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "contact_email",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "ein_number",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "ownership_type",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "COUNCIL"
+        },
+        "allowed": [
+          "COUNCIL",
+          "PARISH"
+        ]
+      },
+      {
+        "name": "due_to_council_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -5211,6 +5267,11 @@ export const TABLES: Record<string, TableMeta> = {
       {
         "column": "ParentAccountID",
         "refTable": "GLAccount",
+        "refColumn": "id"
+      },
+      {
+        "column": "due_to_council_id",
+        "refTable": "Council",
         "refColumn": "id"
       }
     ],
@@ -8161,75 +8222,6 @@ export const TABLES: Record<string, TableMeta> = {
       [
         "source_gl_account_id",
         "destination_gl_account_id"
-      ]
-    ]
-  },
-  "AccountOwners": {
-    "primaryKey": [
-      "id"
-    ],
-    "columns": [
-      {
-        "name": "id",
-        "kind": "int",
-        "notNull": true,
-        "identity": true,
-        "default": null
-      },
-      {
-        "name": "council_id",
-        "kind": "int",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "account_name",
-        "kind": "text",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "contact_name",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "contact_number",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "contact_email",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "ein_number",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      }
-    ],
-    "foreignKeys": [
-      {
-        "column": "council_id",
-        "refTable": "Council",
-        "refColumn": "id"
-      }
-    ],
-    "uniqueKeys": [
-      [
-        "council_id",
-        "account_name"
       ]
     ]
   },

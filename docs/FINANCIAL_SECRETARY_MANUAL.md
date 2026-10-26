@@ -1064,7 +1064,7 @@ Some fundraisers use parish property, for example the cathedral parking lot. The
 | Split profile | **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
 | Event Split Override | **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **⚖️ Override Event Split** | One posting of one event's gifts is shared out by the shares you choose. Nothing is saved to the account. |
 
-The destinations of a split are other Revenue accounts of the council. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.
+The destinations of a split are other Revenue accounts of the council. Since schema 103, a destination can also be an affiliated council. That council's share goes to a **Due to Sister Council** account in this council's own books. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.
 
 ### 9.2 Share fundraiser revenue with a split profile
 > **Who can do this:** the council's Treasurer and Super Admins.
@@ -1107,6 +1107,29 @@ The destinations of a split are other Revenue accounts of the council. The share
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | **⚖️ Override Event Split** is unavailable. | The ticked gifts belong to more than one event, or no Revenue line is chosen. | Tick one event's gifts and choose the line. |
+
+### 9.4 Send a share to an affiliated council
+> **Who can do this:** the council's Treasurer and Super Admins.
+> **Warning:** After you save, every new posting to the account sends this share. Postings already made do not change.
+
+**Goal:** Send a part of each posting to an affiliated council, for example for a joint fundraiser.
+
+**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on the Revenue account.
+
+**Steps:**
+1. Select **Edit split** on the Revenue account that receives the money.
+2. In a **Destination** list, choose the council under **Affiliated councils (Due to Sister Council)**.
+3. Type its **Share (%)**, for example `40`.
+4. Make the percentages total exactly 100.
+5. Save the split.
+
+**Expected result:** The chart shows a new Liability account named **Due to Sister Council - Council** and the council number. This account has the **Sister council clearing** tag. Each posting puts the council's share in this account. Pay the affiliated council from this account. The portal writes nothing to the other council's books.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The council is not in the list. | Only councils with an active affiliation show. | Ask the Grand Knight to complete the affiliation first. |
+| *"… is not an active affiliate …"* | The affiliation ended or is still pending. | Choose another destination, or finish the affiliation. |
 
 ---
 

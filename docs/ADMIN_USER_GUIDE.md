@@ -261,7 +261,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 1. Open the tab: **Activities**, **Donation types**, **Enabled donation methods** or **Meeting Agenda Templates**.
 2. Edit the rows. Each changed row shows **Edited** under its ID.
 3. In **Status**, select **Active** or **Inactive**. An **Inactive** row stays for the old records, but members cannot pick it for new hours or new donations.
-4. On **Enabled donation methods**, select the **Account**. **Council Account** is the default. The other choices are the rows of the **Account Owners Matrix** (8.10).
+4. On **Enabled donation methods**, select the **Account**. **Council Account** is the default. The other choices are the rows of the **Account Owners Matrix** (8.10). A Parish account shows **(Parish)**. Its gifts are the parish's and stay off the Treasurer's batch coder.
 5. For a QR method, select the **QR code** check box. Select **Upload** and choose the image. A small preview shows the code. The check box is disabled for **Cash**, **Check**, **Credit Card** and **Physical Items**.
 6. Select **Save changes**.
 
@@ -675,23 +675,28 @@ The card shows only the settings of the provider you choose:
 ### 8.10 Keep the Account Owners Matrix
 > **Who can do this:** council Admins and Super Admins.
 
-**Goal:** Record each electronic account the council keeps, and who to call about it.
+**Goal:** Record each money account the council uses, who owns it, and who to call about it.
 
 **Start point:** Sidebar → System Settings → **Council Wide Settings** → **Standard Bank Accounts** drawer → **Account Owners Matrix**.
 
+The matrix shows the council's money (Asset) accounts from the chart of accounts. There is no separate list. A row you add here is a new account in the Treasurer's chart.
+
 **Steps:**
 1. Select **Add account**.
-2. Type the **Account name**, for example `Venmo`.
-3. Type the **Contact name**, **Contact number** and **Contact email**.
-4. Type the account holder's **EIN**, for example `12-3456789`.
-5. Select **Save**. To change a row, select **Edit**. To remove it, select **Delete**.
+2. Type the **Ledger account** name, for example `Venmo`.
+3. Type the **Name members see**, for example `St. Mary's Knights Venmo`.
+4. In **Owned by**, choose **Council** or **Parish**.
+5. Type the **Contact name**, **Contact number** and **Contact email**.
+6. Type the account holder's **EIN**, for example `12-3456789`.
+7. Select **Save**. To change a row, select **Edit**. To remove it, select **Delete**.
 
-**Expected result:** The row shows in the matrix. Each council sees only its own rows.
+**Expected result:** The row shows in the matrix with a **Council** or **Parish** tag. Each council sees only its own rows. A payment method linked to a **Parish** account becomes parish-owned. Gifts paid by that method stay off the Treasurer's batch coder.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| *"The council already has an account named …"* | Each account name is used once in a council. | Edit the existing row. |
+| *"The council's chart already has an account named …"* | Each ledger name is used once in a council's chart. | Edit the existing row, or choose another name. |
+| *"… is still used by a …"* | A payment method, a journal entry or a split still uses the account. | Pick another account on that payment method first. An account with postings stays. |
 | *"… is not an email address."* | The contact email is not in name@domain form. | Correct the email. |
 
 ### 8.11 Print a council's custom guides
