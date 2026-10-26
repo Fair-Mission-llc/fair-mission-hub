@@ -13,9 +13,12 @@
 // form or Set the ballot link. Members nominate in the Council Election Center (/elections).
 // Sprint 11 Revision 1.0: /elections is the Council Election Center (CouncilElectionCenter): a pinned election progress
 // bar, then closed drawers for the positions table, the nominations and the PIN-unlocked Cast Active Ballot drawer.
+// Sprint 11 Revision 2.0: the Officer Election Parameters grid moved here from Council Lookups, as a fourth drawer for those
+// who may set the ballot (canConfigureBallot).
 import { useMemo, useState } from 'react';
 import {
   buildElectionWorkflow,
+  canConfigureBallot,
   describeError,
   formatTimestamp,
   GRAND_KNIGHT_ROLE,
@@ -249,6 +252,83 @@ function NominationsBody({ councilId, data, onReload, readOnly = false }: { coun
   );
 }
 
+/**
+ * Officer Election Parameters (Sprint 5U; moved here from Council Lookups in Sprint 11 Revision 2.0): the council's Admins
+ * and Super Admins tick which elected offices are open for nomination this season (elections.toggleRoleBallotStatus, saved
+ * per click). Appointed offices and the trustee ladder are never on a ballot, so only elected seats are listed.
+ */
+function ElectionParameters({ councilId }: { councilId: number }) {
+  const user = useUser();
+  const seats = useLoad(async () => (await db.elections.listOfficerSeats(councilId)).filter((s) => s.kind === 'elected'), [councilId]);
+  const [busyRoleId, setBusyRoleId] = useState<number | null>(null);
+  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+
+  const toggle = async (roleId: number, roleName: string, isOpen: boolean) => {
+    setBusyRoleId(roleId);
+    setMessage(null);
+    try {
+      await db.elections.toggleRoleBallotStatus(user.memberId, councilId, roleId, isOpen);
+      setMessage({ tone: 'info', text: `${roleName} is ${isOpen ? 'now open for nomination' : 'off the ballot'} this season.` });
+      await seats.reload();
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setBusyRoleId(null);
+    }
+  };
+
+  if (seats.error) return <Notice tone="error">{seats.error}</Notice>;
+  if (!seats.data) return <p className="text-sm text-muted">Loading…</p>;
+  const openCount = seats.data.filter((s) => s.ballot?.IsUpForElection === 1).length;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {message ? (
+        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+          {message.text}
+        </Notice>
+      ) : null}
+      <p className="text-xs text-muted">
+        Tick each elected office open for nomination this season ({openCount} of {seats.data.length} open). Leave the Grand Knight unticked in the
+        second year of a two-year term: the Grand Knight and trustees then keep their chairs when the year concludes. Each change saves at once.
+      </p>
+      <Table caption="Elected offices and their ballot status" head={['Office', 'Sitting officer', 'Status', 'Open for nomination']}>
+        {seats.data.map((seat) => {
+          const open = seat.ballot?.IsUpForElection === 1;
+          const midYear = seat.ballot?.IsMidYearElection === 1;
+          return (
+            <tr key={seat.roleId} className={cx(open && 'outline outline-2 -outline-offset-2 outline-gold')}>
+              <Td className="font-bold">{seat.roleName}</Td>
+              <Td>{seat.holder ? `${seat.holder.firstName} ${seat.holder.lastName}` : <span className="text-muted">Vacant</span>}</Td>
+              <Td>
+                {midYear ? (
+                  <Pill tone="red">Mid-year · closes {formatTimestamp(seat.ballot?.NominationsCloseAt)}</Pill>
+                ) : open ? (
+                  <Pill tone="navy">On ballot</Pill>
+                ) : (
+                  <Pill tone="outline">Not on ballot</Pill>
+                )}
+              </Td>
+              <Td>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={open}
+                    disabled={busyRoleId !== null}
+                    onChange={(e) => void toggle(seat.roleId, seat.roleName, e.target.checked)}
+                  />
+                  <span className="sr-only">Open {seat.roleName} for nomination</span>
+                  <span aria-hidden="true">{busyRoleId === seat.roleId ? 'Saving…' : open ? 'Open' : 'Closed'}</span>
+                </label>
+              </Td>
+            </tr>
+          );
+        })}
+      </Table>
+    </div>
+  );
+}
+
 /** The Election Center's title (Sprint 11 Revision 1.0). */
 export const COUNCIL_ELECTION_CENTER_TITLE = 'Council Election Center';
 
@@ -257,10 +337,11 @@ export const ELECTION_CENTER_DRAWERS = [
   { id: 'positions', label: '📋 Election Positions', hint: 'Each elected office, its sitting officer and whether it is on the ballot.' },
   { id: 'nominations', label: '✍️ Candidate Nominations', hint: 'Nominate a brother Knight while a window is open, and see who is nominated.' },
   { id: 'ballot', label: CAST_ACTIVE_BALLOT_TITLE, hint: 'At a live meeting: unlock with the meeting PIN and cast a secret ballot.' },
+  { id: 'parameters', label: '⚙️ Officer Election Parameters', hint: 'Choose which elected offices are open for nomination this season.' },
 ] as const;
 type ElectionCenterDrawerId = (typeof ELECTION_CENTER_DRAWERS)[number]['id'];
 
-/** The Election Positions table: the elected seats, read only (the ballot is set on Council Lookups). */
+/** The Election Positions table: the elected seats, read only (the ballot is set in the Officer Election Parameters drawer). */
 function ElectionPositions({ data }: { data: ElectionData }) {
   return (
     <Table caption="Elected offices and their ballot status" head={['Office', 'Sitting officer', 'Ballot', 'Nominees']}>
@@ -288,14 +369,17 @@ function ElectionPositions({ data }: { data: ElectionData }) {
  * drawer that lands closed.
  */
 export function CouncilElectionCenter() {
+  const user = useUser();
   const scope = useCouncilScope();
   const councilId = scope.councilId;
   const data = useElectionData(councilId);
   const today = useMemo(() => new Date(), []);
-  const [open, setOpen] = useState<Record<ElectionCenterDrawerId, boolean>>({ positions: false, nominations: false, ballot: false });
+  const [open, setOpen] = useState<Record<ElectionCenterDrawerId, boolean>>({ positions: false, nominations: false, ballot: false, parameters: false });
+  const drawers = ELECTION_CENTER_DRAWERS.filter((d) => d.id !== 'parameters' || canConfigureBallot(user, councilId));
   const flow = data.data ? buildElectionWorkflow({ today, electedSeats: data.data.seats.length, ballot: data.data.ballot }) : null;
   const body = (id: ElectionCenterDrawerId) => {
     if (id === 'ballot') return <CastActiveBallot councilId={councilId} active={open.ballot} />;
+    if (id === 'parameters') return open.parameters ? <ElectionParameters key={councilId} councilId={councilId} /> : null;
     if (!data.data) return <p className="text-sm text-muted">Loading the ballot…</p>;
     return id === 'positions' ? <ElectionPositions data={data.data} /> : <NominationsBody councilId={councilId} data={data.data} onReload={data.reload} />;
   };
@@ -314,7 +398,7 @@ export function CouncilElectionCenter() {
         )}
       </section>
       <div className="flex flex-col gap-3">
-        {ELECTION_CENTER_DRAWERS.map((drawer) => (
+        {drawers.map((drawer) => (
           <details
             key={drawer.id}
             id={`election-drawer-${drawer.id}`}

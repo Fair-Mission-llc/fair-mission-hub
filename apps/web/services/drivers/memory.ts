@@ -188,6 +188,8 @@ import {
   PARISH_COLUMNS,
   participantIds,
   distributionGroupMemberIds,
+  assertMayBroadcastToDistributionGroups,
+  defaultAccountIdentityLabel,
   PASTOR_COLUMNS,
   planEventCopy,
   RECORD_REFERENCES,
@@ -1445,6 +1447,11 @@ export class MemoryDataService implements DataService {
             if (value !== null && value !== undefined && !s.rows(key.table).some((r) => r.id === value && r[key.councilColumn] === councilId)) {
               throw new BusinessRuleError('INVALID_INPUT', `Council ${councilId} has no ${key.label} ${String(value)}.`, { field: key.column, value, councilId });
             }
+          }
+          // Sprint 11 Revision 2.0: a blank 'Account Name Members See' takes the picked account's name.
+          if ('account_identity_label' in values && values.account_owner_id != null) {
+            const account = s.rows('AccountOwners').find((r) => r.id === values.account_owner_id);
+            values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, account?.account_name as string | undefined);
           }
         }
         for (const { id, values } of plan.updates) Object.assign(s.rows(table).find((r) => r.id === id)!, values);
@@ -7406,6 +7413,8 @@ export class MemoryDataService implements DataService {
           assertThreadParticipant(rows, input.threadId, input.senderId);
           recipients = participantIds(input.threadId, rows.messages, rows.receipts).filter((id) => id !== input.senderId);
         } else {
+          // Sprint 11 Revision 2.0: the built-in lists are for officers, Admins and Super Admins.
+          assertMayBroadcastToDistributionGroups(this.memberWriteActor(s, input.senderId), input.distributionGroups);
           const grouped = this.distributionRecipients(s, input.councilId, input.distributionGroups);
           recipients = [...new Set([...(input.recipientIds ?? []), ...grouped])].filter((id) => id !== input.senderId);
           if (input.councilId !== undefined && recipients.length === 0 && input.distributionGroups?.length) {

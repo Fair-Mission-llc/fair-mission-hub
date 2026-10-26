@@ -112,6 +112,7 @@ describe('portal permissions', () => {
       'system-settings/impersonate',
       'system-settings/view-as-member',
       'system-settings/feedback',
+      'admin-desk',
       'council-lookups',
       'elections/appointments',
       'parishes',
@@ -172,6 +173,7 @@ describe('portal permissions', () => {
       'gallery',
       'system-settings/view-as-member',
       'system-settings/feedback',
+      'admin-desk',
       'council-lookups',
       'parishes',
       'activities',
@@ -322,7 +324,7 @@ describe('portal permissions', () => {
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
-        ['System Settings', ['system-settings/view-as-member', 'system-settings/feedback', 'system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault', 'expenses/assets', 'charities/registry', 'parishes']],
+        ['System Settings', ['admin-desk', 'system-settings/view-as-member', 'system-settings/feedback', 'system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault', 'expenses/assets', 'charities/registry', 'parishes']],
       ]);
     });
 

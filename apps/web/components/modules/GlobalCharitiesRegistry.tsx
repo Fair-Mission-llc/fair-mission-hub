@@ -7,6 +7,10 @@
 // (charities.addGlobalCharity), filed under one of the six core types; a duplicate is refused naming the entry.
 // Sprint 10 Revision 1.0 (schema 100): the search table's Verified column marks or clears each entry's verification
 // (charities.setCharityVerified). Only verified charities appear in the Propose Charity Grant form's auto-fill dropdowns.
+// Sprint 11 Revision 2.0: the state-scoped reads wait for the council list, so the first read already uses the council's
+// own state (Oregon for St. Mary's) instead of a stand-in. A 'Verified charities' panel leads the page with the
+// verified entries of that state (searchGlobalRegistry, verified: true), filled as soon as the council is known.
+// Description, mailing address and ZIP code are optional in the add form.
 import { useState } from 'react';
 import {
   CHARITY_TYPES,
@@ -41,8 +45,17 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
   const [chosenState, setChosenState] = useState<string | null>(null);
   const state = chosenState ?? councilState;
   const mayConnect = canConnectCouncilCharity(user, councilId);
+  // The council list arrives after the first render; until it does, the council's state is not known yet.
+  const councilKnown = council !== undefined;
 
-  const suggestions = useLoad(() => db.charities.listSuggestedLocal(user.memberId, councilId, state), [user.memberId, councilId, state]);
+  const suggestions = useLoad(
+    () => (councilKnown ? db.charities.listSuggestedLocal(user.memberId, councilId, state) : Promise.resolve(null)),
+    [user.memberId, councilId, state, councilKnown],
+  );
+  const verifiedHere = useLoad(
+    () => (councilKnown ? db.charities.searchGlobalRegistry(user.memberId, { state, verified: true }) : Promise.resolve(null)),
+    [user.memberId, state, councilKnown],
+  );
   const ledger = useLoad(() => (mayConnect ? db.charities.listCouncilLedger(user.memberId, councilId) : Promise.resolve([])), [user.memberId, councilId, mayConnect]);
   const linked = new Set((ledger.data ?? []).map((e) => e.charity.id));
 
@@ -56,7 +69,7 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
   const [message, setMessage] = useState<Message | null>(null);
 
   const reloadAll = async () => {
-    await Promise.all([suggestions.reload(), ledger.reload(), results.reload()]);
+    await Promise.all([suggestions.reload(), ledger.reload(), results.reload(), verifiedHere.reload()]);
   };
 
   const connect = async (charity: GlobalCharityRegistry) => {
@@ -80,7 +93,7 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
       setFilters({ name: saved.Name });
       setSearchText(saved.Name);
       setSearchType('');
-      await suggestions.reload();
+      await Promise.all([suggestions.reload(), verifiedHere.reload()]);
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     } finally {
@@ -99,7 +112,7 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
           ? `${charity.Name} is verified. Members can now pick it on the Propose Charity Grant form.`
           : `${charity.Name} is no longer verified. It leaves the Propose Charity Grant dropdowns.`,
       });
-      await results.reload();
+      await Promise.all([results.reload(), verifiedHere.reload()]);
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     }
@@ -125,6 +138,7 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
 
   const rows = results.data ?? [];
   const suggested = suggestions.data ?? [];
+  const verified = verifiedHere.data ?? [];
 
   return (
     <>
@@ -136,6 +150,23 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
           </Notice>
         ) : null}
 
+        <Panel title={`Verified charities in ${state} (${verified.length})`}>
+          {verifiedHere.error ? <Notice tone="error">{verifiedHere.error}</Notice> : null}
+          {!verifiedHere.data && !verifiedHere.error ? <p className="text-sm text-muted">Loading the verified charities…</p> : null}
+          {verifiedHere.data && verified.length === 0 ? <Empty>No charity in {state} is verified yet. Verify one in the search table below.</Empty> : null}
+          {verified.length > 0 ? (
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-3" aria-label={`Verified charities in ${state}`}>
+              {verified.map((c) => (
+                <li key={c.id} className="flex items-start justify-between gap-3 rounded border border-line border-l-4 border-l-navy bg-white p-3">
+                  <CharitySummary charity={c} />
+                  {connectCell(c)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <p className="mt-2 text-xs text-muted">Members pick these charities on the Propose Charity Grant form.</p>
+        </Panel>
+
         <Panel
           title={`Suggested local charities (${suggested.length})`}
           actions={
@@ -145,6 +176,7 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
           }
         >
           {suggestions.error ? <Notice tone="error">{suggestions.error}</Notice> : null}
+          {!suggestions.data && !suggestions.error ? <p className="text-sm text-muted">Loading the suggestions…</p> : null}
           {suggestions.data && suggested.length === 0 ? (
             <Empty>No registry charity in {state} is waiting to be connected. Search the registry below, or add a new charity.</Empty>
           ) : (

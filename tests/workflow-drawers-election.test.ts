@@ -48,7 +48,7 @@ const ballotSeat = (roleId: number, roleName: string, over: { up?: 0 | 1; midYea
   }) as unknown as BallotSeat;
 
 describe('1. Council Wide Settings: two accordions, no text spill', () => {
-  const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+  const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
   const parts = read('apps/web/components/FeatureDeploymentParts.tsx');
 
   it('keeps exactly the five drawer panels (Sprint 10 Revision 3.0; four cabinet tabs in 8S Revision 10.1)', () => {

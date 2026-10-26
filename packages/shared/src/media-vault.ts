@@ -294,10 +294,25 @@ export const COUNCIL_PHOTO_GALLERY_TITLE = '📸 Council Photo Gallery';
 /** The gallery's two views: looking at photos and albums, or adding photos and saving albums. */
 export type GalleryViewId = 'browse' | 'manage';
 
+// Sprint 11 Revision 2.0: 'Browse Albums' is '📸 Browse Gallery' (tabs: Event/Meeting, Year, Album Picker) and the
+// 'Gallery Management Center' is the 'Gallery Administration Hub'.
 export const GALLERY_VIEWS: readonly { id: GalleryViewId; label: string; hint: string }[] = [
-  { id: 'browse', label: 'Browse Albums', hint: 'Look through the council photos, open a Smart Album and play a slideshow' },
-  { id: 'manage', label: 'Gallery Management Center', hint: 'Upload photos and save filters as Smart Albums' },
+  { id: 'browse', label: '📸 Browse Gallery', hint: 'Look through the council photos by event or meeting, by year, or by album, and play a slideshow' },
+  { id: 'manage', label: 'Gallery Administration Hub', hint: 'Upload photos, pick selections and save them as an album' },
 ];
 
-/** The view a /gallery URL anchor opens ('#manage' or '#browse'); anything else opens Browse Albums. */
+/** The Browse Gallery tabs (Sprint 11 Revision 2.0): photos grouped by event or meeting, by year, or the album picker. */
+export type GalleryBrowseTab = 'source' | 'year' | 'albums';
+export const GALLERY_BROWSE_TABS: readonly { id: GalleryBrowseTab; label: string }[] = [
+  { id: 'source', label: 'Event/Meeting' },
+  { id: 'year', label: 'Year' },
+  { id: 'albums', label: 'Album Picker' },
+];
+
+/** The Gallery Administration Hub's selection grid heading and album form texts. */
+export const GALLERY_SELECTION_TITLE = 'Pick Selections for Album';
+export const GALLERY_SAVE_ALBUM_TITLE = 'Save as Album';
+export const GALLERY_SAVE_ALBUM_PLACEHOLDER = 'Saves selections you picked...';
+
+/** The view a /gallery URL anchor opens ('#manage' or '#browse'); anything else opens Browse Gallery. */
 export const galleryViewFromAnchor = (hash: string): GalleryViewId => (hash.replace(/^#/, '') === 'manage' ? 'manage' : 'browse');

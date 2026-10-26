@@ -14,8 +14,9 @@ export type LegalNoticeId = 'about' | 'terms' | 'privacy';
  * draws them with the markdown renderer; the paragraphs below stay as the fallback when the file cannot be read.
  */
 export const LEGAL_DOCUMENT_FILES: Partial<Record<LegalNoticeId, string>> = {
-  terms: 'legal/TERMS_OF_SERVICE.md',
-  privacy: 'legal/PRIVACY_POLICY.md',
+  // Sprint 11 Revision 2.0: the owner's own Terms and Privacy Policy, converted from the .docx originals in docs/legal/.
+  terms: 'legal/transformed_doc/TERMS_OF_SERVICE.md',
+  privacy: 'legal/transformed_doc/PRIVACY_POLICY.md',
 };
 export const LEGAL_DOCUMENTS_EFFECTIVE_DATE = '2026-10-26';
 export const LEGAL_DOCUMENT_ROUTE = '/api/legal';

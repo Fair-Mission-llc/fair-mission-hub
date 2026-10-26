@@ -16,6 +16,9 @@
 // the plain tones.
 // Sprint 9 Revision 2.0: under the grid, the '🗓️ Sync with Your Phone Calendar' card (CalendarSyncCard) gives the
 // member their own read-only calendar feed link for Google Calendar, Apple Calendar or Outlook.
+// Sprint 11 Revision 2.0: each event in the day's details card has a 'Message All Attendants' button for the council's
+// officers, Admins, Super Admins and the event's owner (canMessageEventAttendees). It opens a short message box and sends
+// one conversation to everyone signed up for any of the event's shifts (eventAttendeeRecipientIds, messages.send).
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
@@ -24,9 +27,11 @@ import {
   calendarDays,
   calendarLayers,
   calendarTone,
+  canMessageEventAttendees,
   canRecordLedger,
   describeError,
   entriesOn,
+  eventAttendeeRecipientIds,
   formatTimeRange,
   HOLY_DAY_BADGE,
   isAllHandsShift,
@@ -55,7 +60,7 @@ import {
 import { CalendarSyncCard } from '@/components/CalendarSyncCard';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { DriveButtons } from '@/components/DriveLinks';
-import { Button, cx, Empty, Field, NewMemberBadge, Notice, PageTitle, Pill, Select, Tabs } from '@/components/ui';
+import { Button, cx, Empty, Field, NewMemberBadge, Notice, PageTitle, Pill, Select, Tabs, Textarea } from '@/components/ui';
 import { formatPersonName } from '@/lib/format';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -306,6 +311,61 @@ function ShiftRow({ item, now, onSignUp, busy }: { item: ShiftFeedItem; now: Dat
   );
 }
 
+/**
+ * 'Message All Attendants' (Sprint 11 Revision 2.0): a message box that sends one conversation to everyone signed up for
+ * the event, on any of its shifts and days. Hidden while nobody but the sender is signed up.
+ */
+function MessageAttendants({ councilId, eventName, recipients }: { councilId: number; eventName: string; recipients: number[] }) {
+  const user = useUser();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
+  if (recipients.length === 0) return null;
+  const send = async () => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      await db.messages.send({ senderId: user.memberId, councilId, recipientIds: recipients, text: `${eventName}: ${text.trim()}` });
+      setMessage({ tone: 'info', text: `Sent to ${recipients.length} attendant${recipients.length === 1 ? '' : 's'}. Replies arrive in Council Messages & Alerts.` });
+      setText('');
+      setOpen(false);
+    } catch (err) {
+      setMessage({ tone: 'error', text: describeError(err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="flex flex-col gap-2">
+      {message ? (
+        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+          {message.text}
+        </Notice>
+      ) : null}
+      {open ? (
+        <>
+          <Field label={`Message to all ${recipients.length} attendant${recipients.length === 1 ? '' : 's'}`}>
+            {(id) => <Textarea id={id} rows={3} maxLength={2000} value={text} disabled={busy} onChange={(e) => setText(e.target.value)} placeholder="e.g. Parking moves to the north lot on Saturday." />}
+          </Field>
+          <div className="flex gap-2">
+            <Button size="sm" disabled={busy || text.trim() === ''} onClick={() => void send()}>
+              {busy ? 'Sending…' : 'Send'}
+            </Button>
+            <Button size="sm" variant="secondary" disabled={busy} onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
+          Message All Attendants
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function DayDetails({
   date,
   entries,
@@ -343,6 +403,11 @@ function DayDetails({
       }),
     );
     return new Set(eventIds.filter((_, i) => allowed[i]));
+  }, [eventIds.join(','), user.memberId]);
+  // Sprint 11 Revision 2.0: the events whose attendants this reader may message (canMessageEventAttendees).
+  const messageable = useLoad(async () => {
+    const events = await Promise.all(eventIds.map((id) => db.events.get(id)));
+    return new Set(eventIds.filter((_, i) => events[i] !== null && canMessageEventAttendees(user, events[i]!)));
   }, [eventIds.join(','), user.memberId]);
   const [busyShift, setBusyShift] = useState<number | null>(null);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
@@ -472,6 +537,9 @@ function DayDetails({
                   </Link>
                 ) : null}
               </div>
+              {messageable.data?.has(e.id) && turnout.data ? (
+                <MessageAttendants councilId={user.councilId} eventName={e.title} recipients={eventAttendeeRecipientIds(turnout.data.get(e.id) ?? [], user.memberId)} />
+              ) : null}
             </section>
           );
         })}

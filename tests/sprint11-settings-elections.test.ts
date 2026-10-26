@@ -79,7 +79,7 @@ describe.each(drivers)('$name driver: payment method accounts', ({ make }) => {
 
 describe('Council Wide Settings and Council Lookups', () => {
   it('pins the Council Instance Record, closes every drawer and routes the email gateway to the vault', () => {
-    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+    const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
     expect(page.indexOf('<CouncilInstanceRecord')).toBeLessThan(page.indexOf('<SettingsDrawers'));
     expect(page).not.toMatch(/BANK_ACCOUNT_SETTINGS_PAGES|href="\/council-lookups"/);
     expect(read('apps/web/components/FeatureDeploymentParts.tsx')).toContain('open={false}');
@@ -89,7 +89,7 @@ describe('Council Wide Settings and Council Lookups', () => {
   });
 
   it('drops budget categories and the QR URL column, and adds the QR check box, status and account picker', () => {
-    const page = read('apps/web/app/council-lookups/page.tsx');
+    const page = read('apps/web/components/modules/CouncilLookupTables.tsx');
     expect(page).toContain(".filter((t) => t !== 'CouncilBudgetCategory')");
     expect(page).not.toContain('QR code image URL');
     expect(page).toContain("kind: 'qr'");
@@ -107,7 +107,7 @@ describe('the Council Election Center', () => {
     expect(read('apps/web/app/elections/page.tsx')).toContain('<CouncilElectionCenter />');
     const module = read('apps/web/components/modules/ElectionWorkflow.tsx');
     expect(module).toContain('sticky top-0');
-    expect(module).toContain("{ positions: false, nominations: false, ballot: false }");
+    expect(module).toContain("{ positions: false, nominations: false, ballot: false, parameters: false }");
     expect(module).toContain('<CastActiveBallot');
   });
 

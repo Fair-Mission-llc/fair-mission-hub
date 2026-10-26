@@ -177,7 +177,8 @@ export function cleanGlobalCharity(input: NewGlobalCharity): CleanGlobalCharity 
   }
   return {
     Name: assertText(input.Name, 'Charity name', CHARITY_NAME_MAX_LENGTH),
-    Description: assertText(input.Description, 'Description', CHARITY_DESCRIPTION_MAX_LENGTH),
+    // Sprint 11 Revision 2.0: optional; the column is NOT NULL, so a blank description is stored as ''.
+    Description: optionalText(input.Description, 'Description', CHARITY_DESCRIPTION_MAX_LENGTH) ?? '',
     EIN: ein === null ? null : normalizeEin(ein),
     State: normalizeStateCode(input.State),
     Phone: optionalText(input.Phone, 'Phone', CHARITY_PHONE_MAX_LENGTH),

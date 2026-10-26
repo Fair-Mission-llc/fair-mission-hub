@@ -386,6 +386,6 @@ describe('Sprint 7A screens', () => {
     const roster = read('apps/web/components/modules/MemberRecordForm.tsx');
     expect(roster).not.toContain('db.members.sweepInactive');
     expect(roster).toContain('Charter member');
-    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('db.members.sweepInactive');
+    expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('db.members.sweepInactive');
   });
 });

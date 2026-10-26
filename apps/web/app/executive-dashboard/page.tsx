@@ -28,6 +28,12 @@
 // stacked one under another (DashboardDrawer); each loads only when opened. The Top 5 Volunteers Leaderboard (still on
 // the Council Dashboard), the Shifts Awaiting Hours audit (still a Grand Knight Desk drawer) and the monthly financial
 // ledger table are gone from this page; the net balance tile keeps the month's raised and spent figures.
+//
+// Sprint 11 Revision 2.0: the Net Balance tile and the Monthly Activity card read one set of figures
+// (monthlyActivityFigures over the same reports.monthlySummary), which fixes the October mismatch between the card's cash
+// and the tile's funds raised. The order under the tiles is now: the Monthly Activity card, the Faith in Action Mission
+// Tracking drawer, Budget Tracking, the Roadmap, Goals and Year-over-Year drawers, the monthly highlights, and the
+// No-Show Audit drawer on the bottom row.
 import { useState, type ReactNode } from 'react';
 import {
   BUDGET_WARNING_THRESHOLD_PERCENT,
@@ -38,6 +44,7 @@ import {
   canViewExecutiveDashboard,
   currentFraternalYear,
   isAdmin,
+  monthlyActivityFigures,
   NO_SHOW_AUDIT_MONTHS,
   type MonthlySummary,
 } from '@kofc/shared';
@@ -70,7 +77,8 @@ function StatTile({ label, value, detail, tone = 'navy', compact = false }: { la
 }
 
 function Scorecards({ s, compact = false }: { s: MonthlySummary; compact?: boolean }) {
-  const deficit = s.finances.net < 0;
+  const figures = monthlyActivityFigures(s);
+  const deficit = figures.net < 0;
   const tile = { compact };
   return (
     <div className={cx('grid grid-cols-2 xl:grid-cols-4', compact ? 'gap-3' : 'gap-4 md:grid-cols-2')}>
@@ -90,8 +98,8 @@ function Scorecards({ s, compact = false }: { s: MonthlySummary; compact?: boole
         {...tile}
         label="Net balance"
         tone={deficit ? 'red' : 'navy'}
-        value={formatMoney(s.finances.net)}
-        detail={`${deficit ? 'Deficit' : s.finances.net > 0 ? 'Surplus' : 'Break-even'}: ${formatMoney(s.finances.raised)} raised − ${formatMoney(s.finances.spend)} spent`}
+        value={formatMoney(figures.net)}
+        detail={`${deficit ? 'Deficit' : figures.net > 0 ? 'Surplus' : 'Break-even'}: ${formatMoney(figures.raised)} raised − ${formatMoney(figures.spend)} spent`}
       />
       <StatTile
         {...tile}
@@ -318,6 +326,15 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
         <div className="flex flex-col gap-4">
           <Scorecards s={s} compact />
           <EngagementCards councilId={councilId} year={year} month={month} monthLabel={`${MONTHS[month - 1]} ${year}`} summary={s} showLeaderboard={false} />
+          {/* Sprint 11 Revision 2.0: Faith in Action right under Monthly Activity, then Budget Tracking. */}
+          {canReviewBudgetPerformance(user, councilId) ? (
+            <>
+              <DashboardDrawer title="Faith in Action Mission Tracking" summary="This fraternal year's service across the four Supreme mission areas">
+                <MissionTracking actorId={user.memberId} councilId={councilId} fraternalYear={fraternalYear} />
+              </DashboardDrawer>
+              <BudgetTracking actorId={user.memberId} councilId={councilId} fraternalYear={fraternalYear} />
+            </>
+          ) : null}
           {/* Sprint 10 Revision 1.0: the compact drawers, stacked under the primary metrics. */}
           <div className="flex flex-col gap-2" aria-label="Executive Dashboard drawers" role="group">
             <DashboardDrawer id={SUMMARY_ROADMAP_ID} title="Annual Fraternal Roadmap" summary="Nominations, elections, the July 1 term and the Three-Signature Expense Flow">
@@ -333,18 +350,7 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
                 </DashboardDrawer>
               </>
             ) : null}
-            {canViewExecutiveAudits(user, councilId) ? (
-              <DashboardDrawer title="No-Show Audits" summary={`Missed shifts in the last ${NO_SHOW_AUDIT_MONTHS} months and their reasons`}>
-                <NoShowAudit councilId={councilId} />
-              </DashboardDrawer>
-            ) : null}
           </div>
-          {canReviewBudgetPerformance(user, councilId) ? (
-            <>
-              <MissionTracking actorId={user.memberId} councilId={councilId} fraternalYear={fraternalYear} />
-              <BudgetTracking actorId={user.memberId} councilId={councilId} fraternalYear={fraternalYear} />
-            </>
-          ) : null}
           <Panel title={`Monthly highlights (${s.highlights.length})`}>
             {s.highlights.length === 0 ? (
               <Empty>No event this month has highlights recorded. Add them in the post-event ledger.</Empty>
@@ -360,6 +366,12 @@ function ExecutiveSummary({ councilId }: { councilId: number }) {
               </ol>
             )}
           </Panel>
+          {/* Sprint 11 Revision 2.0: the No-Show Audit sits on the bottom row. */}
+          {canViewExecutiveAudits(user, councilId) ? (
+            <DashboardDrawer title="No-Show Audits" summary={`Missed shifts in the last ${NO_SHOW_AUDIT_MONTHS} months and their reasons`}>
+              <NoShowAudit councilId={councilId} />
+            </DashboardDrawer>
+          ) : null}
         </div>
       )}
     </section>

@@ -124,7 +124,7 @@ describe('4. payment QR code uploads', () => {
     expect(repositoryFolderName('Payment_QR_Codes')).toBe('Payment QR Codes');
     expect(parsePaymentQrServerUrl(paymentQrServerUrl(1, 'qr-1-abc.png'))).toEqual({ councilId: 1, fileName: 'qr-1-abc.png' });
     expect(parsePaymentQrServerUrl('/api/council/payment-qr?file=c1/../../secret.png')).toBeNull();
-    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('<PaymentQrUploader council={council} />');
+    expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('<PaymentQrUploader council={council} />');
   });
 
   it('lets the keepers of the donation methods upload, and serves the image to the council', async () => {

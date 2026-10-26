@@ -136,7 +136,8 @@ describe('charity helpers (pure)', () => {
     const clean = cleanGlobalCharity(charity({ Name: '  Mercy House ', EIN: '930386970', State: 'wa', Phone: '  ', IsCatholic: undefined }));
     expect(clean).toMatchObject({ Name: 'Mercy House', EIN: '93-0386970', State: 'WA', Phone: null, IsCatholic: 0 });
     expect(cleanGlobalCharity(charity({ EIN: '' })).EIN).toBeNull();
-    expect(() => cleanGlobalCharity(charity({ Description: ' ' }))).toThrow(/Description is required/);
+    // Sprint 11 Revision 2.0: the description is optional; a blank one is stored as '' (the column is NOT NULL).
+    expect(cleanGlobalCharity(charity({ Description: ' ' })).Description).toBe('');
     expect(() => cleanGlobalCharity(charity({ CharityType: 'x'.repeat(101) }))).toThrow(/at most 100/);
     // Sprint 5V-2: only the six core types, stored in their canonical spelling.
     expect(cleanGlobalCharity(charity({ CharityType: ' protecting LIFE ' })).CharityType).toBe('Protecting Life');

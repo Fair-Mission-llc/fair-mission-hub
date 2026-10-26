@@ -60,7 +60,7 @@ describe('1. Financial Secretary onboarding and the retired split card', () => {
 
   it('deletes the Parish Fundraiser Split card', () => {
     expect(existsSync(join(__dirname, '..', 'apps/web/components/ParishSplitParts.tsx'))).toBe(false);
-    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).not.toContain('<ParishSplitSettingsCard');
+    expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).not.toContain('<ParishSplitSettingsCard');
   });
 });
 
@@ -138,7 +138,7 @@ describe('4. the Account Owners Matrix (pure)', () => {
     });
     expect(() => cleanAccountOwner({ account_name: '' })).toThrow();
     expect(() => cleanAccountOwner({ account_name: 'Zelle', contact_email: 'not-an-email' })).toThrow(/email/);
-    expect(read('apps/web/app/system-settings/council-settings/page.tsx')).toContain('<AccountOwnersMatrix council={council} />');
+    expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('<AccountOwnersMatrix council={council} />');
   });
 });
 
@@ -176,7 +176,7 @@ describe('6. the Application Advisory Panel', () => {
     expect(portalAreas(viewer('Member', [ADVISORY_PANELIST_ROLE]))).toContain('advisory-panel');
     expect(portalAreas(viewer('Member'))).not.toContain('advisory-panel');
     expect(existsSync(join(__dirname, '..', 'apps/web/app/advisory-panel/page.tsx'))).toBe(true);
-    expect(read('apps/web/components/Sidebar.tsx')).toContain('{ADVISORY_PANEL_TITLE}');
+    expect(read('apps/web/components/Sidebar.tsx')).toContain('{plainNavLabel(ADVISORY_PANEL_TITLE)}');
   });
 });
 

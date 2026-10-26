@@ -253,6 +253,6 @@ describe('Sprint 8O: schema 85 and the split console', () => {
 
   it('keeps the account owner gate after the parish split console was removed (Sprint 10 Revision 3.2)', () => {
     expect(existsSync(join(__dirname, '..', 'apps/web/components/ParishSplitParts.tsx'))).toBe(false);
-    expect(read('apps/web/app/council-lookups/page.tsx')).toContain('accountOwnerGateMessage');
+    expect(read('apps/web/components/modules/CouncilLookupTables.tsx')).toContain('accountOwnerGateMessage');
   });
 });

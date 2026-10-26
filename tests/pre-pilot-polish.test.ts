@@ -76,7 +76,7 @@ describe('Credentials Vault page', () => {
     expect(page).toContain('aria-label="Connection status"');
     const gateway = read('apps/web/components/EmailGatewayPanel.tsx');
     expect(gateway).not.toMatch(/SMTP_PORTS|' \(STARTTLS\)'|label="Port"/);
-    expect(read('apps/web/app/council-lookups/page.tsx')).not.toContain('EmailGatewayPanel');
+    expect(read('apps/web/components/modules/CouncilLookupTables.tsx')).not.toContain('EmailGatewayPanel');
   });
 });
 

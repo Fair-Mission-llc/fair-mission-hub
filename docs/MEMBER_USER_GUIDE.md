@@ -94,7 +94,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
-- **📸 Council Photo Gallery** sits under **Navigation Guide**, above the pillars. Its two links open **Browse Albums** and the **Gallery Management Center**.
+- **Council Photo Gallery** sits under **Navigation Guide**, above the pillars. Its two links open **Browse Gallery** and the **Gallery Administration Hub**.
+- The sidebar shows its links as plain text, with no icons.
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
 - Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
 - If the platform owner invites you to the **Application Advisory Panel**, an invitation card shows at the top of **Home**, on your alert bell and on your phone's **Home**. Select **Accept** to join.
@@ -153,8 +154,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **📸 Council Photo Gallery** → **Browse Albums** | Top of the sidebar | Event and meeting photos, Smart Albums and slideshows |
-| **📸 Council Photo Gallery** → **Gallery Management Center** | Top of the sidebar | Photo uploads and new Smart Albums |
+| **Council Photo Gallery** → **Browse Gallery** | Top of the sidebar | Photos on three tabs: **Event/Meeting**, **Year** and **Album Picker**, with slideshows |
+| **Council Photo Gallery** → **Gallery Administration Hub** | Top of the sidebar | Photo uploads, **Pick Selections for Album** and **Save as Album** |
 | **Council Artifacts** | Resources | Flyers, minutes and photo albums |
 | **Constitutional Bylaws** | Governance | The council's bylaws |
 | **Online Help Center** | Answers | Answers to common questions |

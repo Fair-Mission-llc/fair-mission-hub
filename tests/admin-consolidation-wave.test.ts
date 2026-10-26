@@ -63,7 +63,7 @@ describe('1. the unified roster', () => {
 
 describe('2. Council Wide Settings drawers', () => {
   it('mounts the settings as drawer panels with no revenue splits tab or reference archives', () => {
-    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+    const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
     expect(page).toContain('<SettingsDrawers');
     expect(page).not.toContain('<SettingsCabinet');
     expect(read('apps/web/components/FeatureDeploymentParts.tsx')).not.toContain('SYSTEM_REFERENCE_PAGES');

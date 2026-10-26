@@ -5,8 +5,10 @@
 //   (Sprint 10 Revision 5.0 removed the '📋 Copy link' button beside the PDF.)
 //   - 'How do I…', a search over that one manual's task workflows (GET /api/manuals). The best matches open in place
 //     with their steps, so the officer never leaves the desk. Nothing outside the seat's own manual is searched.
+// Sprint 11 Revision 2.0: the Admin Desk passes ADMIN_USER_GUIDE (the Administration Manual) and splits the bar across its
+// first two drawers with `show`: 'pdf' for the link alone, 'search' for the search alone.
 import { useState } from 'react';
-import { roleManualByToken, roleManualPdfHref, roleManualTasksHref, searchRoleManual, type GuideTask, type RoleManualToken } from '@kofc/shared';
+import { deskManualByToken, roleManualPdfHref, roleManualTasksHref, searchRoleManual, type DeskManualToken, type GuideTask } from '@kofc/shared';
 import { MarkdownInline } from '@/components/Markdown';
 import { Button, Input } from '@/components/ui';
 import { useLoad } from '@/lib/use-load';
@@ -62,10 +64,10 @@ function ManualAnswer({ task, open, onToggle }: { task: GuideTask; open: boolean
   );
 }
 
-export function DeskManualHeader({ manual: token }: { manual: RoleManualToken }) {
-  const manual = roleManualByToken(token);
+export function DeskManualHeader({ manual: token, show = 'both' }: { manual: DeskManualToken; show?: 'both' | 'pdf' | 'search' }) {
+  const manual = deskManualByToken(token);
   const pdfHref = roleManualPdfHref(manual.key);
-  const tasks = useLoad(() => readManualTasks(roleManualTasksHref(manual.key)), [manual.key]);
+  const tasks = useLoad(() => (show === 'pdf' ? Promise.resolve([]) : readManualTasks(roleManualTasksHref(manual.key))), [manual.key, show]);
   const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
   const answers = searchRoleManual(tasks.data ?? [], query);
@@ -73,22 +75,26 @@ export function DeskManualHeader({ manual: token }: { manual: RoleManualToken })
   return (
     <section data-role-manual={manual.token} aria-label={`${manual.title} help`} className="flex flex-col gap-2 rounded border-2 border-gold bg-white p-3 text-navy">
       <div className="flex flex-wrap items-center gap-2">
-        <a href={pdfHref} target="_blank" rel="noopener noreferrer" className="rounded border-2 border-navy bg-navy px-3 py-1 text-sm font-bold text-white">
-          📘 {manual.title} (PDF)
-        </a>
-        <label className="ml-auto flex min-w-[16rem] flex-1 items-center gap-2 text-sm font-bold">
-          How do I…
-          <Input
-            type="search"
-            value={query}
-            placeholder={`Search the ${manual.title}`}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setOpenId(null);
-            }}
-            className="flex-1"
-          />
-        </label>
+        {show !== 'search' ? (
+          <a href={pdfHref} target="_blank" rel="noopener noreferrer" className="rounded border-2 border-navy bg-navy px-3 py-1 text-sm font-bold text-white">
+            📘 {manual.title} (PDF)
+          </a>
+        ) : null}
+        {show !== 'pdf' ? (
+          <label className="ml-auto flex min-w-[16rem] flex-1 items-center gap-2 text-sm font-bold">
+            How do I…
+            <Input
+              type="search"
+              value={query}
+              placeholder={`Search the ${manual.title}`}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setOpenId(null);
+              }}
+              className="flex-1"
+            />
+          </label>
+        ) : null}
       </div>
       {tasks.error ? <p className="text-sm text-brand-red">{tasks.error}</p> : null}
       {query.trim() && tasks.data ? (

@@ -83,6 +83,7 @@ export type PortalArea =
   | 'system-settings/impersonate'
   | 'system-settings/view-as-member'
   | 'system-settings/feedback'
+  | 'admin-desk'
   | 'system-settings/affiliations'
   | 'system-settings/knowledge-archive'
   | 'navigation-guide'
@@ -235,6 +236,13 @@ export const canSyncSupremeRoster = (u: Actor, councilId: number): boolean =>
  * feedback form left the Online Help Center, so no member or volunteer screen offers it.
  */
 export const canOpenAdministrativeFeedback = (u: Actor): boolean => isAdmin(u);
+
+/**
+ * The Admin Desk (Sprint 11 Revision 2.0, /admin-desk, admin-desk.ts): a council Admin's own workspace of eight vertical
+ * drawers - the Administration Manual, its help search, the council settings, lookups, vault, charities registry, assets
+ * and feedback. Admins and Super Admins.
+ */
+export const canOpenAdminDesk = (u: Actor): boolean => isAdmin(u);
 
 /** Super Admins act on any council; Admins only on their own. */
 export const canAdministerCouncil = (u: Actor, councilId: number): boolean =>
@@ -714,6 +722,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canOpenImpersonationLookup(u)) areas.push('system-settings/impersonate');
   if (canOpenViewAsMember(u)) areas.push('system-settings/view-as-member');
   if (canOpenAdministrativeFeedback(u)) areas.push('system-settings/feedback');
+  if (canOpenAdminDesk(u)) areas.push('admin-desk');
   if (canOpenCouncilLookups(u)) areas.push('council-lookups');
   if (canAppointOfficers(u)) areas.push('elections/appointments');
   // Sprint 10 Revision 3.0: the Affiliated Roster page ('members') is gone; member records are kept on /roster.
@@ -846,7 +855,9 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   {
     id: 'setup',
     label: 'System Settings',
+    // Sprint 11 Revision 2.0: the Admin Desk heads the pillar for Admins and Super Admins.
     items: [
+      'admin-desk',
       'councils',
       'feature-flags',
       'system-settings/global-settings',

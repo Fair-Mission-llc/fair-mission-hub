@@ -376,7 +376,7 @@ describe.each(drivers)('planning, affiliations and shared loans in the $name dri
 
 describe('the portal pages', () => {
   it('leads Council Wide Settings with the planning banner and the sharing switch', () => {
-    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+    const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
     expect(page).toContain('FraternalPlanningWorkflow');
     expect(page).toContain('LoanerLibrarySharingCard');
     const parts = read('apps/web/components/PlanningWorkflowParts.tsx');

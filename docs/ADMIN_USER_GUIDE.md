@@ -29,6 +29,7 @@
 - [13. Network addresses, ports and configuration keys](#13-network-addresses-ports-and-configuration-keys)
 - [14. Firewall clearance](#14-firewall-clearance)
 - [15. The software bill of materials (SBOM)](#15-the-software-bill-of-materials-sbom)
+- [16. The Admin Desk](#16-the-admin-desk)
 - [Appendix: QR code files](#appendix-qr-code-files)
 - [Manual map](#manual-map)
 
@@ -627,7 +628,7 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 3. Enter the **Base dues rate** in dollars.
 4. Select **Save council parameters**.
 
-**Expected result:** A message shows the council number, the tenant type and the new base dues. The dues forecast uses the new rate.
+**Expected result:** A message shows the council number, the tenant type and the new base dues. The council's dues figures use the new rate.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1278,6 +1279,67 @@ The script reads only `package.json` and `package-lock.json`. It opens no networ
 
 ---
 
+## 16. The Admin Desk
+
+### 16.1 Concept: one desk for the council's Admin work
+The **Admin Desk** collects the council Admin's tools in one page. The page has eight drawers down the left side.
+All drawers are closed when the page opens. Select a drawer to open its panel on the right. Select another drawer to change the panel.
+
+| Drawer | What the panel holds |
+| --- | --- |
+| **Administration Manual PDF** | This guide as a PDF, and the **Regenerate Manuals On-Demand** button |
+| **'How Do I...' Local Help Search** | A search over the tasks of this guide |
+| **Council Wide Settings** | The same panels as **System Settings** → **Council Wide Settings** |
+| **Council Lookup Tables** | Activities, donation types and payment methods |
+| **Credentials Vault** | The keys of your home council only |
+| **Global Charities Registry** | Verified charities, suggestions, search and the add form |
+| **Council Asset Management** | The council's assets inventory |
+| **Administrative Feedback Loops** | The note to the platform owner (section 10.2) |
+
+The server rebuilds every manual PDF each night at 2:00. The **Regenerate Manuals On-Demand** button rebuilds them at once.
+To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
+
+### 16.2 Open a drawer of the Admin Desk
+> **Who can do this:** council Admins and Super Admins. Other members do not see the Admin Desk.
+
+**Goal:** Work in one Admin tool without leaving the desk.
+
+**Start point:** Sidebar → System Settings → **Admin Desk**.
+
+**Steps:**
+1. Select a drawer on the left, for example **Council Lookup Tables**.
+2. Work in the panel on the right.
+3. To close the panel, select the same drawer again.
+
+**Expected result:** The panel of the drawer shows on the right. The drawer is dark blue while its panel is open.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Admin Desk** is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin. |
+| The **Credentials Vault** panel shows another council's keys. | This does not happen. The vault opens your home council only. | Sign in to the other council's Admin account. |
+
+### 16.3 Rebuild the manuals now
+> **Who can do this:** council Admins and Super Admins.
+
+**Goal:** Rebuild every manual PDF from the current manual text.
+
+**Start point:** Sidebar → System Settings → **Admin Desk** → **Administration Manual PDF**.
+
+**Steps:**
+1. Select **Regenerate Manuals On-Demand**.
+2. Wait until the button reads **Regenerate Manuals On-Demand** again. A full rebuild takes up to 10 minutes.
+
+**Expected result:** The message *"Every manual was rebuilt."* shows with the time the rebuild finished.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The message says Python with ReportLab is not installed. | The server has no Python or no ReportLab. | Run `pip install -r scripts/requirements.txt` on the server. |
+| The message says the manuals could not be rebuilt. | A manual failed its wording check. | Run `py scripts/compile_all_manuals.py --check` and correct the lines it prints. |
+
+---
+
 ## Appendix: QR code files
 The two onboarding codes are in `apps/web/public/assets/images/qr/`. Print or project the codes for new members.
 The phone **Collect** screen shows the collection codes. The phone shows the council's image link first.
@@ -1319,6 +1381,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 13. Network addresses, ports and configuration keys
 - 14. Firewall clearance
 - 15. The software bill of materials (SBOM)
+- 16. The Admin Desk
 - Appendix: QR code files
 
 **Executive Governance Manual**

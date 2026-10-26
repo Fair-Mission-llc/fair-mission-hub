@@ -91,7 +91,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'lessons-registry': { member: 'Searches the lessons learned that councils recorded after their events.' },
   gallery: {
-    member: 'Opens the Council Photo Gallery. Browse Albums shows the photos, Smart Albums and slideshows; the Gallery Management Center is where you upload photos and save albums.',
+    member: 'Opens the Council Photo Gallery. Browse Gallery shows the photos by event or meeting, by year, or by album, with slideshows; the Gallery Administration Hub is where you upload photos and save albums.',
   },
   'resources/bulletins': { member: "Opens the council's Google Drive files and the reports the portal prepares." },
   'resources/marketing': { member: 'Turns an event into a printable flyer with photos from past events.' },
@@ -119,6 +119,10 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'system-settings/view-as-member': {
     member: "Shows what one member of your own council sees: their sidebar links, their desks and their coming shifts. Read-only; you stay signed in as yourself.",
+  },
+  'admin-desk': {
+    member:
+      "Opens your Admin Desk: eight drawers down the left side, all closed when you arrive. Open one to work in it on the right - the Administration Manual, its help search, the council settings, lookups, Credentials Vault, charities registry, assets and feedback.",
   },
   'system-settings/feedback': {
     member: "Sends a note or bug report from your council's Admins to the platform owner. Super Admins also read every note here.",

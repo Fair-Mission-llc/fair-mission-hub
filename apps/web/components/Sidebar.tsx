@@ -14,10 +14,15 @@
 // Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it). The '📸 Council Photo Gallery' node is
 // pinned under the Navigation Guide with its two views, Browse Albums and Gallery Management Center (GALLERY_VIEWS). The
 // sidebar collapses: the hamburger button at its top hides or shows the links, and this browser remembers the choice.
+// Sprint 11 Revision 2.0: a text-only rail. Every link label is drawn through plainNavLabel, which strips icon glyphs
+// ('📸 Council Photo Gallery' reads 'Council Photo Gallery'); external links lost their arrow and the collapsed legal
+// button reads 'Legal'. The Admin Desk link heads the System Settings pillar for Admins and Super Admins.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  ADMIN_DESK_HREF,
+  ADMIN_DESK_TITLE,
   canOpenArchiveVault,
   COUNCIL_PHOTO_GALLERY_TITLE,
   EXECUTIVE_DASHBOARD_HREF,
@@ -36,6 +41,7 @@ import {
   LEGAL_NOTICES,
   LEGAL_DOCUMENT_ROUTE,
   isLegalDocumentId,
+  plainNavLabel,
   type LegalNoticeId,
 } from '@kofc/shared';
 import { Drawer } from '@/components/Drawer';
@@ -166,6 +172,12 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'A read-only picture of what one member of your council sees',
     restrictedTo: 'council Admins and Super Admins',
   },
+  'admin-desk': {
+    href: ADMIN_DESK_HREF,
+    label: ADMIN_DESK_TITLE,
+    hint: 'The Administration Manual, settings, lookups, vault, charities, assets and feedback in one desk of drawers',
+    restrictedTo: 'council Admins and Super Admins',
+  },
   'system-settings/feedback': {
     href: '/system-settings/feedback',
     label: 'Administrative Feedback Loops',
@@ -256,8 +268,7 @@ function ExternalNavLink({ href, label, hint }: Omit<ExternalNavEntry, 'visible'
         title={hint}
         className="flex items-center gap-2 border-l-8 border-transparent py-1.5 pl-6 pr-3 text-sm hover:underline"
       >
-        {label}
-        <span aria-hidden="true">↗</span>
+        {plainNavLabel(label)}
         <span className="sr-only">(opens in a new tab)</span>
       </a>
     </li>
@@ -297,7 +308,7 @@ function NavLink({ item, current, tenant }: { item: PortalNavItem | 'navigation-
   return (
     <li>
       <Link href={href} title={whiteLabel(hint, tenant)} aria-current={current ? 'page' : undefined} className={navLinkClass(current)}>
-        {whiteLabel(label, tenant)}
+        {plainNavLabel(whiteLabel(label, tenant))}
       </Link>
     </li>
   );
@@ -353,7 +364,7 @@ function GalleryNode({ pathname, hash, tenant }: { pathname: string; hash: strin
               }}
               className={cx(navLinkClass(current), 'pl-10 text-xs')}
             >
-              {whiteLabel(v.label, tenant)}
+              {plainNavLabel(whiteLabel(v.label, tenant))}
             </Link>
           </li>
         );
@@ -400,8 +411,8 @@ function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
   return (
     <footer aria-label="Legal" className="mt-auto border-t border-t-gold px-3 pt-2 text-xs">
       {collapsed ? (
-        <button type="button" onClick={() => setOpen('terms')} title="Terms of Service and Privacy Policy" aria-label="Terms of Service and Privacy Policy" className="w-full text-center text-base hover:text-gold">
-          ⚖
+        <button type="button" onClick={() => setOpen('terms')} title="Terms of Service and Privacy Policy" aria-label="Terms of Service and Privacy Policy" className="w-full text-center text-[0.625rem] font-bold uppercase hover:text-gold">
+          Legal
         </button>
       ) : (
         <ul className="flex flex-col gap-1">
@@ -490,7 +501,7 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
                 aria-current={pathname === ADVISORY_PANEL_HREF ? 'page' : undefined}
                 className={navLinkClass(pathname === ADVISORY_PANEL_HREF)}
               >
-                {ADVISORY_PANEL_TITLE}
+                {plainNavLabel(ADVISORY_PANEL_TITLE)}
               </Link>
             </li>
           ) : null}
@@ -501,7 +512,7 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
           return (
             <div key={group.id} className="border-t border-t-gold pb-2 pt-1 first:border-t-0 first:pt-0">
               <h2 id={headingId} className="px-4 py-2 text-xs font-bold uppercase tracking-wide">
-                {whiteLabel(group.label, tenant)}
+                {plainNavLabel(whiteLabel(group.label, tenant))}
               </h2>
               <ul aria-labelledby={headingId} className="flex flex-col">
                 {group.entries.map(({ item }) => (

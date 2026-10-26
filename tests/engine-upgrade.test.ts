@@ -248,7 +248,8 @@ describe('server-held secrets', () => {
         if (statSync(path).isDirectory()) walk(path);
         else if (/\.tsx?$/.test(name)) {
           const rel = relative(webRoot, path).replace(/\\/g, '/');
-          const serverSide = rel.startsWith('app/api/') || rel.startsWith('services/server/');
+          // Sprint 11 Revision 2.0: instrumentation.ts runs only on the server (the nightly manual rebuild).
+          const serverSide = rel.startsWith('app/api/') || rel.startsWith('services/server/') || rel === 'instrumentation.ts';
           const text = readFileSync(path, 'utf8');
           if (!serverSide && /from ['"][^'"]*services\/server\/|from ['"]\.\/server\//.test(text)) offenders.push(rel);
           if (!serverSide && /process\.env\.(?!NEXT_PUBLIC_|NODE_ENV)/.test(text) && rel !== 'services/google-drive.ts') offenders.push(`${rel} (process.env)`);

@@ -53,6 +53,33 @@ export const ROLE_MANUALS: Record<RoleManualKey, RoleManual> = {
 
 export const isRoleManualKey = (value: unknown): value is RoleManualKey => (ROLE_MANUAL_KEYS as readonly unknown[]).includes(value);
 
+/**
+ * Sprint 11 Revision 2.0: the Administration Manual (docs/ADMIN_USER_GUIDE.md) on the Admin Desk's first two drawers - its
+ * PDF and its 'How do I...' search. It is not an officer desk's manual, so it is kept apart from ROLE_MANUALS; the
+ * /api/manuals routes serve it under the key 'admin'.
+ */
+export const ADMIN_MANUAL_KEY = 'admin';
+export const ADMIN_MANUAL = {
+  key: ADMIN_MANUAL_KEY,
+  token: 'ADMIN_USER_GUIDE',
+  title: 'Administration Manual',
+  markdown: 'ADMIN_USER_GUIDE.md',
+  pdf: 'ADMIN_USER_GUIDE.pdf',
+} as const;
+
+/** A manual the /api/manuals routes serve: one of the three role manuals, or the Administration Manual. */
+export type DeskManualKey = RoleManualKey | typeof ADMIN_MANUAL_KEY;
+export type DeskManualToken = RoleManualToken | typeof ADMIN_MANUAL.token;
+export type DeskManual = Pick<RoleManual, 'title' | 'markdown' | 'pdf'> & { key: DeskManualKey; token: DeskManualToken };
+
+export const isDeskManualKey = (value: unknown): value is DeskManualKey => value === ADMIN_MANUAL_KEY || isRoleManualKey(value);
+
+/** The manual a key names. */
+export const deskManual = (key: DeskManualKey): DeskManual => (key === ADMIN_MANUAL_KEY ? ADMIN_MANUAL : ROLE_MANUALS[key]);
+
+/** The manual a token names, the Administration Manual included. */
+export const deskManualByToken = (token: DeskManualToken): DeskManual => (token === ADMIN_MANUAL.token ? ADMIN_MANUAL : roleManualByToken(token));
+
 /** The manual a token names. */
 export const roleManualByToken = (token: RoleManualToken): RoleManual => ROLE_MANUAL_KEYS.map((k) => ROLE_MANUALS[k]).find((m) => m.token === token)!;
 
@@ -61,8 +88,8 @@ export const roleManualForDesk = (desk: DashboardTabId): RoleManual | null => RO
 
 /** The routes the desk header calls. */
 export const ROLE_MANUAL_ROUTE = '/api/manuals';
-export const roleManualTasksHref = (key: RoleManualKey): string => `${ROLE_MANUAL_ROUTE}?manual=${key}`;
-export const roleManualPdfHref = (key: RoleManualKey): string => `${ROLE_MANUAL_ROUTE}/pdf?manual=${key}`;
+export const roleManualTasksHref = (key: DeskManualKey): string => `${ROLE_MANUAL_ROUTE}?manual=${key}`;
+export const roleManualPdfHref = (key: DeskManualKey): string => `${ROLE_MANUAL_ROUTE}/pdf?manual=${key}`;
 
 /** The task workflows of one role manual's Markdown. */
 export const roleManualTasks = (markdown: string): GuideTask[] => parseGuideTasks(markdown);

@@ -179,7 +179,7 @@ describe('custom user guides', () => {
     expect(route).toContain('mayCompileCustomManual(session.actor, payload.council.id)');
     expect(route).toContain("'compile_all_manuals.py'");
     expect(route).toContain('runPythonScript(');
-    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+    const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
     expect(page).toContain('📥 Generate Custom ${label} PDF');
     for (const kind of CUSTOM_MANUAL_KINDS) expect(page).toContain(`{ guide: '${kind}', label: `);
     expect(read('scripts/compile_all_manuals.py')).toContain("key='financial-secretary'");

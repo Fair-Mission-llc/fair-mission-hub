@@ -20,6 +20,9 @@
 // (GALLERY_VIEWS, chosen by the '#browse' or '#manage' anchor): Browse Albums - the photos, the Smart Albums to open and
 // the filters - and the Gallery Management Center - the upload block, whose drop zone now comes first, above the
 // fields that tag the photos, then the Smart Album name field, the filters it saves and the albums to delete.
+// Sprint 11 Revision 2.0: Browse Albums is '📸 Browse Gallery', with three tabs - Event/Meeting, Year and the Album Picker
+// (GALLERY_BROWSE_TABS) - and the Gallery Management Center is the Gallery Administration Hub. On the hub the selection
+// grid is 'Pick Selections for Album', with the 'Save as Album' form directly beneath it.
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import {
   canAttachEventMedia,
@@ -32,6 +35,10 @@ import {
   GALLERY_VIEWS,
   galleryViewFromAnchor,
   EMPTY_ALBUM_CRITERIA,
+  GALLERY_BROWSE_TABS,
+  GALLERY_SAVE_ALBUM_PLACEHOLDER,
+  GALLERY_SAVE_ALBUM_TITLE,
+  GALLERY_SELECTION_TITLE,
   filterMediaLibrary,
   formatDate,
   isEmptyAlbumCriteria,
@@ -40,6 +47,7 @@ import {
   SMART_ALBUM_NAME_MAX_LENGTH,
   toIsoDate,
   type Event as CouncilEvent,
+  type GalleryBrowseTab,
   type GalleryViewId,
   type MediaAlbumCriteria,
   type MediaLibrary,
@@ -54,11 +62,8 @@ import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 import { archiveToDriveVault } from '@/services/drive-vault-transport';
 
-type Grouping = 'source' | 'year';
-const GROUPINGS = [
-  { id: 'source', label: 'By event or meeting' },
-  { id: 'year', label: 'By year' },
-] as const satisfies readonly { id: Grouping; label: string }[];
+/** How the photo grid groups its photos; the Browse Gallery's third tab, the Album Picker, shows the albums instead. */
+type Grouping = Exclude<GalleryBrowseTab, 'albums'>;
 
 const sourceName = (item: MediaLibraryItem) => item.eventName ?? item.meetingName ?? 'Standalone council photos';
 
@@ -234,9 +239,19 @@ function CheckList({ legend, options, picked, onToggle }: { legend: string; opti
   );
 }
 
-function FiltersPanel({ library, criteria, onChange }: { library: MediaLibrary; criteria: MediaAlbumCriteria; onChange: (c: MediaAlbumCriteria) => void }) {
+function FiltersPanel({
+  library,
+  criteria,
+  onChange,
+  title = 'Find photos',
+}: {
+  library: MediaLibrary;
+  criteria: MediaAlbumCriteria;
+  onChange: (c: MediaAlbumCriteria) => void;
+  title?: string;
+}) {
   return (
-    <Panel title="Find photos" actions={!isEmptyAlbumCriteria(criteria) ? <Button size="sm" variant="secondary" onClick={() => onChange(EMPTY_ALBUM_CRITERIA)}>Clear</Button> : undefined}>
+    <Panel title={title} actions={!isEmptyAlbumCriteria(criteria) ? <Button size="sm" variant="secondary" onClick={() => onChange(EMPTY_ALBUM_CRITERIA)}>Clear</Button> : undefined}>
       <div className="flex flex-col gap-4">
         <CheckList legend="Events" options={library.events} picked={criteria.eventIds} onToggle={(id) => onChange({ ...criteria, eventIds: toggle(criteria.eventIds, id) })} />
         <CheckList legend="Meetings" options={library.meetings} picked={criteria.meetingIds} onToggle={(id) => onChange({ ...criteria, meetingIds: toggle(criteria.meetingIds, id) })} />
@@ -283,7 +298,7 @@ function AlbumsPanel({
   onChanged,
   manage,
 }: {
-  /** Sprint 10 Revision 1.0: true in the Gallery Management Center (save and delete), false in Browse Albums (open only). */
+  /** True in the Gallery Administration Hub (save and delete), false in Browse Gallery (open only). */
   manage: boolean;
   councilId: number;
   albums: SmartAlbum[];
@@ -324,7 +339,7 @@ function AlbumsPanel({
     });
 
   return (
-    <Panel title={manage ? 'Save a Smart Album' : 'Smart Albums'}>
+    <Panel title={manage ? GALLERY_SAVE_ALBUM_TITLE : 'Smart Albums'}>
       <div className="flex flex-col gap-3">
         {message ? (
           <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
@@ -333,15 +348,15 @@ function AlbumsPanel({
         ) : null}
         {manage ? (
           <>
-            <Field label="Album name" hint={isEmptyAlbumCriteria(criteria) ? 'Pick at least one filter first.' : 'Saves the filters you picked under this name.'}>
-              {(id) => <Input id={id} value={name} maxLength={SMART_ALBUM_NAME_MAX_LENGTH} placeholder="For example: Fish Fry 2026" onChange={(e) => setName(e.target.value)} />}
+            <Field label="Album name" hint={isEmptyAlbumCriteria(criteria) ? 'Pick at least one selection above first.' : 'Saves the selections you picked above under this name.'}>
+              {(id) => <Input id={id} value={name} maxLength={SMART_ALBUM_NAME_MAX_LENGTH} placeholder={GALLERY_SAVE_ALBUM_PLACEHOLDER} onChange={(e) => setName(e.target.value)} />}
             </Field>
             <Button size="sm" disabled={busy || !name.trim() || isEmptyAlbumCriteria(criteria)} onClick={() => void save()}>
-              Save Smart Album
+              Save as Album
             </Button>
           </>
         ) : null}
-        {albums.length === 0 ? <p className="text-sm text-muted">{manage ? 'No albums yet.' : 'No albums yet. Save one in the Gallery Management Center.'}</p> : null}
+        {albums.length === 0 ? <p className="text-sm text-muted">{manage ? 'No albums yet.' : 'No albums yet. Save one in the Gallery Administration Hub.'}</p> : null}
         <ul className="flex flex-col gap-1">
           {albums.map((a) => (
             <li key={a.id} className="flex items-center gap-2">
@@ -363,6 +378,29 @@ function AlbumsPanel({
         </ul>
       </div>
     </Panel>
+  );
+}
+
+/** The Browse Gallery's Album Picker tab (Sprint 11 Revision 2.0): every saved album as a card; a pick opens its photos. */
+function AlbumPicker({ albums, activeId, onPick }: { albums: SmartAlbum[] | null; activeId: number | null; onPick: (album: SmartAlbum) => void }) {
+  if (!albums) return <p className="text-sm text-muted">Loading the albums…</p>;
+  if (albums.length === 0) return <Empty>No albums yet. Save one in the Gallery Administration Hub.</Empty>;
+  return (
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="Albums">
+      {albums.map((a) => (
+        <li key={a.id}>
+          <button
+            type="button"
+            aria-pressed={activeId === a.id}
+            onClick={() => onPick(a)}
+            className={cx('w-full rounded border-2 border-l-8 bg-white px-4 py-3 text-left', activeId === a.id ? 'border-navy border-l-gold' : 'border-line border-l-navy hover:border-navy')}
+          >
+            <span className="block font-serif text-lg font-bold">{a.album_name}</span>
+            <span className="block text-xs text-muted">Open the photos this album selects</span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -594,7 +632,8 @@ export function PhotoGallery() {
   const scope = useCouncilScope();
   const councilId = scope.councilId;
   const [view, setView] = useGalleryView();
-  const [grouping, setGrouping] = useState<Grouping>('source');
+  const [browseTab, setBrowseTab] = useState<GalleryBrowseTab>('source');
+  const grouping: Grouping = browseTab === 'albums' ? 'source' : browseTab;
   const [criteria, setCriteria] = useState<MediaAlbumCriteria>(EMPTY_ALBUM_CRITERIA);
   const [albumId, setAlbumId] = useState<number | null>(null);
   const [viewer, setViewer] = useState<{ index: number; autoplay: boolean } | null>(null);
@@ -656,6 +695,7 @@ export function PhotoGallery() {
       />
     ) : null;
   const filtersPanel = library.data ? <FiltersPanel library={library.data} criteria={criteria} onChange={changeCriteria} /> : null;
+  const selectionPanel = library.data ? <FiltersPanel library={library.data} criteria={criteria} onChange={changeCriteria} title={GALLERY_SELECTION_TITLE} /> : null;
   const mayUpload = !!targets.data && (targets.data.length > 0 || standaloneAllowed);
 
   return (
@@ -669,16 +709,28 @@ export function PhotoGallery() {
         <div id="gallery-view-panel" role="tabpanel" aria-labelledby="gallery-view-tab-browse" className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <section aria-label="Photos" className="flex min-w-0 flex-col gap-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
-              <Tabs tabs={GROUPINGS} value={grouping} onChange={setGrouping} label="Group photos" idPrefix="gallery" />
+              <Tabs tabs={GALLERY_BROWSE_TABS} value={browseTab} onChange={setBrowseTab} label="Browse the gallery" idPrefix="gallery" />
               <div className="flex items-center gap-2">
                 {activeAlbum ? <Pill tone="gold">Album: {activeAlbum.album_name}</Pill> : null}
                 <Pill tone="outline">{shown.length === total ? `${total} photo${total === 1 ? '' : 's'}` : `${shown.length} of ${total} photos`}</Pill>
               </div>
             </div>
-            <div id="gallery-panel" role="tabpanel" aria-labelledby={`gallery-tab-${grouping}`} className="flex flex-col gap-6">
+            <div id="gallery-panel" role="tabpanel" aria-labelledby={`gallery-tab-${browseTab}`} className="flex flex-col gap-6">
+              {browseTab === 'albums' ? (
+                <AlbumPicker
+                  albums={albums.data ?? null}
+                  activeId={albumId}
+                  onPick={(a) => {
+                    setCriteria(a.criteria);
+                    setAlbumId(a.id);
+                    setBrowseTab('source');
+                  }}
+                />
+              ) : (
+                <>
               {library.loading && !library.data ? <p className="text-sm text-muted">Loading photos…</p> : null}
               {library.data && total === 0 ? (
-                <Empty>No photos yet. {(targets.data?.length ?? 0) > 0 || standaloneAllowed ? 'Add some in the Gallery Management Center.' : 'Event owners and council officers add them.'}</Empty>
+                <Empty>No photos yet. {(targets.data?.length ?? 0) > 0 || standaloneAllowed ? 'Add some in the Gallery Administration Hub.' : 'Event owners and council officers add them.'}</Empty>
               ) : null}
               {library.data && total > 0 && shown.length === 0 ? <Empty>No photos match these filters.</Empty> : null}
               {groups.map((group) => (
@@ -710,12 +762,11 @@ export function PhotoGallery() {
                   </ul>
                 </section>
               ))}
+                </>
+              )}
             </div>
           </section>
-          <aside className="flex flex-col gap-4">
-            {albumsPanel(false)}
-            {filtersPanel}
-          </aside>
+          <aside className="flex flex-col gap-4">{filtersPanel}</aside>
         </div>
       ) : (
         <div id="gallery-view-panel" role="tabpanel" aria-labelledby="gallery-view-tab-manage" className="grid max-w-6xl items-start gap-4 xl:grid-cols-2">
@@ -725,9 +776,12 @@ export function PhotoGallery() {
             ) : (
               <Notice tone="info">Event owners, council officers and the Council Historian upload photos. You can still save Smart Albums here.</Notice>
             )}
+          </div>
+          {/* Sprint 11 Revision 2.0: the selection grid, with the Save as Album form directly beneath it. */}
+          <div className="flex flex-col gap-4">
+            {selectionPanel}
             {albumsPanel(true)}
           </div>
-          {filtersPanel}
         </div>
       )}
       {viewer && ordered[viewer.index] ? <Slideshow items={ordered} index={viewer.index} onIndex={setIndex} autoplay={viewer.autoplay} onClose={closeViewer} /> : null}

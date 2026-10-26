@@ -277,7 +277,7 @@ describe('asset photos', () => {
     expect(route).toContain("driveVaultClient(creds).upload('asset'");
     expect(route).toContain('assetDriveFolderName(');
     expect(route).not.toContain('hasAdminRights');
-    const page = read('apps/web/app/expenses/assets/page.tsx');
+    const page = read('apps/web/components/modules/CouncilAssetManagement.tsx');
     expect(page).toContain("form.set('assetName', asset.asset_name)");
     expect(page).toContain('db.expenses.setAssetPhoto(user.memberId, asset.id, link)');
     expect(page).not.toMatch(/archiveToDriveVault|localFileLink/);

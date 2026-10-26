@@ -95,6 +95,7 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   'system-settings/view-as-member': 'settings',
   'expenses/assets': 'ledgers',
   'system-settings/feedback': 'settings',
+  'admin-desk': 'settings',
 };
 
 /** One sentence per Active Desks tab. */

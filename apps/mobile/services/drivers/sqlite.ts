@@ -186,6 +186,8 @@ import {
   PARISH_COLUMNS,
   participantIds,
   distributionGroupMemberIds,
+  assertMayBroadcastToDistributionGroups,
+  defaultAccountIdentityLabel,
   PASTOR_COLUMNS,
   planEventCopy,
   RECORD_REFERENCES,
@@ -1687,6 +1689,11 @@ export class SqliteDataService implements DataService {
             if (value === null || value === undefined) continue;
             const hit = await db.getFirstAsync(`SELECT [id] FROM [${key.table}] WHERE [id] = ? AND [${key.councilColumn}] = ?`, [value, councilId]);
             if (!hit) throw new BusinessRuleError('INVALID_INPUT', `Council ${councilId} has no ${key.label} ${String(value)}.`, { field: key.column, value, councilId });
+          }
+          // Sprint 11 Revision 2.0: a blank 'Account Name Members See' takes the picked account's name.
+          if ('account_identity_label' in values && values.account_owner_id != null) {
+            const account = await db.getFirstAsync<{ account_name: string }>('SELECT [account_name] FROM [AccountOwners] WHERE [id] = ?', [values.account_owner_id]);
+            values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, account?.account_name);
           }
         }
         for (const { id, values } of plan.updates) {
@@ -8899,6 +8906,8 @@ export class SqliteDataService implements DataService {
           threadId = input.threadId;
           recipients = participantIds(threadId, rows.messages, rows.receipts).filter((id) => id !== input.senderId);
         } else {
+          // Sprint 11 Revision 2.0: the built-in lists are for officers, Admins and Super Admins.
+          if (input.distributionGroups?.length) assertMayBroadcastToDistributionGroups(await this.memberWriteActor(db, input.senderId), input.distributionGroups);
           const grouped = await this.distributionRecipients(db, input.councilId, input.distributionGroups);
           recipients = [...new Set([...(input.recipientIds ?? []), ...grouped])].filter((id) => id !== input.senderId);
           if (input.councilId !== undefined && recipients.length === 0 && input.distributionGroups?.length) {

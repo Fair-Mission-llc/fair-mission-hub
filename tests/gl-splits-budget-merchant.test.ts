@@ -448,7 +448,7 @@ describe('screens', () => {
     expect(read('apps/web/components/CashAuditParts.tsx')).toContain('done.splits');
     expect(read('apps/web/components/AnnualBudgetCenter.tsx')).toContain('<BudgetCategoryManager');
     expect(read('apps/web/components/BudgetAnalyzerParts.tsx')).toContain('<BudgetCategoryCharts progress={progress} />');
-    expect(read('apps/web/app/council-lookups/page.tsx')).toContain("key: 'account_identity_label'");
+    expect(read('apps/web/components/modules/CouncilLookupTables.tsx')).toContain("key: 'account_identity_label'");
     expect(read('apps/mobile/components/CollectionQrModal.tsx')).toContain('{payee}');
     expect(read('apps/mobile/components/DonationQr.tsx')).toContain('{payee}');
     expect(read('apps/mobile/app/(app)/donate.tsx')).toContain('merchantAccountLine(option.link)');

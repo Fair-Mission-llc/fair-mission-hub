@@ -335,7 +335,7 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
   });
 
   it('renders Council Wide Settings as only its drawer panels (Sprint 10 Revision 3.0; a filing cabinet in 8S Revision 10.1)', () => {
-    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+    const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
     const panels = page.slice(page.indexOf('function SettingsPanels('), page.indexOf('function CouncilWideSettings('));
     const body = panels.slice(panels.indexOf('return ('));
     const topLevel = [...body.matchAll(/^ {4}<(\w+)/gm)].map((m) => m[1]);

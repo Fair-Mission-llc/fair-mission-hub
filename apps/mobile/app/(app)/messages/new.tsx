@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { DISTRIBUTION_GROUPS, distributionGroupLabel, memberDropdownOptions, sortCouncils, type DistributionGroup } from '@kofc/shared';
+import { canBroadcastToDistributionGroups, DISTRIBUTION_GROUPS, distributionGroupLabel, memberDropdownOptions, sortCouncils, type DistributionGroup } from '@kofc/shared';
 import { Dropdown } from '@/components/Dropdown';
 import { NavStrip } from '@/components/NavStrip';
 import { AppInput, AppText, Button, Field, Loading, Notice, Pill } from '@/components/ui';
@@ -36,7 +36,10 @@ export default function NewMessageScreen() {
 
   const options = state.data?.options ?? [];
   const labelOf = (id: number) => options.find((o) => o.value === id)?.label ?? `Member ${id}`;
-  const groupOptions = DISTRIBUTION_GROUPS.filter((g) => !groups.includes(g.value)).map((g) => ({ value: g.value, label: g.label }));
+  // Sprint 11 Revision 2.0: the built-in 'All Members' and 'Active Officers' lists are offered to officers, Admins and Super Admins only.
+  const groupOptions = canBroadcastToDistributionGroups(user)
+    ? DISTRIBUTION_GROUPS.filter((g) => !groups.includes(g.value)).map((g) => ({ value: g.value, label: g.label }))
+    : [];
 
   const send = async () => {
     setBusy(true);
@@ -71,13 +74,15 @@ export default function NewMessageScreen() {
 
         <Field label="TO">
           <View style={{ gap: space.sm }}>
-            <Dropdown
-              title="Distribution List"
-              placeholder="Distribution List…"
-              value={null}
-              options={groupOptions}
-              onChange={(g) => setGroups((current) => [...current, g])}
-            />
+            {canBroadcastToDistributionGroups(user) ? (
+              <Dropdown
+                title="Distribution List"
+                placeholder="Distribution List…"
+                value={null}
+                options={groupOptions}
+                onChange={(g) => setGroups((current) => [...current, g])}
+              />
+            ) : null}
             <Dropdown
               title="Add a person"
               placeholder="Add a person…"

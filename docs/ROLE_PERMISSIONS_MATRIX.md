@@ -74,13 +74,14 @@ Every permission also requires an **Active** membership status. Inactive members
 | Action | Standard Member | Budget Director | Financial Secretary | Treasurer | Council Admin | Grand Knight |
 | --- | :-: | :-: | :-: | :-: | :-: | :-: |
 | Message members of their council and affiliated councils | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Send to a built-in group (**All Members**, **Active Officers**) from the phone | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Send to a built-in group (**All Members**, **Active Officers**) from the phone | — | — | ✅ | ✅ | ✅ | ✅ |
+| **Message All Attendants** of an event from the calendar | — ¹ | — ¹ | ✅ | ✅ | ✅ | ✅ |
 | Start a new conversation from the web portal | — | — | — | — | ✅ | — |
 | Maintain the council's custom distribution lists | — | — | — | — | ✅ | — |
 | Message every member who holds a skill (roster skill filter) | — | — | — | — | ✅ | — |
 | Send a high-priority push alert | — | — | ✅ | ✅ | ✅ | — |
 
-The built-in groups are All Members and Active Officers (`DISTRIBUTION_GROUPS`). Every member may register their phone for push alerts and read their own. Rule: `assertMayDispatchCouncilAlerts`.
+The built-in groups are All Members and Active Officers (`DISTRIBUTION_GROUPS`). Since Sprint 11 Revision 2.0 only officers, Admins and Super Admins send to them (`assertMayBroadcastToDistributionGroups`). ¹ The event's owner may also message its attendants. Every member may register their phone for push alerts and read their own. Rule: `assertMayDispatchCouncilAlerts`.
 
 ## 4. Calendars
 

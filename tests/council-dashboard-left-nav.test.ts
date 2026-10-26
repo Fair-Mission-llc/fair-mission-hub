@@ -318,7 +318,7 @@ describe('the Member Desk cards', () => {
     expect(cards).toContain('<RankThresholdsInfo council={council.data} />');
     expect(cards).not.toContain('<ThresholdEditor');
     expect(cards).not.toContain('setRankThresholds');
-    const settings = read('apps/web/app/system-settings/council-settings/page.tsx');
+    const settings = read('apps/web/components/modules/CouncilWideSettings.tsx');
     expect(settings).toContain('<RankThresholdsCard council={council}');
     // No other page edits them.
     for (const path of ['apps/web/app/dashboard/page.tsx', 'apps/web/app/member-center/page.tsx', 'apps/web/components/DashboardDesks.tsx']) {

@@ -105,7 +105,7 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
   });
 
   it('files every settings card in exactly one drawer (Sprint 10 Revision 3.0)', () => {
-    const page = read('apps/web/app/system-settings/council-settings/page.tsx');
+    const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
     const tab = (id: string, next?: string) => page.slice(page.indexOf(`'${id}': (`), next ? page.indexOf(`'${next}': (`) : page.indexOf('}}', page.indexOf(`'${id}': (`)));
     const placement: Record<string, string[]> = {
       // Sprint 11 Revision 1.0: the lookups and vault link cards left; the Council Instance Record is the page header.

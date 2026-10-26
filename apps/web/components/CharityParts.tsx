@@ -74,9 +74,9 @@ export function CharityRecordFields({ draft, onChange }: { draft: CharityDraft; 
         )}
       </Field>
       <Field label="State">{(id) => <StateSelect id={id} required value={draft.State} onChange={(code) => set('State', code)} blankLabel="Choose…" />}</Field>
-      <Field label="Description" className="md:col-span-2">
+      <Field label="Description (optional)" className="md:col-span-2">
         {(id) => (
-          <Textarea id={id} required maxLength={CHARITY_DESCRIPTION_MAX_LENGTH} value={draft.Description} onChange={(e) => set('Description', e.target.value)} placeholder="What the charity does" />
+          <Textarea id={id} maxLength={CHARITY_DESCRIPTION_MAX_LENGTH} value={draft.Description} onChange={(e) => set('Description', e.target.value)} placeholder="What the charity does" />
         )}
       </Field>
       <Field label="EIN (optional)" hint="Nine digits, as NN-NNNNNNN">
@@ -91,10 +91,10 @@ export function CharityRecordFields({ draft, onChange }: { draft: CharityDraft; 
       <Field label="Contact email (optional)">
         {(id) => <Input id={id} type="email" maxLength={CHARITY_CONTACT_MAX_LENGTH} value={draft.ContactEmail} onChange={(e) => set('ContactEmail', e.target.value)} />}
       </Field>
-      <Field label="Mailing address" hint="Where the check is sent">
+      <Field label="Mailing address (optional)" hint="Where the check is sent">
         {(id) => <Input id={id} maxLength={CHARITY_ADDRESS_MAX_LENGTH} value={draft.Address} onChange={(e) => set('Address', e.target.value)} placeholder="Street, city" />}
       </Field>
-      <Field label="ZIP code">
+      <Field label="ZIP code (optional)">
         {(id) => <Input id={id} maxLength={CHARITY_ZIP_MAX_LENGTH} value={draft.ZipCode} onChange={(e) => set('ZipCode', e.target.value)} />}
       </Field>
       <label className="flex items-center gap-2 text-sm font-bold md:col-span-2">

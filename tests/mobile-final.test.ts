@@ -58,15 +58,27 @@ describe.each(drivers)('$name driver: sending to a distribution list', (d) => {
   it('merges lists and people picked one by one without duplicates', async () => {
     const db = await d.make();
     const sent = await db.messages.send({
-      senderId: MEMBER.member,
+      senderId: MEMBER.superAdmin,
       councilId: 1,
-      recipientIds: [MEMBER.superAdmin],
+      recipientIds: [MEMBER.member, MEMBER.admin],
       distributionGroups: ['active_officers'],
       text: 'Question for leadership.',
     });
     const thread = (await db.messages.listThreads(MEMBER.member)).find((t) => t.thread.id === sent.ThreadID)!;
     expect(thread.participantIds).toEqual([MEMBER.superAdmin, MEMBER.admin, MEMBER.member]);
     expect(thread.thread.IsGroupChat).toBe(1);
+  });
+
+  it('refuses the built-in lists to a member who is not an officer, Admin or Super Admin (Sprint 11 Revision 2.0)', async () => {
+    const db = await d.make();
+    const receipts = d.count(db, 'ReadReceipts');
+    await expectRule(
+      db.messages.send({ senderId: MEMBER.member, councilId: 1, recipientIds: [MEMBER.superAdmin], distributionGroups: ['active_officers'], text: 'Question for leadership.' }),
+      'ADMIN_REQUIRED',
+    );
+    expect(d.count(db, 'ReadReceipts')).toBe(receipts);
+    // A message to people picked one by one is still every member's.
+    await db.messages.send({ senderId: MEMBER.member, councilId: 1, recipientIds: [MEMBER.superAdmin], text: 'Question for leadership.' });
   });
 
   it('reaches every Active member with All Members', async () => {

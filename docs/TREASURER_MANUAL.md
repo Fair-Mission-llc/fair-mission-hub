@@ -1126,7 +1126,7 @@ Four figures show at the top of the panel: **Events awaiting the count**, **Logg
 
 ### 11.1 Concept: who owns a payment account
 Each payment method that a council turns on pays into one account. A card reader, a Venmo page, a Zelle profile and a parish giving portal are examples.
-The **Account owner** column on **Enabled donation methods** records who owns that account.
+Each payment method records who owns that account. **Enabled donation methods** no longer shows an **Account owner** column.
 
 | Account owner | Meaning |
 | --- | --- |
@@ -1134,34 +1134,35 @@ The **Account owner** column on **Enabled donation methods** records who owns th
 | **Parish account** | The money lands in the parish's account. The parish already holds the money. |
 | **Third-party account** | The money lands in the account of a vendor or a partner charity. |
 
-The portal does not guess the owner. A new payment method starts with no owner. The editor does not save until you choose one.
+A payment method keeps the owner it has. A new payment method is a **Council account**.
 Methods that were set up before Sprint 8O read as **Council account**.
+The **Account** column names the account itself (11.2). **Council Account** is the default account.
 
 Each donation keeps the owner that its payment method had at the moment the donation was recorded.
 A later change to the owner does not change past donations. The change applies only to donations recorded after the change.
 Past parish splits and batch coding therefore stay the same when you correct a payment method.
 An edit that moves a donation to a different payment method takes that method's owner at the moment of the edit.
 
-### 11.2 Set the account owner of a payment method
+### 11.2 Choose the account of a payment method
 > **Who can do this:** council Admins, the council's Financial Secretary and Treasurer, and Super Admins.
 
-**Goal:** Record who owns the account that each payment method pays into.
+**Goal:** Record which account each payment method pays into.
 
 **Start point:** Sidebar → System Settings → **Council Lookups** → **Enabled donation methods**.
 
 **Steps:**
-1. Find the payment method. To add a method, select **Add donation method**.
-2. In **Account owner**, select **Council account**, **Parish account** or **Third-party account**.
+1. Find the payment method. To add a method, select **Add donation method**. The **Check** method is always row 3.
+2. In **Account**, select **Council Account** or one of the council's accounts.
 3. Select **Save changes**.
 
-**Expected result:** The message **Saved … donation method rows.** shows. The owner shows on the row.
+**Expected result:** The message **Saved … donation method rows.** shows. The account shows on the row.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| **Save changes** is unavailable and a red message says *"Choose who owns the account each payment method pays into (Council, Parish or Third party) before you save."* | A changed row shows **Choose…** in **Account owner**. | Choose the owner on each row with a red border. |
-| A parish gift shows in the batch coder. | The parish's giving method was set to **Council account** when the gift was recorded. | Set the method to **Parish account** before the next event. Past donations keep their recorded owner. |
-| You changed the owner, but past events did not change. | Each donation keeps the owner it was recorded under. | No fix is needed. Only new donations use the new owner. |
+| You cannot find the **Account owner** column. | The column was removed. A payment method keeps the owner it has, and a new method is a **Council account**. | No fix is needed. Ask the platform owner to correct the owner of an old method. |
+| A parish gift shows in the batch coder. | The parish's giving method is recorded as a **Council account**. | Ask the platform owner to record the method as a **Parish account**. Past donations keep their recorded owner. |
+| You changed the account, but past events did not change. | Each donation keeps the owner it was recorded under. | No fix is needed. Only new donations use the change. |
 
 ---
 
@@ -1289,8 +1290,8 @@ A table under the charts lists each category with its figures. The first eight c
 
 **Steps:**
 1. Find the payment method, for example **Venmo**.
-2. Check the **Account owner** (11.2).
-3. In **Account Name Members See**, enter the account name as the payment app shows it, for example `St. Mary's Cathedral Parish`.
+2. Check the **Account** (11.2). **Council Account** is the default account.
+3. In **Account Name Members See**, enter the account name as the payment app shows it, for example `St. Mary's Cathedral Parish`. Left empty, the name of the selected account is saved.
 4. Select **Save changes**.
 
 **Expected result:** On the phone, the QR code screen shows *"Pays into St. Mary's Cathedral Parish (Parish account)"* under the heading.
@@ -1299,7 +1300,7 @@ A table under the charts lists each category with its figures. The first eight c
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The phone shows *"Pays into the council's account"* only. | The method has no account name. | Enter the account name (step 3). |
-| The phone shows the wrong owner. | The **Account owner** is wrong. | Correct the owner (11.2). |
+| The phone shows the wrong owner. | The method's recorded owner is wrong. | Ask the platform owner to correct the owner. |
 
 ---
 
@@ -1324,6 +1325,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 13. Network addresses, ports and configuration keys
 - 14. Firewall clearance
 - 15. The software bill of materials (SBOM)
+- 16. The Admin Desk
 - Appendix: QR code files
 
 **Executive Governance Manual**

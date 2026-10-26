@@ -433,7 +433,7 @@ describe.each(drivers)('councils.setDuesRate ($name)', (d) => {
 
 describe('Base Dues Rate editing (Sprint 6L Extension)', () => {
   it('leaves the rate to the Global Parameters Dashboard: Council Lookups has no dues tab or panel', () => {
-    const page = read('apps/web/app/council-lookups/page.tsx');
+    const page = read('apps/web/components/modules/CouncilLookupTables.tsx');
     expect(page).not.toContain("label: 'Base Dues Rate'");
     expect(page).not.toContain('DuesRatePanel');
     expect(existsSync(join(__dirname, '..', 'apps/web/components/DuesRatePanel.tsx'))).toBe(false);

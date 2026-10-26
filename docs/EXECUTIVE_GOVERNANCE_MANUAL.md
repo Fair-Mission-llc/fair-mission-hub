@@ -195,7 +195,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Council History** | Performance | Every member | Annals, the diary, oral histories and the In Memoriam roll | 5 |
 | **Operations Knowledge Archive** | System Settings | Officers, Admins | Every lesson the councils filed | 17.3 |
 | **Lessons Registry** | Performance | Officers, Admins | Lessons from past events | 5.5 |
-| **📸 Council Photo Gallery** (**Browse Albums**, **Gallery Management Center**) | Top of the sidebar | Every member | Event and meeting photos, Smart Albums and photo uploads | 6.2 |
+| **Council Photo Gallery** (**Browse Gallery**, **Gallery Administration Hub**) | Top of the sidebar | Every member | Event and meeting photos, albums and photo uploads | 6.2 |
 | **Council Artifacts** | Resources | Every member | Flyers, minutes and photo albums filed in Google Drive | 6.2 |
 | **Constitutional Bylaws** | Governance | Every member | The council's bylaws | 2.8 |
 | **SOP Center** | Answers | Every member | The standard operating procedures | 4.2 (Administrator User Guide) |
@@ -270,7 +270,8 @@ The **System Settings** pillar had the name **Setup** in earlier versions of the
 Two changes came with Sprint 10:
 
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page.
-- **📸 Council Photo Gallery** sits above the pillars, under **Navigation Guide**. Its two links are **Browse Albums** and **Gallery Management Center**.
+- **Council Photo Gallery** sits above the pillars, under **Navigation Guide**. Its two links are **Browse Gallery** and **Gallery Administration Hub**.
+- The sidebar shows its links as plain text, with no icons. Admins and Super Admins see **Admin Desk** first under **System Settings**.
 
 The menu button (three lines) at the top of the sidebar hides the sidebar. Select the menu button again to show the sidebar. The portal remembers the choice on each computer.
 
@@ -2250,6 +2251,27 @@ On a coloured block, the shift warnings change form:
 
 The legend above the calendar lists every colour and mark.
 
+### 15.5 Message all attendants of an event
+> **Who can do this:** council officers, Admins, Super Admins and the event's owner.
+> **Warning:** The message goes at once to every member signed up for any shift of the event. You cannot recall it.
+
+**Goal:** Send one message to everyone signed up for an event.
+
+**Start point:** Sidebar → Faith In Action → **Visual Master Calendar** → a day with the event.
+
+**Steps:**
+1. Select the day. The details card opens beside the calendar.
+2. Under the event, select **Message All Attendants**.
+3. Enter the message.
+4. Select **Send**. The message goes out at once.
+
+**Expected result:** The message *"Sent to … attendants."* shows. Replies arrive in **Council Messages & Alerts**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Message All Attendants** does not show. | Nobody else is signed up yet, or you are not an officer, an Admin or the event's owner. | Wait for sign-ups, or ask the event's owner. |
+
 ---
 
 ## 16. Planning workflows and bilateral council affiliations
@@ -2727,6 +2749,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 13. Network addresses, ports and configuration keys
 - 14. Firewall clearance
 - 15. The software bill of materials (SBOM)
+- 16. The Admin Desk
 - Appendix: QR code files
 
 **Executive Governance Manual**

@@ -223,7 +223,9 @@ describe('the desk manual headers', () => {
     for (const route of ['apps/web/app/api/manuals/route.ts', 'apps/web/app/api/manuals/pdf/route.ts']) {
       const src = read(route);
       expect(src).toContain('requirePortalSession');
-      expect(src).toContain('isRoleManualKey');
+      // Sprint 11 Revision 2.0: the routes also serve the Administration Manual ('admin'), to Admins and Super Admins only.
+      expect(src).toContain('isDeskManualKey');
+      expect(src).toContain('The Administration Manual is for Admins and Super Admins.');
     }
     expect(read('apps/web/app/api/manuals/pdf/route.ts')).toContain("'Content-Type': 'application/pdf'");
   });

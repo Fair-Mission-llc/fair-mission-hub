@@ -24,26 +24,47 @@
 //     page. Lump-sum revenue and corrected cash bag counts are posted from the Treasurer Desk's batch coder (the
 //     Lump-Sum Financial Override row, CashAuditParts); bank statements are matched in the Treasurer Desk's Bank
 //     Statement Match-Window. The quick-action hub keeps only the asset transfer drawer.
+//   - Sprint 11 Revision 2.0: the Membership Dues Revenue Forecast and the Budget Allocation & YOY Variance Analyzer are
+//     gone from this page. Budgeted vs. Current Actual Spend is a closed drawer (FinanceDrawer); its grid loads only once
+//     the drawer is opened.
 import Link from 'next/link';
-import { useState } from 'react';
-import {
-  buildDuesForecast,
-  buildLiquidityGauges,
-  canManageBudgetForecast,
-  canOpenTreasurerDesk,
-  canPostGeneralLedger,
-  currentFraternalYear,
-} from '@kofc/shared';
+import { useState, type ReactNode } from 'react';
+import { buildLiquidityGauges, canOpenTreasurerDesk, canPostGeneralLedger } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { BalanceScale, LiquidityGaugeCard, TransferDrawer } from '@/components/FinanceParts';
-import { BudgetAnalyzerCard } from '@/components/BudgetAnalyzerParts';
 import { NetWorthCard } from '@/components/NetWorthParts';
-import { ConcludedPerformanceGrid, DuesForecastCard } from '@/components/DuesParts';
+import { ConcludedPerformanceGrid } from '@/components/DuesParts';
 import { Button, Empty, Notice, PageTitle, Panel } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
+
+/** Sprint 11 Revision 2.0: a closed drawer of the Financial Management Center; the body mounts only while it is open. */
+function FinanceDrawer({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details className="group rounded border-2 border-navy bg-white" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="flex cursor-pointer list-none items-center gap-3 border-l-8 border-gold px-4 py-3 [&::-webkit-details-marker]:hidden">
+        <span aria-hidden="true" className="font-bold text-navy motion-safe:transition-transform group-open:rotate-90">
+          ›
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="font-serif text-lg font-bold leading-tight">{title}</span>
+          <span className="text-xs text-muted">{summary}</span>
+        </span>
+      </summary>
+      {open ? <div className="border-t border-line p-4">{children}</div> : null}
+    </details>
+  );
+}
+
+/** The drawer's body: the concluded events and meetings against their budget lines. */
+function ConcludedPerformance({ actorId, councilId }: { actorId: number; councilId: number }) {
+  const concluded = useLoad(() => db.budget.getConcludedPerformance(actorId, councilId), [actorId, councilId]);
+  if (concluded.error) return <Notice tone="error">{concluded.error}</Notice>;
+  return concluded.data ? <ConcludedPerformanceGrid performance={concluded.data} /> : <p className="text-sm">Loading…</p>;
+}
 
 function FinanceDashboard() {
   const user = useUser();
@@ -52,15 +73,6 @@ function FinanceDashboard() {
   const chart = useLoad(() => db.finance.listChartOfAccounts(user.memberId, councilId), [user.memberId, councilId]);
   const sheet = useLoad(() => db.finance.getLatestBalanceSheet(user.memberId, councilId), [user.memberId, councilId]);
   const worth = useLoad(() => db.finance.getCouncilNetWorth(user.memberId, councilId), [user.memberId, councilId]);
-  const dues = useLoad(async () => {
-    const [council, members, statuses] = await Promise.all([db.councils.get(councilId), db.members.listByCouncil(councilId), db.lookups.list('MemberStatus')]);
-    return buildDuesForecast({ council, members, statuses });
-  }, [councilId]);
-  const concluded = useLoad(() => db.budget.getConcludedPerformance(user.memberId, councilId), [user.memberId, councilId]);
-  const analysisYear = currentFraternalYear(new Date());
-  const analysis = useLoad(() => db.budget.getBudgetAnalysis(user.memberId, councilId, analysisYear), [user.memberId, councilId, analysisYear]);
-  // Sprint 9 Revision 6.0: the category charts; a reader who may not review budget performance just goes without them.
-  const progress = useLoad(() => db.budget.getBudgetProgress(user.memberId, councilId, analysisYear).catch(() => null), [user.memberId, councilId, analysisYear]);
   const [transferring, setTransferring] = useState(false);
   const canPost = canPostGeneralLedger(user, councilId);
   const reload = async () => {
@@ -119,24 +131,9 @@ function FinanceDashboard() {
       {worth.error ? <Notice tone="error">{worth.error}</Notice> : null}
       {worth.data ? <NetWorthCard worth={worth.data} /> : worth.loading ? <p className="text-sm">Loading…</p> : null}
 
-      {dues.error ? <Notice tone="error">{dues.error}</Notice> : null}
-      {concluded.error ? <Notice tone="error">{concluded.error}</Notice> : null}
-      {dues.data ? <DuesForecastCard forecast={dues.data} /> : dues.loading ? <p className="text-sm">Loading…</p> : null}
-      {concluded.data ? <ConcludedPerformanceGrid performance={concluded.data} /> : concluded.loading ? <p className="text-sm">Loading…</p> : null}
-      {analysis.error ? <Notice tone="error">{analysis.error}</Notice> : null}
-      {analysis.data ? (
-        <BudgetAnalyzerCard
-          analysis={analysis.data}
-          progress={progress.data}
-          canSetCeiling={canManageBudgetForecast(user, councilId)}
-          onSaveCeiling={async (ceiling) => {
-            await db.budget.setTargetSpendingCeiling(user.memberId, councilId, analysisYear, ceiling);
-            await analysis.reload();
-          }}
-        />
-      ) : analysis.loading ? (
-        <p className="text-sm">Loading…</p>
-      ) : null}
+      <FinanceDrawer title="Budgeted vs. Current Actual Spend" summary="Concluded events and meetings of this fraternal year against their budget lines">
+        <ConcludedPerformance actorId={user.memberId} councilId={councilId} />
+      </FinanceDrawer>
 
       <Panel
         title="Quick actions"

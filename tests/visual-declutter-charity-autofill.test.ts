@@ -201,7 +201,8 @@ describe('the collapsible sidebar and the Council Photo Gallery node', () => {
 
   it('pins the gallery node with its two views and a persistent hamburger toggle', () => {
     expect(COUNCIL_PHOTO_GALLERY_TITLE).toBe('📸 Council Photo Gallery');
-    expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['Browse Albums', 'Gallery Management Center']);
+    // Sprint 11 Revision 2.0: renamed.
+    expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['📸 Browse Gallery', 'Gallery Administration Hub']);
     expect(galleryViewFromAnchor('#manage')).toBe('manage');
     expect(galleryViewFromAnchor('#browse')).toBe('browse');
     expect(galleryViewFromAnchor('')).toBe('browse');

@@ -12,11 +12,17 @@
 // Sprint 8C: outside System Settings the Canonization Rank benchmarks are a read-only information block
 // (RankThresholdsInfo). The editor (RankThresholdsCard) lives only on System Settings > Council Wide Settings, for the
 // council's Admins and Super Admins (councils.setRankThresholds checks the same rule).
+//
+// Sprint 11 Revision 2.0: the Monthly activity overview reads its figures from the month's summary (monthlyActivityFigures),
+// the same summary the Net Balance tile reads, so the two never disagree: volunteers are the summary's unique Knights,
+// hours its labor hours, and the money its funds raised (cash plus electronic) with the net balance beside it. The
+// engagement read now supplies only the names of who served.
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   canAdministerCouncil,
   CANONIZATION_LEVELS,
   councilRankThresholds,
+  monthlyActivityFigures,
   describeError,
   RANK_THRESHOLD_MAX_EVENTS,
   RANK_THRESHOLD_MAX_HOURS,
@@ -143,25 +149,29 @@ export function EngagementCards({
   const engagement = useLoad(() => db.reports.councilEngagement(user.memberId, councilId, year, month), [user.memberId, councilId, year, month]);
   const council = useLoad(() => db.councils.get(councilId), [councilId]);
   const e = engagement.data;
-  const totalHours = e ? e.volunteers.reduce((sum, v) => sum + v.hours, 0) : 0;
+  const figures = monthlyActivityFigures(summary);
 
   return (
     <div className={showLeaderboard ? 'grid grid-cols-1 items-start gap-4 xl:grid-cols-2' : 'grid grid-cols-1 gap-4'}>
       <section aria-label="Monthly activity overview" className="rounded border-4 border-gold bg-navy px-5 py-4 text-white">
         <h2 className="font-serif text-xl font-bold">Monthly activity overview · {monthLabel}</h2>
         {engagement.error ? <Notice tone="error">{engagement.error}</Notice> : null}
-        <dl className="mt-3 grid grid-cols-3 gap-3">
+        <dl className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
           <div>
             <dt className="text-xs font-bold uppercase tracking-wide text-gold">Volunteers</dt>
-            <dd className="text-4xl font-bold">{e ? e.volunteers.length.toLocaleString('en-US') : '…'}</dd>
+            <dd className="text-4xl font-bold">{figures.volunteers.toLocaleString('en-US')}</dd>
           </div>
           <div>
-            <dt className="text-xs font-bold uppercase tracking-wide text-gold">Cash collected</dt>
-            <dd className="text-4xl font-bold">{formatMoney(summary.finances.cash)}</dd>
+            <dt className="text-xs font-bold uppercase tracking-wide text-gold">Funds raised</dt>
+            <dd className="text-4xl font-bold">{formatMoney(figures.raised)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-bold uppercase tracking-wide text-gold">Net balance</dt>
+            <dd className="text-4xl font-bold">{formatMoney(figures.net)}</dd>
           </div>
           <div>
             <dt className="text-xs font-bold uppercase tracking-wide text-gold">Hours served</dt>
-            <dd className="text-4xl font-bold">{e ? formatDecimalHours(totalHours) : '…'}</dd>
+            <dd className="text-4xl font-bold">{formatDecimalHours(figures.hours)}</dd>
           </div>
         </dl>
         <h3 className="mt-4 text-sm font-bold text-gold">Who served</h3>
@@ -176,7 +186,10 @@ export function EngagementCards({
             ))}
           </ul>
         ) : null}
-        <p className="mt-3 text-xs">Cash collected is the month&apos;s cash raised at the council&apos;s events.</p>
+        <p className="mt-3 text-xs">
+          Funds raised, net balance, volunteers and hours come from the same monthly ledger as the Net balance tile: {formatMoney(figures.raised)} raised −{' '}
+          {formatMoney(figures.spend)} spent.
+        </p>
       </section>
 
       {showLeaderboard ? (
