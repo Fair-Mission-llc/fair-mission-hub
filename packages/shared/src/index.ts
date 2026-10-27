@@ -91,3 +91,4 @@ export * from './calendar-feed';
 export * from './donation-attachments';
 export * from './hub-sync';
 export * from './admin-desk';
+export * from './setup-wizard';

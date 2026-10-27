@@ -1351,6 +1351,45 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 | The message says Python with ReportLab is not installed. | The server has no Python or no ReportLab. | Run `pip install -r scripts/requirements.txt` on the server. |
 | The message says the manuals could not be rebuilt. | A manual failed its wording check. | Run `py scripts/compile_all_manuals.py --check` and correct the lines it prints. |
 
+### 16.4 Run the Council Setup Wizard
+> **Who can do this:** council Admins and Super Admins. The wizard always works on your own home council.
+
+**Goal:** Set up a new council in five steps.
+
+**Start point:** Sidebar → System Settings → **Admin Desk** → **Run Setup Wizard**. The wizard also opens by itself the first time you open the desk of a council with no accounts and no other members.
+
+**Steps:**
+1. **Supreme CSV Roster Ingestion:** drop the Supreme roster CSV file. Select **Sync**.
+2. **File Storage and Email Gateway:** choose the file repository provider. Type the mail server, the sign-in email and the password. Select **Save**. The password goes to the **Credentials Vault** for your home council only.
+3. **Clone Founding Template:** select **⚡ Clone Founding Template**. The platform copies the chart of accounts, the **Council Lookup Tables** rows and the **Council Wide Settings** of Founding Council 15295.
+4. **Practice Sandbox:** to try the desks first, select **Activate Safe Practice Sandbox**.
+5. **Quick-Start Guide:** select **Download the Quick-Start Intake Guide**. Select **Open the Admin Desk**.
+
+**Expected result:** The wizard closes and the Admin Desk shows. Select **Skip for now** to close the wizard before the end. Select **?** beside a field to read what the field does.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The clone copied 0 items. | Your council already has every item. | No action. The clone copies only what is missing. |
+| The clone says Council 15295 cannot be cloned. | You are signed in to the founding council. | No action. The founding council is the template. |
+
+### 16.5 Turn off the Practice Sandbox
+> **Who can do this:** council Admins and Super Admins.
+
+**Goal:** Remove all practice members and practice fundraisers.
+
+**Start point:** Sidebar → System Settings → **Admin Desk** → **Practice Sandbox** switch.
+
+**Steps:**
+1. Turn off the **Practice Sandbox** switch.
+
+**Expected result:** The 10 practice members, the 3 practice fundraisers, and their shifts, sign-ups and logins are removed. Real records stay.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The switch says a donation is recorded. | A donation names a practice fundraiser. | Remove the donation. Turn off the switch again. |
+
 ---
 
 ## Appendix: QR code files

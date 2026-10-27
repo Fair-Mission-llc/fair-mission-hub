@@ -124,6 +124,7 @@ import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, A
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
+import type { FoundingTemplateCloneResult, PracticeSandboxPurgeResult, PracticeSandboxSeedResult, PracticeSandboxStatus } from './setup-wizard';
 import type { BulletinLayoutInput, LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { OldBusinessItem } from './old-business';
 import type { GLSplitProfile, GLSplitProfileInput } from './gl-splits';
@@ -2625,6 +2626,29 @@ export interface DataService {
      * field or no field.
      */
     setPlatformSettings(actorId: number, settings: Partial<Omit<PlatformSettings, 'id'>>): Promise<PlatformSettings>;
+
+    /*
+     * Sprint 11 Revision 4.1: the Admin Desk Setup Wizard (setup-wizard.ts). All four need an Active Admin of the council
+     * or any Active Super Admin (assertMayMaintainCouncilRecords: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED).
+     */
+    /**
+     * '⚡ Clone Founding Template': copies Council 15295's chart of accounts, council lookup rows (activities, donation
+     * types, payment methods) and Council Wide Settings onto the council, all or nothing (planFoundingTemplateClone).
+     * Rows the council already holds by name are kept. INVALID_INPUT when the council is 15295 itself or 15295 is missing.
+     */
+    cloneFoundingTemplate(actorId: number, councilId: number): Promise<FoundingTemplateCloneResult>;
+    /** How many practice members and events the council holds now. */
+    getPracticeSandboxStatus(actorId: number, councilId: number): Promise<PracticeSandboxStatus>;
+    /**
+     * 'Activate Safe Practice Sandbox': adds the 10 practice members and 3 practice fundraisers (each with one shift and
+     * three practice volunteers). No welcome email is sent. INVALID_INPUT while practice records remain.
+     */
+    seedPracticeSandbox(actorId: number, councilId: number): Promise<PracticeSandboxSeedResult>;
+    /**
+     * Removes every practice member and event of the council, with their signups, shifts, roles and logins. RECORD_IN_USE
+     * (nothing removed) when a donation names a practice event.
+     */
+    purgePracticeSandbox(actorId: number, councilId: number): Promise<PracticeSandboxPurgeResult>;
   };
 
   /**

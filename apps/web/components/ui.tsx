@@ -68,23 +68,66 @@ export function Textarea({ className, ...rest }: ComponentProps<'textarea'>) {
 }
 
 /** A labelled control. The label is wired to the control through a generated id. */
+/**
+ * Sprint 11 Revision 4.1: the '?' context tip next to an administrative input. Select (or focus) it to show the tip;
+ * Escape or leaving the mark hides it. The tip is also the button's accessible description.
+ */
+export function HelpTip({ text, label = 'More about this field' }: { text: string; label?: string }) {
+  const [open, setOpen] = useState(false);
+  const tipId = useId();
+  return (
+    <span className="relative inline-flex align-middle">
+      <button
+        type="button"
+        aria-label={label}
+        aria-expanded={open}
+        aria-describedby={tipId}
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setOpen(false)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setOpen(false);
+        }}
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-navy bg-white text-xs font-bold normal-case text-navy hover:bg-gold/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold"
+      >
+        ?
+      </button>
+      <span
+        id={tipId}
+        role="tooltip"
+        className={cx(
+          'absolute left-0 top-full z-50 mt-1 w-64 rounded border-2 border-navy bg-white p-2 text-xs font-normal normal-case tracking-normal text-navy shadow-lg',
+          open ? 'block' : 'sr-only',
+        )}
+      >
+        {text}
+      </span>
+    </span>
+  );
+}
+
 export function Field({
   label,
   hint,
+  help,
   children,
   className,
 }: {
   label: string;
   hint?: string;
+  /** Sprint 11 Revision 4.1: a '?' context tip beside the label. */
+  help?: string;
   children: (id: string) => ReactNode;
   className?: string;
 }) {
   const id = useId();
   return (
     <div className={cx('flex flex-col gap-1', className)}>
-      <label htmlFor={id} className="text-xs font-bold uppercase tracking-wide text-navy">
-        {label}
-      </label>
+      <span className="flex items-center gap-1.5">
+        <label htmlFor={id} className="text-xs font-bold uppercase tracking-wide text-navy">
+          {label}
+        </label>
+        {help ? <HelpTip text={help} label={`More about ${label}`} /> : null}
+      </span>
       {children(id)}
       {hint ? <span className="text-xs text-muted">{hint}</span> : null}
     </div>

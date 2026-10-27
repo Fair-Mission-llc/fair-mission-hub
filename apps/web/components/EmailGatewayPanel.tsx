@@ -123,7 +123,7 @@ export function EmailGatewayPanel({ councilId, onChanged }: { councilId: number;
         ) : null}
         {vaulted.error ? <Notice tone="error">The saved password could not be checked: {vaulted.error}</Notice> : null}
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Email service">
+          <Field label="Email service" help="The company that runs your mail server. Choosing one fills in its server and port for you.">
             {(id) => (
               <Select id={id} value={provider} onChange={(e) => chooseProvider(e.target.value as EmailProvider)} disabled={busy}>
                 {EMAIL_PROVIDERS.map((p) => (
@@ -134,13 +134,17 @@ export function EmailGatewayPanel({ councilId, onChanged }: { councilId: number;
               </Select>
             )}
           </Field>
-          <Field label="Mail server">
+          <Field label="Mail server" help="The SMTP host name the portal sends council email through, for example smtp.gmail.com.">
             {(id) => <Input id={id} value={host} onChange={(e) => setHost(e.target.value)} placeholder="smtp.example.org" maxLength={253} required disabled={busy} />}
           </Field>
-          <Field label="Sign-in email">
+          <Field label="Sign-in email" help="The mailbox the portal signs in as. Council email is sent from this address.">
             {(id) => <Input id={id} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="council@example.org" maxLength={255} required disabled={busy} />}
           </Field>
-          <Field label="Password" hint={saved ? 'Saved. Leave empty to keep it.' : undefined}>
+          <Field
+            label="Password"
+            hint={saved ? 'Saved. Leave empty to keep it.' : undefined}
+            help="Sealed in the Credentials Vault for your home council only. The portal never shows it again."
+          >
             {(id) => (
               <Input
                 id={id}

@@ -6,6 +6,7 @@
                                                  docs/TREASURER_MANUAL.md  -> docs/TREASURER_MANUAL.pdf
                                                  docs/FINANCIAL_SECRETARY_MANUAL.md -> docs/FINANCIAL_SECRETARY_MANUAL.pdf
                                                  docs/EXECUTIVE_GOVERNANCE_MANUAL.md -> docs/EXECUTIVE_GOVERNANCE_MANUAL.pdf
+                                                 docs/QUICK_START_INTAKE_GUIDE.md -> docs/QUICK_START_INTAKE_GUIDE.pdf
     py scripts/compile_all_manuals.py --only treasurer   (or financial-secretary, executive)
     py scripts/compile_all_manuals.py --check    run each guide's wording check only; write nothing
     py scripts/compile_all_manuals.py --only member
@@ -105,6 +106,15 @@ MANUALS = (
         title='Executive Governance Manual',
         disclaimer=layout.DISCLAIMER,
         required_screen_names=layout.REQUIRED_SCREEN_NAMES,
+    ),
+    # Sprint 11 Revision 4.1: the short leaflet the Admin Desk Setup Wizard's last step hands out.
+    Manual(
+        key='quickstart',
+        source='docs/QUICK_START_INTAKE_GUIDE.md',
+        output='docs/QUICK_START_INTAKE_GUIDE.pdf',
+        title='Quick-Start Intake Guide',
+        disclaimer=layout.DISCLAIMER,
+        required_screen_names=('Credentials Vault',),
     ),
 )
 

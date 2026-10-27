@@ -784,6 +784,21 @@ import {
   type CouncilAffiliations,
 } from '@kofc/shared';
 import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import {
+  assertNotFoundingCouncil,
+  assertPracticeSandboxEmpty,
+  COUNCIL_WIDE_SETTING_NAMES as SETUP_COUNCIL_WIDE_SETTING_NAMES,
+  FOUNDING_COUNCIL_NUMBER,
+  isPracticeEmail,
+  isPracticeEventName,
+  planFoundingTemplateClone,
+  PRACTICE_BLOCKING_EVENT_ROWS,
+  PRACTICE_DEPENDENT_ROWS,
+  practiceFundraisers,
+  practiceRosterRows,
+  practiceSandboxStatus,
+  type FoundingTemplateCloneResult,
+} from '@kofc/shared';
 import { PRESENTATION_SEED_STATEMENTS, SCHEMA_STATEMENTS, SEED_STATEMENTS, TABLE_COLUMNS } from '../generated/schema.sqlite';
 import { sha256Hex } from '../password';
 import {
@@ -2102,6 +2117,161 @@ export class SqliteDataService implements DataService {
         councilId,
       ]);
       return withoutMeetingPin((await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!);
+    },
+
+    // ---- Sprint 11 Revision 4.1: the Admin Desk Setup Wizard (setup-wizard.ts) ----
+    cloneFoundingTemplate: async (actorId, councilId) => {
+      const db = await this.ready();
+      let result: FoundingTemplateCloneResult | null = null;
+      await db.withTransactionAsync(async () => {
+        assertMayMaintainCouncilRecords(await this.memberWriteActor(db, actorId), councilId, 'clone the founding template');
+        assertNotFoundingCouncil((await this.requireRecord(db, 'Council', councilId)) as unknown as Council);
+        const founding = await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [CouncilNumber] = ?', [FOUNDING_COUNCIL_NUMBER]);
+        if (!founding) throw new BusinessRuleError('INVALID_INPUT', `Founding Council ${FOUNDING_COUNCIL_NUMBER} is not on this platform.`, {});
+        const of = <T>(table: string, id: number) => db.getAllAsync<T>(`SELECT * FROM [${table}] WHERE [CouncilID] = ? ORDER BY [id]`, [id]);
+        const plan = planFoundingTemplateClone(
+          {
+            accounts: await this.glAccounts(db, founding.id),
+            activities: await of<Activities>('Activities', founding.id),
+            donationTypes: await of<DonationType>('DonationType', founding.id),
+            methods: await of<CouncilDonationMethod>('CouncilDonationMethod', founding.id),
+            settings: councilWideSettings(founding),
+          },
+          {
+            accounts: await this.glAccounts(db, councilId),
+            activities: await of<Activities>('Activities', councilId),
+            donationTypes: await of<DonationType>('DonationType', councilId),
+            methods: await of<CouncilDonationMethod>('CouncilDonationMethod', councilId),
+          },
+        );
+        const accountId = async (name: string | null) =>
+          name === null
+            ? null
+            : ((await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [GLAccount] WHERE [CouncilID] = ? AND LOWER([AccountName]) = LOWER(?)', [councilId, name]))?.id ?? null);
+        for (const a of plan.accounts) {
+          await db.runAsync(
+            `INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [ParentAccountID], [IsVirtualGoal], [TargetGoalAmount], [is_split_account], [account_display_name], [ownership_type])
+             VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+            [councilId, a.AccountName, a.AccountType, await accountId(a.parentName), a.IsVirtualGoal, a.TargetGoalAmount, a.account_display_name, a.ownership_type],
+          );
+        }
+        for (const a of plan.activities) {
+          await db.runAsync('INSERT INTO [Activities] ([ActivityName], [ActivityDescription], [CategoryID], [CouncilID], [lookup_status]) VALUES (?, ?, ?, ?, ?)', [
+            a.ActivityName,
+            a.ActivityDescription,
+            a.CategoryID,
+            councilId,
+            a.lookup_status,
+          ]);
+        }
+        for (const t of plan.donationTypes) {
+          await db.runAsync('INSERT INTO [DonationType] ([CouncilID], [DonationType], [lookup_status]) VALUES (?, ?, ?)', [councilId, t.DonationType, t.lookup_status]);
+        }
+        for (const m of plan.methods) {
+          await db.runAsync('INSERT INTO [CouncilDonationMethod] ([CouncilID], [DonationMethodID], [account_id], [account_owner_entity], [lookup_status]) VALUES (?, ?, ?, ?, ?)', [
+            councilId,
+            m.DonationMethodID,
+            await accountId(m.accountName),
+            m.account_owner_entity,
+            m.lookup_status,
+          ]);
+        }
+        // Only the known setting columns, so the names are safe to interpolate.
+        const columns = SETUP_COUNCIL_WIDE_SETTING_NAMES.filter((c) => plan.settings[c] !== undefined);
+        if (columns.length > 0) {
+          await db.runAsync(`UPDATE [Council] SET ${columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...columns.map((c) => plan.settings[c]!), councilId]);
+        }
+        result = {
+          accounts: plan.accounts.length,
+          activities: plan.activities.length,
+          donationTypes: plan.donationTypes.length,
+          paymentMethods: plan.methods.length,
+          settings: columns.length,
+        };
+      });
+      return result!;
+    },
+    getPracticeSandboxStatus: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayMaintainCouncilRecords(await this.memberWriteActor(db, actorId), councilId, 'read the practice sandbox');
+      await this.requireRecord(db, 'Council', councilId);
+      const { members, events } = await this.practiceRecords(db, councilId);
+      return practiceSandboxStatus(members.length, events.length);
+    },
+    seedPracticeSandbox: async (actorId, councilId) => {
+      const db = await this.ready();
+      const out = { members: 0, events: 0, signups: 0 };
+      await db.withTransactionAsync(async () => {
+        assertMayMaintainCouncilRecords(await this.memberWriteActor(db, actorId), councilId, 'activate the practice sandbox');
+        const council = (await this.requireRecord(db, 'Council', councilId)) as unknown as Council;
+        const existing = await this.practiceRecords(db, councilId);
+        assertPracticeSandboxEmpty(practiceSandboxStatus(existing.members.length, existing.events.length));
+        const today = this.now();
+        const ids = {
+          activeStatusId: (await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active'"))!.id,
+          memberTypeId: (await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [MemberType] WHERE [Type] = 'Member'"))!.id,
+        };
+        const memberIds: number[] = [];
+        for (const row of practiceRosterRows(councilId, council.State, today)) {
+          const clean = cleanSupremeRosterRow(row, councilId, ids, today);
+          // A leftover login with the same name is reused. No welcome email is sent.
+          const leftover = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Credentials] WHERE LOWER([Username]) = LOWER(?)', [clean.Email]);
+          const credId = leftover?.id ?? (await db.runAsync('INSERT INTO [Credentials] ([Username], [Password]) VALUES (?, ?)', [clean.Email, UNREGISTERED_PASSWORD])).lastInsertRowId;
+          const cols = MEMBER_COLUMNS.filter((c) => clean[c] != null);
+          const res = await db.runAsync(`INSERT INTO [Member] (${cols.map((c) => `[${c}]`).join(', ')}, [CredentialID]) VALUES (${marks(cols.length + 1)})`, [
+            ...cols.map((c) => clean[c] as Bind),
+            credId,
+          ]);
+          memberIds.push(res.lastInsertRowId);
+        }
+        const category =
+          (await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [Category] WHERE [Category] = 'Fundraising'")) ??
+          (await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Category] ORDER BY [id]'));
+        for (const plan of practiceFundraisers(today)) {
+          const eventId = await this.insertEventRow(db, cleanNewEvent({ ...plan.event, OwnerID: memberIds[plan.owner]!, CategoryID: category!.id }), [councilId]);
+          const shiftId = await this.insertShiftRow(db, eventId, plan.shift);
+          for (const v of plan.volunteers) {
+            await db.runAsync('INSERT INTO [EventSignup] ([ShiftID], [MemberID], [NoShow]) VALUES (?, ?, 0)', [shiftId, memberIds[v]!]);
+            out.signups += 1;
+          }
+          await db.runAsync('UPDATE [Shift] SET [NumberVolunteersSignedUp] = ? WHERE [id] = ?', [plan.volunteers.length, shiftId]);
+          out.events += 1;
+        }
+        out.members = memberIds.length;
+      });
+      return out;
+    },
+    purgePracticeSandbox: async (actorId, councilId) => {
+      const db = await this.ready();
+      const out = { members: 0, events: 0 };
+      await db.withTransactionAsync(async () => {
+        assertMayMaintainCouncilRecords(await this.memberWriteActor(db, actorId), councilId, 'purge the practice sandbox');
+        await this.requireRecord(db, 'Council', councilId);
+        const { members, events } = await this.practiceRecords(db, councilId);
+        const memberIds = members.map((m) => m.id);
+        const eventIds = events.map((e) => e.id);
+        const inList = (ids: readonly number[]) => (ids.length === 0 ? '(NULL)' : `(${marks(ids.length)})`);
+        for (const [table, column] of PRACTICE_BLOCKING_EVENT_ROWS) {
+          if (eventIds.length > 0 && (await db.getFirstAsync(`SELECT 1 AS [hit] FROM [${table}] WHERE [${column}] IN ${inList(eventIds)}`, eventIds))) {
+            throw new BusinessRuleError('RECORD_IN_USE', 'A donation is recorded on a practice fundraiser. Remove the donation first, then purge the sandbox.', { table });
+          }
+        }
+        const shiftIds = (await db.getAllAsync<{ id: number }>(`SELECT [id] FROM [Shift] WHERE [EventID] IN ${inList(eventIds)}`, eventIds)).map((r) => r.id);
+        const sets = { member: memberIds, event: eventIds, shift: shiftIds };
+        // Table and column names come from PRACTICE_DEPENDENT_ROWS, a fixed list.
+        for (const [table, column, kind] of PRACTICE_DEPENDENT_ROWS) {
+          if (sets[kind].length > 0) await db.runAsync(`DELETE FROM [${table}] WHERE [${column}] IN ${inList(sets[kind])}`, sets[kind]);
+        }
+        if (eventIds.length > 0) await db.runAsync(`DELETE FROM [Event] WHERE [id] IN ${inList(eventIds)}`, eventIds);
+        if (memberIds.length > 0) {
+          const credIds = members.map((m) => m.CredentialID);
+          await db.runAsync(`DELETE FROM [Member] WHERE [id] IN ${inList(memberIds)}`, memberIds);
+          await db.runAsync(`DELETE FROM [Credentials] WHERE [id] IN ${inList(credIds)}`, credIds);
+        }
+        out.members = memberIds.length;
+        out.events = eventIds.length;
+      });
+      return out;
     },
   };
 
@@ -4284,6 +4454,17 @@ export class SqliteDataService implements DataService {
         categoryId: fields.CategoryID,
       });
     }
+  }
+
+  /** Sprint 11 Revision 4.1: the council's practice members (by email) and practice events (by name, on the council). */
+  private async practiceRecords(db: SQLite.SQLiteDatabase, councilId: number): Promise<{ members: Member[]; events: CouncilEvent[] }> {
+    const members = (await db.getAllAsync<Member>('SELECT * FROM [Member] WHERE [CouncilID] = ?', [councilId])).filter((m) => isPracticeEmail(m.Email));
+    const owners = new Set(members.map((m) => m.id));
+    const onCouncil = new Set((await db.getAllAsync<{ EventID: number }>('SELECT [EventID] FROM [EventCouncils] WHERE [CouncilID] = ?', [councilId])).map((l) => l.EventID));
+    const events = (await db.getAllAsync<CouncilEvent>('SELECT * FROM [Event]')).filter(
+      (e) => isPracticeEventName(e.EventName) && (onCouncil.has(e.id) || owners.has(e.OwnerID)),
+    );
+    return { members, events };
   }
 
   private async insertEventRow(db: SQLite.SQLiteDatabase, event: NewEvent, councilIds: readonly number[]): Promise<number> {

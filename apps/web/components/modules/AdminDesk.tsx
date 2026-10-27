@@ -15,12 +15,19 @@
 //   5. Council Asset Management         the inventory of components/modules/CouncilAssetManagement.tsx
 //   6. Administrative Feedback Loops    the note to the platform owner, and the inbox for Super Admins
 // A drawer's panel mounts only while it is open, so a closed drawer reads no data.
+//
+// Sprint 11 Revision 4.1: the Council Setup Wizard (components/modules/SetupWizard.tsx) masks the desk on its first visit
+// to an unset council (councilLooksUnset) and opens again from 'Run Setup Wizard'. The desk control bar also holds the
+// Practice Sandbox master switch: on adds the practice members and fundraisers, off purges them.
 import { useEffect, useState } from 'react';
 import {
   ADMIN_DESK_DRAWERS,
   ADMIN_DESK_TITLE,
   ADMIN_DESK_TOP_PANELS,
   ADMIN_MANUAL,
+  councilLooksUnset,
+  describeError,
+  PURGE_PRACTICE_SANDBOX_LABEL,
   formatTimestamp,
   isSuperAdmin,
   MANUAL_REGENERATION_ROUTE,
@@ -36,7 +43,8 @@ import { CouncilLookups } from '@/components/modules/CouncilLookupTables';
 import { CouncilWideSettings } from '@/components/modules/CouncilWideSettings';
 import { CredentialsVaultPanel } from '@/components/modules/CredentialsVaultPanel';
 import { GlobalCharitiesRegistry } from '@/components/modules/GlobalCharitiesRegistry';
-import { Button, cx, EmbeddedModuleContext, Notice, PageTitle } from '@/components/ui';
+import { SetupWizard, setupWizardWasDone } from '@/components/modules/SetupWizard';
+import { Button, cx, EmbeddedModuleContext, HelpTip, Notice, PageTitle, Switch } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -194,13 +202,97 @@ function DrawerPanel({ id }: { id: AdminDeskDrawerId }) {
   }
 }
 
+/** The Practice Sandbox master switch: on seeds the practice records, off purges them (councils.*PracticeSandbox). */
+function PracticeSandboxSwitch({ version }: { version: number }) {
+  const user = useUser();
+  const status = useLoad(() => db.councils.getPracticeSandboxStatus(user.memberId, user.councilId), [user.memberId, user.councilId, version]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const on = status.data?.active === true;
+  const toggle = async (next: boolean) => {
+    setBusy(true);
+    setError(null);
+    try {
+      if (next) await db.councils.seedPracticeSandbox(user.memberId, user.councilId);
+      else await db.councils.purgePracticeSandbox(user.memberId, user.councilId);
+      await status.reload();
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <Switch
+            checked={on}
+            disabled={busy || status.loading}
+            onChange={(next) => void toggle(next)}
+            label={PURGE_PRACTICE_SANDBOX_LABEL}
+            description={
+              on
+                ? `On: ${status.data?.members ?? 0} practice members and ${status.data?.events ?? 0} practice fundraisers. Turn off to purge them.`
+                : 'Off: no practice data. Turn on to add 10 practice members and 3 practice fundraisers.'
+            }
+          />
+        </div>
+        <HelpTip
+          label="More about the Practice Sandbox"
+          text="Practice records are marked by an @practice.sandbox email or a [Practice] event name. Turning the switch off removes only those records, with their shifts, sign-ups and logins."
+        />
+      </div>
+      {status.error ? <Notice tone="error">{status.error}</Notice> : null}
+      {error ? <Notice tone="error">{error}</Notice> : null}
+    </div>
+  );
+}
+
+/** Opens the wizard on its own once per browser, for a council with no accounts and no members besides the Admin. */
+function useAutoOpenWizard(open: () => void) {
+  const user = useUser();
+  useEffect(() => {
+    if (setupWizardWasDone(user.councilId)) return;
+    let live = true;
+    void Promise.all([db.councils.listCouncilAccounts(user.memberId, user.councilId), db.members.listByCouncil(user.councilId)]).then(
+      ([accounts, members]) => {
+        if (live && councilLooksUnset({ accounts: accounts.length, members: members.length })) open();
+      },
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.memberId, user.councilId]);
+}
+
 export function AdminDesk() {
+  const [wizardOpen, setWizardOpen] = useState(false);
+  // Bumped when the wizard closes, so the sandbox switch reads its state again.
+  const [wizardRuns, setWizardRuns] = useState(0);
+  useAutoOpenWizard(() => setWizardOpen(true));
   // Every drawer lands closed; one opens at a time, its panel drawn to the right of the rail.
   const [open, setOpen] = useState<AdminDeskDrawerId | null>(null);
   const drawer = ADMIN_DESK_DRAWERS.find((d) => d.id === open) ?? null;
   return (
     <>
+      {wizardOpen ? (
+        <SetupWizard
+          onClose={() => {
+            setWizardOpen(false);
+            setWizardRuns((n) => n + 1);
+          }}
+        />
+      ) : null}
       <PageTitle>{ADMIN_DESK_TITLE}</PageTitle>
+      <section aria-label="Admin Desk controls" className="mb-4 flex flex-wrap items-center gap-4">
+        <Button variant="gold" onClick={() => setWizardOpen(true)}>
+          Run Setup Wizard
+        </Button>
+        <PracticeSandboxSwitch version={wizardRuns} />
+      </section>
       <EmbeddedModuleContext.Provider value={true}>
         <StaticTopDeck />
       </EmbeddedModuleContext.Provider>

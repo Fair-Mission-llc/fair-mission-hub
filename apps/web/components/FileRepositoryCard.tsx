@@ -81,7 +81,7 @@ export function FileRepositoryCard({ council, onSaved }: { council: Council; onS
         uploader&apos;s own computer or phone. Only the settings the chosen provider needs are shown.
       </p>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Field label="File Repository Provider">
+        <Field label="File Repository Provider" help="Where the portal files council documents, photos and receipts. Each provider asks for its own folder details.">
           {(id) => (
             <Select id={id} value={mode} disabled={!mayEdit || busy} onChange={(e) => choose(e.target.value as FileRepositoryMode)}>
               {FILE_REPOSITORY_MODES.map((m) => (

@@ -776,6 +776,21 @@ import {
   type CouncilAffiliations,
 } from '@kofc/shared';
 import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import {
+  assertNotFoundingCouncil,
+  assertPracticeSandboxEmpty,
+  FOUNDING_COUNCIL_NUMBER,
+  isPracticeEmail,
+  isPracticeEventName,
+  planFoundingTemplateClone,
+  PRACTICE_BLOCKING_EVENT_ROWS,
+  PRACTICE_DEPENDENT_ROWS,
+  practiceFundraisers,
+  practiceRosterRows,
+  practiceSandboxStatus,
+  type FoundingTemplateCloneResult,
+  type PracticeSandboxStatus,
+} from '@kofc/shared';
 import { PRESENTATION_SEED_DATA, SEED_DATA, TABLES, type SeedTable, type SeedValue } from '../generated/schema.generated';
 import { sha256Hex } from '../password';
 import {
@@ -1620,6 +1635,132 @@ export class MemoryDataService implements DataService {
       const row = this.requireRecord(s, 'Council', councilId);
       Object.assign(row, clean);
       return withoutMeetingPin({ ...row } as unknown as Council);
+    },
+
+    // ---- Sprint 11 Revision 4.1: the Admin Desk Setup Wizard (setup-wizard.ts) ----
+    cloneFoundingTemplate: async (actorId, councilId) => {
+      const s = await this.ready();
+      return s.transaction((): FoundingTemplateCloneResult => {
+        assertMayMaintainCouncilRecords(this.memberWriteActor(s, actorId), councilId, 'clone the founding template');
+        const councilRow = this.requireRecord(s, 'Council', councilId);
+        assertNotFoundingCouncil(councilRow as unknown as Council);
+        const founding = s.rows('Council').find((c) => c.CouncilNumber === FOUNDING_COUNCIL_NUMBER) as unknown as Council | undefined;
+        if (!founding) throw new BusinessRuleError('INVALID_INPUT', `Founding Council ${FOUNDING_COUNCIL_NUMBER} is not on this platform.`, {});
+        const of = <T>(table: string, id: number) => s.rows(table).filter((r) => r.CouncilID === id).map((r) => ({ ...r }) as unknown as T);
+        const plan = planFoundingTemplateClone(
+          {
+            accounts: this.glAccounts(s, founding.id),
+            activities: of<Activities>('Activities', founding.id),
+            donationTypes: of<DonationType>('DonationType', founding.id),
+            methods: of<CouncilDonationMethod>('CouncilDonationMethod', founding.id),
+            settings: councilWideSettings(founding),
+          },
+          {
+            accounts: this.glAccounts(s, councilId),
+            activities: of<Activities>('Activities', councilId),
+            donationTypes: of<DonationType>('DonationType', councilId),
+            methods: of<CouncilDonationMethod>('CouncilDonationMethod', councilId),
+          },
+        );
+        const accountId = (name: string | null) =>
+          name === null ? null : ((s.rows('GLAccount').find((a) => a.CouncilID === councilId && lower(a.AccountName) === name.toLowerCase())?.id as number | undefined) ?? null);
+        for (const a of plan.accounts) {
+          s.insert('GLAccount', {
+            CouncilID: councilId,
+            AccountName: a.AccountName,
+            AccountType: a.AccountType,
+            ParentAccountID: accountId(a.parentName),
+            IsVirtualGoal: a.IsVirtualGoal,
+            TargetGoalAmount: a.TargetGoalAmount,
+            is_split_account: 0,
+            due_to_council_id: null,
+            account_display_name: a.account_display_name,
+            ownership_type: a.ownership_type,
+          });
+        }
+        for (const a of plan.activities) s.insert('Activities', { ...a, CouncilID: councilId });
+        for (const t of plan.donationTypes) s.insert('DonationType', { ...t, CouncilID: councilId });
+        for (const m of plan.methods) {
+          s.insert('CouncilDonationMethod', {
+            CouncilID: councilId,
+            DonationMethodID: m.DonationMethodID,
+            account_id: accountId(m.accountName),
+            account_owner_entity: m.account_owner_entity,
+            lookup_status: m.lookup_status,
+          });
+        }
+        Object.assign(councilRow, plan.settings);
+        return {
+          accounts: plan.accounts.length,
+          activities: plan.activities.length,
+          donationTypes: plan.donationTypes.length,
+          paymentMethods: plan.methods.length,
+          settings: Object.keys(plan.settings).length,
+        };
+      });
+    },
+    getPracticeSandboxStatus: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayMaintainCouncilRecords(this.memberWriteActor(s, actorId), councilId, 'read the practice sandbox');
+      this.requireRecord(s, 'Council', councilId);
+      return this.practiceStatus(s, councilId);
+    },
+    seedPracticeSandbox: async (actorId, councilId) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayMaintainCouncilRecords(this.memberWriteActor(s, actorId), councilId, 'activate the practice sandbox');
+        const council = this.requireRecord(s, 'Council', councilId) as unknown as Council;
+        assertPracticeSandboxEmpty(this.practiceStatus(s, councilId));
+        const today = this.now();
+        const memberTypeId = s.rows('MemberType').find((t) => t.Type === 'Member')?.id as number;
+        const ids = { activeStatusId: this.activeStatusId(s) as number, memberTypeId };
+        const memberIds: number[] = [];
+        for (const row of practiceRosterRows(councilId, council.State, today)) {
+          const clean = cleanSupremeRosterRow(row, councilId, ids, today);
+          // A leftover login with the same name is reused. No welcome email is sent.
+          const cred =
+            s.rows('Credentials').find((c) => lower(c.Username) === clean.Email.toLowerCase()) ?? s.insert('Credentials', { Username: clean.Email, Password: UNREGISTERED_PASSWORD });
+          const values: Record<string, SeedValue | undefined> = { CredentialID: cred.id };
+          for (const c of MEMBER_COLUMNS) values[c] = clean[c] ?? null;
+          memberIds.push(s.insert('Member', values).id as number);
+        }
+        const categoryId = (s.rows('Category').find((c) => c.Category === 'Fundraising') ?? s.rows('Category')[0])?.id as number;
+        let signups = 0;
+        const plans = practiceFundraisers(today);
+        for (const plan of plans) {
+          const event = this.insertEvent(s, cleanNewEvent({ ...plan.event, OwnerID: memberIds[plan.owner]!, CategoryID: categoryId }), [councilId]);
+          const shift = this.insertShift(s, event.id as number, plan.shift);
+          for (const v of plan.volunteers) {
+            s.insert('EventSignup', { ShiftID: shift.id, MemberID: memberIds[v]!, NoShow: 0 });
+            signups += 1;
+          }
+          shift.NumberVolunteersSignedUp = plan.volunteers.length;
+        }
+        return { members: memberIds.length, events: plans.length, signups };
+      });
+    },
+    purgePracticeSandbox: async (actorId, councilId) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayMaintainCouncilRecords(this.memberWriteActor(s, actorId), councilId, 'purge the practice sandbox');
+        this.requireRecord(s, 'Council', councilId);
+        const { members, events } = this.practiceRecords(s, councilId);
+        const memberIds = new Set(members.map((m) => m.id as number));
+        const eventIds = new Set(events.map((e) => e.id as number));
+        for (const [table, column] of PRACTICE_BLOCKING_EVENT_ROWS) {
+          if (s.rows(table).some((r) => eventIds.has(r[column] as number))) {
+            throw new BusinessRuleError('RECORD_IN_USE', 'A donation is recorded on a practice fundraiser. Remove the donation first, then purge the sandbox.', { table });
+          }
+        }
+        const shiftIds = new Set(s.rows('Shift').filter((sh) => eventIds.has(sh.EventID as number)).map((sh) => sh.id as number));
+        const sets = { member: memberIds, event: eventIds, shift: shiftIds };
+        for (const [table, column, kind] of PRACTICE_DEPENDENT_ROWS) s.remove(table, (r) => sets[kind].has(r[column] as number));
+        s.remove('Event', (e) => eventIds.has(e.id as number));
+        const credIds = new Set(members.map((m) => m.CredentialID as number));
+        s.remove('Member', (m) => memberIds.has(m.id as number));
+        s.remove('Credentials', (c) => credIds.has(c.id as number));
+        return { members: memberIds.size, events: eventIds.size };
+      });
     },
 
     setDuesRate: async (actorId, councilId, rate) => {
@@ -2803,6 +2944,20 @@ export class MemoryDataService implements DataService {
       if (next) Object.assign(this.requireEvent(s, id), next);
     });
     return result;
+  }
+
+  /** Sprint 11 Revision 4.1: the council's practice members (by email) and practice events (by name, on the council). */
+  private practiceRecords(s: MemoryStore, councilId: number): { members: Row[]; events: Row[] } {
+    const members = s.rows('Member').filter((m) => m.CouncilID === councilId && isPracticeEmail(m.Email));
+    const onCouncil = new Set(s.rows('EventCouncils').filter((l) => l.CouncilID === councilId).map((l) => l.EventID as number));
+    const owners = new Set(members.map((m) => m.id as number));
+    const events = s.rows('Event').filter((e) => isPracticeEventName(e.EventName) && (onCouncil.has(e.id as number) || owners.has(e.OwnerID as number)));
+    return { members, events };
+  }
+
+  private practiceStatus(s: MemoryStore, councilId: number): PracticeSandboxStatus {
+    const { members, events } = this.practiceRecords(s, councilId);
+    return practiceSandboxStatus(members.length, events.length);
   }
 
   private activeStatusId(s: MemoryStore): number | undefined {

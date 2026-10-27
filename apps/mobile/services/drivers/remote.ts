@@ -66,6 +66,10 @@ export function createRemoteDataService(): DataService {
       saveCouncilAccount: notImplemented('councils.saveCouncilAccount'),
       removeCouncilAccount: notImplemented('councils.removeCouncilAccount'),
       setFileRepositorySettings: notImplemented('councils.setFileRepositorySettings'),
+      cloneFoundingTemplate: notImplemented('councils.cloneFoundingTemplate'),
+      getPracticeSandboxStatus: notImplemented('councils.getPracticeSandboxStatus'),
+      seedPracticeSandbox: notImplemented('councils.seedPracticeSandbox'),
+      purgePracticeSandbox: notImplemented('councils.purgePracticeSandbox'),
     },
     parishes: {
       listByCouncil: notImplemented('parishes.listByCouncil'),
