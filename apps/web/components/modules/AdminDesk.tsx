@@ -1,26 +1,32 @@
 'use client';
-// The Admin Desk (Sprint 11 Revision 2.0, /admin-desk, admin-desk.ts): a council Admin's own workspace, for Admins and
-// Super Admins (canOpenAdminDesk). The left rail is a stack of vertical drawers (ADMIN_DESK_DRAWERS) that all land closed;
-// opening one draws its panel to the right of the rail, and opening another swaps it. In order:
-//   1. Administration Manual PDF        the PDF link and 'Regenerate Manuals On-Demand' (POST MANUAL_REGENERATION_ROUTE)
-//   2. 'How Do I...' Local Help Search  the Administration Manual's task workflows
-//   3. Council Wide Settings            components/modules/CouncilWideSettings.tsx
-//   4. Council Lookup Tables            components/modules/CouncilLookupTables.tsx
-//   5. Credentials Vault                pinned to the reader's home council (homeCouncilOnly; the server's vault gate agrees)
-//   6. Global Charities Registry        components/modules/GlobalCharitiesRegistry.tsx
-//   7. Council Asset Management         the inventory of components/modules/CouncilAssetManagement.tsx
-//   8. Administrative Feedback Loops    the note to the platform owner, and the inbox for Super Admins
-// A panel mounts only while its drawer is open, so a closed drawer reads no data.
+// The Admin Desk (/admin-desk, admin-desk.ts): a council Admin's own workspace, for Admins and Super Admins
+// (canOpenAdminDesk).
+//
+// Sprint 11 Revision 3.0: the Static Top Deck (ADMIN_DESK_TOP_PANELS) sits at the top of the page and never collapses:
+//   A. Council Instance Identity Record  the home council's record (councils.get)
+//   B. Administration Manual PDF         the PDF link and 'Regenerate Manuals On-Demand' (POST MANUAL_REGENERATION_ROUTE)
+//   C. 'How Do I...' Local Help Search   the Administration Manual's task workflows
+// Below it, the left rail is a stack of six vertical drawers (ADMIN_DESK_DRAWERS) that all land closed; opening one draws
+// its panel to the right of the rail, and opening another swaps it. In order:
+//   1. Council Wide Settings            components/modules/CouncilWideSettings.tsx
+//   2. Council Lookup Tables            components/modules/CouncilLookupTables.tsx
+//   3. Credentials Vault                pinned to the reader's home council (homeCouncilOnly; the server's vault gate agrees)
+//   4. Global Charities Registry        components/modules/GlobalCharitiesRegistry.tsx
+//   5. Council Asset Management         the inventory of components/modules/CouncilAssetManagement.tsx
+//   6. Administrative Feedback Loops    the note to the platform owner, and the inbox for Super Admins
+// A drawer's panel mounts only while it is open, so a closed drawer reads no data.
 import { useEffect, useState } from 'react';
 import {
   ADMIN_DESK_DRAWERS,
   ADMIN_DESK_TITLE,
+  ADMIN_DESK_TOP_PANELS,
   ADMIN_MANUAL,
   formatTimestamp,
   isSuperAdmin,
   MANUAL_REGENERATION_ROUTE,
   NIGHTLY_MANUAL_REBUILD_HOUR,
   type AdminDeskDrawerId,
+  type AdminDeskTopPanelId,
   type ManualRegenerationStatus,
 } from '@kofc/shared';
 import { DeskManualHeader } from '@/components/DeskManualHeader';
@@ -31,7 +37,9 @@ import { CouncilWideSettings } from '@/components/modules/CouncilWideSettings';
 import { CredentialsVaultPanel } from '@/components/modules/CredentialsVaultPanel';
 import { GlobalCharitiesRegistry } from '@/components/modules/GlobalCharitiesRegistry';
 import { Button, cx, EmbeddedModuleContext, Notice, PageTitle } from '@/components/ui';
-import { useUser } from '@/lib/session';
+import { useTenantType, useUser } from '@/lib/session';
+import { useLoad } from '@/lib/use-load';
+import { db } from '@/services/db';
 
 async function readRegenerationStatus(init?: RequestInit): Promise<ManualRegenerationStatus> {
   const res = await fetch(MANUAL_REGENERATION_ROUTE, { cache: 'no-store', ...init });
@@ -101,8 +109,38 @@ function AdministrativeFeedbackPanel() {
   );
 }
 
-function DrawerPanel({ id }: { id: AdminDeskDrawerId }) {
+/** Panel A: the record of the council this desk works on - the signed-in Admin's home council. */
+function CouncilIdentityRecord() {
+  const user = useUser();
+  const tenantType = useTenantType();
+  const council = useLoad(() => db.councils.get(user.councilId), [user.councilId]);
+  const c = council.data;
+  if (council.error) return <Notice tone="error">{council.error}</Notice>;
+  if (!c) return <p className="text-sm">{council.loading ? 'Loading…' : 'The council record could not be found.'}</p>;
+  const rows: [string, string][] = [
+    ['Council', `${c.CouncilNumber} - ${c.CouncilName}`],
+    ['State', c.State || 'Not set'],
+    ['EIN', c.ein_number || 'Not entered'],
+    ['Phone', c.Phone || 'Not set'],
+    ['Email', c.Email || 'Not set'],
+    ['Instance', `Record #${c.id} · ${tenantType}`],
+  ];
+  return (
+    <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
+      {rows.map(([term, value]) => (
+        <div key={term} className="contents">
+          <dt className="font-bold text-navy">{term}</dt>
+          <dd className="break-words">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function TopPanelBody({ id }: { id: AdminDeskTopPanelId }) {
   switch (id) {
+    case 'council-identity':
+      return <CouncilIdentityRecord />;
     case 'admin-manual':
       return (
         <div className="flex flex-col gap-3">
@@ -112,6 +150,35 @@ function DrawerPanel({ id }: { id: AdminDeskDrawerId }) {
       );
     case 'help-search':
       return <DeskManualHeader manual={ADMIN_MANUAL.token} show="search" />;
+  }
+}
+
+/** The Static Top Deck: three panels in a row (stacked on narrow screens). They have no close control. */
+function StaticTopDeck() {
+  return (
+    <section aria-label="Admin Desk top deck" className="grid items-stretch gap-4 lg:grid-cols-3">
+      {ADMIN_DESK_TOP_PANELS.map((p) => (
+        <article
+          key={p.id}
+          id={`admin-desk-top-${p.id}`}
+          aria-label={p.label}
+          className="flex min-w-0 flex-col gap-2 rounded border-2 border-navy border-t-8 border-t-gold bg-white p-4"
+        >
+          <header>
+            <h2 className="font-serif text-lg font-bold text-navy">
+              {p.tier}. {p.label}
+            </h2>
+            <p className="text-xs text-muted">{p.hint}</p>
+          </header>
+          <TopPanelBody id={p.id} />
+        </article>
+      ))}
+    </section>
+  );
+}
+
+function DrawerPanel({ id }: { id: AdminDeskDrawerId }) {
+  switch (id) {
     case 'council-settings':
       return <CouncilWideSettings embedded />;
     case 'council-lookups':
@@ -134,7 +201,10 @@ export function AdminDesk() {
   return (
     <>
       <PageTitle>{ADMIN_DESK_TITLE}</PageTitle>
-      <div className="grid items-start gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
+      <EmbeddedModuleContext.Provider value={true}>
+        <StaticTopDeck />
+      </EmbeddedModuleContext.Provider>
+      <div className="mt-4 grid items-start gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <nav aria-label="Admin Desk drawers" className="flex flex-col gap-2">
           {ADMIN_DESK_DRAWERS.map((d, i) => {
             const here = d.id === open;

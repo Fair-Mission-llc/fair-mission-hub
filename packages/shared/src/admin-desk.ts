@@ -1,19 +1,22 @@
 // =========================================================================
 // THE ADMIN DESK AND THE SPRINT 11 REVISION 2.0 CALIBRATIONS (schema 102, no table change)
 //
-// The Admin Desk (/admin-desk) is a council Admin's own workspace (Super Admins included, canOpenAdminDesk). Its left
-// rail is a stack of vertical drawers, all closed on landing; a drawer opens its panel to the right of the rail. The
-// panels, in this exact order (ADMIN_DESK_DRAWERS):
-//   1. Administration Manual PDF         the compiled ADMIN_USER_GUIDE.pdf (GET /api/manuals/pdf?manual=admin)
-//   2. 'How Do I...' Local Help Search   the Administration Manual's task workflows (GET /api/manuals?manual=admin)
-//   3. Council Wide Settings             the /system-settings/council-settings module
-//   4. Council Lookup Tables             the /council-lookups module
-//   5. Credentials Vault                 pinned to the reader's home council (the server's vault gate says the same)
-//   6. Global Charities Registry         the /charities/registry module
-//   7. Council Asset Management          the /expenses/assets inventory
-//   8. Administrative Feedback Loops     the note to the platform owner (feedback.submit)
-// The manual drawer also carries 'Regenerate Manuals On-Demand' (POST MANUAL_REGENERATION_ROUTE). The server rebuilds
-// every manual each night as well (apps/web/instrumentation.ts, nextNightlyManualRebuild).
+// The Admin Desk (/admin-desk) is a council Admin's own workspace (Super Admins included, canOpenAdminDesk).
+//
+// Sprint 11 Revision 3.0: the desk has two parts.
+//   - The Static Top Deck (ADMIN_DESK_TOP_PANELS): three panels in a row at the top of the page. They never collapse.
+//       A. Council Instance Identity Record   the home council's name, number, state, EIN and contact (councils.get)
+//       B. Administration Manual PDF          the compiled ADMIN_USER_GUIDE.pdf and 'Regenerate Manuals On-Demand'
+//       C. 'How Do I...' Local Help Search    the Administration Manual's task workflows (GET /api/manuals?manual=admin)
+//   - The left rail of drawers (ADMIN_DESK_DRAWERS), below the deck, all closed on landing. A drawer opens its panel to
+//     the right of the rail. In this exact order:
+//       1. Council Wide Settings             the /system-settings/council-settings module (Standard Bank Accounts first)
+//       2. Council Lookup Tables             the /council-lookups module (Active/Inactive status on every grid)
+//       3. Credentials Vault                 pinned to the reader's home council (the server's vault gate says the same)
+//       4. Global Charities Registry         the /charities/registry module (verified panel, search and filters)
+//       5. Council Asset Management          the /expenses/assets inventory (Trustees add asset photos)
+//       6. Administrative Feedback Loops     the note to the platform owner (feedback.submit)
+// The server also rebuilds every manual each night (apps/web/instrumentation.ts, nextNightlyManualRebuild).
 //
 // The rest of this file holds the small pure rules the wave added elsewhere:
 //   - monthlyActivityFigures: the Monthly Activity card and the Net Balance tile read the same MonthlySummary figures.
@@ -29,9 +32,24 @@ import { donationMethodKind, SecurityPrivilegeError } from './rules';
 export const ADMIN_DESK_HREF = '/admin-desk';
 export const ADMIN_DESK_TITLE = 'Admin Desk';
 
+export type AdminDeskTopPanelId = 'council-identity' | 'admin-manual' | 'help-search';
+
+export interface AdminDeskTopPanel {
+  id: AdminDeskTopPanelId;
+  /** 'A', 'B' or 'C', left to right. */
+  tier: string;
+  label: string;
+  hint: string;
+}
+
+/** The Static Top Deck's three panels, left to right. They are always open. */
+export const ADMIN_DESK_TOP_PANELS: readonly AdminDeskTopPanel[] = [
+  { id: 'council-identity', tier: 'A', label: 'Council Instance Identity Record', hint: 'The council this desk works on' },
+  { id: 'admin-manual', tier: 'B', label: 'Administration Manual PDF', hint: 'Open the printed Administration Manual, or rebuild every manual now' },
+  { id: 'help-search', tier: 'C', label: "'How Do I...' Local Help Search", hint: 'Search the Administration Manual for the steps of a task' },
+];
+
 export type AdminDeskDrawerId =
-  | 'admin-manual'
-  | 'help-search'
   | 'council-settings'
   | 'council-lookups'
   | 'credentials-vault'
@@ -45,15 +63,13 @@ export interface AdminDeskDrawer {
   hint: string;
 }
 
-/** The eight Admin Desk drawers, top to bottom. Every one starts closed. */
+/** The six Admin Desk drawers below the top deck, top to bottom. Every one starts closed. */
 export const ADMIN_DESK_DRAWERS: readonly AdminDeskDrawer[] = [
-  { id: 'admin-manual', label: 'Administration Manual PDF', hint: 'Open the printed Administration Manual, or rebuild every manual now' },
-  { id: 'help-search', label: "'How Do I...' Local Help Search", hint: 'Search the Administration Manual for the steps of a task' },
-  { id: 'council-settings', label: 'Council Wide Settings', hint: 'Limits, timing, roster control and the feature matrix' },
-  { id: 'council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types and payment methods' },
+  { id: 'council-settings', label: 'Council Wide Settings', hint: 'Standard bank accounts, limits, timing, roster control and the feature matrix' },
+  { id: 'council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types and payment methods, each Active or Inactive' },
   { id: 'credentials-vault', label: 'Credentials Vault', hint: "Your home council's email, Drive and file server keys" },
-  { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Search, verify and add charities' },
-  { id: 'asset-management', label: 'Council Asset Management', hint: "The council's capital assets and their photos" },
+  { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Browse, filter, verify and add charities' },
+  { id: 'asset-management', label: 'Council Asset Management', hint: "The council's capital assets and the Trustees' asset photos" },
   { id: 'feedback', label: 'Administrative Feedback Loops', hint: 'Send a note or bug report to the platform owner' },
 ];
 

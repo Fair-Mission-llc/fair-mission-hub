@@ -122,7 +122,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'admin-desk': {
     member:
-      "Opens your Admin Desk: eight drawers down the left side, all closed when you arrive. Open one to work in it on the right - the Administration Manual, its help search, the council settings, lookups, Credentials Vault, charities registry, assets and feedback.",
+      "Opens your Admin Desk. Three panels stay open across the top: your council's record, the Administration Manual and its help search. Below them, six drawers down the left side are closed when you arrive. Open one to work in it on the right - the council settings, lookups, Credentials Vault, charities registry, assets and feedback.",
   },
   'system-settings/feedback': {
     member: "Sends a note or bug report from your council's Admins to the platform owner. Super Admins also read every note here.",

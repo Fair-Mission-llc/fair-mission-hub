@@ -54,7 +54,8 @@ export const ROLE_MANUALS: Record<RoleManualKey, RoleManual> = {
 export const isRoleManualKey = (value: unknown): value is RoleManualKey => (ROLE_MANUAL_KEYS as readonly unknown[]).includes(value);
 
 /**
- * Sprint 11 Revision 2.0: the Administration Manual (docs/ADMIN_USER_GUIDE.md) on the Admin Desk's first two drawers - its
+ * Sprint 11 Revision 2.0: the Administration Manual (docs/ADMIN_USER_GUIDE.md) on the Admin Desk (the top deck's panels B and C since
+ * Sprint 11 Revision 3.0) - its
  * PDF and its 'How do I...' search. It is not an officer desk's manual, so it is kept apart from ROLE_MANUALS; the
  * /api/manuals routes serve it under the key 'admin'.
  */

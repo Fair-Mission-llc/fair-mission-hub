@@ -1287,19 +1287,27 @@ The script reads only `package.json` and `package-lock.json`. It opens no networ
 ## 16. The Admin Desk
 
 ### 16.1 Concept: one desk for the council's Admin work
-The **Admin Desk** collects the council Admin's tools in one page. The page has eight drawers down the left side.
-All drawers are closed when the page opens. Select a drawer to open its panel on the right. Select another drawer to change the panel.
+The **Admin Desk** collects the council Admin's tools in one page. The page has two parts.
+
+The **top deck** is a row of three panels at the top of the page. The panels are always open. You cannot close them.
+
+| Panel | What the panel holds |
+| --- | --- |
+| **A. Council Instance Identity Record** | Your home council's name, number, state, EIN, phone, email and record number |
+| **B. Administration Manual PDF** | This guide as a PDF, and the **Regenerate Manuals On-Demand** button |
+| **C. 'How Do I...' Local Help Search** | A search over the tasks of this guide |
+
+Below the top deck, six drawers are down the left side. All drawers are closed when the page opens.
+Select a drawer to open its panel on the right. Select another drawer to change the panel.
 
 | Drawer | What the panel holds |
 | --- | --- |
-| **Administration Manual PDF** | This guide as a PDF, and the **Regenerate Manuals On-Demand** button |
-| **'How Do I...' Local Help Search** | A search over the tasks of this guide |
-| **Council Wide Settings** | The same panels as **System Settings** → **Council Wide Settings** |
-| **Council Lookup Tables** | Activities, donation types and payment methods |
-| **Credentials Vault** | The keys of your home council only |
-| **Global Charities Registry** | Verified charities, suggestions, search and the add form |
-| **Council Asset Management** | The council's assets inventory |
-| **Administrative Feedback Loops** | The note to the platform owner (section 10.2) |
+| **1. Council Wide Settings** | The same panels as **System Settings** → **Council Wide Settings**, with **Standard Bank Accounts** first |
+| **2. Council Lookup Tables** | Activities, donation types and payment methods. Each row is **Active** or **Inactive** |
+| **3. Credentials Vault** | The keys of your home council only |
+| **4. Global Charities Registry** | Verified charities, suggestions, search, filters and the add form |
+| **5. Council Asset Management** | The council's assets inventory. Trustees add the asset photos |
+| **6. Administrative Feedback Loops** | The note to the platform owner (section 10.2) |
 
 The server rebuilds every manual PDF each night at 2:00. The **Regenerate Manuals On-Demand** button rebuilds them at once.
 To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
@@ -1316,7 +1324,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 2. Work in the panel on the right.
 3. To close the panel, select the same drawer again.
 
-**Expected result:** The panel of the drawer shows on the right. The drawer is dark blue while its panel is open.
+**Expected result:** The panel of the drawer shows on the right. The drawer is dark blue while its panel is open. The three panels of the top deck stay open above the drawers.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1329,7 +1337,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 
 **Goal:** Rebuild every manual PDF from the current manual text.
 
-**Start point:** Sidebar → System Settings → **Admin Desk** → **Administration Manual PDF**.
+**Start point:** Sidebar → System Settings → **Admin Desk** → top deck → **B. Administration Manual PDF**.
 
 **Steps:**
 1. Select **Regenerate Manuals On-Demand**.
