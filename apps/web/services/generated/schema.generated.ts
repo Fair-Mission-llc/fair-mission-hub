@@ -5243,11 +5243,12 @@ export const TABLES: Record<string, TableMeta> = {
         "identity": false,
         "default": {
           "kind": "literal",
-          "value": "COUNCIL"
+          "value": "INTERNAL_OPERATING"
         },
         "allowed": [
-          "COUNCIL",
-          "PARISH"
+          "INTERNAL_OPERATING",
+          "PARENT_ORGANIZATION",
+          "AFFILIATED_ENTITY"
         ]
       },
       {

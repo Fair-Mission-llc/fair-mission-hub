@@ -2523,7 +2523,7 @@ export interface DataService {
     /**
      * Adds an Asset account to the chart (no id) or changes one of the council's money accounts. Changing ownership_type
      * also moves the owner of every payment method linked to it. INVALID_INPUT for a bad field, a ledger name already in
-     * the chart or an ownership_type other than COUNCIL or PARISH; RECORD_NOT_FOUND for another council's account.
+     * the chart or an ownership_type other than INTERNAL_OPERATING, PARENT_ORGANIZATION or AFFILIATED_ENTITY; RECORD_NOT_FOUND for another council's account.
      */
     saveCouncilAccount(actorId: number, councilId: number, input: CouncilAccountInput): Promise<CouncilAccount>;
     /**

@@ -7,6 +7,10 @@
 // (Asset) accounts - not a separate table. Each row has the ledger name, the name members see, who owns the account
 // (Council or Parish), who to call about it and the holder's EIN. Adding a row adds an Asset account to the chart. A
 // Parish account's gifts are parish-held: they stay off the Treasurer's batch coder.
+//
+// Sprint 11 Revision 2.2: the owner is one of three universal classifications (Internal Operating, Parent Organization,
+// Affiliated Entity), labelled in the tenant's vocabulary (accountOwnershipLabel: Council / Parish / Affiliated Entity for a
+// Knights of Columbus council). Both external kinds are shielded from the council's operating books.
 import { useState } from 'react';
 import {
   ACCOUNT_CONTACT_EMAIL_MAX_LENGTH,
@@ -15,9 +19,11 @@ import {
   ACCOUNT_DISPLAY_NAME_MAX_LENGTH,
   ACCOUNT_OWNERS_MATRIX_TITLE,
   ACCOUNT_OWNERSHIP_COLUMN_LABEL,
-  ACCOUNT_OWNERSHIP_LABELS,
   ACCOUNT_OWNERSHIP_TYPES,
+  accountOwnershipLabel,
   canAdministerCouncil,
+  DEFAULT_ACCOUNT_OWNERSHIP_TYPE,
+  isShieldedOwnership,
   describeError,
   GL_ACCOUNT_NAME_MAX_LENGTH,
   type AccountOwnershipType,
@@ -25,13 +31,13 @@ import {
   type CouncilAccount,
 } from '@kofc/shared';
 import { Button, Empty, Input, Notice, Panel, Pill, Select, Table, Td } from '@/components/ui';
-import { useUser } from '@/lib/session';
+import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 type TextKey = 'AccountName' | 'account_display_name' | 'contact_name' | 'contact_number' | 'contact_email' | 'ein_number';
 type Draft = { id: number | null; ownership_type: AccountOwnershipType } & Record<TextKey, string>;
-const blank: Draft = { id: null, AccountName: '', account_display_name: '', ownership_type: 'COUNCIL', contact_name: '', contact_number: '', contact_email: '', ein_number: '' };
+const blank: Draft = { id: null, AccountName: '', account_display_name: '', ownership_type: DEFAULT_ACCOUNT_OWNERSHIP_TYPE, contact_name: '', contact_number: '', contact_email: '', ein_number: '' };
 const draftOf = (r: CouncilAccount): Draft => ({
   id: r.id,
   AccountName: r.AccountName,
@@ -57,6 +63,7 @@ const HEAD = [...NAME_COLUMNS.map((c) => c.label), ACCOUNT_OWNERSHIP_COLUMN_LABE
 
 export function AccountOwnersMatrix({ council }: { council: Council }) {
   const user = useUser();
+  const tenant = useTenantType();
   const mayEdit = canAdministerCouncil(user, council.id);
   const rows = useLoad(() => (mayEdit ? db.councils.listCouncilAccounts(user.memberId, council.id) : Promise.resolve([] as CouncilAccount[])), [user.memberId, council.id, mayEdit]);
   const [editing, setEditing] = useState<Draft | null>(null);
@@ -116,7 +123,7 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
         >
           {ACCOUNT_OWNERSHIP_TYPES.map((t) => (
             <option key={t} value={t}>
-              {ACCOUNT_OWNERSHIP_LABELS[t]}
+              {accountOwnershipLabel(t, tenant)}
             </option>
           ))}
         </Select>
@@ -150,7 +157,8 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
     >
       <p className="mb-3 text-sm">
         The council&apos;s money accounts (checking, Venmo, Zelle, Zeffy, the parish account), straight from the chart of accounts: who owns each one and who to
-        call about it. Gifts paid into a Parish account are the parish&apos;s and stay off the Treasurer&apos;s batch coder.
+        call about it. Gifts paid into a {accountOwnershipLabel('PARENT_ORGANIZATION', tenant)} or {accountOwnershipLabel('AFFILIATED_ENTITY', tenant)} account are
+        not the council&apos;s: they stay off the Treasurer&apos;s batch coder and the operating books.
       </p>
       {!mayEdit ? <Notice tone="info">Only the council&apos;s Admins and Super Admins keep the accounts.</Notice> : null}
       {rows.error ? <Notice tone="error">{rows.error}</Notice> : null}
@@ -172,7 +180,7 @@ export function AccountOwnersMatrix({ council }: { council: Council }) {
                     <Td className="font-bold">{r.AccountName}</Td>
                     <Td>{r.account_display_name ?? '–'}</Td>
                     <Td>
-                      <Pill tone={r.ownership_type === 'PARISH' ? 'gold' : 'navy'}>{ACCOUNT_OWNERSHIP_LABELS[r.ownership_type]}</Pill>
+                      <Pill tone={isShieldedOwnership(r.ownership_type) ? 'gold' : 'navy'}>{accountOwnershipLabel(r.ownership_type, tenant)}</Pill>
                     </Td>
                     <Td>{r.contact_name ?? '–'}</Td>
                     <Td className="whitespace-nowrap">{r.contact_number ?? '–'}</Td>

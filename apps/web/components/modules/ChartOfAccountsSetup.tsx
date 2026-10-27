@@ -16,9 +16,13 @@
 // Sprint 11 Revision 2.1 (schema 103): the editor also lists the council's ACTIVE affiliates (finance.listSplitSisterCouncils).
 // A share sent to one posts to this council's 'Due to Sister Council' Liability clearing account - never to the other
 // council's books. Asset rows carry a Parish tag when the account is parish-owned (ownership_type).
+// Sprint 11 Revision 2.2: the tag shows for both shielded classifications, in the tenant's words (accountOwnershipLabel).
 import { useState } from 'react';
 import {
+  accountOwnershipLabel,
+  accountOwnershipOf,
   canBatchCodeDonations,
+  isShieldedOwnership,
   describeError,
   GL_ACCOUNT_TYPE_LABELS,
   GL_ACCOUNT_TYPES,
@@ -32,7 +36,7 @@ import {
 import { AccountLedgerDrawer, flattenChart, Money } from '@/components/FinanceParts';
 import { SplitShareRows, splitRowsOf, splitRowsToDestinations, type SplitRow } from '@/components/SplitShareRows';
 import { Button, Empty, Notice, Pill, Table, Td } from '@/components/ui';
-import { useUser } from '@/lib/session';
+import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -110,6 +114,7 @@ function SplitEditor({
 
 export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number; councilId: number }) {
   const user = useUser();
+  const tenant = useTenantType();
   const chart = useLoad(() => db.finance.listChartOfAccounts(memberId, councilId), [memberId, councilId]);
   const profiles = useLoad(() => db.finance.listGLSplitProfiles(memberId, councilId), [memberId, councilId]);
   const sisters = useLoad(() => db.finance.listSplitSisterCouncils(memberId, councilId).catch(() => [] as SplitSisterCouncil[]), [memberId, councilId]);
@@ -171,7 +176,7 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
                             </button>
                             {n.account.IsVirtualGoal === 1 ? <Pill tone="gold">Virtual goal</Pill> : null}
                             {splitIds.has(n.account.id) ? <Pill tone="navy">{GL_SPLIT_ACCOUNT_LABEL}</Pill> : null}
-                            {n.account.ownership_type === 'PARISH' ? <Pill tone="gold">Parish</Pill> : null}
+                            {isShieldedOwnership(n.account.ownership_type) ? <Pill tone="gold">{accountOwnershipLabel(accountOwnershipOf(n.account), tenant)}</Pill> : null}
                             {isSisterCouncilClearingAccount(n.account) ? <Pill tone="navy">Sister council clearing</Pill> : null}
                           </span>
                           {profile && profile.destinations.length > 0 ? (

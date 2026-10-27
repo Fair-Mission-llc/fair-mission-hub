@@ -1213,8 +1213,8 @@ export interface GLAccount {
   contact_number?: string | null;
   contact_email?: string | null;
   ein_number?: string | null;
-  /** 'COUNCIL' (default) or 'PARISH'. */
-  ownership_type?: 'COUNCIL' | 'PARISH';
+  /** Sprint 11 Revision 2.2: 'INTERNAL_OPERATING' (default), 'PARENT_ORGANIZATION' or 'AFFILIATED_ENTITY'. */
+  ownership_type?: 'INTERNAL_OPERATING' | 'PARENT_ORGANIZATION' | 'AFFILIATED_ENTITY';
   /** Set only on a 'Due to Sister Council' Liability clearing account: the affiliated council owed. */
   due_to_council_id?: number | null;
 }

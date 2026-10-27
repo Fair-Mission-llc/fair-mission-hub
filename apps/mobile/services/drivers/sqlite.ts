@@ -602,6 +602,9 @@ import {
   accountOwnerEntityOf,
   donationAccountOwner,
   isParishHeldDonation,
+  OWNERSHIP_OWNER_ENTITY,
+  accountOwnershipOf,
+  DEFAULT_ACCOUNT_OWNERSHIP_TYPE,
   type AccountOwnerEntity,
   buildBatchCodingQueue,
   buildCashAuditBoard,
@@ -971,7 +974,7 @@ const DB_NAME = 'kofc.db';
  * 102: lookup_status ('Active' / 'Inactive') on Activities, DonationType and CouncilDonationMethod, and
  *     CouncilDonationMethod.account_owner_id, the AccountOwners row a payment method pays into (Sprint 11 Revision 1.0).
  * 103: AccountOwners merged into GLAccount (account_display_name, contact_name / number / email, ein_number, the
- *     COUNCIL / PARISH ownership_type and due_to_council_id for 'Due to Sister Council' clearing accounts);
+ *     ownership_type (Sprint 11 Revision 2.2: INTERNAL_OPERATING / PARENT_ORGANIZATION / AFFILIATED_ENTITY) and due_to_council_id for 'Due to Sister Council' clearing accounts);
  *     CouncilDonationMethod.account_owner_id replaced by account_id; AccountOwners dropped (Sprint 11 Revision 2.1).
  */
 const SCHEMA_VERSION = 103;
@@ -1187,6 +1190,10 @@ export class SqliteDataService implements DataService {
       const actual = (await db.getAllAsync<{ name: string }>(`PRAGMA table_info([${table}])`)).map((c) => c.name);
       if (actual.length !== expected.length || expected.some((name) => !actual.includes(name))) return false;
     }
+    // Sprint 11 Revision 2.2 kept version 103 but replaced GLAccount.ownership_type's COUNCIL / PARISH check with the
+    // three universal tokens. A database built under the old check would refuse every new account, so it is stale too.
+    const gl = await db.getFirstAsync<{ sql: string }>("SELECT [sql] FROM [sqlite_master] WHERE [type] = 'table' AND [name] = 'GLAccount'");
+    if (!gl?.sql.includes(`'${DEFAULT_ACCOUNT_OWNERSHIP_TYPE}'`)) return false;
     return true;
   }
 
@@ -2058,7 +2065,7 @@ export class SqliteDataService implements DataService {
             [...values, id],
           );
           // The payment methods paying into it follow its owner.
-          await db.runAsync('UPDATE [CouncilDonationMethod] SET [account_owner_entity] = ? WHERE [account_id] = ?', [clean.ownership_type, id]);
+          await db.runAsync('UPDATE [CouncilDonationMethod] SET [account_owner_entity] = ? WHERE [account_id] = ?', [OWNERSHIP_OWNER_ENTITY[clean.ownership_type], id]);
         } else {
           const added = await db.runAsync(
             `INSERT INTO [GLAccount] ([CouncilID], [AccountType], [IsVirtualGoal], [TargetGoalAmount], [AccountName], [account_display_name], [contact_name], [contact_number], [contact_email], [ein_number], [ownership_type])
@@ -8269,7 +8276,7 @@ export class SqliteDataService implements DataService {
   private async councilAccounts(db: SQLite.SQLiteDatabase, councilId: number): Promise<CouncilAccount[]> {
     return (await this.glAccounts(db, councilId))
       .filter(isCouncilAccount)
-      .map((a) => ({ ...a, ownership_type: a.ownership_type ?? 'COUNCIL' }))
+      .map((a) => ({ ...a, ownership_type: accountOwnershipOf(a) }))
       .sort((a, b) => a.AccountName.localeCompare(b.AccountName) || a.id - b.id);
   }
 
@@ -8300,7 +8307,7 @@ export class SqliteDataService implements DataService {
         const name = dueToSisterCouncilName(sister);
         assertAccountNameFree(await this.glAccounts(db, councilId), name, null);
         const added = await db.runAsync(
-          `INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [IsVirtualGoal], [TargetGoalAmount], [ownership_type], [due_to_council_id]) VALUES (?, ?, 'Liability', 0, 0, 'COUNCIL', ?)`,
+          `INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [IsVirtualGoal], [TargetGoalAmount], [ownership_type], [due_to_council_id]) VALUES (?, ?, 'Liability', 0, 0, 'INTERNAL_OPERATING', ?)`,
           [councilId, name, sisterId],
         );
         account = { id: added.lastInsertRowId };

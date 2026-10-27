@@ -261,7 +261,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 1. Open the tab: **Activities**, **Donation types**, **Enabled donation methods** or **Meeting Agenda Templates**.
 2. Edit the rows. Each changed row shows **Edited** under its ID.
 3. In **Status**, select **Active** or **Inactive**. An **Inactive** row stays for the old records, but members cannot pick it for new hours or new donations.
-4. On **Enabled donation methods**, select the **Account**. **Council Account** is the default. The other choices are the rows of the **Account Owners Matrix** (8.10). A Parish account shows **(Parish)**. Its gifts are the parish's and stay off the Treasurer's batch coder.
+4. On **Enabled donation methods**, select the **Account**. **Council Account** is the default. The other choices are the rows of the **Account Owners Matrix** (8.10). A **Parish** account shows **(Parish)** and an **Affiliated Entity** account shows **(Affiliated Entity)**. Their gifts are not the council's. They stay off the Treasurer's batch coder.
 5. For a QR method, select the **QR code** check box. Select **Upload** and choose the image. A small preview shows the code. The check box is disabled for **Cash**, **Check**, **Credit Card** and **Physical Items**.
 6. Select **Save changes**.
 
@@ -685,12 +685,12 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 1. Select **Add account**.
 2. Type the **Ledger account** name, for example `Venmo`.
 3. Type the **Name members see**, for example `St. Mary's Knights Venmo`.
-4. In **Owned by**, choose **Council** or **Parish**.
+4. In **Owned by**, choose **Council**, **Parish** or **Affiliated Entity**. A white-label chapter sees **Internal Operating**, **Parent Organization** or **Affiliated Entity**.
 5. Type the **Contact name**, **Contact number** and **Contact email**.
 6. Type the account holder's **EIN**, for example `12-3456789`.
 7. Select **Save**. To change a row, select **Edit**. To remove it, select **Delete**.
 
-**Expected result:** The row shows in the matrix with a **Council** or **Parish** tag. Each council sees only its own rows. A payment method linked to a **Parish** account becomes parish-owned. Gifts paid by that method stay off the Treasurer's batch coder.
+**Expected result:** The row shows in the matrix with its **Owned by** tag. Each council sees only its own rows. A payment method linked to a **Parish** account becomes a **Parish account**. A payment method linked to an **Affiliated Entity** account becomes a **Third-party account**. Gifts paid by either method stay off the Treasurer's batch coder. The account keeps its own **Name members see**.
 
 **Common problems:**
 | Problem | Cause | Fix |

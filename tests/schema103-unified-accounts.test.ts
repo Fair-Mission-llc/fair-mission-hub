@@ -36,7 +36,7 @@ describe('schema 103: one accounts ledger', () => {
     expect(gl.map((c) => c.name)).toEqual(
       expect.arrayContaining(['account_display_name', 'contact_name', 'contact_number', 'contact_email', 'ein_number', 'ownership_type', 'due_to_council_id']),
     );
-    expect(gl.find((c) => c.name === 'ownership_type')).toMatchObject({ notNull: true, allowed: ['COUNCIL', 'PARISH'] });
+    expect(gl.find((c) => c.name === 'ownership_type')).toMatchObject({ notNull: true, allowed: ['INTERNAL_OPERATING', 'PARENT_ORGANIZATION', 'AFFILIATED_ENTITY'] });
     expect(TABLES.GLAccount.foreignKeys).toContainEqual({ column: 'due_to_council_id', refTable: 'Council', refColumn: 'id' });
     const methods = TABLES.CouncilDonationMethod;
     expect(methods.columns.map((c) => c.name)).not.toContain('account_owner_id');
@@ -50,10 +50,10 @@ describe('schema 103: one accounts ledger', () => {
     expect(GL_ACCOUNT_REFERENCES.map((r) => `${r.table}.${r.column}`).sort()).toEqual(fromSchema.sort());
   });
 
-  it('holds ownership to COUNCIL or PARISH and lets a linked account decide a method owner', () => {
-    expect(cleanOwnershipType('PARISH')).toBe('PARISH');
-    for (const bad of ['THIRD_PARTY', 'parish', '', null, undefined]) expect(() => cleanOwnershipType(bad), String(bad)).toThrow();
-    expect(paymentMethodOwner({ account_owner_entity: 'COUNCIL' }, { ownership_type: 'PARISH' })).toBe('PARISH');
+  it('holds ownership to the three universal classifications and lets a linked account decide a method owner', () => {
+    expect(cleanOwnershipType('PARENT_ORGANIZATION')).toBe('PARENT_ORGANIZATION');
+    for (const bad of ['COUNCIL', 'PARISH', 'THIRD_PARTY', 'parent_organization', '', null, undefined]) expect(() => cleanOwnershipType(bad), String(bad)).toThrow();
+    expect(paymentMethodOwner({ account_owner_entity: 'COUNCIL' }, { ownership_type: 'PARENT_ORGANIZATION' })).toBe('PARISH');
     expect(paymentMethodOwner({ account_owner_entity: 'THIRD_PARTY' }, null)).toBe('THIRD_PARTY');
     expect(isCouncilAccount({ AccountType: 'Asset', IsVirtualGoal: 0, due_to_council_id: null })).toBe(true);
     expect(isCouncilAccount({ AccountType: 'Asset', IsVirtualGoal: 1, due_to_council_id: null })).toBe(false);
@@ -98,8 +98,8 @@ describe.each(drivers)('$name driver: schema 103 accounts and sister-council sha
     const db = await makePilot();
     const admin = await signIn(db, 'testsuperadmin@kofc.org');
     const treasurer = await signIn(db, 'treasurer_user@stmarys.org');
-    const account = await db.councils.saveCouncilAccount(admin, OWN, { AccountName: 'Parish Venmo', ownership_type: 'PARISH', contact_name: 'Parish Office' });
-    expect(account).toMatchObject({ CouncilID: OWN, AccountType: 'Asset', ownership_type: 'PARISH' });
+    const account = await db.councils.saveCouncilAccount(admin, OWN, { AccountName: 'Parish Venmo', ownership_type: 'PARENT_ORGANIZATION', contact_name: 'Parish Office' });
+    expect(account).toMatchObject({ CouncilID: OWN, AccountType: 'Asset', ownership_type: 'PARENT_ORGANIZATION' });
 
     const venmo = (await db.donations.listMethods(OWN)).find((o) => o.method.DonationMethod === 'Venmo')!.method.id;
     const link = (await db.lookups.listCouncilSpecific(admin, OWN, 'CouncilDonationMethod')).find((l) => l.DonationMethodID === venmo)!;
@@ -119,7 +119,7 @@ describe.each(drivers)('$name driver: schema 103 accounts and sister-council sha
     await expectRule(db.finance.batchCodeDonations(treasurer, OWN, { donationIds: [gift.id], revenueAccountId: queue.revenueAccounts[0]!.id }), 'INVALID_INPUT');
 
     // Moving the account back to the council moves the linked method with it (not the stored gift).
-    await db.councils.saveCouncilAccount(admin, OWN, { id: account.id, AccountName: 'Parish Venmo', ownership_type: 'COUNCIL' });
+    await db.councils.saveCouncilAccount(admin, OWN, { id: account.id, AccountName: 'Parish Venmo', ownership_type: 'INTERNAL_OPERATING' });
     const relinked = (await db.lookups.listCouncilSpecific(admin, OWN, 'CouncilDonationMethod')).find((l) => l.id === link.id)!;
     expect(relinked.account_owner_entity).toBe('COUNCIL');
     // A linked account, or one with postings, cannot be deleted; nor can a non-money account through the matrix.

@@ -36,6 +36,8 @@
 // Sprint 11 Revision 2.1 (schema 103): the Account column reads the unified accounts ledger (councils.listCouncilAccounts:
 // the council's money accounts in its chart) and saves account_id. The drivers set the row's owner from the picked
 // account's ownership_type, so a Parish account makes the method parish-held.
+// Sprint 11 Revision 2.2: a Parent Organization or Affiliated Entity account makes it externally held; the picker names
+// the classification in the tenant's words.
 //
 // Sprint 11 Revision 2.0: the payment methods grid lost its legacy 'Account owner' column - a row keeps the owner it has,
 // and a new row is the council's own (DEFAULT_ACCOUNT_OWNER_ENTITY) - and the Check method is always row 3
@@ -45,7 +47,9 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ACCOUNT_PICKER_COLUMN_LABEL,
+  accountOwnershipLabel,
   councilAccountLabel,
+  isShieldedOwnership,
   COUNCIL_ACCOUNT_TOKEN_LABEL,
   defaultAccountIdentityLabel,
   LOOKUP_STATUSES,
@@ -66,7 +70,7 @@ import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { QrThumbnail, uploadPaymentQrImage } from '@/components/PaymentQrUploader';
 import { Markdown } from '@/components/Markdown';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
-import { useUser } from '@/lib/session';
+import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -128,6 +132,7 @@ interface ColumnData {
 
 function useColumns(table: CouncilLookupTableName, councilId: number): ColumnData {
   const user = useUser();
+  const tenant = useTenantType();
   const options = useLoad(async () => {
     if (table === 'Activities') return { options: (await db.lookups.list('Category')).map((c) => ({ value: c.id, label: c.Category })), owners: [], names: [] };
     if (table === 'CouncilDonationMethod') {
@@ -136,12 +141,15 @@ function useColumns(table: CouncilLookupTableName, councilId: number): ColumnDat
       const accounts = await db.councils.listCouncilAccounts(user.memberId, councilId).catch(() => []);
       return {
         options: methods,
-        owners: accounts.map((a) => ({ value: a.id, label: `${councilAccountLabel(a)}${a.ownership_type === 'PARISH' ? ' (Parish)' : ''}` })),
+        owners: accounts.map((a) => ({
+          value: a.id,
+          label: `${councilAccountLabel(a)}${isShieldedOwnership(a.ownership_type) ? ` (${accountOwnershipLabel(a.ownership_type, tenant)})` : ''}`,
+        })),
         names: accounts.map((a) => ({ value: a.id, label: councilAccountLabel(a) })),
       };
     }
     return { options: [], owners: [], names: [] };
-  }, [table, councilId, user.memberId]);
+  }, [table, councilId, user.memberId, tenant]);
   const accountNames = new Map((options.data?.names ?? []).map((o) => [o.value, o.label]));
   if (!options.data) return { columns: null, error: options.error, accountNames };
   const columns: Record<CouncilLookupTableName, Column[]> = {

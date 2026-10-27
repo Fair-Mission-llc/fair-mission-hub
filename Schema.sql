@@ -4096,8 +4096,11 @@ GO
 -- payment method, a split share and the Account Owners Matrix all read one catalog:
 --   account_display_name  the name members see (the old account_name stays the ledger name, AccountName);
 --   contact_name / contact_number / contact_email / ein_number  who to call about the account, and its holder's EIN;
---   ownership_type        'COUNCIL' (DEFAULT) or 'PARISH' - nothing else. A parish account's money is the parish's:
---                         gifts paid into it are kept off the Treasurer's batch coder (the parish shield);
+--   ownership_type        Sprint 11 Revision 2.2 (still version 103): 'INTERNAL_OPERATING' (DEFAULT, the chapter's
+--                         or council's own money), 'PARENT_ORGANIZATION' (the umbrella institution, e.g. the parish) or
+--                         'AFFILIATED_ENTITY' (an independent group, partner non-profit or auxiliary sub-chapter). Money
+--                         in either external kind is not the council's: gifts paid into it are kept off the Treasurer's
+--                         batch coder (the shield);
 --   due_to_council_id     set only on a 'Due to Sister Council' Liability clearing account: the affiliated council the
 --                         council owes. A revenue split may send a share there; nothing is written to that council.
 -- CouncilDonationMethod.account_owner_id is replaced by account_id, a GLAccount of the same council (NULL is the
@@ -4114,7 +4117,7 @@ ALTER TABLE [GLAccount] ADD [contact_email] VARCHAR(100) NULL;
 GO
 ALTER TABLE [GLAccount] ADD [ein_number] VARCHAR(20) NULL;
 GO
-ALTER TABLE [GLAccount] ADD [ownership_type] VARCHAR(10) NOT NULL DEFAULT 'COUNCIL' CONSTRAINT [CK_GLAccount_ownership_type] CHECK ([ownership_type] IN ('COUNCIL', 'PARISH'));
+ALTER TABLE [GLAccount] ADD [ownership_type] VARCHAR(20) NOT NULL DEFAULT 'INTERNAL_OPERATING' CONSTRAINT [CK_GLAccount_ownership_type] CHECK ([ownership_type] IN ('INTERNAL_OPERATING', 'PARENT_ORGANIZATION', 'AFFILIATED_ENTITY'));
 GO
 ALTER TABLE [GLAccount] ADD [due_to_council_id] INTEGER NULL;
 GO

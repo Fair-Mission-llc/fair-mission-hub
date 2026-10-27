@@ -131,17 +131,17 @@ describe('3. the Local Network Server file repository', () => {
 
 describe('4. the Account Owners Matrix (pure)', () => {
   it('cleans a row', () => {
-    expect(cleanCouncilAccount({ AccountName: ' Venmo ', contact_email: 'tr@stmarys.org', ein_number: '123456789', ownership_type: 'COUNCIL' })).toEqual({
+    expect(cleanCouncilAccount({ AccountName: ' Venmo ', contact_email: 'tr@stmarys.org', ein_number: '123456789', ownership_type: 'INTERNAL_OPERATING' })).toEqual({
       AccountName: 'Venmo',
       account_display_name: null,
       contact_name: null,
       contact_number: null,
       contact_email: 'tr@stmarys.org',
       ein_number: '12-3456789',
-      ownership_type: 'COUNCIL',
+      ownership_type: 'INTERNAL_OPERATING',
     });
-    expect(() => cleanCouncilAccount({ AccountName: '', ownership_type: 'COUNCIL' })).toThrow();
-    expect(() => cleanCouncilAccount({ AccountName: 'Zelle', contact_email: 'not-an-email', ownership_type: 'COUNCIL' })).toThrow(/email/);
+    expect(() => cleanCouncilAccount({ AccountName: '', ownership_type: 'INTERNAL_OPERATING' })).toThrow();
+    expect(() => cleanCouncilAccount({ AccountName: 'Zelle', contact_email: 'not-an-email', ownership_type: 'INTERNAL_OPERATING' })).toThrow(/email/);
     expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('<AccountOwnersMatrix council={council} />');
   });
 });
@@ -188,10 +188,10 @@ describe.each(drivers)('$name driver: Revision 3.1 methods', ({ make }) => {
   it('keeps account owners per council for its Admins only', async () => {
     const db = await make();
     const admin = (await db.members.get(MEMBER.admin))!;
-    const row = await db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { AccountName: 'Venmo', contact_name: 'Pat Treasurer', ein_number: '123456789', ownership_type: 'COUNCIL' });
-    expect(row).toMatchObject({ CouncilID: admin.CouncilID, AccountName: 'Venmo', AccountType: 'Asset', ein_number: '12-3456789', ownership_type: 'COUNCIL' });
-    await expectRule(db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { AccountName: 'venmo', ownership_type: 'COUNCIL' }), 'INVALID_INPUT');
-    const changed = await db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { id: row.id, AccountName: 'Venmo', contact_number: '503-555-0100', ownership_type: 'COUNCIL' });
+    const row = await db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { AccountName: 'Venmo', contact_name: 'Pat Treasurer', ein_number: '123456789', ownership_type: 'INTERNAL_OPERATING' });
+    expect(row).toMatchObject({ CouncilID: admin.CouncilID, AccountName: 'Venmo', AccountType: 'Asset', ein_number: '12-3456789', ownership_type: 'INTERNAL_OPERATING' });
+    await expectRule(db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { AccountName: 'venmo', ownership_type: 'INTERNAL_OPERATING' }), 'INVALID_INPUT');
+    const changed = await db.councils.saveCouncilAccount(MEMBER.admin, admin.CouncilID, { id: row.id, AccountName: 'Venmo', contact_number: '503-555-0100', ownership_type: 'INTERNAL_OPERATING' });
     expect(changed.contact_number).toBe('503-555-0100');
     expect((await db.councils.listCouncilAccounts(MEMBER.admin, admin.CouncilID)).map((r) => r.AccountName)).toContain('Venmo');
     await expectRule(db.councils.listCouncilAccounts(MEMBER.member, admin.CouncilID), 'ADMIN_REQUIRED');

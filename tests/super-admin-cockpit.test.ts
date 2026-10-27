@@ -51,12 +51,13 @@ describe('account ownership codes', () => {
     expect(accountOwnerGateMessage([undefined])).not.toBeNull();
   });
 
-  it('treats only electronic gifts through a parish-owned account as held by the parish', () => {
+  it('treats only electronic gifts through a parish- or third-party-owned account as held outside the council', () => {
     expect(isParishHeldDonation('qr', 'PARISH')).toBe(true);
     expect(isParishHeldDonation('card', 'PARISH')).toBe(true);
     expect(isParishHeldDonation('cash', 'PARISH')).toBe(false);
     expect(isParishHeldDonation('qr', 'COUNCIL')).toBe(false);
-    expect(isParishHeldDonation('qr', 'THIRD_PARTY')).toBe(false);
+    expect(isParishHeldDonation('qr', 'THIRD_PARTY')).toBe(true);
+    expect(isParishHeldDonation('cash', 'THIRD_PARTY')).toBe(false);
     expect(isParishHeldDonation('qr', undefined)).toBe(false);
   });
 });

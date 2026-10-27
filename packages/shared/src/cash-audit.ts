@@ -63,12 +63,16 @@ export const CASH_OVER_SHORT_ACCOUNT_TYPE: GLAccount['AccountType'] = 'Expense';
 /** The donation method kinds the batch coder treats as electronic money. */
 export const ELECTRONIC_DONATION_KINDS: readonly DonationMethodKind[] = ['card', 'qr'];
 
+/** Sprint 11 Revision 2.2: the method owners whose money is external - a parent organization's or an affiliated entity's. */
+export const SHIELDED_ACCOUNT_OWNER_ENTITIES: readonly AccountOwnerEntity[] = ['PARISH', 'THIRD_PARTY'];
+
 /**
  * Sprint 8O: an electronic donation (card or QR code) given through a payment method whose account the parish owns. The
- * parish already holds that money, so the council's books never record it as revenue.
+ * parish already holds that money, so the council's books never record it as revenue. Sprint 11 Revision 2.2: the same
+ * shield covers a third party's account (an AFFILIATED_ENTITY account).
  */
 export const isParishHeldDonation = (kind: DonationMethodKind, owner: AccountOwnerEntity | null | undefined): boolean =>
-  ELECTRONIC_DONATION_KINDS.includes(kind) && owner === 'PARISH';
+  ELECTRONIC_DONATION_KINDS.includes(kind) && owner != null && SHIELDED_ACCOUNT_OWNER_ENTITIES.includes(owner);
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 const cents = (n: number) => Math.round(n * 100);

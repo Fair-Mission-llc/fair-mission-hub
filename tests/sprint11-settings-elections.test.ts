@@ -64,7 +64,7 @@ describe.each(drivers)('$name driver: payment method accounts', ({ make }) => {
   it("links a payment method to one of the council's own accounts and keeps a linked account", async () => {
     const db = await make();
     const councilId = (await db.members.get(MEMBER.admin))!.CouncilID;
-    const account = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Parish Venmo', ownership_type: 'PARISH' });
+    const account = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Parish Venmo', ownership_type: 'PARENT_ORGANIZATION' });
     const [link] = await db.lookups.listCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod');
     const base = { id: link.id, DonationMethodID: link.DonationMethodID, DonationMethodURL: null, account_owner_entity: 'PARISH' };
     const [saved] = (await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [
@@ -84,8 +84,8 @@ describe.each(drivers)('$name driver: payment method accounts', ({ make }) => {
     const db = await make();
     const councilId = (await db.members.get(MEMBER.admin))!.CouncilID;
     const other = (await db.councils.list()).find((c) => c.id !== councilId)!;
-    const own = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Council Zeffy', ownership_type: 'COUNCIL' });
-    const foreign = await db.councils.saveCouncilAccount(MEMBER.superAdmin, other.id, { AccountName: 'Parish ParishSoft', ownership_type: 'PARISH' });
+    const own = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Council Zeffy', ownership_type: 'INTERNAL_OPERATING' });
+    const foreign = await db.councils.saveCouncilAccount(MEMBER.superAdmin, other.id, { AccountName: 'Parish ParishSoft', ownership_type: 'PARENT_ORGANIZATION' });
     const listed = await db.councils.listCouncilAccounts(MEMBER.admin, councilId);
     expect(listed.map((r) => r.id)).toContain(own.id);
     expect(listed.every((r) => r.CouncilID === councilId && r.AccountType === 'Asset')).toBe(true);

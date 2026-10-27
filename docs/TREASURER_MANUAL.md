@@ -1155,7 +1155,7 @@ Each payment method records who owns that account. **Enabled donation methods** 
 | --- | --- |
 | **Council account** | The money lands in the council's own account. The council's books record the money as revenue. |
 | **Parish account** | The money lands in the parish's account. The parish already holds the money. |
-| **Third-party account** | The money lands in the account of a vendor or a partner charity. |
+| **Third-party account** | The money lands in the account of an affiliated group, a vendor or a partner charity. That group already holds the money. |
 
 A payment method keeps the owner it has. A new payment method is a **Council account**.
 Methods that were set up before Sprint 8O read as **Council account**.

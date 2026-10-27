@@ -598,6 +598,9 @@ import {
   accountOwnerEntityOf,
   donationAccountOwner,
   isParishHeldDonation,
+  OWNERSHIP_OWNER_ENTITY,
+  accountOwnershipOf,
+  DEFAULT_ACCOUNT_OWNERSHIP_TYPE,
   type AccountOwnerEntity,
   buildBatchCodingQueue,
   buildCashAuditBoard,
@@ -1589,7 +1592,7 @@ export class MemoryDataService implements DataService {
           if (!row || !isCouncilAccount(row as unknown as GLAccount)) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${input.id}.`, { id: input.id });
           Object.assign(row, clean);
           // The payment methods paying into it follow its owner.
-          for (const link of s.rows('CouncilDonationMethod')) if (link.account_id === row.id) link.account_owner_entity = clean.ownership_type;
+          for (const link of s.rows('CouncilDonationMethod')) if (link.account_id === row.id) link.account_owner_entity = OWNERSHIP_OWNER_ENTITY[clean.ownership_type];
           return { ...row } as unknown as CouncilAccount;
         }
         return {
@@ -6923,7 +6926,7 @@ export class MemoryDataService implements DataService {
   private councilAccounts(s: MemoryStore, councilId: number): CouncilAccount[] {
     return this.glAccounts(s, councilId)
       .filter(isCouncilAccount)
-      .map((a) => ({ ...a, ownership_type: a.ownership_type ?? 'COUNCIL' }))
+      .map((a) => ({ ...a, ownership_type: accountOwnershipOf(a) }))
       .sort((a, b) => a.AccountName.localeCompare(b.AccountName) || a.id - b.id);
   }
 
@@ -6951,7 +6954,7 @@ export class MemoryDataService implements DataService {
           IsVirtualGoal: 0,
           TargetGoalAmount: 0,
           is_split_account: 0,
-          ownership_type: 'COUNCIL',
+          ownership_type: DEFAULT_ACCOUNT_OWNERSHIP_TYPE,
           due_to_council_id: sisterId,
         });
       }

@@ -228,7 +228,7 @@ describe.each(drivers)('$name driver: Sprint 11 Revision 2.0', (d) => {
   it("fills a blank 'Account Name Members See' from the picked account", async () => {
     const db = await d.make();
     const councilId = (await db.members.get(MEMBER.admin))!.CouncilID;
-    const owner = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Parish Giving Portal', ownership_type: 'PARISH' });
+    const owner = await db.councils.saveCouncilAccount(MEMBER.admin, councilId, { AccountName: 'Parish Giving Portal', ownership_type: 'PARENT_ORGANIZATION' });
     const row = (await db.lookups.listCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod'))[0]!;
     const saved = await db.lookups.saveCouncilSpecific(MEMBER.admin, councilId, 'CouncilDonationMethod', [
       { id: row.id, DonationMethodID: row.DonationMethodID, DonationMethodURL: null, account_owner_entity: 'PARISH', account_identity_label: '', account_id: owner.id, lookup_status: 'Active' },
