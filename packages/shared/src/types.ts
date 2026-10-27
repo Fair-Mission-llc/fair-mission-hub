@@ -143,6 +143,8 @@ export interface Council {
   is_loaner_library_enabled?: number | null;
   /** Sprints 8G/8H (Schema 78): the council's state district number (INT NULL), the affiliations directory's tiebreak. */
   district_number?: number | null;
+  /** Sprint 11 Revision 5.0 (schema 104): 'LOCAL' (DEFAULT) or 'STATE' for a State Council instance (regional.ts). */
+  council_level?: 'LOCAL' | 'STATE';
   /**
    * Sprint 8Q (Schema 90): INT DEFAULT 1 - 0 switches off FaceID / biometric sign-in on the phones of the council's
    * members (feature-deployment.ts biometricLoginEnabled). A missing or NULL value reads as on.
@@ -684,6 +686,8 @@ export interface CouncilDonationMethod {
   lookup_status?: LookupStatus;
   /** Sprint 11 Revision 2.1 (schema 103): the council's GLAccount it pays into; NULL is the built-in 'Council Account' token. */
   account_id?: number | null;
+  /** Sprint 11 Revision 5.0 (schema 104): the method's channel (paymentChannelOf); only DIGITAL may hold a QR link. */
+  payment_channel?: 'CASH' | 'CHECK' | 'CARD_READER' | 'PHYSICAL_ITEM' | 'DIGITAL';
 }
 
 export interface Donation {

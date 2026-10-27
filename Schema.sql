@@ -4141,3 +4141,104 @@ GO
 
 DROP TABLE [AccountOwners];
 GO
+
+-- =========================================================================
+-- Sprint 11 Revision 5.0: REGIONAL OVERSIGHT, DATABASE PASSKEYS AND THE QR CHANNEL RULE (schema version 104)
+--
+-- UserPasskeys       the web 'Sign in with FaceID' passkeys (services/server/webauthn.ts), moved off the hub's
+--                    webauthn-credentials.json file. public_key_sealed holds the device's public key sealed with
+--                    AES-256-GCM under the server's credentials vault key. Only the web server reads or writes the
+--                    table (the hub refuses the 'passkeys' methods from devices). credential_id is unique.
+-- Council.council_level  'LOCAL' (DEFAULT, a numbered council) or 'STATE' (a State Council instance, e.g. the Oregon
+--                    State Council, with its own checking account and the State Desk as its desk; regional.ts).
+-- MemberRegionalAssignment / MemberRegionalCouncil
+--                    a member's regional jurisdiction: DISTRICT_DEPUTY, STATE_OFFICER or STATE_ADMIN for one state, and
+--                    the councils bound to it. Super Admins assign anywhere; a State Admin only inside their own state.
+-- CouncilDonationMethod.payment_channel and CK_CouncilDonationMethod_qr_channel
+--                    the method's channel (CASH, CHECK, CARD_READER, PHYSICAL_ITEM or DIGITAL), written by the drivers
+--                    from the method's kind. The database refuses a QR image link (DonationMethodURL) on any channel
+--                    but DIGITAL. (The QR link lives on the payment method row, not on GLAccount.)
+-- The phone version moves to 104; a hub vault at 103 must be archived first (npm run hub:archive).
+-- =========================================================================
+CREATE TABLE [UserPasskeys] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[credential_id] VARCHAR(255) NOT NULL,
+	[member_id] INTEGER NOT NULL,
+	[login_id] INTEGER NOT NULL,
+	[username] VARCHAR(100) NOT NULL,
+	[public_key_sealed] VARCHAR(2000) NOT NULL,
+	[alg] INTEGER NOT NULL,
+	[sign_count] INTEGER NOT NULL DEFAULT 0,
+	[created_at] DATETIME NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [UserPasskeys]
+ADD FOREIGN KEY([member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [UserPasskeys]
+ADD FOREIGN KEY([login_id])
+REFERENCES [Credentials]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE UNIQUE INDEX [UX_UserPasskeys_credential_id] ON [UserPasskeys] ([credential_id]);
+GO
+
+ALTER TABLE [Council] ADD [council_level] VARCHAR(10) NOT NULL DEFAULT 'LOCAL' CONSTRAINT [CK_Council_council_level] CHECK ([council_level] IN ('LOCAL', 'STATE'));
+GO
+
+CREATE TABLE [MemberRegionalAssignment] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[member_id] INTEGER NOT NULL,
+	[assignment_type] VARCHAR(20) NOT NULL CONSTRAINT [CK_MemberRegionalAssignment_type] CHECK ([assignment_type] IN ('DISTRICT_DEPUTY', 'STATE_OFFICER', 'STATE_ADMIN')),
+	[state_code] VARCHAR(50) NOT NULL,
+	[assigned_by_member_id] INTEGER NULL,
+	[assigned_at] DATETIME NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [MemberRegionalAssignment]
+ADD FOREIGN KEY([member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MemberRegionalAssignment]
+ADD FOREIGN KEY([assigned_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE UNIQUE INDEX [UX_MemberRegionalAssignment_member] ON [MemberRegionalAssignment] ([member_id]);
+GO
+
+CREATE TABLE [MemberRegionalCouncil] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[assignment_id] INTEGER NOT NULL,
+	[council_id] INTEGER NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [MemberRegionalCouncil]
+ADD FOREIGN KEY([assignment_id])
+REFERENCES [MemberRegionalAssignment]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MemberRegionalCouncil]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE UNIQUE INDEX [UX_MemberRegionalCouncil_pair] ON [MemberRegionalCouncil] ([assignment_id], [council_id]);
+GO
+
+ALTER TABLE [CouncilDonationMethod] ADD [payment_channel] VARCHAR(20) NOT NULL DEFAULT 'DIGITAL' CONSTRAINT [CK_CouncilDonationMethod_payment_channel] CHECK ([payment_channel] IN ('CASH', 'CHECK', 'CARD_READER', 'PHYSICAL_ITEM', 'DIGITAL'));
+GO
+ALTER TABLE [CouncilDonationMethod] ADD CONSTRAINT [CK_CouncilDonationMethod_qr_channel] CHECK ([DonationMethodURL] IS NULL OR [payment_channel] IN ('DIGITAL'));
+GO

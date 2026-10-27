@@ -96,6 +96,9 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   'expenses/assets': 'ledgers',
   'system-settings/feedback': 'settings',
   'admin-desk': 'settings',
+  'system-settings/regional-assignments': 'settings',
+  'district-desk': 'dashboard',
+  'state-desk': 'dashboard',
 };
 
 /** One sentence per Active Desks tab. */

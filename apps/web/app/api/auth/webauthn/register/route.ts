@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     // The member's login id is kept with the passkey; a passkey whose login id no longer matches is retired at sign-in.
     const member = await (await memberDirectory()).members.get(memberId);
     if (!member) return NextResponse.json({ message: 'Your member record was not found.' }, { status: 404 });
-    const saved = registerPasskey({ memberId, username, credentialId: member.CredentialID as number }, body ?? {}, publicOrigin(req));
+    const saved = await registerPasskey({ memberId, username, credentialId: member.CredentialID as number }, body ?? {}, publicOrigin(req));
     return NextResponse.json({ saved: true, credentialId: saved.credentialId, username: saved.username });
   } catch (err) {
     return NextResponse.json({ message: describeError(err) }, { status: 400 });

@@ -92,3 +92,4 @@ export * from './donation-attachments';
 export * from './hub-sync';
 export * from './admin-desk';
 export * from './setup-wizard';
+export * from './regional';

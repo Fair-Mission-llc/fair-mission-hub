@@ -30,6 +30,7 @@
 - [14. Firewall clearance](#14-firewall-clearance)
 - [15. The software bill of materials (SBOM)](#15-the-software-bill-of-materials-sbom)
 - [16. The Admin Desk](#16-the-admin-desk)
+- [17. Regional oversight](#17-regional-oversight)
 - [Appendix: QR code files](#appendix-qr-code-files)
 - [Manual map](#manual-map)
 
@@ -1392,6 +1393,93 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 
 ---
 
+## 17. Regional oversight
+
+### 17.1 Concept: District Deputies, State Officers and State Councils
+A member can hold one regional office. The office opens a desk that reads the councils of a district or a state.
+
+| Office | Desk | Councils the desk reads |
+| --- | --- | --- |
+| **District Deputy** | **District Deputy Desk** | The councils bound to the office |
+| **State Officer** | **State Oversight Desk** | Every council in the state, and any bound council |
+| **State Admin** | **State Oversight Desk** | The same as a State Officer. A State Admin also assigns offices in the state |
+
+A **State Council** is a council record of the level **State**, for example the **Oregon State Council**. A State Council has its own checking account and books. Its members work from the **State Oversight Desk**.
+
+The desks only read data. Nothing on a desk changes a council.
+
+### 17.2 Assign a regional office
+> **Who can do this:** Super Admins, in every state. A State Admin, in their own state only. Only a Super Admin makes a State Admin.
+
+**Goal:** Make a member a District Deputy, State Officer or State Admin.
+
+**Start point:** Sidebar → System Settings → **Regional Jurisdiction Assignments**.
+
+**Steps:**
+1. In **Member**, choose the member.
+2. In **Office**, choose the office.
+3. In **State**, type the state, for example `OR`. A State Admin's state is filled in.
+4. In **Bound councils**, check the councils. A District Deputy needs at least one council.
+5. Select **Save Assignment**.
+
+**Expected result:** The office shows in **Current jurisdictions**. The member sees the new desk the next time they sign in.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The message says the council is outside your state. | You are a State Admin and checked a council of another state. | Clear that council. Ask a Super Admin to assign it. |
+| **State Admin** is not in the **Office** list. | You are a State Admin. | Ask a Super Admin. |
+
+To end an office, select **Remove** on its row. The member loses the desk at the next sign-in.
+
+### 17.3 Read the District Deputy Desk or the State Oversight Desk
+> **Who can do this:** District Deputies (District Deputy Desk), State Officers and State Admins (State Oversight Desk), and Super Admins (both desks, every council).
+
+**Goal:** See the totals and details of the councils you oversee.
+
+**Start point:** Sidebar → Performance → **District Deputy Desk** or **State Oversight Desk**.
+
+The **top deck** shows four totals: councils, volunteer hours this fraternal year, gross cash balances and physical assets. The top deck is always open. It updates every minute. Select **Refresh** to update it now.
+
+Below the top deck, eight drawers are down the left side. All drawers are closed when the page opens.
+
+| Drawer | What the panel holds |
+| --- | --- |
+| **1. Council Directory & Affiliation Networks** | Each council, its state, district and active members, and the sister-council links |
+| **2. Financial & Budgetary Balance Rollups** | Cash balance, and this year's revenue, costs and net, for each council |
+| **3. Activity & Volunteer Hours Summary** | Shift hours, activity hours and volunteers for each council |
+| **4. Charitable Contributions & Grant Audits** | Grants paid this year, with the check numbers |
+| **5. Master Regional Calendar** | Coming events and meetings. Check councils to filter the list |
+| **6. Combined Physical Asset Ledger** | Each council's equipment and its cost |
+| **7. Council Goals Progress Center** | Hours, new members and fundraising against each council's targets |
+| **8. Top Performers & Volunteer Leaderboards** | The Top 10 volunteers of the region. Choose a council to see its Top 5 |
+
+**Steps:**
+1. Select a drawer on the left.
+2. Read the panel on the right.
+3. In drawer 8, choose a council in **Show** to see its Top 5 volunteers.
+
+**Expected result:** The panel of the drawer shows on the right.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The desk says you hold no jurisdiction. | Your office was removed, or you have not signed in again since it changed. | Sign out and sign in. Ask a Super Admin if the problem stays. |
+| A council is missing from the District Deputy Desk. | The council is not bound to your office. | Ask a Super Admin or your State Admin to bind it. |
+
+### 17.4 Test logins for regional work
+The pilot data has three regional test logins. The password of each is `Fraternal2026!`.
+
+| Login | Office |
+| --- | --- |
+| `tim@fairmissionsoftware.com` | Super Admin, every council |
+| `dd.test@fairmissionsoftware.com` | District Deputy of Councils 15295, 4100 and 7224 |
+| `state.test@fairmissionsoftware.com` | State Officer of the Oregon State Council |
+
+> **Warning:** These passwords are printed in this guide and in the project files. Change them, or remove the logins, before real council data goes on the server.
+
+---
+
 ## Appendix: QR code files
 The two onboarding codes are in `apps/web/public/assets/images/qr/`. Print or project the codes for new members.
 The phone **Collect** screen shows the collection codes. The phone shows the council's image link first.
@@ -1434,6 +1522,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 14. Firewall clearance
 - 15. The software bill of materials (SBOM)
 - 16. The Admin Desk
+- 17. Regional oversight
 - Appendix: QR code files
 
 **Executive Governance Manual**

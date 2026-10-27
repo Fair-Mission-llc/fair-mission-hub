@@ -19,6 +19,7 @@ import { GRAND_KNIGHT_ROLE, TRUSTEE_ROLE_NAMES } from './elections';
 import { FINANCE_LOOKUP_TABLES, FINANCIAL_SECRETARY_ROLE_NAME, holdsExecutiveRole, holdsFinanceRole, holdsGrandKnightAuthority } from './rules';
 import { TREASURER_ROLE_NAME } from './treasurer-desk';
 import { canOpenHistorianDesk } from './recorder-historian';
+import { canOpenDistrictDesk, canOpenRegionalAssignments, canOpenStateDesk } from './regional';
 import type { BudgetLineStatus, CharitableRequest, CharitableThreadType, Donation, Event, ExpenseReport, Meeting, Member, MemberType } from './types';
 
 /** `roles` (Role names) matters only to the finance areas; omitted, the member holds none. `isBudgetDirector` only to the budget. */
@@ -84,6 +85,9 @@ export type PortalArea =
   | 'system-settings/view-as-member'
   | 'system-settings/feedback'
   | 'admin-desk'
+  | 'system-settings/regional-assignments'
+  | 'district-desk'
+  | 'state-desk'
   | 'system-settings/affiliations'
   | 'system-settings/knowledge-archive'
   | 'navigation-guide'
@@ -723,6 +727,10 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canOpenViewAsMember(u)) areas.push('system-settings/view-as-member');
   if (canOpenAdministrativeFeedback(u)) areas.push('system-settings/feedback');
   if (canOpenAdminDesk(u)) areas.push('admin-desk');
+  // Sprint 11 Revision 5.0: regional oversight - the assignment panel (Super Admins, State Admins) and the two desks.
+  if (canOpenRegionalAssignments(u)) areas.push('system-settings/regional-assignments');
+  if (canOpenDistrictDesk(u)) areas.push('district-desk');
+  if (canOpenStateDesk(u)) areas.push('state-desk');
   if (canOpenCouncilLookups(u)) areas.push('council-lookups');
   if (canAppointOfficers(u)) areas.push('elections/appointments');
   // Sprint 10 Revision 3.0: the Affiliated Roster page ('members') is gone; member records are kept on /roster.
@@ -849,7 +857,8 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'financials/budget',
     ],
   },
-  { id: 'performance', label: 'Performance', items: ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry'] },
+  // Sprint 11 Revision 5.0: the District and State Desks head the pillar for regional officers and Super Admins.
+  { id: 'performance', label: 'Performance', items: ['district-desk', 'state-desk', 'member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry'] },
   { id: 'resources', label: 'Resources', items: ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library'] },
   { id: 'answers', label: 'Answers', items: ['help', 'answers/help', 'answers/sop'] },
   {
@@ -858,6 +867,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
     // Sprint 11 Revision 2.0: the Admin Desk heads the pillar for Admins and Super Admins.
     items: [
       'admin-desk',
+      'system-settings/regional-assignments',
       'councils',
       'feature-flags',
       'system-settings/global-settings',

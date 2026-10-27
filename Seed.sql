@@ -770,7 +770,7 @@ New Business
 Old Business
 Upcoming Events
 Good of the Order',
- '', 1, 19, 0, 1, 1, 35);
+ '', 1, 19, 0, 1, 1, 37); -- Sprint 11 Revision 5.0: 35 -> 37 (Tim Ferkel and the District Deputy test login joined 15295)
 GO
 
 INSERT INTO [MeetingInvites] ([MeetingID], [MemberID], [Attended], [ResponseStatus])
@@ -1090,4 +1090,144 @@ VALUES
 
 # Adjournment
 - Closed at 8:55 PM with a prayer for deceased members.', '2026-09-18 20:00:00');
+GO
+
+-- =========================================================================
+-- Sprint 11 Revision 5.0 (schema 104): REGIONAL OVERSIGHT SEED
+--
+-- Three regional roles (ids 23-25), two more Oregon councils in District 5 (4100 Sacred Heart, id 7; 7224 St. Francis
+-- of Assisi, id 8) and the Oregon State Council (id 9, council_level 'STATE', CouncilNumber 900001 - a State Council
+-- has no Supreme number, so the platform gives it one in the 900000 range).
+--
+-- Permanent regional test logins (password: Fraternal2026!, hashed when the store loads, like the dev logins above):
+--   tim@fairmissionsoftware.com        Credentials/Member 35, Super Admin of Council 15295 (global visibility)
+--   dd.test@fairmissionsoftware.com    Credentials/Member 36, District Deputy, home Council 15295, bound to 15295, 4100, 7224
+--   state.test@fairmissionsoftware.com Credentials/Member 37, State Officer, home council the Oregon State Council
+-- Four volunteers (Members 38-41, no login yet) give the two new councils hours, money, assets and an event, so the
+-- District and State Desks have something to roll up.
+-- =========================================================================
+INSERT INTO [Role] ([Role], [Officer])
+VALUES
+('District Deputy', 0), -- id 23
+('State Officer', 0),   -- id 24
+('State Admin', 0);     -- id 25
+GO
+
+INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email], [district_number], [council_level])
+VALUES
+(4100, 'Sacred Heart Council', 'OR', '503-555-0410', NULL, 5, 'LOCAL'),             -- id 7
+(7224, 'St. Francis of Assisi Council', 'OR', '503-555-0722', NULL, 5, 'LOCAL'),   -- id 8
+(900001, 'Oregon State Council', 'OR', '503-555-0900', NULL, NULL, 'STATE');      -- id 9
+GO
+
+INSERT INTO [Credentials] ([Username], [Password])
+VALUES
+('tim@fairmissionsoftware.com', 'Fraternal2026!'),        -- ID 35
+('dd.test@fairmissionsoftware.com', 'Fraternal2026!'),    -- ID 36
+('state.test@fairmissionsoftware.com', 'Fraternal2026!'), -- ID 37
+('paul.harmon@sacredheart4100.org', ''),                  -- ID 38 (no login yet)
+('luke.brennan@sacredheart4100.org', ''),                 -- ID 39
+('ignatius.moreno@stfrancis7224.org', ''),                -- ID 40
+('francis.olsen@stfrancis7224.org', '');                  -- ID 41
+GO
+
+INSERT INTO [Member] (
+    [CouncilID], [MemberNumber], [MemberFirstName], [MemberLastName],
+    [Phone], [StreetAddress1], [City], [State], [ZipCode], [Email],
+    [DateOfBirth], [StatusID], [DegreeID], [MemberTypeID], [CredentialID], [DateJoinedCouncil]
+)
+VALUES
+(1, 9910001, 'Tim', 'Ferkel', '503-555-0135', '100 Mission Way', 'Portland', 'OR', '97201', 'tim@fairmissionsoftware.com', '1975-03-15', 1, 4, 1, 35, '2015-09-01'),
+(1, 9910002, 'District', 'Deputy Test', '503-555-0136', '200 District Way', 'Portland', 'OR', '97202', 'dd.test@fairmissionsoftware.com', '1970-06-01', 1, 4, 3, 36, '2010-02-01'),
+(9, 9910003, 'State', 'Officer Test', '503-555-0137', '300 Capitol Way', 'Salem', 'OR', '97301', 'state.test@fairmissionsoftware.com', '1968-11-20', 1, 4, 3, 37, '2005-05-01'),
+(7, 9910004, 'Paul', 'Harmon', '503-555-0138', '410 Sacred Heart Ln', 'Gresham', 'OR', '97030', 'paul.harmon@sacredheart4100.org', '1982-04-04', 1, 3, 3, 38, '2019-03-01'),
+(7, 9910005, 'Luke', 'Brennan', '503-555-0139', '412 Sacred Heart Ln', 'Gresham', 'OR', '97030', 'luke.brennan@sacredheart4100.org', '1990-08-08', 1, 2, 3, 39, '2023-01-15'),
+(8, 9910006, 'Ignatius', 'Moreno', '503-555-0140', '722 Assisi Ave', 'Beaverton', 'OR', '97005', 'ignatius.moreno@stfrancis7224.org', '1978-10-04', 1, 4, 3, 40, '2012-10-04'),
+(8, 9910007, 'Francis', 'Olsen', '503-555-0141', '724 Assisi Ave', 'Beaverton', 'OR', '97005', 'francis.olsen@stfrancis7224.org', '1987-12-12', 1, 3, 3, 41, '2021-06-01');
+GO
+
+INSERT INTO [MemberRoles] ([RoleID], [MemberID])
+VALUES
+(23, 36), -- District Deputy
+(24, 37), -- State Officer
+(20, 38),
+(20, 39),
+(20, 40),
+(20, 41);
+GO
+
+INSERT INTO [MemberRegionalAssignment] ([member_id], [assignment_type], [state_code], [assigned_by_member_id], [assigned_at])
+VALUES
+(36, 'DISTRICT_DEPUTY', 'OR', 35, '2026-10-27 09:00:00'), -- id 1
+(37, 'STATE_OFFICER', 'OR', 35, '2026-10-27 09:00:00');   -- id 2
+GO
+
+INSERT INTO [MemberRegionalCouncil] ([assignment_id], [council_id])
+VALUES
+(1, 1), -- 15295
+(1, 7), -- 4100
+(1, 8); -- 7224
+GO
+
+INSERT INTO [Activities] ([ActivityName], [ActivityDescription], [CategoryID], [CouncilID])
+VALUES
+('Parish Grounds Care', 'Mowing, weeding and leaf cleanup around Sacred Heart', 2, 7), -- id 12
+('Food Pantry Shifts', 'Sorting and handing out food at the St. Francis pantry', 2, 8); -- id 13
+GO
+
+INSERT INTO [ActivityTime] ([MemberID], [ActivityID], [ActivityDate], [Hours], [ActivityNotes])
+VALUES
+(38, 12, '2026-09-12', 6.50, 'Fall cleanup'),
+(39, 12, '2026-09-12', 4.00, 'Fall cleanup'),
+(38, 12, '2026-10-03', 3.00, 'Leaf removal'),
+(40, 13, '2026-09-19', 9.00, 'Two pantry shifts'),
+(41, 13, '2026-10-10', 3.50, 'Saturday pantry');
+GO
+
+INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [ParentAccountID], [IsVirtualGoal], [TargetGoalAmount])
+VALUES
+(7, 'Operating Checking', 'Asset', NULL, 0, 0.00),          -- id 17
+(7, 'Opening Balance Equity', 'Equity', NULL, 0, 0.00),     -- id 18
+(8, 'Operating Checking', 'Asset', NULL, 0, 0.00),          -- id 19
+(8, 'Opening Balance Equity', 'Equity', NULL, 0, 0.00),     -- id 20
+(9, 'State Operating Checking', 'Asset', NULL, 0, 0.00),    -- id 21: the State Council's own checking account
+(9, 'State Per Capita Revenue', 'Revenue', NULL, 0, 0.00),  -- id 22
+(9, 'State Operational Costs', 'Expense', NULL, 0, 0.00),   -- id 23
+(9, 'Opening Balance Equity', 'Equity', NULL, 0, 0.00);     -- id 24
+GO
+
+INSERT INTO [JournalEntry] ([CouncilID], [GLAccountID], [DateLogged], [Description], [DebitAmount], [CreditAmount], [LinkedEventID], [LinkedMeetingID], [IsBankReconciled], [CheckNumber], [TransactionID])
+VALUES
+(7, 17, '2026-07-01 00:00:00', 'Opening balance carried into the ledger', 5400.00, 0.00, NULL, NULL, 1, NULL, 'seed-txn-r4100'),
+(7, 18, '2026-07-01 00:00:00', 'Opening balance carried into the ledger', 0.00, 5400.00, NULL, NULL, 1, NULL, 'seed-txn-r4100'),
+(8, 19, '2026-07-01 00:00:00', 'Opening balance carried into the ledger', 3150.00, 0.00, NULL, NULL, 1, NULL, 'seed-txn-r7224'),
+(8, 20, '2026-07-01 00:00:00', 'Opening balance carried into the ledger', 0.00, 3150.00, NULL, NULL, 1, NULL, 'seed-txn-r7224'),
+(9, 21, '2026-07-01 00:00:00', 'Opening balance carried into the ledger', 12800.00, 0.00, NULL, NULL, 1, NULL, 'seed-txn-rORSC'),
+(9, 24, '2026-07-01 00:00:00', 'Opening balance carried into the ledger', 0.00, 12800.00, NULL, NULL, 1, NULL, 'seed-txn-rORSC');
+GO
+
+INSERT INTO [CouncilAssetsInventory] ([council_id], [asset_name], [purchase_date], [cost_basis], [original_expense_id], [current_status], [notes], [storage_location], [is_loanable], [loan_status], [borrower_name], [borrower_council], [expected_return_date])
+VALUES
+(7, 'Pancake griddle set', '2025-04-02 00:00:00', 640.00, NULL, 'ACTIVE', NULL, 'Parish hall kitchen', 0, 'AVAILABLE', NULL, NULL, NULL),
+(8, 'Event canopy tent', '2024-06-20 00:00:00', 415.00, NULL, 'ACTIVE', NULL, 'Pantry storage shed', 1, 'AVAILABLE', NULL, NULL, NULL);
+GO
+
+INSERT INTO [CouncilAffiliations] ([requesting_council_id], [target_council_id], [status], [date_established], [requested_by_member_id], [requested_at], [responded_by_member_id], [responded_at])
+VALUES
+(7, 8, 'ACTIVE', '2026-09-01', 38, '2026-08-28 10:00:00', 40, '2026-09-01 09:00:00');
+GO
+
+INSERT INTO [CharitableDisbursementLedger] ([CouncilID], [CharityID], [Amount], [CheckNumber], [DisbursedByID], [PayoutDate], [Notes], [ProposalID])
+VALUES
+(8, 1, 500.00, '1043', 40, '2026-09-20', 'Food pantry grant', NULL);
+GO
+
+INSERT INTO [Event] ([EventName], [EventDescription], [OwnerID], [StartDate], [EndDate], [Location], [CategoryID], [IsAnnual], [IsMultiDay])
+VALUES
+('Sacred Heart Pancake Breakfast', 'Monthly pancake breakfast after the 9 AM Mass', 38, '2026-11-08', '2026-11-08', 'Sacred Heart Parish Hall', 5, 1, 0); -- id 10
+GO
+
+INSERT INTO [EventCouncils] ([EventID], [CouncilID])
+VALUES
+(10, 7);
 GO

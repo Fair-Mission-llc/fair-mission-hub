@@ -785,6 +785,26 @@ import {
 } from '@kofc/shared';
 import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import {
+  assertMayAssignRegional,
+  assertMayOpenRegionalAssignments,
+  assertMayReplaceRegional,
+  assertQrLinkAllowed,
+  buildRegionalDeskReport,
+  cleanRegionalAssignmentInput,
+  paymentChannelOf,
+  REGIONAL_DESK_TABLES,
+  REGIONAL_ROLE_NAMES,
+  REGIONAL_ROLE_OF,
+  regionalCouncilIds,
+  STATE_COUNCIL_TEMPLATE_ACCOUNTS,
+  stateAdminStateOf,
+  type NewUserPasskey,
+  type RegionalAssignment,
+  type RegionalAssignmentType,
+  type RegionalDeskRows,
+  type UserPasskeyRow,
+} from '@kofc/shared';
+import {
   assertNotFoundingCouncil,
   assertPracticeSandboxEmpty,
   COUNCIL_WIDE_SETTING_NAMES as SETUP_COUNCIL_WIDE_SETTING_NAMES,
@@ -991,8 +1011,12 @@ const DB_NAME = 'kofc.db';
  * 103: AccountOwners merged into GLAccount (account_display_name, contact_name / number / email, ein_number, the
  *     ownership_type (Sprint 11 Revision 2.2: INTERNAL_OPERATING / PARENT_ORGANIZATION / AFFILIATED_ENTITY) and due_to_council_id for 'Due to Sister Council' clearing accounts);
  *     CouncilDonationMethod.account_owner_id replaced by account_id; AccountOwners dropped (Sprint 11 Revision 2.1).
+ * 104: UserPasskeys (web FaceID passkeys, off the JSON file), Council.council_level ('LOCAL' / 'STATE'),
+ *     MemberRegionalAssignment and MemberRegionalCouncil (District Deputy / State Officer / State Admin jurisdictions),
+ *     CouncilDonationMethod.payment_channel and the CK_CouncilDonationMethod_qr_channel rule, and the regional seed
+ *     (Sprint 11 Revision 5.0).
  */
-const SCHEMA_VERSION = 103;
+const SCHEMA_VERSION = 104;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1706,6 +1730,12 @@ export class SqliteDataService implements DataService {
         await this.assertMayManageCouncilLookups(db, actorId, councilId, table, `change the council's ${table} lookups`);
         const current = await db.getAllAsync<Record<string, unknown>>(`SELECT * FROM [${table}] WHERE [CouncilID] = ?`, [councilId]);
         const plan = planCouncilLookupSave(table, councilId, current, records);
+        // Sprint 11 Revision 5.0 (schema 104): every payment method row carries its channel; only DIGITAL may hold a QR link.
+        const columns: string[] = table === 'CouncilDonationMethod' ? [...meta.columns, 'payment_channel'] : [...meta.columns];
+        if (table === 'CouncilDonationMethod') {
+          for (const values of plan.inserts) await this.applyPaymentChannel(db, values as Record<string, unknown>, null);
+          for (const u of plan.updates) await this.applyPaymentChannel(db, u.values as Record<string, unknown>, current.find((r) => r.id === u.id) ?? null);
+        }
         for (const values of [...plan.inserts, ...plan.updates.map((u) => u.values)]) {
           for (const fk of meta.foreignKeys) await this.assertRowExists(db, fk.table, values[fk.column] as number, fk.label);
           // Sprint 11 Revision 2.1 (schema 103): the account a payment method pays into must be one of this council's
@@ -1724,16 +1754,17 @@ export class SqliteDataService implements DataService {
             if ('account_identity_label' in values) values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, councilAccountLabel(account));
           }
         }
+        const valueOf = (values: Record<string, unknown>, c: string) => (values[c] ?? null) as Bind;
         for (const { id, values } of plan.updates) {
-          await db.runAsync(`UPDATE [${table}] SET ${meta.columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
-            ...meta.columns.map((c) => values[c] ?? null),
+          await db.runAsync(`UPDATE [${table}] SET ${columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
+            ...columns.map((c) => valueOf(values as Record<string, unknown>, c)),
             id,
           ]);
         }
         for (const values of plan.inserts) {
           await db.runAsync(
-            `INSERT INTO [${table}] (${meta.columns.map((c) => `[${c}]`).join(', ')}, [CouncilID]) VALUES (${marks(meta.columns.length + 1)})`,
-            [...meta.columns.map((c) => values[c] ?? null), councilId],
+            `INSERT INTO [${table}] (${columns.map((c) => `[${c}]`).join(', ')}, [CouncilID]) VALUES (${marks(columns.length + 1)})`,
+            [...columns.map((c) => valueOf(values as Record<string, unknown>, c)), councilId],
           );
         }
       });
@@ -1828,6 +1859,12 @@ export class SqliteDataService implements DataService {
         const rows = await db.getAllAsync<Record<string, unknown>>('SELECT [id], [CouncilNumber] FROM [Council]');
         assertRecordValueUnique('Council', rows, 'CouncilNumber', clean.CouncilNumber, 'by another council');
         id = await this.insertRecord(db, 'Council', COUNCIL_COLUMNS, clean);
+        // Sprint 11 Revision 5.0: a State Council instance starts with its own checking account and books.
+        if (clean.council_level === 'STATE') {
+          for (const a of STATE_COUNCIL_TEMPLATE_ACCOUNTS) {
+            await db.runAsync('INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [IsVirtualGoal], [TargetGoalAmount]) VALUES (?, ?, ?, 0, 0)', [id, a.AccountName, a.AccountType]);
+          }
+        }
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [id]))!;
     },
@@ -2168,9 +2205,11 @@ export class SqliteDataService implements DataService {
           await db.runAsync('INSERT INTO [DonationType] ([CouncilID], [DonationType], [lookup_status]) VALUES (?, ?, ?)', [councilId, t.DonationType, t.lookup_status]);
         }
         for (const m of plan.methods) {
-          await db.runAsync('INSERT INTO [CouncilDonationMethod] ([CouncilID], [DonationMethodID], [account_id], [account_owner_entity], [lookup_status]) VALUES (?, ?, ?, ?, ?)', [
+          const methodName = (await db.getFirstAsync<{ DonationMethod: string }>('SELECT [DonationMethod] FROM [DonationMethod] WHERE [id] = ?', [m.DonationMethodID]))?.DonationMethod ?? '';
+          await db.runAsync('INSERT INTO [CouncilDonationMethod] ([CouncilID], [DonationMethodID], [payment_channel], [account_id], [account_owner_entity], [lookup_status]) VALUES (?, ?, ?, ?, ?, ?)', [
             councilId,
             m.DonationMethodID,
+            paymentChannelOf(methodName),
             await accountId(m.accountName),
             m.account_owner_entity,
             m.lookup_status,
@@ -5084,6 +5123,158 @@ export class SqliteDataService implements DataService {
     assertFeatureEnabled(row.council_id, 'feature_volunteer_quarantine', council);
     assertQuarantinePending(row);
     return row;
+  }
+
+  // ---- Sprint 11 Revision 5.0: regional oversight (regional.ts) ----
+  regional: DataService['regional'] = {
+    getAssignmentWorkspace: async (actorId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const stateLimit = stateAdminStateOf(await this.regionalAssignmentOf(db, actorId));
+      assertMayOpenRegionalAssignments(actor, stateLimit);
+      const inState = (state: unknown) => stateLimit === null || String(state ?? '').toUpperCase() === stateLimit.toUpperCase();
+      const councils = (await db.getAllAsync<Council>('SELECT * FROM [Council]')).filter((c) => inState(c.State));
+      const councilIds = new Set(councils.map((c) => c.id));
+      const stateOf = new Map(councils.map((c) => [c.id, String(c.State ?? '')]));
+      return {
+        stateLimit,
+        assignments: (await this.regionalAssignments(db)).filter((a) => stateLimit === null || a.stateCode.toUpperCase() === stateLimit.toUpperCase()),
+        members: (await db.getAllAsync<Member>('SELECT * FROM [Member]'))
+          .filter((m) => councilIds.has(m.CouncilID))
+          .map((m) => ({ id: m.id, name: `${m.MemberFirstName} ${m.MemberLastName}`, councilId: m.CouncilID, state: stateOf.get(m.CouncilID) ?? '' }))
+          .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id),
+        councils: councils
+          .map((c) => ({ id: c.id, label: `${c.CouncilNumber} - ${c.CouncilName}`, state: String(c.State ?? ''), level: (c.council_level === 'STATE' ? 'STATE' : 'LOCAL') as 'LOCAL' | 'STATE' }))
+          .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true })),
+      };
+    },
+    saveAssignment: async (actorId, input) => {
+      const clean = cleanRegionalAssignmentInput(input);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const stateLimit = stateAdminStateOf(await this.regionalAssignmentOf(db, actorId));
+        assertMayOpenRegionalAssignments(actor, stateLimit);
+        const member = await db.getFirstAsync<{ CouncilID: number }>('SELECT [CouncilID] FROM [Member] WHERE [id] = ?', [clean.memberId]);
+        if (!member) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${clean.memberId}.`, { memberId: clean.memberId });
+        const councilStates = new Map((await db.getAllAsync<{ id: number; State: string }>('SELECT [id], [State] FROM [Council]')).map((c) => [c.id, String(c.State ?? '')]));
+        for (const id of clean.councilIds) {
+          if (!councilStates.has(id)) throw new BusinessRuleError('INVALID_INPUT', `Council ${id} does not exist.`, { field: 'councilIds', councilId: id });
+        }
+        assertMayAssignRegional(actor, stateLimit, clean, councilStates.get(member.CouncilID) ?? '', councilStates);
+        assertMayReplaceRegional(actor, stateLimit, await this.regionalAssignmentOf(db, clean.memberId));
+        await this.dropRegionalAssignment(db, clean.memberId);
+        const res = await db.runAsync(
+          'INSERT INTO [MemberRegionalAssignment] ([member_id], [assignment_type], [state_code], [assigned_by_member_id], [assigned_at]) VALUES (?, ?, ?, ?, ?)',
+          [clean.memberId, clean.assignmentType, clean.stateCode, actorId, toTimestamp(this.now())],
+        );
+        for (const councilId of clean.councilIds) {
+          await db.runAsync('INSERT INTO [MemberRegionalCouncil] ([assignment_id], [council_id]) VALUES (?, ?)', [res.lastInsertRowId, councilId]);
+        }
+        const role = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Role] WHERE [Role] = ?', [REGIONAL_ROLE_OF[clean.assignmentType]]);
+        if (role) await db.runAsync('INSERT INTO [MemberRoles] ([RoleID], [MemberID]) VALUES (?, ?)', [role.id, clean.memberId]);
+      });
+      return (await this.regionalAssignmentOf(db, clean.memberId))!;
+    },
+    removeAssignment: async (actorId, memberId) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const stateLimit = stateAdminStateOf(await this.regionalAssignmentOf(db, actorId));
+        assertMayOpenRegionalAssignments(actor, stateLimit);
+        const existing = await this.regionalAssignmentOf(db, memberId);
+        if (!existing) throw new BusinessRuleError('RECORD_NOT_FOUND', `Member ${memberId} holds no regional jurisdiction.`, { memberId });
+        assertMayReplaceRegional(actor, stateLimit, existing);
+        await this.dropRegionalAssignment(db, memberId);
+      });
+    },
+    getRegionalDesk: async (actorId, desk) => {
+      if (desk !== 'district' && desk !== 'state') throw new BusinessRuleError('INVALID_INPUT', 'Open the district or the state desk.', { desk });
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const councils = await db.getAllAsync<Council>('SELECT * FROM [Council]');
+      const ids = regionalCouncilIds(desk, actor, await this.regionalAssignmentOf(db, actorId), councils);
+      const rows: Partial<RegionalDeskRows> = {};
+      // Table names come from REGIONAL_DESK_TABLES, a fixed list.
+      for (const t of REGIONAL_DESK_TABLES) rows[t] = await db.getAllAsync<Record<string, unknown>>(`SELECT * FROM [${t}]`);
+      return buildRegionalDeskReport(desk, ids, rows as RegionalDeskRows, this.now());
+    },
+  };
+
+  // ---- Sprint 11 Revision 5.0: web FaceID passkeys (UserPasskeys), for the web server only ----
+  passkeys: DataService['passkeys'] = {
+    list: async () => {
+      const db = await this.ready();
+      return db.getAllAsync<UserPasskeyRow>('SELECT * FROM [UserPasskeys] ORDER BY [id]');
+    },
+    save: async (row: NewUserPasskey) => {
+      const db = await this.ready();
+      let id = 0;
+      await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM [UserPasskeys] WHERE [credential_id] = ?', [row.credential_id]);
+        const res = await db.runAsync(
+          'INSERT INTO [UserPasskeys] ([credential_id], [member_id], [login_id], [username], [public_key_sealed], [alg], [sign_count], [created_at]) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [row.credential_id, row.member_id, row.login_id, row.username, row.public_key_sealed, row.alg, row.sign_count, row.created_at],
+        );
+        id = res.lastInsertRowId;
+      });
+      return (await db.getFirstAsync<UserPasskeyRow>('SELECT * FROM [UserPasskeys] WHERE [id] = ?', [id]))!;
+    },
+    setSignCount: async (credentialId, signCount) => {
+      if (!Number.isInteger(signCount) || signCount < 0) return;
+      const db = await this.ready();
+      await db.runAsync('UPDATE [UserPasskeys] SET [sign_count] = ? WHERE [credential_id] = ?', [signCount, credentialId]);
+    },
+    remove: async (credentialId) => {
+      const db = await this.ready();
+      await db.runAsync('DELETE FROM [UserPasskeys] WHERE [credential_id] = ?', [credentialId]);
+    },
+  };
+
+  /** Every regional jurisdiction, as the panel lists them. */
+  private async regionalAssignments(db: SQLite.SQLiteDatabase): Promise<RegionalAssignment[]> {
+    const rows = await db.getAllAsync<Record<string, unknown>>(
+      `SELECT a.*, m.[MemberFirstName], m.[MemberLastName], m.[CouncilID] AS [home_council_id]
+         FROM [MemberRegionalAssignment] a LEFT JOIN [Member] m ON m.[id] = a.[member_id] ORDER BY a.[id]`,
+    );
+    const bound = await db.getAllAsync<{ assignment_id: number; council_id: number }>('SELECT [assignment_id], [council_id] FROM [MemberRegionalCouncil]');
+    return rows.map((a) => ({
+      id: a.id as number,
+      memberId: a.member_id as number,
+      memberName: a.MemberFirstName ? `${a.MemberFirstName as string} ${a.MemberLastName as string}` : `Member ${a.member_id as number}`,
+      homeCouncilId: (a.home_council_id as number) ?? 0,
+      assignmentType: a.assignment_type as RegionalAssignmentType,
+      stateCode: a.state_code as string,
+      councilIds: bound
+        .filter((c) => c.assignment_id === a.id)
+        .map((c) => c.council_id)
+        .sort((x, y) => x - y),
+      assignedByMemberId: (a.assigned_by_member_id as number | null) ?? null,
+      assignedAt: a.assigned_at as string,
+    }));
+  }
+
+  private async regionalAssignmentOf(db: SQLite.SQLiteDatabase, memberId: number): Promise<RegionalAssignment | null> {
+    return (await this.regionalAssignments(db)).find((a) => a.memberId === memberId) ?? null;
+  }
+
+  /** Ends a member's jurisdiction: its bound councils, the row and the regional roles. */
+  private async dropRegionalAssignment(db: SQLite.SQLiteDatabase, memberId: number): Promise<void> {
+    await db.runAsync('DELETE FROM [MemberRegionalCouncil] WHERE [assignment_id] IN (SELECT [id] FROM [MemberRegionalAssignment] WHERE [member_id] = ?)', [memberId]);
+    await db.runAsync('DELETE FROM [MemberRegionalAssignment] WHERE [member_id] = ?', [memberId]);
+    await db.runAsync(`DELETE FROM [MemberRoles] WHERE [MemberID] = ? AND [RoleID] IN (SELECT [id] FROM [Role] WHERE [Role] IN (${marks(REGIONAL_ROLE_NAMES.length)}))`, [
+      memberId,
+      ...REGIONAL_ROLE_NAMES,
+    ]);
+  }
+
+  /** Sprint 11 Revision 5.0: sets a payment method row's payment_channel from its method, refusing a QR link the channel may not hold. */
+  private async applyPaymentChannel(db: SQLite.SQLiteDatabase, values: Record<string, unknown>, existing: Record<string, unknown> | null): Promise<void> {
+    const methodId = (values.DonationMethodID ?? existing?.DonationMethodID) as number;
+    const name = (await db.getFirstAsync<{ DonationMethod: string }>('SELECT [DonationMethod] FROM [DonationMethod] WHERE [id] = ?', [methodId]))?.DonationMethod ?? '';
+    const url = ('DonationMethodURL' in values ? values.DonationMethodURL : existing?.DonationMethodURL) as string | null | undefined;
+    assertQrLinkAllowed(name, url);
+    values.payment_channel = paymentChannelOf(name);
   }
 
   volunteerQuarantine: DataService['volunteerQuarantine'] = {
@@ -8115,6 +8306,11 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         assertMayCodeExpenseLedger(await this.memberWriteActor(db, actorId), councilId, `code donations for council ${councilId}`);
         await this.assertCouncilsExist(db, [councilId]);
+        // Sprint 11 Revision 5.0: a one-time override share naming an affiliated council goes to this council's clearing
+        // account for it, exactly as in a master split profile.
+        if (input?.eventSplitOverride) {
+          input = { ...input, eventSplitOverride: (await this.resolveSisterCouncilShares(db, councilId, input.eventSplitOverride)) as GLSplitDestination[] };
+        }
         const plan = planBatchCoding(
           councilId,
           await this.batchCodingRows(db, councilId),
@@ -9342,9 +9538,9 @@ export class SqliteDataService implements DataService {
   private async seedDevDonationMethods(db: SQLite.SQLiteDatabase): Promise<void> {
     for (const { method, qrUrl } of DEV_COUNCIL_DONATION_METHODS) {
       const res = await db.runAsync(
-        `INSERT INTO [CouncilDonationMethod] ([CouncilID], [DonationMethodID], [DonationMethodURL])
-         SELECT c.[id], dm.[id], ? FROM [Council] c, [DonationMethod] dm WHERE c.[CouncilNumber] = ? AND dm.[DonationMethod] = ?`,
-        [qrUrl, DEV_COUNCIL_NUMBER, method],
+        `INSERT INTO [CouncilDonationMethod] ([CouncilID], [DonationMethodID], [DonationMethodURL], [payment_channel])
+         SELECT c.[id], dm.[id], ?, ? FROM [Council] c, [DonationMethod] dm WHERE c.[CouncilNumber] = ? AND dm.[DonationMethod] = ?`,
+        [qrUrl, paymentChannelOf(method), DEV_COUNCIL_NUMBER, method],
       );
       if (res.changes !== 1) throw new Error(`Seed.sql is missing Council ${DEV_COUNCIL_NUMBER} or donation method ${method}`);
     }

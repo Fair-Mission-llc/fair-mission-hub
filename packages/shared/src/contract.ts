@@ -124,6 +124,7 @@ import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, A
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
 import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
+import type { RegionalAssignment, RegionalAssignmentInput, RegionalAssignmentWorkspace, RegionalDesk, RegionalDeskReport } from './regional';
 import type { FoundingTemplateCloneResult, PracticeSandboxPurgeResult, PracticeSandboxSeedResult, PracticeSandboxStatus } from './setup-wizard';
 import type { BulletinLayoutInput, LiveMeetingLaunch, MeetingMinutesInput } from './recorder-historian';
 import type { OldBusinessItem } from './old-business';
@@ -4547,4 +4548,51 @@ export interface DataService {
      */
     resubmit(actorId: number, quarantineId: number, hours: number, notes?: string): Promise<VolunteerQuarantine>;
   };
+
+  /*
+   * Sprint 11 Revision 5.0 (schema 104): regional oversight (regional.ts). The District and State Desks read one
+   * report; the assignment panel reads one workspace. Reads and writes check the actor against their own regional
+   * assignment (COUNCIL_ACCESS_DENIED outside it) or Super Admin rights.
+   */
+  regional: {
+    /** The members, councils and assignments the actor may manage: a Super Admin everywhere, a State Admin in their state. SUPER_ADMIN_REQUIRED otherwise. */
+    getAssignmentWorkspace(actorId: number): Promise<RegionalAssignmentWorkspace>;
+    /**
+     * Gives the member the jurisdiction (replacing theirs) and its role, and binds the councils. INVALID_INPUT for a bad
+     * field or an unknown council; SUPER_ADMIN_REQUIRED / COUNCIL_ACCESS_DENIED per assertMayAssignRegional.
+     */
+    saveAssignment(actorId: number, input: RegionalAssignmentInput): Promise<RegionalAssignment>;
+    /** Ends the member's jurisdiction and takes its role away. RECORD_NOT_FOUND when they hold none. */
+    removeAssignment(actorId: number, memberId: number): Promise<void>;
+    /** The District Desk ('district') or State Desk ('state') report over the actor's councils (regionalCouncilIds). */
+    getRegionalDesk(actorId: number, desk: RegionalDesk): Promise<RegionalDeskReport>;
+  };
+
+  /**
+   * Sprint 11 Revision 5.0 (schema 104): the web 'Sign in with FaceID' passkeys (UserPasskeys). Only the web server
+   * calls these, for services/server/webauthn.ts; the hub refuses the whole namespace from devices
+   * (HUB_SERVER_ONLY_NAMESPACES). The public key arrives already sealed.
+   */
+  passkeys: {
+    list(): Promise<UserPasskeyRow[]>;
+    /** Adds the passkey, or replaces the row with the same credential_id. */
+    save(row: NewUserPasskey): Promise<UserPasskeyRow>;
+    setSignCount(credentialId: string, signCount: number): Promise<void>;
+    remove(credentialId: string): Promise<void>;
+  };
 }
+
+/** One UserPasskeys row (Sprint 11 Revision 5.0). */
+export interface UserPasskeyRow {
+  id: number;
+  credential_id: string;
+  member_id: number;
+  login_id: number;
+  username: string;
+  /** The SPKI public key, sealed with AES-256-GCM by the web server. */
+  public_key_sealed: string;
+  alg: number;
+  sign_count: number;
+  created_at: string;
+}
+export type NewUserPasskey = Omit<UserPasskeyRow, 'id'>;

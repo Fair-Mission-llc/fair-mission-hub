@@ -153,7 +153,8 @@ describe('Sprint 7J screens', () => {
   });
 
   it('leaves the left sidebar intact', () => {
-    expect(read('packages/shared/src/permissions.ts')).toContain("items: ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']");
+    // Sprint 11 Revision 5.0: the District and State Desks head the Performance pillar.
+    expect(read('packages/shared/src/permissions.ts')).toContain("items: ['district-desk', 'state-desk', 'member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']");
   });
 });
 

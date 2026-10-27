@@ -777,6 +777,26 @@ import {
 } from '@kofc/shared';
 import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import {
+  assertMayAssignRegional,
+  assertMayOpenRegionalAssignments,
+  assertMayReplaceRegional,
+  assertQrLinkAllowed,
+  buildRegionalDeskReport,
+  cleanRegionalAssignmentInput,
+  paymentChannelOf,
+  REGIONAL_DESK_TABLES,
+  REGIONAL_ROLE_NAMES,
+  REGIONAL_ROLE_OF,
+  regionalCouncilIds,
+  STATE_COUNCIL_TEMPLATE_ACCOUNTS,
+  stateAdminStateOf,
+  type NewUserPasskey,
+  type RegionalAssignment,
+  type RegionalAssignmentType,
+  type RegionalDeskRows,
+  type UserPasskeyRow,
+} from '@kofc/shared';
+import {
   assertNotFoundingCouncil,
   assertPracticeSandboxEmpty,
   FOUNDING_COUNCIL_NUMBER,
@@ -892,6 +912,19 @@ class MemoryStore {
     return removed;
   }
 
+  /**
+   * Sprint 11 Revision 5.0: the table's row-level CHECK rules (TableMeta.rowChecks), as SQLite applies them. Inserts
+   * call it; a driver that changes a row in place calls it before keeping the change.
+   */
+  checkRow(table: string, row: Row): void {
+    for (const rule of TABLES[table]?.rowChecks ?? []) {
+      const v = row[rule.column];
+      if (row[rule.nullColumn] !== null && row[rule.nullColumn] !== undefined && !(typeof v === 'string' && rule.allowed.includes(v))) {
+        throw new Error(`CHECK constraint failed: ${rule.name}`);
+      }
+    }
+  }
+
   insert(table: string, values: Record<string, SeedValue | boolean | undefined>): Row {
     const meta = TABLES[table];
     if (!meta) throw new Error(`no such table: ${table}`);
@@ -922,6 +955,7 @@ class MemoryStore {
       row[col.name] = v;
     }
 
+    this.checkRow(table, row);
     const stored = this.rows(table);
     if (stored.some((r) => meta.primaryKey.every((k) => r[k] === row[k]))) {
       throw new Error(`UNIQUE constraint failed: ${meta.primaryKey.map((k) => `${table}.${k}`).join(', ')}`);
@@ -1082,7 +1116,7 @@ export class MemoryDataService implements DataService {
     for (const { method, qrUrl } of DEV_COUNCIL_DONATION_METHODS) {
       const methodRow = this.store.rows('DonationMethod').find((m) => m.DonationMethod === method);
       if (!methodRow) throw new Error(`Seed.sql is missing donation method ${method}`);
-      this.store.insert('CouncilDonationMethod', { CouncilID: council.id, DonationMethodID: methodRow.id, DonationMethodURL: qrUrl });
+      this.store.insert('CouncilDonationMethod', { CouncilID: council.id, DonationMethodID: methodRow.id, DonationMethodURL: qrUrl, payment_channel: paymentChannelOf(method) });
     }
 
     // Day-one leadership history: every seated officer gets an open term for the current fraternal year.
@@ -1457,6 +1491,11 @@ export class MemoryDataService implements DataService {
       this.assertMayManageCouncilLookups(s, actorId, councilId, table, `change the council's ${table} lookups`);
       return s.transaction(() => {
         const plan = planCouncilLookupSave(table, councilId, s.rows(table).filter((r) => r.CouncilID === councilId), records);
+        // Sprint 11 Revision 5.0 (schema 104): every payment method row carries its channel; only DIGITAL may hold a QR link.
+        if (table === 'CouncilDonationMethod') {
+          for (const values of plan.inserts) this.applyPaymentChannel(s, values as Record<string, unknown>, null);
+          for (const u of plan.updates) this.applyPaymentChannel(s, u.values as Record<string, unknown>, s.rows(table).find((r) => r.id === u.id) ?? null);
+        }
         for (const values of [...plan.inserts, ...plan.updates.map((u) => u.values)]) {
           for (const fk of COUNCIL_LOOKUP_META[table].foreignKeys) this.assertRowExists(s, fk.table, values[fk.column] as number, fk.label);
           // Sprint 11 Revision 2.1 (schema 103): the account a payment method pays into must be one of this council's
@@ -1477,7 +1516,11 @@ export class MemoryDataService implements DataService {
             if ('account_identity_label' in values) values.account_identity_label = defaultAccountIdentityLabel(values.account_identity_label as string | null, councilAccountLabel(account));
           }
         }
-        for (const { id, values } of plan.updates) Object.assign(s.rows(table).find((r) => r.id === id)!, values);
+        for (const { id, values } of plan.updates) {
+          const row = s.rows(table).find((r) => r.id === id)!;
+          s.checkRow(table, { ...row, ...(values as Row) });
+          Object.assign(row, values);
+        }
         for (const values of plan.inserts) s.insert(table, { ...values, CouncilID: councilId });
         return this.councilLookupRows(s, councilId, table);
       });
@@ -1494,6 +1537,15 @@ export class MemoryDataService implements DataService {
       s.remove(table, (r) => r.id === id);
     },
   };
+
+  /** Sprint 11 Revision 5.0: sets a payment method row's payment_channel from its method, refusing a QR link the channel may not hold. */
+  private applyPaymentChannel(s: MemoryStore, values: Record<string, unknown>, existing: Row | null): void {
+    const methodId = (values.DonationMethodID ?? existing?.DonationMethodID) as number;
+    const name = String(s.rows('DonationMethod').find((m) => m.id === methodId)?.DonationMethod ?? '');
+    const url = ('DonationMethodURL' in values ? values.DonationMethodURL : existing?.DonationMethodURL) as string | null | undefined;
+    assertQrLinkAllowed(name, url);
+    values.payment_channel = paymentChannelOf(name);
+  }
 
   /** Loads the actor, checks the council exists and applies assertMayManageCouncilLookups. */
   private assertMayManageCouncilLookups(s: MemoryStore, actorId: number, councilId: number, table: CouncilLookupTableName, action: string): void {
@@ -1542,7 +1594,12 @@ export class MemoryDataService implements DataService {
       const clean = cleanCouncil(council);
       return s.transaction(() => {
         assertRecordValueUnique('Council', s.rows('Council'), 'CouncilNumber', clean.CouncilNumber, 'by another council');
-        return { ...s.insert('Council', rowValues(COUNCIL_COLUMNS, clean)) } as unknown as Council;
+        const row = s.insert('Council', rowValues(COUNCIL_COLUMNS, clean));
+        // Sprint 11 Revision 5.0: a State Council instance starts with its own checking account and books.
+        if (clean.council_level === 'STATE') {
+          for (const a of STATE_COUNCIL_TEMPLATE_ACCOUNTS) s.insert('GLAccount', { CouncilID: row.id, AccountName: a.AccountName, AccountType: a.AccountType, IsVirtualGoal: 0, TargetGoalAmount: 0 });
+        }
+        return { ...row } as unknown as Council;
       });
     },
 
@@ -1684,6 +1741,7 @@ export class MemoryDataService implements DataService {
           s.insert('CouncilDonationMethod', {
             CouncilID: councilId,
             DonationMethodID: m.DonationMethodID,
+            payment_channel: paymentChannelOf(String(s.rows('DonationMethod').find((d) => d.id === m.DonationMethodID)?.DonationMethod ?? '')),
             account_id: accountId(m.accountName),
             account_owner_entity: m.account_owner_entity,
             lookup_status: m.lookup_status,
@@ -4236,6 +4294,139 @@ export class MemoryDataService implements DataService {
     return row;
   }
 
+  // ---- Sprint 11 Revision 5.0: regional oversight (regional.ts) ----
+  regional: DataService['regional'] = {
+    getAssignmentWorkspace: async (actorId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const stateLimit = stateAdminStateOf(this.regionalAssignmentOf(s, actorId));
+      assertMayOpenRegionalAssignments(actor, stateLimit);
+      const inState = (state: unknown) => stateLimit === null || String(state ?? '').toUpperCase() === stateLimit.toUpperCase();
+      const councils = s.rows('Council').filter((c) => inState(c.State));
+      const councilIds = new Set(councils.map((c) => c.id as number));
+      const stateOf = new Map(councils.map((c) => [c.id as number, String(c.State ?? '')]));
+      return {
+        stateLimit,
+        assignments: this.regionalAssignments(s).filter((a) => stateLimit === null || a.stateCode.toUpperCase() === stateLimit.toUpperCase()),
+        members: s
+          .rows('Member')
+          .filter((m) => councilIds.has(m.CouncilID as number))
+          .map((m) => ({ id: m.id as number, name: `${m.MemberFirstName as string} ${m.MemberLastName as string}`, councilId: m.CouncilID as number, state: stateOf.get(m.CouncilID as number) ?? '' }))
+          .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id),
+        councils: councils
+          .map((c) => ({ id: c.id as number, label: `${c.CouncilNumber as number} - ${c.CouncilName as string}`, state: String(c.State ?? ''), level: (c.council_level === 'STATE' ? 'STATE' : 'LOCAL') as 'LOCAL' | 'STATE' }))
+          .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true })),
+      };
+    },
+    saveAssignment: async (actorId, input) => {
+      const clean = cleanRegionalAssignmentInput(input);
+      const s = await this.ready();
+      return s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        const stateLimit = stateAdminStateOf(this.regionalAssignmentOf(s, actorId));
+        assertMayOpenRegionalAssignments(actor, stateLimit);
+        const member = this.requireMember(s, clean.memberId);
+        const councilStates = new Map(s.rows('Council').map((c) => [c.id as number, String(c.State ?? '')]));
+        for (const id of clean.councilIds) {
+          if (!councilStates.has(id)) throw new BusinessRuleError('INVALID_INPUT', `Council ${id} does not exist.`, { field: 'councilIds', councilId: id });
+        }
+        assertMayAssignRegional(actor, stateLimit, clean, councilStates.get(member.CouncilID as number) ?? '', councilStates);
+        assertMayReplaceRegional(actor, stateLimit, this.regionalAssignmentOf(s, clean.memberId));
+        this.dropRegionalAssignment(s, clean.memberId);
+        const row = s.insert('MemberRegionalAssignment', {
+          member_id: clean.memberId,
+          assignment_type: clean.assignmentType,
+          state_code: clean.stateCode,
+          assigned_by_member_id: actorId,
+          assigned_at: toTimestamp(this.now()),
+        });
+        for (const councilId of clean.councilIds) s.insert('MemberRegionalCouncil', { assignment_id: row.id, council_id: councilId });
+        const roleId = s.rows('Role').find((r) => r.Role === REGIONAL_ROLE_OF[clean.assignmentType])?.id;
+        if (roleId !== undefined) s.insert('MemberRoles', { RoleID: roleId, MemberID: clean.memberId });
+        return this.regionalAssignmentOf(s, clean.memberId)!;
+      });
+    },
+    removeAssignment: async (actorId, memberId) => {
+      const s = await this.ready();
+      s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        const stateLimit = stateAdminStateOf(this.regionalAssignmentOf(s, actorId));
+        assertMayOpenRegionalAssignments(actor, stateLimit);
+        const existing = this.regionalAssignmentOf(s, memberId);
+        if (!existing) throw new BusinessRuleError('RECORD_NOT_FOUND', `Member ${memberId} holds no regional jurisdiction.`, { memberId });
+        assertMayReplaceRegional(actor, stateLimit, existing);
+        this.dropRegionalAssignment(s, memberId);
+      });
+    },
+    getRegionalDesk: async (actorId, desk) => {
+      if (desk !== 'district' && desk !== 'state') throw new BusinessRuleError('INVALID_INPUT', 'Open the district or the state desk.', { desk });
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const ids = regionalCouncilIds(desk, actor, this.regionalAssignmentOf(s, actorId), s.rows('Council') as unknown as Council[]);
+      const rows = Object.fromEntries(REGIONAL_DESK_TABLES.map((t) => [t, s.rows(t).map((r) => ({ ...r }))])) as unknown as RegionalDeskRows;
+      return buildRegionalDeskReport(desk, ids, rows, this.now());
+    },
+  };
+
+  // ---- Sprint 11 Revision 5.0: web FaceID passkeys (UserPasskeys), for the web server only ----
+  passkeys: DataService['passkeys'] = {
+    list: async () => {
+      const s = await this.ready();
+      return s.rows('UserPasskeys').map((r) => ({ ...r }) as unknown as UserPasskeyRow);
+    },
+    save: async (row: NewUserPasskey) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        s.remove('UserPasskeys', (r) => r.credential_id === row.credential_id);
+        return { ...s.insert('UserPasskeys', { ...row }) } as unknown as UserPasskeyRow;
+      });
+    },
+    setSignCount: async (credentialId, signCount) => {
+      const s = await this.ready();
+      const row = s.rows('UserPasskeys').find((r) => r.credential_id === credentialId);
+      if (row && Number.isInteger(signCount) && signCount >= 0) row.sign_count = signCount;
+    },
+    remove: async (credentialId) => {
+      const s = await this.ready();
+      s.remove('UserPasskeys', (r) => r.credential_id === credentialId);
+    },
+  };
+
+  /** Every regional jurisdiction, as the panel lists them. */
+  private regionalAssignments(s: MemoryStore): RegionalAssignment[] {
+    return s.rows('MemberRegionalAssignment').map((a) => {
+      const member = s.rows('Member').find((m) => m.id === a.member_id);
+      return {
+        id: a.id as number,
+        memberId: a.member_id as number,
+        memberName: member ? `${member.MemberFirstName as string} ${member.MemberLastName as string}` : `Member ${a.member_id as number}`,
+        homeCouncilId: (member?.CouncilID as number) ?? 0,
+        assignmentType: a.assignment_type as RegionalAssignmentType,
+        stateCode: a.state_code as string,
+        councilIds: s
+          .rows('MemberRegionalCouncil')
+          .filter((c) => c.assignment_id === a.id)
+          .map((c) => c.council_id as number)
+          .sort((x, y) => x - y),
+        assignedByMemberId: (a.assigned_by_member_id as number | null) ?? null,
+        assignedAt: a.assigned_at as string,
+      };
+    });
+  }
+
+  private regionalAssignmentOf(s: MemoryStore, memberId: number): RegionalAssignment | null {
+    return this.regionalAssignments(s).find((a) => a.memberId === memberId) ?? null;
+  }
+
+  /** Ends a member's jurisdiction: its bound councils, the row and the regional roles. */
+  private dropRegionalAssignment(s: MemoryStore, memberId: number): void {
+    const ids = new Set(s.rows('MemberRegionalAssignment').filter((a) => a.member_id === memberId).map((a) => a.id as number));
+    s.remove('MemberRegionalCouncil', (c) => ids.has(c.assignment_id as number));
+    s.remove('MemberRegionalAssignment', (a) => a.member_id === memberId);
+    const roleIds = new Set(s.rows('Role').filter((r) => REGIONAL_ROLE_NAMES.includes(r.Role as string)).map((r) => r.id as number));
+    s.remove('MemberRoles', (r) => r.MemberID === memberId && roleIds.has(r.RoleID as number));
+  }
+
   volunteerQuarantine: DataService['volunteerQuarantine'] = {
     listPending: async (actorId, councilId) => {
       const s = await this.ready();
@@ -6782,6 +6973,11 @@ export class MemoryDataService implements DataService {
       return s.transaction(() => {
         assertMayCodeExpenseLedger(this.memberWriteActor(s, actorId), councilId, `code donations for council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
+        // Sprint 11 Revision 5.0: a one-time override share naming an affiliated council goes to this council's clearing
+        // account for it, exactly as in a master split profile.
+        if (input?.eventSplitOverride) {
+          input = { ...input, eventSplitOverride: this.resolveSisterCouncilShares(s, councilId, input.eventSplitOverride) as GLSplitDestination[] };
+        }
         const plan = planBatchCoding(councilId, this.batchCodingRows(s, councilId), this.glAccounts(s, councilId), input, this.now(), this.glSplitProfiles(s, councilId));
         assertLedgerPeriodsOpen(plan.lines, this.councilAudits(s, councilId));
         const batchId = this.insertJournalLines(s, councilId, plan.lines)[0]!.TransactionID as string;

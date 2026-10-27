@@ -11,6 +11,7 @@
 // =========================================================================
 import { cleanAccountOwnerEntity, type AccountOwnerEntity, ACCOUNT_IDENTITY_LABEL_MAX_LENGTH } from './account-ownership';
 import { cleanDistrictNumber } from './council-affiliations';
+import { cleanCouncilLevel } from './regional';
 import type {
   DistributionListChanges,
   NewActivity,
@@ -109,6 +110,8 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
     // Sprint 6Y: the web server's vault rows; a data driver's own copy of the table is always empty.
     { table: 'CouncilCredentialsVault', column: 'council_id', noun: ['saved credential', 'saved credentials'] },
     { table: 'AdvisoryFeedback', column: 'council_id', noun: ['advisory feedback note', 'advisory feedback notes'] },
+    // Sprint 11 Revision 5.0: a council bound to a District Deputy's or State Officer's jurisdiction.
+    { table: 'MemberRegionalCouncil', column: 'council_id', noun: ['regional jurisdiction', 'regional jurisdictions'] },
     { table: 'CouncilAssetsInventory', column: 'council_id', noun: ['inventory asset', 'inventory assets'] },
     { table: 'CouncilHistoryAnnals', column: 'council_id', noun: ['history annals year', 'history annals years'] },
     { table: 'CouncilSpiritualDiary', column: 'council_id', noun: ['diary entry', 'diary entries'] },
@@ -141,7 +144,7 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
 };
 
 /** Columns each maintained table's create/update writes, besides its id. */
-export const COUNCIL_COLUMNS = ['CouncilNumber', 'CouncilName', 'State', 'Phone', 'Email', 'ein_number', 'district_number'] as const satisfies readonly (keyof NewCouncil)[];
+export const COUNCIL_COLUMNS = ['CouncilNumber', 'CouncilName', 'State', 'Phone', 'Email', 'ein_number', 'district_number', 'council_level'] as const satisfies readonly (keyof NewCouncil)[];
 export const PARISH_COLUMNS = [
   'Name',
   'StreetAddress1',
@@ -196,6 +199,8 @@ export function cleanCouncil(input: NewCouncil): NewCouncil {
     Email: email ?? undefined,
     ein_number: cleanEinNumber(input.ein_number),
     district_number: cleanDistrictNumber(input.district_number),
+    // Sprint 11 Revision 5.0: 'LOCAL' unless the row is a State Council instance.
+    council_level: cleanCouncilLevel(input.council_level),
   };
 }
 

@@ -113,6 +113,10 @@ describe('portal permissions', () => {
       'system-settings/view-as-member',
       'system-settings/feedback',
       'admin-desk',
+      // Sprint 11 Revision 5.0: regional oversight.
+      'system-settings/regional-assignments',
+      'district-desk',
+      'state-desk',
       'council-lookups',
       'elections/appointments',
       'parishes',

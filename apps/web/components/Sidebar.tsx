@@ -26,6 +26,11 @@ import { createPortal } from 'react-dom';
 import {
   ADMIN_DESK_HREF,
   ADMIN_DESK_TITLE,
+  DISTRICT_DESK_HREF,
+  DISTRICT_DESK_TITLE,
+  REGIONAL_ASSIGNMENTS_TITLE,
+  STATE_DESK_HREF,
+  STATE_DESK_TITLE,
   canOpenArchiveVault,
   COUNCIL_PHOTO_GALLERY_TITLE,
   EXECUTIVE_DASHBOARD_HREF,
@@ -174,6 +179,24 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     label: 'View As Member',
     hint: 'A read-only picture of what one member of your council sees',
     restrictedTo: 'council Admins and Super Admins',
+  },
+  'system-settings/regional-assignments': {
+    href: '/system-settings/regional-assignments',
+    label: REGIONAL_ASSIGNMENTS_TITLE,
+    hint: 'Name District Deputies, State Officers and State Admins and bind their councils',
+    restrictedTo: 'Super Admins and State Admins',
+  },
+  'district-desk': {
+    href: DISTRICT_DESK_HREF,
+    label: DISTRICT_DESK_TITLE,
+    hint: "Hours, money, assets, calendar and leaders across your district's councils",
+    restrictedTo: 'District Deputies and Super Admins',
+  },
+  'state-desk': {
+    href: STATE_DESK_HREF,
+    label: STATE_DESK_TITLE,
+    hint: "Hours, money, assets, calendar and leaders across your state's councils",
+    restrictedTo: 'State Officers, State Admins and Super Admins',
   },
   'admin-desk': {
     href: ADMIN_DESK_HREF,

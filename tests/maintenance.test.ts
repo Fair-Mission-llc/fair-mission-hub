@@ -99,6 +99,7 @@ describe('maintenance rules', () => {
       Phone: undefined,
       ein_number: null,
       district_number: null,
+      council_level: 'LOCAL', // Sprint 11 Revision 5.0
     });
     expect(() => cleanCouncil({ CouncilNumber: 0, CouncilName: 'x', State: 'OR' })).toThrow(/whole number/);
     expect(() => cleanCouncil({ CouncilNumber: 1, CouncilName: 'x', State: 'OR', Motto: 'x' } as never)).toThrow(/no field "Motto"/);

@@ -276,7 +276,8 @@ describe.each(drivers)('$name driver: presentation data', (d) => {
     ]);
     expect((await db.expenses.listAuthorizationQueue(MEMBER.superAdmin, OWN)).map((q) => q.report.id)).toEqual([19, 23]);
     expect(expenseQueue.filter((q) => isPayableExpenseReport(q.report)).map((q) => q.report.id)).toEqual([13, 16]); // Sprint 8M Extension: 16 waits for the Treasurer's check
-    expect(d.count(db, 'CharitableDisbursementLedger')).toBe(8);
+    // Sprint 11 Revision 5.0: plus St. Francis of Assisi Council 7224's pantry grant (the regional seed).
+    expect(d.count(db, 'CharitableDisbursementLedger')).toBe(9);
 
     const trustee = await db.auth.signIn('francis.byrne@kofc15295.org', 'dev-pass-secure-9912');
     const queue = await db.charities.listCharitableRequestsQueue(trustee.memberId, OWN);

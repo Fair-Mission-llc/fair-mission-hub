@@ -448,6 +448,27 @@ export const QR_BLOCKED_METHOD_KINDS: readonly DonationMethodKind[] = ['cash', '
 /** Whether a payment method may carry a QR code image. */
 export const methodAcceptsQrCode = (methodName: string): boolean => !QR_BLOCKED_METHOD_KINDS.includes(donationMethodKind(methodName));
 
+/**
+ * Sprint 11 Revision 5.0 (schema 104): CouncilDonationMethod.payment_channel, written by the drivers from the method's
+ * kind. The database refuses a QR image link on any channel but DIGITAL (CK_CouncilDonationMethod_qr_channel).
+ */
+export type PaymentChannel = 'CASH' | 'CHECK' | 'CARD_READER' | 'PHYSICAL_ITEM' | 'DIGITAL';
+const CHANNEL_OF_KIND: Record<DonationMethodKind, PaymentChannel> = {
+  cash: 'CASH',
+  check: 'CHECK',
+  card: 'CARD_READER',
+  item: 'PHYSICAL_ITEM',
+  qr: 'DIGITAL',
+  other: 'DIGITAL',
+};
+export const paymentChannelOf = (methodName: string): PaymentChannel => CHANNEL_OF_KIND[donationMethodKind(methodName)];
+
+/** Refuses (INVALID_INPUT) a QR image link on Cash, Check, a card reader or Physical Items, before the database does. */
+export function assertQrLinkAllowed(methodName: string, url: string | null | undefined): void {
+  if (url == null || url === '' || methodAcceptsQrCode(methodName)) return;
+  throw new BusinessRuleError('INVALID_INPUT', `${methodName} never shows a QR code, so it cannot hold a QR image link.`, { field: 'DonationMethodURL', method: methodName });
+}
+
 /** Trimmed optional text; undefined, null or blank becomes null. */
 export const optionalText = (value: unknown, label: string, maxLength: number): string | null => {
   if (value === undefined || value === null) return null;

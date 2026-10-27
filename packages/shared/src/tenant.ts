@@ -49,7 +49,8 @@ export const isFraternalTenant = (tenant: TenantType): boolean => tenant === 'KO
  * roster export), the Constitutional Advisor (which cites the order's Charter and Supreme Laws) and the web Faith Center
  * (Sprint 6L Extension 3: the feast day, the daily verse and the Council Prayer Intentions List).
  */
-export const FRATERNAL_AREAS: readonly PortalArea[] = ['supreme-sync', 'governance/advisor', 'faith-center'];
+// Sprint 11 Revision 5.0: District Deputies and State Councils are Knights of Columbus offices.
+export const FRATERNAL_AREAS: readonly PortalArea[] = ['supreme-sync', 'governance/advisor', 'faith-center', 'district-desk', 'state-desk', 'system-settings/regional-assignments'];
 
 /** Drops the fraternal areas for a white-label tenant; a Knights of Columbus council keeps them all. */
 export function withTenantGate<T extends PortalArea>(areas: readonly T[], tenant: TenantType): T[] {

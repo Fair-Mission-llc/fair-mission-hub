@@ -111,6 +111,7 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'meetings.setMeetingPhoto', 'meetings.startLiveAssemblyConsole', 'members.create', 'members.listAffiliations', 'members.listRoster', 'members.getViewAsMirror',
   'councils.listCouncilAccounts', 'councils.saveCouncilAccount', 'councils.removeCouncilAccount', 'councils.setFileRepositorySettings',
   'councils.cloneFoundingTemplate', 'councils.getPracticeSandboxStatus', 'councils.seedPracticeSandbox', 'councils.purgePracticeSandbox',
+  'regional.getAssignmentWorkspace', 'regional.saveAssignment', 'regional.removeAssignment', 'regional.getRegionalDesk',
   'advisory.listMeetings', 'advisory.saveMeeting', 'advisory.removeMeeting', 'advisory.listFeedback', 'advisory.submitFeedback',
   'advisory.listPanelists', 'advisory.setPanelist', 'advisory.inviteMember', 'advisory.acceptInvitation',
   'members.resendWelcome', 'members.sweepInactive', 'members.update', 'notifications.dispatchHighPriorityAlert',
@@ -140,6 +141,12 @@ export const HUB_SELF_ARGUMENTS: Readonly<Record<string, number | 'senderId'>> =
   'messages.send': 'senderId',
   'messages.saveDraft': 'senderId',
 };
+
+/**
+ * Sprint 11 Revision 5.0: namespaces only the web server itself calls. A device asking the hub for one is refused, so no
+ * signed-in member can add a passkey for someone else.
+ */
+export const HUB_SERVER_ONLY_NAMESPACES: ReadonlySet<string> = new Set(['passkeys']);
 
 /** '<namespace>.<method>' with plain names only, so nothing but the service's own methods can be reached. */
 const METHOD_NAME = /^[a-z][A-Za-z0-9]*\.[a-z][A-Za-z0-9]*$/;
@@ -174,6 +181,9 @@ export function hubCallerArgument(call: HubCall): unknown {
 export function assertHubCallAllowed(call: HubCall, caller: HubCaller | null): void {
   if (typeof call.method !== 'string' || !isHubMethodName(call.method) || !Array.isArray(call.args)) {
     throw new BusinessRuleError('INVALID_INPUT', 'A hub call needs a method named "namespace.method" and an argument list.', {});
+  }
+  if (HUB_SERVER_ONLY_NAMESPACES.has(call.method.split('.')[0] ?? '')) {
+    throw new BusinessRuleError('INVALID_INPUT', `${call.method} is not offered to devices.`, { method: call.method });
   }
   if (HUB_PUBLIC_METHODS.has(call.method)) return;
   if (!caller) throw new BusinessRuleError('HUB_SESSION_REQUIRED', 'Sign in again: the hub has no session for this device.', { method: call.method });

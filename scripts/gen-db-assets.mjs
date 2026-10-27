@@ -162,10 +162,20 @@ function parseSchema(sql) {
       }
       if (!pk.length) fail(`[${name}] has no PRIMARY KEY`, stmt);
       for (const c of pk) if (!columns.some((x) => x.name === c)) fail(`PK column [${c}] missing on [${name}]`, stmt);
-      tables.set(name, { columns, pk, fks: [], uniqueKeys: [] });
+      tables.set(name, { columns, pk, fks: [], uniqueKeys: [], rowChecks: [] });
     } else if ((m = stmt.match(/^ALTER TABLE \[([^\]]+)\]\s+ADD FOREIGN KEY\s*\(\[([^\]]+)\]\)\s+REFERENCES\s+\[?([^\s(\]]+)\]?\s*(?:\(\[?([^\])]+)\]?\))?(?:\s+ON\s+(?:UPDATE|DELETE)\s+NO\s+ACTION)*$/i))) {
       // ON UPDATE/DELETE NO ACTION is SQLite's default too, so the clauses need no translation.
       alters.push({ table: m[1], column: m[2], refTable: m[3], refColumn: m[4] ?? null, stmt });
+    } else if ((m = stmt.match(/^ALTER TABLE \[([^\]]+)\]\s+ADD CONSTRAINT\s+\[([^\]]+)\]\s+CHECK\s*\(\s*\[([^\]]+)\]\s+IS\s+NULL\s+OR\s+\[([^\]]+)\]\s+IN\s*\(([^)]*)\)\s*\)$/i))) {
+      // Sprint 11 Revision 5.0 (schema 104): the one table-level CHECK form - a row passes when [a] is NULL or [b] is one
+      // of the listed values: CHECK ([a] IS NULL OR [b] IN ('...')). SQLite gets the same constraint and the web mock
+      // enforces it (TableMeta.rowChecks).
+      const [, name, checkName, nullColumn, column, list] = m;
+      const t = tables.get(name) ?? fail(`ALTER TABLE ADD CONSTRAINT on unknown table [${name}]`, stmt);
+      for (const c of [nullColumn, column]) if (!t.columns.some((x) => x.name === c)) fail(`CHECK column [${name}].[${c}] does not exist`, stmt);
+      if (t.rowChecks.some((r) => r.name === checkName)) fail(`Constraint [${checkName}] already exists on [${name}]`, stmt);
+      const allowed = splitTopLevel(list).map((v) => (/^'[^']*'$/.test(v) ? v.slice(1, -1) : fail(`CHECK values on [${name}] must be 'text'`, stmt)));
+      t.rowChecks.push({ name: checkName, nullColumn, column, allowed });
     } else if ((m = stmt.match(/^ALTER TABLE \[([^\]]+)\]\s+ADD\s+(\[[\s\S]+)$/i))) {
       // A column added to an earlier CREATE TABLE is folded into that table, so both targets create it in place.
       const [, name, item] = m;
@@ -271,6 +281,7 @@ function sqliteCreateTable(name, t) {
   });
   const identityPk = t.columns.some((c) => c.identity);
   if (!identityPk) lines.push(`  PRIMARY KEY (${t.pk.map((c) => `[${c}]`).join(', ')})`);
+  for (const r of t.rowChecks) lines.push(`  CONSTRAINT [${r.name}] CHECK ([${r.nullColumn}] IS NULL OR [${r.column}] IN (${r.allowed.map((v) => `'${v}'`).join(', ')}))`);
   for (const fk of t.fks) lines.push(`  FOREIGN KEY ([${fk.column}]) REFERENCES [${fk.refTable}]([${fk.refColumn}])`);
   return `CREATE TABLE IF NOT EXISTS [${name}] (\n${lines.join(',\n')}\n);`;
 }
@@ -401,6 +412,7 @@ function renderWeb(tables, seed, presentation) {
       })),
       foreignKeys: t.fks,
       uniqueKeys: t.uniqueKeys,
+      ...(t.rowChecks.length ? { rowChecks: t.rowChecks } : {}),
     }]),
   );
   return (
@@ -429,6 +441,15 @@ export interface TableMeta {
   foreignKeys: ForeignKeyMeta[];
   /** Column sets of the table's CREATE UNIQUE INDEX statements, besides the primary key. */
   uniqueKeys: string[][];
+  /** Sprint 11 Revision 5.0: named CHECK ([nullColumn] IS NULL OR [column] IN (allowed)) rules; absent when none. */
+  rowChecks?: RowCheckMeta[];
+}
+
+export interface RowCheckMeta {
+  name: string;
+  nullColumn: string;
+  column: string;
+  allowed: string[];
 }
 
 export type SeedValue = string | number | null;

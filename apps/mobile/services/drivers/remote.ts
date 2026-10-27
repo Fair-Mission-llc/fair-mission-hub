@@ -381,6 +381,18 @@ export function createRemoteDataService(): DataService {
       getProgress: notImplemented('devotionals.getProgress'),
       record: notImplemented('devotionals.record'),
     },
+    regional: {
+      getAssignmentWorkspace: notImplemented('regional.getAssignmentWorkspace'),
+      saveAssignment: notImplemented('regional.saveAssignment'),
+      removeAssignment: notImplemented('regional.removeAssignment'),
+      getRegionalDesk: notImplemented('regional.getRegionalDesk'),
+    },
+    passkeys: {
+      list: notImplemented('passkeys.list'),
+      save: notImplemented('passkeys.save'),
+      setSignCount: notImplemented('passkeys.setSignCount'),
+      remove: notImplemented('passkeys.remove'),
+    },
     volunteerQuarantine: {
       listPending: notImplemented('volunteerQuarantine.listPending'),
       clear: notImplemented('volunteerQuarantine.clear'),

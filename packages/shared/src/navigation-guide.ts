@@ -124,6 +124,18 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     member:
       "Opens your Admin Desk. Three panels stay open across the top: your council's record, the Administration Manual and its help search. Below them, six drawers down the left side are closed when you arrive. Open one to work in it on the right - the council settings, lookups, Credentials Vault, charities registry, assets and feedback.",
   },
+  'system-settings/regional-assignments': {
+    member:
+      'Names District Deputies, State Officers and State Admins and binds the councils each one oversees. Super Admins assign anywhere; a State Admin assigns only inside their own state.',
+  },
+  'district-desk': {
+    member:
+      "Opens the District Deputy Desk: the district's totals across the top - volunteer hours, cash balances and assets - and eight drawers below for the councils you oversee. Read-only.",
+  },
+  'state-desk': {
+    member:
+      "Opens the State Oversight Desk: the state's totals across the top and the same eight drawers for every council in your state. Read-only.",
+  },
   'system-settings/feedback': {
     member: "Sends a note or bug report from your council's Admins to the platform owner. Super Admins also read every note here.",
   },

@@ -320,10 +320,18 @@ describe.each(drivers)('$name driver: council-specific lookups', (d) => {
       'INVALID_INPUT',
     );
     await expectRule(db.lookups.saveCouncilSpecific(MEMBER.superAdmin, OTHER, 'CouncilDonationMethod', [{ DonationMethodID: 999, account_owner_entity: 'COUNCIL' }]), 'INVALID_INPUT');
+    // Sprint 11 Revision 5.0 (schema 104): only a digital (QR) method may hold a QR image link.
+    const methods = await db.donations.listAllMethods();
+    const venmo = methods.find((m) => m.DonationMethod === 'Venmo')!;
+    const cash = methods.find((m) => m.DonationMethod === 'Cash')!;
+    await expectRule(
+      db.lookups.saveCouncilSpecific(MEMBER.superAdmin, OTHER, 'CouncilDonationMethod', [{ DonationMethodID: cash.id, DonationMethodURL: 'https://example.org/qr.png', account_owner_entity: 'COUNCIL' }]),
+      'INVALID_INPUT',
+    );
     const other = await db.lookups.saveCouncilSpecific(MEMBER.superAdmin, OTHER, 'CouncilDonationMethod', [
-      { DonationMethodID: enabled[0].DonationMethodID, DonationMethodURL: 'https://example.org/qr.png', account_owner_entity: 'THIRD_PARTY' },
+      { DonationMethodID: venmo.id, DonationMethodURL: 'https://example.org/qr.png', account_owner_entity: 'THIRD_PARTY' },
     ]);
-    expect(other).toEqual([expect.objectContaining({ CouncilID: OTHER, DonationMethodURL: 'https://example.org/qr.png', account_owner_entity: 'THIRD_PARTY' })]);
+    expect(other).toEqual([expect.objectContaining({ CouncilID: OTHER, DonationMethodURL: 'https://example.org/qr.png', account_owner_entity: 'THIRD_PARTY', payment_channel: 'DIGITAL' })]);
   });
 
   it('lists every donation method, enabled or not, for the enable-a-method picker', async () => {

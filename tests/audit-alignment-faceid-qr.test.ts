@@ -71,11 +71,11 @@ describe('2. Global Lookup Tables and web FaceID', () => {
     // Setup: the server's one-time challenge, answered by the "device".
     const regChallenge = issueChallenge('register', user.memberId);
     const regClient = Buffer.from(JSON.stringify({ type: 'webauthn.create', challenge: regChallenge, origin: ORIGIN }));
-    expect(() => registerPasskey(user, { id: b64(Buffer.from('cred-1')), clientDataJSON: b64(regClient), publicKey: b64(spki), alg: -7 }, 'https://evil.example')).toThrow(/another site/);
+    await expect(registerPasskey(user, { id: b64(Buffer.from('cred-1')), clientDataJSON: b64(regClient), publicKey: b64(spki), alg: -7 }, 'https://evil.example')).rejects.toThrow(/another site/);
     const regChallenge2 = issueChallenge('register', user.memberId);
     const regClient2 = Buffer.from(JSON.stringify({ type: 'webauthn.create', challenge: regChallenge2, origin: ORIGIN }));
-    const saved = registerPasskey(user, { id: b64(Buffer.from('cred-1')), clientDataJSON: b64(regClient2), publicKey: b64(spki), alg: -7 }, ORIGIN);
-    expect(readPasskeys().map((p) => p.credentialId)).toContain(saved.credentialId);
+    const saved = await registerPasskey(user, { id: b64(Buffer.from('cred-1')), clientDataJSON: b64(regClient2), publicKey: b64(spki), alg: -7 }, ORIGIN);
+    expect((await readPasskeys()).map((p) => p.credentialId)).toContain(saved.credentialId);
 
     const answer = (counter: number, flags = 0x05, origin = ORIGIN) => {
       const challenge = issueChallenge('login', null);
@@ -89,15 +89,15 @@ describe('2. Global Lookup Tables and web FaceID', () => {
     };
 
     expect(parseAuthenticatorData(Buffer.from(answer(7).authenticatorData, 'base64url'))).toMatchObject({ userPresent: true, userVerified: true, signCount: 7 });
-    expect(() => verifyPasskeyAssertion(answer(1, 0x01), ORIGIN)).toThrow(/face or fingerprint/);
+    await expect(verifyPasskeyAssertion(answer(1, 0x01), ORIGIN)).rejects.toThrow(/face or fingerprint/);
     const good = answer(3);
-    const passkey = verifyPasskeyAssertion(good, ORIGIN);
+    const passkey = await verifyPasskeyAssertion(good, ORIGIN);
     expect(passkey.signCount).toBe(3);
     // The same answer cannot be used twice (its challenge is spent), and the counter must move forward.
-    expect(() => verifyPasskeyAssertion(good, ORIGIN)).toThrow(/timed out/);
-    expect(() => verifyPasskeyAssertion(answer(2), ORIGIN)).toThrow(/out of order/);
+    await expect(verifyPasskeyAssertion(good, ORIGIN)).rejects.toThrow(/timed out/);
+    await expect(verifyPasskeyAssertion(answer(2), ORIGIN)).rejects.toThrow(/out of order/);
     const forged = { ...answer(9), signature: answer(10).signature };
-    expect(() => verifyPasskeyAssertion(forged, ORIGIN)).toThrow();
+    await expect(verifyPasskeyAssertion(forged, ORIGIN)).rejects.toThrow();
 
     const session = await passkeySessionUser(passkey);
     expect(session?.user).toMatchObject({ memberId: user.memberId, username: user.username, councilId: user.councilId });

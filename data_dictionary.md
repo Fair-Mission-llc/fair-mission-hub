@@ -1296,3 +1296,36 @@ CouncilDonationMethod.account_owner_id is dropped and replaced by:
 Rules (council-accounts.ts). councils.listCouncilAccounts, saveCouncilAccount and removeCouncilAccount (the Account Owners Matrix) are open to the council's Active Admins and any Active Super Admin. A new matrix row is a new Asset account. Changing ownership_type moves every linked payment method's owner; stored donations keep their snapshot. removeCouncilAccount refuses an account any column in GL_ACCOUNT_REFERENCES still names (RECORD_IN_USE).
 Revenue splits (gl-splits.ts). A destination may name { affiliatedCouncilId } in place of an account. The council must be an ACTIVE affiliate (CouncilAffiliations). The driver swaps in the council's own clearing account for that affiliate, creating it on first use, so the share is posted in this council's books only; nothing is written to the other council. finance.listSplitSisterCouncils lists the ACTIVE affiliates and their clearing accounts for the ledger's readers. A clearing account is the one Liability account a split may send to.
 The schema generator (scripts/gen-db-assets.mjs) learns DROP TABLE, and DROP COLUMN now drops the column's foreign key with it.
+________________________________________
+# 59. Regional Oversight, Database Passkeys and the QR Channel Rule (Sprint 11 Revision 5.0)
+Schema version 104; the phone database version moves to 104. A pilot hub vault at 103 must be archived (npm run hub:archive) before it opens again.
+UserPasskeys (new) - the web 'Sign in with FaceID' passkeys, moved off the hub's webauthn-credentials.json file.
+•	id (INTEGER, IDENTITY, PK)
+•	credential_id (VARCHAR(255), NOT NULL, UNIQUE) - the WebAuthn credential id (base64url).
+•	member_id (INTEGER, NOT NULL) - Foreign Key references Member(id).
+•	login_id (INTEGER, NOT NULL) - Foreign Key references Credentials(id): the login the passkey was made under; a new login retires it.
+•	username (VARCHAR(100), NOT NULL)
+•	public_key_sealed (VARCHAR(2000), NOT NULL) - the SPKI public key, sealed with AES-256-GCM under the credentials vault key and bound to the credential id.
+•	alg (INTEGER, NOT NULL) - COSE algorithm: -7 (ES256) or -257 (RS256).
+•	sign_count (INTEGER, NOT NULL, DEFAULT 0) - must move forward on every sign-in.
+•	created_at (DATETIME, NOT NULL)
+Only the web server reads and writes the table (passkeys.*); the hub refuses the namespace from devices (HUB_SERVER_ONLY_NAMESPACES).
+Council gains one column.
+•	council_level (VARCHAR(10), NOT NULL, DEFAULT 'LOCAL') - CHECK IN ('LOCAL', 'STATE'). A STATE row is a State Council instance (CouncilNumber from 900000, e.g. 900001 Oregon State Council); councils.create gives it State Operating Checking, State Per Capita Revenue, State Operational Costs and Opening Balance Equity.
+MemberRegionalAssignment (new) - one member's regional office.
+•	id (INTEGER, IDENTITY, PK)
+•	member_id (INTEGER, NOT NULL, UNIQUE) - Foreign Key references Member(id).
+•	assignment_type (VARCHAR(20), NOT NULL) - CHECK IN ('DISTRICT_DEPUTY', 'STATE_OFFICER', 'STATE_ADMIN'). Each type also gives the member the Role of the same name.
+•	state_code (VARCHAR(50), NOT NULL) - the state the office covers, e.g. OR.
+•	assigned_by_member_id (INTEGER, NULL) - Foreign Key references Member(id).
+•	assigned_at (DATETIME, NOT NULL)
+MemberRegionalCouncil (new) - the councils bound to an office.
+•	id (INTEGER, IDENTITY, PK)
+•	assignment_id (INTEGER, NOT NULL) - Foreign Key references MemberRegionalAssignment(id).
+•	council_id (INTEGER, NOT NULL) - Foreign Key references Council(id). UNIQUE with assignment_id.
+CouncilDonationMethod gains one column and one table constraint.
+•	payment_channel (VARCHAR(20), NOT NULL, DEFAULT 'DIGITAL') - CHECK IN ('CASH', 'CHECK', 'CARD_READER', 'PHYSICAL_ITEM', 'DIGITAL'). The drivers write it from the method on every save (paymentChannelOf).
+•	CK_CouncilDonationMethod_qr_channel - CHECK ([DonationMethodURL] IS NULL OR [payment_channel] IN ('DIGITAL')): the database refuses a QR image link on Cash, Check, card readers and Physical Items. (The QR link lives on the payment method row; GLAccount has none.)
+Roles: 'District Deputy' (23), 'State Officer' (24), 'State Admin' (25), Officer 0.
+Seed: Councils 4100 Sacred Heart (id 7) and 7224 St. Francis of Assisi (id 8), both OR District 5, and the Oregon State Council (id 9). Regional test logins (password Fraternal2026!): tim@fairmissionsoftware.com (Super Admin, Member 35), dd.test@fairmissionsoftware.com (District Deputy bound to 15295, 4100 and 7224, Member 36), state.test@fairmissionsoftware.com (State Officer, home the Oregon State Council, Member 37).
+The schema generator learns one table-level CHECK form: ALTER TABLE [T] ADD CONSTRAINT [name] CHECK ([a] IS NULL OR [b] IN ('...')). SQLite gets the same constraint; the web mock enforces it (TableMeta.rowChecks, MemoryStore.checkRow).

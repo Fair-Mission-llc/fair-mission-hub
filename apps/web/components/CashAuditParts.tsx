@@ -39,6 +39,7 @@ import {
   type GLAccount,
   type CashAuditRow,
   type SessionUser,
+  type SplitSisterCouncil,
 } from '@kofc/shared';
 import { SplitShareRows, splitRowsOf, splitRowsToDestinations, type SplitRow } from '@/components/SplitShareRows';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td } from '@/components/ui';
@@ -372,6 +373,8 @@ function LumpSumOverrideRow({ user, councilId, revenueAccounts, depositAccount }
 /** The Treasurer Desk's High-Volume Batch Transaction Coder. */
 export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; councilId: number }) {
   const view = useLoad(() => db.finance.getBatchCodingQueue(user.memberId, councilId), [user.memberId, councilId]);
+  // Sprint 11 Revision 5.0: the override may also send a one-time share to an ACTIVE affiliated council.
+  const sisters = useLoad(() => db.finance.listSplitSisterCouncils(user.memberId, councilId).catch(() => [] as SplitSisterCouncil[]), [user.memberId, councilId]);
   const [selected, setSelected] = useState<ReadonlySet<number>>(new Set());
   const [lineId, setLineId] = useState<number | null>(null);
   // Sprint 9 Revision 6.2: the one-time Event Split Override - its rows, or null while it is not in use.
@@ -390,7 +393,7 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
   const pickedEvents = new Set(picked.map((r) => r.donation.EventID ?? null));
   const overrideEvent = pickedEvents.size === 1 && !pickedEvents.has(null) ? picked[0]! : null;
   const overrideChoices = (view.data?.revenueAccounts ?? []).filter((a) => maySplitAccount(a) && !splitIds.has(a.id));
-  const openOverride = () => setOverride(splitRowsOf(splitProfiles.find((p) => p.accountId === lineId)));
+  const openOverride = () => setOverride(splitRowsOf(splitProfiles.find((p) => p.accountId === lineId), sisters.data ?? []));
 
   const toggle = (id: number) =>
     setSelected((prev) => {
@@ -501,7 +504,11 @@ export function BatchTransactionCoder({ user, councilId }: { user: SessionUser; 
                     These shares split this one posting of {formatMoney(pickedTotal)} in place of the line&apos;s master split. They are not saved to the line;
                     the next batch uses the master rules again.
                   </p>
-                  <SplitShareRows rows={override} onChange={setOverride} choices={overrideChoices} disabled={busy} />
+                  <p className="text-sm">
+                    A share may go to an affiliated council: it is posted to this council&apos;s &apos;Due to Sister Council&apos; account for it, and nothing is
+                    written to the other council&apos;s books.
+                  </p>
+                  <SplitShareRows rows={override} onChange={setOverride} choices={overrideChoices} sisters={sisters.data ?? []} disabled={busy} />
                 </section>
               ) : null}
               <Table caption="Un-coded electronic donations" head={['', 'Date', 'Method', 'Event', 'Donor / description', 'Amount']}>

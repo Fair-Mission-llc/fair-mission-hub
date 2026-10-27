@@ -28,6 +28,15 @@ export interface TableMeta {
   foreignKeys: ForeignKeyMeta[];
   /** Column sets of the table's CREATE UNIQUE INDEX statements, besides the primary key. */
   uniqueKeys: string[][];
+  /** Sprint 11 Revision 5.0: named CHECK ([nullColumn] IS NULL OR [column] IN (allowed)) rules; absent when none. */
+  rowChecks?: RowCheckMeta[];
+}
+
+export interface RowCheckMeta {
+  name: string;
+  nullColumn: string;
+  column: string;
+  allowed: string[];
 }
 
 export type SeedValue = string | number | null;
@@ -800,6 +809,20 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "council_level",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "LOCAL"
+        },
+        "allowed": [
+          "LOCAL",
+          "STATE"
+        ]
       }
     ],
     "foreignKeys": [
@@ -3032,6 +3055,23 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "payment_channel",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "DIGITAL"
+        },
+        "allowed": [
+          "CASH",
+          "CHECK",
+          "CARD_READER",
+          "PHYSICAL_ITEM",
+          "DIGITAL"
+        ]
       }
     ],
     "foreignKeys": [
@@ -3051,7 +3091,17 @@ export const TABLES: Record<string, TableMeta> = {
         "refColumn": "id"
       }
     ],
-    "uniqueKeys": []
+    "uniqueKeys": [],
+    "rowChecks": [
+      {
+        "name": "CK_CouncilDonationMethod_qr_channel",
+        "nullColumn": "DonationMethodURL",
+        "column": "payment_channel",
+        "allowed": [
+          "DIGITAL"
+        ]
+      }
+    ]
   },
   "SystemFeedback": {
     "primaryKey": [
@@ -8344,6 +8394,213 @@ export const TABLES: Record<string, TableMeta> = {
       }
     ],
     "uniqueKeys": []
+  },
+  "UserPasskeys": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "credential_id",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "member_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "login_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "username",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "public_key_sealed",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "alg",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "sign_count",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "login_id",
+        "refTable": "Credentials",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "credential_id"
+      ]
+    ]
+  },
+  "MemberRegionalAssignment": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "member_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "assignment_type",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null,
+        "allowed": [
+          "DISTRICT_DEPUTY",
+          "STATE_OFFICER",
+          "STATE_ADMIN"
+        ]
+      },
+      {
+        "name": "state_code",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "assigned_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "assigned_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "assigned_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "member_id"
+      ]
+    ]
+  },
+  "MemberRegionalCouncil": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "assignment_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "assignment_id",
+        "refTable": "MemberRegionalAssignment",
+        "refColumn": "id"
+      },
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "assignment_id",
+        "council_id"
+      ]
+    ]
   }
 };
 
@@ -12378,7 +12635,7 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "IsMultiDay": 0,
         "MeetingTypeID": 1,
         "IsLiveInProgress": 1,
-        "LiveQuorumRosterCount": 35
+        "LiveQuorumRosterCount": 37
       }
     ]
   },
@@ -13662,6 +13919,583 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "LiveQuorumRosterCount": null,
         "minutes_text": "# Call to order\n- Opened at 7:30 PM by the Grand Knight; 24 members present.\n\n# Reports\n- The Treasurer reported the picnic closed with a surplus.\n\n# Projects\n- [x] Order replacement banners for the parish picnic\n- [ ] Seal the teak furniture on the parish patio before the rains\n- [ ] Organize the council storage room in the parish hall basement\n\n# Adjournment\n- Closed at 8:55 PM with a prayer for deceased members.",
         "minutes_published_at": "2026-09-18 20:00:00"
+      }
+    ]
+  },
+  {
+    "table": "Role",
+    "rows": [
+      {
+        "Role": "District Deputy",
+        "Officer": 0
+      },
+      {
+        "Role": "State Officer",
+        "Officer": 0
+      },
+      {
+        "Role": "State Admin",
+        "Officer": 0
+      }
+    ]
+  },
+  {
+    "table": "Council",
+    "rows": [
+      {
+        "CouncilNumber": 4100,
+        "CouncilName": "Sacred Heart Council",
+        "State": "OR",
+        "Phone": "503-555-0410",
+        "Email": null,
+        "district_number": 5,
+        "council_level": "LOCAL"
+      },
+      {
+        "CouncilNumber": 7224,
+        "CouncilName": "St. Francis of Assisi Council",
+        "State": "OR",
+        "Phone": "503-555-0722",
+        "Email": null,
+        "district_number": 5,
+        "council_level": "LOCAL"
+      },
+      {
+        "CouncilNumber": 900001,
+        "CouncilName": "Oregon State Council",
+        "State": "OR",
+        "Phone": "503-555-0900",
+        "Email": null,
+        "district_number": null,
+        "council_level": "STATE"
+      }
+    ]
+  },
+  {
+    "table": "Credentials",
+    "rows": [
+      {
+        "Username": "tim@fairmissionsoftware.com",
+        "Password": "Fraternal2026!"
+      },
+      {
+        "Username": "dd.test@fairmissionsoftware.com",
+        "Password": "Fraternal2026!"
+      },
+      {
+        "Username": "state.test@fairmissionsoftware.com",
+        "Password": "Fraternal2026!"
+      },
+      {
+        "Username": "paul.harmon@sacredheart4100.org",
+        "Password": ""
+      },
+      {
+        "Username": "luke.brennan@sacredheart4100.org",
+        "Password": ""
+      },
+      {
+        "Username": "ignatius.moreno@stfrancis7224.org",
+        "Password": ""
+      },
+      {
+        "Username": "francis.olsen@stfrancis7224.org",
+        "Password": ""
+      }
+    ]
+  },
+  {
+    "table": "Member",
+    "rows": [
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9910001,
+        "MemberFirstName": "Tim",
+        "MemberLastName": "Ferkel",
+        "Phone": "503-555-0135",
+        "StreetAddress1": "100 Mission Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97201",
+        "Email": "tim@fairmissionsoftware.com",
+        "DateOfBirth": "1975-03-15",
+        "StatusID": 1,
+        "DegreeID": 4,
+        "MemberTypeID": 1,
+        "CredentialID": 35,
+        "DateJoinedCouncil": "2015-09-01"
+      },
+      {
+        "CouncilID": 1,
+        "MemberNumber": 9910002,
+        "MemberFirstName": "District",
+        "MemberLastName": "Deputy Test",
+        "Phone": "503-555-0136",
+        "StreetAddress1": "200 District Way",
+        "City": "Portland",
+        "State": "OR",
+        "ZipCode": "97202",
+        "Email": "dd.test@fairmissionsoftware.com",
+        "DateOfBirth": "1970-06-01",
+        "StatusID": 1,
+        "DegreeID": 4,
+        "MemberTypeID": 3,
+        "CredentialID": 36,
+        "DateJoinedCouncil": "2010-02-01"
+      },
+      {
+        "CouncilID": 9,
+        "MemberNumber": 9910003,
+        "MemberFirstName": "State",
+        "MemberLastName": "Officer Test",
+        "Phone": "503-555-0137",
+        "StreetAddress1": "300 Capitol Way",
+        "City": "Salem",
+        "State": "OR",
+        "ZipCode": "97301",
+        "Email": "state.test@fairmissionsoftware.com",
+        "DateOfBirth": "1968-11-20",
+        "StatusID": 1,
+        "DegreeID": 4,
+        "MemberTypeID": 3,
+        "CredentialID": 37,
+        "DateJoinedCouncil": "2005-05-01"
+      },
+      {
+        "CouncilID": 7,
+        "MemberNumber": 9910004,
+        "MemberFirstName": "Paul",
+        "MemberLastName": "Harmon",
+        "Phone": "503-555-0138",
+        "StreetAddress1": "410 Sacred Heart Ln",
+        "City": "Gresham",
+        "State": "OR",
+        "ZipCode": "97030",
+        "Email": "paul.harmon@sacredheart4100.org",
+        "DateOfBirth": "1982-04-04",
+        "StatusID": 1,
+        "DegreeID": 3,
+        "MemberTypeID": 3,
+        "CredentialID": 38,
+        "DateJoinedCouncil": "2019-03-01"
+      },
+      {
+        "CouncilID": 7,
+        "MemberNumber": 9910005,
+        "MemberFirstName": "Luke",
+        "MemberLastName": "Brennan",
+        "Phone": "503-555-0139",
+        "StreetAddress1": "412 Sacred Heart Ln",
+        "City": "Gresham",
+        "State": "OR",
+        "ZipCode": "97030",
+        "Email": "luke.brennan@sacredheart4100.org",
+        "DateOfBirth": "1990-08-08",
+        "StatusID": 1,
+        "DegreeID": 2,
+        "MemberTypeID": 3,
+        "CredentialID": 39,
+        "DateJoinedCouncil": "2023-01-15"
+      },
+      {
+        "CouncilID": 8,
+        "MemberNumber": 9910006,
+        "MemberFirstName": "Ignatius",
+        "MemberLastName": "Moreno",
+        "Phone": "503-555-0140",
+        "StreetAddress1": "722 Assisi Ave",
+        "City": "Beaverton",
+        "State": "OR",
+        "ZipCode": "97005",
+        "Email": "ignatius.moreno@stfrancis7224.org",
+        "DateOfBirth": "1978-10-04",
+        "StatusID": 1,
+        "DegreeID": 4,
+        "MemberTypeID": 3,
+        "CredentialID": 40,
+        "DateJoinedCouncil": "2012-10-04"
+      },
+      {
+        "CouncilID": 8,
+        "MemberNumber": 9910007,
+        "MemberFirstName": "Francis",
+        "MemberLastName": "Olsen",
+        "Phone": "503-555-0141",
+        "StreetAddress1": "724 Assisi Ave",
+        "City": "Beaverton",
+        "State": "OR",
+        "ZipCode": "97005",
+        "Email": "francis.olsen@stfrancis7224.org",
+        "DateOfBirth": "1987-12-12",
+        "StatusID": 1,
+        "DegreeID": 3,
+        "MemberTypeID": 3,
+        "CredentialID": 41,
+        "DateJoinedCouncil": "2021-06-01"
+      }
+    ]
+  },
+  {
+    "table": "MemberRoles",
+    "rows": [
+      {
+        "RoleID": 23,
+        "MemberID": 36
+      },
+      {
+        "RoleID": 24,
+        "MemberID": 37
+      },
+      {
+        "RoleID": 20,
+        "MemberID": 38
+      },
+      {
+        "RoleID": 20,
+        "MemberID": 39
+      },
+      {
+        "RoleID": 20,
+        "MemberID": 40
+      },
+      {
+        "RoleID": 20,
+        "MemberID": 41
+      }
+    ]
+  },
+  {
+    "table": "MemberRegionalAssignment",
+    "rows": [
+      {
+        "member_id": 36,
+        "assignment_type": "DISTRICT_DEPUTY",
+        "state_code": "OR",
+        "assigned_by_member_id": 35,
+        "assigned_at": "2026-10-27 09:00:00"
+      },
+      {
+        "member_id": 37,
+        "assignment_type": "STATE_OFFICER",
+        "state_code": "OR",
+        "assigned_by_member_id": 35,
+        "assigned_at": "2026-10-27 09:00:00"
+      }
+    ]
+  },
+  {
+    "table": "MemberRegionalCouncil",
+    "rows": [
+      {
+        "assignment_id": 1,
+        "council_id": 1
+      },
+      {
+        "assignment_id": 1,
+        "council_id": 7
+      },
+      {
+        "assignment_id": 1,
+        "council_id": 8
+      }
+    ]
+  },
+  {
+    "table": "Activities",
+    "rows": [
+      {
+        "ActivityName": "Parish Grounds Care",
+        "ActivityDescription": "Mowing, weeding and leaf cleanup around Sacred Heart",
+        "CategoryID": 2,
+        "CouncilID": 7
+      },
+      {
+        "ActivityName": "Food Pantry Shifts",
+        "ActivityDescription": "Sorting and handing out food at the St. Francis pantry",
+        "CategoryID": 2,
+        "CouncilID": 8
+      }
+    ]
+  },
+  {
+    "table": "ActivityTime",
+    "rows": [
+      {
+        "MemberID": 38,
+        "ActivityID": 12,
+        "ActivityDate": "2026-09-12",
+        "Hours": 6.5,
+        "ActivityNotes": "Fall cleanup"
+      },
+      {
+        "MemberID": 39,
+        "ActivityID": 12,
+        "ActivityDate": "2026-09-12",
+        "Hours": 4,
+        "ActivityNotes": "Fall cleanup"
+      },
+      {
+        "MemberID": 38,
+        "ActivityID": 12,
+        "ActivityDate": "2026-10-03",
+        "Hours": 3,
+        "ActivityNotes": "Leaf removal"
+      },
+      {
+        "MemberID": 40,
+        "ActivityID": 13,
+        "ActivityDate": "2026-09-19",
+        "Hours": 9,
+        "ActivityNotes": "Two pantry shifts"
+      },
+      {
+        "MemberID": 41,
+        "ActivityID": 13,
+        "ActivityDate": "2026-10-10",
+        "Hours": 3.5,
+        "ActivityNotes": "Saturday pantry"
+      }
+    ]
+  },
+  {
+    "table": "GLAccount",
+    "rows": [
+      {
+        "CouncilID": 7,
+        "AccountName": "Operating Checking",
+        "AccountType": "Asset",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      },
+      {
+        "CouncilID": 7,
+        "AccountName": "Opening Balance Equity",
+        "AccountType": "Equity",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      },
+      {
+        "CouncilID": 8,
+        "AccountName": "Operating Checking",
+        "AccountType": "Asset",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      },
+      {
+        "CouncilID": 8,
+        "AccountName": "Opening Balance Equity",
+        "AccountType": "Equity",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      },
+      {
+        "CouncilID": 9,
+        "AccountName": "State Operating Checking",
+        "AccountType": "Asset",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      },
+      {
+        "CouncilID": 9,
+        "AccountName": "State Per Capita Revenue",
+        "AccountType": "Revenue",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      },
+      {
+        "CouncilID": 9,
+        "AccountName": "State Operational Costs",
+        "AccountType": "Expense",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      },
+      {
+        "CouncilID": 9,
+        "AccountName": "Opening Balance Equity",
+        "AccountType": "Equity",
+        "ParentAccountID": null,
+        "IsVirtualGoal": 0,
+        "TargetGoalAmount": 0
+      }
+    ]
+  },
+  {
+    "table": "JournalEntry",
+    "rows": [
+      {
+        "CouncilID": 7,
+        "GLAccountID": 17,
+        "DateLogged": "2026-07-01 00:00:00",
+        "Description": "Opening balance carried into the ledger",
+        "DebitAmount": 5400,
+        "CreditAmount": 0,
+        "LinkedEventID": null,
+        "LinkedMeetingID": null,
+        "IsBankReconciled": 1,
+        "CheckNumber": null,
+        "TransactionID": "seed-txn-r4100"
+      },
+      {
+        "CouncilID": 7,
+        "GLAccountID": 18,
+        "DateLogged": "2026-07-01 00:00:00",
+        "Description": "Opening balance carried into the ledger",
+        "DebitAmount": 0,
+        "CreditAmount": 5400,
+        "LinkedEventID": null,
+        "LinkedMeetingID": null,
+        "IsBankReconciled": 1,
+        "CheckNumber": null,
+        "TransactionID": "seed-txn-r4100"
+      },
+      {
+        "CouncilID": 8,
+        "GLAccountID": 19,
+        "DateLogged": "2026-07-01 00:00:00",
+        "Description": "Opening balance carried into the ledger",
+        "DebitAmount": 3150,
+        "CreditAmount": 0,
+        "LinkedEventID": null,
+        "LinkedMeetingID": null,
+        "IsBankReconciled": 1,
+        "CheckNumber": null,
+        "TransactionID": "seed-txn-r7224"
+      },
+      {
+        "CouncilID": 8,
+        "GLAccountID": 20,
+        "DateLogged": "2026-07-01 00:00:00",
+        "Description": "Opening balance carried into the ledger",
+        "DebitAmount": 0,
+        "CreditAmount": 3150,
+        "LinkedEventID": null,
+        "LinkedMeetingID": null,
+        "IsBankReconciled": 1,
+        "CheckNumber": null,
+        "TransactionID": "seed-txn-r7224"
+      },
+      {
+        "CouncilID": 9,
+        "GLAccountID": 21,
+        "DateLogged": "2026-07-01 00:00:00",
+        "Description": "Opening balance carried into the ledger",
+        "DebitAmount": 12800,
+        "CreditAmount": 0,
+        "LinkedEventID": null,
+        "LinkedMeetingID": null,
+        "IsBankReconciled": 1,
+        "CheckNumber": null,
+        "TransactionID": "seed-txn-rORSC"
+      },
+      {
+        "CouncilID": 9,
+        "GLAccountID": 24,
+        "DateLogged": "2026-07-01 00:00:00",
+        "Description": "Opening balance carried into the ledger",
+        "DebitAmount": 0,
+        "CreditAmount": 12800,
+        "LinkedEventID": null,
+        "LinkedMeetingID": null,
+        "IsBankReconciled": 1,
+        "CheckNumber": null,
+        "TransactionID": "seed-txn-rORSC"
+      }
+    ]
+  },
+  {
+    "table": "CouncilAssetsInventory",
+    "rows": [
+      {
+        "council_id": 7,
+        "asset_name": "Pancake griddle set",
+        "purchase_date": "2025-04-02 00:00:00",
+        "cost_basis": 640,
+        "original_expense_id": null,
+        "current_status": "ACTIVE",
+        "notes": null,
+        "storage_location": "Parish hall kitchen",
+        "is_loanable": 0,
+        "loan_status": "AVAILABLE",
+        "borrower_name": null,
+        "borrower_council": null,
+        "expected_return_date": null
+      },
+      {
+        "council_id": 8,
+        "asset_name": "Event canopy tent",
+        "purchase_date": "2024-06-20 00:00:00",
+        "cost_basis": 415,
+        "original_expense_id": null,
+        "current_status": "ACTIVE",
+        "notes": null,
+        "storage_location": "Pantry storage shed",
+        "is_loanable": 1,
+        "loan_status": "AVAILABLE",
+        "borrower_name": null,
+        "borrower_council": null,
+        "expected_return_date": null
+      }
+    ]
+  },
+  {
+    "table": "CouncilAffiliations",
+    "rows": [
+      {
+        "requesting_council_id": 7,
+        "target_council_id": 8,
+        "status": "ACTIVE",
+        "date_established": "2026-09-01",
+        "requested_by_member_id": 38,
+        "requested_at": "2026-08-28 10:00:00",
+        "responded_by_member_id": 40,
+        "responded_at": "2026-09-01 09:00:00"
+      }
+    ]
+  },
+  {
+    "table": "CharitableDisbursementLedger",
+    "rows": [
+      {
+        "CouncilID": 8,
+        "CharityID": 1,
+        "Amount": 500,
+        "CheckNumber": "1043",
+        "DisbursedByID": 40,
+        "PayoutDate": "2026-09-20",
+        "Notes": "Food pantry grant",
+        "ProposalID": null
+      }
+    ]
+  },
+  {
+    "table": "Event",
+    "rows": [
+      {
+        "EventName": "Sacred Heart Pancake Breakfast",
+        "EventDescription": "Monthly pancake breakfast after the 9 AM Mass",
+        "OwnerID": 38,
+        "StartDate": "2026-11-08",
+        "EndDate": "2026-11-08",
+        "Location": "Sacred Heart Parish Hall",
+        "CategoryID": 5,
+        "IsAnnual": 1,
+        "IsMultiDay": 0
+      }
+    ]
+  },
+  {
+    "table": "EventCouncils",
+    "rows": [
+      {
+        "EventID": 10,
+        "CouncilID": 7
       }
     ]
   }

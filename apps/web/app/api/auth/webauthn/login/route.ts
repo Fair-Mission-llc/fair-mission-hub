@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   let passkey;
   try {
-    passkey = verifyPasskeyAssertion(body ?? {}, publicOrigin(req));
+    passkey = await verifyPasskeyAssertion(body ?? {}, publicOrigin(req));
   } catch (err) {
     return NextResponse.json({ signedIn: false, message: describeError(err) }, { status: 401 });
   }

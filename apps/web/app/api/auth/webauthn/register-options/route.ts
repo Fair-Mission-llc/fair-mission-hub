@@ -24,6 +24,6 @@ export async function POST(req: Request) {
     authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' },
     attestation: 'none',
     timeout: 60_000,
-    excludeCredentials: passkeysOf(session.claims.memberId).map((p) => ({ type: 'public-key', id: p.credentialId })),
+    excludeCredentials: (await passkeysOf(session.claims.memberId)).map((p) => ({ type: 'public-key', id: p.credentialId })),
   });
 }
