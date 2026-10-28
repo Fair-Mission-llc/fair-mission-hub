@@ -217,7 +217,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
   { desk: 'grand-knight', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-charity-endorsements', alerts: true },
   { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },
-  { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
+  { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', area: 'inventory/loaner-library', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
   { desk: 'grand-knight', id: 'affiliation-invites', title: 'Affiliation Invites', summary: 'Accept or decline invites from nearby councils', gate: 'affiliations', rowId: 'grand-knight-affiliations' },
   { desk: 'grand-knight', id: 'connected-councils', title: 'Connected Councils', summary: 'Invite and answer nearby councils', area: 'system-settings/affiliations', rowId: 'module-connected-councils' },
   { desk: 'grand-knight', id: 'meeting-pin', title: 'Meeting PIN (Recorder Absent)', summary: 'Set the check-in PIN yourself when the Recorder is away', gate: 'always', rowId: 'drawer-gk-meeting-pin' },
@@ -259,10 +259,10 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'recorder', id: 'motions-ledger', title: 'Council Resolutions and Motions Ledger', summary: "Every motion of this fraternal year's meetings and its result", area: 'meetings', rowId: 'module-motions-ledger' },
   { desk: 'recorder', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-recorder-election-workflow', cabinet: 'reference' },
   // ---- Historian Desk
-  { desk: 'historian', id: 'diary-logs', title: 'Fraternal Diary Entry Logs', summary: "Read the council's diary entries by year, author or word", gate: 'always', rowId: 'drawer-diary-logs' },
+  { desk: 'historian', id: 'diary-logs', title: 'Fraternal Diary Entry Logs', summary: "Read the council's diary entries by year, author or word", area: 'history', gate: 'always', rowId: 'drawer-diary-logs' },
   { desk: 'historian', id: 'bulletins', title: 'Monthly Newsletters', summary: 'Write one text newsletter a month', gate: 'always', rowId: 'drawer-bulletins' },
-  { desk: 'historian', id: 'meeting-photos', title: 'Meeting Photos', summary: "File each meeting's photo to the Drive media vault", gate: 'always', rowId: 'drawer-meeting-photos' },
-  { desk: 'historian', id: 'oral-histories', title: 'Oral History Recordings', summary: 'Listen to testimonials and record your own', gate: 'always', rowId: 'drawer-oral-histories' },
+  { desk: 'historian', id: 'meeting-photos', title: 'Meeting Photos', summary: "File each meeting's photo to the Drive media vault", area: 'gallery', gate: 'always', rowId: 'drawer-meeting-photos' },
+  { desk: 'historian', id: 'oral-histories', title: 'Oral History Recordings', summary: 'Listen to testimonials and record your own', area: 'history', gate: 'always', rowId: 'drawer-oral-histories' },
   { desk: 'historian', id: 'media-gallery', title: 'Google Drive Media Gallery Sync Board', summary: 'Upload, tag and file photos to the Drive media vault', area: 'gallery', rowId: 'module-media-gallery' },
   { desk: 'historian', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-historian-election-workflow', cabinet: 'reference' },
 ];

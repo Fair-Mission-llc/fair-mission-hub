@@ -25,7 +25,7 @@ import { NextResponse } from 'next/server';
 import { cleanCustomManualPayload, customizeManualMarkdown, customManualFileName, CUSTOM_MANUAL_SOURCES, describeError, mayCompileCustomManual, toIsoDate } from '@kofc/shared';
 import { pythonCommand, repoRoot, runPythonScript, scriptFailureAnswer } from '@/services/server/reportlab';
 import { fileManualIntoRepository } from '@/services/server/file-repository';
-import { featureSwitchedOff } from '@/services/server/feature-gate';
+import { councilDisabledModules, featureSwitchedOff } from '@/services/server/feature-gate';
 import { requirePortalSession } from '@/services/server/session';
 
 export const runtime = 'nodejs';
@@ -59,11 +59,16 @@ export async function POST(req: Request) {
     const output = join(work, 'guide.pdf');
     await writeFile(input, customizeManualMarkdown(payload.guide, markdown, payload.council, payload.settings, toIsoDate(new Date())), 'utf8');
     const preparedFor = `${payload.council.name} ${payload.council.number}`;
+    // Sprint 11 Revision 8.0: the sections of the council's switched-off modules carry a 'disabled' banner.
+    const disabled = await councilDisabledModules(payload.council.id);
     try {
       await runPythonScript(
         pythonCommand(),
         join(root, 'scripts', 'compile_all_manuals.py'),
-        ['--only', payload.guide, '--input', input, '--output', output, '--base', join(root, 'docs'), '--prepared-for', preparedFor],
+        [
+          ...['--only', payload.guide, '--input', input, '--output', output, '--base', join(root, 'docs'), '--prepared-for', preparedFor],
+          ...(disabled.length > 0 ? ['--disabled-modules', disabled.join(',')] : []),
+        ],
         COMPILE_TIMEOUT_MS,
       );
     } catch (err) {

@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canReviewVolunteerQuarantine,
   FEATURE_FLAG_NAMES,
+  RETIRED_FEATURE_COLUMNS,
   isQuarantinedHours,
   isQuarantineExempt,
   mayReviewQuarantine,
@@ -31,7 +32,9 @@ describe('Schema 61', () => {
     }
     expect(schema).toContain('ALTER TABLE [Council] ADD [feature_volunteer_quarantine] BIT NOT NULL DEFAULT 1;');
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[1-9]|[7-9]\d|\d{3});/);
-    expect(FEATURE_FLAG_NAMES).toContain('feature_volunteer_quarantine');
+    // Sprint 11 Revision 8.0: the switch is retired; the guards are a core system.
+    expect(FEATURE_FLAG_NAMES).not.toContain('feature_volunteer_quarantine');
+    expect(RETIRED_FEATURE_COLUMNS).toContain('feature_volunteer_quarantine');
   });
 });
 
@@ -283,12 +286,11 @@ describe.each(drivers)('$name driver: volunteer time quarantine', (d) => {
     await expectRule(db.volunteerQuarantine.listPending(MEMBER.admin, 999), 'INVALID_INPUT');
   });
 
-  it('logs everything directly and closes the desk while the flag is off', async () => {
+  it('has no off switch since Sprint 11 Revision 8.0: the guards keep holding entries', async () => {
     const db = await d.make();
-    await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { feature_volunteer_quarantine: false });
-    expect(isQuarantinedHours(await db.activityTime.logHours(MEMBER.member, 3, 8, DAY))).toBe(false);
-    expect(d.count(db, 'VolunteerQuarantine')).toBe(0);
-    await expectRule(db.volunteerQuarantine.listPending(MEMBER.admin, 1), 'FEATURE_DISABLED');
-    expect(await db.volunteerQuarantine.listReturned(MEMBER.member)).toEqual([]);
+    await expectRule(db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { feature_volunteer_quarantine: false } as never), 'INVALID_INPUT');
+    expect(isQuarantinedHours(await db.activityTime.logHours(MEMBER.member, 3, 8, DAY))).toBe(true);
+    expect(d.count(db, 'VolunteerQuarantine')).toBe(1);
+    expect(await db.volunteerQuarantine.listPending(MEMBER.admin, 1)).toHaveLength(1);
   });
 });

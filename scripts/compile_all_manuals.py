@@ -13,6 +13,10 @@
     py scripts/compile_all_manuals.py --only admin --input custom.md --output custom.pdf --base docs
                                       --prepared-for "St. Mary's Cathedral Council 15295"
                                                  one council's custom copy (Sprint 7H; /api/council/compile-manual)
+    py scripts/compile_all_manuals.py --only executive --input custom.md --output custom.pdf --base docs
+                                      --disabled-modules feature_photo_gallery,feature_loaner_library
+                                                 Sprint 11 Revision 8.0: a council copy marks the sections of each
+                                                 switched-off premium module with a 'disabled' banner
     py scripts/compile_all_manuals.py --only pilot-kit
                                                  the Conference Room Pilot scripts and 11x17 posters only
                                                  (scripts/pilot_kit_pdf.py; a full run compiles them after the guides)
@@ -31,11 +35,18 @@ Each guide has its own title, its own closing disclaimer and its own wording che
 the renamed screens ('Council Artifacts', 'Donations History', 'Credentials Vault'); both guides must avoid the retired
 screen names and corporate jargon. A failed check prints each offending line and exits with status 2 before any PDF
 is written. An image the guide names but the disk does not have is left out with a warning, as before.
+
+Sprint 11 Revision 8.0: the generic guides in docs/ always describe every module. A council's custom copy names the
+council's switched-off modules (--disabled-modules, the feature flag names of packages/shared/src/features.ts), and
+every section whose heading matches one of them gets a '⚠️ This premium module is currently disabled' banner right
+under its heading (disabled_module_banners). The text of the section itself is left as it is.
 """
 from __future__ import annotations
 
 import argparse
+import re
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -119,6 +130,68 @@ MANUALS = (
 )
 
 
+# Sprint 11 Revision 8.0: each switchable module's name and the headings of its sections. The keys are the flag names
+# of packages/shared/src/features.ts (FEATURE_FLAG_NAMES) and the names its FEATURE_FLAG_LABELS; a test keeps them equal.
+MODULE_SECTIONS: dict[str, tuple[str, str]] = {
+    'flag_mobile_elections': ('Officer elections', r'election|nomination|appointment|ballot'),
+    'flag_fundraising_inflow': ('Fundraising inflow', r'\bdonations?\b(?! workflow)'),
+    'flag_charity_proposals': ('Charity proposals', r'charity grant|charity request|propose a charity'),
+    'flag_meeting_management': ('Meeting management', r'meeting|cadence|agenda'),
+    'feature_expense_reporting': ('Expense reporting', r'expense'),
+    'feature_faith_center': ('Faith Center', r'faith center|prayer|devotion'),
+    'feature_constitutional_advisor': ('Constitutional Advisor', r'constitutional advisor'),
+    'feature_council_bylaws': ('Council bylaws', r'bylaws'),
+    'feature_council_history': ('Council History & Archive Vault', r'annals|diary|oral histor|in memoriam|team legacy|council history'),
+    'feature_live_meeting_console': ('Live meeting console', r'live meeting|secret ballot|hand tall'),
+    'feature_capital_assets': ('Capital asset tracking', r'\basset'),
+    'feature_charity_registry': ('Global charity registry', r'verified charit|charities registry|global charit'),
+    'feature_document_compilation': ('Document compilation pipelines', r'custom guide'),
+    'feature_photo_gallery': ('Photo Gallery & Media Center', r'gallery|share photos|meeting photo|photo from the meeting'),
+    'feature_lessons_registry': ('Lessons & Knowledge Registries', r'lessons registry|knowledge archive'),
+    'feature_marketing_factory': ('Marketing Factory', r'marketing|flyer'),
+    'feature_loaner_library': ('Cross-Council Loaner Library', r'loaner'),
+    'feature_advanced_audits': ('Advanced Financial Audits', r'1295|semiannual audit|trustee audit'),
+}
+
+DISABLED_BANNER = '⚠️ This premium module is currently disabled'
+
+HEADING = re.compile(r'^(#{2,4})\s+(.*\S)\s*$')
+
+
+def parse_disabled_modules(value: str) -> list[str]:
+    """The comma-separated flag names of --disabled-modules, each one a known module; an unknown name is an error."""
+    names = [n.strip() for n in value.split(',') if n.strip()]
+    unknown = [n for n in names if n not in MODULE_SECTIONS]
+    if unknown:
+        raise argparse.ArgumentTypeError(f'unknown module(s): {", ".join(unknown)}; the modules are {", ".join(MODULE_SECTIONS)}')
+    return names
+
+
+def disabled_module_banners(markdown: str, disabled: list[str]) -> str:
+    """Puts the disabled banner under every heading (levels 2-4) that matches a switched-off module, once per module.
+
+    With no module switched off the guide comes back unchanged, so a generic guide always shows everything.
+    """
+    if not disabled:
+        return markdown
+    rules = [(MODULE_SECTIONS[n][0], re.compile(MODULE_SECTIONS[n][1], re.IGNORECASE)) for n in disabled]
+    out: list[str] = []
+    in_code = False
+    for line in markdown.split('\n'):
+        out.append(line)
+        if line.lstrip().startswith('```'):
+            in_code = not in_code
+        match = None if in_code else HEADING.match(line)
+        if not match:
+            continue
+        labels = [label for label, rule in rules if rule.search(match.group(2))]
+        if labels:
+            out.append('')
+            out.append(f'> {DISABLED_BANNER} for this council: **{", ".join(labels)}**. '
+                       'A Super Admin can switch it on in the Master Feature Deployment Grid.')
+    return '\n'.join(out)
+
+
 def use(manual: Manual) -> None:
     """Points the shared layout at one manual: its title page, PDF metadata, wording check and disclaimer."""
     layout.DOCUMENT_TITLE = manual.title
@@ -136,7 +209,15 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument('--output', type=Path, help='where to write the PDF instead of docs/ (needs --only)')
     parser.add_argument('--base', type=Path, help="the folder the guide's image links are relative to (default: the input's folder)")
     parser.add_argument('--prepared-for', default='', help='the council named on the title page')
+    parser.add_argument(
+        '--disabled-modules',
+        type=parse_disabled_modules,
+        default=[],
+        help="the council's switched-off modules, comma-separated feature flag names (a council copy only)",
+    )
     args = parser.parse_args(argv)
+    if args.disabled_modules and not args.input:
+        parser.error('--disabled-modules marks a council copy, so it needs --input')
     if (args.input or args.output) and args.only in (None, 'pilot-kit'):
         parser.error('--input and --output need --only with one guide')
     if args.only == 'pilot-kit':
@@ -164,7 +245,17 @@ def main(argv: list[str] | None = None) -> None:
 
     for manual in chosen:
         use(manual)
-        layout.compile_guide(source_of(manual), args.output or (ROOT / manual.output), args.base)
+        source = source_of(manual)
+        if not args.disabled_modules:
+            layout.compile_guide(source, args.output or (ROOT / manual.output), args.base)
+            continue
+        # Sprint 11 Revision 8.0: the council copy with its disabled banners, laid out from a temporary file; the images
+        # are still read from the copy's own folder (or --base).
+        marked = disabled_module_banners(source.read_text(encoding='utf-8'), args.disabled_modules)
+        with tempfile.TemporaryDirectory() as work:
+            copy = Path(work) / source.name
+            copy.write_text(marked, encoding='utf-8')
+            layout.compile_guide(copy, args.output or (ROOT / manual.output), args.base or source.parent)
     # Phase 7I: a full run also compiles the pilot kit into docs/ (a custom copy, --only, does not).
     if args.only is None:
         pilot_kit_pdf.compile_pilot_kit()

@@ -5,7 +5,7 @@
 //     Sprint 6A patch: bigger tiles. Sprint 8S Revision 4: signing in unlocks the whole app, so a tap no longer asks
 //     for Face ID or a fingerprint (lib/pocket-gate.ts is gone). Every tap waits in a queue and the member drags the
 //     Slide to Log Hours bar (components/SwipeToConfirm.tsx) to save them, so a pocket brush logs nothing.
-//   - A shift I worked (only while the council keeps flag_complex_shifts on): pick a shift (back to the council's logging
+//   - A shift I worked: pick a shift (back to the council's logging
 //     window, Council.volunteer_logging_window_days since Sprint 7E), then
 //     step the time in 15-minute steps and save. A shift with no hours logged yet starts at its own length
 //     (shifts.getShiftDefaultLength, Sprint 5Y-6).
@@ -38,7 +38,7 @@ import {
 } from '@kofc/shared';
 import { SwipeToConfirm } from '@/components/SwipeToConfirm';
 import { AppInput, AppText, Button, Card, EmptyState, Field, Loading, Notice, Screen, Section } from '@/components/ui';
-import { useFeatureFlags, useUser } from '@/lib/app-context';
+import { useUser } from '@/lib/app-context';
 import { useTheme } from '@/lib/layout-mode';
 import { describeError, useLoad } from '@/lib/use-async';
 import { db } from '@/services/db';
@@ -535,9 +535,7 @@ function ReturnedReports({ onToast }: { onToast: (toast: Toast) => void }) {
 
 export default function LogScreen() {
   const { color, large } = useTheme();
-  const shiftsOn = useFeatureFlags().flag_complex_shifts;
-  const [chosen, setMode] = useState<Mode>('activity');
-  const mode = shiftsOn ? chosen : 'activity';
+  const [mode, setMode] = useState<Mode>('activity');
   const toast = useToast();
   const tracker = useActivityTracker(toast.show);
   const slider = mode === 'activity' && tracker.queuedQuarters > 0;
@@ -550,7 +548,7 @@ export default function LogScreen() {
             Report Hours
           </AppText>
           <ReturnedReports onToast={toast.show} />
-          {shiftsOn ? <Segmented value={mode} onChange={setMode} /> : null}
+          <Segmented value={mode} onChange={setMode} />
           {mode === 'activity' ? <ActivityGrid tracker={tracker} /> : <ShiftReport onToast={toast.show} />}
           <View style={{ height: large ? 160 : 72 }} />
         </Screen>

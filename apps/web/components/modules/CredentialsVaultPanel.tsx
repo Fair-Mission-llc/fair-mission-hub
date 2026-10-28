@@ -8,6 +8,7 @@ import { useState, type FormEvent } from 'react';
 import { canAdministerCouncil, councilEmailGateway, councilLabel, describeError, REDACTED_SECRET, type CredentialKey, type CredentialStatus } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { EmailGatewayPanel, gatewayOnServer } from '@/components/EmailGatewayPanel';
+import { TwoFactorDeliveryPanel } from '@/components/TwoFactorSection';
 import { Button, Field, Input, Notice, PageTitle, Panel, Textarea } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -278,6 +279,8 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !ho
       {mayEdit ? (
         <div className="flex flex-col gap-4">
           <EmailGatewayPanel key={`email-${councilId}`} councilId={councilId} onChanged={reload} />
+          {/* Sprint 11 Revision 8.0: which second-step channels the portal can deliver for this council. */}
+          <TwoFactorDeliveryPanel emailGatewayConnected={emailOn} />
           <SecretPanel key={`drive-${councilId}`} card={DRIVE_CARD} councilId={councilId} saved={drive} onChanged={reload} />
           <SecretPanel key={`copilot-${councilId}`} card={COPILOT_CARD} councilId={councilId} saved={copilot} onChanged={reload} />
           <SecretPanel key={`ocr-endpoint-${councilId}`} card={OCR_ENDPOINT_CARD} councilId={councilId} saved={ocrEndpoint} onChanged={reload} />

@@ -27,8 +27,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const session = await requirePortalSession(req, mayUse);
   if ('denied' in session) return session.denied;
-  // Sprint 11 Revision 7.0: the flyer factory is a premium module (feature_document_compilation).
-  const off = await featureSwitchedOff(session.actor.councilId, 'feature_document_compilation');
+  // Sprint 11 Revision 7.0: the flyer factory is a premium module; Sprint 11 Revision 8.0 gave it its own switch.
+  const off = await featureSwitchedOff(session.actor.councilId, 'feature_marketing_factory');
   if (off) return off;
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
 

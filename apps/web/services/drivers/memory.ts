@@ -4245,12 +4245,11 @@ export class MemoryDataService implements DataService {
 
   /**
    * Why a time entry must be held for review (volunteer-quarantine.ts quarantineReasons), or [] to log it - always [] for
-   * an exempt member or while their council's feature_volunteer_quarantine flag is off.
+   * an exempt member. Sprint 11 Revision 8.0: the guards are a core system, with no switch.
    */
   private quarantineReasonsFor(s: MemoryStore, member: Row, entry: QuarantineEntry): string[] {
     const memberId = member.id as number;
     const council = s.rows('Council').find((c) => c.id === member.CouncilID);
-    if (!councilFeatureFlags(council as Partial<Council> | undefined).feature_volunteer_quarantine) return [];
     const logger = {
       memberType: this.memberTypeName(s, member.MemberTypeID as number),
       roles: this.rolesFor(s, memberId).map((r) => r.Role),
@@ -4315,14 +4314,13 @@ export class MemoryDataService implements DataService {
     return { quarantined: { ...row } as unknown as VolunteerQuarantine };
   }
 
-  /** A desk decision's held row, after the reviewer, flag and PENDING checks; RECORD_NOT_FOUND for an unknown id. */
+  /** A desk decision's held row, after the reviewer and PENDING checks; RECORD_NOT_FOUND for an unknown id. */
   private requireReviewableHold(s: MemoryStore, actorId: number, quarantineId: number): Row {
     const actor = this.memberWriteActor(s, actorId);
     const row = s.rows('VolunteerQuarantine').find((q) => q.id === quarantineId);
     if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No held time entry with id ${quarantineId}.`, { quarantineId });
     const councilId = row.council_id as number;
     assertMayReviewQuarantine(actor, councilId);
-    assertFeatureEnabled(councilId, 'feature_volunteer_quarantine', s.rows('Council').find((c) => c.id === councilId) as GateCouncil | undefined);
     assertQuarantinePending(row as unknown as VolunteerQuarantine);
     return row;
   }
@@ -4467,7 +4465,6 @@ export class MemoryDataService implements DataService {
       const council = s.rows('Council').find((c) => c.id === councilId);
       if (!council) throw new BusinessRuleError('INVALID_INPUT', `No council with id ${councilId}.`, { councilId });
       assertMayReviewQuarantine(actor, councilId);
-      assertFeatureEnabled(councilId, 'feature_volunteer_quarantine', council as GateCouncil);
       const rows = s
         .rows('VolunteerQuarantine')
         .filter((q) => q.council_id === councilId && q.clearance_status === 'PENDING')
@@ -4541,9 +4538,7 @@ export class MemoryDataService implements DataService {
 
     listReturned: async (actorId) => {
       const s = await this.ready();
-      const member = this.requireMember(s, actorId);
-      const council = s.rows('Council').find((c) => c.id === member.CouncilID);
-      if (!councilFeatureFlags(council as Partial<Council> | undefined).feature_volunteer_quarantine) return [];
+      this.requireMember(s, actorId);
       const rows = s
         .rows('VolunteerQuarantine')
         .filter((q) => q.user_id === actorId && q.clearance_status === 'DRAFT')
@@ -4569,7 +4564,6 @@ export class MemoryDataService implements DataService {
         if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No returned time entry with id ${quarantineId}.`, { quarantineId });
         assertOwnsQuarantine(actorId, row as unknown as VolunteerQuarantine);
         const councilId = row.council_id as number;
-        assertFeatureEnabled(councilId, 'feature_volunteer_quarantine', s.rows('Council').find((c) => c.id === councilId) as GateCouncil | undefined);
         assertQuarantineDraft(row as unknown as VolunteerQuarantine);
         const activityType = row.activity_type as VolunteerQuarantineActivityType;
         const activityId = row.activity_id as number;

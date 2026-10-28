@@ -7,10 +7,11 @@
 // saved at once; it redraws the phone app in large bold white type on black with 140-point tap areas.
 import { enrollFaceId, faceIdSupported, forgetRememberedPasskey, rememberedPasskey } from '@/lib/webauthn-client';
 import { useEffect, useState } from 'react';
-import { describeError, LARGE_TEXT_TOGGLE_LABEL, MEMBER_BIOGRAPHY_MAX_LENGTH, prefersLargeText, type Member } from '@kofc/shared';
+import { councilEmailGateway, describeError, LARGE_TEXT_TOGGLE_LABEL, MEMBER_BIOGRAPHY_MAX_LENGTH, prefersLargeText, type Member } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { MemberAvatar } from '@/components/MemberAvatar';
 import { ProfileExtensionsEditor } from '@/components/ProfileExtensionsEditor';
+import { TwoFactorSection } from '@/components/TwoFactorSection';
 import { Button, cx, Field, Input, Notice, PageTitle, Panel, Pill, Switch, Textarea } from '@/components/ui';
 import { formatPhone } from '@/lib/format';
 import { useSession, useUser } from '@/lib/session';
@@ -313,6 +314,11 @@ function Profile() {
     profileChanged();
   };
   const council = useLoad(() => db.councils.get(user.councilId), [user.councilId]);
+  // Sprint 11 Revision 8.0: the passkey facts the Two-Factor Authentication rows read, kept here so FaceID setup updates them.
+  const [passkey, setPasskey] = useState<{ supported: boolean; remembered: string | null }>({ supported: false, remembered: null });
+  useEffect(() => {
+    setPasskey({ supported: faceIdSupported(), remembered: rememberedPasskey()?.username ?? null });
+  }, []);
 
   if (member.error) return <Notice tone="error">{member.error}</Notice>;
   if (!member.data) return <p className="text-sm text-muted">Loading your profile…</p>;
@@ -343,9 +349,18 @@ function Profile() {
           <p className="mt-4 text-xs text-muted">Your name, member number, degree and type are kept by your council&apos;s admins. Ask them to correct these.</p>
         </Panel>
         <div className="flex flex-col gap-4">
-          <Panel title="Sign in with FaceID">
-            <FaceIdSetup />
-          </Panel>
+          <TwoFactorSection
+            facts={{
+              phone: m.Phone,
+              email: m.Email,
+              emailGatewayConnected: councilEmailGateway(council.data) !== null,
+              passkeySupported: passkey.supported,
+              passkeyOnThisDevice: passkey.remembered !== null,
+            }}
+            passkeySetup={
+              passkey.supported ? <FaceIdSetup remembered={passkey.remembered} onChange={(remembered) => setPasskey((p) => ({ ...p, remembered }))} /> : null
+            }
+          />
           <Panel title="Display settings">
             <DisplaySettings member={m} onSaved={reloadOwn} />
           </Panel>
@@ -368,17 +383,12 @@ function Profile() {
  * Sprint 10 Revision 5.0: sets 'Sign in with FaceID' up on this browser (lib/webauthn-client.ts). The device's face or
  * fingerprint check (Face ID, Touch ID, Windows Hello) creates a passkey whose public key the server keeps; the sign-in
  * card then signs the member in with it. 'Forget on this computer' only drops the browser's reminder.
+ * Sprint 11 Revision 8.0: drawn inside the passkey row of the Two-Factor Authentication section, which owns the state.
  */
-function FaceIdSetup() {
-  const [supported, setSupported] = useState(false);
-  const [remembered, setRemembered] = useState<string | null>(null);
+function FaceIdSetup({ remembered, onChange }: { remembered: string | null; onChange: (remembered: string | null) => void }) {
+  const setRemembered = onChange;
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
-  useEffect(() => {
-    setSupported(faceIdSupported());
-    setRemembered(rememberedPasskey()?.username ?? null);
-  }, []);
-  if (!supported) return <p className="text-sm text-muted">This browser cannot use FaceID or fingerprint sign-in.</p>;
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm">

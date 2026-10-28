@@ -14,13 +14,12 @@ import {
 import { drivers, expectRule, MEMBER } from './helpers';
 
 const superAdmin = { memberId: 1, councilId: 1, memberType: 'Super Admin' as const, isOfficer: true, roles: ['Grand Knight'] };
-// The five Sprint 6A modules off; the Sprint 6R switches (tests/pre-pilot-alignment.test.ts) stay on.
+// The Sprint 6A modules off (event shifts became a core system in Sprint 11 Revision 8.0); the Sprint 6R switches stay on.
 const allOff: FeatureFlags = {
   ...ALL_FEATURES_ON,
   flag_mobile_elections: false,
   flag_fundraising_inflow: false,
   flag_charity_proposals: false,
-  flag_complex_shifts: false,
   flag_meeting_management: false,
 };
 
@@ -36,10 +35,10 @@ describe('feature flag rules', () => {
 
   it('hides each switched-off module but keeps the financial engine and the service logs', () => {
     const areas = portalAreas(superAdmin, allOff);
-    for (const gone of ['elections', 'elections/appointments', 'donations', 'charities/propose', 'charities/vetting', 'events', 'meetings', 'meetings/cadence', 'meetings/live']) {
+    for (const gone of ['elections', 'elections/appointments', 'donations', 'charities/propose', 'charities/vetting', 'meetings', 'meetings/cadence', 'meetings/live']) {
       expect(areas).not.toContain(gone);
     }
-    for (const kept of ['home', 'ledger', 'expenses', 'finance/ledger', 'finance/balance-sheet', 'financials/budget', 'activities', 'charities/queue']) {
+    for (const kept of ['home', 'events', 'ledger', 'expenses', 'finance/ledger', 'finance/balance-sheet', 'financials/budget', 'activities', 'charities/queue']) {
       expect(areas).toContain(kept);
     }
   });
@@ -61,15 +60,17 @@ describe('feature flag rules', () => {
   });
 
   it('hides the matching phone tabs and never Home or Report', () => {
-    expect(['index', 'log', 'shifts', 'meetings', 'donate'].filter((t) => mobileTabEnabled(t as never, allOff))).toEqual(['index', 'log']);
+    expect(['index', 'log', 'shifts', 'meetings', 'donate'].filter((t) => mobileTabEnabled(t as never, allOff))).toEqual(['index', 'log', 'shifts']);
     expect(mobileTabEnabled('donate', { ...ALL_FEATURES_ON, flag_fundraising_inflow: false })).toBe(false);
     expect(mobileTabEnabled('shifts', { ...ALL_FEATURES_ON, flag_fundraising_inflow: false })).toBe(true);
   });
 
   it('accepts only known flags with boolean values', () => {
-    expect(cleanFeatureFlagChanges({ flag_complex_shifts: false, flag_fundraising_inflow: true })).toEqual({ flag_complex_shifts: 0, flag_fundraising_inflow: 1 });
+    expect(cleanFeatureFlagChanges({ flag_meeting_management: false, flag_fundraising_inflow: true })).toEqual({ flag_meeting_management: 0, flag_fundraising_inflow: 1 });
     expect(() => cleanFeatureFlagChanges({ flag_unknown: true } as never)).toThrow(/not a feature flag/);
-    expect(() => cleanFeatureFlagChanges({ flag_complex_shifts: 0 } as never)).toThrow(/true or false/);
+    expect(() => cleanFeatureFlagChanges({ flag_meeting_management: 0 } as never)).toThrow(/true or false/);
+    // Sprint 11 Revision 8.0: a retired switch is refused by name.
+    expect(() => cleanFeatureFlagChanges({ flag_complex_shifts: false } as never)).toThrow(/permanent core system/);
   });
 
   it('adds exactly 15 minutes per tap and stops at 24 hours', () => {
@@ -88,9 +89,9 @@ describe.each(drivers)('$name driver: councils.setFeatureFlags', (d) => {
 
   it('lets a Super Admin switch modules off and back on, keeping the flags not named', async () => {
     const db = await d.make();
-    const off = await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_meeting_management: false, flag_complex_shifts: false });
-    expect(councilFeatureFlags(off)).toEqual({ ...ALL_FEATURES_ON, flag_meeting_management: false, flag_complex_shifts: false });
-    await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_complex_shifts: true });
+    const off = await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_meeting_management: false, flag_charity_proposals: false });
+    expect(councilFeatureFlags(off)).toEqual({ ...ALL_FEATURES_ON, flag_meeting_management: false, flag_charity_proposals: false });
+    await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_charity_proposals: true });
     expect(councilFeatureFlags(await db.councils.get(1))).toEqual({ ...ALL_FEATURES_ON, flag_meeting_management: false });
   });
 

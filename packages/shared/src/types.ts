@@ -78,7 +78,14 @@ export interface Council {
   feature_capital_assets?: number;
   feature_charity_registry?: number;
   feature_document_compilation?: number;
+  /** Retired in Sprint 11 Revision 8.0 with flag_complex_shifts and feature_volunteer_quarantine: core systems, unread. */
   feature_financial_management?: number;
+  /** BIT (Sprint 11 Revision 8.0, Schema 107): five more premium module switches (features.ts REV80_FEATURE_FLAGS). Default 1. */
+  feature_photo_gallery?: number;
+  feature_lessons_registry?: number;
+  feature_marketing_factory?: number;
+  feature_loaner_library?: number;
+  feature_advanced_audits?: number;
   /** Sprint 6R (Schema 57): the council's IRS Employer Identification Number, stored as 'NN-NNNNNNN'. NULL until entered. */
   ein_number?: string | null;
   /** Sprint 6Z (Schema 35): the council's bylaws as light markdown (bylaws.ts); written only by councils.setBylaws. */

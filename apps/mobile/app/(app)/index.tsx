@@ -1,7 +1,7 @@
 // Member Dashboard: the shifts I am signed up for (anything within two days in red), and an expense card that links to
 // My expense reports and flags any report leadership returned for changes.
 // Sprint 6A: no no-show tallies, badges or absence logs on the phone; a signup already marked as a no-show simply drops
-// off My shifts. When the council switches off flag_complex_shifts, My shifts is gone too.
+// off My shifts. (Sprint 11 Revision 8.0: event shifts are a core system now, with no switch.)
 // Sprint 5Z-Mobile-Clean: Home holds only work still ahead. Meetings live on the Meetings tab, completed events are
 // gone, and a shift drops off the minute it ends by the device clock, for every member, officers and admins included.
 // Phase 4.5: a closable Liturgical Feast or Saint Day banner sits first, just under the header.
@@ -29,7 +29,6 @@ export default function DashboardScreen() {
   const { color, space } = useTheme();
   const user = useUser();
   const { features, refreshFeatures } = useApp();
-  const shiftsOn = features.flag_complex_shifts;
   // Sprint 6R: the expense card and the Faith Center pieces follow their own council feature flags.
   const expensesOn = features.feature_expense_reporting;
   const faithOn = features.feature_faith_center;
@@ -61,20 +60,18 @@ export default function DashboardScreen() {
       {/* Sprint 10 Revision 4.0: an open Advisory Panel invitation leads Home (nothing shows without one). */}
       <AdvisoryInviteCard version={prayerVersion} />
       {/* Sprint 8S Revision 4: the volunteer's next shifts come first, before anything else on Home. */}
-      {shiftsOn ? (
-        <Section title={MY_ACTIVE_SHIFTS_TITLE}>
-          {!data ? (
-            state.loading ? <Loading /> : null
-          ) : myShifts.length === 0 ? (
-            <EmptyState message="You are not signed up for any upcoming shifts. Open the Signup Desk to volunteer." />
-          ) : (
-            myShifts.map(({ shift, event }) => {
-              const urgent = isUrgent(shift.ShiftDate, data.today);
-              return <ShiftCard key={shift.id} shift={shift} event={event} look={urgent ? 'urgent' : 'normal'} badges={urgent ? <UrgentTag /> : undefined} />;
-            })
-          )}
-        </Section>
-      ) : null}
+      <Section title={MY_ACTIVE_SHIFTS_TITLE}>
+        {!data ? (
+          state.loading ? <Loading /> : null
+        ) : myShifts.length === 0 ? (
+          <EmptyState message="You are not signed up for any upcoming shifts. Open the Signup Desk to volunteer." />
+        ) : (
+          myShifts.map(({ shift, event }) => {
+            const urgent = isUrgent(shift.ShiftDate, data.today);
+            return <ShiftCard key={shift.id} shift={shift} event={event} look={urgent ? 'urgent' : 'normal'} badges={urgent ? <UrgentTag /> : undefined} />;
+          })
+        )}
+      </Section>
       {faithOn ? <LiturgicalBanner /> : null}
       <View>
         <AppText variant="heading" accessibilityRole="header">
@@ -92,8 +89,6 @@ export default function DashboardScreen() {
           <Button title="Open the Council Dashboard" variant="secondary" onPress={() => router.push('/member-center')} />
         </Card>
       </Section>
-
-      {!shiftsOn && !data && state.loading ? <Loading /> : null}
 
       {data ? (
         <>

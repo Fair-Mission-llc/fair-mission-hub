@@ -5,6 +5,8 @@
 // premium modules (features.ts featureFlagTier). Each checkbox saves at once (councils.setFeatureFlags); a column's
 // 'Lightweight' button sets that council to LIGHTWEIGHT_FEATURE_FLAGS in one save. The drivers refuse anyone but a
 // Super Admin (SUPER_ADMIN_REQUIRED), and the page is a Super Admin area, so council Admins never see it.
+// Sprint 11 Revision 8.0: every switch is premium now. The top block lists the core systems (ALWAYS_ON_MODULES) with an
+// 'Always on' cell per council and no checkbox.
 import { useState } from 'react';
 import {
   ALWAYS_ON_MODULES,
@@ -23,10 +25,10 @@ import { useSession, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-const GROUPS = [
-  { tier: 'lightweight' as const, title: 'Lightweight footprint', note: 'On for a new council.' },
-  { tier: 'premium' as const, title: 'Premium modules', note: 'Off for a new council until a Super Admin turns them on.' },
-];
+const GROUPS = [{ tier: 'premium' as const, title: 'Premium modules', note: 'Off for a new council until a Super Admin turns them on.' }];
+
+/** The title of the grid's top block: the core systems, which have no switch. */
+export const CORE_SYSTEMS_TITLE = 'Core systems (always on)';
 
 function FlagGrid({ councils, onSaved }: { councils: Council[]; onSaved: () => Promise<void> }) {
   const user = useUser();
@@ -89,6 +91,25 @@ function FlagGrid({ councils, onSaved }: { councils: Council[]; onSaved: () => P
               })}
             </tr>
           </thead>
+          <tbody>
+            <tr className="border-t-2 border-navy bg-gold/20">
+              <th scope="rowgroup" colSpan={councils.length + 1} className="px-3 py-1.5 text-left">
+                <span className="font-serif font-bold">{CORE_SYSTEMS_TITLE}</span> <span className="text-xs text-muted">Every council, with no switch.</span>
+              </th>
+            </tr>
+            {ALWAYS_ON_MODULES.map((name, i) => (
+              <tr key={name} className={cx('border-t border-line', i % 2 === 1 && 'bg-white')}>
+                <th scope="row" className="sticky left-0 bg-inherit px-3 py-1.5 text-left align-top font-bold">
+                  {name}
+                </th>
+                {councils.map((c) => (
+                  <td key={c.id} className="px-2 py-1.5 text-center align-middle text-xs font-bold text-muted">
+                    Always on
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
           {GROUPS.map((group) => (
             <tbody key={group.tier}>
               <tr className="border-t-2 border-navy bg-gold/20">
@@ -140,8 +161,9 @@ export function FeatureFlagControlPanel({ title = 'Module switches by council' }
     <Panel title={title}>
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted">
-          Clear a box to hide that module&apos;s sidebar links, pages, desk drawers, phone app screens and buttons for every member of the council. {ALWAYS_ON_MODULES.join(', ')}{' '}
-          have no switch and always show. Nothing is deleted; ticking the box again restores the module. A new council starts with the lightweight footprint.
+          Clear a box to hide that module&apos;s sidebar links, pages, desk drawers, Navigation Guide entries, phone app screens and buttons for every member of
+          the council; the council&apos;s custom manuals mark its sections as disabled. {ALWAYS_ON_MODULES.join(', ')} are core systems: they have no switch and
+          always show. Nothing is deleted; ticking the box again restores the module. A new council starts with the lightweight footprint.
         </p>
         {councils.error ? <Notice tone="error">{councils.error}</Notice> : null}
         {councils.data ? <FlagGrid councils={councils.data} onSaved={councils.reload} /> : <p className="text-sm text-muted">Loading councils…</p>}

@@ -89,37 +89,43 @@ The navy header shows your own council, your name, your member type and your off
 ## 2. Module feature flags
 
 ### 2.1 Concept: backend logic of the flags
-Each council row has sixteen on/off columns. Each column is a module feature flag. A Super Admin sets them on the **Master Feature Deployment Grid**.
+Each council row has eighteen on/off columns. Each column is a module feature flag. A Super Admin sets them on the **Master Feature Deployment Grid**.
 
-A new council starts with the **lightweight footprint**: only **Event shifts** is on. Service hours, event communications (messages and distribution lists) and calendars have no flag and always show. Every other module is a premium module and stays off until a Super Admin turns it on. A council that was on file before this release keeps its own switches.
+Six modules are **core systems**. They have no flag and always show: service hours, event communications (messages and distribution lists), calendars, event shifts, flagged hours review and the financial management dashboards. The grid lists them at the top under **Core systems (always on)**.
+
+A new council starts with the **lightweight footprint**: the core systems only. Every flag is a premium module and stays off until a Super Admin turns it on. A council that was on file before this release keeps its own switches.
 
 | Flag column | Label in the Master Feature Deployment Grid | Web pages hidden when off | Phone items hidden when off |
 | --- | --- | --- | --- |
 | `flag_mobile_elections` | **Officer elections** | Council Election Center, Appointed Leadership Matrix | None |
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
-| `flag_complex_shifts` | **Event shifts** | Event Planner, the shift tabs of the Member Actions Hub | **Signup**, and the shift mode of **Report** |
 | `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console | **Mtgs** |
 | `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit, Treasurer Ledger Audit Desk, GK Expense Authorize, Bulk Check Payments Made | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
-| `feature_council_history` | **Council history** | Council history (Team Legacy) | None |
+| `feature_council_history` | **Council History & Archive Vault** | Council history (Team Legacy), the **Fraternal Diary Entry Logs** and **Oral History Recordings** drawers of the **Historian Desk** | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
-| `feature_volunteer_quarantine` | **Flagged hours review** | The **Flagged Hours Review** drawer on the **Grand Knight Desk** of the dashboard. Members' hours also stop going to review (section 10 of the Executive Governance Manual). | None |
-| `feature_capital_assets` | **Capital asset tracking** | Council Asset Management, Loaner Library, the **Council Asset Management** drawer of the **Admin Desk** | The **Council assets** button and screen |
+| `feature_capital_assets` | **Capital asset tracking** | Council Asset Management, the **Council Asset Management** drawer of the **Admin Desk** | The **Council assets** button and screen |
 | `feature_charity_registry` | **Global charity registry** | Global Charities Registry, the **Global Charities Registry** drawer of the **Admin Desk** | None |
-| `feature_document_compilation` | **Document compilation pipelines** | Marketing Factory, the **Custom user guides** card on **Council Wide Settings**. The server also refuses the guide and flyer requests. | None |
-| `feature_financial_management` | **Financial management dashboards** | Finance Dashboard, General Ledger, Balance Sheet, Financial Audits, Annual Budget Center | None |
+| `feature_document_compilation` | **Document compilation pipelines** | The **Custom user guides** card on **Council Wide Settings**. The server also refuses the guide requests. | None |
+| `feature_photo_gallery` | **Photo Gallery & Media Center** | Photo Gallery, the **Google Drive Media Gallery Sync Board** and **Meeting Photos** drawers of the **Historian Desk** | None |
+| `feature_lessons_registry` | **Lessons & Knowledge Registries** | Lessons Registry, Operations Knowledge Archive, the archive drawers of the officer desks | None |
+| `feature_marketing_factory` | **Marketing Factory** | Marketing Factory. The server also refuses the flyer co-pilot requests. | None |
+| `feature_loaner_library` | **Cross-Council Loaner Library** | Loaner Library, the **Shared Loaner Library** drawer of the **Grand Knight Desk** | None |
+| `feature_advanced_audits` | **Advanced Financial Audits** | Financial Audits, the **Semiannual Audit Form 1295 Center** drawer of the **Financial Secretary Desk** | None |
+
+The retired columns `flag_complex_shifts`, `feature_volunteer_quarantine` and `feature_financial_management` stay in the database, but the portal does not read them. Their modules are core systems now.
 
 The flags follow four rules.
 
 1. A flag that is off hides the module from every member of the council. The rule includes Admins.
-2. A hidden desk is gone from the sidebar.
+2. A hidden desk is gone from the sidebar, the officer desks and the **Navigation Guide**.
 3. A hidden page refuses a typed web address. The phone sends a member on a hidden screen back to **Home**.
 4. A flag never deletes data. A flag that is switched back on restores the module with all records.
 
-The activity hour log, the messages, the distribution lists and the calendar have no flag. They stay on for every council.
+The council's custom manuals follow the flags too. When an Admin prints a council copy (8.11), each section about a switched-off module starts with the banner **⚠️ This premium module is currently disabled**. The general guides always describe every module.
 
 ### 2.2 Switch a module on or off
 > **Prerequisite (who can do this):** You must have Super Admin privileges. Council Admins do not see the **Master Feature Deployment Grid**.

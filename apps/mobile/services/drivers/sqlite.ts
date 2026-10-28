@@ -1027,8 +1027,11 @@ const DB_NAME = 'kofc.db';
  *     6-tier merit ladder replaces the canonization shield, Sprint 11 Revision 6.0).
  * 106: Council.feature_capital_assets, feature_charity_registry, feature_document_compilation and
  *     feature_financial_management, the premium switches of the Master Feature Deployment Grid (Sprint 11 Revision 7.0).
+ * 107: Council.feature_photo_gallery, feature_lessons_registry, feature_marketing_factory, feature_loaner_library and
+ *     feature_advanced_audits (Sprint 11 Revision 8.0); flag_complex_shifts, feature_volunteer_quarantine and
+ *     feature_financial_management are retired as core systems and no longer read.
  */
-const SCHEMA_VERSION = 106;
+const SCHEMA_VERSION = 107;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -5070,20 +5073,19 @@ export class SqliteDataService implements DataService {
 
   /**
    * Why a time entry must be held for review (volunteer-quarantine.ts quarantineReasons), or [] to log it - always [] for
-   * an exempt member or while their council's feature_volunteer_quarantine flag is off.
+   * an exempt member. Sprint 11 Revision 8.0: the guards are a core system, with no switch.
    */
   private async quarantineReasonsFor(db: SQLite.SQLiteDatabase, memberId: number, entry: QuarantineEntry): Promise<string[]> {
     const member = await db.getFirstAsync<
-      { memberType: string | null; flag: number | null } & Pick<Council, 'quarantine_max_daily_activities' | 'quarantine_max_single_hours' | 'max_shift_padding_hours'>
+      { memberType: string | null } & Pick<Council, 'quarantine_max_daily_activities' | 'quarantine_max_single_hours' | 'max_shift_padding_hours'>
     >(
-      `SELECT t.[Type] AS memberType, c.[feature_volunteer_quarantine] AS flag, c.[quarantine_max_daily_activities],
+      `SELECT t.[Type] AS memberType, c.[quarantine_max_daily_activities],
               c.[quarantine_max_single_hours], c.[max_shift_padding_hours] FROM [Member] m
          LEFT JOIN [MemberType] t ON t.[id] = m.[MemberTypeID]
          LEFT JOIN [Council] c ON c.[id] = m.[CouncilID]
         WHERE m.[id] = ?`,
       [memberId],
     );
-    if (!councilFeatureFlags({ feature_volunteer_quarantine: member?.flag ?? undefined }).feature_volunteer_quarantine) return [];
     const roles = await db.getAllAsync<{ Role: string }>(
       'SELECT r.[Role] FROM [MemberRoles] mr JOIN [Role] r ON r.[id] = mr.[RoleID] WHERE mr.[MemberID] = ?',
       [memberId],
@@ -5153,14 +5155,12 @@ export class SqliteDataService implements DataService {
     return (await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [ins.lastInsertRowId]))!;
   }
 
-  /** A desk decision's held row, after the reviewer, flag and PENDING checks; RECORD_NOT_FOUND for an unknown id. */
+  /** A desk decision's held row, after the reviewer and PENDING checks; RECORD_NOT_FOUND for an unknown id. */
   private async requireReviewableHold(db: SQLite.SQLiteDatabase, actorId: number, quarantineId: number): Promise<VolunteerQuarantine> {
     const actor = await this.memberWriteActor(db, actorId);
     const row = await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [quarantineId]);
     if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No held time entry with id ${quarantineId}.`, { quarantineId });
     assertMayReviewQuarantine(actor, row.council_id);
-    const council = await db.getFirstAsync<GateCouncil>('SELECT [id], [feature_volunteer_quarantine] FROM [Council] WHERE [id] = ?', [row.council_id]);
-    assertFeatureEnabled(row.council_id, 'feature_volunteer_quarantine', council);
     assertQuarantinePending(row);
     return row;
   }
@@ -5321,10 +5321,9 @@ export class SqliteDataService implements DataService {
     listPending: async (actorId, councilId) => {
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
-      const council = await db.getFirstAsync<GateCouncil>('SELECT [id], [feature_volunteer_quarantine] FROM [Council] WHERE [id] = ?', [councilId]);
+      const council = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Council] WHERE [id] = ?', [councilId]);
       if (!council) throw new BusinessRuleError('INVALID_INPUT', `No council with id ${councilId}.`, { councilId });
       assertMayReviewQuarantine(actor, councilId);
-      assertFeatureEnabled(councilId, 'feature_volunteer_quarantine', council);
       const rows = await db.getAllAsync<VolunteerQuarantine>(
         `SELECT * FROM [VolunteerQuarantine] WHERE [council_id] = ? AND [clearance_status] = 'PENDING'`,
         [councilId],
@@ -5418,11 +5417,6 @@ export class SqliteDataService implements DataService {
     listReturned: async (actorId) => {
       const db = await this.ready();
       await this.requireMember(db, actorId);
-      const council = await db.getFirstAsync<{ flag: number | null }>(
-        'SELECT c.[feature_volunteer_quarantine] AS flag FROM [Member] m LEFT JOIN [Council] c ON c.[id] = m.[CouncilID] WHERE m.[id] = ?',
-        [actorId],
-      );
-      if (!councilFeatureFlags({ feature_volunteer_quarantine: council?.flag ?? undefined }).feature_volunteer_quarantine) return [];
       const rows = await db.getAllAsync<VolunteerQuarantine>(
         `SELECT * FROM [VolunteerQuarantine] WHERE [user_id] = ? AND [clearance_status] = 'DRAFT'`,
         [actorId],
@@ -5460,8 +5454,6 @@ export class SqliteDataService implements DataService {
         const row = await db.getFirstAsync<VolunteerQuarantine>('SELECT * FROM [VolunteerQuarantine] WHERE [id] = ?', [quarantineId]);
         if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No returned time entry with id ${quarantineId}.`, { quarantineId });
         assertOwnsQuarantine(actorId, row);
-        const council = await db.getFirstAsync<GateCouncil>('SELECT [id], [feature_volunteer_quarantine] FROM [Council] WHERE [id] = ?', [row.council_id]);
-        assertFeatureEnabled(row.council_id, 'feature_volunteer_quarantine', council);
         assertQuarantineDraft(row);
         const owner =
           row.activity_type === 'SHIFT'

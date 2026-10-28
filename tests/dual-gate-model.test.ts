@@ -63,7 +63,7 @@ describe('workflow guards', () => {
     expect(isFeatureEnabled(7, 'flag_meeting_management')).toBe(true);
     registerCouncilGates({ id: 7, flag_meeting_management: 0 });
     expect(isFeatureEnabled(7, 'flag_meeting_management')).toBe(false);
-    expect(isFeatureEnabled(7, 'flag_complex_shifts')).toBe(true);
+    expect(isFeatureEnabled(7, 'feature_photo_gallery')).toBe(true);
     expect(isFeatureEnabled(7, 'flag_meeting_management', { id: 7, flag_meeting_management: 1 })).toBe(true);
     expect(() => assertFeatureEnabled(7, 'flag_meeting_management')).toThrow(BusinessRuleError);
     try {

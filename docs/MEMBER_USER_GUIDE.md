@@ -373,7 +373,7 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 
 **Goal:** Sign in to the web portal without typing your password.
 
-**Start point:** My Profile (header member menu) → **Sign in with FaceID** card, once; then the portal's sign-in page.
+**Start point:** My Profile (header member menu) → **Two-Factor Authentication** card → **WebAuthn biometric hardware passkeys** row, once; then the portal's sign-in page.
 
 **Steps:**
 1. Sign in with your password (2.5). Open **My Profile**.
@@ -388,6 +388,18 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 | The sign-in page has no **Sign in with FaceID** button. | The browser cannot use Face ID or fingerprint sign-in. | Use a current browser, or sign in with your password. |
 | *"FaceID sign-in is no longer set up for this account."* | Your login changed, or your council switched biometric sign-in off. | Sign in with your password. Set FaceID up again on **My Profile**. |
 | *"Your council has switched biometric sign-in off."* | The council turned off biometric sign-in. | Sign in with your password. |
+
+### 2.5.2 Concept: the Two-Factor Authentication card
+
+The **Two-Factor Authentication** card on **My Profile** has one row for each second step after your password.
+
+| Row | What it is | Status today |
+| --- | --- | --- |
+| **SMS text tokens** | A 6-digit code sent by text message to your cell phone. | **Not connected yet.** No text message is sent. |
+| **Email secure passcodes** | A one-time passcode sent to your email address. | **Not connected yet.** No passcode is sent. |
+| **WebAuthn biometric hardware passkeys** | Your device's face or fingerprint check unlocks a passkey. | Works now on Android (Chrome), iOS and iPadOS (Safari) and desktop browsers (2.5.1). |
+
+A row that says **Add contact details first** needs a phone number or email address under **Contact details**. Sign-in does not ask for a second step yet.
 
 ### 2.6 Reset a forgotten password
 

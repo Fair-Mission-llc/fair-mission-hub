@@ -58,7 +58,7 @@ describe('2. Global Lookup Tables and web FaceID', () => {
 
   it('puts Sign in with FaceID on the sign-in card and its setup on My Profile', () => {
     expect(read('apps/web/components/Shell.tsx')).toContain('<FaceIdSignIn onError={setError} />');
-    expect(read('apps/web/app/profile/page.tsx')).toContain('<FaceIdSetup />');
+    expect(read('apps/web/app/profile/page.tsx')).toContain('<FaceIdSetup remembered={passkey.remembered}') // inside the Sprint 11 Revision 8.0 2FA passkey row;
   });
 
   it('signs in only with a genuine, user-verified, forward-counting answer for this site', async () => {

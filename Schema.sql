@@ -4319,3 +4319,26 @@ ALTER TABLE [Council] ADD [feature_document_compilation] BIT NOT NULL DEFAULT 1;
 GO
 ALTER TABLE [Council] ADD [feature_financial_management] BIT NOT NULL DEFAULT 1;
 GO
+-- =========================================================================
+-- Sprint 11 Revision 8.0: THE FEATURE FLAG ALIGNMENT PASS (schema version 107)
+--
+-- Five more premium module switches (features.ts REV80_FEATURE_FLAGS), set only by a Super Admin on the Master Feature
+-- Deployment Grid. DEFAULT 1 keeps every existing council as it is; councils.create stores a new council with them off.
+--   feature_photo_gallery      the photo gallery page and the Historian Desk's media and meeting photo drawers
+--   feature_lessons_registry   the lessons-learned registry and the Operations Knowledge Archive
+--   feature_marketing_factory  the marketing flyer factory and its co-pilot route (out of feature_document_compilation)
+--   feature_loaner_library     the Cross-Council Loaner Library (out of feature_capital_assets)
+--   feature_advanced_audits    the Trustees' semiannual audit and the Form 1295 center
+-- flag_complex_shifts, feature_volunteer_quarantine and feature_financial_management are retired as permanent core
+-- systems: the columns stay (the generator has no DROP COLUMN), but nothing reads them any more.
+-- =========================================================================
+ALTER TABLE [Council] ADD [feature_photo_gallery] BIT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [feature_lessons_registry] BIT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [feature_marketing_factory] BIT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [feature_loaner_library] BIT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [feature_advanced_audits] BIT NOT NULL DEFAULT 1;
+GO

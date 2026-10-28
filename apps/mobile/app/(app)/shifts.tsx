@@ -11,7 +11,6 @@ import { councilLabel, isAllHandsShift, isShiftFull, shiftStatus, signupWindow, 
 import { Dropdown, type DropdownOption } from '@/components/Dropdown';
 import { AllHandsTag, FullTag, PriorityTag, ShiftCard, type ShiftLook } from '@/components/ShiftCard';
 import { AppText, choiceStyle, Button, EmptyState, Loading, Notice } from '@/components/ui';
-import { FeatureGate } from '@/components/FeatureGate';
 import { useUser } from '@/lib/app-context';
 import { useTheme } from '@/lib/layout-mode';
 import { describeError, useLoad } from '@/lib/use-async';
@@ -159,9 +158,5 @@ function ShiftsScreenBody() {
 }
 
 export default function ShiftsScreen() {
-  return (
-    <FeatureGate flag="flag_complex_shifts">
-      <ShiftsScreenBody />
-    </FeatureGate>
-  );
+  return <ShiftsScreenBody />;
 }

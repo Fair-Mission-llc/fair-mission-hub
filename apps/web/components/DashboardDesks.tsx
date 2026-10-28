@@ -717,14 +717,9 @@ function KnowledgeArchiveDrawer({ user, councilId }: { user: SessionUser; counci
   );
 }
 
-/** The Flagged Hours Review drawer: the Volunteer Time Quarantine Desk while the council's flag is on. */
+/** The Flagged Hours Review drawer: the Volunteer Time Quarantine Desk (a core system since Sprint 11 Revision 8.0). */
 function FlaggedHoursDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
-  const flags = useFeatureFlags();
-  return flags.feature_volunteer_quarantine ? (
-    <QuarantineDesk actorId={user.memberId} councilId={councilId} />
-  ) : (
-    <Notice tone="info">The Flagged Hours Review is switched off for this council (Feature Flags), so no time entry is held for review.</Notice>
-  );
+  return <QuarantineDesk actorId={user.memberId} councilId={councilId} />;
 }
 
 /**
@@ -742,7 +737,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   const tenantType = useTenantType();
   const drawers = deskDrawersFor(user, 'grand-knight', councilId, flags, tenantType);
   const has = (id: DeskDrawerId) => drawers.some((d) => d.id === id);
-  const reviewHeld = has('flagged-hours') && flags.feature_volunteer_quarantine;
+  const reviewHeld = has('flagged-hours');
   const readsHours = has('shifts-awaiting-hours');
   const charity = useCharityPipeline(user, councilId, 'grand-knight', has('donation-workflow') || has('charity-endorsements'));
   const queue = useLoad(() => db.expenses.listAuthorizationQueue(user.memberId, councilId), [user.memberId, councilId]);
