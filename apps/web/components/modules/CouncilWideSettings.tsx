@@ -77,6 +77,7 @@ import {
   sortCouncils,
   type Council,
   type CustomManualKind,
+  councilFeatureFlags,
 } from '@kofc/shared';
 import {
   CouncilInstanceRecord,
@@ -250,7 +251,8 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
               onSave={save}
             />
             <FileRepositoryCard key={`files-${council.id}`} council={council} onSaved={onSaved} />
-            <CustomGuidesCard council={council} />
+            {/* Sprint 11 Revision 7.0: the guide compiler is a premium module. */}
+            {councilFeatureFlags(council).feature_document_compilation ? <CustomGuidesCard council={council} /> : null}
           </>
         ),
         'feature-controls': (

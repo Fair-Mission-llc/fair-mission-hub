@@ -133,7 +133,7 @@ describe('Feature Flags Control Center', () => {
     const items = setup.entries.map((e) => e.item);
     expect(items.indexOf('feature-flags')).toBe(items.indexOf('councils') + 1);
     const sidebar = read('apps/web/components/Sidebar.tsx');
-    expect(sidebar).toContain("label: 'Feature Flags Control Center'");
+    expect(sidebar).toContain("label: 'Master Feature Deployment Grid'"); // Sprint 11 Revision 7.0 rename
   });
 
   it('draws every flag for every council and saves through councils.setFeatureFlags', () => {
@@ -142,7 +142,7 @@ describe('Feature Flags Control Center', () => {
     // Sprint 8O: the grid moved to a shared component, also drawn on the Super Admin Desk.
     expect(page).toContain('<FeatureFlagControlPanel />');
     const grid = read('apps/web/components/FeatureFlagParts.tsx');
-    expect(grid).toContain('FEATURE_FLAG_NAMES.map');
+    expect(grid).toContain('FEATURE_FLAG_NAMES.filter((n) => featureFlagTier(n) === group.tier).map'); // Sprint 11 Revision 7.0 groups the rows
     expect(grid).toContain('db.councils.setFeatureFlags');
   });
 });

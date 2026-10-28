@@ -74,6 +74,11 @@ export interface Council {
   feature_live_meeting_console?: number;
   /** BIT (Sprint 7B, Schema 61): 0 switches off the volunteer time guards and hides the quarantine desk. Default 1. */
   feature_volunteer_quarantine?: number;
+  /** BIT (Sprint 11 Revision 7.0, Schema 106): the premium module switches of the Master Feature Deployment Grid. Default 1. */
+  feature_capital_assets?: number;
+  feature_charity_registry?: number;
+  feature_document_compilation?: number;
+  feature_financial_management?: number;
   /** Sprint 6R (Schema 57): the council's IRS Employer Identification Number, stored as 'NN-NNNNNNN'. NULL until entered. */
   ein_number?: string | null;
   /** Sprint 6Z (Schema 35): the council's bylaws as light markdown (bylaws.ts); written only by councils.setBylaws. */

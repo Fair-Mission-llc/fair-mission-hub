@@ -127,7 +127,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
     label: FEATURE_FLAG_LABELS[name].label,
     description: FEATURE_FLAG_LABELS[name].hint,
     deployed: flags[name],
-    managedOn: 'Feature Flags Control Center (Super Admins)',
+    managedOn: 'Master Feature Deployment Grid (Super Admins)',
     href: '/feature-flags',
   }));
   return [...capabilities, ...modules];
@@ -140,4 +140,4 @@ export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed
  * The platform's database schema version, shown under System Information. It moves with the phone database's
  * SCHEMA_VERSION (apps/mobile/services/drivers/sqlite.ts) and the Schema.sql sprint headers.
  */
-export const PLATFORM_SCHEMA_VERSION = 105;
+export const PLATFORM_SCHEMA_VERSION = 106;

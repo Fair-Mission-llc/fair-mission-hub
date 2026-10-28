@@ -113,7 +113,7 @@ export default function DashboardScreen() {
                 </AppText>
                 <Button title="My expense reports" variant="secondary" onPress={() => router.push('/expenses')} />
                 {/* Sprint 7F Extension 2: the asset managers, Deputy Grand Knight and Trustees inspect the council's property. */}
-                {canAttachAssetPhoto(user, user.councilId) ? <Button title="Council assets" variant="secondary" onPress={() => router.push('/assets')} /> : null}
+                {features.feature_capital_assets && canAttachAssetPhoto(user, user.councilId) ? <Button title="Council assets" variant="secondary" onPress={() => router.push('/assets')} /> : null}
               </Card>
             </Section>
           ) : null}

@@ -8,6 +8,11 @@
 // Sprint 6R (schema 57) adds six 'feature_*' switches beside the five 'flag_*' ones, named as the user gave them: expense
 // reporting, the Faith Center, the Constitutional Advisor, the council bylaws, the council history and the live console.
 // Sprint 7B (schema 61) adds feature_volunteer_quarantine: off, members' time logs directly and the quarantine desk hides.
+// Sprint 11 Revision 7.0 (schema 106) adds four premium switches - capital asset tracking, the Global Charities
+// Registry, the document compilation pipelines and the financial management dashboards - and the Master Feature
+// Deployment Grid (/feature-flags, also /super-admin) groups every switch as the lightweight footprint or a premium
+// module. A new council (councils.create) starts with LIGHTWEIGHT_FEATURE_FLAGS: only service hours, event
+// communications, event sign-ups and calendars show. Councils already on file keep their stored switches.
 // =========================================================================
 import type { PortalArea } from './permissions';
 import { assertValidHours, BusinessRuleError, HOURS_STEP } from './rules';
@@ -26,6 +31,10 @@ export const FEATURE_FLAG_NAMES = [
   'feature_council_history',
   'feature_live_meeting_console',
   'feature_volunteer_quarantine',
+  'feature_capital_assets',
+  'feature_charity_registry',
+  'feature_document_compilation',
+  'feature_financial_management',
 ] as const;
 export type FeatureFlagName = (typeof FEATURE_FLAG_NAMES)[number];
 
@@ -46,7 +55,35 @@ export const ALL_FEATURES_ON: FeatureFlags = {
   feature_council_history: true,
   feature_live_meeting_console: true,
   feature_volunteer_quarantine: true,
+  feature_capital_assets: true,
+  feature_charity_registry: true,
+  feature_document_compilation: true,
+  feature_financial_management: true,
 };
+
+/**
+ * Sprint 11 Revision 7.0: the lightweight footprint a new council starts with. Service hours, event communications
+ * (messages and distribution lists) and calendars have no switch and always show; event sign-ups are flag_complex_shifts.
+ * Every other module is premium and stays off until a Super Admin switches it on.
+ */
+export const LIGHTWEIGHT_FEATURE_FLAGS: FeatureFlags = {
+  ...(Object.fromEntries(Object.keys(ALL_FEATURES_ON).map((k) => [k, false])) as FeatureFlags),
+  flag_complex_shifts: true,
+};
+
+/** Sprint 11 Revision 7.0: the Super Admin page's title (/feature-flags and /super-admin). */
+export const MASTER_FEATURE_GRID_TITLE = 'Master Feature Deployment Grid';
+
+/** The modules that always show, with no switch (the rest of the lightweight footprint). */
+export const ALWAYS_ON_MODULES = ['Service hours', 'Event communications', 'Calendars'] as const;
+
+/** Sprint 11 Revision 7.0: how the Master Feature Deployment Grid groups the switches. */
+export type FeatureFlagTier = 'lightweight' | 'premium';
+export const featureFlagTier = (name: FeatureFlagName): FeatureFlagTier => (LIGHTWEIGHT_FEATURE_FLAGS[name] ? 'lightweight' : 'premium');
+
+/** The BIT column values a new council is stored with (councils.create). */
+export const lightweightFeatureColumns = (): Record<FeatureFlagName, 0 | 1> =>
+  Object.fromEntries(FEATURE_FLAG_NAMES.map((n) => [n, LIGHTWEIGHT_FEATURE_FLAGS[n] ? 1 : 0])) as Record<FeatureFlagName, 0 | 1>;
 
 /** How the master admin portal names and explains each switch. */
 export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint: string }> = {
@@ -74,6 +111,19 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
     label: 'Flagged hours review',
     hint: "The 5/5 over-reporting and +1 hour shift padding guards, and the leadership dashboard's Flagged Hours Review Desk",
   },
+  feature_capital_assets: {
+    label: 'Capital asset tracking',
+    hint: "The council asset inventory, the loaner library, the Admin Desk's asset drawer and the phone app Council Assets screen",
+  },
+  feature_charity_registry: { label: 'Global charity registry', hint: "The Global Charities Registry page and the Admin Desk's registry drawer" },
+  feature_document_compilation: {
+    label: 'Document compilation pipelines',
+    hint: 'The printable custom guide compiler and the marketing flyer factory, with their PDF routes',
+  },
+  feature_financial_management: {
+    label: 'Financial management dashboards',
+    hint: 'The finance dashboard, general ledger, balance sheet, financial audits and the Annual Budget Center',
+  },
 };
 
 /** The portal areas each flag hides when it is off. */
@@ -92,6 +142,10 @@ export const FEATURE_FLAG_AREAS: Record<FeatureFlagName, readonly PortalArea[]> 
   feature_live_meeting_console: ['meetings/live'],
   // The desk is a pane on the dashboard, not its own area; the dashboard reads the flag itself (Sprint 7B).
   feature_volunteer_quarantine: [],
+  feature_capital_assets: ['expenses/assets', 'inventory/loaner-library'],
+  feature_charity_registry: ['charities/registry'],
+  feature_document_compilation: ['resources/marketing'],
+  feature_financial_management: ['finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget'],
 };
 
 /** The phone app's tabs (route names under app/(app)) that a flag hides when it is off. */
@@ -112,6 +166,11 @@ export const FEATURE_FLAG_MOBILE_TABS: Record<FeatureFlagName, readonly MobileTa
   feature_council_history: [],
   feature_live_meeting_console: [],
   feature_volunteer_quarantine: [],
+  // The phone's Council Assets screen is not a tab either; it reads feature_capital_assets itself.
+  feature_capital_assets: [],
+  feature_charity_registry: [],
+  feature_document_compilation: [],
+  feature_financial_management: [],
 };
 
 /** A council row's flags; a missing or NULL column reads as on. */

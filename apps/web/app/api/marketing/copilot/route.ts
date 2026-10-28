@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { buildCollateralPrompt, canOpenMarketingFactory, cleanCopilotPrompt, describeError } from '@kofc/shared';
 import { askCopilotStudio, copilotConnected, CopilotGatewayError } from '@/services/marketing/copilot-gateway';
+import { featureSwitchedOff } from '@/services/server/feature-gate';
 import { requirePortalSession } from '@/services/server/session';
 
 const mayUse = (_actor: unknown, claims: Parameters<typeof canOpenMarketingFactory>[0]) => canOpenMarketingFactory(claims);
@@ -26,6 +27,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const session = await requirePortalSession(req, mayUse);
   if ('denied' in session) return session.denied;
+  // Sprint 11 Revision 7.0: the flyer factory is a premium module (feature_document_compilation).
+  const off = await featureSwitchedOff(session.actor.councilId, 'feature_document_compilation');
+  if (off) return off;
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
 
   let prompt: string;

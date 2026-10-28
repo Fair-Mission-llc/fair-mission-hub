@@ -571,6 +571,7 @@ import {
   buildReturnedEntries,
   quarantineResubmitText,
   councilFeatureFlags,
+  lightweightFeatureColumns,
   HOURS_STEP,
   isQuarantineExempt,
   quarantineActivityKey,
@@ -1600,7 +1601,8 @@ export class MemoryDataService implements DataService {
       const clean = cleanCouncil(council);
       return s.transaction(() => {
         assertRecordValueUnique('Council', s.rows('Council'), 'CouncilNumber', clean.CouncilNumber, 'by another council');
-        const row = s.insert('Council', rowValues(COUNCIL_COLUMNS, clean));
+        // Sprint 11 Revision 7.0: a new council starts with the lightweight footprint; a Super Admin switches modules on.
+        const row = s.insert('Council', { ...rowValues(COUNCIL_COLUMNS, clean), ...lightweightFeatureColumns() });
         // Sprint 11 Revision 5.0: a State Council instance starts with its own checking account and books.
         if (clean.council_level === 'STATE') {
           for (const a of STATE_COUNCIL_TEMPLATE_ACCOUNTS) s.insert('GLAccount', { CouncilID: row.id, AccountName: a.AccountName, AccountType: a.AccountType, IsVirtualGoal: 0, TargetGoalAmount: 0 });

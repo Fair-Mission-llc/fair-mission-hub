@@ -21,7 +21,7 @@
 // Practice Sandbox master switch: on adds the practice members and fundraisers, off purges them.
 import { useEffect, useState } from 'react';
 import {
-  ADMIN_DESK_DRAWERS,
+  adminDeskDrawersFor,
   ADMIN_DESK_TITLE,
   ADMIN_DESK_TOP_PANELS,
   ADMIN_MANUAL,
@@ -45,7 +45,7 @@ import { CredentialsVaultPanel } from '@/components/modules/CredentialsVaultPane
 import { GlobalCharitiesRegistry } from '@/components/modules/GlobalCharitiesRegistry';
 import { SetupWizard, setupWizardWasDone } from '@/components/modules/SetupWizard';
 import { Button, cx, EmbeddedModuleContext, HelpTip, Notice, PageTitle, Switch } from '@/components/ui';
-import { useTenantType, useUser } from '@/lib/session';
+import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -275,7 +275,9 @@ export function AdminDesk() {
   useAutoOpenWizard(() => setWizardOpen(true));
   // Every drawer lands closed; one opens at a time, its panel drawn to the right of the rail.
   const [open, setOpen] = useState<AdminDeskDrawerId | null>(null);
-  const drawer = ADMIN_DESK_DRAWERS.find((d) => d.id === open) ?? null;
+  // Sprint 11 Revision 7.0: a premium module switched off takes its drawer off the desk.
+  const drawers = adminDeskDrawersFor(useFeatureFlags());
+  const drawer = drawers.find((d) => d.id === open) ?? null;
   return (
     <>
       {wizardOpen ? (
@@ -298,7 +300,7 @@ export function AdminDesk() {
       </EmbeddedModuleContext.Provider>
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <nav aria-label="Admin Desk drawers" className="flex flex-col gap-2">
-          {ADMIN_DESK_DRAWERS.map((d, i) => {
+          {drawers.map((d, i) => {
             const here = d.id === open;
             return (
               <button

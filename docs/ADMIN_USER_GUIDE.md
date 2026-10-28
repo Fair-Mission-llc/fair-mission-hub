@@ -89,9 +89,11 @@ The navy header shows your own council, your name, your member type and your off
 ## 2. Module feature flags
 
 ### 2.1 Concept: backend logic of the flags
-Each council row has twelve on/off columns. Each column is a module feature flag. A new council has every flag on.
+Each council row has sixteen on/off columns. Each column is a module feature flag. A Super Admin sets them on the **Master Feature Deployment Grid**.
 
-| Flag column | Label in the Feature Flags Control Center | Web pages hidden when off | Phone items hidden when off |
+A new council starts with the **lightweight footprint**: only **Event shifts** is on. Service hours, event communications (messages and distribution lists) and calendars have no flag and always show. Every other module is a premium module and stays off until a Super Admin turns it on. A council that was on file before this release keeps its own switches.
+
+| Flag column | Label in the Master Feature Deployment Grid | Web pages hidden when off | Phone items hidden when off |
 | --- | --- | --- | --- |
 | `flag_mobile_elections` | **Officer elections** | Council Election Center, Appointed Leadership Matrix | None |
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
@@ -105,6 +107,10 @@ Each council row has twelve on/off columns. Each column is a module feature flag
 | `feature_council_history` | **Council history** | Council history (Team Legacy) | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
 | `feature_volunteer_quarantine` | **Flagged hours review** | The **Flagged Hours Review** drawer on the **Grand Knight Desk** of the dashboard. Members' hours also stop going to review (section 10 of the Executive Governance Manual). | None |
+| `feature_capital_assets` | **Capital asset tracking** | Council Asset Management, Loaner Library, the **Council Asset Management** drawer of the **Admin Desk** | The **Council assets** button and screen |
+| `feature_charity_registry` | **Global charity registry** | Global Charities Registry, the **Global Charities Registry** drawer of the **Admin Desk** | None |
+| `feature_document_compilation` | **Document compilation pipelines** | Marketing Factory, the **Custom user guides** card on **Council Wide Settings**. The server also refuses the guide and flyer requests. | None |
+| `feature_financial_management` | **Financial management dashboards** | Finance Dashboard, General Ledger, Balance Sheet, Financial Audits, Annual Budget Center | None |
 
 The flags follow four rules.
 
@@ -113,20 +119,21 @@ The flags follow four rules.
 3. A hidden page refuses a typed web address. The phone sends a member on a hidden screen back to **Home**.
 4. A flag never deletes data. A flag that is switched back on restores the module with all records.
 
-The general ledger, the budget and the activity hour log have no flag. They stay on for every council.
+The activity hour log, the messages, the distribution lists and the calendar have no flag. They stay on for every council.
 
 ### 2.2 Switch a module on or off
-> **Prerequisite (who can do this):** You must have Super Admin privileges. Council Admins do not see the Feature Flags Control Center.
+> **Prerequisite (who can do this):** You must have Super Admin privileges. Council Admins do not see the **Master Feature Deployment Grid**.
 > **Warning:** a switched-off module disappears at once for every member of the council, on the web and on the phone.
 
 **Goal:** Turn one optional module on or off for one council.
 
-**Start point:** Sidebar → System Settings → **Feature Flags Control Center**.
+**Start point:** Sidebar → System Settings → **Master Feature Deployment Grid**. The address `/super-admin` opens the same grid.
 
 **Steps:**
-1. Find the row of the module. Each row shows the label, the flag column and the pages the flag hides.
+1. Find the row of the module. The rows are in two groups: **Lightweight footprint** and **Premium modules**. Each row shows the label, the flag column and the pages the flag hides.
 2. Find the column of the council. Each column shows the council number and how many modules are on.
 3. Clear the box to hide the module. Select the box to show the module.
+4. To put a council back to the lightweight footprint, select **Lightweight** under the council number.
 
 **Expected result:** The platform saves each switch at once. Members of the council see the change the next time each page loads.
 
@@ -134,7 +141,8 @@ The general ledger, the budget and the activity hour log have no flag. They stay
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A member still sees a phone tab. | The phone read the flags before the change. | Ask the member to sign out and sign in again. |
-| *"… is not a feature flag"* | The request named an unknown flag. | Use one of the twelve flags in 3.1. |
+| *"… is not a feature flag"* | The request named an unknown flag. | Use one of the sixteen flags in 2.1. |
+| *"… is switched off for this council."* | A premium module is off. | Ask a Super Admin to turn it on in the **Master Feature Deployment Grid**. |
 
 ---
 
@@ -497,7 +505,7 @@ The page has no **Global Revenue Splits** tab and no **Reference Archives** link
 
 The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
-The page has no links to **Council Lookups** or the **Credentials Vault**. Open them from the sidebar (System Settings). The **Module & Platform Switches** links show **Feature Flags Control Center** and **Global System Parameters** to Super Admins.
+The page has no links to **Council Lookups** or the **Credentials Vault**. Open them from the sidebar (System Settings). The **Module & Platform Switches** links show **Master Feature Deployment Grid** and **Global System Parameters** to Super Admins.
 
 The **Council Instance Record** shows the council number and name, the organization type, the district, the EIN, the base dues rate, the email gateway, the date the bylaws were last saved and the database schema version. You cannot change these facts here. Each fact changes on its own page.
 
@@ -517,7 +525,7 @@ The **Council Feature Deployment Matrix** has its own drawer. The matrix shows w
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Credentials Vault** → **Email Gateway** (the link opens the vault) |
 
-**Council modules** rows: one row for each of the twelve module switches (section 2). A Super Admin changes them on the **Feature Flags Control Center**.
+**Council modules** rows: one row for each of the sixteen module switches (section 2). A Super Admin changes them on the **Master Feature Deployment Grid**. Council Admins see the status only.
 
 The card counts the rows that are on, for example *"14 of 17 deployed"*. The matrix changes nothing by itself, except the **Biometric Authentication** button.
 
@@ -613,7 +621,7 @@ The **Global System Parameters** page holds the numbers that sit above the setti
 | **Global Council Parameters Dashboard** | The base dues rate and the tenant type (Knights of Columbus council or a white-labelled organization) | One council at a time |
 | **Platform Settings** | Three cards of numbers (section 8.6) | Every council at once |
 
-The **Platform Settings** card had the name **Platform Limits** in earlier versions. The cards were on **Global Lookup Tables** before that. The **Feature Flags Control Center** holds only the on/off module switches.
+The **Platform Settings** card had the name **Platform Limits** in earlier versions. The cards were on **Global Lookup Tables** before that. The **Master Feature Deployment Grid** holds only the on/off module switches.
 
 ### 8.6 Concept: the platform settings
 | Card | On-screen label | Default | Allowed values | What the setting controls |

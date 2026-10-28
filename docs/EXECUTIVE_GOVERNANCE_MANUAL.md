@@ -236,7 +236,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Council Wide Settings** | Officers, Admins, Super Admins | Five drawers: Standard Bank Accounts, User Access & Roster Control, System Settings, Feature Controls, Council Feature Deployment Matrix | 11 |
 | **Council Lookup Tables** | Admins, finance officers | Payment methods, lists and the email gateway | 5.1 (Administrator User Guide) |
 | **Credentials Vault** | Officers, Admins, Super Admins | Sealed keys for Drive, mail and receipt reading | 5.2 (Administrator User Guide) |
-| **Feature Flags Control Center** | Super Admins | The module switches of each council | 2 (Administrator User Guide) |
+| **Master Feature Deployment Grid** | Super Admins | The module switches of each council | 2 (Administrator User Guide) |
 | **Global System Parameters** | Super Admins | Dues, organization type and platform settings | 8.5 (Administrator User Guide) |
 | **Councils** | Super Admins | The council list | 5.3 (Administrator User Guide) |
 | **Global Charities Registry** | Super Admins | The shared charity list | 5.3 (Administrator User Guide) |
@@ -263,7 +263,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
 | **Resources** | Council Artifacts, Marketing Factory, Cross-Council Loaner Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
-| **System Settings** | Councils, Feature Flags Control Center, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Archive, Supreme Council Sync, Council Lookup Tables, Credentials Vault, 🛠️ Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |
+| **System Settings** | Councils, Master Feature Deployment Grid, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Archive, Supreme Council Sync, Council Lookup Tables, Credentials Vault, 🛠️ Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |
 
 The **System Settings** pillar had the name **Setup** in earlier versions of the portal.
 
@@ -1250,7 +1250,7 @@ The rules apply to regular members only. These members are exempt. The platform 
 
 Appointed officers, such as the Financial Secretary (FS), follow the rules.
 
-A Super Admin can switch the flagged hours review off. The Super Admin turns off **Flagged hours review** in the Feature Flags Control Center (section 2 of the Administrator User Guide).
+A Super Admin can switch the flagged hours review off. The Super Admin turns off **Flagged hours review** in the Master Feature Deployment Grid (section 2 of the Administrator User Guide).
 When the switch is off, every entry counts at once. The desk is hidden. Entries that wait for review stay flagged until the switch is on again.
 
 ### 10.5 Approve or reject held volunteer time

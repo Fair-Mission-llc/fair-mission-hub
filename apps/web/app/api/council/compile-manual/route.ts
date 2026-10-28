@@ -25,6 +25,7 @@ import { NextResponse } from 'next/server';
 import { cleanCustomManualPayload, customizeManualMarkdown, customManualFileName, CUSTOM_MANUAL_SOURCES, describeError, mayCompileCustomManual, toIsoDate } from '@kofc/shared';
 import { pythonCommand, repoRoot, runPythonScript, scriptFailureAnswer } from '@/services/server/reportlab';
 import { fileManualIntoRepository } from '@/services/server/file-repository';
+import { featureSwitchedOff } from '@/services/server/feature-gate';
 import { requirePortalSession } from '@/services/server/session';
 
 export const runtime = 'nodejs';
@@ -45,6 +46,9 @@ export async function POST(req: Request) {
   if (!mayCompileCustomManual(session.actor, payload.council.id)) {
     return NextResponse.json({ message: "Only the council's Admins and officers, and Super Admins, can print its custom guides." }, { status: 403 });
   }
+  // Sprint 11 Revision 7.0: the guide compiler is a premium module (feature_document_compilation).
+  const off = await featureSwitchedOff(payload.council.id, 'feature_document_compilation');
+  if (off) return off;
 
   const root = repoRoot();
   const manual = CUSTOM_MANUAL_SOURCES[payload.guide];

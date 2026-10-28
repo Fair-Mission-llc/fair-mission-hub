@@ -39,8 +39,8 @@ const CSV_HEADER = 'Member Number,First Name,Last Name,Email,Phone,Street,City,S
 
 describe('1. schema 105', () => {
   it('moves the platform to 105 with the join date, recruiter, honorary switch, institution date and milestones', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(105);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 105;');
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(105); // Sprint 11 Revision 7.0 moved the platform on to 106.
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = 10[5-9];/);
     expect(read('Schema.sql')).toContain('(schema version 105)');
     const member = TABLES.Member!.columns;
     expect(member.find((c) => c.name === 'join_date')).toMatchObject({ notNull: false });

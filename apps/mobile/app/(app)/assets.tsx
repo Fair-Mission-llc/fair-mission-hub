@@ -5,6 +5,7 @@
 // driver checks assertMayAttachAssetPhoto. Photos are added on the web portal's asset form.
 import { Image, View } from 'react-native';
 import { driveThumbnailUrl, isDriveFileId, type CouncilAssetsInventory, type CouncilAssetStatus } from '@kofc/shared';
+import { FeatureGate } from '@/components/FeatureGate';
 import { NavStrip } from '@/components/NavStrip';
 import { AppText, Card, EmptyState, Loading, Notice, Screen } from '@/components/ui';
 import { useUser } from '@/lib/app-context';
@@ -52,7 +53,7 @@ function AssetCard({ asset }: { asset: CouncilAssetsInventory }) {
   );
 }
 
-export default function CouncilAssetsScreen() {
+function CouncilAssets() {
   const user = useUser();
   const state = useLoad(() => db.expenses.listAssetsInventory(user.memberId, user.councilId), [user.memberId, user.councilId]);
   return (
@@ -71,5 +72,14 @@ export default function CouncilAssetsScreen() {
         Photos are kept in the council Google Drive. Add or change a photo on the web portal.
       </AppText>
     </Screen>
+  );
+}
+
+/** Sprint 11 Revision 7.0: the screen closes, back to Home, while the council's feature_capital_assets switch is off. */
+export default function CouncilAssetsScreen() {
+  return (
+    <FeatureGate flag="feature_capital_assets">
+      <CouncilAssets />
+    </FeatureGate>
   );
 }

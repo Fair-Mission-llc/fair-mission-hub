@@ -4298,3 +4298,24 @@ ALTER TABLE [Council] DROP COLUMN [rank_threshold_hours];
 GO
 ALTER TABLE [Council] DROP COLUMN [rank_threshold_events];
 GO
+
+-- =========================================================================
+-- Sprint 11 Revision 7.0: THE MASTER FEATURE DEPLOYMENT GRID (schema version 106)
+--
+-- Four more module switches beside the twelve flag_* / feature_* ones (features.ts), set only by a Super Admin on the
+-- Master Feature Deployment Grid (/feature-flags, also /super-admin; councils.setFeatureFlags). DEFAULT 1 keeps every
+-- existing council as it is; councils.create stores a new council with the lightweight footprint (LIGHTWEIGHT_FEATURE_FLAGS:
+-- service hours, event communications, event sign-ups and calendars on; every premium module off).
+--   feature_capital_assets         the council asset inventory, the loaner library and the phone's Council Assets screen
+--   feature_charity_registry       the Global Charities Registry page and its Admin Desk drawer
+--   feature_document_compilation   the custom guide compiler, the marketing flyer factory and their PDF routes
+--   feature_financial_management   the finance dashboards: budget, general ledger, balance sheet, audits, charts
+-- =========================================================================
+ALTER TABLE [Council] ADD [feature_capital_assets] BIT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [feature_charity_registry] BIT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [feature_document_compilation] BIT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [feature_financial_management] BIT NOT NULL DEFAULT 1;
+GO

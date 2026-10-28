@@ -5,14 +5,16 @@
 // pages, phone tabs and buttons. Super Admins only (canOpenFeatureFlagsControlCenter), the tier the drivers enforce
 // (SUPER_ADMIN_REQUIRED). The panel used to sit on the Councils page. Sprint 8O: the grid lives in
 // components/FeatureFlagParts.tsx, shared with the Super Admin Desk's System Feature Flag Control Panel folder.
+// Sprint 11 Revision 7.0: renamed the Master Feature Deployment Grid (MASTER_FEATURE_GRID_TITLE); /super-admin draws it too.
 import { RequireArea } from '@/components/CouncilScope';
 import { FeatureFlagControlPanel } from '@/components/FeatureFlagParts';
 import { PageTitle } from '@/components/ui';
+import { MASTER_FEATURE_GRID_TITLE } from '@kofc/shared';
 
 function ControlCenter() {
   return (
     <>
-      <PageTitle>Feature Flags Control Center</PageTitle>
+      <PageTitle>{MASTER_FEATURE_GRID_TITLE}</PageTitle>
       <FeatureFlagControlPanel />
     </>
   );

@@ -573,6 +573,7 @@ import {
   buildReturnedEntries,
   quarantineResubmitText,
   councilFeatureFlags,
+  lightweightFeatureColumns,
   HOURS_STEP,
   isQuarantineExempt,
   quarantineActivityKey,
@@ -1024,8 +1025,10 @@ const DB_NAME = 'kofc.db';
  * 105: Member.join_date, recruited_by_member_id and flag_honorary_shield, Council.institution_date and the twelve
  *     Council.merit_t2_* .. merit_t5_* milestones; Council.rank_threshold_hours / rank_threshold_events dropped (the
  *     6-tier merit ladder replaces the canonization shield, Sprint 11 Revision 6.0).
+ * 106: Council.feature_capital_assets, feature_charity_registry, feature_document_compilation and
+ *     feature_financial_management, the premium switches of the Master Feature Deployment Grid (Sprint 11 Revision 7.0).
  */
-const SCHEMA_VERSION = 105;
+const SCHEMA_VERSION = 106;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1868,6 +1871,10 @@ export class SqliteDataService implements DataService {
         const rows = await db.getAllAsync<Record<string, unknown>>('SELECT [id], [CouncilNumber] FROM [Council]');
         assertRecordValueUnique('Council', rows, 'CouncilNumber', clean.CouncilNumber, 'by another council');
         id = await this.insertRecord(db, 'Council', COUNCIL_COLUMNS, clean);
+        // Sprint 11 Revision 7.0: a new council starts with the lightweight footprint; a Super Admin switches modules on.
+        const light = lightweightFeatureColumns();
+        const flagCols = Object.keys(light) as (keyof typeof light)[];
+        await db.runAsync(`UPDATE [Council] SET ${flagCols.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...flagCols.map((c) => light[c]), id]);
         // Sprint 11 Revision 5.0: a State Council instance starts with its own checking account and books.
         if (clean.council_level === 'STATE') {
           for (const a of STATE_COUNCIL_TEMPLATE_ACCOUNTS) {

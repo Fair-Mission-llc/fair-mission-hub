@@ -28,6 +28,7 @@
 // =========================================================================
 import type { MonthlySummary, VolunteerTurnout } from './contract';
 import { donationMethodKind, SecurityPrivilegeError } from './rules';
+import type { FeatureFlagName, FeatureFlags } from './features';
 
 export const ADMIN_DESK_HREF = '/admin-desk';
 export const ADMIN_DESK_TITLE = 'Admin Desk';
@@ -72,6 +73,19 @@ export const ADMIN_DESK_DRAWERS: readonly AdminDeskDrawer[] = [
   { id: 'asset-management', label: 'Council Asset Management', hint: "The council's capital assets and the Trustees' asset photos" },
   { id: 'feedback', label: 'Administrative Feedback Loops', hint: 'Send a note or bug report to the platform owner' },
 ];
+
+/** Sprint 11 Revision 7.0: the drawers a premium module switch hides when it is off. */
+export const ADMIN_DESK_DRAWER_FLAGS: Partial<Record<AdminDeskDrawerId, FeatureFlagName>> = {
+  'charities-registry': 'feature_charity_registry',
+  'asset-management': 'feature_capital_assets',
+};
+
+/** The drawers a council's switches leave on the desk, in order. */
+export const adminDeskDrawersFor = (flags: FeatureFlags): AdminDeskDrawer[] =>
+  ADMIN_DESK_DRAWERS.filter((d) => {
+    const flag = ADMIN_DESK_DRAWER_FLAGS[d.id];
+    return flag === undefined || flags[flag];
+  });
 
 export const isAdminDeskDrawerId = (value: unknown): value is AdminDeskDrawerId => ADMIN_DESK_DRAWERS.some((d) => d.id === value);
 

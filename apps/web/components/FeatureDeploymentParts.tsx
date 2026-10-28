@@ -22,6 +22,7 @@ import { useState, type ReactNode } from 'react';
 import {
   GPS_UI_SUPPRESSED,
   canEditCouncilWideSettings,
+  canOpenFeatureFlagsControlCenter,
   councilTenantType,
   describeError,
   featureDeploymentBadge,
@@ -132,7 +133,8 @@ export function FeatureDeploymentMatrix({ council, onSaved }: { council: Council
                 <Button variant="secondary" disabled={busy} onClick={() => void toggleBiometric(!r.deployed)}>
                   {r.deployed ? 'Turn off' : 'Turn on'}
                 </Button>
-              ) : r.href ? (
+              ) : r.href && (r.href !== '/feature-flags' || canOpenFeatureFlagsControlCenter(user)) ? (
+                // Sprint 11 Revision 7.0: only a Super Admin gets a link to the Master Feature Deployment Grid.
                 <Link href={r.href} className="font-bold underline">
                   {r.managedOn}
                 </Link>
@@ -209,7 +211,7 @@ export const BANK_ACCOUNT_SETTINGS_PAGES: readonly SettingsPageLink[] = [
 
 /** Feature Controls: the pages that switch modules and platform-wide parameters (Super Admins). */
 export const PLATFORM_SWITCH_PAGES: readonly SettingsPageLink[] = [
-  { area: 'feature-flags', href: '/feature-flags', label: 'Feature Flags Control Center', hint: "Switch each council's modules on or off (Super Admins)." },
+  { area: 'feature-flags', href: '/feature-flags', label: 'Master Feature Deployment Grid', hint: "Switch each council's modules on or off (Super Admins)." },
   { area: 'system-settings/global-settings', href: '/system-settings/global-settings', label: 'Global System Parameters', hint: 'Dues, organization type and the platform limits (Super Admins).' },
 ];
 

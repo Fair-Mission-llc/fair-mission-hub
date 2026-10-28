@@ -152,7 +152,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   councils: { href: '/councils', label: 'Councils', hint: 'Add, edit and delete councils and their registration profiles' },
   'feature-flags': {
     href: '/feature-flags',
-    label: 'Feature Flags Control Center',
+    label: 'Master Feature Deployment Grid',
     hint: "Switch each council's optional modules on and off",
     restrictedTo: 'Super Admins',
   },
