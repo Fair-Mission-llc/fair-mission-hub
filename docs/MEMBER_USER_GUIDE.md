@@ -1625,7 +1625,7 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 2. Read **This month**: the number of volunteers, their hours and their names.
 3. Read **Our combined devotions**: the council's totals. No member's own count shows.
 4. Read **Leaderboard**: the Top 5 volunteers with the most hours.
-5. Read **My impact**: your events, your hours, your canonization shield and your council history.
+5. Read **My impact**: your events, your hours, your merit tier and your council history. The merit tier counts this fraternal year only. It starts again every July 1.
 
 **Expected result:** The **Council Dashboard** shows the council's service and your own impact. The page shows no money.
 

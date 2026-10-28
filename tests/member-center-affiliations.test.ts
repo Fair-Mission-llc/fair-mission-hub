@@ -8,6 +8,8 @@ import {
   buildAffiliationHistory,
   buildCouncilEngagement,
   buildMemberCenter,
+  DEFAULT_MERIT_THRESHOLDS,
+  meritStanding,
   councilDevotionTotals,
   planAffiliationLog,
   portalAreas,
@@ -138,16 +140,23 @@ describe('Shared Member Center (pure)', () => {
       members: [{ id: 1, CouncilID: 1, StatusID: 1, MemberFirstName: 'A', MemberLastName: 'B' }],
       activeStatusId: 1,
     });
+    const merit = meritStanding({
+      member: { DateJoinedCouncil: '2020-01-01' },
+      roles: [],
+      metrics: { hours: 2.5, events: 1, meetings: 1, recruits: 0 },
+      thresholds: DEFAULT_MERIT_THRESHOLDS,
+      today: '2026-09-20',
+    });
     const center = buildMemberCenter({
       engagement,
       viewer: { id: 1, MemberFirstName: 'A', MemberLastName: 'B' },
       viewerLogs: [{ MemberID: 1, Hours: 2.5, date: '2026-09-02', eventId: 4 }],
-      thresholds: { hours: 3, events: 3 },
+      merit,
       devotions,
     });
-    expect(center).toMatchObject({ volunteerCount: 1, totalHours: 2.5, me: { eventsAttended: 1, hours: 2.5, rank: { level: 'Venerable' } } });
+    expect(center).toMatchObject({ volunteerCount: 1, totalHours: 2.5, me: { eventsAttended: 1, hours: 2.5, rank: { tier: { id: 'TIER_2_ACTIVE' } } } });
     expect(JSON.stringify(center)).not.toMatch(/cash|budget|ledger|amount|balance/i);
-    expect(buildMemberCenter({ engagement, viewer: { id: 1, MemberFirstName: 'A', MemberLastName: 'B' }, viewerLogs: [], thresholds: { hours: 3, events: 3 }, devotions: null }).me.rank).toBeNull();
+    expect(buildMemberCenter({ engagement, viewer: { id: 1, MemberFirstName: 'A', MemberLastName: 'B' }, viewerLogs: [], merit, devotions: null }).me.rank).toBeNull();
   });
 });
 
@@ -240,7 +249,7 @@ describe.each(drivers)('Sprint 7A Extension services ($name driver)', ({ make })
     expect(center.volunteerCount).toBe(center.volunteers.length);
     expect(center.me).toMatchObject({ memberId: MEMBER.member });
     expect(center.me.hours).toBeGreaterThanOrEqual(2);
-    expect(center.me.rank?.level).toBeDefined();
+    expect(center.me.rank?.fraternalYear).toBe('2026-2027');
     expect(center).not.toHaveProperty('finances');
     const { member } = await otherCouncil(db, 99084);
     await expectRule(db.reports.memberCenter(member.id, OWN, 2026, 9), 'COUNCIL_ACCESS_DENIED');
@@ -262,7 +271,7 @@ describe('Sprint 7A Extension screens and guide', () => {
     expect(page).toContain('<RequireArea area="member-center">');
     expect(page).toContain('db.reports.memberCenter');
     expect(page).toContain('<Leaderboard');
-    expect(page).toContain('<CanonizationShield');
+    expect(page).toContain('<MeritTierBadge');
     expect(page).not.toMatch(/formatMoney|monthlySummary|finances/);
     expect(read('apps/web/components/Sidebar.tsx')).toContain("'member-center': {");
     expect(read('apps/web/components/modules/MemberRosterDirectory.tsx')).toContain('<AffiliationHistoryCard');

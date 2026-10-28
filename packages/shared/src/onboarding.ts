@@ -7,6 +7,7 @@
 // =========================================================================
 import type { SupremeRosterRow } from './contract';
 import { csvRecords } from './finance';
+import { applyCharterRule } from './merit-tiers';
 import { APP_DISTRIBUTION, NOTIFICATION_SENDER, type EmailPayload, type NotificationPacket } from './notifications';
 import {
   assertIsoDate,
@@ -209,6 +210,12 @@ const ROSTER_HEADERS: Record<string, keyof SupremeRosterRow> = {
   joined: 'DateJoinedCouncil',
   chartermember: 'flag_charter_member',
   charter: 'flag_charter_member',
+  // Sprint 11 Revision 6.0: Supreme's First Degree / Initiation Date column -> Member.join_date.
+  firstdegreedate: 'join_date',
+  firstdegree: 'join_date',
+  initiationdate: 'join_date',
+  initiated: 'join_date',
+  firstdegreedateinitiationdate: 'join_date',
 };
 const rosterHeaderKey = (h: string) => h.toLowerCase().replace(/[^a-z0-9]/g, '');
 const REQUIRED_ROSTER_COLUMNS: (keyof SupremeRosterRow)[] = ['MemberNumber', 'MemberFirstName', 'MemberLastName', 'Email', 'DateJoinedCouncil'];
@@ -223,7 +230,8 @@ function rosterYesNo(cell: string): number | string {
 
 /**
  * Supreme's roster export (CSV with a header row) as SupremeRosterRow values: Member Number, First Name, Last Name,
- * Email, Phone, Street, Street 2, City, State, Zip, Birth Date, Degree, Date Joined and, from Sprint 7A, Charter Member (Yes/No) (header case and spacing ignored).
+ * Email, Phone, Street, Street 2, City, State, Zip, Birth Date, Degree, Date Joined, from Sprint 7A Charter Member (Yes/No)
+ * and, from Sprint 11 Revision 6.0, First Degree Date / Initiation Date (join_date, optional) (header case and spacing ignored).
  * Numbers are read as numbers; blank cells stay ''. Rejects INVALID_INPUT for a file without the member number, names,
  * email and join date columns. Each row is checked when it is synced (cleanSupremeRosterRow).
  */
@@ -248,17 +256,20 @@ export function parseSupremeRosterCsv(csv: unknown): SupremeRosterRow[] {
 /**
  * One roster row as the new member it would create in `councilId` (Active, MemberType 'Member', the First Degree when
  * none is given), checked as members.create checks it, plus a required join date. Throws INVALID_INPUT or INVALID_DATE.
+ * Sprint 11 Revision 6.0: a First Degree / Initiation Date on or before `institutionDate` + 30 days (the council's
+ * charter window) marks the member a charter member (merit-tiers.ts applyCharterRule).
  */
 export function cleanSupremeRosterRow(
   row: SupremeRosterRow,
   councilId: number,
   ids: { activeStatusId: number; memberTypeId: number },
   now: Date,
+  institutionDate?: string | null,
 ): NewMember {
   const joined = assertIsoDate(row?.DateJoinedCouncil, 'Date joined council');
   const degree = row.DegreeID == null ? 1 : row.DegreeID;
   if (!Number.isInteger(degree) || degree < 1 || degree > 4) throw invalid(`Degree must be 1 to 4; received ${String(row.DegreeID)}.`, { degree: row.DegreeID });
-  return cleanNewMember(
+  const clean = cleanNewMember(
     {
       CouncilID: councilId,
       MemberNumber: row.MemberNumber,
@@ -277,9 +288,11 @@ export function cleanSupremeRosterRow(
       MemberTypeID: ids.memberTypeId,
       DateJoinedCouncil: joined,
       flag_charter_member: row.flag_charter_member,
+      join_date: row.join_date || null,
     },
     now,
   );
+  return applyCharterRule(clean, institutionDate);
 }
 
 /** A roster row's member number, when it has a usable one. */
@@ -291,6 +304,31 @@ export function cleanRosterJoinDate(value: unknown, now: Date): string {
   const joined = assertIsoDate(value, 'Date joined council');
   if (joined > toIsoDate(now)) throw invalid(`Date joined council ${joined} cannot be in the future.`, { dateJoinedCouncil: joined });
   return joined;
+}
+
+/**
+ * Sprint 11 Revision 6.0: what a roster row changes on a member already on the roster - DateJoinedCouncil, a
+ * non-blank First Degree / Initiation Date (join_date) and the charter flag (applyCharterRule against the council's
+ * institution date). Only fields that differ are returned; {} when nothing changes. Throws INVALID_INPUT/INVALID_DATE.
+ */
+export function rosterExistingMemberChanges(
+  existing: Pick<Member, 'DateJoinedCouncil' | 'join_date' | 'flag_charter_member' | 'DateOfBirth'>,
+  row: Pick<SupremeRosterRow, 'DateJoinedCouncil' | 'join_date'>,
+  institutionDate: string | null | undefined,
+  now: Date,
+): Partial<Pick<Member, 'DateJoinedCouncil' | 'join_date' | 'flag_charter_member'>> {
+  const changes: Partial<Pick<Member, 'DateJoinedCouncil' | 'join_date' | 'flag_charter_member'>> = {};
+  const joined = cleanRosterJoinDate(row.DateJoinedCouncil, now);
+  if ((existing.DateJoinedCouncil ?? null) !== joined) changes.DateJoinedCouncil = joined;
+  let initiated = existing.join_date ?? null;
+  if (row.join_date != null && row.join_date !== '') {
+    initiated = assertIsoDate(row.join_date, 'First Degree / Initiation Date');
+    if (initiated > toIsoDate(now)) throw invalid(`First Degree / Initiation Date ${initiated} cannot be in the future.`, { joinDate: initiated });
+    if (initiated !== (existing.join_date ?? null)) changes.join_date = initiated;
+  }
+  const flagged = applyCharterRule({ join_date: initiated, flag_charter_member: existing.flag_charter_member ?? 0 }, institutionDate);
+  if (flagged.flag_charter_member !== (existing.flag_charter_member ?? 0)) changes.flag_charter_member = flagged.flag_charter_member;
+  return changes;
 }
 
 /** The default way a driver sends an email (Sprint 6B Patch): print the SendGrid request it would make, key withheld. */

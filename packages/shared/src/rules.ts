@@ -691,6 +691,9 @@ export const MEMBER_COLUMNS = [
   'DateJoinedCouncil',
   'flag_large_text_mode',
   'flag_charter_member',
+  'join_date',
+  'recruited_by_member_id',
+  'flag_honorary_shield',
 ] as const satisfies readonly (keyof NewMember)[];
 
 /** Longest Member.ProfilePhotoURL (VARCHAR(2000)). */
@@ -1680,6 +1683,10 @@ export function cleanNewMember(input: NewMember, now: Date): NewMember {
   const joined = input.DateJoinedCouncil == null || input.DateJoinedCouncil === '' ? null : assertIsoDate(input.DateJoinedCouncil, 'Date joined council');
   if (joined !== null && joined > toIsoDate(now)) throw invalid(`Date joined council ${joined} cannot be in the future.`, { dateJoinedCouncil: joined });
   if (joined !== null && joined <= dob) throw invalid(`Date joined council ${joined} must come after the date of birth.`, { dateJoinedCouncil: joined });
+  // Sprint 11 Revision 6.0: the First Degree / Initiation Date - optional, never in the future nor before their birth.
+  const initiated = input.join_date == null || input.join_date === '' ? null : assertIsoDate(input.join_date, 'First Degree / Initiation Date');
+  if (initiated !== null && initiated > toIsoDate(now)) throw invalid(`First Degree / Initiation Date ${initiated} cannot be in the future.`, { joinDate: initiated });
+  if (initiated !== null && initiated <= dob) throw invalid(`First Degree / Initiation Date ${initiated} must come after the date of birth.`, { joinDate: initiated });
   return {
     CouncilID: assertInteger(input.CouncilID, 'Council', 1),
     MemberNumber: assertInteger(input.MemberNumber, 'Member number', 1),
@@ -1703,6 +1710,9 @@ export function cleanNewMember(input: NewMember, now: Date): NewMember {
     DateJoinedCouncil: joined,
     flag_large_text_mode: bitFlag(input.flag_large_text_mode, 'flag_large_text_mode'),
     flag_charter_member: bitFlag(input.flag_charter_member, 'flag_charter_member'),
+    join_date: initiated,
+    recruited_by_member_id: input.recruited_by_member_id == null ? null : assertInteger(input.recruited_by_member_id, 'Recruited by', 1),
+    flag_honorary_shield: bitFlag(input.flag_honorary_shield, 'flag_honorary_shield'),
   };
 }
 

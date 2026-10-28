@@ -24,9 +24,8 @@
 // Desk. The card shows its button to the council's Admins and Super Admins (canAdministerCouncil), the sweep's own rule
 // (assertMaySweepInactiveMembers); the page's other readers see who may run it.
 //
-// Sprint 8C: the Canonization Rank Benchmarks card (RankThresholdsCard) moved here from the Executive Summary's
-// leaderboard. It is the only place they are edited (the council's Admins and Super Admins); everywhere else they are a
-// read-only information block.
+// Sprint 8C: the Canonization Rank Benchmarks card moved here from the Executive Summary's leaderboard. Sprint 11
+// Revision 6.0 removed it: the 6-tier merit milestones are edited in the Admin Desk's Council Lookup Tables drawer.
 //
 // Sprints 8G/8H: the Fraternal Planning & Budgeting Workflow banner leads the page (FraternalPlanningWorkflow): Draft in
 // May, Review in June, the July 1 lock that freezes the year's Annual Council Goals as read-only information blocks, and
@@ -79,7 +78,6 @@ import {
   type Council,
   type CustomManualKind,
 } from '@kofc/shared';
-import { RankThresholdsCard } from '@/components/EngagementParts';
 import {
   CouncilInstanceRecord,
   FeatureDeploymentMatrix,
@@ -235,7 +233,6 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
         'access-roster': (
           <>
             <InactivitySweepCard council={council} />
-            <RankThresholdsCard council={council} onSaved={() => void onSaved()} />
           </>
         ),
         'system-settings': (

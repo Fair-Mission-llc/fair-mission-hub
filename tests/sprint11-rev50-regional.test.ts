@@ -40,7 +40,7 @@ const admin = (memberType: string, memberId = 99) => ({ memberId, memberType, ac
 
 describe('1. schema 104', () => {
   it('moves the platform to 104 with the new tables and the QR channel rule', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(104);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(104); // Sprint 11 Revision 6.0 moved the platform on to 105.
     const schema = read('Schema.sql');
     for (const t of ['UserPasskeys', 'MemberRegionalAssignment', 'MemberRegionalCouncil']) expect(TABLES[t]).toBeDefined();
     expect(schema).toContain("CHECK ([DonationMethodURL] IS NULL OR [payment_channel] IN ('DIGITAL'))");

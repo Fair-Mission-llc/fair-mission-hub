@@ -324,16 +324,23 @@ import {
   assertMayJoinCouncilPrayers,
   assertMayClosePrayerIntention,
   addDevotionalEntry,
-  assertMaySetRankThresholds,
+  assertMaySetMeritThresholds,
   assertMaySweepInactiveMembers,
   buildCouncilEngagement,
-  canonizationRank,
+  applyCharterRule,
+  cleanInstitutionDate,
   cleanDevotionalEntry,
-  cleanRankThresholds,
-  councilRankThresholds,
+  cleanMeritThresholds,
+  councilMeritThresholds,
+  meritStanding,
+  meritThresholdColumns,
+  meritYearMetrics,
+  rosterExistingMemberChanges,
+  type MeritAttendanceRow,
+  type MeritRecruitRow,
+  type MeritStanding,
   emptyDevotionals,
   INACTIVE_STATUS,
-  memberServiceMetrics,
   memberStatusId,
   planInactivitySweep,
   planMemberLifecycle,
@@ -496,7 +503,6 @@ import {
   assertMayImportSupremeRoster,
   assertMaySyncSupremeRoster,
   cleanAgendaLineKey,
-  cleanRosterJoinDate,
   cleanSupremeRosterRow,
   describeError,
   SecurityPrivilegeError,
@@ -1015,8 +1021,11 @@ const DB_NAME = 'kofc.db';
  *     MemberRegionalAssignment and MemberRegionalCouncil (District Deputy / State Officer / State Admin jurisdictions),
  *     CouncilDonationMethod.payment_channel and the CK_CouncilDonationMethod_qr_channel rule, and the regional seed
  *     (Sprint 11 Revision 5.0).
+ * 105: Member.join_date, recruited_by_member_id and flag_honorary_shield, Council.institution_date and the twelve
+ *     Council.merit_t2_* .. merit_t5_* milestones; Council.rank_threshold_hours / rank_threshold_events dropped (the
+ *     6-tier merit ladder replaces the canonization shield, Sprint 11 Revision 6.0).
  */
-const SCHEMA_VERSION = 104;
+const SCHEMA_VERSION = 105;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1948,13 +1957,17 @@ export class SqliteDataService implements DataService {
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
 
-    setRankThresholds: async (actorId, councilId, thresholds) => {
-      const clean = cleanRankThresholds(thresholds);
+    setMeritThresholds: async (actorId, councilId, thresholds, institutionDate) => {
+      const clean = cleanMeritThresholds(thresholds);
+      const instituted = cleanInstitutionDate(institutionDate, this.now());
       const db = await this.ready();
       await db.withTransactionAsync(async () => {
-        assertMaySetRankThresholds(await this.memberWriteActor(db, actorId), councilId);
+        assertMaySetMeritThresholds(await this.memberWriteActor(db, actorId), councilId);
         await this.requireRecord(db, 'Council', councilId);
-        await db.runAsync('UPDATE [Council] SET [rank_threshold_hours] = ?, [rank_threshold_events] = ? WHERE [id] = ?', [clean.hours, clean.events, councilId]);
+        const values: Record<string, Bind> = { ...meritThresholdColumns(clean) };
+        if (instituted !== undefined) values.institution_date = instituted;
+        const cols = Object.keys(values);
+        await db.runAsync(`UPDATE [Council] SET ${cols.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...cols.map((c) => values[c]!), councilId]);
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
@@ -2777,10 +2790,11 @@ export class SqliteDataService implements DataService {
     listRoles: async (memberId) => this.rolesFor(await this.ready(), memberId),
 
     create: async (actorId, member) => {
-      const clean = cleanNewMember(member, this.now());
+      let clean = cleanNewMember(member, this.now());
       const db = await this.ready();
       let id = 0;
       await db.withTransactionAsync(async () => {
+        clean = await this.withCharterRule(db, clean);
         assertMayCreateMember(await this.memberWriteActor(db, actorId), clean, await this.memberTypeName(db, clean.MemberTypeID));
         await this.assertMemberReferences(db, clean);
         const taken = await db.getFirstAsync<{ n: number }>(
@@ -2828,7 +2842,8 @@ export class SqliteDataService implements DataService {
         const actor = await this.memberWriteActor(db, actorId);
         const existing = await db.getFirstAsync<Member>('SELECT * FROM [Member] WHERE [id] = ?', [id]);
         if (!existing) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${id}.`, { memberId: id });
-        const clean = mergeMemberChanges(existing, changes, this.now());
+        const clean = await this.withCharterRule(db, mergeMemberChanges(existing, changes, this.now()));
+        if (clean.recruited_by_member_id === id) throw new BusinessRuleError('INVALID_INPUT', 'A member cannot be recorded as their own recruiter.', { memberId: id });
         assertMayUpdateMember(actor, existing, clean, {
           current: await this.memberTypeName(db, existing.MemberTypeID),
           next: await this.memberTypeName(db, clean.MemberTypeID),
@@ -2960,18 +2975,13 @@ export class SqliteDataService implements DataService {
     return [...events, ...activities];
   }
 
-  /** Sprint 7A: the member's own devotional tally and canonization shield. */
+  /** Sprint 7A: the member's own devotional tally; Sprint 11 Revision 6.0: with their merit tier (was the shield). */
   private async devotionalProgress(db: SQLite.SQLiteDatabase, memberId: number): Promise<DevotionalProgress> {
-    const [tally, council, logs] = await Promise.all([
+    const [tally, rank] = await Promise.all([
       db.getFirstAsync<MemberDevotionals>('SELECT * FROM [MemberDevotionals] WHERE [user_id] = ?', [memberId]),
-      db.getFirstAsync<Council>('SELECT c.* FROM [Council] c JOIN [Member] m ON m.[CouncilID] = c.[id] WHERE m.[id] = ?', [memberId]),
-      this.serviceLogs(db),
+      this.meritStandingOf(db, memberId),
     ]);
-    return {
-      memberId,
-      tally: tally ?? emptyDevotionals(memberId),
-      rank: canonizationRank(memberServiceMetrics(memberId, logs), councilRankThresholds(council)),
-    };
+    return { memberId, tally: tally ?? emptyDevotionals(memberId), rank };
   }
 
   /** Inserts snapshots; the compound primary key and OR IGNORE keep an existing (locked) snapshot as it is. */
@@ -3067,6 +3077,29 @@ export class SqliteDataService implements DataService {
     await this.assertRowExists(db, 'Degree', clean.DegreeID, 'degree');
     await this.assertRowExists(db, 'MemberType', clean.MemberTypeID, 'member type');
     if (clean.WorkingStatusID != null) await this.assertRowExists(db, 'WorkingStatus', clean.WorkingStatusID, 'working status');
+    if (clean.recruited_by_member_id != null) await this.assertRowExists(db, 'Member', clean.recruited_by_member_id, 'recruiting member');
+  }
+
+  /** Sprint 11 Revision 6.0: the charter member rule against the member's council's institution date. */
+  private async withCharterRule(db: SQLite.SQLiteDatabase, clean: NewMember): Promise<NewMember> {
+    const council = await db.getFirstAsync<{ institution_date: string | null }>('SELECT [institution_date] FROM [Council] WHERE [id] = ?', [clean.CouncilID]);
+    return applyCharterRule(clean, council?.institution_date ?? null);
+  }
+
+  /** Sprint 11 Revision 6.0: the member's merit tier this fraternal year, against their own council's milestones. */
+  private async meritStandingOf(db: SQLite.SQLiteDatabase, memberId: number): Promise<MeritStanding> {
+    const [member, council, logs, attendance, members, roles] = await Promise.all([
+      db.getFirstAsync<Member>('SELECT * FROM [Member] WHERE [id] = ?', [memberId]),
+      db.getFirstAsync<Council>('SELECT c.* FROM [Council] c JOIN [Member] m ON m.[CouncilID] = c.[id] WHERE m.[id] = ?', [memberId]),
+      this.serviceLogs(db),
+      db.getAllAsync<MeritAttendanceRow>('SELECT [MemberID], [MeetingID], [CheckedInAt] FROM [LiveAttendance] WHERE [MemberID] = ?', [memberId]),
+      db.getAllAsync<MeritRecruitRow>('SELECT [id], [recruited_by_member_id], [join_date], [DateJoinedCouncil] FROM [Member] WHERE [recruited_by_member_id] = ?', [memberId]),
+      this.rolesFor(db, memberId),
+    ]);
+    const today = this.now();
+    const fraternalYear = currentFraternalYear(today);
+    const metrics = meritYearMetrics({ memberId, fraternalYear, logs, attendance, members });
+    return meritStanding({ member: member ?? {}, roles: roles.map((r) => r.Role), metrics, thresholds: councilMeritThresholds(council), today, fraternalYear });
   }
 
   /**
@@ -4822,12 +4855,12 @@ export class SqliteDataService implements DataService {
         db.getFirstAsync<Member>('SELECT * FROM [Member] WHERE [id] = ?', [actorId]),
         db.getAllAsync<MemberDevotionals>('SELECT d.* FROM [MemberDevotionals] d JOIN [Member] m ON m.[id] = d.[user_id] WHERE m.[CouncilID] = ?', [councilId]),
       ]);
-      const viewerCouncil = await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [viewer!.CouncilID]);
+      const merit = await this.meritStandingOf(db, actorId);
       return buildMemberCenter({
         engagement: buildCouncilEngagement({ councilId, year, month, fromDate, toDate, logs: councilLogs, members, activeStatusId: active!.id }),
         viewer: viewer!,
         viewerLogs: allLogs.filter((l) => l.MemberID === actorId),
-        thresholds: councilRankThresholds(viewerCouncil),
+        merit,
         devotions: isFraternalTenant(councilTenantType(council)) ? councilDevotionTotals(devotionRows, new Set(devotionRows.map((d) => d.user_id))) : null,
       });
     },
@@ -6479,6 +6512,7 @@ export class SqliteDataService implements DataService {
           activeStatusId: (await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [MemberStatus] WHERE [Status] = 'Active'"))!.id,
           memberTypeId: (await db.getFirstAsync<{ id: number }>("SELECT [id] FROM [MemberType] WHERE [Type] = 'Member'"))!.id,
         };
+        const institutionDate = (await db.getFirstAsync<{ institution_date: string | null }>('SELECT [institution_date] FROM [Council] WHERE [id] = ?', [councilId]))?.institution_date ?? null;
         const out: SupremeRosterSyncResult = { created: [], updated: [], skipped: [] };
         const createdIds: number[] = [];
         const seen = new Set<number>();
@@ -6496,14 +6530,15 @@ export class SqliteDataService implements DataService {
           try {
             const existing = await db.getFirstAsync<Member>('SELECT * FROM [Member] WHERE [CouncilID] = ? AND [MemberNumber] = ?', [councilId, memberNumber]);
             if (existing) {
-              const joined = cleanRosterJoinDate(row.DateJoinedCouncil, this.now());
-              if ((existing.DateJoinedCouncil ?? null) !== joined) {
-                await db.runAsync('UPDATE [Member] SET [DateJoinedCouncil] = ? WHERE [id] = ?', [joined, existing.id]);
-                out.updated.push(withoutPushToken({ ...existing, DateJoinedCouncil: joined }));
+              const changes = rosterExistingMemberChanges(existing, row, institutionDate, this.now());
+              const cols = Object.keys(changes) as (keyof typeof changes)[];
+              if (cols.length > 0) {
+                await db.runAsync(`UPDATE [Member] SET ${cols.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...cols.map((c) => changes[c] as Bind), existing.id]);
+                out.updated.push(withoutPushToken({ ...existing, ...changes }));
               }
               continue;
             }
-            const clean = cleanSupremeRosterRow(row, councilId, ids, this.now());
+            const clean = cleanSupremeRosterRow(row, councilId, ids, this.now(), institutionDate);
             const taken = await db.getFirstAsync<{ n: number }>(
               `SELECT (SELECT COUNT(*) FROM [Member] WHERE [Email] = ? COLLATE NOCASE)
                     + (SELECT COUNT(*) FROM [Credentials] WHERE [Username] = ? COLLATE NOCASE) AS n`,

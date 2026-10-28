@@ -39,7 +39,7 @@ Each step has a **?** mark next to its hard fields. Select the **?** mark to rea
 **Goal:** Add the council's members from the Supreme roster export.
 
 **Steps:**
-1. Get the roster export from Supreme Headquarters. Save it as a CSV file.
+1. Get the roster export from Supreme. Save it as CSV. Keep its **First Degree Date** column.
 2. Drop the file on the upload area, or select the area and choose the file.
 3. Make sure that the row count is correct.
 4. Select **Sync**.

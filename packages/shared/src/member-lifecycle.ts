@@ -1,7 +1,7 @@
 // =========================================================================
-// MEMBER LIFECYCLE, DEVOTIONALS, CANONIZATION RANKS AND THE MEMBER CENTER (Sprint 7A, schemas 59-60)
+// MEMBER LIFECYCLE, DEVOTIONALS, MERIT TIERS AND THE MEMBER CENTER (Sprint 7A, schemas 59-60)
 // Pure helpers behind the member lifecycle hooks (members.create, members.update, supreme.syncSupremeRoster and
-// members.sweepInactive), the phone's devotional tracker (devotionals.*), the canonization shield and the dashboard's
+// members.sweepInactive), the phone's devotional tracker (devotionals.*), the merit ladder (merit-tiers.ts) and the dashboard's
 // monthly engagement card (reports.councilEngagement). Drivers load rows, call these, then only store.
 //
 // Lifecycle hooks, run inside the same transaction as the member write:
@@ -15,6 +15,7 @@
 import type { NewMember } from './contract';
 import { daysSinceJoined } from './onboarding';
 import { BusinessRuleError, describeActor, hasAdminRights, hasSuperAdminRights, SecurityPrivilegeError, type MemberWriteActor } from './rules';
+import type { MeritStanding } from './merit-tiers';
 import type { Council, Member, MemberCouncilAffiliationLog, MemberDevotionals, MemberStatus, MemberType } from './types';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
@@ -208,64 +209,9 @@ export const addDevotionalEntry = (current: MemberDevotionals, entry: Required<D
   confessions_count: current.confessions_count + entry.confessions,
 });
 
-// ---- canonization shield ---------------------------------------------------------------------------------------
-
-/** The shield's levels, lowest first. */
-export const CANONIZATION_LEVELS = ['Servant of God', 'Venerable', 'Blessed', 'Saint'] as const;
-export type CanonizationLevel = (typeof CANONIZATION_LEVELS)[number];
-
-/** Thirds of the council's thresholds each level needs, by CANONIZATION_LEVELS index (Saint is the whole bar). */
-const LEVEL_THIRDS = [0, 1, 2, 3] as const;
-
-export const DEFAULT_RANK_THRESHOLD_HOURS = 100;
-export const DEFAULT_RANK_THRESHOLD_EVENTS = 10;
-export const RANK_THRESHOLD_MAX_HOURS = 10_000;
-export const RANK_THRESHOLD_MAX_EVENTS = 1_000;
-
-/** The volunteer hours and distinct events that make a 'Saint' in a council. */
-export interface RankThresholds {
-  hours: number;
-  events: number;
-}
-
-/** The council's stored thresholds, with the column defaults for missing values. */
-export const councilRankThresholds = (council: Pick<Council, 'rank_threshold_hours' | 'rank_threshold_events'> | null | undefined): RankThresholds => ({
-  hours: council?.rank_threshold_hours ?? DEFAULT_RANK_THRESHOLD_HOURS,
-  events: council?.rank_threshold_events ?? DEFAULT_RANK_THRESHOLD_EVENTS,
-});
-
-/** councils.setRankThresholds' input: whole numbers from 1 to the maximums (INVALID_INPUT). */
-export function cleanRankThresholds(input: unknown): RankThresholds {
-  if (input === null || typeof input !== 'object') throw invalid('Enter the hours and events thresholds.');
-  const raw = input as Record<string, unknown>;
-  const whole = (key: 'hours' | 'events', label: string, max: number): number => {
-    const v = raw[key];
-    if (typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > max) {
-      throw invalid(`${label} must be a whole number from 1 to ${max.toLocaleString('en-US')}; received ${JSON.stringify(v)}.`, { field: key });
-    }
-    return v;
-  };
-  return { hours: whole('hours', 'The hours threshold', RANK_THRESHOLD_MAX_HOURS), events: whole('events', 'The events threshold', RANK_THRESHOLD_MAX_EVENTS) };
-}
-
-/** councils.setRankThresholds: an Active Admin of the council or an Active Super Admin. */
-export function assertMaySetRankThresholds(actor: MemberWriteActor, councilId: number): void {
-  if (hasSuperAdminRights(actor)) return;
-  if (!hasAdminRights(actor)) {
-    throw new SecurityPrivilegeError(
-      'ADMIN_REQUIRED',
-      `Only an active Admin of the council or a Super Admin can set the canonization thresholds; member ${actor.memberId} is ${describeActor(actor)}.`,
-      { actorId: actor.memberId, councilId },
-    );
-  }
-  if (actor.councilId !== councilId) {
-    throw new SecurityPrivilegeError(
-      'COUNCIL_ACCESS_DENIED',
-      `Admin ${actor.memberId} of council ${actor.councilId} cannot set the canonization thresholds of council ${councilId}.`,
-      { actorId: actor.memberId, actorCouncilId: actor.councilId, councilId },
-    );
-  }
-}
+// ---- service metrics ------------------------------------------------------------------------------------------
+// Sprint 11 Revision 6.0: the canonization shield (levels, thresholds, councils.setRankThresholds) is replaced by the
+// 6-tier merit ladder in merit-tiers.ts.
 
 /** A member's logged service: total hours (2 decimals) and the distinct events they logged a shift at. */
 export interface ServiceMetrics {
@@ -284,46 +230,12 @@ export function memberServiceMetrics(memberId: number, logs: readonly ServiceLog
   return { hours: Math.round(hours * 100) / 100, events: events.size };
 }
 
-/** Where a member stands on the shield. */
-export interface CanonizationRank {
-  level: CanonizationLevel;
-  /** Index into CANONIZATION_LEVELS (0 = Servant of God, 3 = Saint). */
-  levelIndex: number;
-  metrics: ServiceMetrics;
-  thresholds: RankThresholds;
-  /** Share of the way to Saint, 0 to 1: the lesser of the hours and events shares. */
-  progress: number;
-  /** The next level and what it still needs (hours rounded up to a quarter hour); null for a Saint. */
-  next: { level: CanonizationLevel; hoursNeeded: number; eventsNeeded: number } | null;
-}
-
-/**
- * The member's level: the highest whose share of BOTH council thresholds they have met - a third for Venerable, two
- * thirds for Blessed, the whole bar for Saint. Everyone starts as a Servant of God.
- */
-export function canonizationRank(metrics: ServiceMetrics, thresholds: RankThresholds): CanonizationRank {
-  // Compared in thirds (hours * 3 >= k * threshold) so 1/3 of 100 hours is not rounded.
-  const meets = (k: number) => metrics.hours * 3 >= k * thresholds.hours && metrics.events * 3 >= k * thresholds.events;
-  let levelIndex = 0;
-  for (const k of LEVEL_THIRDS) if (meets(k)) levelIndex = k;
-  const nextK = levelIndex + 1;
-  const next =
-    nextK < CANONIZATION_LEVELS.length
-      ? {
-          level: CANONIZATION_LEVELS[nextK]!,
-          hoursNeeded: Math.max(0, Math.ceil(((nextK * thresholds.hours) / 3 - metrics.hours) * 4 - 1e-9) / 4),
-          eventsNeeded: Math.max(0, Math.ceil((nextK * thresholds.events) / 3 - metrics.events - 1e-9)),
-        }
-      : null;
-  const progress = Math.min(1, metrics.hours / thresholds.hours, metrics.events / thresholds.events);
-  return { level: CANONIZATION_LEVELS[levelIndex]!, levelIndex, metrics, thresholds, progress: Math.round(progress * 1000) / 1000, next };
-}
-
 /** devotionals.getProgress and record: the member's own tally and shield. */
 export interface DevotionalProgress {
   memberId: number;
   tally: MemberDevotionals;
-  rank: CanonizationRank;
+  /** Sprint 11 Revision 6.0: the member's merit tier this fraternal year (replaces the canonization shield). */
+  rank: MeritStanding;
 }
 
 // ---- monthly engagement card and leaderboard -------------------------------------------------------------------
@@ -567,8 +479,8 @@ export interface PersonalImpact {
   eventsAttended: number;
   /** All hours the member logged, events and activities, ever. */
   hours: number;
-  /** null for a white-label council (the shield is a Knights of Columbus extension). */
-  rank: CanonizationRank | null;
+  /** The merit tier this fraternal year; null for a white-label council (the ladder is a Knights of Columbus extension). */
+  rank: MeritStanding | null;
 }
 
 /**
@@ -602,8 +514,8 @@ export function buildMemberCenter(input: {
   viewer: Pick<Member, 'id' | 'MemberFirstName' | 'MemberLastName'>;
   /** Every service log of the viewer, any council. */
   viewerLogs: readonly ServiceLogRow[];
-  /** The viewer's own council's thresholds. */
-  thresholds: RankThresholds;
+  /** The viewer's merit standing (merit-tiers.ts meritStanding). */
+  merit: MeritStanding;
   /** Null for a white-label council. */
   devotions: CouncilDevotionTotals | null;
 }): MemberCenter {
@@ -620,7 +532,7 @@ export function buildMemberCenter(input: {
       lastName: viewer.MemberLastName,
       eventsAttended: metrics.events,
       hours: metrics.hours,
-      rank: input.devotions === null ? null : canonizationRank(metrics, input.thresholds),
+      rank: input.devotions === null ? null : input.merit,
     },
   };
 }

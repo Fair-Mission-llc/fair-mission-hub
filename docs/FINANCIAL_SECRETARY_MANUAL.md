@@ -437,7 +437,8 @@ The form has no **Designated Budget Director** box. An Admin assigns the Budget 
 The sync reads the roster export from Supreme Headquarters. The sync adds new members and updates join dates.
 
 - The input is a CSV file with a header row. Save the Supreme Excel export as CSV first.
-- The columns are Member Number, First Name, Last Name, Email, Phone, Street, Street 2, City, State, Zip, Birth Date, Degree, Date Joined and Charter Member.
+- The columns are Member Number, First Name, Last Name, Email, Phone, Street, Street 2, City, State, Zip, Birth Date, Degree, Date Joined, Charter Member and First Degree Date.
+- **First Degree Date** (or **Initiation Date**) is optional. The sync saves it as the member's **First Degree / Initiation Date**. A date on or before the council's institution date + 30 days marks the member a **📜 Charter Member**.
 - The Financial Secretary and Admins can download a ready Excel roster template with drop-down lists (3.3).
 - Header case and spacing do not matter.
 - The file must have the member number, the names, the email and the join date columns.

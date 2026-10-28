@@ -104,7 +104,7 @@ describe('the Council Dashboard rename', () => {
     const admin = readOfficerManuals();
     expect(admin).toContain('**[ 🚗 Open Shifts Needing Volunteers ]**');
     expect(admin).toContain('**[ 📥 My Charity Requests ]**');
-    expect(admin).toContain('**Canonization Rank Benchmarks** card');
+    expect(admin).toContain('**Merit Tier Milestones** tab');
     expect(admin).toContain('The Deputy Grand Knight (DGK) has the same access as the Grand Knight (GK).');
   });
 });
@@ -312,17 +312,15 @@ describe('the Member Desk cards', () => {
     expect(desks).toContain('{flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}');
   });
 
-  it('shows the Canonization Rank benchmarks read-only outside System Settings', () => {
+  it('shows the merit tier milestones read-only outside the Council Lookup Tables drawer (Sprint 11 Revision 6.0)', () => {
     const engagement = read('apps/web/components/EngagementParts.tsx');
     const cards = engagement.slice(engagement.indexOf('export function EngagementCards('));
-    expect(cards).toContain('<RankThresholdsInfo council={council.data} />');
-    expect(cards).not.toContain('<ThresholdEditor');
-    expect(cards).not.toContain('setRankThresholds');
-    const settings = read('apps/web/components/modules/CouncilWideSettings.tsx');
-    expect(settings).toContain('<RankThresholdsCard council={council}');
-    // No other page edits them.
-    for (const path of ['apps/web/app/dashboard/page.tsx', 'apps/web/app/member-center/page.tsx', 'apps/web/components/DashboardDesks.tsx']) {
-      expect(read(path)).not.toMatch(/RankThresholdsCard|setRankThresholds/);
+    expect(cards).toContain('<MeritTierInfo council={council.data} />');
+    expect(cards).not.toContain('setMeritThresholds');
+    expect(read('apps/web/components/modules/CouncilLookupTables.tsx')).toContain('<MeritMilestonesPanel');
+    // No other page edits them; the shield editor is gone.
+    for (const path of ['apps/web/app/dashboard/page.tsx', 'apps/web/app/member-center/page.tsx', 'apps/web/components/DashboardDesks.tsx', 'apps/web/components/modules/CouncilWideSettings.tsx']) {
+      expect(read(path)).not.toMatch(/MeritMilestonesPanel|setMeritThresholds|RankThresholdsCard|setRankThresholds/);
     }
   });
 });

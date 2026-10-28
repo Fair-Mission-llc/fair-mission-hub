@@ -52,7 +52,7 @@ export function createRemoteDataService(): DataService {
       getMeetingGeofence: notImplemented('councils.getMeetingGeofence'),
       setMeetingGeofence: notImplemented('councils.setMeetingGeofence'),
       setGlobalParameters: notImplemented('councils.setGlobalParameters'),
-      setRankThresholds: notImplemented('councils.setRankThresholds'),
+      setMeritThresholds: notImplemented('councils.setMeritThresholds'),
       setCouncilWideSettings: notImplemented('councils.setCouncilWideSettings'),
       setLoanerLibraryEnabled: notImplemented('councils.setLoanerLibraryEnabled'),
       setBiometricLoginEnabled: notImplemented('councils.setBiometricLoginEnabled'),

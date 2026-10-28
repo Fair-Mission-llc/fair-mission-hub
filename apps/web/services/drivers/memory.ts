@@ -320,16 +320,23 @@ import {
   assertMayJoinCouncilPrayers,
   assertMayClosePrayerIntention,
   addDevotionalEntry,
-  assertMaySetRankThresholds,
+  assertMaySetMeritThresholds,
   assertMaySweepInactiveMembers,
   buildCouncilEngagement,
-  canonizationRank,
+  applyCharterRule,
+  cleanInstitutionDate,
   cleanDevotionalEntry,
-  cleanRankThresholds,
-  councilRankThresholds,
+  cleanMeritThresholds,
+  councilMeritThresholds,
+  meritStanding,
+  meritThresholdColumns,
+  meritYearMetrics,
+  rosterExistingMemberChanges,
+  type MeritAttendanceRow,
+  type MeritRecruitRow,
+  type MeritStanding,
   emptyDevotionals,
   INACTIVE_STATUS,
-  memberServiceMetrics,
   memberStatusId,
   planInactivitySweep,
   planMemberLifecycle,
@@ -493,7 +500,6 @@ import {
   assertMayImportSupremeRoster,
   assertMaySyncSupremeRoster,
   cleanAgendaLineKey,
-  cleanRosterJoinDate,
   cleanSupremeRosterRow,
   describeError,
   SecurityPrivilegeError,
@@ -1839,12 +1845,13 @@ export class MemoryDataService implements DataService {
       return { ...row } as unknown as Council;
     },
 
-    setRankThresholds: async (actorId, councilId, thresholds) => {
-      const clean = cleanRankThresholds(thresholds);
+    setMeritThresholds: async (actorId, councilId, thresholds, institutionDate) => {
+      const clean = cleanMeritThresholds(thresholds);
+      const instituted = cleanInstitutionDate(institutionDate, this.now());
       const s = await this.ready();
-      assertMaySetRankThresholds(this.memberWriteActor(s, actorId), councilId);
+      assertMaySetMeritThresholds(this.memberWriteActor(s, actorId), councilId);
       const row = this.requireRecord(s, 'Council', councilId);
-      Object.assign(row, { rank_threshold_hours: clean.hours, rank_threshold_events: clean.events });
+      Object.assign(row, meritThresholdColumns(clean), instituted === undefined ? {} : { institution_date: instituted });
       return { ...row } as unknown as Council;
     },
 
@@ -2345,9 +2352,10 @@ export class MemoryDataService implements DataService {
     listRoles: async (memberId) => this.rolesFor(await this.ready(), memberId),
 
     create: async (actorId, member) => {
-      const clean = cleanNewMember(member, this.now());
+      let clean = cleanNewMember(member, this.now());
       const s = await this.ready();
       const row = s.transaction(() => {
+        clean = this.withCharterRule(s, clean);
         assertMayCreateMember(this.memberWriteActor(s, actorId), clean, this.memberTypeName(s, clean.MemberTypeID));
         this.assertMemberReferences(s, clean);
         const email = clean.Email.toLowerCase();
@@ -2385,7 +2393,8 @@ export class MemoryDataService implements DataService {
       const row = s.transaction(() => {
         const actor = this.memberWriteActor(s, actorId);
         const existing = this.requireMember(s, id);
-        const clean = mergeMemberChanges(existing as unknown as Member, changes, this.now());
+        const clean = this.withCharterRule(s, mergeMemberChanges(existing as unknown as Member, changes, this.now()));
+        if (clean.recruited_by_member_id === id) throw new BusinessRuleError('INVALID_INPUT', 'A member cannot be recorded as their own recruiter.', { memberId: id });
         assertMayUpdateMember(actor, existing as unknown as Member, clean, {
           current: this.memberTypeName(s, existing.MemberTypeID as number),
           next: this.memberTypeName(s, clean.MemberTypeID),
@@ -2500,16 +2509,37 @@ export class MemoryDataService implements DataService {
     return logs;
   }
 
-  /** Sprint 7A: the member's own devotional tally and canonization shield. */
+  /** Sprint 7A: the member's own devotional tally; Sprint 11 Revision 6.0: with their merit tier (was the shield). */
   private devotionalProgress(s: MemoryStore, memberId: number): DevotionalProgress {
-    const member = this.requireMember(s, memberId);
+    this.requireMember(s, memberId);
     const tally = s.rows('MemberDevotionals').find((d) => d.user_id === memberId);
-    const council = s.rows('Council').find((c) => c.id === member.CouncilID) as unknown as Council | undefined;
     return {
       memberId,
       tally: tally ? ({ ...tally } as unknown as MemberDevotionals) : emptyDevotionals(memberId),
-      rank: canonizationRank(memberServiceMetrics(memberId, this.serviceLogs(s)), councilRankThresholds(council)),
+      rank: this.meritStandingOf(s, memberId),
     };
+  }
+
+  /** Sprint 11 Revision 6.0: the member's merit tier this fraternal year, against their own council's milestones. */
+  private meritStandingOf(s: MemoryStore, memberId: number): MeritStanding {
+    const member = this.requireMember(s, memberId) as unknown as Member;
+    const council = s.rows('Council').find((c) => c.id === member.CouncilID) as unknown as Council | undefined;
+    const today = this.now();
+    const fraternalYear = currentFraternalYear(today);
+    const metrics = meritYearMetrics({
+      memberId,
+      fraternalYear,
+      logs: this.serviceLogs(s),
+      attendance: s.rows('LiveAttendance') as unknown as MeritAttendanceRow[],
+      members: s.rows('Member') as unknown as MeritRecruitRow[],
+    });
+    return meritStanding({ member, roles: this.rolesFor(s, memberId).map((r) => r.Role), metrics, thresholds: councilMeritThresholds(council), today, fraternalYear });
+  }
+
+  /** Sprint 11 Revision 6.0: the charter member rule against the member's council's institution date. */
+  private withCharterRule(s: MemoryStore, clean: NewMember): NewMember {
+    const council = s.rows('Council').find((c) => c.id === clean.CouncilID);
+    return applyCharterRule(clean, (council?.institution_date as string | null | undefined) ?? null);
   }
 
   /**
@@ -2603,6 +2633,7 @@ export class MemoryDataService implements DataService {
     this.assertRowExists(s, 'Degree', clean.DegreeID, 'degree');
     this.assertRowExists(s, 'MemberType', clean.MemberTypeID, 'member type');
     if (clean.WorkingStatusID != null) this.assertRowExists(s, 'WorkingStatus', clean.WorkingStatusID, 'working status');
+    if (clean.recruited_by_member_id != null) this.requireMember(s, clean.recruited_by_member_id);
   }
 
   /**
@@ -4056,7 +4087,7 @@ export class MemoryDataService implements DataService {
         }),
         viewer,
         viewerLogs: this.serviceLogs(s).filter((l) => l.MemberID === actorId),
-        thresholds: councilRankThresholds(viewerCouncil),
+        merit: this.meritStandingOf(s, actorId),
         devotions: isFraternalTenant(councilTenantType(council))
           ? councilDevotionTotals(s.rows('MemberDevotionals') as unknown as MemberDevotionals[], councilMembers)
           : null,
@@ -5468,6 +5499,7 @@ export class MemoryDataService implements DataService {
         this.assertFraternalCouncil(s, councilId, 'import the Supreme Council roster');
         const memberTypeId = s.rows('MemberType').find((t) => t.Type === 'Member')?.id as number;
         const ids = { activeStatusId: this.activeStatusId(s) as number, memberTypeId };
+        const institutionDate = (s.rows('Council').find((c) => c.id === councilId)?.institution_date as string | null | undefined) ?? null;
         const out: SupremeRosterSyncResult = { created: [], updated: [], skipped: [] };
         const seen = new Set<number>();
         for (const row of Array.isArray(rows) ? rows : []) {
@@ -5484,14 +5516,14 @@ export class MemoryDataService implements DataService {
           try {
             const existing = s.rows('Member').find((m) => m.CouncilID === councilId && m.MemberNumber === memberNumber);
             if (existing) {
-              const joined = cleanRosterJoinDate(row.DateJoinedCouncil, this.now());
-              if ((existing.DateJoinedCouncil ?? null) !== joined) {
-                existing.DateJoinedCouncil = joined;
+              const changes = rosterExistingMemberChanges(existing as unknown as Member, row, institutionDate, this.now());
+              if (Object.keys(changes).length > 0) {
+                Object.assign(existing, changes);
                 out.updated.push(withoutPushToken({ ...existing }) as unknown as Member);
               }
               continue;
             }
-            const clean = cleanSupremeRosterRow(row, councilId, ids, this.now());
+            const clean = cleanSupremeRosterRow(row, councilId, ids, this.now(), institutionDate);
             const email = clean.Email.toLowerCase();
             if (s.rows('Member').some((m) => lower(m.Email) === email) || s.rows('Credentials').some((c) => lower(c.Username) === email)) {
               out.skipped.push({ memberNumber, reason: `The email ${clean.Email} already belongs to a member or login.` });

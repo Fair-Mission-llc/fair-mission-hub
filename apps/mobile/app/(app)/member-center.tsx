@@ -5,7 +5,7 @@
 // council membership history. No cash, budget or ledger figure appears here.
 import { View } from 'react-native';
 import { toIsoDate, type AffiliationHistoryEntry, type MemberCenter } from '@kofc/shared';
-import { CanonizationShield } from '@/components/DevotionalTracker';
+import { MeritTierBadge } from '@/components/DevotionalTracker';
 import { AppText, Card, EmptyState, Loading, Notice, Screen, Section } from '@/components/ui';
 import { useUser } from '@/lib/app-context';
 import { useLoad } from '@/lib/use-async';
@@ -141,7 +141,7 @@ export default function MemberCenterScreen() {
                 <AppText variant="title">
                   {c.me.eventsAttended} event{c.me.eventsAttended === 1 ? '' : 's'} attended · {hours(c.me.hours)} served
                 </AppText>
-                {c.me.rank ? <CanonizationShield rank={c.me.rank} /> : null}
+                {c.me.rank ? <MeritTierBadge rank={c.me.rank} /> : null}
                 <AppText variant="label">My council history</AppText>
                 {state.data && state.data.history.length > 0 ? <History entries={state.data.history} /> : <EmptyState message="No council history yet." />}
               </View>

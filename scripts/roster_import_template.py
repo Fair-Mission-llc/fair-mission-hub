@@ -13,7 +13,7 @@
 # are the ones the portal's roster import reads (parseSupremeRosterCsv in packages/shared/src/onboarding.ts), so the
 # sheet saved as CSV loads on Supreme Sync > 'Supreme roster sync'. Excel enforces drop-downs on Role (every office in
 # the election lookup definitions, packages/shared/src/elections.ts, plus 'Member'), Degree (1-4) and Charter Member
-# (Yes/No), and dates on Birth Date and Date Joined.
+# (Yes/No), and dates on Birth Date, Date Joined and (Sprint 11 Revision 6.0) First Degree Date.
 #
 # The Role column is a planning aid: the import does not assign offices. Offices are filled through elections and the
 # Grand Knight's appointments, so they keep their history.
@@ -65,6 +65,7 @@ COLUMNS = [
     ('Degree', 9, 3, 'Optional. 1 to 4 from the drop-down; blank means First Degree.'),
     ('Date Joined', 13, dt.date(2026, 9, 12), 'Required. The day the member joined the council, not in the future (YYYY-MM-DD). Drives the New Member badge.'),
     ('Charter Member', 15, 'No', 'Optional. Yes for a brother who founded the council; blank means No.'),
+    ('First Degree Date', 17, dt.date(2026, 9, 5), 'Optional. The First Degree / Initiation Date from Supreme (YYYY-MM-DD). Drives the merit tiers; a date within 30 days of the council institution date marks a charter member.'),
     ('Role', 24, 'Member', 'Planning aid only, from the drop-down. The import does not assign offices: fill them through elections and the Grand Knight\'s appointments.'),
 ]
 
@@ -160,7 +161,7 @@ def build() -> bytes:
         (charter_dv, ['Charter Member']),
         (degree_dv, ['Degree']),
         (member_dv, ['Member Number']),
-        (date_dv, ['Birth Date', 'Date Joined']),
+        (date_dv, ['Birth Date', 'Date Joined', 'First Degree Date']),
     ):
         dv.showErrorMessage = True
         dv.showInputMessage = bool(dv.prompt)

@@ -3,131 +3,29 @@
 //   - Monthly activity overview: a high-contrast navy card with white text and a gold edge - the month's volunteer
 //     count, cash collected (the monthly summary's cash raised), total hours, and every volunteer's name with hours.
 //   - Top 5 Volunteers Leaderboard: gold-bordered, the council's Active members ranked by all hours ever logged at its
-//     events and activities. The council's Admins and Super Admins also set the canonization shield's thresholds here
-//     (councils.setRankThresholds), the bar a member's phone shield is measured against.
+//     events and activities.
 //
-// Sprint 7A Extension: the leaderboard, the web canonization shield and the council history card are shared with the
-// Council Dashboard (/member-center, named the Shared Member Center until Sprint 8C) and the roster.
+// Sprint 7A Extension: the leaderboard and the council history card are shared with the Council Dashboard
+// (/member-center, named the Shared Member Center until Sprint 8C) and the roster.
 //
-// Sprint 8C: outside System Settings the Canonization Rank benchmarks are a read-only information block
-// (RankThresholdsInfo). The editor (RankThresholdsCard) lives only on System Settings > Council Wide Settings, for the
-// council's Admins and Super Admins (councils.setRankThresholds checks the same rule).
+// Sprint 11 Revision 6.0: the canonization shield is replaced by the 6-tier merit ladder (components/MeritTierParts.tsx).
+// The leaderboard shows the ladder read-only (MeritTierInfo); the milestones are edited only in the Admin Desk's
+// Council Lookup Tables drawer (MeritMilestonesPanel).
 //
 // Sprint 11 Revision 2.0: the Monthly activity overview reads its figures from the month's summary (monthlyActivityFigures),
 // the same summary the Net Balance tile reads, so the two never disagree: volunteers are the summary's unique Knights,
 // hours its labor hours, and the money its funds raised (cash plus electronic) with the net balance beside it. The
 // engagement read now supplies only the names of who served.
-import { useEffect, useState, type ReactNode } from 'react';
-import {
-  canAdministerCouncil,
-  CANONIZATION_LEVELS,
-  councilRankThresholds,
-  monthlyActivityFigures,
-  describeError,
-  RANK_THRESHOLD_MAX_EVENTS,
-  RANK_THRESHOLD_MAX_HOURS,
-  type CanonizationRank,
-  type Council,
-  type LeaderboardEntry,
-  type MonthlySummary,
-} from '@kofc/shared';
-import { Button, Field, Input, Notice, Panel } from '@/components/ui';
+import { type ReactNode } from 'react';
+import { monthlyActivityFigures, type LeaderboardEntry, type MonthlySummary } from '@kofc/shared';
+import { MeritTierInfo } from '@/components/MeritTierParts';
+import { Notice } from '@/components/ui';
 import { formatDecimalHours, formatMoney, formatPersonName } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
-
-/**
- * The Canonization Rank benchmarks as a read-only information block (Sprint 8C): what a member needs for each shield
- * level. Shown everywhere outside System Settings.
- */
-export function RankThresholdsInfo({ council }: { council: Council }) {
-  const t = councilRankThresholds(council);
-  return (
-    <section aria-label="Canonization Rank benchmarks" className="mt-3 border-t border-line pt-3 text-xs">
-      <p>
-        <span className="font-bold">Canonization Rank benchmarks.</span> Saint: {t.hours.toLocaleString('en-US')} hours and{' '}
-        {t.events.toLocaleString('en-US')} events. Blessed at two thirds and Venerable at one third of each.
-      </p>
-      <p className="mt-1 text-muted">Read only. The council&apos;s Admins change them in System Settings: Council Wide Settings.</p>
-    </section>
-  );
-}
-
-/** The Canonization Rank benchmarks editor (System Settings > Council Wide Settings only, Sprint 8C). */
-export function RankThresholdsCard({ council, onSaved }: { council: Council; onSaved: () => void }) {
-  const user = useUser();
-  return (
-    <Panel title="Canonization Rank Benchmarks" className="mt-6">
-      <p className="text-sm">The bar each member&apos;s canonization shield is measured against: {CANONIZATION_LEVELS.join(' → ')}.</p>
-      {canAdministerCouncil(user, council.id) ? (
-        <ThresholdEditor council={council} onSaved={onSaved} />
-      ) : (
-        <RankThresholdsInfo council={council} />
-      )}
-    </Panel>
-  );
-}
-
-function ThresholdEditor({ council, onSaved }: { council: Council; onSaved: () => void }) {
-  const user = useUser();
-  const current = councilRankThresholds(council);
-  const [hours, setHours] = useState(String(current.hours));
-  const [events, setEvents] = useState(String(current.events));
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
-  useEffect(() => {
-    setHours(String(current.hours));
-    setEvents(String(current.events));
-  }, [current.hours, current.events]);
-
-  const save = async () => {
-    setBusy(true);
-    setMessage(null);
-    try {
-      await db.councils.setRankThresholds(user.memberId, council.id, { hours: Number(hours), events: Number(events) });
-      setMessage({ tone: 'info', text: 'Shield thresholds saved.' });
-      onSaved();
-    } catch (err) {
-      setMessage({ tone: 'error', text: describeError(err) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <form
-      className="mt-3 flex flex-col gap-2 border-t border-line pt-3"
-      onSubmit={(e) => {
-        e.preventDefault();
-        void save();
-      }}
-    >
-      <p className="text-xs">
-        <span className="font-bold">Canonization shield thresholds.</span> A member reaches Saint once both are met; Blessed at two thirds and Venerable at one
-        third of each.
-      </p>
-      <div className="flex items-end gap-2">
-        <Field label="Hours" className="w-28">
-          {(id) => <Input id={id} type="number" min={1} max={RANK_THRESHOLD_MAX_HOURS} step={1} value={hours} onChange={(e) => setHours(e.target.value)} />}
-        </Field>
-        <Field label="Events" className="w-28">
-          {(id) => <Input id={id} type="number" min={1} max={RANK_THRESHOLD_MAX_EVENTS} step={1} value={events} onChange={(e) => setEvents(e.target.value)} />}
-        </Field>
-        <Button type="submit" size="sm" disabled={busy}>
-          {busy ? 'Saving…' : 'Save'}
-        </Button>
-      </div>
-      {message ? (
-        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
-          {message.text}
-        </Notice>
-      ) : null}
-    </form>
-  );
-}
 
 export function EngagementCards({
   councilId,
@@ -194,8 +92,7 @@ export function EngagementCards({
 
       {showLeaderboard ? (
         <Leaderboard entries={e?.leaderboard ?? null}>
-          <p className="mt-3 text-xs text-muted">Shield levels: {CANONIZATION_LEVELS.join(' → ')}.</p>
-          {council.data ? <RankThresholdsInfo council={council.data} /> : null}
+          {council.data ? <MeritTierInfo council={council.data} /> : null}
         </Leaderboard>
       ) : null}
     </div>
@@ -227,38 +124,6 @@ export function Leaderboard({ entries, children }: { entries: readonly Leaderboa
       ) : null}
       {children}
     </section>
-  );
-}
-
-const SHIELD_ICONS = ['🕯️', '📿', '✨', '👑'] as const;
-
-/** The canonization shield on the web (Sprint 7A Extension), drawn as on the phone: a navy crest with a gold rim. */
-export function CanonizationShield({ rank }: { rank: CanonizationRank }) {
-  const percent = Math.round(rank.progress * 100);
-  return (
-    <div
-      role="img"
-      aria-label={`Canonization shield: ${rank.level}. ${percent} percent of the way to Saint.`}
-      className="flex flex-col items-center gap-2 rounded-t-lg rounded-b-[5rem] border-4 border-gold bg-navy px-4 pb-8 pt-4 text-center text-white"
-    >
-      <span className="text-4xl" aria-hidden>
-        {SHIELD_ICONS[rank.levelIndex]}
-      </span>
-      <span className="font-serif text-2xl font-bold text-gold">{rank.level}</span>
-      <div className="h-3 w-full overflow-hidden rounded-full bg-white">
-        <div className="h-full bg-gold" style={{ width: `${percent}%` }} />
-      </div>
-      <span className="text-xs">
-        {rank.next
-          ? `Next: ${rank.next.level} - ${rank.next.hoursNeeded > 0 ? `${formatDecimalHours(rank.next.hoursNeeded)}` : 'hours met'}, ${
-              rank.next.eventsNeeded > 0 ? `${rank.next.eventsNeeded} event${rank.next.eventsNeeded === 1 ? '' : 's'}` : 'events met'
-            } to go`
-          : 'The highest level. Thank you for your service!'}
-      </span>
-      <span className="text-xs">
-        Saint: {formatDecimalHours(rank.thresholds.hours)} and {rank.thresholds.events} events
-      </span>
-    </div>
   );
 }
 

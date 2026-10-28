@@ -1,18 +1,18 @@
-// The phone's devotional tracker and canonization shield (Sprint 7A), a section of Home under the prayer intentions.
+// The phone's devotional tracker and merit tier badge (Sprint 7A; the badge replaced the canonization shield in Sprint 11
+// Revision 6.0), a section of Home under the prayer intentions.
 //
 // The member types how many rosaries they said, hours of adoration they kept and confessions they made, and
 // 'Log devotions' adds them to their running tally (devotionals.record). The tally is the member's own: nobody else
 // reads it.
 //
-// The shield shows the member's level - Servant of God, Venerable, Blessed or Saint - measured only on their logged
-// service (volunteer hours and distinct events) against the council's thresholds, with a gold bar toward Saint and what
-// the next level still needs. Sprint 8S Revision 4: the section is the closed '[ 📖 Daily Devotional Drawer ]'
+// The badge shows the member's merit tier this fraternal year (MeritTierBadge, merit-tiers.ts), from their hours,
+// events, meeting check-ins and recruits against the council's milestones, and what the next tier still needs. Sprint 8S Revision 4: the section is the closed '[ 📖 Daily Devotional Drawer ]'
 // (mobile-home.ts), and today's NABRE verse (dailyVerse) heads it, so the scripture shares the drawer with the tally. Like the rest of the Faith Center it is a Knights of Columbus extension: for a white-label
 // tenant the section draws nothing.
 import { useState } from 'react';
 import { View } from 'react-native';
 import {
-  CANONIZATION_LEVELS,
+  CHARTER_MEMBER_BADGE,
   DAILY_DEVOTIONAL_DRAWER_LABEL,
   dailyVerse,
   DEVOTIONAL_ENTRY_MAX,
@@ -20,8 +20,10 @@ import {
   isFraternalTenant,
   NABRE_NOTICE,
   toIsoDate,
-  type CanonizationRank,
+  MERIT_TIERS,
+  meritBadgeText,
   type DevotionalEntry,
+  type MeritStanding,
 } from '@kofc/shared';
 import { AppInput, AppText, Button, Card, Drawer, Field, Notice } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/app-context';
@@ -29,19 +31,20 @@ import { useLoad } from '@/lib/use-async';
 import { useTheme } from '@/lib/layout-mode';
 import { db } from '@/services/db';
 
-const SHIELD_ICONS = ['🕯️', '📿', '✨', '👑'] as const;
+const plural = (n: number, word: string) => `${n.toLocaleString('en-US', { maximumFractionDigits: 2 })} ${word}${n === 1 ? '' : 's'}`;
 
-const hoursText = (h: number) => `${h.toLocaleString('en-US', { maximumFractionDigits: 2 })} hour${h === 1 ? '' : 's'}`;
-const eventsText = (n: number) => `${n} event${n === 1 ? '' : 's'}`;
-
-/** The shield: a navy crest with a gold rim, the level in large type, and a gold bar toward Saint. */
-export function CanonizationShield({ rank }: { rank: CanonizationRank }) {
+/**
+ * Sprint 11 Revision 6.0: the member's merit tier this fraternal year (merit-tiers.ts), in the old shield's navy crest
+ * with a gold rim, with the Charter Member badge and what the next ladder tier still needs.
+ */
+export function MeritTierBadge({ rank }: { rank: MeritStanding }) {
   const { color, space, radius, border } = useTheme();
-  const percent = Math.round(rank.progress * 100);
+  const m = rank.metrics;
+  const next = rank.next;
   return (
     <View
       accessible
-      accessibilityLabel={`Canonization shield: ${rank.level}. ${percent} percent of the way to Saint.`}
+      accessibilityLabel={`Merit tier: ${meritBadgeText(rank)}.${rank.charterMember ? ` ${CHARTER_MEMBER_BADGE}.` : ''}`}
       style={{
         alignItems: 'center',
         gap: space.sm,
@@ -58,26 +61,35 @@ export function CanonizationShield({ rank }: { rank: CanonizationRank }) {
       }}
     >
       <AppText variant="heading" tone="white" style={{ fontSize: 40, lineHeight: 48 }}>
-        {SHIELD_ICONS[rank.levelIndex]}
+        {rank.tier?.icon ?? '○'}
       </AppText>
       <AppText variant="heading" tone="white" style={{ color: color.gold, textAlign: 'center' }}>
-        {rank.level}
+        {rank.tier ? rank.tier.label : 'No tier yet'}
       </AppText>
       <AppText variant="small" tone="white" style={{ textAlign: 'center' }}>
-        {hoursText(rank.metrics.hours)} · {eventsText(rank.metrics.events)} served
+        {rank.tier ? `Tier ${rank.tier.number} of 6 · ` : ''}fraternal year {rank.fraternalYear}
       </AppText>
-      <View style={{ alignSelf: 'stretch', height: 12, borderRadius: 6, backgroundColor: color.white, overflow: 'hidden' }}>
-        <View style={{ width: `${percent}%`, height: '100%', backgroundColor: color.gold }} />
-      </View>
+      {rank.charterMember ? (
+        <AppText variant="label" style={{ backgroundColor: color.gold, color: color.navy, paddingHorizontal: space.sm, textAlign: 'center' }}>
+          {CHARTER_MEMBER_BADGE}
+        </AppText>
+      ) : null}
       <AppText variant="small" tone="white" style={{ textAlign: 'center' }}>
-        {rank.next
-          ? `Next: ${rank.next.level} - ${rank.next.hoursNeeded > 0 ? `${hoursText(rank.next.hoursNeeded)}` : 'hours met'}, ${
-              rank.next.eventsNeeded > 0 ? `${eventsText(rank.next.eventsNeeded)}` : 'events met'
-            } to go`
-          : 'You have reached the highest level. Thank you for your service!'}
+        This year: {plural(m.hours, 'hour')} · {plural(m.events, 'event')} · {plural(m.meetings, 'meeting')} · {plural(m.recruits, 'recruit')}
       </AppText>
       <AppText variant="small" tone="white" style={{ textAlign: 'center' }}>
-        Saint: {hoursText(rank.thresholds.hours)} and {eventsText(rank.thresholds.events)} · {CANONIZATION_LEVELS.join(' → ')}
+        {next
+          ? `Next: ${next.tier.label} - ${[
+              next.hoursNeeded > 0 ? plural(next.hoursNeeded, 'hour') : null,
+              next.eventsNeeded > 0 ? plural(next.eventsNeeded, 'event') : null,
+              next.meetingsNeeded > 0 ? plural(next.meetingsNeeded, 'meeting') : null,
+            ]
+              .filter(Boolean)
+              .join(', ')} to go`
+          : 'Fraternal Champion milestones met. Thank you for your service!'}
+      </AppText>
+      <AppText variant="small" tone="white" style={{ textAlign: 'center' }}>
+        {MERIT_TIERS.map((t) => t.label).join(' → ')} · counts reset July 1
       </AppText>
     </View>
   );
@@ -133,7 +145,7 @@ export function DevotionalTracker({ version }: { version: number }) {
         </AppText>
       </Card>
       {progress.error ? <Notice tone="error" message={progress.error} /> : null}
-      {p ? <CanonizationShield rank={p.rank} /> : null}
+      {p ? <MeritTierBadge rank={p.rank} /> : null}
       <Card>
         <View style={{ gap: space.sm }}>
           {p ? (

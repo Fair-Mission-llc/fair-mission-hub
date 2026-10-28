@@ -11,7 +11,8 @@
 import { useState } from 'react';
 import { type MemberCenter } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
-import { AffiliationHistoryCard, CanonizationShield, Leaderboard } from '@/components/EngagementParts';
+import { AffiliationHistoryCard, Leaderboard } from '@/components/EngagementParts';
+import { MeritTierBadge } from '@/components/MeritTierParts';
 import { Field, Notice, PageTitle, Select } from '@/components/ui';
 import { formatDecimalHours, formatPersonName } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -94,7 +95,7 @@ function MyImpact({ c }: { c: MemberCenter }) {
           <dd className="text-3xl font-bold text-navy">{formatDecimalHours(me.hours)}</dd>
         </div>
       </dl>
-      {me.rank ? <CanonizationShield rank={me.rank} /> : null}
+      {me.rank ? <MeritTierBadge rank={me.rank} /> : null}
       <AffiliationHistoryCard memberId={me.memberId} title="My council history" />
     </section>
   );

@@ -529,26 +529,6 @@ export const TABLES: Record<string, TableMeta> = {
         }
       },
       {
-        "name": "rank_threshold_hours",
-        "kind": "int",
-        "notNull": true,
-        "identity": false,
-        "default": {
-          "kind": "literal",
-          "value": 100
-        }
-      },
-      {
-        "name": "rank_threshold_events",
-        "kind": "int",
-        "notNull": true,
-        "identity": false,
-        "default": {
-          "kind": "literal",
-          "value": 10
-        }
-      },
-      {
         "name": "feature_volunteer_quarantine",
         "kind": "bit",
         "notNull": true,
@@ -823,6 +803,133 @@ export const TABLES: Record<string, TableMeta> = {
           "LOCAL",
           "STATE"
         ]
+      },
+      {
+        "name": "institution_date",
+        "kind": "date",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "merit_t2_hours",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 1
+        }
+      },
+      {
+        "name": "merit_t2_events",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 1
+        }
+      },
+      {
+        "name": "merit_t2_meetings",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 1
+        }
+      },
+      {
+        "name": "merit_t3_hours",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 20
+        }
+      },
+      {
+        "name": "merit_t3_events",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 4
+        }
+      },
+      {
+        "name": "merit_t3_meetings",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 4
+        }
+      },
+      {
+        "name": "merit_t4_hours",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 60
+        }
+      },
+      {
+        "name": "merit_t4_events",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 8
+        }
+      },
+      {
+        "name": "merit_t4_meetings",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 8
+        }
+      },
+      {
+        "name": "merit_t5_meetings",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 3
+        }
+      },
+      {
+        "name": "merit_t5_events",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 3
+        }
+      },
+      {
+        "name": "merit_t5_recruits",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 1
+        }
       }
     ],
     "foreignKeys": [
@@ -1472,6 +1579,30 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 0
         }
+      },
+      {
+        "name": "join_date",
+        "kind": "date",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "recruited_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "flag_honorary_shield",
+        "kind": "bit",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
       }
     ],
     "foreignKeys": [
@@ -1503,6 +1634,11 @@ export const TABLES: Record<string, TableMeta> = {
       {
         "column": "WorkingStatusID",
         "refTable": "WorkingStatus",
+        "refColumn": "id"
+      },
+      {
+        "column": "recruited_by_member_id",
+        "refTable": "Member",
         "refColumn": "id"
       }
     ],

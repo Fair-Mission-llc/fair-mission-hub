@@ -96,12 +96,24 @@ export interface Council {
   tenant_type?: string | null;
   /** Sprint 6A Phase 5 (Schema 41): yearly dues per member, DEFAULT 40.00 (dues.ts). A missing value reads as 40.00. */
   base_dues_rate?: number | null;
+  /** DATE (Sprint 11 Revision 6.0, Schema 105): the council's institution (charter) date; drives the charter member rule. */
+  institution_date?: string | null;
   /**
-   * Sprint 7A (Schema 59): the canonization shield's bar (member-lifecycle.ts canonizationRank) - logged volunteer hours
-   * and distinct events served that make a 'Saint'. DEFAULT 100 and 10; a missing value reads as the default.
+   * Sprint 11 Revision 6.0 (Schema 105): the council's merit tier milestones (merit-tiers.ts councilMeritThresholds),
+   * replacing the canonization shield's rank_threshold_hours / rank_threshold_events. A missing value reads as the default.
    */
-  rank_threshold_hours?: number | null;
-  rank_threshold_events?: number | null;
+  merit_t2_hours?: number | null;
+  merit_t2_events?: number | null;
+  merit_t2_meetings?: number | null;
+  merit_t3_hours?: number | null;
+  merit_t3_events?: number | null;
+  merit_t3_meetings?: number | null;
+  merit_t4_hours?: number | null;
+  merit_t4_events?: number | null;
+  merit_t4_meetings?: number | null;
+  merit_t5_meetings?: number | null;
+  merit_t5_events?: number | null;
+  merit_t5_recruits?: number | null;
   /**
    * Sprint 7C (Schema 62): the Council Wide Settings (council-settings.ts) - the volunteer time guards' daily activity
    * cap (DEFAULT 5), single-activity hour ceiling (DEFAULT 5.0) and shift padding allowance (DEFAULT 1.0), and the
@@ -236,6 +248,12 @@ export interface Member {
   flag_large_text_mode?: number;
   /** BIT (Sprint 7A): one of the brothers who founded the council; set by the council's Admins. Default 0. */
   flag_charter_member?: number;
+  /** DATE (Sprint 11 Revision 6.0): First Degree / Initiation Date from Supreme's roster; the merit ladder's join date. */
+  join_date?: string | null;
+  /** Sprint 11 Revision 6.0: the member who recruited this one (the Tier 5 recruitment credit). */
+  recruited_by_member_id?: number | null;
+  /** BIT (Sprint 11 Revision 6.0): the Admin's switch that awards Tier 6 (Shield Circle / Honorary). Default 0. */
+  flag_honorary_shield?: number;
 }
 
 export interface MemberRoles {

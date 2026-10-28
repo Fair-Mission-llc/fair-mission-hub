@@ -4242,3 +4242,59 @@ ALTER TABLE [CouncilDonationMethod] ADD [payment_channel] VARCHAR(20) NOT NULL D
 GO
 ALTER TABLE [CouncilDonationMethod] ADD CONSTRAINT [CK_CouncilDonationMethod_qr_channel] CHECK ([DonationMethodURL] IS NULL OR [payment_channel] IN ('DIGITAL'));
 GO
+
+-- =========================================================================
+-- Sprint 11 Revision 6.0: THE 6-TIER MERIT LADDER AND CHARTER MEMBER RECOGNITION (schema version 105)
+--
+-- Member.join_date             the member's First Degree / Initiation Date (Supreme roster column 'First Degree Date'
+--                              or 'Initiation Date'). NULL when unknown; the ladder then reads DateJoinedCouncil.
+-- Member.recruited_by_member_id the member who recruited this one (the Tier 5 recruitment credit). NULL when unknown.
+-- Member.flag_honorary_shield  the Admin's switch that awards Tier 6 (Shield Circle / Honorary) on demand.
+-- Council.institution_date     the council's institution (charter) date. A member whose join_date is on or before
+--                              this date + 30 days is flagged flag_charter_member = 1 on save (merit-tiers.ts).
+-- Council.merit_t2_* .. merit_t5_*  the council's own merit milestones (Admins and Super Admins, Council Lookup
+--                              Tables drawer). Defaults: Tier 2 1 hour / 1 event / 1 meeting; Tier 3 20 / 4 / 4;
+--                              Tier 4 60 / 8 / 8; Tier 5 3 meetings / 3 events / 1 recruit.
+-- Council.rank_threshold_hours / rank_threshold_events are dropped: the canonization shield is replaced by the ladder.
+-- =========================================================================
+ALTER TABLE [Member] ADD [join_date] DATE NULL;
+GO
+ALTER TABLE [Member] ADD [recruited_by_member_id] INTEGER NULL;
+GO
+ALTER TABLE [Member]
+ADD FOREIGN KEY([recruited_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Member] ADD [flag_honorary_shield] BIT NOT NULL DEFAULT 0;
+GO
+ALTER TABLE [Council] ADD [institution_date] DATE NULL;
+GO
+ALTER TABLE [Council] ADD [merit_t2_hours] INT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [merit_t2_events] INT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [merit_t2_meetings] INT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] ADD [merit_t3_hours] INT NOT NULL DEFAULT 20;
+GO
+ALTER TABLE [Council] ADD [merit_t3_events] INT NOT NULL DEFAULT 4;
+GO
+ALTER TABLE [Council] ADD [merit_t3_meetings] INT NOT NULL DEFAULT 4;
+GO
+ALTER TABLE [Council] ADD [merit_t4_hours] INT NOT NULL DEFAULT 60;
+GO
+ALTER TABLE [Council] ADD [merit_t4_events] INT NOT NULL DEFAULT 8;
+GO
+ALTER TABLE [Council] ADD [merit_t4_meetings] INT NOT NULL DEFAULT 8;
+GO
+ALTER TABLE [Council] ADD [merit_t5_meetings] INT NOT NULL DEFAULT 3;
+GO
+ALTER TABLE [Council] ADD [merit_t5_events] INT NOT NULL DEFAULT 3;
+GO
+ALTER TABLE [Council] ADD [merit_t5_recruits] INT NOT NULL DEFAULT 1;
+GO
+ALTER TABLE [Council] DROP COLUMN [rank_threshold_hours];
+GO
+ALTER TABLE [Council] DROP COLUMN [rank_threshold_events];
+GO

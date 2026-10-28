@@ -1,5 +1,5 @@
 // Sprint 7A (schema 59): the roster import template, the member lifecycle hooks (distribution lists follow new,
-// excised and transferred members), the inactivity sweep, the phone's devotional tracker with its canonization shield,
+// excised and transferred members), the inactivity sweep, the phone's devotional tracker (its canonization shield became the merit tier badge in Sprint 11 Revision 6.0),
 // and the dashboard's monthly engagement card with the Top 5 Volunteers Leaderboard.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -7,13 +7,10 @@ import { describe, expect, it } from 'vitest';
 import {
   addDevotionalEntry,
   buildCouncilEngagement,
-  canonizationRank,
-  CANONIZATION_LEVELS,
   cleanDevotionalEntry,
   cleanNewMember,
-  cleanRankThresholds,
   cleanSupremeRosterRow,
-  councilRankThresholds,
+  DEFAULT_MERIT_THRESHOLDS,
   emptyDevotionals,
   INACTIVITY_SWEEP_DAYS,
   lastServiceDates,
@@ -73,8 +70,9 @@ describe('schema 59', () => {
     expect(TABLES.MemberDevotionals.columns.map((c) => c.name)).toEqual(['user_id', 'rosaries_said', 'adorations_count', 'confessions_count']);
     expect(read('Schema.sql')).toMatch(/ALTER TABLE \[MemberDevotionals\]\s+ADD FOREIGN KEY\(\[user_id\]\)\s+REFERENCES \[Member\]\(\[id\]\)/);
     expect(TABLES.Member.columns.find((c) => c.name === 'flag_charter_member')).toMatchObject({ kind: 'bit', notNull: true });
-    expect(TABLES.Council.columns.find((c) => c.name === 'rank_threshold_hours')).toMatchObject({ notNull: true });
-    expect(TABLES.Council.columns.find((c) => c.name === 'rank_threshold_events')).toMatchObject({ notNull: true });
+    // Sprint 11 Revision 6.0 (schema 105) dropped the rank thresholds with the canonization shield.
+    expect(TABLES.Council.columns.find((c) => c.name === 'rank_threshold_hours')).toBeUndefined();
+    expect(TABLES.Council.columns.find((c) => c.name === 'merit_t2_hours')).toMatchObject({ notNull: true });
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (59|[6-9]\d|\d{3});/);
   });
 
@@ -107,11 +105,11 @@ describe('roster import template', () => {
   it('uses headers the roster import reads, so the sheet saved as CSV loads', () => {
     expect(headers).toEqual([
       'Member Number', 'First Name', 'Last Name', 'Email', 'Phone', 'Street', 'Street 2', 'City', 'State', 'Zip',
-      'Birth Date', 'Degree', 'Date Joined', 'Charter Member', 'Role',
+      'Birth Date', 'Degree', 'Date Joined', 'Charter Member', 'First Degree Date', 'Role',
     ]);
-    const csv = `${headers.join(',')}\n1234567,Joseph,Kowalski,joseph.kowalski@example.org,(555) 201-4477,410 Columbus Avenue,Apt 2B,Springfield,IL,62701,1978-03-19,3,2026-09-12,Yes,Member\n`;
+    const csv = `${headers.join(',')}\n1234567,Joseph,Kowalski,joseph.kowalski@example.org,(555) 201-4477,410 Columbus Avenue,Apt 2B,Springfield,IL,62701,1978-03-19,3,2026-09-12,Yes,2026-09-05,Member\n`;
     const [row] = parseSupremeRosterCsv(csv);
-    expect(row).toMatchObject({ MemberNumber: 1234567, DegreeID: 3, DateJoinedCouncil: '2026-09-12', flag_charter_member: 1 });
+    expect(row).toMatchObject({ MemberNumber: 1234567, DegreeID: 3, DateJoinedCouncil: '2026-09-12', flag_charter_member: 1, join_date: '2026-09-05' });
     expect(row).not.toHaveProperty('Role');
     const clean = cleanSupremeRosterRow(row!, OWN, { activeStatusId: 1, memberTypeId: 3 }, NOW);
     expect(clean).toMatchObject({ MemberFirstName: 'Joseph', flag_charter_member: 1, DegreeID: 3 });
@@ -173,7 +171,7 @@ describe('inactivity sweep (pure)', () => {
   });
 });
 
-describe('devotional entries and the canonization shield (pure)', () => {
+describe('devotional entries and service metrics (pure)', () => {
   it('cleans an entry and adds it to the tally', () => {
     expect(cleanDevotionalEntry({ rosaries: 2 })).toEqual({ rosaries: 2, adorations: 0, confessions: 0 });
     expect(() => cleanDevotionalEntry({})).toThrow(/at least one/);
@@ -185,29 +183,8 @@ describe('devotional entries and the canonization shield (pure)', () => {
     expect(tally).toEqual({ user_id: 9, rosaries_said: 2, adorations_count: 1, confessions_count: 1 });
   });
 
-  it('ranks by the share of BOTH thresholds met: a third, two thirds, the whole bar', () => {
-    const t = { hours: 30, events: 3 };
-    expect(CANONIZATION_LEVELS).toEqual(['Servant of God', 'Venerable', 'Blessed', 'Saint']);
-    expect(canonizationRank({ hours: 0, events: 0 }, t)).toMatchObject({ level: 'Servant of God', next: { level: 'Venerable', hoursNeeded: 10, eventsNeeded: 1 } });
-    expect(canonizationRank({ hours: 10, events: 1 }, t).level).toBe('Venerable');
-    expect(canonizationRank({ hours: 29.75, events: 3 }, t)).toMatchObject({ level: 'Blessed', next: { level: 'Saint', hoursNeeded: 0.25, eventsNeeded: 0 } });
-    expect(canonizationRank({ hours: 500, events: 1 }, t).level).toBe('Venerable');
-    expect(canonizationRank({ hours: 30, events: 3 }, t)).toMatchObject({ level: 'Saint', levelIndex: 3, progress: 1, next: null });
-    // A third of 100 hours is not rounded down to 33.
-    expect(canonizationRank({ hours: 33.25, events: 10 }, { hours: 100, events: 10 }).level).toBe('Servant of God');
-    expect(canonizationRank({ hours: 33.5, events: 10 }, { hours: 100, events: 10 }).level).toBe('Venerable');
-  });
-
   it('counts hours and distinct events from the logs', () => {
     expect(memberServiceMetrics(1, [log(1, 2, '2026-01-01', 7), log(1, 1.25, '2026-01-02', 7), log(1, 1, '2026-01-03'), log(2, 9, '2026-01-01', 8)])).toEqual({ hours: 4.25, events: 1 });
-  });
-
-  it('reads and checks the council thresholds', () => {
-    expect(councilRankThresholds({})).toEqual({ hours: 100, events: 10 });
-    expect(councilRankThresholds({ rank_threshold_hours: 40, rank_threshold_events: 4 })).toEqual({ hours: 40, events: 4 });
-    expect(cleanRankThresholds({ hours: 50, events: 5 })).toEqual({ hours: 50, events: 5 });
-    expect(() => cleanRankThresholds({ hours: 0, events: 5 })).toThrow(/hours threshold/);
-    expect(() => cleanRankThresholds({ hours: 50, events: 2.5 })).toThrow(/events threshold/);
   });
 });
 
@@ -314,11 +291,11 @@ describe.each(drivers)('Sprint 7A services ($name driver)', ({ make }) => {
     expect(await db.members.sweepInactive(MEMBER.admin, OWN)).toEqual([]);
   });
 
-  it("logs the member's own devotions and ranks their shield on logged service", async () => {
+  it("logs the member's own devotions and gives their merit tier on logged service", async () => {
     const db = await make();
     const empty = await db.devotionals.getProgress(MEMBER.member);
     expect(empty.tally).toEqual({ user_id: MEMBER.member, rosaries_said: 0, adorations_count: 0, confessions_count: 0 });
-    expect(empty.rank.thresholds).toEqual({ hours: 100, events: 10 });
+    expect(empty.rank.thresholds).toEqual(DEFAULT_MERIT_THRESHOLDS);
     await db.devotionals.record(MEMBER.member, { rosaries: 3, confessions: 1 });
     const after = await db.devotionals.record(MEMBER.member, { rosaries: 1, adorations: 2 });
     expect(after.tally).toEqual({ user_id: MEMBER.member, rosaries_said: 4, adorations_count: 2, confessions_count: 1 });
@@ -326,10 +303,9 @@ describe.each(drivers)('Sprint 7A services ($name driver)', ({ make }) => {
     await expectRule(db.devotionals.getProgress(9999), 'MEMBER_NOT_FOUND');
 
     await db.activityTime.logHours(MEMBER.member, 1, 2, '2026-09-19');
-    await db.councils.setRankThresholds(MEMBER.admin, OWN, { hours: 1, events: 1 });
     const ranked = await db.devotionals.getProgress(MEMBER.member);
+    expect(ranked.rank.fraternalYear).toBe('2026-2027');
     expect(ranked.rank.metrics.hours).toBeGreaterThanOrEqual(2);
-    expect(ranked.rank).toEqual(canonizationRank(ranked.rank.metrics, { hours: 1, events: 1 }));
   });
 
   it('refuses the devotional tracker in a white-label council', async () => {
@@ -338,16 +314,6 @@ describe.each(drivers)('Sprint 7A services ($name driver)', ({ make }) => {
     await db.councils.setGlobalParameters(MEMBER.superAdmin, council.id, { tenant_type: 'GENERIC' });
     await expectRule(db.devotionals.getProgress(member.id), 'FRATERNAL_EXTENSION_REQUIRED');
     await expectRule(db.devotionals.record(member.id, { rosaries: 1 }), 'FRATERNAL_EXTENSION_REQUIRED');
-  });
-
-  it('lets only the council Admins and Super Admins set the shield thresholds', async () => {
-    const db = await make();
-    expect(await db.councils.setRankThresholds(MEMBER.admin, OWN, { hours: 40, events: 4 })).toMatchObject({ rank_threshold_hours: 40, rank_threshold_events: 4 });
-    await expectRule(db.councils.setRankThresholds(MEMBER.member, OWN, { hours: 40, events: 4 }), 'ADMIN_REQUIRED');
-    const { council } = await councilWithMember(db, 99074);
-    await expectRule(db.councils.setRankThresholds(MEMBER.admin, council.id, { hours: 40, events: 4 }), 'COUNCIL_ACCESS_DENIED');
-    await expectRule(db.councils.setRankThresholds(MEMBER.superAdmin, council.id, { hours: 0, events: 4 }), 'INVALID_INPUT');
-    expect((await db.councils.setRankThresholds(MEMBER.superAdmin, council.id, { hours: 7, events: 2 })).rank_threshold_hours).toBe(7);
   });
 
   it("compiles the month's volunteers and the Top 5 leaderboard for the council's members", async () => {
@@ -372,20 +338,20 @@ describe('Sprint 7A screens', () => {
     const parts = read('apps/web/components/EngagementParts.tsx');
     expect(parts).toContain('Top 5 Volunteers Leaderboard');
     expect(parts).toMatch(/border-4 border-gold bg-navy/);
-    expect(parts).toContain('db.councils.setRankThresholds');
+    expect(parts).toContain('<MeritTierInfo');
   });
 
   it('puts the devotional tracker and shield on the phone Home, inside the Faith Center flag', () => {
     expect(read('apps/mobile/app/(app)/index.tsx')).toContain('{faithOn ? <DevotionalTracker version={prayerVersion} /> : null}');
     const tracker = read('apps/mobile/components/DevotionalTracker.tsx');
     expect(tracker).toContain('db.devotionals.record');
-    expect(tracker).toContain('CanonizationShield');
+    expect(tracker).toContain('MeritTierBadge');
   });
 
   it('gives Admins the charter flag on the roster and the inactivity sweep on Council Wide Settings (Sprint 8A)', () => {
     const roster = read('apps/web/components/modules/MemberRecordForm.tsx');
     expect(roster).not.toContain('db.members.sweepInactive');
-    expect(roster).toContain('Charter member');
+    expect(roster).toContain('CHARTER_MEMBER_BADGE');
     expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('db.members.sweepInactive');
   });
 });

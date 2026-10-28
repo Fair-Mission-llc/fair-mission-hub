@@ -110,7 +110,7 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     const placement: Record<string, string[]> = {
       // Sprint 11 Revision 1.0: the lookups and vault link cards left; the Council Instance Record is the page header.
       'bank-accounts': ['AccountOwnersMatrix', 'PaymentQrUploader'],
-      'access-roster': ['InactivitySweepCard', 'RankThresholdsCard'],
+      'access-roster': ['InactivitySweepCard'],
       'system-settings': ['GroupedSettingsCards', 'FileRepositoryCard', 'CustomGuidesCard'],
       'feature-controls': ['LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES'],
       'feature-matrix': ['FeatureDeploymentMatrix'],

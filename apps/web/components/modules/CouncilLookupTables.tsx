@@ -44,6 +44,9 @@
 // (orderPaymentMethodRows). A blank 'Account Name Members See' falls back to the picked account's name, and the drivers
 // apply the same fallback on save. The Officer Election Parameters tab moved to the Council Election Center (/elections);
 // budget categories stay on the Annual Budget Center.
+//
+// Sprint 11 Revision 6.0: the Merit Tier Milestones tab (MeritMilestonesPanel) - the council's own Tier 2 to 5
+// milestones and its institution date - for the council's Admins and Super Admins only (canAdministerCouncil).
 import { useEffect, useRef, useState } from 'react';
 import {
   ACCOUNT_PICKER_COLUMN_LABEL,
@@ -60,6 +63,7 @@ import {
   ACCOUNT_IDENTITY_LABEL_COLUMN_LABEL,
   ACCOUNT_IDENTITY_LABEL_MAX_LENGTH,
   AGENDA_TEMPLATE_MAX_LENGTH,
+  canAdministerCouncil,
   canManageAgendaTemplates,
   councilLookupTablesFor,
   describeError,
@@ -69,6 +73,7 @@ import {
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { QrThumbnail, uploadPaymentQrImage } from '@/components/PaymentQrUploader';
 import { Markdown } from '@/components/Markdown';
+import { MeritMilestonesPanel } from '@/components/MeritTierParts';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -556,7 +561,7 @@ function AgendaTemplates({ councilId }: { councilId: number }) {
   );
 }
 
-type LookupTab = CouncilLookupTableName | 'agenda';
+type LookupTab = CouncilLookupTableName | 'agenda' | 'merit';
 
 /** `embedded` (Sprint 11 Revision 2.0): inside an Admin Desk drawer - the council picker without the page title. */
 export function CouncilLookups({ embedded = false }: { embedded?: boolean }) {
@@ -567,6 +572,7 @@ export function CouncilLookups({ embedded = false }: { embedded?: boolean }) {
   const tabs: { id: LookupTab; label: string }[] = [
     ...tables.map((t) => ({ id: t, label: TAB_LABELS[t] })),
     ...(canManageAgendaTemplates(user, scope.councilId) ? [{ id: 'agenda' as const, label: 'Meeting Agenda Templates' }] : []),
+    ...(canAdministerCouncil(user, scope.councilId) ? [{ id: 'merit' as const, label: 'Merit Tier Milestones' }] : []),
   ];
   const [chosen, setChosen] = useState<LookupTab | null>(null);
   const table = chosen && tabs.some((t) => t.id === chosen) ? chosen : tabs[0]?.id;
@@ -587,7 +593,9 @@ export function CouncilLookups({ embedded = false }: { embedded?: boolean }) {
         <>
           <Tabs tabs={tabs} value={table} onChange={setChosen} label="Council lookup tables" idPrefix="council-lookup" />
           <div id="council-lookup-panel" role="tabpanel" aria-labelledby={`council-lookup-tab-${table}`} className="pt-4">
-            {table === 'agenda' ? (
+            {table === 'merit' ? (
+              <MeritMilestonesPanel key={scope.councilId} councilId={scope.councilId} />
+            ) : table === 'agenda' ? (
               <AgendaTemplates key={scope.councilId} councilId={scope.councilId} />
             ) : (
               <LookupEditor key={`${scope.councilId}-${table}`} councilId={scope.councilId} table={table} />

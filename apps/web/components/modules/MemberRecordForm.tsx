@@ -7,6 +7,8 @@
 // flag is no longer set here: the Annual Budget Center assigns it, and an edit keeps the stored value.
 import { useEffect, useState } from 'react';
 import {
+  CHARTER_MEMBER_BADGE,
+  CHARTER_WINDOW_DAYS,
   canCreateMembers,
   canEditMember,
   describeError,
@@ -19,6 +21,7 @@ import {
 } from '@kofc/shared';
 import { Button, Field, Input, Notice, Panel, Pill, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
+import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 type Message = { tone: 'error' | 'info'; text: string };
@@ -61,7 +64,10 @@ export interface Lookups {
  * Large Text Layout Mode choice (Sprint 6C).
  */
 type Draft = Record<
-  Exclude<keyof NewMember, 'WorkingStatusID' | 'ProfilePhotoURL' | 'Biography' | 'IsBudgetDirector' | 'flag_large_text_mode' | 'flag_charter_member'>,
+  Exclude<
+    keyof NewMember,
+    'WorkingStatusID' | 'ProfilePhotoURL' | 'Biography' | 'IsBudgetDirector' | 'flag_large_text_mode' | 'flag_charter_member' | 'recruited_by_member_id' | 'flag_honorary_shield'
+  >,
   string
 >;
 
@@ -74,6 +80,8 @@ const TEXT_FIELDS: { key: keyof Draft; label: string; type?: string; maxLength: 
   { key: 'DateOfBirth', label: 'Date of birth', type: 'date', maxLength: 10 },
   // Sprint 6B Patch: from Supreme's roster; the New Member badge shows for 180 days from it.
   { key: 'DateJoinedCouncil', label: 'Date joined council', type: 'date', maxLength: 10, optional: true },
+  // Sprint 11 Revision 6.0: Supreme's First Degree / Initiation Date - the merit ladder's join date and the charter rule's date.
+  { key: 'join_date', label: 'First Degree / Initiation Date', type: 'date', maxLength: 10, optional: true },
   { key: 'StreetAddress1', label: 'Street address', maxLength: 255, wide: true },
   { key: 'StreetAddress2', label: 'Street address line 2', maxLength: 255, optional: true, wide: true },
   { key: 'City', label: 'City', maxLength: 50 },
@@ -99,6 +107,7 @@ function draftFrom(member: Member | null, councilId: number, lookups: Lookups): 
       Email: '',
       DateOfBirth: '',
       DateJoinedCouncil: '',
+      join_date: '',
       StatusID: idOf(lookups.statuses.find((s) => s.Status === 'Active') ?? lookups.statuses[0]),
       DegreeID: idOf(lookups.degrees[0]),
       MemberTypeID: idOf(lookups.types.find((t) => t.Type === 'Member') ?? lookups.types[0]),
@@ -119,6 +128,7 @@ function draftFrom(member: Member | null, councilId: number, lookups: Lookups): 
     Email: member.Email,
     DateOfBirth: member.DateOfBirth,
     DateJoinedCouncil: text(member.DateJoinedCouncil),
+    join_date: text(member.join_date),
     StatusID: text(member.StatusID),
     DegreeID: text(member.DegreeID),
     MemberTypeID: text(member.MemberTypeID),
@@ -126,7 +136,7 @@ function draftFrom(member: Member | null, councilId: number, lookups: Lookups): 
 }
 
 /** IsBudgetDirector is left out, so an edit keeps the stored flag; the Annual Budget Center assigns it (Sprint 10 Revision 3.0). */
-function toNewMember(d: Draft, charter: boolean): NewMember {
+function toNewMember(d: Draft, charter: boolean, merit: { recruiter: string; honorary: boolean }): NewMember {
   return {
     CouncilID: Number(d.CouncilID),
     MemberNumber: Number(d.MemberNumber),
@@ -145,6 +155,9 @@ function toNewMember(d: Draft, charter: boolean): NewMember {
     DegreeID: Number(d.DegreeID),
     MemberTypeID: Number(d.MemberTypeID),
     flag_charter_member: charter ? 1 : 0,
+    join_date: d.join_date.trim() === '' ? null : d.join_date,
+    recruited_by_member_id: merit.recruiter === '' ? null : Number(merit.recruiter),
+    flag_honorary_shield: merit.honorary ? 1 : 0,
   };
 }
 
@@ -169,6 +182,14 @@ export function MemberForm({
   const [charter, setCharter] = useState(member?.flag_charter_member === 1);
   useEffect(() => setCharter(member?.flag_charter_member === 1), [member]);
   const mayMarkCharter = canCreateMembers(user, member?.CouncilID ?? councilId);
+  // Sprint 11 Revision 6.0: the recruiter (Tier 5 recruitment credit) and the Admin's Honorary (Tier 6) switch.
+  const [recruiter, setRecruiter] = useState(member?.recruited_by_member_id == null ? '' : String(member.recruited_by_member_id));
+  const [honorary, setHonorary] = useState(member?.flag_honorary_shield === 1);
+  useEffect(() => {
+    setRecruiter(member?.recruited_by_member_id == null ? '' : String(member.recruited_by_member_id));
+    setHonorary(member?.flag_honorary_shield === 1);
+  }, [member]);
+  const recruiters = useLoad(() => db.members.listByCouncil(member?.CouncilID ?? councilId), [member?.CouncilID ?? councilId]);
 
   const typeName = (id: number) => lookups.types.find((t) => t.id === id)?.Type;
   const currentType = member ? typeName(member.MemberTypeID) : undefined;
@@ -183,7 +204,7 @@ export function MemberForm({
   const save = async () => {
     setBusy(true);
     const ok = await run(async () => {
-      const values = toNewMember(draft, charter);
+      const values = toNewMember(draft, charter, { recruiter, honorary });
       if (member) {
         const saved = await db.members.update(user.memberId, member.id, values);
         onSaved(saved.id);
@@ -196,6 +217,8 @@ export function MemberForm({
     if (ok && !member) {
       setDraft(draftFrom(null, councilId, lookups));
       setCharter(false);
+      setRecruiter('');
+      setHonorary(false);
     }
   };
 
@@ -264,16 +287,49 @@ export function MemberForm({
           </p>
         ) : null}
         {mayMarkCharter ? (
-          <label className="flex items-center gap-3 text-sm">
-            <input type="checkbox" className="size-5" checked={charter} onChange={(e) => setCharter(e.target.checked)} />
-            <span className="font-bold">Charter member</span>
-            <span className="text-xs text-muted">One of the brothers who founded the council.</span>
-          </label>
-        ) : member?.flag_charter_member === 1 ? (
-          <p className="text-sm">
-            <Pill tone="gold">Charter member</Pill>
-          </p>
-        ) : null}
+          <>
+            <label className="flex items-center gap-3 text-sm">
+              <input type="checkbox" className="size-5" checked={charter} onChange={(e) => setCharter(e.target.checked)} />
+              <span className="font-bold">{CHARTER_MEMBER_BADGE}</span>
+              <span className="text-xs text-muted">
+                One of the brothers who founded the council. Set automatically on save when the First Degree / Initiation Date is within {CHARTER_WINDOW_DAYS} days
+                of the council&apos;s institution date.
+              </span>
+            </label>
+            <Field label="Recruited by (optional)" hint="Gives the recruiter the Tier 5 recruitment credit in the fraternal year this member joined." className="max-w-sm">
+              {(id) => (
+                <Select id={id} value={recruiter} onChange={(e) => setRecruiter(e.target.value)}>
+                  <option value="">Not recorded</option>
+                  {(recruiters.data ?? [])
+                    .filter((m) => m.id !== member?.id)
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.MemberLastName}, {m.MemberFirstName}
+                      </option>
+                    ))}
+                </Select>
+              )}
+            </Field>
+            <label className="flex items-center gap-3 text-sm">
+              <input type="checkbox" className="size-5" checked={honorary} onChange={(e) => setHonorary(e.target.checked)} />
+              <span className="font-bold">👑 Shield Circle / Honorary (Tier 6)</span>
+              <span className="text-xs text-muted">Awards Tier 6 on demand. Executive officers and members of 25+ years hold it automatically.</span>
+            </label>
+          </>
+        ) : (
+          <>
+            {member?.flag_charter_member === 1 ? (
+              <p className="text-sm">
+                <Pill tone="gold">{CHARTER_MEMBER_BADGE}</Pill>
+              </p>
+            ) : null}
+            {member?.flag_honorary_shield === 1 ? (
+              <p className="text-sm">
+                <Pill tone="gold">👑 Shield Circle / Honorary</Pill>
+              </p>
+            ) : null}
+          </>
+        )}
         {editable ? (
           <div className="flex gap-2">
             <Button type="submit" disabled={busy}>

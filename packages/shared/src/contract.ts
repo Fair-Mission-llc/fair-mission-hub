@@ -121,7 +121,8 @@ import type { MemberRosterOptions, MemberRosterResult } from './member-roster';
 import type { CouncilAccount, CouncilAccountInput, SplitSisterCouncil } from './council-accounts';
 import type { FileRepositorySettings } from './file-repository';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
-import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter, RankThresholds } from './member-lifecycle';
+import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter } from './member-lifecycle';
+import type { MeritThresholds } from './merit-tiers';
 import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
 import type { CouncilWideSettings } from './council-settings';
 import type { RegionalAssignment, RegionalAssignmentInput, RegionalAssignmentWorkspace, RegionalDesk, RegionalDeskReport } from './regional';
@@ -2003,6 +2004,8 @@ export interface SupremeRosterRow {
   DateJoinedCouncil: string;
   /** Sprint 7A: the template's Charter Member column (Yes/No read as 1/0); omitted is 0. */
   flag_charter_member?: number;
+  /** Sprint 11 Revision 6.0: the 'First Degree Date' / 'Initiation Date' column (Member.join_date); blank is unknown. */
+  join_date?: string | null;
 }
 
 /** supreme.syncSupremeRoster's answer. */
@@ -2566,12 +2569,14 @@ export interface DataService {
      */
     setGlobalParameters(actorId: number, councilId: number, parameters: GlobalCouncilParameters): Promise<Council>;
     /**
-     * Sprint 7A: saves the canonization shield's thresholds (Council.rank_threshold_hours and rank_threshold_events,
-     * member-lifecycle.ts cleanRankThresholds) and resolves to the updated council. Only an Active Admin of the council or
-     * an Active Super Admin may (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED, nothing written). RECORD_NOT_FOUND for an unknown
-     * council, INVALID_INPUT for a value that is not a whole number from 1 to the maximum.
+     * Sprint 11 Revision 6.0: saves the council's merit tier milestones (Council.merit_t2_* .. merit_t5_*,
+     * merit-tiers.ts cleanMeritThresholds) and, when given, its institution date (Council.institution_date, the charter
+     * member rule's anchor; null clears it). Resolves to the updated council. Only an Active Admin of the council or an
+     * Active Super Admin may (assertMaySetMeritThresholds: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED, nothing written).
+     * RECORD_NOT_FOUND for an unknown council; INVALID_INPUT for a milestone that is not a whole number from 0 to the
+     * maximum, Tier 2 to 4 milestones that go down, or a bad or future institution date. Replaces setRankThresholds.
      */
-    setRankThresholds(actorId: number, councilId: number, thresholds: RankThresholds): Promise<Council>;
+    setMeritThresholds(actorId: number, councilId: number, thresholds: MeritThresholds, institutionDate?: string | null): Promise<Council>;
     /**
      * Sprint 7C: the Council Wide Settings page (/system-settings/council-settings). Saves one or more of the council's
      * quarantine_max_daily_activities, quarantine_max_single_hours, max_shift_padding_hours and inactivity_threshold_days
@@ -3660,7 +3665,9 @@ export interface DataService {
      * Sprint 6B Patch: brings Supreme Headquarters' roster into the council's Member table. A row whose MemberNumber is
      * not yet on the council's roster becomes a new Active member (MemberType 'Member') with a placeholder login, and the
      * moment the batch is stored each new member is sent the welcome email with the app download steps and a one-time
-     * setup code (MemberEnrollmentToken). A row already on the roster only has its DateJoinedCouncil brought in line;
+     * setup code (MemberEnrollmentToken). A row already on the roster only has its DateJoinedCouncil (and, from Sprint 11
+     * Revision 6.0, a non-blank First Degree Date as join_date) brought in line, and gets flag_charter_member = 1 when the
+     * join date falls in the council's charter window (merit-tiers.ts applyCharterRule; new rows get the same rule);
      * the council keeps its own contact details. Invalid rows, emails already in use and member numbers repeated in
      * the batch are skipped with their reason; the rest are stored together. For the council's Active Admins and any
      * Active Super Admin (assertMayImportSupremeRoster: ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED).

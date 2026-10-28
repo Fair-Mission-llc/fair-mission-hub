@@ -1102,7 +1102,7 @@ Cash, budgets and the general ledger stay on the **Executive Dashboard** and the
 | **Council volunteers** | The month's volunteer count, the hours served and the name of each member who served |
 | **Our combined devotions** | The rosaries, hours of adoration and confessions of all members, added together |
 | **Top 5 Volunteers Leaderboard** | The 5 active members with the most hours ever logged at council events and activities |
-| **My impact** | The reader's own events attended, personal hours, canonization shield and council history |
+| **My impact** | The reader's own events attended, personal hours, merit tier and council history |
 
 - The combined devotions show only totals. No card shows the devotions of one member.
 - Members with equal hours share a place on the leaderboard.
@@ -1130,50 +1130,51 @@ Cash, budgets and the general ledger stay on the **Executive Dashboard** and the
 | A volunteer is missing from the month. | The volunteer did not log hours yet. | Ask the volunteer to log the hours. Hours close after the logging window, 90 days by default. |
 | The devotions card shows 0. | No member logged devotions on the phone. | Tell members about the **[ 📖 Daily Devotional Drawer ]** on the phone Home screen. |
 
-### 9.3 Concept: personal impact and the canonization shield
+### 9.3 Concept: personal impact and the merit tier
 The **My impact** card shows three personal measures.
 
 | Measure | How the platform counts the measure |
 | --- | --- |
 | **Events attended** | The events where the member logged shift hours, each event counted one time |
 | **Personal hours** | All shift hours and activity hours the member logged |
-| Canonization shield | The member's level, from the logged hours and events against the council's thresholds |
+| Merit tier | The highest of the six tiers the member qualifies for this fraternal year |
 
-The shield has four levels. A member reaches a level when both the hours and the events meet the level's share.
+The tiers count hours, events, meeting check-ins and new members recruited in the current fraternal year (July 1 to June 30). The counts start again at 0 every July 1.
 
-| Level | Share of both thresholds |
-| --- | --- |
-| Servant of God | The starting level |
-| Venerable | One third |
-| Blessed | Two thirds |
-| Saint | The full thresholds |
+| Tier | Name | Default rule |
+| --- | --- | --- |
+| 1 | 🌱 New Member | 180 days or fewer since the First Degree / Initiation Date |
+| 2 | ⚔️ Active Knight | 1 hour, 1 event and 1 meeting |
+| 3 | ⚓ Anchor Knight | 20 hours, 4 events and 4 meetings |
+| 4 | 🏆 Fraternal Champion | 60 hours, 8 events and 8 meetings |
+| 5 | 🛡️ Shining Armor Companion | 3 meetings, 3 separate events and 1 new member recruited |
+| 6 | 👑 Shield Circle / Honorary | The Grand Knight or Deputy Grand Knight seat, 25+ years since joining, or awarded by an Admin |
 
-- The default thresholds are 100 hours and 10 events.
-- Devotions do not change the shield. The shield counts logged service only.
-- The member logs devotions on the phone: Home → **[ 📖 Daily Devotional Drawer ]** → **Log devotions**. Only the member sees the member's own tally.
+- A member who meets no rule has no tier yet. The card says **No tier yet**.
+- A founding member also shows the **📜 Charter Member** badge.
+- Devotions do not change the tier. The member logs devotions on the phone: Home → **[ 📖 Daily Devotional Drawer ]** → **Log devotions**. Only the member sees the member's own tally.
 
-### 9.4 Set the canonization shield thresholds
+### 9.4 Set the merit tier milestones
 > **Prerequisite (who can do this):** You must have council Admin privileges for the council, or Super Admin privileges.
 
-**Goal:** Set the hours and events that make a Saint in your council.
+**Goal:** Set the numbers for Tiers 2 to 5 in your council.
 
-The thresholds are the Canonization Rank benchmarks. You change the benchmarks on **Council Wide Settings** only. Every other page shows the benchmarks as read-only text.
+You change the milestones on the **Admin Desk** only. Every other page shows the tiers as read-only text.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **User Access & Roster Control** → **Canonization Rank Benchmarks** card.
+**Start point:** Sidebar → System Settings → **Admin Desk** → **Council Lookup Tables** drawer → **Merit Tier Milestones** tab.
 
 **Steps:**
-1. Find the **Canonization Rank Benchmarks** card under the **Roster Inactivity Sweep** card.
-2. Enter the **Hours**. Use a whole number from 1 to 10,000.
-3. Enter the **Events**. Use a whole number from 1 to 1,000.
-4. Select **Save**.
+1. Enter the **Hours**, **Events** and **Meetings** for Tiers 2, 3 and 4.
+2. Enter the **Meetings**, **Separate events** and **Recruits** for Tier 5.
+3. Select **Save milestones**.
 
-**Expected result:** The message **Shield thresholds saved.** shows. Every member's shield uses the new thresholds at once.
+**Expected result:** The message **Merit tier milestones saved.** shows. Every member's tier uses the new numbers at once.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The thresholds are refused. | A value is 0, a decimal or too large. | Enter a whole number in the allowed range. |
-| The card shows the benchmarks as text only. | Only Admins and Super Admins set the thresholds. | Ask a council Admin. |
+| The milestones are refused. | A value is a decimal, too large, or lower than the tier below. | Enter whole numbers that do not go down from Tier 2 to Tier 4. |
+| The tab is missing. | Only Admins and Super Admins set the milestones. | Ask a council Admin. |
 
 ### 9.5 Read the monthly activity overview
 > **Prerequisite (who can do this):** You must be a seated officer or an Admin of the council, or a Super Admin.
@@ -1204,7 +1205,7 @@ The platform holds some hour entries for leadership review. A held entry is flag
 A held entry does not count anywhere until a leader clears it. The rule covers these totals:
 
 - The council's monthly summary and the **Executive Dashboard** hours.
-- The member's canonization shield and personal hours.
+- The member's merit tier and personal hours.
 - The **Top 5 Volunteers Leaderboard** and the **Council Dashboard**.
 
 The member sees this message when the platform holds an entry: "... hours sent to leadership review before they count toward your totals."

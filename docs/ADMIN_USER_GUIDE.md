@@ -259,7 +259,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 **Start point:** Sidebar → System Settings → **Council Lookup Tables**.
 
 **Steps:**
-1. Open the tab: **Activities**, **Donation types**, **Enabled donation methods** or **Meeting Agenda Templates**.
+1. Open the tab: **Activities**, **Donation types**, **Enabled donation methods**, **Meeting Agenda Templates** or **Merit Tier Milestones** (5.6).
 2. Edit the rows. Each changed row shows **Edited** under its ID.
 3. In **Status**, select **Active** or **Inactive**. An **Inactive** row stays for the old records, but members cannot pick it for new hours or new donations.
 4. On **Enabled donation methods**, select the **Account**. **Council Account** is the default. The other choices are the rows of the **Account Owners Matrix** (8.10). A **Parish** account shows **(Parish)** and an **Affiliated Entity** account shows **(Affiliated Entity)**. Their gifts are not the council's. They stay off the Treasurer's batch coder.
@@ -381,6 +381,42 @@ The registry keeps the date of each verification and the Admin who verified the 
 
 ---
 
+### 5.6 Set the merit tier milestones and the institution date
+> **Prerequisite (who can do this):** You must be a council Admin of the council, or a Super Admin. Other members do not see the **Merit Tier Milestones** tab.
+> **Note:** the counts start again at 0 every July 1. The tiers count only the current fraternal year (July 1 to June 30).
+
+**Goal:** Set the numbers that give members a merit tier in your council, and the date that marks charter members.
+
+Each member holds the highest tier that the member qualifies for:
+
+| Tier | Name | What the member needs |
+| --- | --- | --- |
+| 1 | 🌱 New Member | 180 days or fewer since the **First Degree / Initiation Date**. Fixed. |
+| 2 | ⚔️ Active Knight | Hours, events and meetings this year. Default: 1 hour, 1 event, 1 meeting. |
+| 3 | ⚓ Anchor Knight | Default: 20 hours, 4 events, 4 meetings. |
+| 4 | 🏆 Fraternal Champion | Default: 60 hours, 8 events, 8 meetings. |
+| 5 | 🛡️ Shining Armor Companion | Meetings, separate events and new members recruited this year. Default: 3 meetings, 3 events, 1 recruit. |
+| 6 | 👑 Shield Circle / Honorary | The Grand Knight or Deputy Grand Knight seat, 25 or more years since the join date, or the **Shield Circle / Honorary (Tier 6)** switch on the member record. Fixed. |
+
+A meeting counts when the member checks in to it. A recruit counts when the recruit's member record names the member in **Recruited by** and the recruit joined in this fraternal year.
+
+**Start point:** Sidebar → System Settings → **Admin Desk** → **Council Lookup Tables** drawer → **Merit Tier Milestones** tab.
+
+**Steps:**
+1. Enter the **Council institution date**: the date of the council's charter.
+2. For Tiers 2, 3 and 4, enter the **Hours**, **Events** and **Meetings**. Use whole numbers. A higher tier must not ask for less than the tier below it.
+3. For Tier 5, enter the **Meetings**, **Separate events** and **Recruits**.
+4. Select **Save milestones**.
+
+**Expected result:** The message **Merit tier milestones saved.** shows. Every member's tier uses the new numbers at once. When a member record or a roster import is saved, a member whose **First Degree / Initiation Date** is on or before the institution date + 30 days gets the **📜 Charter Member** badge.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The milestones are refused. | A value is not a whole number, or a higher tier asks for less than a lower tier. | Correct the value. |
+| A founding member has no **📜 Charter Member** badge. | The institution date or the member's **First Degree / Initiation Date** is empty. | Enter both dates. Save the member record again. |
+| The tab is missing. | You are not an Admin of this council. | Ask a council Admin. |
+
 ## 6. Data protection rules
 - **Nothing cascades.** The platform refuses to delete a record that other records use. The message names the record in use.
 - Examples: a shift with sign-ups, a member with logged hours, a lookup value in use.
@@ -452,7 +488,7 @@ A number that you typed but did not save stays in its card when you close the dr
 | Drawer | What the drawer holds |
 | --- | --- |
 | **Standard Bank Accounts** | The **Account Owners Matrix** (8.10) and the **Payment QR Codes** card (8.12). |
-| **User Access & Roster Control** | The **Roster Inactivity Sweep** and **Canonization Rank Benchmarks** cards. The meeting PIN is on the **Recorder Desk** (and the **Grand Knight Desk** when the Recorder is absent). |
+| **User Access & Roster Control** | The **Roster Inactivity Sweep** card. The merit tier milestones are on **Council Lookup Tables** → **Merit Tier Milestones** (5.6). The meeting PIN is on the **Recorder Desk** (and the **Grand Knight Desk** when the Recorder is absent). |
 | **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **File Repository Mode** card (8.9) and the **Custom User Guides** card. |
 | **Feature Controls** | The **Cross-Council Loaner Library Sharing** card and the **Module & Platform Switches** links. |
 | **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
@@ -1304,7 +1340,7 @@ Select a drawer to open its panel on the right. Select another drawer to change 
 | Drawer | What the panel holds |
 | --- | --- |
 | **1. Council Wide Settings** | The same panels as **System Settings** → **Council Wide Settings**, with **Standard Bank Accounts** first |
-| **2. Council Lookup Tables** | Activities, donation types and payment methods. Each row is **Active** or **Inactive** |
+| **2. Council Lookup Tables** | Activities, donation types and payment methods. Each row is **Active** or **Inactive**. The **Merit Tier Milestones** tab sets the merit tiers (5.6) |
 | **3. Credentials Vault** | The keys of your home council only |
 | **4. Global Charities Registry** | Verified charities, suggestions, search, filters and the add form |
 | **5. Council Asset Management** | The council's assets inventory. Trustees add the asset photos |
