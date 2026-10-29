@@ -59,10 +59,13 @@ export interface NodeSqlite {
   pathOf(name: string): string;
 }
 
-/** The SQLite module for a hub whose files live in `dir`. */
-export function createNodeSqlite(dir: string): NodeSqlite {
+/**
+ * The SQLite module for a hub whose files live in `dir`. Sprint 11 Revision 13.0: `vaultFile` names the file the phone data
+ * layer's 'kofc.db' becomes - the vault by default, or the simulated central database (central-sync.ts).
+ */
+export function createNodeSqlite(dir: string, vaultFile: string = HUB_VAULT_FILE): NodeSqlite {
   const pathOf = (name: string) =>
-    name === PHONE_DATABASE_NAME ? join(/*turbopackIgnore: true*/ dir, HUB_VAULT_FILE) : join(/*turbopackIgnore: true*/ dir, 'backups', name);
+    name === PHONE_DATABASE_NAME ? join(/*turbopackIgnore: true*/ dir, vaultFile) : join(/*turbopackIgnore: true*/ dir, 'backups', name);
   return {
     pathOf,
     async openDatabaseAsync(name) {
@@ -74,7 +77,7 @@ export function createNodeSqlite(dir: string): NodeSqlite {
       return new SQLiteDatabase(raw);
     },
     async deleteDatabaseAsync(name) {
-      throw new Error(`The hub never deletes ${name === PHONE_DATABASE_NAME ? HUB_VAULT_FILE : name}: its records are kept on disk.`);
+      throw new Error(`The hub never deletes ${name === PHONE_DATABASE_NAME ? vaultFile : name}: its records are kept on disk.`);
     },
     async backupDatabaseAsync({ sourceDatabase, destDatabase }) {
       const target = destDatabase.raw.location();

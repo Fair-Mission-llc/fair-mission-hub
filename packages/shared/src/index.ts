@@ -91,6 +91,7 @@ export * from './pilot-timeline';
 export * from './calendar-feed';
 export * from './donation-attachments';
 export * from './hub-sync';
+export * from './pilot-sync';
 export * from './admin-desk';
 export * from './setup-wizard';
 export * from './regional';

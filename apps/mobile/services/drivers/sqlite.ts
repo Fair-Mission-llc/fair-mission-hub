@@ -1183,6 +1183,18 @@ export class SqliteDataService implements DataService {
     await this.ready();
   }
 
+  /** Sprint 11 Revision 13.0: closes the file (the hub closes the simulated central database after its handshake). */
+  async close(): Promise<void> {
+    const opening = this.opening;
+    this.opening = null;
+    if (!opening) return;
+    try {
+      await (await opening).closeAsync();
+    } catch {
+      // a failed open has nothing to close
+    }
+  }
+
   async reset(): Promise<void> {
     const opening = this.opening;
     this.opening = null;

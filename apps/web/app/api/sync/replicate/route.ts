@@ -11,6 +11,8 @@
 // phone posts the code to /api/auth/two-factor, which sets the cookie. A setup-code sign-up is not asked again: the
 // setup code from the welcome email already is a one-time code.
 // GET answers whether hub mode is on, for the pilot checklist. 404 while hub mode is off (npm run build:web).
+// Sprint 11 Revision 13.0: GET ?handshake=1 (npm run dev:pilot calls it at launch) opens the vault - creating it and running
+// the central sync handshake when it does not exist yet - and every GET reports the sync receipt (null: never synced).
 import { NextResponse } from 'next/server';
 import {
   assertHubCallAllowed,
@@ -22,7 +24,8 @@ import {
   type HubCall,
   type HubReply,
 } from '@kofc/shared';
-import { callHub, hubModeOn } from '@/services/server/hub/hub-vault';
+import { callHub, hubDataDir, hubModeOn, hubService } from '@/services/server/hub/hub-vault';
+import { readSyncReceipt } from '@/services/server/hub/central-sync';
 import { readPortalSession, signInOnServer } from '@/services/server/session';
 import { issueTwoFactorChallenge, TwoFactorContactMissingError } from '@/services/server/two-factor';
 
@@ -40,9 +43,15 @@ const hubOff = () =>
 const gateStatus = (err: unknown): number =>
   err instanceof BusinessRuleError ? (err.code === 'HUB_SESSION_REQUIRED' ? 401 : err.code === 'INVALID_INPUT' ? 400 : 403) : 400;
 
-export async function GET() {
+export async function GET(req?: Request) {
+  const hub = hubModeOn();
+  let opened = false;
+  if (hub && req && new URL(req.url).searchParams.get('handshake') === '1') {
+    await hubService();
+    opened = true;
+  }
   return NextResponse.json(
-    { hub: hubModeOn(), vault: HUB_VAULT_RELATIVE_PATH, schemaVersion: PLATFORM_SCHEMA_VERSION },
+    { hub, vault: HUB_VAULT_RELATIVE_PATH, schemaVersion: PLATFORM_SCHEMA_VERSION, opened, sync: hub ? readSyncReceipt(hubDataDir()) : null },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }

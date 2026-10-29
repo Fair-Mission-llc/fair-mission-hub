@@ -11,7 +11,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dir = process.env.HUB_VAULT_DIR?.trim() ? resolve(process.env.HUB_VAULT_DIR.trim()) : join(root, 'packages', 'backend', 'data');
-const ENTRIES = ['central-hub-vault.db', 'central-hub-vault.db-wal', 'central-hub-vault.db-shm', 'hub-ballot-secret.txt', 'photos', 'backups'];
+const ENTRIES = ['central-hub-vault.db', 'central-hub-vault.db-wal', 'central-hub-vault.db-shm', 'hub-ballot-secret.txt', 'photos', 'backups', 'hub-sync-receipt.json'];
+// Sprint 11 Revision 13.0: the handshake receipt goes with its vault; the simulated central database (simulated-central.db)
+// stays, so the next new vault pulls from it again.
 
 const running = await fetch('http://127.0.0.1:3000/api/sync/replicate')
   .then((r) => r.json())

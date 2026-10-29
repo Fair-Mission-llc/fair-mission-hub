@@ -1105,7 +1105,9 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | Command | What it does |
 | --- | --- |
 | `npm run build:pilot` | Builds the web portal as the hub. |
-| `npm run dev:pilot` | Starts the hub. It prints the portal address, for example `http://10.0.0.167:3000`. |
+| `npm run dev:pilot` | Starts the hub. It prints the portal address, for example `http://10.0.0.167:3000`. A fresh vault pulls council 15295 from the simulated central database (11.1.1). |
+| `npm run dev:pilot -- --council <number>` | Starts the hub. A fresh vault pulls the named council instead. |
+| `npm run dev:pilot -- --no-sync` | Starts the hub. A fresh vault holds the seed data only. |
 | `npm run dev:mobile:pilot` | Starts the phone app server. The phones work on the hub. |
 | `npm run hub:archive` | Moves the vault into `packages/backend/data/archive`. The next start makes a fresh vault. |
 
@@ -1122,9 +1124,10 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 3. To start the scripted rehearsal on fresh records, run `npm run hub:archive`.
 4. Run `npm run dev:pilot`. Keep this terminal open.
 5. Read the line `[pilot] Hub mode: every device works on packages/backend/data/central-hub-vault.db.` Write down the portal address on that line.
-6. In a second terminal, run `npm run dev:mobile:pilot`. Keep this terminal open.
-7. On each laptop, open the portal address in the browser. Sign in.
-8. On each phone, scan the QR code in the second terminal with Expo Go. Sign in.
+6. On a fresh vault, read the line `[pilot] Live data: council 15295 ...`. The line counts the members, the hour entries and the switches that the hub pulled in (11.1.1).
+7. In a second terminal, run `npm run dev:mobile:pilot`. Keep this terminal open.
+8. On each laptop, open the portal address in the browser. Sign in.
+9. On each phone, scan the QR code in the second terminal with Expo Go. Sign in.
 
 **Expected result:** Every device shows the same records. A donation recorded on a phone shows on the Treasurer's laptop after the page reloads.
 
@@ -1136,6 +1139,17 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | The phone app cannot sign in. | The phone server has the wrong hub address. | Stop `npm run dev:mobile:pilot`. Run `npm run dev:mobile:pilot -- --hub http://<hub address>:3000`. |
 | The hub stops with *"The hub vault is at database version ..."*. | The vault is from an older version of the platform. | Run `npm run hub:archive`. Start the hub again. The old vault stays in the archive folder. |
 | Windows asks if Node.js can use the network. | The firewall protects the laptop. | Allow access on private networks. |
+| The terminal shows `[pilot] No sync receipt`. | The vault was there before the start. The hub never syncs over a vault. Or the handshake failed. | To pull live data, stop the hub, run `npm run hub:archive`, and start the hub again. If the line stays, read the `[hub]` line in the terminal. |
+| The terminal shows `--council needs a council number`. | The value after `--council` is not a number. | Type the council number, for example `npm run dev:pilot -- --council 15295`. |
+
+### 11.1.1 Concept: the live data handshake
+- The simulated central database is one file, `packages/backend/data/simulated-central.db`. It holds every council. It stands in for the production database until the production connection is ready.
+- The hub makes the central file from the seed data the first time it needs the file. After that, the hub keeps the file. `npm run hub:archive` does not move it. Changes in the central file go into the next fresh vault.
+- When `npm run dev:pilot` makes a fresh vault, the hub pulls one council from the central file: the roster, the logged event and activity hours, the module switches, and the parent organization.
+- The hub adds members that the vault does not have and refreshes the members that it has. It deletes nothing. The seven `@stmarys.org` pilot personas stay as the seed made them, so the pilot scripts still work.
+- The hub never syncs over a vault that is already there. To pull again, archive the vault first.
+- The charts, the merit badges, the leaderboard and the Admin Desk read the vault rows, so they show the synced data. When the parent organization is `KofC`, the Form 1728 popups show. When it is `SECULAR_CHARITY`, the screens show the organization matrices instead.
+- The hub keeps a receipt of the handshake beside the vault: `hub-sync-receipt.json`.
 
 ### 11.2 Keep or archive the vault after a session
 > **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
@@ -1270,6 +1284,8 @@ The launchers set most keys. Set the other keys in the terminal or in `.env`. Ne
 | `NEXT_PUBLIC_DATA_DRIVER` | `npm run build:pilot` sets `hub` | Chooses where the records live: `memory` (default), `hub` or `remote`. The value is fixed at build time. |
 | `PORTAL_ALLOW_HTTP_COOKIES` | `npm run dev:pilot` sets `1` | Lets the session cookie travel over plain `http` on the room Wi-Fi. Never set it on a server that the internet can reach. |
 | `HUB_VAULT_DIR` | You, when needed | Moves the vault folder away from `packages/backend/data`. `npm run hub:archive` uses the same folder. |
+| `PILOT_SYNC_COUNCIL` | `npm run dev:pilot` sets `15295`, or the `--council` number | The council that a fresh vault pulls from the simulated central database (11.1.1). Without it, a fresh vault holds the seed data only. |
+| `PILOT_CENTRAL_DIR` | You, when needed | Moves the simulated central database away from the vault folder. |
 | `HUB_URL` | You, when needed | The hub address for `npm run dev:mobile:pilot`, the same as `--hub http://<address>:3000`. |
 | `EXPO_PUBLIC_DATA_DRIVER`, `EXPO_PUBLIC_HUB_URL` | `npm run dev:mobile:pilot` | Point the phone app at the hub. |
 | `PORTAL_SESSION_SECRET` | You | Signs the session cookies. Use 32 characters or more. Without the key, every session ends when the server restarts. |

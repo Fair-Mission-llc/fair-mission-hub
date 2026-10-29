@@ -12,6 +12,9 @@
 //   - memberDirectory() (session.ts) is this vault, so sign-in, the calendar feed and the other server routes see what
 //     every device saved.
 // HUB_VAULT_DIR moves the folder (the tests use a temporary one).
+// Sprint 11 Revision 13.0: a vault created while PILOT_SYNC_COUNCIL is set (npm run dev:pilot sets it) is filled from the
+// simulated central database right after its seed: that council's roster, logged hours and module switches
+// (central-sync.ts). An existing vault is never synced over.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -19,6 +22,7 @@ import { HUB_DATA_DRIVER, HUB_VAULT_RELATIVE_PATH, isHubMethodName, type DataSer
 import { SqliteDataService, type SqliteModule } from '../../../../mobile/services/drivers/sqlite';
 import { deliverServerEmail } from '../notify';
 import { createNodeSqlite, HUB_VAULT_FILE } from './node-sqlite';
+import { pilotSyncCouncil, syncVaultFromCentral } from './central-sync';
 
 if (typeof window !== 'undefined') {
   throw new Error('services/server/hub/hub-vault.ts was loaded in a browser. The hub vault lives on the server only.');
@@ -35,12 +39,12 @@ export const hubModeOn = (env?: Env): boolean =>
 
 /** The repository root: the nearest folder above the server's working folder that holds apps/ and packages/. */
 function repositoryRoot(start = process.cwd()): string {
-  let dir = resolve(start);
+  let dir = resolve(/*turbopackIgnore: true*/ start);
   for (;;) {
     // turbopackIgnore: these paths are found at run time on the hub laptop, not bundled.
     if (existsSync(join(/*turbopackIgnore: true*/ dir, 'apps')) && existsSync(join(/*turbopackIgnore: true*/ dir, 'packages'))) return dir;
     const up = dirname(dir);
-    if (up === dir) return resolve(start);
+    if (up === dir) return resolve(/*turbopackIgnore: true*/ start);
     dir = up;
   }
 }
@@ -79,6 +83,9 @@ export async function hubService(env: Env = process.env): Promise<SqliteDataServ
   const dir = hubDataDir(env);
   if (!opened || opened.dir !== dir) {
     mkdirSync(dir, { recursive: true });
+    const vaultPath = join(/*turbopackIgnore: true*/ dir, HUB_VAULT_FILE);
+    const fresh = !existsSync(vaultPath);
+    const council = fresh ? pilotSyncCouncil(env) : null;
     const service = new SqliteDataService({
       sqlite: createNodeSqlite(dir) as unknown as SqliteModule,
       persistent: true,
@@ -87,7 +94,21 @@ export async function hubService(env: Env = process.env): Promise<SqliteDataServ
       sendEmail: deliverServerEmail,
       log: () => {},
     });
-    opened = { dir, service, ready: onHub(() => service.init()) };
+    const open = async () => {
+      await service.init();
+      if (council === null) return;
+      try {
+        const receipt = await syncVaultFromCentral(dir, vaultPath, council, env);
+        console.info(
+          `[hub] synced council ${receipt.councilNumber} from the simulated central database: ${receipt.members.added + receipt.members.updated} members, ` +
+            `${receipt.eventHours.added + receipt.eventHours.updated + receipt.activityHours.added + receipt.activityHours.updated} hour entries, ${receipt.councilSettings.length} switches.`,
+        );
+      } catch (err) {
+        // The vault still opens with its seed; the launcher reports that no receipt was written.
+        console.warn(`[hub] the central sync handshake for council ${council} failed: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    };
+    opened = { dir, service, ready: onHub(open) };
   }
   const current = opened;
   try {

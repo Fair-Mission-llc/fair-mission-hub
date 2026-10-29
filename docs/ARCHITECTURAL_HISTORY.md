@@ -513,3 +513,24 @@ provider keys never leave the server). Its code box carries `textContentType="on
 box already had `autoComplete="one-time-code"`. A setup-code sign-up is not asked again, because the welcome-email setup
 code already is a one-time code. GET /api/auth/two-factor reports `universal`, which My Profile and the Secure Access
 Vault's delivery card show.
+
+## 12. Live data for the room pilot hub (Sprint 11 Revision 13.0)
+
+Schema version stays 110. There is no production central database yet (the remote driver is a placeholder), so the user
+chose a **simulated central database**: `packages/backend/data/simulated-central.db`, one SQLite file holding every
+council, built by the same data layer from the seed the first time it is needed and kept after that (`hub:archive` leaves
+it). `npm run dev:pilot` sets `PILOT_SYNC_COUNCIL` (15295 by default, `--council <n>`, or `--no-sync`) and calls
+`GET /api/sync/replicate?handshake=1`, which opens the vault. A vault created at that moment is seeded and then filled from
+the central file in one transaction (`central-sync.ts` pullTenantSlice):
+
+| Pulled | Rule |
+|---|---|
+| Member rows of the council | Added by id or refreshed; a row whose id belongs to another council in the vault is skipped. The seven pilot personas are never touched (the user's choice), so the printed pilot scripts keep working. |
+| EventTime and ActivityTime of those members | Added or refreshed by id; a row that does not fit (e.g. a shift the vault lacks) is skipped and counted. |
+| Council flag_*, feature_*, parent_organization, tenant_type | Copied onto the vault's council row. |
+
+Nothing is deleted, and an existing vault is never synced over. The receipt (`hub-sync-receipt.json`) sits beside the vault,
+moves with it on `hub:archive`, is reported by every GET of the hub route and is printed by the launcher. The screens needed
+no change: charts, the leaderboard behind the merit badges and the Admin Desk drawers already read the vault through the data
+service, and the Form 1728 popups versus the organization matrices already follow the council row's parent_organization
+(useTenantType). The pilot persona list moved from the phone onboarding module to shared `pilot-sync.ts`.

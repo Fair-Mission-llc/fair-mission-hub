@@ -23,7 +23,7 @@
 // hold no rules of their own. `contactAdmin` is terminal: submitEmail and
 // submitPassword do nothing until the screen offers restart().
 import type { DataService, SessionUser } from '@kofc/shared';
-import { BusinessRuleError } from '@kofc/shared';
+import { BusinessRuleError, isPilotPersonaEmail } from '@kofc/shared';
 import { councilAllowsBiometric, type BiometricLogin } from './biometric-login';
 import type { SessionStore } from './session';
 
@@ -73,21 +73,11 @@ export async function findCouncilAdminContact(db: DataService, councilNumber: nu
 }
 
 /**
- * Sprint 8S Revision 10.3: the seven seeded Conference Room Pilot personas (Seed.sql Credentials 28-34) already hold a
- * password, so their email goes straight to the plain email + password sign-in, never the setup-code screen. Every
- * other member still needs the welcome email's setup code. Remove this list after the pilot.
+ * Sprint 8S Revision 10.3: the seven seeded Conference Room Pilot personas skip the setup-code screen. Every other
+ * member still needs the welcome email's setup code. Sprint 11 Revision 13.0: the list moved to the shared package
+ * (pilot-sync.ts) so the hub's central handshake can leave the same rows alone.
  */
-export const PILOT_PERSONA_EMAILS: readonly string[] = [
-  'gk_user@stmarys.org',
-  'fs_user@stmarys.org',
-  'treasurer_user@stmarys.org',
-  'dgk_user@stmarys.org',
-  'historian_user@stmarys.org',
-  'member_alpha@stmarys.org',
-  'member_beta@stmarys.org',
-];
-
-export const isPilotPersonaEmail = (email: string): boolean => PILOT_PERSONA_EMAILS.includes(email.trim().toLowerCase());
+export { isPilotPersonaEmail, PILOT_PERSONA_EMAILS } from '@kofc/shared';
 
 /** The label of the phone password prompt's biometric toggle (Sprint 8P Stage 2). */
 export const BIOMETRIC_TOGGLE_LABEL = '[ 🔘 Enable FaceID / Biometric Login ]';
