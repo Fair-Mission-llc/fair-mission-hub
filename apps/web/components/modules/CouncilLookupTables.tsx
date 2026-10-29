@@ -20,7 +20,7 @@
 // CouncilAgendaTemplate). The Meeting center's schedule form pre-fills its agenda from it. Sprint 11 Revision 1.0: a live
 // preview under the editor draws the outline through the markdown renderer (components/Markdown.tsx).
 //
-// Sprint 6L Extension: the Outbound Email Gateway tab moved to the Credentials Vault page (/credentials-vault), and the
+// Sprint 6L Extension: the Outbound Email Gateway tab moved to the Secure Access Vault page (/credentials-vault), and the
 // Base Dues Rate tab is gone - Council.base_dues_rate is set only on the Global Parameters Dashboard (/lookups).
 //
 // Sprint 8O: the Enabled donation methods grid is the payment configuration drawer. Each method names who owns the account
@@ -77,6 +77,7 @@ import { MeritMilestonesPanel } from '@/components/MeritTierParts';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
+import { FORM_1728_CANCELLED_MESSAGE, needsForm1728Confirmation, useForm1728Confirm } from '@/components/Form1728Parts';
 import { db } from '@/services/db';
 
 interface Column {
@@ -163,6 +164,8 @@ function useColumns(table: CouncilLookupTableName, councilId: number): ColumnDat
       { key: 'ActivityDescription', label: 'Description', maxLength: 255 },
       { key: 'CategoryID', label: 'Category', options: options.data.options },
       STATUS_COLUMN,
+      // Sprint 11 Revision 11.0: the confirmed Form 1728 line rides along unseen; the popup sets it on save.
+      { key: 'form_1728_line', label: 'Form 1728 line', hidden: { fallback: '' }, optional: true },
     ],
     DonationType: [{ key: 'DonationType', label: 'Donation type', maxLength: 100 }, STATUS_COLUMN],
     CouncilDonationMethod: [
@@ -326,14 +329,30 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
     }
   };
 
+  // Sprint 11 Revision 11.0: a new or renamed activity, or one without a confirmed line, goes through the Form 1728
+  // suggestion popup before the batch is saved. Cancel on any row saves nothing.
+  const confirmLine = useForm1728Confirm();
   const save = () =>
     void act(async () => {
       const records = pending.map((d) => toRecord(d, columns, accountNames)) as CouncilLookupRecord<typeof table>[];
+      if (table === 'Activities') {
+        for (const [i, d] of pending.entries()) {
+          const record = records[i] as Record<string, unknown>;
+          const name = d.values.ActivityName ?? '';
+          const stored = d.saved?.form_1728_line || null;
+          if (!needsForm1728Confirmation(name, d.saved?.ActivityName ?? null, stored)) continue;
+          const renamed = d.saved !== null && name.trim() !== (d.saved.ActivityName ?? '').trim();
+          const code = await confirmLine.ask({ title: name, description: d.values.ActivityDescription, initial: renamed ? null : stored });
+          if (code === null) throw new Error(FORM_1728_CANCELLED_MESSAGE);
+          record.form_1728_line = code;
+        }
+      }
       await db.lookups.saveCouncilSpecific(user.memberId, councilId, table, records);
     }, `Saved ${pending.length} ${noun} row${pending.length === 1 ? '' : 's'}.`);
 
   return (
     <div className="flex flex-col gap-3">
+      {confirmLine.dialog}
       {message ? (
         <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
           {message.text}

@@ -60,8 +60,8 @@
 // Sprint 10 Revision 5.0: Standard Bank Accounts gains the Payment QR Codes card (PaymentQrUploader): a '📁 Upload QR Code
 // Image' drop zone per enabled donation method.
 // Sprint 11 Revision 1.0: the Council Instance Record is pinned above the drawers as the page's permanent header, every
-// drawer lands closed, and the Council Lookups and Credentials Vault link cards are gone from Standard Bank Accounts (the
-// matrix's email gateway row links to the Credentials Vault).
+// drawer lands closed, and the Council Lookups and Secure Access Vault link cards are gone from Standard Bank Accounts (the
+// matrix's email gateway row links to the Secure Access Vault).
 import { useState } from 'react';
 import {
   canAdministerCouncil,

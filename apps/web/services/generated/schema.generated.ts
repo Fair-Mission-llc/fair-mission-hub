@@ -2362,6 +2362,13 @@ export const TABLES: Record<string, TableMeta> = {
           "Active",
           "Inactive"
         ]
+      },
+      {
+        "name": "form_1728_line",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
     "foreignKeys": [
@@ -14747,19 +14754,22 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "ActivityName": "Global Wheelchair Mission",
         "ActivityDescription": "Raising funds and delivering wheelchairs through the Global Wheelchair Mission",
         "CategoryID": 2,
-        "CouncilID": 1
+        "CouncilID": 1,
+        "form_1728_line": "COMMUNITY_B"
       },
       {
         "ActivityName": "Habitat for Humanity Support",
         "ActivityDescription": "Council build days with the local Habitat for Humanity affiliate",
         "CategoryID": 2,
-        "CouncilID": 1
+        "CouncilID": 1,
+        "form_1728_line": "COMMUNITY_C"
       },
       {
         "ActivityName": "Special Olympics Staffing",
         "ActivityDescription": "Staffing Special Olympics games, meets and award ceremonies",
         "CategoryID": 7,
-        "CouncilID": 1
+        "CouncilID": 1,
+        "form_1728_line": "LIFE_C"
       }
     ]
   },

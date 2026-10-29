@@ -1,5 +1,5 @@
 'use client';
-// The Super Admin Desk (Sprint 8O, super-admin-desk.ts): the platform owner's own Active Desk, mounted on /dashboard only
+// The Platform Management (Sprint 8O, super-admin-desk.ts): the platform owner's own Active Desk, mounted on /dashboard only
 // for the owner's personal session (isPlatformOwner - the dashboard falls back to Home for anyone else). A row of three
 // top horizontal action folders, drawn like the Active Desks folder tabs, opens one workspace at a time:
 //   [ 📥 Feedback Communication Center ]         the Administrative Feedback Loops notes (FeedbackInbox)
@@ -7,8 +7,8 @@
 //   [ 🛠️ System Feature Flag Control Panel ]      every council's module switches (FeatureFlagControlPanel)
 // The chosen folder is remembered in this browser only (a per-viewer convenience).
 // Sprint 10 Revision 3.0: under the folders, four collapsible infrastructure drawers (SUPER_ADMIN_DESK_DRAWERS): Global
-// System Parameters, Global Lookup Tables, Global Charities Registry and the Credentials Vault. A drawer's body mounts
-// only while it is open. The Credentials Vault drawer is pinned to the Super Admin's own home council.
+// System Parameters, Global Lookup Tables, Global Charities Registry and the Secure Access Vault. A drawer's body mounts
+// only while it is open. The Secure Access Vault drawer is pinned to the Super Admin's own home council.
 import { useEffect, useState } from 'react';
 import {
   isPlatformOwner,
@@ -110,7 +110,7 @@ export function SuperAdminDesk({ user }: { user: SessionUser }) {
   useEffect(() => setOpen(superAdminDeskFolder(readLastFolder())), []);
 
   // The tab is never offered to anyone else; this guards a hand-typed #super-admin as well.
-  if (!isPlatformOwner(user)) return <Notice tone="error">The Super Admin Desk opens only for the platform owner&apos;s own account.</Notice>;
+  if (!isPlatformOwner(user)) return <Notice tone="error">The Platform Management opens only for the platform owner&apos;s own account.</Notice>;
 
   const folder = SUPER_ADMIN_DESK_FOLDERS.find((f) => f.id === open) ?? SUPER_ADMIN_DESK_FOLDERS[0]!;
   const choose = (id: SuperAdminDeskFolderId) => {
@@ -120,7 +120,7 @@ export function SuperAdminDesk({ user }: { user: SessionUser }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div role="tablist" aria-label="Super Admin Desk folders" className="flex items-end gap-1 overflow-x-auto border-b-[3px] border-navy">
+      <div role="tablist" aria-label="Platform Management folders" className="flex items-end gap-1 overflow-x-auto border-b-[3px] border-navy">
         {SUPER_ADMIN_DESK_FOLDERS.map((f) => {
           const here = f.id === open;
           return (

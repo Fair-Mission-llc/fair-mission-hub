@@ -312,7 +312,7 @@ export const canOpenMarketingFactory = (u: Actor): boolean => canOpenArchiveVaul
 
 /**
  * Sprint 6L Extension: the officer tools an ordinary member's sidebar never shows - the Constitutional Advisor and the
- * Credentials Vault. Seated officers and Super Admins open them; so do the council's Admins, who already keep its email
+ * Secure Access Vault. Seated officers and Super Admins open them; so do the council's Admins, who already keep its email
  * gateway and Drive key. Saving a credential still follows assertMayMaintainCouncilRecords (council Admins, Super Admins).
  */
 export const canOpenOfficerTools = (u: Actor): boolean => isSuperAdmin(u) || u.isOfficer || isAdmin(u);
@@ -701,7 +701,7 @@ export const canDesignateBudgetDirector = (u: Actor, member: Pick<Member, 'Counc
  * Visual Master Calendar (with its phone calendar sync card) and the photo gallery. portalAreas opens every signed-in
  * member's list with them, so every seat - the Council Historian, who holds no officer seat, included - inherits them.
  * Only a council feature flag or the white-label tenant gate can take one away, for every role alike.
- * Sprint 10 Revision 2.0: the read-only Member Roster directory (/roster, member-roster.ts) joins them for every member.
+ * Sprint 10 Revision 2.0: the read-only Roster & Achievements directory (/roster, member-roster.ts) joins them for every member.
  */
 export const MEMBER_BASE_AREAS = ['home', 'member-actions', 'roster', 'calendar', 'gallery'] as const satisfies readonly PortalArea[];
 
@@ -781,7 +781,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   areas.push('help', 'answers/help');
   // Sprint 6Z: every member reads the council bylaws (canEditBylaws decides editing), the SOP center and the council
   // artifacts board; the growth and hours charts have the executive dashboard's audience. Sprint 6L Extension: the
-  // Constitutional Advisor and the Credentials Vault are officer tools (canOpenOfficerTools), never on a member's sidebar.
+  // Constitutional Advisor and the Secure Access Vault are officer tools (canOpenOfficerTools), never on a member's sidebar.
   areas.push('governance/bylaws', 'answers/sop', 'resources/bulletins');
   if (canOpenConstitutionalAdvisor(u)) areas.push('governance/advisor');
   if (canOpenCredentialsVault(u)) areas.push('credentials-vault');
@@ -837,7 +837,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
   // Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it), and the gallery is the sidebar's own
   // top-level '📸 Media & Memory Center' node (Sidebar.tsx) instead of a Resources link. Sprint 10 Revision 2.0: the
-  // Member Roster directory heads the pillar, directly under its header, for every member.
+  // Roster & Achievements directory heads the pillar, directly under its header, for every member.
   { id: 'faith', label: 'Faith In Action', items: ['roster', 'activities', 'member-actions', 'events', 'calendar', 'faith-center'] },
   {
     id: 'finances',

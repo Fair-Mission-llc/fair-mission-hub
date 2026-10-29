@@ -32,7 +32,7 @@ page, the guide's own sections with clickable contents links and PDF bookmarks, 
 page footer and a closing disclaimer. The text is the Markdown text, word for word.
 
 Each guide has its own title, its own closing disclaimer and its own wording check: the Administrator guide must name
-the renamed screens ('Council Artifacts', 'Donations History', 'Credentials Vault'); both guides must avoid the retired
+the renamed screens ('Council Artifacts', 'Donations History', 'Secure Access Vault'); both guides must avoid the retired
 screen names and corporate jargon. A failed check prints each offending line and exits with status 2 before any PDF
 is written. An image the guide names but the disk does not have is left out with a warning, as before.
 
@@ -83,7 +83,7 @@ MANUALS = (
         title='Administrator User Guide',
         disclaimer=layout.DISCLAIMER,
         # Sprint 9 Master Hardening Pass: 'Council Artifacts' moved to the Executive Governance Manual with chapter 8.
-        required_screen_names=('Donations History', 'Credentials Vault'),
+        required_screen_names=('Donations History', 'Secure Access Vault'),
     ),
     Manual(
         key='member',
@@ -125,7 +125,7 @@ MANUALS = (
         output='docs/QUICK_START_INTAKE_GUIDE.pdf',
         title='Quick-Start Intake Guide',
         disclaimer=layout.DISCLAIMER,
-        required_screen_names=('Credentials Vault',),
+        required_screen_names=('Secure Access Vault',),
     ),
 )
 

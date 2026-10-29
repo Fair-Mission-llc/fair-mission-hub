@@ -1,5 +1,5 @@
 // Sprint 11 Revision 1.0 (schema 102): unified council lookup records (Active/Inactive status, the payment method's
-// account link), the Council Wide Settings header and closed drawers, the email gateway routed to the Credentials Vault,
+// account link), the Council Wide Settings header and closed drawers, the email gateway routed to the Secure Access Vault,
 // the QR controls on Council Lookups, the Council Election Center with its PIN-unlocked ballot drawer, the trademark
 // name and the October 26, 2026 legal documents.
 import { existsSync, readFileSync } from 'node:fs';
@@ -107,7 +107,7 @@ describe('Council Wide Settings and Council Lookups', () => {
     expect(page).not.toMatch(/BANK_ACCOUNT_SETTINGS_PAGES|href="\/council-lookups"/);
     expect(read('apps/web/components/FeatureDeploymentParts.tsx')).toContain('open={false}');
     const gateway = councilFeatureDeployment({}).find((r) => r.id === 'email-gateway')!;
-    expect(gateway).toMatchObject({ href: '/credentials-vault', managedOn: 'Credentials Vault: Email Gateway' });
+    expect(gateway).toMatchObject({ href: '/credentials-vault', managedOn: 'Secure Access Vault: Email Gateway' });
     expect(FEATURE_FLAG_LABELS.flag_meeting_management.hint).not.toMatch(/live console/i);
   });
 

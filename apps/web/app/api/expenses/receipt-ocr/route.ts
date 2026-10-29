@@ -4,7 +4,7 @@
 //   POST { base64, contentType }              ReceiptOcrResult - the merchant, date, total and item lines Azure read
 //
 // The file goes to the council's Azure AI Document Intelligence resource through services/ocr/receipt-parser, which
-// reads the endpoint and key from the Credentials Vault. Every member files expense reports, so any portal session may
+// reads the endpoint and key from the Secure Access Vault. Every member files expense reports, so any portal session may
 // call it (401 without one); the session's own council is the one whose resource is used. Nothing is stored: the
 // member checks the pre-filled receipt and saves it through expenses.submitReport as usual.
 import { NextResponse } from 'next/server';

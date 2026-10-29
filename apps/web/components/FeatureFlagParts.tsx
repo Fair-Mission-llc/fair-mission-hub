@@ -1,6 +1,6 @@
 'use client';
 // The Master Feature Deployment Grid (Sprint 11 Revision 7.0; the Feature Flags Control Center of Sprint 6R, moved here in
-// Sprint 8O so the Super Admin Desk's [ 🛠️ System Feature Flag Control Panel ] folder, /feature-flags and /super-admin
+// Sprint 8O so Platform Management's [ 🛠️ System Feature Flag Control Panel ] folder, /feature-flags and /super-admin
 // draw the same panel). A row per module switch, a column per council, grouped as the lightweight footprint and the
 // premium modules (features.ts featureFlagTier). Each checkbox saves at once (councils.setFeatureFlags); a column's
 // 'Lightweight' button sets that council to LIGHTWEIGHT_FEATURE_FLAGS in one save. The drivers refuse anyone but a

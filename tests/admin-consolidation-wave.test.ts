@@ -1,5 +1,5 @@
 // Sprint 10 Revision 3.0 (schema stays 100): the unified roster with record keeping on /roster, the Council Wide Settings
-// drawer panels, the Super Admin Desk infrastructure drawers, Admin-only impersonation and the read-only View As Member
+// drawer panels, Platform Management infrastructure drawers, Admin-only impersonation and the read-only View As Member
 // mirror, the Lump-Sum Financial Override row, the Supreme roster uploader on the Financial Secretary Desk and the
 // Annual Budget Center with its Designated Budget Director row.
 import { existsSync, readFileSync } from 'node:fs';
@@ -70,12 +70,12 @@ describe('2. Council Wide Settings drawers', () => {
   });
 });
 
-describe('3. Super Admin Desk infrastructure drawers', () => {
+describe('3. Platform Management infrastructure drawers', () => {
   it('names the four drawers in order', () => {
-    expect(SUPER_ADMIN_DESK_DRAWERS.map((d) => d.label)).toEqual(['Global System Parameters', 'Global Lookup Tables', 'Global Charities Registry', 'Credentials Vault']);
+    expect(SUPER_ADMIN_DESK_DRAWERS.map((d) => d.label)).toEqual(['Global System Parameters', 'Global Lookup Tables', 'Global Charities Registry', 'Secure Access Vault']);
   });
 
-  it('pins the Credentials Vault drawer to the home council', () => {
+  it('pins the Secure Access Vault drawer to the home council', () => {
     const desk = read('apps/web/components/SuperAdminDesk.tsx');
     expect(desk).toContain('<CredentialsVaultPanel homeCouncilOnly />');
     expect(desk).toContain('<GlobalLookupTables embedded />');

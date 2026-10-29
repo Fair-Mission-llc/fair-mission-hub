@@ -140,7 +140,7 @@ describe('Feature Flags Control Center', () => {
   it('draws every flag for every council and saves through councils.setFeatureFlags', () => {
     const page = read('apps/web/app/feature-flags/page.tsx');
     expect(page).toContain('<RequireArea area="feature-flags">');
-    // Sprint 8O: the grid moved to a shared component, also drawn on the Super Admin Desk.
+    // Sprint 8O: the grid moved to a shared component, also drawn on Platform Management.
     expect(page).toContain('<FeatureFlagControlPanel />');
     const grid = read('apps/web/components/FeatureFlagParts.tsx');
     expect(grid).toContain('FEATURE_FLAG_NAMES.filter((n) => featureFlagTier(n) === group.tier).map'); // Sprint 11 Revision 7.0 groups the rows
@@ -222,7 +222,7 @@ describe.each(drivers)('$name driver: standalone gallery uploads', (d) => {
 });
 
 describe('Co-Pilot tooltip', () => {
-  it('disables Design Advanced Collateral without a key and links the tooltip to the Credentials Vault', () => {
+  it('disables Design Advanced Collateral without a key and links the tooltip to the Secure Access Vault', () => {
     const box = read('apps/web/components/CopilotPrompt.tsx');
     expect(box).toContain('Design Advanced Collateral');
     expect(box).toContain('role="tooltip"');

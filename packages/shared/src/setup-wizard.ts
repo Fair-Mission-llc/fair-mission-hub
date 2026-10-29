@@ -5,7 +5,7 @@
 // (SETUP_WIZARD_STEPS):
 //   1. Supreme CSV Roster Ingestion        the Supreme roster uploader (supreme.syncSupremeRoster)
 //   2. File Storage and Email Gateway      the file repository picker and the SMTP gateway; the SMTP password goes to
-//                                          the server's Credentials Vault, for the Admin's home council only
+//                                          the server's Secure Access Vault, for the Admin's home council only
 //   3. Clone Founding Template             '⚡ Clone Founding Template' (councils.cloneFoundingTemplate): copies Council
 //                                          15295's chart of accounts, council lookup rows and Council Wide Settings
 //   4. Practice Sandbox                    'Activate Safe Practice Sandbox' (councils.seedPracticeSandbox): 10 practice

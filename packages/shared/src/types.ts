@@ -177,7 +177,7 @@ export interface Council {
   /**
    * Sprint 10 Revision 3.1 (Schema 101): where uploads are filed - 'CLOUD' (the Google Drive vault, the default) or
    * 'LOCAL_NETWORK' (file-repository.ts). The share's UNC path and service account username; the password is sealed in
-   * the Credentials Vault (FILE_SERVER_PASSWORD).
+   * the Secure Access Vault (FILE_SERVER_PASSWORD).
    */
   file_repository_mode?: string | null;
   file_server_path?: string | null;
@@ -398,6 +398,11 @@ export interface Activities {
   CouncilID: number;
   /** Sprint 11 Revision 1.0 (schema 102): 'Inactive' keeps the row for history but leaves it off the entry screens. */
   lookup_status?: LookupStatus;
+  /**
+   * VARCHAR(20) (Sprint 11 Revision 11.0, schema 109): the Supreme Form 1728 line an officer confirmed in the activity
+   * form's suggestion popup (a form-1728.ts code). NULL until confirmed; reports then read the line from the name.
+   */
+  form_1728_line?: string | null;
 }
 
 export interface ActivityTime {

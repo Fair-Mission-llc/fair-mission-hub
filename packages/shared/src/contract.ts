@@ -2544,7 +2544,7 @@ export interface DataService {
     removeCouncilAccount(actorId: number, councilId: number, id: number): Promise<void>;
     /**
      * Sprint 10 Revision 3.1: where the council's uploads are filed (file-repository.ts) - the mode, the UNC path and the
-     * service account username. The password goes to the Credentials Vault, never here. The council's Active Admins and
+     * service account username. The password goes to the Secure Access Vault, never here. The council's Active Admins and
      * any Active Super Admin (assertMaySetFileRepository); INVALID_INPUT for a bad mode or path.
      */
     setFileRepositorySettings(actorId: number, councilId: number, settings: FileRepositorySettings): Promise<Council>;
@@ -2745,7 +2745,7 @@ export interface DataService {
     /** Ordered by last name, then first name. */
     listByCouncil(councilId: number, options?: { activeOnly?: boolean }): Promise<Member[]>;
     /**
-     * Sprint 10 Revision 2.0: the Member Roster directory for the signed-in member `actorId` (member-roster.ts). An
+     * Sprint 10 Revision 2.0: the Roster & Achievements directory for the signed-in member `actorId` (member-roster.ts). An
      * Active Super Admin gets every Active member of every council (scope 'global'); everyone else gets the Active members
      * of their home council and its affiliated councils (scope 'fraternal'). Councils come home council first; members
      * are sorted by last name, then first name. Rejects MEMBER_NOT_FOUND for an unknown actor.

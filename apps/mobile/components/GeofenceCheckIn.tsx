@@ -117,7 +117,7 @@ export function GeofenceCheckIn({
 
   return (
     <View
-      accessibilityLabel="Meeting check-in"
+      accessibilityLabel="Chamber Check-In"
       style={{ gap: space.sm, borderWidth: large ? 6 : 4, borderColor: checkedIn ? color.navy : color.gold, borderRadius: radius.md, padding: space.md, backgroundColor: color.white }}
     >
       {checkedIn ? (
@@ -143,7 +143,7 @@ export function GeofenceCheckIn({
         </>
       ) : (
         <>
-          <AppText variant="label">CHECK IN</AppText>
+          <AppText variant="label">CHAMBER CHECK-IN</AppText>
           {error ? <Notice tone="error" message={error} onDismiss={() => setError(null)} /> : null}
           {!gpsLocked ? (
             <Button title={busy ? 'Finding your location…' : CHECK_IN_BUTTON_LABEL} busy={busy} disabled={busy} onPress={() => void checkInByGps()} />

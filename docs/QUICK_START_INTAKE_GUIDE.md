@@ -61,7 +61,7 @@ Each step has a **?** mark next to its hard fields. Select the **?** mark to rea
 3. Type the server, the username and the password.
 4. Select **Save**.
 
-**Expected result:** The password goes to the **Credentials Vault**. The vault seals it and keeps it for your home council only. The page never shows the password again.
+**Expected result:** The password goes to the **Secure Access Vault**. The vault seals it and keeps it for your home council only. The page never shows the password again.
 
 > **Note:** The wizard saves keys only for your own home council. A Super Admin of another council cannot read them.
 

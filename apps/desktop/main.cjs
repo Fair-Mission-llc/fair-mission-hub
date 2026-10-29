@@ -108,8 +108,80 @@ async function startPortal() {
   return url;
 }
 
+/** GET `url` as JSON. */
+function getJson(url) {
+  return new Promise((resolve, reject) => {
+    http
+      .get(url, (res) => {
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => (body += chunk));
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(body));
+          } catch (err) {
+            reject(err);
+          }
+        });
+      })
+      .on('error', reject);
+  });
+}
+
+/** The vault's PRAGMA user_version, or 0 when there is no vault yet. Read-only; the server has not opened it yet. */
+function vaultVersion(dataDir) {
+  const file = path.join(dataDir, 'central-hub-vault.db');
+  if (!fs.existsSync(file)) return 0;
+  const { DatabaseSync } = require('node:sqlite');
+  const db = new DatabaseSync(file, { readOnly: true });
+  try {
+    return db.prepare('PRAGMA user_version').get().user_version ?? 0;
+  } finally {
+    db.close();
+  }
+}
+
+/**
+ * Sprint 11 Revision 11.0: the hub never opens or wipes a vault from an older database version, so after an upgrade the
+ * pages would fail. This asks first, then moves the old vault folder aside (vault-archive-<time>) and starts a fresh
+ * one. Nothing is deleted. Returns false when the person chose to quit.
+ */
+async function ensureVaultVersion(url) {
+  const dataDir = path.join(app.getPath('userData'), 'vault');
+  const { schemaVersion } = await getJson(`${url}/api/sync/replicate`);
+  const version = vaultVersion(dataDir);
+  if (version === 0 || !schemaVersion || version >= schemaVersion) return true;
+  const { response } = await dialog.showMessageBox({
+    type: 'warning',
+    title: 'KofC Tracking Platform',
+    message: `This version needs a new database (version ${schemaVersion}). Your records are in an older one (version ${version}).`,
+    detail:
+      'Choose "Start a new database" to keep the old records in a dated archive folder and start from the seed records. ' +
+      `The archive stays in ${app.getPath('userData')}. Choose "Quit" to keep using the older program.`,
+    buttons: ['Start a new database', 'Quit'],
+    defaultId: 0,
+    cancelId: 1,
+  });
+  if (response !== 0) return false;
+  if (server) {
+    const stopped = new Promise((resolve) => server.once('exit', resolve));
+    app.isQuitting = true;
+    server.kill();
+    await stopped;
+    app.isQuitting = false;
+  }
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  fs.renameSync(dataDir, path.join(app.getPath('userData'), `vault-archive-v${version}-${stamp}`));
+  return true;
+}
+
 async function createWindow() {
-  const url = await startPortal();
+  let url = await startPortal();
+  if (!(await ensureVaultVersion(url))) {
+    app.quit();
+    return;
+  }
+  if (!server) url = await startPortal();
   const win = new BrowserWindow({
     width: 1440,
     height: 900,

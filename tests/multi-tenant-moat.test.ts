@@ -1,5 +1,5 @@
 // Sprint 10 Revision 3.1 (schema 101): the Financial Secretary's own setup-code button, the retired parish split card,
-// the Credentials Vault home-council gate, the Local Network Server file repository, the AccountOwners table and matrix,
+// the Secure Access Vault home-council gate, the Local Network Server file repository, the AccountOwners table and matrix,
 // vacant desk seats, the sidebar legal footer and the Application Advisory Panel.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -66,7 +66,7 @@ describe('1. Financial Secretary onboarding and the retired split card', () => {
   });
 });
 
-describe('2. the Credentials Vault home-council gate', () => {
+describe('2. the Secure Access Vault home-council gate', () => {
   it('refuses every other council, a Super Admin included', () => {
     expect(() => assertHomeCouncilVault({ memberId: 1, councilId: 1 }, 1)).not.toThrow();
     expect(() => assertHomeCouncilVault({ memberId: 1, councilId: 1 }, 2)).toThrow(/home council/);

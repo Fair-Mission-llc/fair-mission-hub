@@ -1,5 +1,5 @@
 'use client';
-// Sprint 10 Revision 4.0: the card left Council Wide Settings. It is the Recorder Desk's 'Meeting Check-In PIN' drawer and,
+// Sprint 10 Revision 4.0: the card left Council Wide Settings. It is the Recorder Desk's 'Chamber Check-In' drawer and,
 // for a night the Recorder is absent, the Grand Knight Desk's drawer (the GK, the DGK and the council's Admins open that
 // desk). The Recorder may set the PIN now, and 'Generate new PIN' makes and saves a random one in one click.
 // Meeting Check-In (Sprint 7G): the card on Council Wide Settings where the Grand Knight, the council's Admins and Super

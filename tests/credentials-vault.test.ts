@@ -1,4 +1,4 @@
-// Sprint 6Y (Schema 40): the Centralized Encrypted Credentials Vault - the CouncilCredentialsVault table, the server's
+// Sprint 6Y (Schema 40): the Centralized Encrypted Secure Access Vault - the CouncilCredentialsVault table, the server's
 // AES-256-GCM sealing, the masked status that is all a browser sees, the per-council Drive key and /api/councils/credentials.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

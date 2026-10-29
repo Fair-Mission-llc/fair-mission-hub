@@ -102,7 +102,7 @@ describe('the Oversight Desk is dissolved', () => {
   it('puts its audits on the Grand Knight Desk as alerting drawers', () => {
     const gk = ids(seat(['Grand Knight']), 'grand-knight');
     expect(gk).toEqual(expect.arrayContaining(['flagged-hours', 'shifts-awaiting-hours']));
-    // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left the desk (the Super Admin Desk keeps it).
+    // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left the desk (Platform Management keeps it).
     expect(ids(seat([], 'Super Admin'), 'grand-knight') as string[]).not.toContain('access-requests');
     for (const id of ['flagged-hours', 'shifts-awaiting-hours'] as const) expect(DESK_DRAWERS.find((d) => d.id === id)).toMatchObject({ desk: 'grand-knight', alerts: true });
     for (const key of ['quarantine', 'hours'] as const) expect(DESK_FOCUS_TARGETS[key].anchor).toBe('grand-knight');

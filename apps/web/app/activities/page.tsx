@@ -9,13 +9,22 @@
 // read-only badge (MissionCategoryParts).
 // Sprint 11 Revision 9.0: each activity shows the Form 1728 line its name files to (Form1728Parts), and the history tab
 // opens with the council's year-to-date hours by line.
+// Sprint 11 Revision 11.0: saving a new or renamed activity, or one with no confirmed line, opens the Form 1728
+// suggestion popup (useForm1728Confirm). The pick is saved in Activities.form_1728_line (schema 109); Cancel saves
+// nothing. Each row's 'Change line' button reopens the popup for that activity alone.
 import { useEffect, useState } from 'react';
-import { canMaintainCouncilRecords, formatHours, type Activities, type ActivitySummary } from '@kofc/shared';
+import { canMaintainCouncilRecords, formatHours, supremeMissionAreaOf, type Activities, type ActivitySummary } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { Form1728Badge, Form1728YearToDatePanel } from '@/components/Form1728Parts';
+import {
+  Form1728Badge,
+  Form1728YearToDatePanel,
+  FORM_1728_CANCELLED_MESSAGE,
+  needsForm1728Confirmation,
+  useForm1728Confirm,
+} from '@/components/Form1728Parts';
 import { LocalCategoryPicker } from '@/components/MissionCategoryParts';
 import { RecordGrid, type Draft, type Selection } from '@/components/RecordGrid';
-import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
+import { Button, cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatPersonName } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -95,7 +104,7 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
                 <Pill tone="outline">{categoryName.get(s.activity.CategoryID) ?? '–'}</Pill>
               </Td>
               <Td>
-                <Form1728Badge title={s.activity.ActivityName} description={s.activity.ActivityDescription} />
+                <Form1728Badge title={s.activity.ActivityName} description={s.activity.ActivityDescription} stored={s.activity.form_1728_line} />
               </Td>
               <Td>{s.entryCount}</Td>
               <Td>{formatDecimalHours(s.totalHours)}</Td>
@@ -125,8 +134,35 @@ function ActivityCatalog() {
   const archivedCount = (summaries.data ?? []).filter((s) => s.archived).length;
   const activeCount = (summaries.data?.length ?? 0) - archivedCount;
 
+  const confirmLine = useForm1728Confirm();
+  const missionAreaOf = (categoryId: number) => supremeMissionAreaOf((categories.data ?? []).find((c) => c.id === categoryId));
+
+  /** Opens the popup when the record needs a confirmed line; throws when the officer cancels, so nothing is saved. */
+  const confirmedLine = async (name: string, description: string, categoryId: number, row: Activities | null): Promise<string> => {
+    const stored = row?.form_1728_line ?? null;
+    if (!needsForm1728Confirmation(name, row?.ActivityName ?? null, stored)) return stored!;
+    const renamed = row !== null && name.trim() !== row.ActivityName.trim();
+    const code = await confirmLine.ask({ title: name, description, context: { missionArea: missionAreaOf(categoryId) }, initial: renamed ? null : stored });
+    if (code === null) throw new Error(FORM_1728_CANCELLED_MESSAGE);
+    return code;
+  };
+
+  const changeLine = async (a: Activities) => {
+    const code = await confirmLine.ask({
+      title: a.ActivityName,
+      description: a.ActivityDescription,
+      context: { missionArea: missionAreaOf(a.CategoryID) },
+      initial: a.form_1728_line ?? null,
+    });
+    if (code === null) return;
+    await db.activities.update(user.memberId, a.id, { form_1728_line: code });
+    await summaries.reload();
+  };
+
   const save = async (d: Draft, row: Activities | null): Promise<Activities> => {
-    const values = { ActivityName: d.ActivityName, ActivityDescription: d.ActivityDescription, CategoryID: Number(d.CategoryID) };
+    const categoryId = Number(d.CategoryID);
+    const form_1728_line = await confirmedLine(d.ActivityName, d.ActivityDescription, categoryId, row);
+    const values = { ActivityName: d.ActivityName, ActivityDescription: d.ActivityDescription, CategoryID: categoryId, form_1728_line };
     const saved = row
       ? await db.activities.update(user.memberId, row.id, values)
       : await db.activities.create(user.memberId, { ...values, CouncilID: scope.councilId });
@@ -167,6 +203,7 @@ function ActivityCatalog() {
           { id: 'history', label: `Activity History (${archivedCount})` },
         ]}
       />
+      {confirmLine.dialog}
       <div id="activities-panel" role="tabpanel" aria-labelledby={`activities-tab-${tab}`} className="mt-4">
         {summaries.error || categories.error ? <Notice tone="error">{summaries.error ?? categories.error}</Notice> : null}
         {tab === 'active' ? (
@@ -179,7 +216,19 @@ function ActivityCatalog() {
             columns={[
               { label: 'Activity', render: (a) => a.ActivityName },
               { label: 'Category', render: (a) => <Pill tone="outline">{categoryName.get(a.CategoryID) ?? '–'}</Pill> },
-              { label: 'Form 1728', render: (a) => <Form1728Badge title={a.ActivityName} description={a.ActivityDescription} /> },
+              {
+                label: 'Form 1728',
+                render: (a) => (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <Form1728Badge title={a.ActivityName} description={a.ActivityDescription} stored={a.form_1728_line} />
+                    {canEdit ? (
+                      <Button type="button" size="sm" variant="secondary" onClick={() => void changeLine(a)}>
+                        Change line
+                      </Button>
+                    ) : null}
+                  </span>
+                ),
+              },
               { label: 'Description', render: (a) => a.ActivityDescription, className: 'text-xs' },
             ]}
             fields={[

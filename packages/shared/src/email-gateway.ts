@@ -5,7 +5,7 @@
 // (councils.setEmailGateway, from the Outbound Email Gateway tab of Council Lookups - Sprint 6Z-Admin-Email-Perms);
 // councils.create and update never touch them.
 //
-// THE PASSWORD IS NOT ON THE COUNCIL ROW. Sprint 6Y (Schema 40) moved it to the Centralized Encrypted Credentials Vault
+// THE PASSWORD IS NOT ON THE COUNCIL ROW. Sprint 6Y (Schema 40) moved it to the Centralized Encrypted Secure Access Vault
 // (credentials-vault.ts) as SMTP_OUTBOUND_PASSWORD. The panel posts it once to /api/councils/email-gateway, where the
 // server seals it with AES-256-GCM and keeps it in CouncilCredentialsVault; nothing sealed or plain comes back, only a
 // CredentialStatus. The notification route unseals it on the server at send time (apps/web/services/server/smtp.ts).
@@ -65,7 +65,7 @@ export function cleanEmailGatewaySettings(input: unknown): EmailGatewaySettings 
   // eslint-disable-next-line no-control-regex
   if (!username || username.length > 255 || /[\x00-\x1f\x7f]/.test(username)) throw fail('The SMTP username is missing, too long or not plain text.', 'SmtpUsername');
   if (v.EmailPasswordEncrypted != null || v.password != null) {
-    throw fail('The SMTP password is kept in the credentials vault, not on the council; enter it on the Credentials Vault page.', 'password');
+    throw fail('The SMTP password is kept in the credentials vault, not on the council; enter it on the Secure Access Vault page.', 'password');
   }
   return { EmailProvider: v.EmailProvider, SmtpHost: host, SmtpPort: port, SmtpUsername: username };
 }

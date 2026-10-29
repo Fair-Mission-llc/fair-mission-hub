@@ -5589,6 +5589,7 @@ export class MemoryDataService implements DataService {
     const councilActivities = s.rows('Activities').filter((a) => a.CouncilID === councilId);
     const activityCategory = new Map(councilActivities.map((a) => [a.id, categoryName(a.CategoryID)]));
     const activityTitle = new Map(councilActivities.map((a) => [a.id, a.ActivityName as string]));
+    const activityLine = new Map(councilActivities.map((a) => [a.id, (a.form_1728_line as string | null | undefined) ?? null]));
     const methodKind = new Map(s.rows('DonationMethod').map((m) => [m.id, donationMethodKind(m.DonationMethod as string)]));
     const council = s.rows('Council').find((c) => c.id === councilId)!;
     const periodEvents = councilEvents.filter((e) => inPeriod(e.StartDate));
@@ -5623,6 +5624,7 @@ export class MemoryDataService implements DataService {
           Hours: t.Hours as number,
           category: activityCategory.get(t.ActivityID)!,
           title: activityTitle.get(t.ActivityID)!,
+          line: activityLine.get(t.ActivityID) ?? null,
         })),
       events: periodEvents.map((e) => ({ id: e.id })),
       eventExpenseItems: s

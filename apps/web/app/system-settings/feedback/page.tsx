@@ -3,7 +3,7 @@
 // bug report to the platform owner (feedback.submit). The role guard (RequireArea, canOpenAdministrativeFeedback) blocks
 // every session whose clearance is below ADMIN, and the drivers refuse them too (ADMIN_REQUIRED). The form used to sit on
 // the Online Help Center for every member; no member or volunteer screen offers it now. Super Admins also read the
-// notes here (FeedbackInbox); the platform owner reads them on the Super Admin Desk's Feedback Communication Center.
+// notes here (FeedbackInbox); the platform owner reads them on Platform Management's Feedback Communication Center.
 import { useState } from 'react';
 import { ADMINISTRATIVE_FEEDBACK_TITLE, isSuperAdmin } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';

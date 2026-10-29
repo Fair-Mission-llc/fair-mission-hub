@@ -1,5 +1,5 @@
 'use client';
-// General Ledger Spreadsheet (Sprint 5Z-8): the council's chart of accounts (finance.listChartOfAccounts) as one table
+// Transaction Ledger (Sprint 5Z-8): the council's chart of accounts (finance.listChartOfAccounts) as one table
 // per account type - Assets, Liabilities, Equity, Revenue, Expenses - with each account's posted debits, credits and
 // normal-side balance, virtual goals indented under their bank account. Every account name opens the drill-down drawer
 // (finance.getAccountLedger): every line ever posted to it with its date, description, check number, linked event and
@@ -46,7 +46,7 @@ function LedgerSpreadsheet() {
           </div>
         }
       >
-        General Ledger Spreadsheet
+        Transaction Ledger
       </PageTitle>
       {chart.error ? <Notice tone="error">{chart.error}</Notice> : null}
       {chart.loading && !chart.data ? <p className="text-sm">Loading…</p> : null}

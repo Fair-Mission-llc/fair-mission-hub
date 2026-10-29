@@ -77,7 +77,7 @@ export const OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE = 'Operations Knowledge Vault';
 /** Who sees a drawer besides its portal area (when it has one). */
 export type DeskDrawerGate = 'loaner-library' | 'planning' | 'council-goals' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'charity-endorsement' | 'always';
 
-/** The desks built as blotters: every officer desk. Home, the Member Desk and the Super Admin Desk are not. */
+/** The desks built as blotters: every officer desk. Home, the Member Desk and Platform Management are not. */
 export type DrawerDeskId = Extract<DashboardTabId, 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian'>;
 
 export type DeskDrawerId =
@@ -213,14 +213,14 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'approved-expenses', title: 'Approved Expenses', summary: 'Counter-sign and release sheets for payment', area: 'expenses/authorize', rowId: DESK_FOCUS_TARGETS.vouchers.rowId, alerts: true },
   { desk: 'grand-knight', id: 'flagged-hours', title: 'Flagged Hours Review', summary: 'Approve or reject time entries held for review', gate: 'quarantine', rowId: DESK_FOCUS_TARGETS.quarantine.rowId, alerts: true },
   { desk: 'grand-knight', id: 'shifts-awaiting-hours', title: 'Shifts Awaiting Hours', summary: 'Volunteers who served but have not logged time', gate: 'executive-audits', rowId: DESK_FOCUS_TARGETS.hours.rowId, alerts: true },
-  // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left this desk; access requests live only on the Super Admin Desk.
+  // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left this desk; access requests live only on Platform Management.
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
   { desk: 'grand-knight', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-charity-endorsements', alerts: true },
   { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },
   { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Equipment Library', summary: 'List, lend and check in council assets', area: 'inventory/loaner-library', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
   { desk: 'grand-knight', id: 'affiliation-invites', title: 'Affiliation Invites', summary: 'Accept or decline invites from nearby councils', gate: 'affiliations', rowId: 'grand-knight-affiliations' },
   { desk: 'grand-knight', id: 'connected-councils', title: 'Connected Councils', summary: 'Invite and answer nearby councils', area: 'system-settings/affiliations', rowId: 'module-connected-councils' },
-  { desk: 'grand-knight', id: 'meeting-pin', title: 'Meeting PIN (Recorder Absent)', summary: 'Set the check-in PIN yourself when the Recorder is away', gate: 'always', rowId: 'drawer-gk-meeting-pin' },
+  { desk: 'grand-knight', id: 'meeting-pin', title: 'Chamber Check-In (Recorder Absent)', summary: 'Set the check-in PIN yourself when the Recorder is away', gate: 'always', rowId: 'drawer-gk-meeting-pin' },
   { desk: 'grand-knight', id: 'advisor', title: 'Constitutional Advisor Panels', summary: 'Ask a parliamentary or bylaws question', area: 'governance/advisor', rowId: 'module-advisor' },
   { desk: 'grand-knight', id: 'knowledge-archive', title: ARCHIVE, summary: ARCHIVE_SUMMARY, area: 'system-settings/knowledge-archive', rowId: 'drawer-gk-knowledge-archive' },
   { desk: 'grand-knight', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-donation-workflow', cabinet: 'reference' },
@@ -254,7 +254,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'recorder', id: 'minutes-entry', title: 'Meeting Minutes Entry Desk', summary: 'The business calendar, the minutes countdown and the editor', gate: 'always', rowId: DESK_FOCUS_TARGETS.minutes.rowId, alerts: true },
   // Sprint 10 Revision 4.0: the meeting check-in PIN lives on the Recorder Desk, with the Grand Knight Desk's copy for a
   // night the Recorder is absent (the GK, the DGK and the council's Admins open that desk).
-  { desk: 'recorder', id: 'meeting-pin', title: 'Meeting Check-In PIN', summary: 'Generate or change the 4-digit PIN members type to check in', gate: 'always', rowId: 'drawer-recorder-meeting-pin' },
+  { desk: 'recorder', id: 'meeting-pin', title: 'Chamber Check-In', summary: 'Generate or change the 4-digit PIN members type to check in', gate: 'always', rowId: 'drawer-recorder-meeting-pin' },
   { desk: 'recorder', id: 'live-meeting', title: 'Start Live Meeting Sequence', summary: 'Open the live console and show the check-in PIN', gate: 'always', rowId: 'drawer-live-meeting' },
   { desk: 'recorder', id: 'motions-ledger', title: 'Council Resolutions and Motions Ledger', summary: "Every motion of this fraternal year's meetings and its result", area: 'meetings', rowId: 'module-motions-ledger' },
   { desk: 'recorder', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-recorder-election-workflow', cabinet: 'reference' },

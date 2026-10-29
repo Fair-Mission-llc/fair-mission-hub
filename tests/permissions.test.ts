@@ -359,7 +359,7 @@ describe('portal permissions', () => {
       ]);
     });
 
-    it('drops the Setup pillar for plain members and gives other officers the Council Wide Settings and the Credentials Vault (Sprint 6L Extension, Sprint 7C)', () => {
+    it('drops the Setup pillar for plain members and gives other officers the Council Wide Settings and the Secure Access Vault (Sprint 6L Extension, Sprint 7C)', () => {
       expect(shape(officer)).toEqual([
         // Sprint 5Z-10: officers run the live console.
         ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor']],

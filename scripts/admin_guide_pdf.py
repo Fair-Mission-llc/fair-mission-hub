@@ -9,7 +9,7 @@ contents links and PDF bookmarks, its tables and screen captures, a page footer,
 the closing footnote. The text is the Markdown text, word for word; nothing is rewritten on the way.
 
 Before it writes anything, the script checks the guide's wording (check_nomenclature): the renamed screens must
-appear under their current names ('Council Artifacts', 'Donations History', 'Credentials Vault'), and retired screen
+appear under their current names ('Council Artifacts', 'Donations History', 'Secure Access Vault'), and retired screen
 names and corporate jargon must not. A failed check prints each offending line and exits with status 2.
 
 Fonts: Arial (Windows) or DejaVu Sans (Linux) for text, with Segoe UI Symbol or DejaVu Sans as the fallback for
@@ -72,7 +72,7 @@ DISCLAIMER = (
 )
 
 # The screens renamed before the pilot: the guide must use these names.
-REQUIRED_SCREEN_NAMES = ('Council Artifacts', 'Donations History', 'Credentials Vault')
+REQUIRED_SCREEN_NAMES = ('Council Artifacts', 'Donations History', 'Secure Access Vault')
 
 # Retired screen names and corporate jargon the guide must not contain. 'Enterprise' alone is allowed: the Drive
 # archive's real root folder is named 'Fraternal Enterprise Suite' (DRIVE_VAULT_ROOT) and the guide must match it.

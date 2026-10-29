@@ -1,7 +1,7 @@
 // =========================================================================
 // THE SUPER ADMIN DESK (Sprint 8O)
 //
-// The platform owner's own cockpit: a folder tab titled 'Super Admin Desk' on the Active Desks row
+// The platform owner's own cockpit: a folder tab titled 'Platform Management' on the Active Desks row
 // (officer-desks.ts dashboardTabsFor, /dashboard#super-admin). It mounts only when the session is the platform owner's
 // personal account - an Active Super Admin whose sign-in name is in PLATFORM_OWNER_USERNAMES - so another Super Admin,
 // and the owner while viewing the portal as someone else, never sees it. Inside, three top horizontal action folders:
@@ -17,7 +17,7 @@
 import type { SessionUser } from './contract';
 
 /** The Active Desks folder tab's title. */
-export const SUPER_ADMIN_DESK_TITLE = 'Super Admin Desk';
+export const SUPER_ADMIN_DESK_TITLE = 'Platform Management';
 
 /**
  * The platform owner's personal sign-in names (Credential usernames, compared without case). The desk mounts only for
@@ -54,14 +54,14 @@ export const SUPER_ADMIN_DESK_FOLDERS: readonly SuperAdminDeskFolder[] = [
 
 /**
  * Sprint 10 Revision 3.0: the desk's four collapsible infrastructure drawers, stacked under the folder row in this order.
- * The Credentials Vault drawer is pinned to the Super Admin's own home council: it never requests another council's
+ * The Secure Access Vault drawer is pinned to the Super Admin's own home council: it never requests another council's
  * sealed keys (CredentialsVaultPanel homeCouncilOnly).
  */
 export const SUPER_ADMIN_DESK_DRAWERS = [
   { id: 'global-parameters', label: 'Global System Parameters', hint: "Each council's dues rate and organization type, and the limits every council shares." },
   { id: 'global-lookups', label: 'Global Lookup Tables', hint: 'The platform-wide lookup tables: statuses, degrees, member types and more.' },
   { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Search, verify and add the charities every council shares.' },
-  { id: 'credentials-vault', label: 'Credentials Vault', hint: "Your own home council's sealed connection keys only." },
+  { id: 'credentials-vault', label: 'Secure Access Vault', hint: "Your own home council's sealed connection keys only." },
 ] as const;
 export type SuperAdminDeskDrawerId = (typeof SUPER_ADMIN_DESK_DRAWERS)[number]['id'];
 

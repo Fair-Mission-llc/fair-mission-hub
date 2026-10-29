@@ -2,7 +2,7 @@
 // Online Help Center: the troubleshooting workflows of docs/MEMBER_USER_GUIDE.md and docs/ADMIN_USER_GUIDE.md as a
 // searchable question-and-answer accordion. Open to every signed-in member. Sprint 8O: the feedback and bug-report form and
 // the Super Admin feedback inbox left this page for System Settings > Administrative Feedback Loops (Admins and higher)
-// and the Super Admin Desk (components/FeedbackParts.tsx). The time windows and limits quoted
+// and Platform Management (components/FeedbackParts.tsx). The time windows and limits quoted
 // come from the shared rule constants, so an answer cannot drift from what the drivers enforce. Sprint 7E: the logging
 // window and the hours reminder cadence are the member's own council's settings (useCouncilTimings), read live.
 import { useEffect, useState } from 'react';
@@ -175,7 +175,7 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
     topics: [
       {
         q: 'How do I reach another Brother Knight?',
-        a: ['Sidebar → Faith In Action → Member Roster lists active members of your council and its sister councils with phone and email. The same list is on the Member Desk and the Member Actions Hub Fraternal roster tab. You can also message them through the Communications Hub.'],
+        a: ['Sidebar → Faith In Action → Roster & Achievements lists active members of your council and its sister councils with phone and email. The same list is on the Member Desk and the Member Actions Hub Fraternal roster tab. You can also message them through the Communications Hub.'],
       },
       {
         q: 'What is the bell next to my name?',
@@ -233,14 +233,14 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
       {
         q: 'How do I find members with a particular trade?',
         a: [
-          'Member Roster → Skills opens the Council skills drawer with every skill and how many members hold it. Choose one to see the holders.',
+          'Roster & Achievements → Skills opens the Council skills drawer with every skill and how many members hold it. Choose one to see the holders.',
           'Write a note and select Send to message all of them at once. Only active members receive it, never you, and replies arrive in the Communications Hub.',
         ],
       },
       {
         q: 'How do I add a new member?',
         a: [
-          'Member Roster → Add Member (council Admins and Super Admins). The email you enter is the member’s login; they then create their password on the phone.',
+          'Roster & Achievements → Add Member (council Admins and Super Admins). The email you enter is the member’s login; they then create their password on the phone.',
           'Admins may grant Admin or Member; only a Super Admin may grant Super Admin.',
         ],
       },

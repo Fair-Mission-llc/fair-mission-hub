@@ -123,7 +123,7 @@ export interface SupremeSnapshotRows {
    */
   eventTime: readonly { MemberID: number; Hours: number; category: string; title?: string; line?: string | null }[];
   /** ActivityTime on the council's activities, dated in the period; `category` is the activity's Category, `title` its name. */
-  activityTime: readonly { MemberID: number; Hours: number; category: string; title?: string }[];
+  activityTime: readonly { MemberID: number; Hours: number; category: string; title?: string; line?: string | null }[];
   /** The council's events starting in the period. */
   events: readonly unknown[];
   /**
@@ -166,7 +166,7 @@ export function compileSupremeSnapshot(
     form1728Lines: tallyForm1728(
       [
         ...rows.eventTime.map((r) => ({ title: r.title ?? '', line: r.line ?? null, date: period.fromDate, hours: r.Hours, memberId: r.MemberID })),
-        ...rows.activityTime.map((r) => ({ title: r.title ?? '', date: period.fromDate, hours: r.Hours, memberId: r.MemberID })),
+        ...rows.activityTime.map((r) => ({ title: r.title ?? '', line: r.line ?? null, date: period.fromDate, hours: r.Hours, memberId: r.MemberID })),
       ],
       period.fromDate,
       period.toDate,

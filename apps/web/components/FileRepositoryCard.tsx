@@ -3,7 +3,7 @@
 // System Settings drawer of Council Wide Settings. The dropdown offers the four provider keys - Google Drive, OneDrive /
 // SharePoint, Dropbox Business and Local Network Server - and the card then draws ONLY the fields that provider needs
 // (fileRepositoryFields): text inputs for the Council columns it uses, and for each secret (client secret, access token,
-// service account password, Drive key) a status line and a link to the Credentials Vault, where secrets are saved. Every
+// service account password, Drive key) a status line and a link to the Secure Access Vault, where secrets are saved. Every
 // other provider's inputs are not rendered at all. The council's Admins and Super Admins save it
 // (councils.setFileRepositorySettings, which also clears the columns the provider does not use); everyone else reads it.
 import Link from 'next/link';
@@ -113,15 +113,15 @@ export function FileRepositoryCard({ council, onSaved }: { council: Council; onS
               <span className="text-sm font-bold">{f.required ? f.label : `${f.label} (optional)`}</span>
               <span className="text-sm">
                 {!home
-                  ? 'Saved in that council’s own Credentials Vault, which only its Admins open.'
+                  ? 'Saved in that council’s own Secure Access Vault, which only its Admins open.'
                   : secrets.data?.has(f.key)
-                    ? '✓ Saved in the Credentials Vault.'
+                    ? '✓ Saved in the Secure Access Vault.'
                     : secrets.data
                       ? '○ Not saved yet.'
-                      : 'Kept in the Credentials Vault.'}{' '}
+                      : 'Kept in the Secure Access Vault.'}{' '}
                 {home ? (
                   <Link href="/credentials-vault" className="font-bold underline">
-                    Open the Credentials Vault
+                    Open the Secure Access Vault
                   </Link>
                 ) : null}
               </span>

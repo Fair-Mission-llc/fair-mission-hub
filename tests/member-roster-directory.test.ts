@@ -1,4 +1,4 @@
-// Sprint 10 Revision 2.0: the Member Roster directory - its sidebar link under Faith In Action, the scope rule
+// Sprint 10 Revision 2.0: the Roster & Achievements directory - its sidebar link under Faith In Action, the scope rule
 // (home council and affiliated councils, or every council for a Super Admin with no council picker), members.listRoster
 // in every driver, and its mounts on the Member, Grand Knight and Financial Secretary Desks.
 import { readFileSync } from 'node:fs';
@@ -20,7 +20,7 @@ import { drivers, expectRule, MEMBER } from './helpers';
 const read = (path: string) => readFileSync(join(__dirname, '..', path), 'utf8');
 const actor = (over: Partial<Actor> = {}): Actor => ({ memberId: 9, councilId: 1, memberType: 'Member', isOfficer: false, roles: [], ...over }) as Actor;
 
-describe('Member Roster link', () => {
+describe('Roster & Achievements link', () => {
   it('heads the Faith In Action pillar', () => {
     expect(PORTAL_NAV_GROUPS.find((g) => g.id === 'faith')!.items[0]).toBe('roster');
   });
@@ -34,7 +34,7 @@ describe('Member Roster link', () => {
 
   it('has its page and sidebar entry', () => {
     expect(read('apps/web/app/roster/page.tsx')).toContain('<RequireArea area="roster">');
-    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/roster: \{ href: '\/roster', label: 'Member Roster'/);
+    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/roster: \{ href: '\/roster', label: 'Roster & Achievements'/);
   });
 });
 

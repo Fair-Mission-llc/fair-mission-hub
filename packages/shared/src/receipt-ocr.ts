@@ -1,7 +1,7 @@
 // Sprint 6S: receipt reading through Microsoft Azure AI Document Intelligence (the prebuilt-receipt model).
 //
 // The browser-safe half of the OCR hook. The server proxy (apps/web/services/ocr/receipt-parser.ts) reads the council's
-// endpoint and key from the Credentials Vault, sends the receipt to Azure and hands the analyzeResult to
+// endpoint and key from the Secure Access Vault, sends the receipt to Azure and hands the analyzeResult to
 // parseAzureReceipt, which keeps only the fields the expense form pre-fills: merchant, date, total and the item lines.
 // Nothing here is trusted as a figure of record: the member checks the pre-filled receipt before saving, and the
 // driver validates it like a typed one (cleanExpenseReceipts, assertExpenseSplitTicket).

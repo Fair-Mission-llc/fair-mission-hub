@@ -103,7 +103,7 @@ const dropboxArg = (value: object) => JSON.stringify(value).replace(/[\u007f-￿
 
 function dropboxToken(councilId: number): string {
   const token = credentialsVault().reveal(councilId, 'DROPBOX_ACCESS_TOKEN');
-  if (!token) throw new Error('Dropbox Business is not fully set up: save the access token on the Credentials Vault page.');
+  if (!token) throw new Error('Dropbox Business is not fully set up: save the access token on the Secure Access Vault page.');
   return token;
 }
 

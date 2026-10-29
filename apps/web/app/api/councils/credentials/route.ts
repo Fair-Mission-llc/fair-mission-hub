@@ -1,4 +1,4 @@
-// /api/councils/credentials - a council's rows in the Centralized Encrypted Credentials Vault (Sprint 6Y).
+// /api/councils/credentials - a council's rows in the Centralized Encrypted Secure Access Vault (Sprint 6Y).
 //
 //   GET  ?councilId=N                                        lists what is saved, masked
 //   POST { councilId, credentialKey, value }                 seals and saves one credential

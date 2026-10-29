@@ -201,7 +201,7 @@ const DESK_ROWS = 6;
  */
 // ---- vacant seats and desk failures (Sprint 10 Revision 3.1) -------------------------------------------------------
 
-/** The placeholder for an officer seat nobody holds, linking to the Member Roster and the appointments matrix. */
+/** The placeholder for an officer seat nobody holds, linking to the Roster & Achievements and the appointments matrix. */
 export function VacantSeatCard({ role }: { role: string }) {
   return (
     <section aria-label={`${role} seat vacant`} className="rounded border-2 border-dashed border-navy bg-white p-4">
@@ -211,7 +211,7 @@ export function VacantSeatCard({ role }: { role: string }) {
       </p>
       <p className="mt-2 flex flex-wrap gap-4 text-sm">
         <Link href="/roster" className="font-bold underline">
-          Open the Member Roster
+          Open the Roster & Achievements
         </Link>
         <Link href="/elections/appointments" className="font-bold underline">
           Appointed Leadership Matrix
@@ -730,7 +730,7 @@ function FlaggedHoursDrawer({ user, councilId }: { user: SessionUser; councilId:
  * Constitutional Advisor Panels and the Operations Knowledge Vault. Sprint 8P Stage 3: the dissolved Oversight Desk's
  * audits join it - the Flagged Hours Review (lit while an entry is held), Shifts Awaiting Hours (lit while one is
  * overdue) and, for Super Admins, the Inbound Council Mail Center (lit while a request is pending). Sprint 10 Revision
- * 1.0 removed the Inbound Council Mail Center drawer: access requests are read on the Super Admin Desk only.
+ * 1.0 removed the Inbound Council Mail Center drawer: access requests are read on Platform Management only.
  */
 export function GrandKnightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
@@ -823,7 +823,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
           }
         }}
       />
-      {/* Sprint 10 Revision 2.0: the Member Roster directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
+      {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
       <MemberRosterDirectory compact />
     </div>
   );
@@ -896,7 +896,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
           }
         }}
       />
-      {/* Sprint 10 Revision 2.0: the Member Roster directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
+      {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
       <MemberRosterDirectory compact />
     </div>
   );
@@ -1173,7 +1173,7 @@ export function MemberDesk({ user }: { user: SessionUser }) {
           </Panel>
         </DeskRow>
       </div>
-      {/* Sprint 10 Revision 2.0: the Member Roster directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
+      {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
       <MemberRosterDirectory compact />
     </div>
   );

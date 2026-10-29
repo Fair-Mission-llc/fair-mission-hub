@@ -229,7 +229,7 @@ describe('the left navigation cleanup', () => {
 
   it('keeps the Inbound Council Mail Center off the Grand Knight Desk (Sprint 10 Revision 1.0)', () => {
     // Sprint 8P Stage 3 made it a Grand Knight Desk drawer for Super Admins; Sprint 10 Revision 1.0 removed the drawer.
-    // The access requests stay on the Super Admin Desk's approval queue.
+    // The access requests stay on Platform Management's approval queue.
     expect(DESK_DRAWERS.map((d) => d.id as string)).not.toContain('access-requests');
     expect(deskDrawersFor(seat({ memberType: 'Super Admin' }), 'grand-knight', OWN).map((d) => d.id as string)).not.toContain('access-requests');
     expect(read('apps/web/components/SuperAdminDesk.tsx')).toContain('<InboundMailCenter />');

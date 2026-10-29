@@ -3,7 +3,7 @@
 // flyer headline, a bulletin notice, a social post - and the council's Microsoft Copilot Studio agent writes it from the
 // chosen event's facts (/api/marketing/copilot). The answer is checked with the same jargon scan as the flyer copy and
 // can be copied.
-// Sprint 6R: without a Direct Line secret in the Credentials Vault the Design Advanced Collateral button is disabled, and
+// Sprint 6R: without a Direct Line secret in the Secure Access Vault the Design Advanced Collateral button is disabled, and
 // hovering or focusing it opens a tooltip box that says what the co-pilot does and links straight to the vault page.
 import Link from 'next/link';
 import { useId, useState, type FormEvent } from 'react';
@@ -45,7 +45,7 @@ function NotConnectedButton({ admin }: { admin: boolean }) {
       >
         <span className="block rounded border-2 border-navy border-t-8 border-t-gold bg-white p-3 text-left text-sm font-normal text-navy shadow-lg">
           <span className="block font-bold">The Microsoft Co-Pilot is not connected yet</span>
-          <span className="mt-1 block">Once its Direct Line secret is saved in the Credentials Vault, the co-pilot:</span>
+          <span className="mt-1 block">Once its Direct Line secret is saved in the Secure Access Vault, the co-pilot:</span>
           <span className="mt-1 block">
             {COPILOT_UTILITIES.map((u) => (
               <span key={u} className="block">
@@ -54,7 +54,7 @@ function NotConnectedButton({ admin }: { admin: boolean }) {
             ))}
           </span>
           <Link href="/credentials-vault" className="mt-2 block font-bold underline">
-            Open the Credentials Vault setup page →
+            Open the Secure Access Vault setup page →
           </Link>
           {admin ? null : <span className="mt-1 block text-xs text-muted">A council Admin saves the key there.</span>}
         </span>

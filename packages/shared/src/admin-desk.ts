@@ -12,7 +12,7 @@
 //     the right of the rail. In this exact order:
 //       1. Council Wide Settings             the /system-settings/council-settings module (Standard Bank Accounts first)
 //       2. Council Lookup Tables             the /council-lookups module (Active/Inactive status on every grid)
-//       3. Credentials Vault                 pinned to the reader's home council (the server's vault gate says the same)
+//       3. Secure Access Vault                 pinned to the reader's home council (the server's vault gate says the same)
 //       4. Global Charities Registry         the /charities/registry module (verified panel, search and filters)
 //       5. Council Asset Management          the /expenses/assets inventory (Trustees add asset photos)
 //       6. Administrative Feedback Loops     the note to the platform owner (feedback.submit)
@@ -68,7 +68,7 @@ export interface AdminDeskDrawer {
 export const ADMIN_DESK_DRAWERS: readonly AdminDeskDrawer[] = [
   { id: 'council-settings', label: 'Council Wide Settings', hint: 'Standard bank accounts, limits, timing, roster control and the feature matrix' },
   { id: 'council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types and payment methods, each Active or Inactive' },
-  { id: 'credentials-vault', label: 'Credentials Vault', hint: "Your home council's email, Drive and file server keys" },
+  { id: 'credentials-vault', label: 'Secure Access Vault', hint: "Your home council's email, Drive and file server keys" },
   { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Browse, filter, verify and add charities' },
   { id: 'asset-management', label: 'Council Asset Management', hint: "The council's capital assets and the Trustees' asset photos" },
   { id: 'feedback', label: 'Administrative Feedback Loops', hint: 'Send a note or bug report to the platform owner' },

@@ -1,4 +1,4 @@
-// Sprint 6Y (Schema 40): the Centralized Encrypted Credentials Vault.
+// Sprint 6Y (Schema 40): the Centralized Encrypted Secure Access Vault.
 //
 // Every secret a council's portal holds - its SMTP password, its Google Drive service-account key, (Sprint 6L
 // Extension 2) its Microsoft Copilot Studio Direct Line secret and (Sprint 6S) its Azure Document Intelligence endpoint
@@ -20,7 +20,7 @@ import { BusinessRuleError, SecurityPrivilegeError } from './rules';
  */
 export function assertHomeCouncilVault(actor: { memberId: number; councilId: number }, councilId: number): void {
   if (actor.councilId === councilId) return;
-  throw new SecurityPrivilegeError('COUNCIL_ACCESS_DENIED', `The Credentials Vault opens only for your home council (${actor.councilId}), not council ${councilId}.`, {
+  throw new SecurityPrivilegeError('COUNCIL_ACCESS_DENIED', `The Secure Access Vault opens only for your home council (${actor.councilId}), not council ${councilId}.`, {
     actorId: actor.memberId,
     actorCouncilId: actor.councilId,
     councilId,

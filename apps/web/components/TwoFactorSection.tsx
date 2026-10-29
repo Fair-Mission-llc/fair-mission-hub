@@ -65,7 +65,7 @@ export function TwoFactorSection({ facts, passkeySetup }: { facts: TwoFactorFact
   );
 }
 
-/** The council's side, on the Credentials Vault: which second-step channels the portal can deliver. */
+/** The council's side, on the Secure Access Vault: which second-step channels the portal can deliver. */
 export function TwoFactorDeliveryPanel({ emailGatewayConnected }: { emailGatewayConnected: boolean }) {
   const delivery: Record<(typeof TWO_FACTOR_METHODS)[number]['id'], { status: TwoFactorStatus; detail: string }> = {
     sms: { status: 'not-wired', detail: 'No SMS provider is connected to the portal yet.' },

@@ -226,7 +226,7 @@ function RegistrationDesk() {
 }
 
 // ---- fraternal roster ----------------------------------------------------------------
-// Sprint 10 Revision 2.0: the tab shows the shared Member Roster directory (MemberRosterDirectory, members.listRoster).
+// Sprint 10 Revision 2.0: the tab shows the shared Roster & Achievements directory (MemberRosterDirectory, members.listRoster).
 
 // ---- hour ledger -------------------------------------------------------------------------
 

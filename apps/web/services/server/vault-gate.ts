@@ -1,4 +1,4 @@
-// The Credentials Vault's tenancy boundary on the server (Sprint 10 Revision 3.1). Every vault route calls
+// The Secure Access Vault's tenancy boundary on the server (Sprint 10 Revision 3.1). Every vault route calls
 // requireHomeCouncilVaultSession before it reads a form or touches a key:
 //   - 401 without a portal session;
 //   - 403 Forbidden when the council named in the request is not the session's own home council - for every member

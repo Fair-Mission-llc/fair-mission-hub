@@ -122,7 +122,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'admin-desk': {
     member:
-      "Opens your Admin Desk. Three panels stay open across the top: your council's record, the Administration Manual and its help search. Below them, six drawers down the left side are closed when you arrive. Open one to work in it on the right - the council settings, lookups, Credentials Vault, charities registry, assets and feedback.",
+      "Opens your Admin Desk. Three panels stay open across the top: your council's record, the Administration Manual and its help search. Below them, six drawers down the left side are closed when you arrive. Open one to work in it on the right - the council settings, lookups, Secure Access Vault, charities registry, assets and feedback.",
   },
   'system-settings/regional-assignments': {
     member:

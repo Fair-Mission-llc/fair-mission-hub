@@ -1,6 +1,6 @@
 'use client';
 // The member record form (Sprint 10 Revision 3.0): the add / edit form that used to sit on the Affiliated Roster page
-// (/members, now removed). The Member Roster (/roster) opens it in a drawer from 'Add Member' and each row's 'Edit'
+// (/members, now removed). The Roster & Achievements (/roster) opens it in a drawer from 'Add Member' and each row's 'Edit'
 // button, for the council's Admins (their own council) and Super Admins (any council). Every field is text; numbers
 // and ids are converted on save and validated again by the driver, which enforces the same tiers (ADMIN_REQUIRED,
 // SUPER_ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED), so a refusal is reported, never hidden. The Designated Budget Director

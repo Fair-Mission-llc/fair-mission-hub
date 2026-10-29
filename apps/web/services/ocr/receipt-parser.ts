@@ -5,7 +5,7 @@
 //      base64Source and the council's key in Ocp-Apim-Subscription-Key. Azure answers 202 and an Operation-Location.
 //   2. GET that Operation-Location (same key) until its status is 'succeeded' or 'failed', or the time runs out.
 //   3. parseAzureReceipt (@kofc/shared) keeps the merchant, date, total and item lines the expense form pre-fills.
-// The endpoint and key are read from the Credentials Vault (AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT and _KEY) at the moment
+// The endpoint and key are read from the Secure Access Vault (AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT and _KEY) at the moment
 // of use and never logged or returned. The endpoint must be an Azure Cognitive Services host, and the Operation-Location
 // must be on that same host, so the proxy cannot be pointed anywhere else.
 import {
@@ -83,13 +83,13 @@ export async function parseReceiptWithAzure(councilId: number, file: ReceiptFile
   const key = vault.reveal(councilId, OCR_SECRET_KEY);
   const rawEndpoint = vault.reveal(councilId, OCR_ENDPOINT_KEY);
   if (!key || !rawEndpoint) {
-    throw new ReceiptOcrError('Receipt reading is not connected for this council. An Admin saves the Azure endpoint and key on the Credentials Vault page.', 503);
+    throw new ReceiptOcrError('Receipt reading is not connected for this council. An Admin saves the Azure endpoint and key on the Secure Access Vault page.', 503);
   }
   let endpoint: string;
   try {
     endpoint = resolveDocumentIntelligenceEndpoint(rawEndpoint);
   } catch {
-    throw new ReceiptOcrError('The saved Azure endpoint is not a Document Intelligence address. An Admin replaces it on the Credentials Vault page.', 503);
+    throw new ReceiptOcrError('The saved Azure endpoint is not a Document Intelligence address. An Admin replaces it on the Secure Access Vault page.', 503);
   }
 
   const call = async (url: string, init: { method: 'GET' | 'POST'; body?: unknown }): Promise<Response> => {
@@ -105,7 +105,7 @@ export async function parseReceiptWithAzure(councilId: number, file: ReceiptFile
       throw new ReceiptOcrError('Azure Document Intelligence could not be reached. Try again later.', 502);
     }
     if (res.status === 401 || res.status === 403) {
-      throw new ReceiptOcrError('Azure refused the saved Document Intelligence key. An Admin replaces it on the Credentials Vault page.', 502);
+      throw new ReceiptOcrError('Azure refused the saved Document Intelligence key. An Admin replaces it on the Secure Access Vault page.', 502);
     }
     return res;
   };

@@ -225,6 +225,7 @@ Taken from the changelog comment above `SCHEMA_VERSION` in `apps/mobile/services
 | 107 | 11 Revision 8.0 | The Feature Flag Alignment Pass: five premium switches on `Council` (`feature_photo_gallery`, `feature_lessons_registry`, `feature_marketing_factory`, `feature_loaner_library`, `feature_advanced_audits`, BIT DEFAULT 1). `flag_complex_shifts`, `feature_volunteer_quarantine` and `feature_financial_management` are retired as core systems (columns kept, unread; `RETIRED_FEATURE_COLUMNS`). A new council starts with every switch off. Officer desk drawers hide by portal area, so the loaner, diary, oral history and meeting photo drawers gained areas. Council custom manuals mark switched-off sections with a disabled banner (`compile_all_manuals.py --disabled-modules`). A baseline Two-Factor Authentication section (SMS, email, WebAuthn passkeys) sits on My Profile and the Credentials Vault; only passkeys work. |
 | 107 | 11 Revision 9.0 | No table change. The Form 1728 interrogation engine (`form-1728.ts`) files every Event and Ongoing Activity to a Supreme Form 1728 line from its title (weighted intent cues, description at half weight, Community line N when vague). The line is derived on read, never stored: the activities and event screens show it, the activity history opens with a year-to-date tally by line, and the Supreme snapshot gains `form1728Lines`. Council 15295's presentation data adds Global Wheelchair Mission, Habitat for Humanity Support and Special Olympics Staffing (Activities 14-16; 'Coats for kids' is reused) with 2026 hours. Council 15295's baseline row starts with eight premium switches off (`COUNCIL_15295_SEED_OFF_FLAGS`). |
 | 108 | 11 Revision 10.0 | `Event.form_1728_line` VARCHAR(20) NULL holds the Form 1728 line an officer confirms. The catalog covers all four sections (Faith A-G, Family A-F, Community A-N, Life A-G); a second engine adds the Local Category's mission area (`SECTION_PRIOR_WEIGHT`). Saving the event form opens the suggestion popup (best guess, ranked alternatives, searchable list of every line) when the event is new, renamed or unconfirmed. `resolveForm1728Line` prefers the stored line in reports. Six screen names are unified across the sidebar, page titles, desk drawers and feature switches: Media & Memory Center, Operations Knowledge Vault, Recruitment Factory, Shared Equipment Library, Financial Inspections, Historical Chronology. Only a Super Admin creates a council Admin or changes a member to or from Admin (`assertMayGrantMemberType`, `grantableMemberTypes`). `npm run build:exe` packages the portal (Next standalone output, hub driver, SQLite vault in the user-data folder) in an Electron shell (`apps/desktop/main.cjs`, `electron-builder.json`) as a portable Windows .exe. Erratum: the title of commit ee1ee09 (Revision 9.0) reads 'Form 107'; it means Form 1728. The pushed history is not rewritten. |
+| 109 | 11 Revision 11.0 | `Activities.form_1728_line` VARCHAR(20) NULL: the Form 1728 suggestion popup (`useForm1728Confirm`) now also confirms an activity's line, on the Activities page (save, and each row's 'Change line') and in the Admin Desk's Council Lookup Tables (a lookup row saved without the field keeps the stored line). Reports prefer the confirmed line. The three Revision 9.0 portfolio activities seed with their lines. Five more screen names unified across sidebar, page titles, desk drawers, the phone and the manuals: Transaction Ledger (General Ledger Spreadsheet), Roster & Achievements (Member Roster), Chamber Check-In (the meeting check-in PIN drawers and the phone check-in panel), Secure Access Vault (Credentials Vault), Platform Management (Super Admin Desk). Next.js 16.3.5 -> 16.4.3 and `npm audit fix` (non-breaking) for the security findings in section 10. |
 
 ---
 
@@ -380,3 +381,82 @@ The phone app has no production build script. Its code is checked by the mobile 
 | Production migration plan | `migration_checksheet.md` |
 | User-facing behavior | `docs/MEMBER_USER_GUIDE.md`, `docs/ADMIN_USER_GUIDE.md`, `docs/sop/` |
 | Change history | `git log` |
+
+---
+
+## 10. Phase 1 vetting: dependency compliance and security footprint (Sprint 11 Revision 11.0)
+
+Assessed on 2026-10-29 at schema version 109 with `npm audit` (npm 11.19.0, Node 24.21.0) and a license tally of
+`package-lock.json`. This is an engineering self-assessment, not a third-party audit or legal opinion.
+
+### 10.1 Core runtime components
+
+| Component | Version | License | Role |
+|---|---|---|---|
+| Next.js | 16.4.3 | MIT | Web portal and its server routes |
+| React | 19.x | MIT | Web and phone user interface |
+| Electron | 37.10.3 | MIT | Desktop shell for `npm run build:exe` |
+| electron-builder | 26.18.0 | MIT | Desktop packaging (build time only) |
+| Expo | 57.0.31 | MIT | Phone app framework |
+| SQLite | built into Node (`node:sqlite`) and Expo (`expo-sqlite`) | Public domain (SQLite); Node.js is MIT | Phone database, hub vault, desktop vault |
+
+SQLite is public domain, not MIT. No database server is bundled.
+
+### 10.2 License footprint (all 1,094 installed packages)
+
+| License | Packages |
+|---|---|
+| MIT | 912 |
+| ISC | 57 |
+| Apache-2.0 | 32 |
+| MPL-2.0 | 24 |
+| BSD-3-Clause / BSD-2-Clause | 26 |
+| BlueOak-1.0.0 | 11 |
+| LGPL-3.0-or-later (alone or combined with Apache-2.0 / MIT) | 14 |
+| Dual or combined permissive (MIT OR CC0-1.0, MIT OR Apache-2.0, MIT AND Apache-2.0, WTFPL OR ISC/MIT, BSD-3-Clause OR GPL-2.0) | 8 |
+| Other permissive (0BSD, Unlicense, WTFPL, Python-2.0, CC-BY-4.0) | 7 |
+| Unlabeled | 3 (the project's own workspaces) |
+
+Items that need attention before a commercial release:
+- **LGPL-3.0 (sharp / libvips).** Next.js uses `sharp` for image optimization, and sharp's prebuilt libvips binaries are
+  LGPL-3.0-or-later. The Windows desktop build ships `@img/sharp-win32-x64` as a separate shared library, which LGPL
+  permits. The release must include the LGPL license text and a notice, and must let the user replace the library.
+- **MPL-2.0** (file-level copyleft, build tooling such as the CSS compiler): changes to those files would have to be
+  published; using them unchanged is fine.
+- **node-forge** is dual BSD-3-Clause OR GPL-2.0; the BSD option is taken.
+- **The project's own packages carry no `license` field.** Choose and add the platform's own license.
+
+### 10.3 Security findings (`npm audit`)
+
+| Scope | Before this revision | After this revision |
+|---|---|---|
+| Everything, dev tools included | 25 (4 critical, 9 high, 7 moderate, 5 low) | 16 (2 critical, 5 high, 4 moderate, 5 low) |
+| Production dependencies only (`--omit=dev`) | 19 (2 critical, 6 high, 6 moderate, 5 low) | 11 (0 critical, 3 high, 3 moderate, 5 low) |
+
+**Fixed in this revision**
+- Next.js 16.3.5 -> 16.4.3: two unauthenticated remote code execution advisories (Image Optimization API with SVG,
+  GHSA-2464-fhr4-w9xw; `use cache` typed arrays, GHSA-673q-mjm6-r5xr), a Server Actions denial of service and the
+  `next/og` ImageResponse advisory.
+- `npm audit fix` without `--force`: node-forge, sharp, shell-quote (critical), source-map-js, uuid, xcode and vite.
+
+**Still open, and why**
+| Package | Severity | Scope | Exposure | Fix |
+|---|---|---|---|---|
+| expo, @expo/cli, @expo/config and siblings, zod, deepmerge | high / low | Phone toolchain (CLI, config, prebuild) | Runs on the developer's computer while building the phone app; not in the shipped JavaScript. | npm offers only a downgrade to expo@51; wait for an Expo SDK patch. |
+| expo-router, query-string, decode-uri-component | moderate | Phone app | Denial of service through a crafted deep-link URL. | expo-router 58 needs the Expo SDK 58 upgrade. |
+| electron, extract-zip | high | Desktop build | The Electron advisory is in `app.moveToApplicationsFolder` on macOS, which the shell never calls; extract-zip runs only when Electron is downloaded at install time. | Electron 45 (a major upgrade). |
+| vitest, @vitest/mocker, tinypool | critical / moderate | Test runner only | Never shipped. | vitest 5 (a major upgrade). |
+
+The vetting criterion "zero vulnerabilities" is **not met**: it needs the Expo SDK, Electron 45 and vitest 5 upgrades,
+each a major version with its own regression pass. No critical finding remains in production code.
+
+### 10.4 Security footprint of the deployed builds
+
+| Build | Network exposure | Data at rest | Secrets |
+|---|---|---|---|
+| Desktop `.exe` | Listens on 127.0.0.1 only, random free port; links to other sites open in the system browser; renderer runs sandboxed with no Node integration | `%APPDATA%\kofc-tracking-platform\vault\central-hub-vault.db` (SQLite, unencrypted) | Session key generated on first run, stored beside the vault |
+| Room pilot hub | Every interface on port 3000, plain http (`PORTAL_ALLOW_HTTP_COOKIES=1`): private Wi-Fi only | `packages/backend/data/central-hub-vault.db` | Random per-process key unless `PORTAL_SESSION_SECRET` is set |
+| Demo portal (`build:web`) | As deployed | Each browser tab, in memory | Server routes only |
+
+The desktop vault and the hub vault are not encrypted at rest; a trial machine should use an encrypted disk (BitLocker).
+The desktop `.exe` is not code-signed.

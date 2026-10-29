@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     if (ref) return NextResponse.json({ saved: true, fileId: ref });
   } catch (err) {
     console.error('[file-repository] repository write failed:', describeError(err));
-    return NextResponse.json({ saved: false, message: 'The council file repository did not accept the file. Check the File Repository Mode settings and the key saved in the Credentials Vault.' }, { status: 502 });
+    return NextResponse.json({ saved: false, message: 'The council file repository did not accept the file. Check the File Repository Mode settings and the key saved in the Secure Access Vault.' }, { status: 502 });
   }
 
   const creds = councilDriveCredentials(councilId);

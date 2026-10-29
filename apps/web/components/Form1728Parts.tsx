@@ -4,7 +4,9 @@
 // Sprint 11 Revision 10.0: the event form's suggestion popup (Form1728SuggestionDialog). It shows the engine's best
 // guess and its runner-up lines, plus a searchable list of every line, and the officer's pick is saved in
 // Event.form_1728_line. A badge for a record with a confirmed line shows that line, marked 'Confirmed'.
-import { useEffect, useMemo, useRef, useState } from 'react';
+// Sprint 11 Revision 11.0: the same popup confirms an activity's line (Activities.form_1728_line, schema 109) through
+// useForm1728Confirm, on the Activities page and the Admin Desk's Council Lookup Tables.
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   form1728Line,
   form1728YearToDate,
@@ -187,6 +189,54 @@ export function Form1728SuggestionDialog({
   );
 }
 
+export interface Form1728Question {
+  title: string;
+  description?: string | null;
+  context?: Form1728Context;
+  /** The line already stored on the record, preselected when it is still valid. */
+  initial?: string | null;
+}
+
+/**
+ * Sprint 11 Revision 11.0: the suggestion popup as a promise, for a form that saves in its own handler (the activity
+ * grid, the Admin Desk's Council Lookup Tables). `ask` opens the popup and resolves to the confirmed code, or null
+ * when the officer cancels; render `dialog` once in the component.
+ */
+export function useForm1728Confirm(): { ask: (question: Form1728Question) => Promise<Form1728LineCode | null>; dialog: ReactNode } {
+  const [open, setOpen] = useState<{ question: Form1728Question; resolve: (code: Form1728LineCode | null) => void } | null>(null);
+  const ask = useCallback(
+    (question: Form1728Question) => new Promise<Form1728LineCode | null>((resolve) => setOpen({ question, resolve })),
+    [],
+  );
+  const close = (code: Form1728LineCode | null) => {
+    open?.resolve(code);
+    setOpen(null);
+  };
+  const dialog = open ? (
+    <Form1728SuggestionDialog
+      key={`${open.question.title}\u0000${open.question.initial ?? ''}`}
+      title={open.question.title}
+      description={open.question.description}
+      context={open.question.context}
+      initial={open.question.initial}
+      onConfirm={(code) => close(code)}
+      onCancel={() => close(null)}
+    />
+  ) : null;
+  return { ask, dialog };
+}
+
+/** Thrown when the officer cancels the popup: the record is not saved. */
+export const FORM_1728_CANCELLED_MESSAGE = 'Not saved. Confirm a Form 1728 line to save the activity.';
+
+/**
+ * Whether saving a record should open the popup: a new record, a renamed one, or one with no confirmed line yet.
+ * `storedName` and `storedLine` are null for a new record.
+ */
+export function needsForm1728Confirmation(name: string, storedName: string | null, storedLine: string | null | undefined): boolean {
+  return storedName === null || !isForm1728LineCode(storedLine) || name.trim() !== storedName.trim();
+}
+
 /** The council's activity hours from January 1 to today, by Form 1728 line. */
 export function Form1728YearToDatePanel({ activities }: { activities: { id: number; ActivityName: string; ActivityDescription: string }[] }) {
   const ids = activities.map((a) => a.id).join(',');
@@ -198,6 +248,7 @@ export function Form1728YearToDatePanel({ activities }: { activities: { id: numb
     log.entries.map((e) => ({
       title: log.activity.ActivityName,
       description: log.activity.ActivityDescription,
+      line: log.activity.form_1728_line ?? null,
       date: e.row.ActivityDate,
       hours: e.row.Hours,
       memberId: e.row.MemberID,

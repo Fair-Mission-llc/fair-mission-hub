@@ -6,7 +6,7 @@
 //
 // The Drive credentials live only on the server (services/server/secrets.ts), never in the browser bundle. Sprint 6Y:
 // the private key is looked up per council at runtime - the council's GOOGLE_DRIVE_PRIVATE_KEY from the Centralized
-// Encrypted Credentials Vault when it has one, else the server's own (services/server/credentials-vault.ts).
+// Encrypted Secure Access Vault when it has one, else the server's own (services/server/credentials-vault.ts).
 //
 // Sprint 6Z-Engine-Upgrade: the route now checks the caller's portal session (services/server/session.ts) BEFORE it
 // reads the form: 401 without a session, 403 unless the session is an Active Admin or Super Admin (the same members
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     if (ref) return NextResponse.json({ archived: true, fileId: ref });
   } catch (err) {
     console.error('[file-repository] repository write failed:', describeError(err));
-    return NextResponse.json({ archived: false, message: 'The council file repository did not accept the file. Check the File Repository Mode settings and the key saved in the Credentials Vault.' }, { status: 502 });
+    return NextResponse.json({ archived: false, message: 'The council file repository did not accept the file. Check the File Repository Mode settings and the key saved in the Secure Access Vault.' }, { status: 502 });
   }
 
   const creds = councilDriveCredentials(session.claims.councilId);

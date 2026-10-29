@@ -1,6 +1,6 @@
 // Sprint 8O: Super Admin cockpit and account ownership splits (schema 85) - the account_owner_entity gate on the payment
 // method editor, parish-held gifts kept out of the batch coder (Sprint 10 Revision 3.2 removed the parish split console
-// and its settlement credit), the Administrative Feedback Loops behind an ADMIN guard, and the platform owner's Super Admin Desk.
+// and its settlement credit), the Administrative Feedback Loops behind an ADMIN guard, and the platform owner's Platform Management.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -208,7 +208,7 @@ describe('Administrative Feedback Loops', () => {
   });
 });
 
-describe('Super Admin Desk', () => {
+describe('Platform Management', () => {
   const owner = { memberId: 1, councilId: OWN, memberType: 'Super Admin' as const, isOfficer: false, roles: [], username: PLATFORM_OWNER_USERNAMES[0]! };
 
   it("mounts only for the platform owner's own Super Admin session", () => {
@@ -227,7 +227,7 @@ describe('Super Admin Desk', () => {
   });
 
   it('holds the three top horizontal action folders', () => {
-    expect(SUPER_ADMIN_DESK_TITLE).toBe('Super Admin Desk');
+    expect(SUPER_ADMIN_DESK_TITLE).toBe('Platform Management');
     expect(SUPER_ADMIN_DESK_FOLDERS.map((f) => f.label)).toEqual([
       '[ 📥 Feedback Communication Center ]',
       '[ 🔑 Council Access Request Approval Queue ]',

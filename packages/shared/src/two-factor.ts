@@ -1,6 +1,6 @@
 // =========================================================================
 // TWO-FACTOR AUTHENTICATION LAYOUT (Sprint 11 Revision 8.0)
-// The baseline Two-Factor Authentication section of My Profile and the Credentials Vault: one configuration row per
+// The baseline Two-Factor Authentication section of My Profile and the Secure Access Vault: one configuration row per
 // second-step method - SMS text tokens, email secure passcodes and WebAuthn hardware passkeys - and, for passkeys, one
 // row per device framework (Android, iOS and desktop browsers).
 //
@@ -56,7 +56,7 @@ export interface TwoFactorFacts {
   phone?: string | null;
   /** The member's email on file (Member.Email). */
   email?: string | null;
-  /** Whether the council's outbound email gateway is connected (Credentials Vault). */
+  /** Whether the council's outbound email gateway is connected (Secure Access Vault). */
   emailGatewayConnected: boolean;
   /** Whether the browser can make a passkey at all (lib/webauthn-client.ts faceIdSupported). */
   passkeySupported: boolean;
@@ -85,7 +85,7 @@ export function twoFactorRows(facts: TwoFactorFacts): TwoFactorRow[] {
         if (!hasText(facts.email)) return { method, status: 'needs-contact', detail: 'Add an email address under Contact details first.' };
         return facts.emailGatewayConnected
           ? { method, status: 'not-wired', detail: "The council's mail account is connected, but sign-in does not ask for a passcode yet." }
-          : { method, status: 'not-wired', detail: "The council's mail account is not connected in the Credentials Vault, and sign-in does not ask for a passcode yet." };
+          : { method, status: 'not-wired', detail: "The council's mail account is not connected in the Secure Access Vault, and sign-in does not ask for a passcode yet." };
       case 'passkey':
         if (!facts.passkeySupported) return { method, status: 'not-wired', detail: 'This browser cannot make a passkey. Try Chrome on Android or Safari on iOS.' };
         return facts.passkeyOnThisDevice

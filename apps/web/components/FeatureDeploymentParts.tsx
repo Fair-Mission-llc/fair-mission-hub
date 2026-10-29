@@ -206,7 +206,7 @@ interface SettingsPageLink {
 /** Standard Bank Accounts: the pages that hold payment methods, account owners and sealed keys. */
 export const BANK_ACCOUNT_SETTINGS_PAGES: readonly SettingsPageLink[] = [
   { area: 'council-lookups', href: '/council-lookups', label: 'Council Lookups', hint: "Payment methods and their account owners, and the council's email gateway." },
-  { area: 'credentials-vault', href: '/credentials-vault', label: 'Credentials Vault', hint: 'The sealed keys for Drive, receipt reading and mail.' },
+  { area: 'credentials-vault', href: '/credentials-vault', label: 'Secure Access Vault', hint: 'The sealed keys for Drive, receipt reading and mail.' },
 ];
 
 /** Feature Controls: the pages that switch modules and platform-wide parameters (Super Admins). */

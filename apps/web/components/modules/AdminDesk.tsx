@@ -10,7 +10,7 @@
 // its panel to the right of the rail, and opening another swaps it. In order:
 //   1. Council Wide Settings            components/modules/CouncilWideSettings.tsx
 //   2. Council Lookup Tables            components/modules/CouncilLookupTables.tsx
-//   3. Credentials Vault                pinned to the reader's home council (homeCouncilOnly; the server's vault gate agrees)
+//   3. Secure Access Vault                pinned to the reader's home council (homeCouncilOnly; the server's vault gate agrees)
 //   4. Global Charities Registry        components/modules/GlobalCharitiesRegistry.tsx
 //   5. Council Asset Management         the inventory of components/modules/CouncilAssetManagement.tsx
 //   6. Administrative Feedback Loops    the note to the platform owner, and the inbox for Super Admins

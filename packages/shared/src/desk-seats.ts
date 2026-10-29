@@ -2,7 +2,7 @@
 // VACANT DESK SEATS (Sprint 10 Revision 3.1)
 //
 // An officer desk can be opened by someone who does not hold its seat - a council Admin or a Super Admin - while nobody
-// holds it. The desk then leads with a placeholder card (SEAT_VACANT_MESSAGE) linking to the Member Roster, read from
+// holds it. The desk then leads with a placeholder card (SEAT_VACANT_MESSAGE) linking to the Roster & Achievements, read from
 // elections.listOfficerSeats (a seat whose holder is null). A desk whose seat is not an office in the seat list (the
 // Council Historian, an appointed role) is never reported vacant, so a missing list or seat never breaks the desk.
 // =========================================================================

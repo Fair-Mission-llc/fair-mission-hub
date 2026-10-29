@@ -48,7 +48,7 @@ describe('1. the Admin Desk', () => {
     expect(ADMIN_DESK_DRAWERS.map((d) => d.label)).toEqual([
       'Council Wide Settings',
       'Council Lookup Tables',
-      'Credentials Vault',
+      'Secure Access Vault',
       'Global Charities Registry',
       'Council Asset Management',
       'Administrative Feedback Loops',

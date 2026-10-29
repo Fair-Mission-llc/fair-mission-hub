@@ -103,8 +103,8 @@ The categories group the links by the work you do. A link can sit in a different
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
 | **Supreme Council Sync** | System Settings | Admins, finance officers | The Supreme Council reports, Forms 1728 and 1295. The roster CSV upload is on the **Financial Secretary Desk** | 2.4 (Financial Secretary Manual) |
-| **Member Roster** | Faith In Action (first link) | Every member reads it. Council Admins and Super Admins add and edit members there | The phone, email and degree of active brothers of your council and its sister councils. A Super Admin sees every council, with a **Council** picker to filter the list. Admins get **Add Member**, **Edit** on each row (every status for their own council) and **Skills**. The same list is on the **Member Desk**, the **Grand Knight Desk** and the **Financial Secretary Desk** | 14.6 |
-| **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | Every member | The same list as **Member Roster** | 14.6 |
+| **Roster & Achievements** | Faith In Action (first link) | Every member reads it. Council Admins and Super Admins add and edit members there | The phone, email and degree of active brothers of your council and its sister councils. A Super Admin sees every council, with a **Council** picker to filter the list. Admins get **Add Member**, **Edit** on each row (every status for their own council) and **Skills**. The same list is on the **Member Desk**, the **Grand Knight Desk** and the **Financial Secretary Desk** | 14.6 |
+| **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | Every member | The same list as **Roster & Achievements** | 14.6 |
 
 </details>
 
@@ -165,7 +165,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **General Ledger Spreadsheet** | Finances | General ledger readers | The chart of accounts and every posting | 2.4 (Treasurer Manual) |
+| **Transaction Ledger** | Finances | General ledger readers | The chart of accounts and every posting | 2.4 (Treasurer Manual) |
 | **Balance Sheet** | Finances | General ledger readers | Assets, liabilities and net worth | 2.4 (Treasurer Manual) |
 | **My Expense Reports** | Finances | Every member | Your own expense reports and their status | 4.1 |
 | **Bulk Check Payments Made** | Finances | Finance officers, Super Admins | Approved reports paid by check | 2.3 (Treasurer Manual) |
@@ -235,7 +235,7 @@ The categories group the links by the work you do. A link can sit in a different
 | --- | --- | --- | --- |
 | **Council Wide Settings** | Officers, Admins, Super Admins | Five drawers: Standard Bank Accounts, User Access & Roster Control, System Settings, Feature Controls, Council Feature Deployment Matrix | 11 |
 | **Council Lookup Tables** | Admins, finance officers | Payment methods, lists and the email gateway | 5.1 (Administrator User Guide) |
-| **Credentials Vault** | Officers, Admins, Super Admins | Sealed keys for Drive, mail and receipt reading | 5.2 (Administrator User Guide) |
+| **Secure Access Vault** | Officers, Admins, Super Admins | Sealed keys for Drive, mail and receipt reading | 5.2 (Administrator User Guide) |
 | **Master Feature Deployment Grid** | Super Admins | The module switches of each council | 2 (Administrator User Guide) |
 | **Global System Parameters** | Super Admins | Dues, organization type and platform settings | 8.5 (Administrator User Guide) |
 | **Councils** | Super Admins | The council list | 5.3 (Administrator User Guide) |
@@ -259,11 +259,11 @@ The categories group the links by the work you do. A link can sit in a different
 | --- | --- |
 | **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Election Center, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
 | **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
-| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Financial Inspections, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Center |
+| **Finances** | Transaction Ledger, Balance Sheet, Financial Dashboard, Financial Inspections, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Center |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Historical Chronology, Post-event Ledger, Lessons Registry |
 | **Resources** | Council Artifacts, Recruitment Factory, Shared Equipment Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
-| **System Settings** | Councils, Master Feature Deployment Grid, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Vault, Supreme Council Sync, Council Lookup Tables, Credentials Vault, 🛠️ Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |
+| **System Settings** | Councils, Master Feature Deployment Grid, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Vault, Supreme Council Sync, Council Lookup Tables, Secure Access Vault, 🛠️ Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |
 
 The **System Settings** pillar had the name **Setup** in earlier versions of the portal.
 
@@ -284,13 +284,13 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | Tab | Who gets the tab | Drawers or sections | Section |
 | --- | --- | --- | --- |
 | **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, [ 📅 Upcoming Event Agenda ], Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 14.2 |
-| **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
+| **Platform Management** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
 | **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, [ 📈 Council Goals & Targets ], Shared Equipment Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **[ 📖 Reference Workflows ]**: Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ] | 14.5 |
 | **Financial Secretary Desk** | The FS, Admins, Super Admins | Auditing & Return Queue, Expense Report (ER) Routing Track, Charitable Donation Records, FS/GK Compliance Endorsements, Charity Check Issuance Console, Excel Roster Imports; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
 | **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **[ 🔧 Accounting Configuration ]**: Chart of Accounts & GL Setup; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.8 |
 | **Historian Desk** | The Council Historian, Admins, Super Admins | Fraternal Diary Entry Logs, Monthly Newsletters, Meeting Photos, Oral History Recordings, Google Drive Media Gallery Sync Board; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.10 |
-| **Member Desk** | Every member | **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts** side by side at the top, **[ 📥 My Charity Requests ]**, **My open expense sheets**, the **Member Roster** panel | 14.6 |
+| **Member Desk** | Every member | **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts** side by side at the top, **[ 📥 My Charity Requests ]**, **My open expense sheets**, the **Roster & Achievements** panel | 14.6 |
 
 </details>
 
@@ -341,7 +341,7 @@ The page reads your member type and your officer roles. The page then lists only
 | Member | Summary | One short sentence for each page that you can open, for example **Home**, **Member Actions Hub**, **Visual Master Calendar** and the **Member Desk**. No leadership, finance desk or settings page. |
 | Council Officer | Full | The member pages and the desks of your office, with the sidebar pillar of each link and every drawer of each desk. For example **GK Expense Authorize** and the **Grand Knight Desk** drawers for the Grand Knight. |
 | Council Admin | Full | The member pages and the leadership, finance and settings pages of your council, with every drawer of each desk. |
-| Super Admin | Full | Every page, including **Global System Parameters**, and the **Super Admin Desk** for the platform owner. |
+| Super Admin | Full | Every page, including **Global System Parameters**, and the **Platform Management** for the platform owner. |
 
 A few pages read differently for leaders. For example, a member reads that **Annual Budget Center** shows the budget. A leader also reads that budget keepers draft and approve the budget there.
 A module that your council switched off is not in the guide, because the module is not in your sidebar.
@@ -710,7 +710,11 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Steps:**
 1. Add an activity with a name, a description and a category.
-2. Save.
+2. Save. The **Confirm the Form 1728 line** window opens.
+3. Read the **Best guess**. To keep it, select **Confirm line and save**.
+4. To use a different line, choose it under **Suggested lines** or in **Or choose any line**. Then select **Confirm line and save**.
+
+> **Note:** the window opens again when you rename the activity. To change only the line, select **Change line** in the **Form 1728** column. The same window opens when you add or rename an activity in **Admin Desk** → **Council Lookup Tables** → **Activities**.
 
 <!-- KEEP_IMAGE: activities catalog capture -->
 ![Activities catalog (/activities)](../generated/dashboard_visual_catalog/activities.png)
@@ -722,6 +726,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A sister council does not see the activity. | Activities belong to one council. | Add the activity in each council. |
+| The message *"Not saved. Confirm a Form 1728 line to save the activity."* shows. | You selected **Cancel** in the Form 1728 window. | Save again and confirm a line. |
 
 ---
 
@@ -1021,7 +1026,7 @@ A budget gauge turns gold at 85% of the cap. The gauge turns red past 100%.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| **Design Advanced Collateral** is grey. Its tooltip says *"The Microsoft Co-Pilot is not connected yet"*. | The council has no Co-Pilot key in the Credentials Vault. | Select the tooltip's link to the Credentials Vault. A council Admin saves the key there (section 5.2 of the Administrator User Guide). |
+| **Design Advanced Collateral** is grey. Its tooltip says *"The Microsoft Co-Pilot is not connected yet"*. | The council has no Co-Pilot key in the Secure Access Vault. | Select the tooltip's link to the Secure Access Vault. A council Admin saves the key there (section 5.2 of the Administrator User Guide). |
 | *"Microsoft refused the saved Co-Pilot key."* | The key was changed or removed in Copilot Studio. | Ask a council Admin to save the new key (section 5.2 of the Administrator User Guide). |
 | *"The Microsoft Co-Pilot did not answer in time."* | The agent took more than 30 seconds. | Type a shorter request. Try again. |
 | **Rewrite in plain, warm words** shows. | The draft uses business jargon. | Edit the words before you use the draft. |
@@ -1036,7 +1041,7 @@ A budget gauge turns gold at 85% of the cap. The gauge turns red past 100%.
 
 **Goal:** Find and message members with a skill.
 
-**Start point:** Sidebar → Faith In Action → **Member Roster** → **Skills**.
+**Start point:** Sidebar → Faith In Action → **Roster & Achievements** → **Skills**.
 
 **Steps:**
 1. Choose a skill in the **Council skills** drawer.
@@ -1084,7 +1089,7 @@ The platform sends no message when an expense report changes status. The member 
 | Day 5 after a shift with no hours (the council can change the day, section 11.2) | A text reminder | The volunteer | **Active Desks** row → **Grand Knight Desk** → **Shifts Awaiting Hours** drawer |
 | Every 7 days after that (the council can change the days, section 11.2) | A follow-up text, until the shift is older than the logging window (90 days by default) | The volunteer | Same panel. The row shows **Closed** when the window ends. |
 | An officer sends an urgent alert | A phone push alert and a bell entry, kept 6 months | Members with the chosen skills or shifts | **Council Messages & Alerts** → **Dispatch High-Priority Push Notification Alert** |
-| A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on the **Member Roster** or the **Financial Secretary Desk** roster upload |
+| A member is added or synced | A welcome email with the app steps and a setup code | The new member | The confirmation on the **Roster & Achievements** or the **Financial Secretary Desk** roster upload |
 | A member requests a password reset | An email with a 6-digit code, valid 15 minutes | The member | None. The member resets the password alone. |
 
 Only the Financial Secretary, the Treasurer, council Admins and Super Admins see the urgent alert tile.
@@ -1412,7 +1417,7 @@ The asset record keeps the Drive file. The photo stays with the asset for every 
 
 The Deputy Grand Knight is a full asset manager because the DGK directs the council's programs and their equipment.
 
-The portal accepts image files up to 25 MB. The council's Google Drive must be connected in **Credentials Vault**. When Drive is not connected, the portal saves no photo.
+The portal accepts image files up to 25 MB. The council's Google Drive must be connected in **Secure Access Vault**. When Drive is not connected, the portal saves no photo.
 
 On the phone, the **Council assets** button on the **Home** tab opens a list of the assets with their photos. The phone list is for viewing only.
 
@@ -1434,7 +1439,7 @@ On the phone, the **Council assets** button on the **Home** tab opens a list of 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The message says "The Drive vault is not configured." or "DRIVE_VAULT_LIVE is not on." | The council's Google Drive is not connected or not switched on. | Ask an Admin to connect Google Drive in **Credentials Vault**. Ask the portal host to switch the Drive vault on. |
+| The message says "The Drive vault is not configured." or "DRIVE_VAULT_LIVE is not on." | The council's Google Drive is not connected or not switched on. | Ask an Admin to connect Google Drive in **Secure Access Vault**. Ask the portal host to switch the Drive vault on. |
 | The message says the file "is not a file type the Assets folder takes." | The file is not an image. | Choose a photo file. |
 | The message says "Google Drive did not accept the photo. Try again later." | Google Drive did not answer. | Wait a few minutes, then upload the photo again. |
 | The form shows the details but no **Save asset details** button. | You are a Trustee. | Ask an asset manager to change the details. You can still add the photo. |
@@ -1556,7 +1561,7 @@ Members check in to a live meeting from the phone with the 4-digit **meeting PIN
 
 **Goal:** Set the 4-digit PIN that members type to check in to a meeting.
 
-**Start point:** **Active Desks** row → **Recorder Desk** → **Meeting Check-In PIN**. When the Recorder is absent: **Active Desks** row → **Grand Knight Desk** → **Meeting PIN (Recorder Absent)**.
+**Start point:** **Active Desks** row → **Recorder Desk** → **Chamber Check-In**. When the Recorder is absent: **Active Desks** row → **Grand Knight Desk** → **Chamber Check-In (Recorder Absent)**.
 
 **Steps:**
 1. Select **🔢 Generate new PIN**. The card makes a random 4-digit PIN, never `0000`, and saves it at once.
@@ -1594,7 +1599,7 @@ Members check in to a live meeting from the phone with the 4-digit **meeting PIN
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The photo is gone after you reload the page. | The upload was not filed in Drive: the uploader is not an Admin, or the council's Drive is off. | Ask an Admin to upload the photo. Turn on Drive in the **Credentials Vault**. |
+| The photo is gone after you reload the page. | The upload was not filed in Drive: the uploader is not an Admin, or the council's Drive is off. | Ask an Admin to upload the photo. Turn on Drive in the **Secure Access Vault**. |
 | *"Google Drive did not accept the file."* | Drive refused the upload. | Try again later. |
 | Members' own photos are not in the panel. | A member's check-in photo stays on the member's phone. | Ask the member to send the photo to an Admin. |
 
@@ -1646,18 +1651,18 @@ The portal has no status badge strip and no **Oversight Desk**. Each queue shows
 The **Bible Verse of the Day**, the **Liturgical Feast Day Tracker** and the **📿 Community Prayer Request List** show only while the council's **Faith Center** module is on. A white-label organization does not see the three faith cards. **Home** then shows the other four cards.
 
 ### 14.3 Concept: the desks
-A desk holds the work of one seat. Every officer desk is a desk blotter of drawers (section 14.3.2). When nobody holds the desk's office, an Admin who opens the desk sees the card **Seat Vacant — Open Council Roster to Assign this Officer Position** above the drawers, with links to the **Member Roster** and the **Appointed Leadership Matrix**. If part of a desk cannot load, the desk shows a short message in its place instead of a blank page. You sign, code and pay inside a drawer on the desk. The **Member Desk** has no drawers.
+A desk holds the work of one seat. Every officer desk is a desk blotter of drawers (section 14.3.2). When nobody holds the desk's office, an Admin who opens the desk sees the card **Seat Vacant — Open Council Roster to Assign this Officer Position** above the drawers, with links to the **Roster & Achievements** and the **Appointed Leadership Matrix**. If part of a desk cannot load, the desk shows a short message in its place instead of a blank page. You sign, code and pay inside a drawer on the desk. The **Member Desk** has no drawers.
 
 The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 14.3.2), with **Approved Expenses** first. Under the drawers: the **Member Roster** panel. | None. You work inside the drawers. |
-| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 14.3.2), with **Auditing & Return Queue** first. Under the drawers: the **Member Roster** panel. | None. You work inside the drawers. |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 14.3.2), with **Approved Expenses** first. Under the drawers: the **Roster & Achievements** panel. | None. You work inside the drawers. |
+| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 14.3.2), with **Auditing & Return Queue** first. Under the drawers: the **Roster & Achievements** panel. | None. You work inside the drawers. |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches** first. | None. You work inside the drawers. |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** first on the spine. | None. You work inside the drawers. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The desk blotter, with the **Fraternal Diary Entry Logs** first. | None. You work inside the drawers. |
-| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **Member Roster** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
+| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **Roster & Achievements** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 ### 14.3.1 Concept: the advanced modules on the desks
 The desks no longer use module folders. Each advanced module below is a drawer on its desk (section 14.3.2). The module's own page also stays at its web address.
@@ -1767,7 +1772,7 @@ A tile shows only to a reader who may open its module. An Admin who does not hol
 
 **Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **[ 🔀 Back to Desk Blotter ]** bar shows under the tab row. Select the bar to go back to your desk.
 
-**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Super Admins read council access requests on the **Super Admin Desk** only. A saved `/dashboard#oversight` address opens your first tab.
+**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Super Admins read council access requests on the **Platform Management** only. A saved `/dashboard#oversight` address opens your first tab.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -2648,7 +2653,7 @@ Type 2 or more letters. A list of results opens under the search bar. The result
 | --- | --- |
 | **Page** | A portal page that your role can open. The search never shows a page that your sidebar does not show. |
 | **Event** | One of your council's events. The result opens the **Event Planner** if you can plan events. Otherwise, the result opens the **Visual Master Calendar**. |
-| **Member** | An active member of your council. Every member gets member results. The result opens the **Member Roster**. |
+| **Member** | An active member of your council. Every member gets member results. The result opens the **Roster & Achievements**. |
 | **Help** | The **Online Help Center** and the **Interactive Help Desk**, with your words already in their search box. The two help results are always at the end of the list. |
 
 Each kind shows at most 5 results.
@@ -2656,7 +2661,7 @@ Each kind shows at most 5 results.
 **Restricted pages:** each time you type, the search reads the permissions of your role again. The finance pages (the general ledger, the balance sheet, the finance dashboard and the Trustee audit), the payment desks (**FS Expense Audit**, **GK Expense Authorize**, **Leadership Auditing Queue** and **Bulk Check Payments Made**), **Donations History**, the Supreme roster sync, and the council and platform settings pages are restricted. The search shows a restricted page only when your role can open that page. **Annual Budget Center** is not restricted: every member can read the budget.
 
 ### 19.2 Find a page, an event, a member or a help answer
-> **Who can do this:** every signed-in member. Member results open the **Member Roster**.
+> **Who can do this:** every signed-in member. Member results open the **Roster & Achievements**.
 
 **Goal:** Open a page, an event, a member or a help answer from the header.
 
@@ -2674,7 +2679,7 @@ Each kind shows at most 5 results.
 | --- | --- | --- |
 | No list opens. | You typed fewer than 2 letters. | Type more letters. |
 | Only the two help results show. | No page, event or member name starts with your words. | Try fewer or different words. Or select a help result. |
-| No member results show. | The member is not active, or belongs to another council. | Open the **Member Roster** and choose the council. |
+| No member results show. | The member is not active, or belongs to another council. | Open the **Roster & Achievements** and choose the council. |
 | A page you expect does not show. | Your role cannot open the page, or the council's module is off. | Ask a council Admin. |
 
 ---
@@ -2701,7 +2706,7 @@ The screen has two depths: **Summary** and **Full**. Your role sets the depth. Y
 | Member (a plain volunteer) | Summary | One short sentence | One short sentence. No drawers. |
 | Council Officer | Full | The leader sentence and the sidebar pillar of the link, for example *sidebar: Finances* | The sentence and a list of every drawer of the desk |
 | Council Admin | Full | The leader sentence and the sidebar pillar | The sentence and every drawer of each desk that you hold |
-| Super Admin | Full | The leader sentence and the sidebar pillar, for every page | The sentence and every drawer, including the **Super Admin Desk** folders for the platform owner |
+| Super Admin | Full | The leader sentence and the sidebar pillar, for every page | The sentence and every drawer, including the **Platform Management** folders for the platform owner |
 
 The first line of the screen tells you your depth. For example, *You are signed in as: Council Officer (Grand Knight)*. Under it, the overview says *You see the full map* or *You see a short summary*.
 
@@ -2728,7 +2733,7 @@ The screen has three levels:
 | Level | What it is | Example |
 | --- | --- | --- |
 | 1. Group | A closed block with a title and the number of its links | **📒 Ledgers** |
-| 2. Link or desk | A page name that you can select, with its sentence | **General Ledger Spreadsheet** · *sidebar: Finances* |
+| 2. Link or desk | A page name that you can select, with its sentence | **Transaction Ledger** · *sidebar: Finances* |
 | 3. Drawer | A drawer of a desk, listed under the desk (full depth only) | **Approved Expenses** under **Grand Knight Desk** |
 
 Select a link name to open that page. Select a desk name to open that desk tab on the **Active Desks** row.
@@ -2775,7 +2780,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 7. Troubleshooting reference
 - 8. Council Wide Settings and platform settings
 - 9. Access requests, impersonation and remote help
-- 10. Feedback loops and the Super Admin Desk
+- 10. Feedback loops and Platform Management
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys

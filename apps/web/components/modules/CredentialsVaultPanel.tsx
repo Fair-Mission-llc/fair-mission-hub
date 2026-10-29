@@ -1,5 +1,5 @@
 'use client';
-// Credentials Vault (Sprint 6L Extension): the one Setup page for every connection a council keeps a secret for - its
+// Secure Access Vault (Sprint 6L Extension): the one Setup page for every connection a council keeps a secret for - its
 // outbound email account (moved here from the Council Lookups tab), its Google Drive key and (Sprint 6L Extension 2) its
 // Microsoft Co-Pilot key, the Microsoft Copilot Studio Direct Line secret (both through /api/councils/credentials). A short status banner leads the page in plain words; no ports or technical flags.
 // Audience: seated officers, the council's Admins and Super Admins (canOpenCredentialsVault). Only the council's Admins
@@ -237,7 +237,7 @@ function SecretPanel({ card, councilId, saved, onChanged }: { card: SecretCard; 
 }
 
 /**
- * The vault for one council. Sprint 10 Revision 3.0: `homeCouncilOnly` (the Super Admin Desk drawer) pins it to the
+ * The vault for one council. Sprint 10 Revision 3.0: `homeCouncilOnly` (Platform Management drawer) pins it to the
  * reader's own home council - no council picker, and no other council's sealed keys are ever requested.
  */
 export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !homeCouncilOnly }: { homeCouncilOnly?: boolean; showTitle?: boolean }) {
@@ -273,7 +273,7 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !ho
 
   return (
     <>
-      {!showTitle ? null : homeCouncilOnly ? <PageTitle>Credentials Vault</PageTitle> : <PageTitle actions={<CouncilSelect scope={scope} />}>Credentials Vault</PageTitle>}
+      {!showTitle ? null : homeCouncilOnly ? <PageTitle>Secure Access Vault</PageTitle> : <PageTitle actions={<CouncilSelect scope={scope} />}>Secure Access Vault</PageTitle>}
       <StatusBanner connections={connections} unknown={council.data === undefined || (mayEdit && vault.loading)} />
       {vault.error ? <Notice tone="error">{vault.error}</Notice> : null}
       {mayEdit ? (

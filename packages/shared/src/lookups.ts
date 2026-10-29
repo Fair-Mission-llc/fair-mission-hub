@@ -257,13 +257,14 @@ function withStatus(record: Record<string, unknown>, clean: (fields: Record<stri
 
 export const COUNCIL_LOOKUP_META: Record<CouncilLookupTableName, CouncilLookupTableMeta> = {
   Activities: {
-    columns: ['ActivityName', 'ActivityDescription', 'CategoryID', 'lookup_status'],
+    columns: ['ActivityName', 'ActivityDescription', 'CategoryID', 'lookup_status', 'form_1728_line'],
     keyField: 'ActivityName',
     foreignKeys: [{ column: 'CategoryID', table: 'Category', label: 'activity category' }],
+    // Sprint 11 Revision 11.0: a row saved without form_1728_line keeps the line already stored on it.
     clean: (record, councilId) =>
       withStatus(record, (fields) => {
-        const { CouncilID: _council, ...rest } = cleanActivity({ ...fields, CouncilID: councilId } as never);
-        return rest;
+        const { CouncilID: _council, form_1728_line, ...rest } = cleanActivity({ ...fields, CouncilID: councilId } as never);
+        return fields.form_1728_line === undefined ? rest : { ...rest, form_1728_line: form_1728_line ?? null };
       }),
   },
   DonationType: {

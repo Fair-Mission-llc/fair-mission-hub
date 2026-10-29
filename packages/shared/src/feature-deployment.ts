@@ -3,7 +3,7 @@
 //
 // Sprint 10 Revision 3.0: Council Wide Settings (/system-settings/council-settings) is a stack of collapsible drawer
 // panels (COUNCIL_SETTINGS_DRAWERS), replacing the Sprint 8S Revision 10.1 filing cabinet of four tabs:
-//   - Standard Bank Accounts        the payment and account pages (Council Lookups, Credentials Vault) and the read-only
+//   - Standard Bank Accounts        the payment and account pages (Council Lookups, Secure Access Vault) and the read-only
 //                                   Council Instance Record (EIN, dues, email gateway, schema version);
 //   - User Access & Roster Control  meeting check-in, the inactivity sweep and the rank benchmarks;
 //   - System Settings               the timing and limit cards and the custom user guides;
@@ -107,7 +107,7 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       description: 'Checks members in by GPS inside the meeting circle. Without a meeting point only the PIN works.',
       deployed: council.meeting_latitude != null && council.meeting_longitude != null,
       // Sprint 10 Revision 4.0: the check-in card moved to the Recorder Desk.
-      managedOn: 'Recorder Desk: Meeting Check-In PIN (Grand Knight Desk when the Recorder is absent)',
+      managedOn: 'Recorder Desk: Chamber Check-In (Grand Knight Desk when the Recorder is absent)',
     },
     {
       id: 'email-gateway',
@@ -115,8 +115,8 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       label: 'Council Email Gateway',
       description: "Sends the council's portal email through its own outgoing mail server.",
       deployed: (council.SmtpHost ?? '').trim() !== '',
-      // Sprint 11 Revision 1.0: the gateway's server and sealed password live in the Credentials Vault.
-      managedOn: 'Credentials Vault: Email Gateway',
+      // Sprint 11 Revision 1.0: the gateway's server and sealed password live in the Secure Access Vault.
+      managedOn: 'Secure Access Vault: Email Gateway',
       href: '/credentials-vault',
     },
   ];
@@ -140,4 +140,4 @@ export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed
  * The platform's database schema version, shown under System Information. It moves with the phone database's
  * SCHEMA_VERSION (apps/mobile/services/drivers/sqlite.ts) and the Schema.sql sprint headers.
  */
-export const PLATFORM_SCHEMA_VERSION = 108;
+export const PLATFORM_SCHEMA_VERSION = 109;

@@ -4,7 +4,7 @@
 // checkbox saves at once (councils.setFeatureFlags); a module switched off disappears from that council's sidebar,
 // pages, phone tabs and buttons. Super Admins only (canOpenFeatureFlagsControlCenter), the tier the drivers enforce
 // (SUPER_ADMIN_REQUIRED). The panel used to sit on the Councils page. Sprint 8O: the grid lives in
-// components/FeatureFlagParts.tsx, shared with the Super Admin Desk's System Feature Flag Control Panel folder.
+// components/FeatureFlagParts.tsx, shared with Platform Management's System Feature Flag Control Panel folder.
 // Sprint 11 Revision 7.0: renamed the Master Feature Deployment Grid (MASTER_FEATURE_GRID_TITLE); /super-admin draws it too.
 import { RequireArea } from '@/components/CouncilScope';
 import { FeatureFlagControlPanel } from '@/components/FeatureFlagParts';

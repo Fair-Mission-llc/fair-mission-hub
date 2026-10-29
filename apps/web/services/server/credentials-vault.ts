@@ -1,4 +1,4 @@
-// The Centralized Encrypted Credentials Vault (Sprint 6Y, Schema 40). SERVER ONLY, like secrets.ts.
+// The Centralized Encrypted Secure Access Vault (Sprint 6Y, Schema 40). SERVER ONLY, like secrets.ts.
 //
 // This module is the only reader and writer of CouncilCredentialsVault. put() takes a plain value and ALWAYS seals it
 // before it touches a row - there is no way to store a value that has not been through the cipher - with AES-256-GCM

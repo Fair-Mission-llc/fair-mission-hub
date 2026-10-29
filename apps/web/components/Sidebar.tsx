@@ -72,7 +72,7 @@ export interface NavEntry {
 export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue', NavEntry> = {
   home: { href: '/dashboard#home', label: 'Home', hint: 'Newsletters, feast days, reminders, the prayer list and the honor board' },
   'member-actions': { href: '/member-actions', label: 'Member Actions Hub', hint: 'My shifts, sign-ups, charity requests, sheets, roster and hours' },
-  roster: { href: '/roster', label: 'Member Roster', hint: 'Brother Knights of your council and sister councils, with phone and email' },
+  roster: { href: '/roster', label: 'Roster & Achievements', hint: 'Brother Knights of your council and sister councils, with phone and email' },
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },
@@ -102,7 +102,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'The Executive Summary: Faith-in-Action, monthly hours, members and funds, budget tracking, roadmap and audits',
   },
   'finance/dashboard': { href: '/finance/dashboard', label: 'Financial Dashboard', hint: 'Liquidity tanks, balance scale, transfers, bank audits' },
-  'finance/ledger': { href: '/finance/ledger', label: 'General Ledger Spreadsheet', hint: 'Chart of accounts with every posting' },
+  'finance/ledger': { href: '/finance/ledger', label: 'Transaction Ledger', hint: 'Chart of accounts with every posting' },
   'finance/balance-sheet': { href: '/finance/balance-sheet', label: 'Balance Sheet', hint: 'Assets against liabilities and equity' },
   'finance/audit': { href: '/finance/audit', label: 'Financial Inspections', hint: 'Semiannual Form 1295 audit: verify ledger lines, sign and lock' },
   'finance/treasurer-desk': {
@@ -140,7 +140,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'council-lookups': { href: '/council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types, methods' },
   'credentials-vault': {
     href: '/credentials-vault',
-    label: 'Credentials Vault',
+    label: 'Secure Access Vault',
     hint: 'Connect the council email account and Google Drive',
     restrictedTo: 'council officers, Admins and Super Admins',
   },

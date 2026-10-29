@@ -1,7 +1,7 @@
 'use client';
 // Sprint 8P Stage 1: the global search bar in the header row (global-search.ts searchGlobal). It finds the reader's own
 // pages (the role-filtered sidebar of navigationGuide), the council's events, the council's members for readers who may
-// open the Member Roster (/roster since Sprint 10 Revision 3.0), and always offers the Online Help Center and the Interactive Help Desk with the words
+// open the Roster & Achievements (/roster since Sprint 10 Revision 3.0), and always offers the Online Help Center and the Interactive Help Desk with the words
 // carried over. Events and members load once, the first time the input gets focus, so pages that never search pay
 // nothing.
 // Sprint 8S Revision 7: every query passes the reader's clearance mask (portalAreas), so restricted finance, payables and

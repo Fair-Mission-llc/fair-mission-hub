@@ -23,7 +23,7 @@
 - [7. Troubleshooting reference](#7-troubleshooting-reference)
 - [8. Council Wide Settings and platform settings](#8-council-wide-settings-and-platform-settings)
 - [9. Access requests, impersonation and remote help](#9-access-requests-impersonation-and-remote-help)
-- [10. Feedback loops and the Super Admin Desk](#10-feedback-loops-and-the-super-admin-desk)
+- [10. Feedback loops and Platform Management](#10-feedback-loops-and-platform-management)
 - [11. Run a room pilot on the hub laptop](#11-run-a-room-pilot-on-the-hub-laptop)
 - [11.3 Build the desktop trial executable](#113-build-the-desktop-trial-executable)
 - [12. Reset the database to the seed data](#12-reset-the-database-to-the-seed-data)
@@ -202,7 +202,7 @@ The vault follows five rules.
 
 **Expected result:** A new Admin upload creates a file under `Fraternal Enterprise Suite`.
 
-A council can use its own Drive private key instead of the server key. A council Admin saves the key on the **Credentials Vault** page (5.2).
+A council can use its own Drive private key instead of the server key. A council Admin saves the key on the **Secure Access Vault** page (5.2).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -219,7 +219,7 @@ A council can use its own Drive private key instead of the server key. A council
 
 **Goal:** Read the notes and bug reports that council Admins send.
 
-**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. The platform owner also reads the notes on the **Super Admin Desk** (10.3).
+**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. The platform owner also reads the notes on the **Platform Management** (10.3).
 
 **Steps:**
 1. Scroll below **Send a Note to the Platform Owner**.
@@ -291,7 +291,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 
 Budget categories are not on this page. Keep them on the **Annual Budget Center** (Sidebar → Finances → **Budget**). On **Meeting Agenda Templates**, the **Preview** box under the outline shows the agenda with its formatting while you type.
 
-The outbound email settings are not on this page. Set them on the **Credentials Vault** page (5.2). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (8.8).
+The outbound email settings are not on this page. Set them on the **Secure Access Vault** page (5.2). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (8.8).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -300,13 +300,13 @@ The outbound email settings are not on this page. Set them on the **Credentials 
 | A budget category will not delete. | Budget lines use the category. | Move the lines to another category. |
 
 ### 5.2 Connect the council email, Google Drive, Microsoft Co-Pilot and receipt reading
-> **Prerequisite (who can do this):** You must be a council Admin or a Super Admin to save or remove a connection. Seated officers see the status lines only. Other members do not see the **Credentials Vault**.
+> **Prerequisite (who can do this):** You must be a council Admin or a Super Admin to save or remove a connection. Seated officers see the status lines only. Other members do not see the **Secure Access Vault**.
 > **Note:** the page opens only your own home council's keys. The portal server refuses any other council's keys with **403 Forbidden**, for Super Admins too.
 > **Warning:** **Remove** deletes the saved password or key at once. The council goes back to the portal default.
 
 **Goal:** Connect the council's own mail account, Google Drive, Copilot Studio agent and Azure receipt reader.
 
-**Start point:** Sidebar → System Settings → **Credentials Vault**.
+**Start point:** Sidebar → System Settings → **Secure Access Vault**.
 
 **Steps:**
 1. Read the status lines at the top. A line with ✓ is a connection that is on.
@@ -514,7 +514,7 @@ The page has no **Global Revenue Splits** tab and no **Reference Archives** link
 
 The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
-The page has no links to **Council Lookups** or the **Credentials Vault**. Open them from the sidebar (System Settings). The **Module & Platform Switches** links show **Master Feature Deployment Grid** and **Global System Parameters** to Super Admins.
+The page has no links to **Council Lookups** or the **Secure Access Vault**. Open them from the sidebar (System Settings). The **Module & Platform Switches** links show **Master Feature Deployment Grid** and **Global System Parameters** to Super Admins.
 
 The **Council Instance Record** shows the council number and name, the organization type, the district, the EIN, the base dues rate, the email gateway, the date the bylaws were last saved and the database schema version. You cannot change these facts here. Each fact changes on its own page.
 
@@ -532,7 +532,7 @@ The **Council Feature Deployment Matrix** has its own drawer. The matrix shows w
 | --- | --- | --- |
 | **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Shared Equipment Library Sharing** card, in the **Feature Controls** drawer |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
-| **Council Email Gateway** | The council has an outgoing mail server. | **Credentials Vault** → **Email Gateway** (the link opens the vault) |
+| **Council Email Gateway** | The council has an outgoing mail server. | **Secure Access Vault** → **Email Gateway** (the link opens the vault) |
 
 **Council modules** rows: one row for each of the sixteen module switches (section 2). A Super Admin changes them on the **Master Feature Deployment Grid**. Council Admins see the status only.
 
@@ -702,7 +702,7 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 
 The card shows only the settings of the provider you choose:
 
-| Provider | Settings on the card | Key saved on the Credentials Vault page |
+| Provider | Settings on the card | Key saved on the Secure Access Vault page |
 | --- | --- | --- |
 | **Google Drive** | None | **Drive service-account key** (optional) |
 | **OneDrive / SharePoint** | **SharePoint Site URL**, **Application (Client) ID** | **Client Secret** |
@@ -713,7 +713,7 @@ The card shows only the settings of the provider you choose:
 1. Choose the provider in **File Repository Provider**. The card shows that provider's settings and hides all others.
 2. Fill in the settings, for example `https://stmarys.sharepoint.com/sites/kofc` for **SharePoint Site URL**, `/KofC Council 15295` for **Team Folder Path** or `\\hall-server\kofc` for **Server Network Address (UNC/IP Path)**.
 3. Select **Save file repository**.
-4. Select **Open the Credentials Vault**. Save the provider's key in its panel (5.2).
+4. Select **Open the Secure Access Vault**. Save the provider's key in its panel (5.2).
 
 **Expected result:** The message **Saved. New uploads go to …** names the provider. Receipts, minutes, gallery and meeting photos, oral histories, asset photos and check photos are sent by the portal server to the provider. Nothing is kept on the uploader's computer or phone. A record keeps a portal link to the file, which only signed-in members of the council and Super Admins can open.
 
@@ -724,7 +724,7 @@ The card shows only the settings of the provider you choose:
 | *"Enter the Application (Client) ID …"* | The ID is not the app registration's GUID. | Copy the **Application (client) ID** from the Azure portal. |
 | *"Enter the team folder path, starting with a slash …"* | The Dropbox path does not start with `/`. | Type it like `/KofC Council 15295`. |
 | *"Enter the server network address as a UNC path"* | The address does not start with two backslashes, a server and a share. | Type it like `\\hall-server\kofc`. |
-| An upload fails with *"The council file repository did not accept the file."* | The provider refused the file, or its key is missing or wrong. | Check the settings and the key saved in the Credentials Vault. |
+| An upload fails with *"The council file repository did not accept the file."* | The provider refused the file, or its key is missing or wrong. | Check the settings and the key saved in the Secure Access Vault. |
 
 ### 8.10 Keep the Account Owners Matrix
 > **Who can do this:** council Admins and Super Admins.
@@ -770,7 +770,7 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The message says the copy was not filed. | The repository has no key or location saved, or Google Drive is not connected. | Check **File Repository Mode** (8.9) and the key in the Credentials Vault. The download still works. |
+| The message says the copy was not filed. | The repository has no key or location saved, or Google Drive is not connected. | Check **File Repository Mode** (8.9) and the key in the Secure Access Vault. The download still works. |
 
 ### 8.12 Upload a payment QR code image
 > **Who can do this:** council Admins, the Financial Secretary and the Treasurer, and Super Admins.
@@ -799,7 +799,7 @@ A council that is not on the platform can ask for access from the sign-in page. 
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
-The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. The platform owner reads the requests on the **Super Admin Desk**, in the **[ 🔑 Council Access Request Approval Queue ]** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. The platform owner reads the requests on the **Platform Management**, in the **[ 🔑 Council Access Request Approval Queue ]** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
 
 Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
 
@@ -812,11 +812,11 @@ Approving a request marks the request as reviewed. Approving does not create the
 > The web portal keeps requests on the portal server. A server restart clears them until the production database is connected. A request sent from the phone stays on that phone.
 
 ### 9.2 Approve a council access request
-> **Who can do this:** the platform owner (the Super Admin who owns the **Super Admin Desk**). Other members do not see the **Inbound Council Mail Center**.
+> **Who can do this:** the platform owner (the Super Admin who owns the **Platform Management**). Other members do not see the **Inbound Council Mail Center**.
 
 **Goal:** Mark a council's access request as reviewed.
 
-**Start point:** **Active Desks** row → **Super Admin Desk** → **[ 🔑 Council Access Request Approval Queue ]**.
+**Start point:** **Active Desks** row → **Platform Management** → **[ 🔑 Council Access Request Approval Queue ]**.
 
 **Steps:**
 1. Read the council name, the city, the state and the contact email of the request.
@@ -854,14 +854,14 @@ The view uses the member's own council. The member can belong to a council other
 
 The gold bar names the member's council. When you select **Return to my account**, the portal switches back to your own council.
 
-Impersonation is only for a Super Admin who helps a local council Admin. Super Admins find the Admin in two places. The **Member Roster** shows the **👥 Impersonate Admin** button on each council Admin's row. The **Impersonate Council Admin** page shows the Admins of every council in one tree.
+Impersonation is only for a Super Admin who helps a local council Admin. Super Admins find the Admin in two places. The **Roster & Achievements** shows the **👥 Impersonate Admin** button on each council Admin's row. The **Impersonate Council Admin** page shows the Admins of every council in one tree.
 
 ### 9.4 View the portal as a council Admin
 > **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate Admin** button.
 
 **Goal:** See the portal with one council Admin's sidebar, pages and permissions while you help the Admin.
 
-**Start point:** Sidebar → Faith In Action → **Member Roster**.
+**Start point:** Sidebar → Faith In Action → **Roster & Achievements**.
 
 **Steps:**
 1. Choose the Admin's council in **Council**, or keep **All councils on the platform**.
@@ -979,7 +979,7 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 
 ---
 
-## 10. Feedback loops and the Super Admin Desk
+## 10. Feedback loops and Platform Management
 
 ### 10.1 Concept: the Administrative Feedback Loops
 Members no longer send feedback from the Online Help Center. A member brings a problem to the council's Admin through the Communications Hub.
@@ -1005,12 +1005,12 @@ Only sessions with Admin clearance or higher see the page. A member, an officer 
 | --- | --- | --- |
 | The page is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin to send the note. |
 
-### 10.3 Use the Super Admin Desk
+### 10.3 Use Platform Management
 > **Who can do this:** the platform owner only. The tab shows only for the owner's own Super Admin sign-in. Other Super Admins do not see the tab.
 
 **Goal:** Read Admin notes, approve council licenses and switch council modules from one desk.
 
-**Start point:** **Active Desks** row → **Super Admin Desk**.
+**Start point:** **Active Desks** row → **Platform Management**.
 
 The desk has three folders across the top:
 
@@ -1027,7 +1027,7 @@ Under the folders, the desk has four drawers. Select a drawer's title to open or
 | **Global System Parameters** | Each council's base dues rate and organization type, and the platform settings every council shares. |
 | **Global Lookup Tables** | The platform-wide lookup tables, one tab for each table. |
 | **Global Charities Registry** | The registry every council shares: search, verify and add charities. |
-| **Credentials Vault** | The sealed connection keys of your own home council only. The drawer never opens another council's keys. |
+| **Secure Access Vault** | The sealed connection keys of your own home council only. The drawer never opens another council's keys. |
 
 **Steps:**
 1. Select a folder.
@@ -1039,7 +1039,7 @@ Under the folders, the desk has four drawers. Select a drawer's title to open or
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The **Super Admin Desk** tab is missing. | You signed in with another account, or you view the portal as another member. | Sign in with the platform owner's account. Stop the view-as session. |
+| The **Platform Management** tab is missing. | You signed in with another account, or you view the portal as another member. | Sign in with the platform owner's account. Stop the view-as session. |
 | A module switch has no effect on a council. | The council's members must reload the portal. | Ask the members to reload the page. |
 
 ---
@@ -1173,6 +1173,7 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | --- | --- | --- |
 | Windows shows *"Windows protected your PC"*. | The file has no code-signing certificate. | Select **More info**, then **Run anyway**. |
 | The program shows *"The portal stopped unexpectedly"*. | The portal server stopped. | Read `portal.log` in `%APPDATA%\kofc-tracking-platform`. Send the file to the developer. |
+| The program shows *"This version needs a new database"*. | The program file is newer than the records on this computer. | Select **Start a new database**. The old records stay in a `vault-archive-...` folder in `%APPDATA%\kofc-tracking-platform`. To keep working on the old records, select **Quit** and use the older program file. |
 | The build stops at step 1 or step 2. | A type error, or the generated database files do not match `Schema.sql`. | Fix the error. For step 2, run `node scripts/gen-db-assets.mjs`. Run the build again. |
 
 > **Note:** after `npm run build:exe`, run `npm run build:web` or `npm run build:pilot` again before you use `npm run dev:pilot`. The desktop build replaces the normal portal build.
@@ -1193,7 +1194,7 @@ The platform has three kinds of build. Each kind keeps its records in a differen
 
 Every new database starts from two files: `Schema.sql` makes the tables, and `Seed.sql` adds the seed records. The seed records include the pilot personas and the scripted records of the pilot kit.
 
-The database version is 108. A hub vault made by an older version is refused at start (section 11.2).
+The database version is 109. A hub vault made by an older version is refused at start (section 11.2).
 
 ### 12.2 Reset the hub vault to the seed data
 > **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
@@ -1384,7 +1385,7 @@ Select a drawer to open its panel on the right. Select another drawer to change 
 | --- | --- |
 | **1. Council Wide Settings** | The same panels as **System Settings** → **Council Wide Settings**, with **Standard Bank Accounts** first |
 | **2. Council Lookup Tables** | Activities, donation types and payment methods. Each row is **Active** or **Inactive**. The **Merit Tier Milestones** tab sets the merit tiers (5.6) |
-| **3. Credentials Vault** | The keys of your home council only |
+| **3. Secure Access Vault** | The keys of your home council only |
 | **4. Global Charities Registry** | Verified charities, suggestions, search, filters and the add form |
 | **5. Council Asset Management** | The council's assets inventory. Trustees add the asset photos |
 | **6. Administrative Feedback Loops** | The note to the platform owner (section 10.2) |
@@ -1410,7 +1411,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | **Admin Desk** is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin. |
-| The **Credentials Vault** panel shows another council's keys. | This does not happen. The vault opens your home council only. | Sign in to the other council's Admin account. |
+| The **Secure Access Vault** panel shows another council's keys. | This does not happen. The vault opens your home council only. | Sign in to the other council's Admin account. |
 
 ### 16.3 Rebuild the manuals now
 > **Who can do this:** council Admins and Super Admins.
@@ -1440,7 +1441,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 
 **Steps:**
 1. **Supreme CSV Roster Ingestion:** drop the Supreme roster CSV file. Select **Sync**.
-2. **File Storage and Email Gateway:** choose the file repository provider. Type the mail server, the sign-in email and the password. Select **Save**. The password goes to the **Credentials Vault** for your home council only.
+2. **File Storage and Email Gateway:** choose the file repository provider. Type the mail server, the sign-in email and the password. Select **Save**. The password goes to the **Secure Access Vault** for your home council only.
 3. **Clone Founding Template:** select **⚡ Clone Founding Template**. The platform copies the chart of accounts, the **Council Lookup Tables** rows and the **Council Wide Settings** of Founding Council 15295.
 4. **Practice Sandbox:** to try the desks first, select **Activate Safe Practice Sandbox**.
 5. **Quick-Start Guide:** select **Download the Quick-Start Intake Guide**. Select **Open the Admin Desk**.
@@ -1594,7 +1595,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 7. Troubleshooting reference
 - 8. Council Wide Settings and platform settings
 - 9. Access requests, impersonation and remote help
-- 10. Feedback loops and the Super Admin Desk
+- 10. Feedback loops and Platform Management
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys

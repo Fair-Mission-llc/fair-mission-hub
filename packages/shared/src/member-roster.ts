@@ -2,7 +2,7 @@
 // MEMBER ROSTER DIRECTORY (Sprint 10 Revision 2.0)
 //
 // One read-only list of Brother Knights with their council, phone, email and degree. It has three homes: the sidebar's
-// 'Member Roster' link (/roster, first in the Faith In Action pillar, every signed-in member), the Member Desk and the
+// 'Roster & Achievements' link (/roster, first in the Faith In Action pillar, every signed-in member), the Member Desk and the
 // Grand Knight and Financial Secretary Desks. The Fraternal roster tab of the Volunteer Center shows the same list.
 //
 // Who sees which rows (members.listRoster enforces it in every driver):
@@ -21,7 +21,7 @@
 import type { Council, Member } from './types';
 
 export const MEMBER_ROSTER_HREF = '/roster';
-export const MEMBER_ROSTER_TITLE = 'Member Roster';
+export const MEMBER_ROSTER_TITLE = 'Roster & Achievements';
 
 /** Sprint 10 Revision 3.0: the budget page's name (the Annual Budget Forecast Center / Annual Budget Projections before). */
 export const ANNUAL_BUDGET_CENTER_TITLE = 'Annual Budget Center';

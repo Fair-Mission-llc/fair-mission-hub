@@ -6,7 +6,7 @@
 //
 // Every answer is { settings, password } - the four Council columns (or null) and the masked CredentialStatus of the
 // council's SMTP_OUTBOUND_PASSWORD (or null). Sprint 6Y: the password goes straight into the Centralized Encrypted
-// Credentials Vault (services/server/credentials-vault.ts), which seals it with AES-256-GCM; neither the password nor its
+// Secure Access Vault (services/server/credentials-vault.ts), which seals it with AES-256-GCM; neither the password nor its
 // sealed form is ever answered, so neither reaches the browser. The panel then stores the four columns through its own
 // data driver.
 //

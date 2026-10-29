@@ -154,10 +154,10 @@ describe.each(drivers)('2. Event.form_1728_line ($name driver)', (d) => {
 
 describe('3. schema 108', () => {
   it('adds Event.form_1728_line and moves both drivers to version 108', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(108);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(108); // 109 since Revision 11.0
     expect(read('Schema.sql')).toContain('ALTER TABLE [Event] ADD [form_1728_line] VARCHAR(20) NULL;');
     expect(read('Schema.sql')).toContain('(schema version 108)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 108;');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain(' * 108: Event.form_1728_line');
     expect(read('data_dictionary.md')).toContain('form_1728_line (VARCHAR(20), NULL)');
   });
 

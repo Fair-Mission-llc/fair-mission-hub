@@ -1,6 +1,6 @@
 'use client';
-// The Member Roster directory (Sprint 10 Revision 2.0, member-roster.ts): Brother Knights with their council, phone,
-// email and degree. It is the /roster page (the sidebar's 'Member Roster' link), the Volunteer Center's Fraternal roster
+// The Roster & Achievements directory (Sprint 10 Revision 2.0, member-roster.ts): Brother Knights with their council, phone,
+// email and degree. It is the /roster page (the sidebar's 'Roster & Achievements' link), the Volunteer Center's Fraternal roster
 // tab, and a panel on the Member, Grand Knight and Financial Secretary Desks.
 // members.listRoster decides the rows from the signed-in member: their home council and its affiliated councils - or,
 // for a Super Admin, every council. Every reader gets a council picker (Sprint 10 Revision 3.0 restored it for the
@@ -147,7 +147,7 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
 
   return (
     <Panel
-      title={`Member Roster (${shown.length})`}
+      title={`Roster & Achievements (${shown.length})`}
       actions={
         manager ? (
           <div className="flex flex-wrap gap-2">

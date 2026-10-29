@@ -55,7 +55,7 @@ export async function askCopilotStudio(councilId: number, userId: string, prompt
   const sleep = options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
 
   const secret = credentialsVault().reveal(councilId, COPILOT_SECRET_KEY);
-  if (!secret) throw new CopilotGatewayError('The Microsoft Co-Pilot is not connected for this council. An Admin saves its key on the Credentials Vault page.', 503);
+  if (!secret) throw new CopilotGatewayError('The Microsoft Co-Pilot is not connected for this council. An Admin saves its key on the Secure Access Vault page.', 503);
   let endpoint: string;
   try {
     endpoint = resolveDirectLineEndpoint(env.COPILOT_DIRECT_LINE_ENDPOINT);
@@ -76,7 +76,7 @@ export async function askCopilotStudio(councilId: number, userId: string, prompt
       throw new CopilotGatewayError('Microsoft Copilot Studio could not be reached. Try again later.', 502);
     }
     if (res.status === 401 || res.status === 403) {
-      throw new CopilotGatewayError('Microsoft refused the saved Co-Pilot key. An Admin replaces it on the Credentials Vault page.', 502);
+      throw new CopilotGatewayError('Microsoft refused the saved Co-Pilot key. An Admin replaces it on the Secure Access Vault page.', 502);
     }
     if (!res.ok) throw new CopilotGatewayError(`Microsoft Copilot Studio answered HTTP ${res.status}. Try again later.`, 502);
     return (await res.json().catch(() => ({}))) as T;

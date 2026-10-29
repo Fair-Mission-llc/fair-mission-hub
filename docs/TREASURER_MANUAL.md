@@ -93,7 +93,7 @@ Coding is mandatory. A report without a budget line and a ledger account does no
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The banner does not show **✓ Ledger Balanced (Zero Leaks)**. | A posting has unequal sides, or a cash box variance is not closed. | Read the newest postings in the **General Ledger Spreadsheet**. Close the cash box audit (section 10.6). |
+| The banner does not show **✓ Ledger Balanced (Zero Leaks)**. | A posting has unequal sides, or a cash box variance is not closed. | Read the newest postings in the **Transaction Ledger**. Close the cash box audit (section 10.6). |
 | An account has an unexpected negative balance. | A debit and a credit were swapped. | Post a correcting transaction with the sides reversed (section 2.5). |
 
 ---
@@ -178,7 +178,7 @@ A shared transaction id groups the lines.
 
 | Page | Shows |
 | --- | --- |
-| **General Ledger Spreadsheet** | The chart of accounts with every posting |
+| **Transaction Ledger** | The chart of accounts with every posting |
 | **Balance Sheet** | Assets against liabilities and equity |
 | **Financial Dashboard** | Cash flow liquidity, the balance sheet summary and **Quick actions** (the transfer between accounts) |
 
@@ -189,7 +189,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: general ledger spreadsheet capture -->
-![General Ledger Spreadsheet (/finance/ledger)](../generated/dashboard_visual_catalog/finance_ledger.png)
+![Transaction Ledger (/finance/ledger)](../generated/dashboard_visual_catalog/finance_ledger.png)
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: balance sheet capture -->
@@ -521,7 +521,7 @@ The Financial Dashboard has no **💰 Log Concluded Event Revenues** card. Use t
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The message says "The Drive vault is not configured." or "DRIVE_VAULT_LIVE is not on." | The council's Google Drive is not connected or not switched on. | Ask an Admin to connect Google Drive in **Credentials Vault**. Ask the portal host to switch the Drive vault on. |
+| The message says "The Drive vault is not configured." or "DRIVE_VAULT_LIVE is not on." | The council's Google Drive is not connected or not switched on. | Ask an Admin to connect Google Drive in **Secure Access Vault**. Ask the portal host to switch the Drive vault on. |
 | The message says the file "is not a file type the Assets folder takes." | The file is not an image. | Choose a photo file. |
 | The message says "Google Drive did not accept the photo. Try again later." | Google Drive did not answer. | Wait a few minutes, then upload the photo again. |
 | The form shows the details but no **Save asset details** button. | You are a Trustee. | Ask an asset manager to change the details. You can still add the photo. |
@@ -603,12 +603,12 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **Approved Expenses** first. Under the drawers: the **Member Roster** panel. | None. You work inside the drawers. |
-| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **Auditing & Return Queue** first. Under the drawers: the **Member Roster** panel. | None. You work inside the drawers. |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **Approved Expenses** first. Under the drawers: the **Roster & Achievements** panel. | None. You work inside the drawers. |
+| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **Auditing & Return Queue** first. Under the drawers: the **Roster & Achievements** panel. | None. You work inside the drawers. |
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches** first. | None. You work inside the drawers. |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** first on the spine. | None. You work inside the drawers. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The desk blotter, with the **Fraternal Diary Entry Logs** first. | None. You work inside the drawers. |
-| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **Member Roster** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
+| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **Roster & Achievements** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 ### 6.2.1 Concept: the advanced modules on the desks
 The desks no longer use module folders. Each advanced module below is a drawer on its desk (section 6.2.2). The module's own page also stays at its web address.
@@ -718,7 +718,7 @@ A tile shows only to a reader who may open its module. An Admin who does not hol
 
 **Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **[ 🔀 Back to Desk Blotter ]** bar shows under the tab row. Select the bar to go back to your desk.
 
-**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Council access requests are on the **Super Admin Desk** only (section 14.11 of the Executive Governance Manual). A saved `/dashboard#oversight` address opens your first tab.
+**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Council access requests are on the **Platform Management** only (section 14.11 of the Executive Governance Manual). A saved `/dashboard#oversight` address opens your first tab.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -1342,7 +1342,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 7. Troubleshooting reference
 - 8. Council Wide Settings and platform settings
 - 9. Access requests, impersonation and remote help
-- 10. Feedback loops and the Super Admin Desk
+- 10. Feedback loops and Platform Management
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys

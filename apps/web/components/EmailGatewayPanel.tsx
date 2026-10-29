@@ -1,5 +1,5 @@
 'use client';
-// Outbound email card of the Credentials Vault page (Sprint 6Z-Email-Proxy; on /credentials-vault since the Sprint 6L
+// Outbound email card of the Secure Access Vault page (Sprint 6Z-Email-Proxy; on /credentials-vault since the Sprint 6L
 // Extension). One council's own mail server for portal email. The council's Active Admins and any Super Admin save it
 // (canAdministerCouncil; the drivers and /api/councils/email-gateway apply the same rule); other officers who open the
 // page see only the status banner above it. The password goes to the route once and stays on the server, sealed in the
@@ -143,7 +143,7 @@ export function EmailGatewayPanel({ councilId, onChanged }: { councilId: number;
           <Field
             label="Password"
             hint={saved ? 'Saved. Leave empty to keep it.' : undefined}
-            help="Sealed in the Credentials Vault for your home council only. The portal never shows it again."
+            help="Sealed in the Secure Access Vault for your home council only. The portal never shows it again."
           >
             {(id) => (
               <Input

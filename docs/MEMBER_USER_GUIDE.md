@@ -90,7 +90,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 - Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **[ 🙏 Praying Hands ]** on the prayer list to pray for an intention. When more cards are below the first screen, the line **Scroll down for more council info ↓** shows at the bottom. The line fades away when you start to scroll down.
 - Your volunteer check-in is on the **Member Actions Hub**. Select **Member Actions Hub** in the sidebar to open it. The page has four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. Your shift trackers, charity requests and sheets are on the **Member Desk** tab.
-- **Member Roster** is the first link in the **Faith In Action** pillar. It lists the phone and email of active brothers of your council and its sister councils.
+- **Roster & Achievements** is the first link in the **Faith In Action** pillar. It lists the phone and email of active brothers of your council and its sister councils.
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
@@ -130,8 +130,8 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Member Roster** | Faith In Action (first link) | The phone, email and degree of active brothers of your council and its sister councils. The same list is on the **Member Desk** tab |
-| **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | The same list as **Member Roster** |
+| **Roster & Achievements** | Faith In Action (first link) | The phone, email and degree of active brothers of your council and its sister councils. The same list is on the **Member Desk** tab |
+| **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | The same list as **Roster & Achievements** |
 | **Council Election Center** | Governance | Election progress, nominations and the secret ballot at a live meeting |
 
 </details>
@@ -1541,7 +1541,7 @@ For an organization that is not on the list, select **Another organization (type
 
 **Goal:** Contact another member.
 
-**Start point:** Sidebar → Faith In Action → **Member Roster**. The same list is on the **Member Desk** tab and on the **Fraternal roster** tab of the **Member Actions Hub**.
+**Start point:** Sidebar → Faith In Action → **Roster & Achievements**. The same list is on the **Member Desk** tab and on the **Fraternal roster** tab of the **Member Actions Hub**.
 
 **Steps:**
 1. Enter a name or a member number in **Search by name or number**.

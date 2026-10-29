@@ -63,7 +63,7 @@
 // Executive Summary moved to their own page, /executive-dashboard (the sidebar's Executive Dashboard link), and the
 // desk status badges to the top of the Oversight Desk.
 //
-// Sprint 8O: the Super Admin Desk (SuperAdminDesk) - the platform owner's own cockpit, a tab only their personal session
+// Sprint 8O: Platform Management (SuperAdminDesk) - the platform owner's own cockpit, a tab only their personal session
 // is given (super-admin-desk.ts isPlatformOwner): the Feedback Communication Center, the Council Access Request Approval
 // Queue and the System Feature Flag Control Panel.
 //

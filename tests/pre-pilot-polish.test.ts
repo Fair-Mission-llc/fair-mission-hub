@@ -1,6 +1,6 @@
 // Sprint 6L Extension (Pre-Pilot Hardening): the web loses its high-contrast layout (the phone keeps it behind the
 // member's own flag), the officer tools leave ordinary members' sidebars, every council credential is set on one
-// Credentials Vault page, the dues rate is set only on the Global Parameters Dashboard, and the navigation wording,
+// Secure Access Vault page, the dues rate is set only on the Global Parameters Dashboard, and the navigation wording,
 // donations drill-down and debug buttons are tidied for the pilot.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -42,7 +42,7 @@ describe('high-contrast layout is phone only', () => {
 });
 
 describe('officer tools leave ordinary members', () => {
-  it('opens the Constitutional Advisor and the Credentials Vault to officers, Admins and Super Admins only', () => {
+  it('opens the Constitutional Advisor and the Secure Access Vault to officers, Admins and Super Admins only', () => {
     const member = { ...base, memberType: 'Member' as const, isOfficer: false };
     for (const allowed of [
       { ...member, isOfficer: true },
@@ -59,16 +59,16 @@ describe('officer tools leave ordinary members', () => {
     expect(portalAreas(member)).not.toContain('credentials-vault');
   });
 
-  it('files one Credentials Vault link under Setup and guards both pages', () => {
+  it('files one Secure Access Vault link under Setup and guards both pages', () => {
     expect(PORTAL_NAV_GROUPS.find((g) => g.id === 'setup')?.items).toContain('credentials-vault');
     const sidebar = read('apps/web/components/Sidebar.tsx');
-    expect(sidebar.match(/label: 'Credentials Vault'/g)).toHaveLength(1);
+    expect(sidebar.match(/label: 'Secure Access Vault'/g)).toHaveLength(1);
     expect(read('apps/web/app/credentials-vault/page.tsx')).toContain('<RequireArea area="credentials-vault">');
     expect(read('apps/web/app/governance/advisor/page.tsx')).toContain('<RequireArea area="governance/advisor">');
   });
 });
 
-describe('Credentials Vault page', () => {
+describe('Secure Access Vault page', () => {
   it('holds the email gateway and the Drive key behind a plain status banner, with no port field', () => {
     const page = read('apps/web/components/modules/CredentialsVaultPanel.tsx');
     expect(page).toContain('<EmailGatewayPanel');

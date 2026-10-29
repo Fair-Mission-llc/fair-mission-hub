@@ -4352,3 +4352,12 @@ GO
 -- =========================================================================
 ALTER TABLE [Event] ADD [form_1728_line] VARCHAR(20) NULL;
 GO
+-- =========================================================================
+-- Sprint 11 Revision 11.0: FORM 1728 LINES ON ONGOING ACTIVITIES (schema version 109)
+--
+-- Activities.form_1728_line holds the Supreme Form 1728 line an officer confirmed in the activity form's suggestion
+-- popup, the same form-1728.ts codes as Event.form_1728_line (schema 108). NULL while no line is confirmed: reports
+-- then read the line from ActivityName (resolveForm1728Line).
+-- =========================================================================
+ALTER TABLE [Activities] ADD [form_1728_line] VARCHAR(20) NULL;
+GO

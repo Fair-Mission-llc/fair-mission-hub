@@ -9,6 +9,7 @@
 // donations and messages keep their history. A distribution list's member entries are the one exception;
 // they belong to the list and go with it.
 // =========================================================================
+import { cleanForm1728LineCode } from './form-1728';
 import { cleanAccountOwnerEntity, type AccountOwnerEntity, ACCOUNT_IDENTITY_LABEL_MAX_LENGTH } from './account-ownership';
 import { cleanDistrictNumber } from './council-affiliations';
 import { cleanCouncilLevel } from './regional';
@@ -155,7 +156,8 @@ export const PARISH_COLUMNS = [
   'CouncilID',
 ] as const satisfies readonly (keyof NewParish)[];
 export const PASTOR_COLUMNS = ['FirstName', 'LastName', 'Phone', 'Email', 'ParishID'] as const satisfies readonly (keyof NewPastor)[];
-export const ACTIVITY_COLUMNS = ['ActivityName', 'ActivityDescription', 'CategoryID', 'CouncilID'] as const satisfies readonly (keyof NewActivity)[];
+/** Sprint 11 Revision 11.0 (schema 109) adds form_1728_line, the confirmed Form 1728 line. */
+export const ACTIVITY_COLUMNS = ['ActivityName', 'ActivityDescription', 'CategoryID', 'CouncilID', 'form_1728_line'] as const satisfies readonly (keyof NewActivity)[];
 
 const invalid = (message: string, details: Record<string, unknown> = {}) =>
   new BusinessRuleError('INVALID_INPUT', message, details);
@@ -237,6 +239,8 @@ export function cleanActivity(input: NewActivity): NewActivity {
     ActivityDescription: assertText(input.ActivityDescription ?? '', 'Activity description', 255),
     CategoryID: assertInteger(input.CategoryID, 'Category', 1),
     CouncilID: assertInteger(input.CouncilID, 'Council', 1),
+    // Sprint 11 Revision 11.0: the confirmed Form 1728 line, a catalog code or null (none confirmed yet).
+    form_1728_line: input.form_1728_line === undefined ? null : cleanForm1728LineCode(input.form_1728_line),
   };
 }
 

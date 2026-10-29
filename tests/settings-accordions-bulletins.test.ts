@@ -131,7 +131,7 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     const rows = councilFeatureDeployment({ id: 1 } as Parameters<typeof councilFeatureDeployment>[0]).filter((r) => r.group === 'capability');
     const where = Object.fromEntries(rows.map((r) => [r.id, r.managedOn]));
     expect(where['parish-split']).toBeUndefined();
-    expect(where['geofence']).toBe('Recorder Desk: Meeting Check-In PIN (Grand Knight Desk when the Recorder is absent)');
+    expect(where['geofence']).toBe('Recorder Desk: Chamber Check-In (Grand Knight Desk when the Recorder is absent)');
     expect(where['biometric']).toBe('This page, Council Feature Deployment Matrix drawer: the switch in this row');
     expect(where['loaner-library']).toBe('This page, Feature Controls drawer: Shared Equipment Library Sharing');
     expect(JSON.stringify(rows)).not.toContain('Operational Configuration');

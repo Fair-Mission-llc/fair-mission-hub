@@ -1246,11 +1246,12 @@ GO
 -- Global Wheelchair Mission (Community line B), Habitat for Humanity Support (Community line C) and Special Olympics
 -- Staffing (Life line C, CategoryID 7 Life). The 2026 entries below fill the year-to-date balances.
 -- ==============================================================================
-INSERT INTO [Activities] ([ActivityName], [ActivityDescription], [CategoryID], [CouncilID])
+-- Sprint 11 Revision 11.0 (schema 109): the three carry their confirmed Form 1728 lines.
+INSERT INTO [Activities] ([ActivityName], [ActivityDescription], [CategoryID], [CouncilID], [form_1728_line])
 VALUES
-('Global Wheelchair Mission', 'Raising funds and delivering wheelchairs through the Global Wheelchair Mission', 2, 1), -- id 14
-('Habitat for Humanity Support', 'Council build days with the local Habitat for Humanity affiliate', 2, 1),           -- id 15
-('Special Olympics Staffing', 'Staffing Special Olympics games, meets and award ceremonies', 7, 1);                  -- id 16
+('Global Wheelchair Mission', 'Raising funds and delivering wheelchairs through the Global Wheelchair Mission', 2, 1, 'COMMUNITY_B'), -- id 14
+('Habitat for Humanity Support', 'Council build days with the local Habitat for Humanity affiliate', 2, 1, 'COMMUNITY_C'),           -- id 15
+('Special Olympics Staffing', 'Staffing Special Olympics games, meets and award ceremonies', 7, 1, 'LIFE_C');                       -- id 16
 GO
 
 INSERT INTO [ActivityTime] ([MemberID], [ActivityID], [ActivityDate], [Hours], [ActivityNotes])

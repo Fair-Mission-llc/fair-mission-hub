@@ -889,7 +889,7 @@ const DB_NAME = 'kofc.db';
  *     email gateway (Sprint 6Z-Email-Proxy).
  * 38: Shift.IsAllHands - All-Hands shifts with no volunteer cap (Phase 4.5).
  * 39: Council.tenant_type - the multi-tenant white-label gate (Sprint 6Z-Dual-Gate-Model).
- * 40: CouncilCredentialsVault, and Council.EmailPasswordEncrypted dropped - the Centralized Encrypted Credentials Vault
+ * 40: CouncilCredentialsVault, and Council.EmailPasswordEncrypted dropped - the Centralized Encrypted Secure Access Vault
  *     (Sprint 6Y). The phone never reads or writes the vault; only the web server does.
  * 41: Council.base_dues_rate - the yearly dues per member behind the dues revenue forecast (Sprint 6A, Phase 5).
  * 42: CouncilBudgetForecast.quantity, unit_cost and budget_version, with budget_version added to the line index - the
@@ -1032,8 +1032,9 @@ const DB_NAME = 'kofc.db';
  *     feature_financial_management are retired as core systems and no longer read.
  * 108: Event.form_1728_line, the Supreme Form 1728 line an officer confirmed in the event form's suggestion popup
  *     (Sprint 11 Revision 10.0).
+ * 109: Activities.form_1728_line, the same confirmed line on ongoing activities (Sprint 11 Revision 11.0).
  */
-const SCHEMA_VERSION = 108;
+const SCHEMA_VERSION = 109;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1773,8 +1774,11 @@ export class SqliteDataService implements DataService {
         }
         const valueOf = (values: Record<string, unknown>, c: string) => (values[c] ?? null) as Bind;
         for (const { id, values } of plan.updates) {
-          await db.runAsync(`UPDATE [${table}] SET ${columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
-            ...columns.map((c) => valueOf(values as Record<string, unknown>, c)),
+          // Sprint 11 Revision 11.0: an activity row saved without form_1728_line keeps its stored line (as the memory
+          // driver's Object.assign does), so the update leaves that column alone.
+          const set = columns.filter((c) => c !== 'form_1728_line' || c in (values as Record<string, unknown>));
+          await db.runAsync(`UPDATE [${table}] SET ${set.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
+            ...set.map((c) => valueOf(values as Record<string, unknown>, c)),
             id,
           ]);
         }
@@ -6624,8 +6628,9 @@ export class SqliteDataService implements DataService {
             AND sh.[ShiftDate] BETWEEN ? AND ?`,
         range,
       ),
-      db.getAllAsync<{ MemberID: number; Hours: number; category: string; title: string }>(
-        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category, a.[ActivityName] AS title
+      db.getAllAsync<{ MemberID: number; Hours: number; category: string; title: string; line: string | null }>(
+        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category, a.[ActivityName] AS title,
+                a.[form_1728_line] AS line
            FROM [ActivityTime] t
            JOIN [Activities] a ON a.[id] = t.[ActivityID]
            LEFT JOIN [Category] c ON c.[id] = a.[CategoryID]

@@ -1,6 +1,6 @@
 // Sprint 6S (schema 58): multi-receipt split-ticket expense sheets (ExpenseReceipts, ExpenseLineItem.is_personal_exclusion
 // and receipt_id), the Honorary Expense (ExpenseReport.flag_missing_receipt and missing_receipt_reason) and the Azure
-// Document Intelligence receipt reader, whose endpoint and key live in the Credentials Vault. Azure is replaced here by
+// Document Intelligence receipt reader, whose endpoint and key live in the Secure Access Vault. Azure is replaced here by
 // a recorded fake fetch.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -218,14 +218,14 @@ describe('Administrator User Guide print edition', () => {
     expect(script).toContain('from reportlab');
     expect(script).toContain("DEFAULT_INPUT = ROOT / 'docs' / 'ADMIN_USER_GUIDE.md'");
     expect(script).toContain("DEFAULT_OUTPUT = ROOT / 'docs' / 'ADMIN_USER_GUIDE.pdf'");
-    expect(script).toContain("REQUIRED_SCREEN_NAMES = ('Council Artifacts', 'Donations History', 'Credentials Vault')");
+    expect(script).toContain("REQUIRED_SCREEN_NAMES = ('Council Artifacts', 'Donations History', 'Secure Access Vault')");
     expect(script).toMatch(/DISCLAIMER = \(\s+'Informational notice\./);
     expect(script).toContain('disclaimer_footnote(st)');
     expect(read('scripts/requirements.txt')).toContain('reportlab');
   });
 
   it('uses the renamed screens and none of the retired names or jargon the compiler refuses', () => {
-    for (const name of ['Council Artifacts', 'Donations History', 'Credentials Vault']) expect(guide).toContain(name);
+    for (const name of ['Council Artifacts', 'Donations History', 'Secure Access Vault']) expect(guide).toContain(name);
     const prose = guide
       .split('\n')
       .filter((l) => !l.trim().startsWith('<!--'))
@@ -294,7 +294,7 @@ const fast = { sleep: async () => {}, pollMs: 0, timeoutMs: 1000 };
 const FILE = { base64: Buffer.from('fake-jpeg').toString('base64'), contentType: 'image/jpeg' };
 
 describe('Azure Document Intelligence receipt reader', () => {
-  it('keeps its endpoint and key in the Credentials Vault and accepts only Azure hosts', () => {
+  it('keeps its endpoint and key in the Secure Access Vault and accepts only Azure hosts', () => {
     expect(CREDENTIAL_KEYS).toEqual(expect.arrayContaining(['AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT', 'AZURE_DOCUMENT_INTELLIGENCE_KEY']));
     expect(resolveDocumentIntelligenceEndpoint(`${ENDPOINT}/`)).toBe(ENDPOINT);
     expect(resolveDocumentIntelligenceEndpoint('https://eastus.api.cognitive.microsoft.com')).toBe('https://eastus.api.cognitive.microsoft.com');

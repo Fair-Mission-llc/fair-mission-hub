@@ -13,7 +13,7 @@
 //   - 'LOCAL_NETWORK_SERVER'  a file server on the council's own network. file_server_path holds the UNC path,
 //                             file_server_username the service account; the vault's FILE_SERVER_PASSWORD its password.
 // The schema stays at 101, so the two existing Council columns carry each provider's location and identity fields
-// (FILE_REPOSITORY_PROVIDERS says which, in words), and every secret lives in the Credentials Vault. Revision 3.1's stored
+// (FILE_REPOSITORY_PROVIDERS says which, in words), and every secret lives in the Secure Access Vault. Revision 3.1's stored
 // values 'CLOUD' and 'LOCAL_NETWORK' still read as GOOGLE_DRIVE and LOCAL_NETWORK_SERVER (the column default is 'CLOUD').
 // A file filed with ONEDRIVE_SHAREPOINT, DROPBOX_BUSINESS or LOCAL_NETWORK_SERVER is stored in its record as a portal link
 // (fileRepositoryRef) naming the provider, which only a signed-in member of that council (or a Super Admin) can open
@@ -28,7 +28,7 @@ export type FileRepositorySecretKey = 'GOOGLE_DRIVE_PRIVATE_KEY' | 'ONEDRIVE_CLI
 
 /** One input the File Repository Mode card shows for a provider; nothing else is shown. */
 export interface FileRepositoryField {
-  /** A Council column, or a Credentials Vault key (kind 'secret', saved on the Credentials Vault page). */
+  /** A Council column, or a Secure Access Vault key (kind 'secret', saved on the Secure Access Vault page). */
   key: 'file_server_path' | 'file_server_username' | FileRepositorySecretKey;
   kind: 'text' | 'secret';
   label: string;
@@ -48,7 +48,7 @@ export const FILE_REPOSITORY_PROVIDERS: readonly FileRepositoryProvider[] = [
     id: 'GOOGLE_DRIVE',
     label: 'Google Drive',
     summary: "Files go to the council's Google Drive vault.",
-    fields: [{ key: 'GOOGLE_DRIVE_PRIVATE_KEY', kind: 'secret', label: 'Drive service-account key', hint: 'Saved on the Credentials Vault page. Without it the portal Drive is used.', required: false }],
+    fields: [{ key: 'GOOGLE_DRIVE_PRIVATE_KEY', kind: 'secret', label: 'Drive service-account key', hint: 'Saved on the Secure Access Vault page. Without it the portal Drive is used.', required: false }],
   },
   {
     id: 'ONEDRIVE_SHAREPOINT',
@@ -57,7 +57,7 @@ export const FILE_REPOSITORY_PROVIDERS: readonly FileRepositoryProvider[] = [
     fields: [
       { key: 'file_server_path', kind: 'text', label: 'SharePoint Site URL', hint: 'For example https://stmarys.sharepoint.com/sites/kofc', required: true },
       { key: 'file_server_username', kind: 'text', label: 'Application (Client) ID', hint: "The Azure app registration's client ID (a GUID).", required: true },
-      { key: 'ONEDRIVE_CLIENT_SECRET', kind: 'secret', label: 'Client Secret', hint: "The app's client secret, saved on the Credentials Vault page.", required: true },
+      { key: 'ONEDRIVE_CLIENT_SECRET', kind: 'secret', label: 'Client Secret', hint: "The app's client secret, saved on the Secure Access Vault page.", required: true },
     ],
   },
   {
@@ -66,7 +66,7 @@ export const FILE_REPOSITORY_PROVIDERS: readonly FileRepositoryProvider[] = [
     summary: "Files go to a Dropbox Business team folder through the council's Dropbox app.",
     fields: [
       { key: 'file_server_path', kind: 'text', label: 'Team Folder Path', hint: 'For example /KofC Council 15295', required: true },
-      { key: 'DROPBOX_ACCESS_TOKEN', kind: 'secret', label: 'Access Token', hint: "The Dropbox app's access token, saved on the Credentials Vault page.", required: true },
+      { key: 'DROPBOX_ACCESS_TOKEN', kind: 'secret', label: 'Access Token', hint: "The Dropbox app's access token, saved on the Secure Access Vault page.", required: true },
     ],
   },
   {
@@ -76,7 +76,7 @@ export const FILE_REPOSITORY_PROVIDERS: readonly FileRepositoryProvider[] = [
     fields: [
       { key: 'file_server_path', kind: 'text', label: 'Server Network Address (UNC/IP Path)', hint: 'For example \\\\hall-server\\kofc or \\\\192.168.1.20\\kofc', required: true },
       { key: 'file_server_username', kind: 'text', label: 'Service Account Username', hint: "For example HALL\\kofc-portal. Leave it blank to use the portal server's own account.", required: false },
-      { key: 'FILE_SERVER_PASSWORD', kind: 'secret', label: 'Service Account Password', hint: 'Saved on the Credentials Vault page.', required: false },
+      { key: 'FILE_SERVER_PASSWORD', kind: 'secret', label: 'Service Account Password', hint: 'Saved on the Secure Access Vault page.', required: false },
     ],
   },
 ];
@@ -87,7 +87,7 @@ export const FILE_REPOSITORY_MODES = FILE_REPOSITORY_PROVIDERS.map((p) => ({ id:
 /** Revision 3.1's stored values, still read correctly. */
 const LEGACY_MODES: Readonly<Record<string, FileRepositoryMode>> = { CLOUD: 'GOOGLE_DRIVE', LOCAL_NETWORK: 'LOCAL_NETWORK_SERVER' };
 
-/** The Credentials Vault key that holds the file server's service account password. */
+/** The Secure Access Vault key that holds the file server's service account password. */
 export const FILE_SERVER_PASSWORD_KEY = 'FILE_SERVER_PASSWORD';
 export const FILE_SERVER_PATH_MAX_LENGTH = 260;
 export const FILE_SERVER_USERNAME_MAX_LENGTH = 100;
