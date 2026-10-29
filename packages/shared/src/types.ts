@@ -106,6 +106,11 @@ export interface Council {
    * organization (tenant.ts). A missing or NULL value reads as 'KOFC'.
    */
   tenant_type?: string | null;
+  /**
+   * VARCHAR(30) NOT NULL DEFAULT 'KofC' (Sprint 11 Revision 12.0, schema 110): the umbrella organization, 'KofC' or
+   * 'SECULAR_CHARITY' (tenant.ts PARENT_ORGANIZATIONS). Kept in step with tenant_type.
+   */
+  parent_organization?: string | null;
   /** Sprint 6A Phase 5 (Schema 41): yearly dues per member, DEFAULT 40.00 (dues.ts). A missing value reads as 40.00. */
   base_dues_rate?: number | null;
   /** DATE (Sprint 11 Revision 6.0, Schema 105): the council's institution (charter) date; drives the charter member rule. */

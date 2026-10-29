@@ -30,7 +30,6 @@ import {
   canManageCharityRegistry,
   canReviewCharityProposals,
   canOverrideVettingClaim,
-  canReviewBudgetPerformance,
   canVetCharitableRequests,
   canViewExecutiveDashboard,
   portalAreas,

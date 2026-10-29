@@ -18,6 +18,7 @@
 // Council.biometric_login_enabled (Schema 90, DEFAULT 1) is the one new switch: 0 turns off FaceID / biometric sign-in
 // on the phones of the council's members (councils.setBiometricLoginEnabled, the Council Wide Settings editors).
 // =========================================================================
+import { councilParentOrganization, whiteLabel, type ParentOrganization } from './tenant';
 import { councilFeatureFlags, FEATURE_FLAG_LABELS, FEATURE_FLAG_NAMES, type FeatureFlagName } from './features';
 import type { Council } from './types';
 
@@ -67,6 +68,8 @@ export interface FeatureDeploymentRow {
 type DeploymentCouncil = Pick<
   Council,
   | FeatureFlagName
+  | 'tenant_type'
+  | 'parent_organization'
   | 'is_loaner_library_enabled'
   | 'biometric_login_enabled'
   | 'meeting_latitude'
@@ -133,6 +136,41 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
   return [...capabilities, ...modules];
 }
 
+/**
+ * Sprint 11 Revision 12.0: the module switches that only make sense for a Knights of Columbus council (the Faith Center
+ * and the Constitutional Advisor, which cites the order's Charter). A SECULAR_CHARITY tenant's matrix leaves them out.
+ */
+export const FRATERNAL_FEATURE_FLAGS = ['feature_faith_center', 'feature_constitutional_advisor'] as const satisfies readonly FeatureFlagName[];
+
+/** Sprint 11 Revision 12.0: the settings page and matrix titles, by parent organization. */
+export const SETTINGS_PAGE_TITLES: Record<ParentOrganization, string> = {
+  KofC: 'Council Wide Settings',
+  SECULAR_CHARITY: 'Organization Settings',
+};
+export const DEPLOYMENT_MATRIX_TITLES: Record<ParentOrganization, string> = {
+  KofC: 'Council Feature Deployment Matrix',
+  SECULAR_CHARITY: 'Organization Feature Matrix',
+};
+
+/**
+ * Sprint 11 Revision 12.0: the matrix as the council's parent organization should see it. A Knights of Columbus council
+ * gets councilFeatureDeployment unchanged. A SECULAR_CHARITY tenant gets a non-denominational matrix: the fraternal
+ * switches (FRATERNAL_FEATURE_FLAGS) are masked and every label and description reads in corporate language (whiteLabel).
+ */
+export function tenantFeatureDeployment(council: Partial<DeploymentCouncil>): FeatureDeploymentRow[] {
+  const rows = councilFeatureDeployment(council);
+  if (councilParentOrganization(council) === 'KofC') return rows;
+  const fraternal = new Set<string>(FRATERNAL_FEATURE_FLAGS);
+  return rows
+    .filter((r) => !fraternal.has(r.id))
+    .map((r) => ({
+      ...r,
+      label: whiteLabel(r.label, 'GENERIC'),
+      description: whiteLabel(r.description, 'GENERIC'),
+      managedOn: whiteLabel(r.managedOn, 'GENERIC'),
+    }));
+}
+
 /** The badge a row shows. */
 export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed'>): string => (row.deployed ? FEATURE_DEPLOYED_BADGE : FEATURE_OFF_BADGE);
 
@@ -140,4 +178,4 @@ export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed
  * The platform's database schema version, shown under System Information. It moves with the phone database's
  * SCHEMA_VERSION (apps/mobile/services/drivers/sqlite.ts) and the Schema.sql sprint headers.
  */
-export const PLATFORM_SCHEMA_VERSION = 109;
+export const PLATFORM_SCHEMA_VERSION = 110;

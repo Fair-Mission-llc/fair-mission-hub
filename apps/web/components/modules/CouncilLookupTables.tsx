@@ -77,7 +77,7 @@ import { MeritMilestonesPanel } from '@/components/MeritTierParts';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
-import { FORM_1728_CANCELLED_MESSAGE, needsForm1728Confirmation, useForm1728Confirm } from '@/components/Form1728Parts';
+import { FORM_1728_CANCELLED_MESSAGE, needsForm1728Confirmation, useForm1728Confirm, useForm1728Enabled } from '@/components/Form1728Parts';
 import { db } from '@/services/db';
 
 interface Column {
@@ -332,10 +332,12 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
   // Sprint 11 Revision 11.0: a new or renamed activity, or one without a confirmed line, goes through the Form 1728
   // suggestion popup before the batch is saved. Cancel on any row saves nothing.
   const confirmLine = useForm1728Confirm();
+  // Sprint 11 Revision 12.0: only a Knights of Columbus tenant confirms Form 1728 lines.
+  const form1728 = useForm1728Enabled();
   const save = () =>
     void act(async () => {
       const records = pending.map((d) => toRecord(d, columns, accountNames)) as CouncilLookupRecord<typeof table>[];
-      if (table === 'Activities') {
+      if (table === 'Activities' && form1728) {
         for (const [i, d] of pending.entries()) {
           const record = records[i] as Record<string, unknown>;
           const name = d.values.ActivityName ?? '';

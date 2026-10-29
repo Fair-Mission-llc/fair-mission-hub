@@ -226,6 +226,7 @@ Taken from the changelog comment above `SCHEMA_VERSION` in `apps/mobile/services
 | 107 | 11 Revision 9.0 | No table change. The Form 1728 interrogation engine (`form-1728.ts`) files every Event and Ongoing Activity to a Supreme Form 1728 line from its title (weighted intent cues, description at half weight, Community line N when vague). The line is derived on read, never stored: the activities and event screens show it, the activity history opens with a year-to-date tally by line, and the Supreme snapshot gains `form1728Lines`. Council 15295's presentation data adds Global Wheelchair Mission, Habitat for Humanity Support and Special Olympics Staffing (Activities 14-16; 'Coats for kids' is reused) with 2026 hours. Council 15295's baseline row starts with eight premium switches off (`COUNCIL_15295_SEED_OFF_FLAGS`). |
 | 108 | 11 Revision 10.0 | `Event.form_1728_line` VARCHAR(20) NULL holds the Form 1728 line an officer confirms. The catalog covers all four sections (Faith A-G, Family A-F, Community A-N, Life A-G); a second engine adds the Local Category's mission area (`SECTION_PRIOR_WEIGHT`). Saving the event form opens the suggestion popup (best guess, ranked alternatives, searchable list of every line) when the event is new, renamed or unconfirmed. `resolveForm1728Line` prefers the stored line in reports. Six screen names are unified across the sidebar, page titles, desk drawers and feature switches: Media & Memory Center, Operations Knowledge Vault, Recruitment Factory, Shared Equipment Library, Financial Inspections, Historical Chronology. Only a Super Admin creates a council Admin or changes a member to or from Admin (`assertMayGrantMemberType`, `grantableMemberTypes`). `npm run build:exe` packages the portal (Next standalone output, hub driver, SQLite vault in the user-data folder) in an Electron shell (`apps/desktop/main.cjs`, `electron-builder.json`) as a portable Windows .exe. Erratum: the title of commit ee1ee09 (Revision 9.0) reads 'Form 107'; it means Form 1728. The pushed history is not rewritten. |
 | 109 | 11 Revision 11.0 | `Activities.form_1728_line` VARCHAR(20) NULL: the Form 1728 suggestion popup (`useForm1728Confirm`) now also confirms an activity's line, on the Activities page (save, and each row's 'Change line') and in the Admin Desk's Council Lookup Tables (a lookup row saved without the field keeps the stored line). Reports prefer the confirmed line. The three Revision 9.0 portfolio activities seed with their lines. Five more screen names unified across sidebar, page titles, desk drawers, the phone and the manuals: Transaction Ledger (General Ledger Spreadsheet), Roster & Achievements (Member Roster), Chamber Check-In (the meeting check-in PIN drawers and the phone check-in panel), Secure Access Vault (Credentials Vault), Platform Management (Super Admin Desk). Next.js 16.3.5 -> 16.4.3 and `npm audit fix` (non-breaking) for the security findings in section 10. |
+| 110 | 11 Revision 12.0 | `Council.parent_organization` VARCHAR(30) NOT NULL DEFAULT 'KofC' ('KofC' or 'SECULAR_CHARITY'), read first by `councilTenantType` and saved together with `tenant_type` by `councils.setGlobalParameters`. A secular charity hides the fraternal areas and Form 1728 and sees Organization Settings with the fraternal switches masked (`tenantFeatureDeployment`). Admins and Super Admins type a 6-digit code at password sign-in when the server holds Twilio or SendGrid tokens (`services/server/two-factor.ts`, `/api/auth/two-factor`; signed challenge, 5 tries, 5 minutes, single use). Platform notices and codes go from `PLATFORM_OPERATIONS_SENDER` (tim@fairmissionsoftware.com); council mail may not use that address. Expo SDK 57 -> 58.0.21 (React Native 0.88.1), React 19.2.3 -> 19.3.0, Electron 37 -> 45.1.0, Vitest 3 -> 5.0.5. |
 
 ---
 
@@ -460,3 +461,32 @@ each a major version with its own regression pass. No critical finding remains i
 
 The desktop vault and the hub vault are not encrypted at rest; a trial machine should use an encrypted disk (BitLocker).
 The desktop `.exe` is not code-signed.
+
+### 10.5 Re-assessment after the Revision 12.0 upgrades
+
+Assessed on 2026-10-29 at schema version 110, after Expo SDK 58.0.21, React Native 0.88.1, React 19.3.0, Electron 45.1.0
+and Vitest 5.0.5. The tree now holds 943 packages.
+
+| Scope | Revision 11.0 | Revision 12.0 |
+|---|---|---|
+| Everything, dev tools included | 16 (2 critical, 5 high, 4 moderate, 5 low) | 8 (0 critical, 3 high, 0 moderate, 5 low) |
+| Production dependencies only (`--omit=dev`) | 11 (0 critical, 3 high, 3 moderate, 5 low) | 8 (0 critical, 3 high, 0 moderate, 5 low) |
+
+Closed by the upgrades: the expo-router deep-link denial of service (query-string, decode-uri-component), the Electron
+macOS `moveToApplicationsFolder` advisory and extract-zip, and the vitest / tinypool / @vitest/mocker findings.
+
+**Still open (all eight are one root cause)**
+| Package | Severity | Why it remains |
+|---|---|---|
+| zod 3.25.76 (via @expo/cli) | high | The fix is zod 4.6.6 or later, but Expo's own CLI depends on zod 3. Forcing zod 4 under it would risk breaking `expo start` and `expo export`. |
+| deepmerge 4.3.1 (via @expo/config) | low | Every published deepmerge release up to 4.3.1, the latest, is affected; there is no fixed version to move to. |
+| expo, @expo/cli, @expo/config, @expo/metro-config, @expo/prebuild-config, @expo/local-build-cache-provider | high / low | They are flagged only because they depend on the two packages above. |
+
+npm counts them as production findings because `expo` is a runtime dependency of the phone app, but both packages run
+only on the developer's computer while the phone app is built or served (configuration loading and CLI input
+validation); neither ships in the phone app's JavaScript, the web portal or the desktop executable. The criterion
+"zero critical" is **met**. The criterion "zero production findings" is **not met** and cannot be met until Expo ships a
+CLI on zod 4 and deepmerge publishes a fix.
+
+The license footprint is unchanged in kind: LGPL-3.0 libvips binaries through sharp (14 packages, one shipped in the
+Windows desktop build), node-forge under its BSD option, and the project's own three unlabeled workspaces.

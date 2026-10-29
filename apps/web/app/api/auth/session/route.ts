@@ -7,8 +7,13 @@
 //                                  sends nothing: the roles always come from the data, never from the request.
 // The browser's own sign-in (the memory driver) runs alongside; this cookie is what the Drive vault, Supreme and email
 // routes trust. Five failed attempts for one username within 15 minutes are refused with 429.
+// Sprint 11 Revision 12.0: an Admin or Super Admin whose password is right, on a server holding Twilio or SendGrid tokens,
+// gets no cookie yet: the answer is { signedIn: false, twoFactor: { challenge, channel, sentTo, expiresInSeconds } } and
+// the code goes by SMS or email. POST /api/auth/two-factor with the challenge and the code sets the cookie.
 import { NextResponse } from 'next/server';
+import { describeError } from '@kofc/shared';
 import { memberDirectory, readPortalSession, requirePortalSession, signInOnServer, signOutCookie } from '@/services/server/session';
+import { issueTwoFactorChallenge } from '@/services/server/two-factor';
 import { portalSessionSecret } from '@/services/server/secrets';
 import { PORTAL_SESSION_COOKIE, secureCookies, sessionCookieHeader, signSessionToken } from '@/services/server/session-token';
 
@@ -16,13 +21,20 @@ import { PORTAL_SESSION_COOKIE, secureCookies, sessionCookieHeader, signSessionT
 const MAX_FIELD_LENGTH = 256;
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => null)) as { username?: unknown; password?: unknown } | null;
-  const { username, password } = body ?? {};
+  const body = (await req.json().catch(() => null)) as { username?: unknown; password?: unknown; channel?: unknown } | null;
+  const { username, password, channel } = body ?? {};
   if (typeof username !== 'string' || typeof password !== 'string' || !username.trim() || !password || username.length > MAX_FIELD_LENGTH || password.length > MAX_FIELD_LENGTH) {
     return NextResponse.json({ signedIn: false, message: 'Send a username and password.' }, { status: 400 });
   }
   const outcome = await signInOnServer(username, password);
   if (!outcome.ok) return NextResponse.json({ signedIn: false, message: outcome.message }, { status: outcome.status });
+  try {
+    const twoFactor = await issueTwoFactorChallenge(outcome, outcome.contact, { requested: channel });
+    if (twoFactor) return NextResponse.json({ signedIn: false, twoFactor });
+  } catch (err) {
+    console.error('[two-factor] the sign-in code could not be sent:', describeError(err));
+    return NextResponse.json({ signedIn: false, message: 'The sign-in code could not be sent. Try again in a minute.' }, { status: 502 });
+  }
   const res = NextResponse.json({ signedIn: true, memberId: outcome.user.memberId });
   res.headers.set('Set-Cookie', outcome.cookie);
   return res;

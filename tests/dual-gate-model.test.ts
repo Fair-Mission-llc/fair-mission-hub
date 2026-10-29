@@ -113,13 +113,18 @@ describe('portal gating and vocabulary', () => {
   });
 });
 
-/** Sets the council's tenant_type straight in the backing store; no driver method writes it yet. */
+/**
+ * Sets the council's tenant straight in the backing store. Sprint 11 Revision 12.0 (schema 110): parent_organization is
+ * written in step, as every driver write does, since it decides the tenant when set.
+ */
 function setTenantType(d: DriverUnderTest, db: DataService, councilId: number, tenantType: string): void {
+  const parent = tenantType.toUpperCase() === 'KOFC' ? 'KofC' : 'SECULAR_CHARITY';
   if (d.name === 'memory') {
     const row = (db as MemoryDataService).debugStore.rows('Council').find((c) => c.id === councilId) as Record<string, unknown>;
     row.tenant_type = tenantType;
+    row.parent_organization = parent;
   } else {
-    openDatabases.at(-1)!.prepare('UPDATE [Council] SET [tenant_type] = ? WHERE [id] = ?').run(tenantType, councilId);
+    openDatabases.at(-1)!.prepare('UPDATE [Council] SET [tenant_type] = ?, [parent_organization] = ? WHERE [id] = ?').run(tenantType, parent, councilId);
   }
 }
 

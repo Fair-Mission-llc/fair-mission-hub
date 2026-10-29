@@ -382,7 +382,7 @@ export const isBudgetVersionWritable = (line: Pick<CouncilBudgetForecast, 'Budge
 // current state, exactly as a record's status is checked before a write.
 
 /** A council row as the gates read it: its id, its tenant type and its feature flags. Missing columns read as defaults. */
-export type GateCouncil = Partial<Pick<Council, 'tenant_type' | FeatureFlagName>> & { id: number };
+export type GateCouncil = Partial<Pick<Council, 'tenant_type' | 'parent_organization' | FeatureFlagName>> & { id: number };
 
 /** A module behind its feature flag: in use while On; a Super Admin switches it between On and Off. */
 export type FeatureGateState = 'On' | 'Off';

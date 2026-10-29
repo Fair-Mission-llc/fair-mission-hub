@@ -48,7 +48,13 @@ export async function memberDirectory(): Promise<DataService> {
 }
 
 
-export type SignInOutcome = { ok: true; user: SessionUser; cookie: string } | { ok: false; status: 401 | 429; message: string };
+/**
+ * Sprint 11 Revision 12.0: a successful outcome also carries `active` and the member's phone and email, so the route can
+ * ask an Admin or Super Admin for a sign-in code (two-factor.ts) before it sets `cookie`.
+ */
+export type SignInOutcome =
+  | { ok: true; user: SessionUser; cookie: string; active: boolean; contact: { phone: string | null; email: string | null } }
+  | { ok: false; status: 401 | 429; message: string };
 
 /** Checks the credentials on the server and, when they are good, mints the session cookie. */
 export async function signInOnServer(username: string, password: string, now = new Date()): Promise<SignInOutcome> {
@@ -64,8 +70,15 @@ export async function signInOnServer(username: string, password: string, now = n
   const [member, statuses, platform] = await Promise.all([db.members.get(user.memberId), db.lookups.list('MemberStatus'), db.councils.getPlatformSettings()]);
   const activeId = statuses.find((st) => st.Status === 'Active')?.id;
   // Sprint 7E: the session lasts the platform's user_session_expiry_hours, read from the server's own copy of the data.
-  const claims = sessionClaimsFor(user, member !== null && member.StatusID === activeId, now, platform.user_session_expiry_hours * 60 * 60);
-  return { ok: true, user, cookie: sessionCookieHeader(await signSessionToken(claims, portalSessionSecret()), secureCookies()) };
+  const active = member !== null && member.StatusID === activeId;
+  const claims = sessionClaimsFor(user, active, now, platform.user_session_expiry_hours * 60 * 60);
+  return {
+    ok: true,
+    user,
+    active,
+    contact: { phone: member?.Phone ?? null, email: member?.Email ?? null },
+    cookie: sessionCookieHeader(await signSessionToken(claims, portalSessionSecret()), secureCookies()),
+  };
 }
 
 /** The Set-Cookie header that ends the session. */

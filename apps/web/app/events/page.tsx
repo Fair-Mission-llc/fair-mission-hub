@@ -31,7 +31,7 @@ import {
   supremeMissionAreaOf,
 } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { Form1728Badge, Form1728Preview, Form1728SuggestionDialog } from '@/components/Form1728Parts';
+import { Form1728Badge, Form1728Preview, Form1728SuggestionDialog, useForm1728Enabled } from '@/components/Form1728Parts';
 import { LocalCategoryField } from '@/components/MissionCategoryParts';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { parseNumberField, toField } from '@/lib/format';
@@ -107,7 +107,9 @@ function EventForm({
   const [askLine, setAskLine] = useState(false);
   const missionArea = supremeMissionAreaOf(categories.find((c) => c.id === categoryId));
   const lineContext = { missionArea };
-  const needsLine = !event || !storedLine || name.trim() !== event.EventName;
+  // Sprint 11 Revision 12.0: only a Knights of Columbus tenant files events to Form 1728 lines.
+  const form1728 = useForm1728Enabled();
+  const needsLine = form1728 && (!event || !storedLine || name.trim() !== event.EventName);
 
   const save = (form1728Line: string | null) =>
     run(async () => {
@@ -166,6 +168,7 @@ function EventForm({
         <Field label="Description" className="col-span-2">
           {(id) => <Textarea id={id} value={description} maxLength={255} onChange={(e) => setDescription(e.target.value)} />}
         </Field>
+        {form1728 ? (
         <div className="col-span-2 flex flex-wrap items-end gap-3">
           <Form1728Preview title={name} description={description} stored={needsLine ? null : storedLine} context={lineContext} />
           {event && !needsLine ? (
@@ -174,6 +177,7 @@ function EventForm({
             </Button>
           ) : null}
         </div>
+        ) : null}
         {askLine ? (
           <Form1728SuggestionDialog
             title={name}
@@ -612,6 +616,7 @@ function EventEditor({
 
 function Planner() {
   const scope = useCouncilScope();
+  const form1728 = useForm1728Enabled();
   const [selected, setSelected] = useState<number | 'new' | null>(null);
   const events = useLoad(() => db.events.listByCouncil(scope.councilId), [scope.councilId]);
 
@@ -637,9 +642,11 @@ function Planner() {
                   className={cx('block w-full border-l-8 px-3 py-2 text-left', selected === e.id ? 'border-gold bg-white outline outline-1 outline-line' : 'border-transparent hover:underline')}
                 >
                   <span className="block text-sm font-bold">{e.EventName}</span>
-                  <span className="mt-0.5 block">
-                    <Form1728Badge title={e.EventName} description={e.EventDescription} stored={e.form_1728_line} />
-                  </span>
+                  {form1728 ? (
+                    <span className="mt-0.5 block">
+                      <Form1728Badge title={e.EventName} description={e.EventDescription} stored={e.form_1728_line} />
+                    </span>
+                  ) : null}
                   <span className="block text-xs text-muted">
                     {e.StartDate === e.EndDate ? formatDate(e.StartDate) : `${formatDate(e.StartDate)} – ${formatDate(e.EndDate)}`} · {e.Location}
                   </span>

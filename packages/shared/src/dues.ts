@@ -29,7 +29,7 @@ import {
 import { BusinessRuleError, describeActor, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 import type { CouncilBudgetForecast, MemberStatus } from './types';
 import type { GlobalCouncilParameters } from './contract';
-import { cleanTenantType, type TenantType } from './tenant';
+import { cleanParentOrganization, cleanTenantType, parentOrganizationForTenant, tenantTypeForParent, type ParentOrganization, type TenantType } from './tenant';
 
 const cents = (value: number | null | undefined) => Math.round((value ?? 0) * 100);
 const sumCents = (values: readonly (number | null | undefined)[]) => values.reduce<number>((t, v) => t + cents(v), 0) / 100;
@@ -395,6 +395,8 @@ export function buildConcludedBudgetPerformance(input: {
 /** What councils.setGlobalParameters writes, after cleanGlobalCouncilParameters. */
 export interface CleanGlobalCouncilParameters {
   tenant_type?: TenantType;
+  /** Sprint 11 Revision 12.0: always written together with tenant_type, in step. */
+  parent_organization?: ParentOrganization;
   base_dues_rate?: number;
 }
 
@@ -405,11 +407,25 @@ export interface CleanGlobalCouncilParameters {
  */
 export function cleanGlobalCouncilParameters(input: GlobalCouncilParameters): CleanGlobalCouncilParameters {
   if (typeof input !== 'object' || input === null) throw new BusinessRuleError('INVALID_INPUT', 'Council parameters are required.');
-  const unknown = Object.keys(input).filter((k) => k !== 'tenant_type' && k !== 'base_dues_rate');
+  const unknown = Object.keys(input).filter((k) => k !== 'tenant_type' && k !== 'parent_organization' && k !== 'base_dues_rate');
   if (unknown.length > 0) throw new BusinessRuleError('INVALID_INPUT', `Unknown council parameter ${unknown.join(', ')}.`, { fields: unknown });
   const clean: CleanGlobalCouncilParameters = {};
-  if (input.tenant_type !== undefined) clean.tenant_type = cleanTenantType(input.tenant_type);
+  // Sprint 11 Revision 12.0: the parent organization and the tenant type are saved together and always agree.
+  const parent = input.parent_organization === undefined ? undefined : cleanParentOrganization(input.parent_organization);
+  const tenant = input.tenant_type === undefined ? undefined : cleanTenantType(input.tenant_type);
+  if (parent !== undefined && tenant !== undefined && tenantTypeForParent(parent) !== tenant) {
+    throw new BusinessRuleError('INVALID_INPUT', `Parent organization ${parent} goes with tenant type ${tenantTypeForParent(parent)}, not ${tenant}.`, {
+      fields: ['parent_organization', 'tenant_type'],
+    });
+  }
+  if (parent !== undefined) {
+    clean.parent_organization = parent;
+    clean.tenant_type = tenantTypeForParent(parent);
+  } else if (tenant !== undefined) {
+    clean.tenant_type = tenant;
+    clean.parent_organization = parentOrganizationForTenant(tenant);
+  }
   if (input.base_dues_rate !== undefined) clean.base_dues_rate = cleanDuesRate(input.base_dues_rate);
-  if (Object.keys(clean).length === 0) throw new BusinessRuleError('INVALID_INPUT', 'Give a tenant type, a base dues rate, or both.');
+  if (Object.keys(clean).length === 0) throw new BusinessRuleError('INVALID_INPUT', 'Give a parent organization, a base dues rate, or both.');
   return clean;
 }

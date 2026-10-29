@@ -668,27 +668,34 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 | The message says that the portal server did not take the new sign-in length. | Your web sign-in on the server ended. | Sign out. Sign in again. Save the number again. |
 | Meeting invitations still appear 5 days before the meeting. | The meetings were built before the change. | No fix is needed. Meetings built after the change use the new number. |
 
-### 8.8 Set a council's base dues rate and tenant type
+### 8.8 Set a council's base dues rate and parent organization
 > **Prerequisite (who can do this):** You must be a Super Admin.
-> **Warning:** a new tenant type changes the sidebar and the labels of every member of the council at once.
+> **Warning:** a new parent organization changes the sidebar and the labels of every member of the council at once.
 
-**Goal:** Set the base dues rate and the tenant type of one council.
+**Goal:** Set the base dues rate and the parent organization of one council.
+
+| Parent organization | What the council sees |
+| --- | --- |
+| `KofC` | The Knights of Columbus council: the Knights lookups, every fraternal area and the Form 1728 suggestion windows on events and activities. |
+| `SECULAR_CHARITY` | A non-denominational charity: the fraternal areas and Form 1728 are hidden, the labels say Chapter and President, and the settings page is **Organization Settings** with the **Organization Feature Matrix**. |
+
+The older tenant type changes with the parent organization: `KofC` is `KOFC`, and `SECULAR_CHARITY` is `GENERIC`.
 
 **Start point:** Sidebar → System Settings → **Global System Parameters** → **Global Council Parameters Dashboard**.
 
 **Steps:**
 1. Choose the council in **Council**.
-2. Choose the **Tenant type**: `KOFC` or `GENERIC`.
+2. Choose the **Parent organization**: `KofC` or `SECULAR_CHARITY`.
 3. Enter the **Base dues rate** in dollars.
 4. Select **Save council parameters**.
 
-**Expected result:** A message shows the council number, the tenant type and the new base dues. The council's dues figures use the new rate.
+**Expected result:** A message shows the council number, the parent organization and the new base dues. The council's dues figures use the new rate.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The message says "Enter a base dues rate." | The rate box is empty. | Enter the rate, then save. |
-| The Faith Center and the Supreme Council Sync left the sidebar. | The tenant type is a white-labelled organization. | Choose the Knights of Columbus tenant type again. |
+| The Faith Center and the Supreme Council Sync left the sidebar. | The parent organization is `SECULAR_CHARITY`. | Choose `KofC` again. |
 
 ---
 
@@ -1173,6 +1180,7 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | --- | --- | --- |
 | Windows shows *"Windows protected your PC"*. | The file has no code-signing certificate. | Select **More info**, then **Run anyway**. |
 | The program shows *"The portal stopped unexpectedly"*. | The portal server stopped. | Read `portal.log` in `%APPDATA%\kofc-tracking-platform`. Send the file to the developer. |
+| The sign-in page asks for a code, but no code arrives. | The phone number on file is not a cell phone, or the provider refused the message. | Select **Start over** and sign in again. If no code arrives, ask a Super Admin to check the phone number on your record. |
 | The program shows *"This version needs a new database"*. | The program file is newer than the records on this computer. | Select **Start a new database**. The old records stay in a `vault-archive-...` folder in `%APPDATA%\kofc-tracking-platform`. To keep working on the old records, select **Quit** and use the older program file. |
 | The build stops at step 1 or step 2. | A type error, or the generated database files do not match `Schema.sql`. | Fix the error. For step 2, run `node scripts/gen-db-assets.mjs`. Run the build again. |
 
@@ -1194,7 +1202,7 @@ The platform has three kinds of build. Each kind keeps its records in a differen
 
 Every new database starts from two files: `Schema.sql` makes the tables, and `Seed.sql` adds the seed records. The seed records include the pilot personas and the scripted records of the pilot kit.
 
-The database version is 109. A hub vault made by an older version is refused at start (section 11.2).
+The database version is 110. A hub vault made by an older version is refused at start (section 11.2).
 
 ### 12.2 Reset the hub vault to the seed data
 > **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
@@ -1268,6 +1276,24 @@ The launchers set most keys. Set the other keys in the terminal or in `.env`. Ne
 | `CALENDAR_FEED_SECRET` | You, optional | Signs the personal calendar feed links. Without the key, the session key signs them. A change breaks every subscribed link. |
 | `CREDENTIALS_VAULT_SECRET` | You | Seals the saved council credentials. Without the key, every saved credential must be entered again after a restart. |
 | `FORM_1295_PYTHON` | You, optional | The Python program for the PDF reports and the custom guides. The default is `py` on Windows and `python3` elsewhere. |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | You, optional | Send sign-in codes by text message. All three are necessary. With them, Admins and Super Admins type a code at each password sign-in. |
+| `SENDGRID_API_KEY`, `SENDGRID_LIVE` | You, optional | Send email through SendGrid (`SENDGRID_LIVE=1`). Sign-in codes for Admins and Super Admins go by email when no text can be sent. Platform notices always come from `tim@fairmissionsoftware.com`. |
+
+### 13.2.1 Concept: sign-in codes for Admins and Super Admins
+- The code step applies to **Admin** and **Super Admin** accounts only. Members sign in with a password.
+- The step is on when the server holds the Twilio keys or the SendGrid keys in the table above. Without the keys, sign-in has one step, as before.
+- The code goes by text message to the phone on file. When the server has no Twilio keys, or the phone number is not valid, the code goes by email to the address on file.
+- A code has 6 digits. It expires after 5 minutes. After 5 wrong codes, the member must sign in again for a new code.
+- **Sign in with FaceID** does not ask for a code. The passkey is the second step.
+- The phone app signs in on the phone itself. It does not ask for a code.
+
+### 13.2.2 Concept: which address sends the mail
+| Mail | Sent from | Through |
+| --- | --- | --- |
+| Platform notices (council access requests) and sign-in codes | `tim@fairmissionsoftware.com` | SendGrid |
+| Council mail (welcome email, password reset) | The council's own address | The council's mail server in the **Secure Access Vault**, when it is connected |
+
+The portal refuses council mail that names `tim@fairmissionsoftware.com` as the sender. Only a Super Admin may send from that address.
 
 ### 13.3 Find the hub laptop address
 > **Who can do this:** the pilot facilitator, on the hub laptop.

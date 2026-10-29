@@ -1020,6 +1020,16 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 1
         }
+      },
+      {
+        "name": "parent_organization",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "KofC"
+        }
       }
     ],
     "foreignKeys": [

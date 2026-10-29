@@ -4361,3 +4361,12 @@ GO
 -- =========================================================================
 ALTER TABLE [Activities] ADD [form_1728_line] VARCHAR(20) NULL;
 GO
+-- =========================================================================
+-- Sprint 11 Revision 12.0: THE PARENT ORGANIZATION (schema version 110)
+--
+-- Council.parent_organization names the umbrella organization of a tenant: 'KofC' (a Knights of Columbus council, the
+-- default) or 'SECULAR_CHARITY' (a non-denominational charity). tenant.ts councilParentOrganization reads it first; the
+-- older tenant_type (schema 39) is kept in step on every write (KofC <-> KOFC, SECULAR_CHARITY <-> GENERIC).
+-- =========================================================================
+ALTER TABLE [Council] ADD [parent_organization] VARCHAR(30) NOT NULL DEFAULT 'KofC';
+GO

@@ -19,15 +19,31 @@ import {
   type TenantType,
 } from '@kofc/shared';
 import { db, setViewAsMode } from '@/services/db';
-import { closeServerSession, endServerImpersonation, openServerSession, startServerImpersonation } from '@/services/session-transport';
+import {
+  closeServerSession,
+  confirmTwoFactorCode,
+  endServerImpersonation,
+  openServerSession,
+  startServerImpersonation,
+  type TwoFactorPrompt,
+} from '@/services/session-transport';
 
 interface SessionValue {
   user: SessionUser | null;
   /** False until the in-memory database has been seeded. */
   ready: boolean;
   startupError: string | null;
-  /** Resolves true when the credentials were accepted. */
+  /**
+   * Resolves true when the credentials were accepted. Sprint 11 Revision 12.0: for an Admin or Super Admin the server may
+   * first ask for a sign-in code; `twoFactor` is then set and the member is signed in by verifyTwoFactor.
+   */
   signIn(username: string, password: string): Promise<boolean>;
+  /** Sprint 11 Revision 12.0: the open sign-in code request, or null. */
+  twoFactor: TwoFactorPrompt | null;
+  /** Sends the typed code; resolves to null when it was right (the member is then signed in) or the reason it was not. */
+  verifyTwoFactor(code: string): Promise<string | null>;
+  /** Drops the code request and returns to the sign-in form. */
+  cancelTwoFactor(): void;
   /**
    * Sprint 10 Revision 5.0: 'Sign in with FaceID' - the device's face or fingerprint check, verified by the server
    * (lib/webauthn-client.ts), which sets the session cookie. Rejects with the reason in plain words.
@@ -100,12 +116,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const router = useRouter();
+  const [twoFactor, setTwoFactor] = useState<{ prompt: TwoFactorPrompt; found: SessionUser } | null>(null);
   const signIn = useCallback(
     async (username: string, password: string) => {
       const found = await db.auth.signIn(username.trim(), password);
       // Sprint 6Z-Engine-Upgrade: the server checks the same credentials and sets its own session cookie, which its Drive
       // vault, Supreme and email routes require. A member it does not know (added in this tab) simply gets no cookie.
-      if (found) await openServerSession(username.trim(), password);
+      if (found) {
+        const server = await openServerSession(username.trim(), password);
+        // Sprint 11 Revision 12.0: an Admin or Super Admin may first have to type the code the server sent.
+        if (server.twoFactor) {
+          setTwoFactor({ prompt: server.twoFactor, found });
+          return true;
+        }
+        if (server.message && !server.opened && /code could not be sent/.test(server.message)) throw new Error(server.message);
+      }
       setUser(found);
       // Sprint 8S Corrected: every sign-in lands on the informational Home tab (/dashboard#home), never on the page or the
       // dashboard tab this browser had open before.
@@ -114,6 +139,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     },
     [router],
   );
+  const verifyTwoFactor = useCallback(
+    async (code: string) => {
+      if (!twoFactor) return 'Sign in again.';
+      const refused = await confirmTwoFactorCode(twoFactor.prompt.challenge, code);
+      if (refused) return refused;
+      setUser(twoFactor.found);
+      setTwoFactor(null);
+      router.replace(HOME_LANDING_ROUTE);
+      return null;
+    },
+    [twoFactor, router],
+  );
+  const cancelTwoFactor = useCallback(() => setTwoFactor(null), []);
   const signInWithFaceId = useCallback(async () => {
     const found = await signInWithFaceIdOnServer();
     setUser(found);
@@ -203,6 +241,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       ready,
       startupError,
       signIn,
+      twoFactor: twoFactor?.prompt ?? null,
+      verifyTwoFactor,
+      cancelTwoFactor,
       signInWithFaceId,
       signOut,
       impersonator,
@@ -221,7 +262,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       featuresChanged,
       rolesChanged,
     }),
-    [user, ready, startupError, signIn, signInWithFaceId, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged, rolesChanged],
+    [user, ready, startupError, signIn, twoFactor, verifyTwoFactor, cancelTwoFactor, signInWithFaceId, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged, rolesChanged],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

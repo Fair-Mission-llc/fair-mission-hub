@@ -1313,6 +1313,8 @@ export interface CharitableRequestThreads {
 /** councils.setGlobalParameters (Sprint 6I): the Super Admin's tenant and dues settings for one council. */
 export interface GlobalCouncilParameters {
   tenant_type?: string;
+  /** Sprint 11 Revision 12.0: 'KofC' or 'SECULAR_CHARITY'; tenant_type follows it. */
+  parent_organization?: string;
   base_dues_rate?: number;
 }
 

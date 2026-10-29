@@ -23,10 +23,10 @@ const read = (path: string) => readFileSync(path, 'utf8');
 
 describe('1. Activities.form_1728_line (schema 109)', () => {
   it('adds the column and moves the platform to 109', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(109);
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(109); // 110 since Revision 12.0
     expect(read('Schema.sql')).toContain('ALTER TABLE [Activities] ADD [form_1728_line] VARCHAR(20) NULL;');
     expect(read('Schema.sql')).toContain('(schema version 109)');
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 109;');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain(' * 109: Activities.form_1728_line');
     expect(read('data_dictionary.md')).toContain('form_1728_line (VARCHAR(20), NULL) — Sprint 11 Revision 11.0');
     expect(ACTIVITY_COLUMNS).toContain('form_1728_line');
   });

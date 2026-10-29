@@ -3,9 +3,14 @@
 // draws TwoFactorSection - a configuration row each for SMS text tokens, email secure passcodes and WebAuthn passkeys,
 // the passkey row holding the FaceID setup and one line per device framework (Android, iOS, desktop). The Credentials
 // Vault draws TwoFactorDeliveryPanel, the council's side: which second-step channels the portal can deliver today.
-// Only passkeys work; the other rows say plainly that nothing is sent yet.
+// Sprint 11 Revision 12.0: the SMS and email rows read what the server can send (GET /api/auth/two-factor) and whether
+// the member is an Admin or Super Admin, who must type a code at each password sign-in.
 import type { ReactNode } from 'react';
+import { useUser } from '@/lib/session';
+import { useLoad } from '@/lib/use-load';
 import {
+  twoFactorRequiredFor,
+  type TwoFactorDelivery,
   PASSKEY_PLATFORMS,
   TWO_FACTOR_METHODS,
   TWO_FACTOR_SECTION_TITLE,
@@ -29,7 +34,15 @@ function StatusTag({ status }: { status: TwoFactorStatus }) {
 
 /** The member's own section on My Profile. `passkeySetup` is the FaceID enrolment control the passkey row holds. */
 export function TwoFactorSection({ facts, passkeySetup }: { facts: TwoFactorFacts; passkeySetup: ReactNode }) {
-  const rows = twoFactorRows(facts);
+  const user = useUser();
+  const delivery = useLoad(
+    async (): Promise<TwoFactorDelivery> =>
+      (await fetch('/api/auth/two-factor')
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)) ?? { sms: false, email: false },
+    [],
+  );
+  const rows = twoFactorRows({ ...facts, delivery: delivery.data ?? undefined, requiredForMember: twoFactorRequiredFor(user.memberType) });
   return (
     <Panel title={TWO_FACTOR_SECTION_TITLE}>
       <p className="mb-3 text-sm text-muted">

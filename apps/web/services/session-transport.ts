@@ -3,14 +3,39 @@
 // own decision; the browser never reads or writes it.
 export const SESSION_ROUTE = '/api/auth/session';
 
-/** True when the server accepted the credentials and set its session cookie. */
-export async function openServerSession(username: string, password: string): Promise<boolean> {
+/** Sprint 11 Revision 12.0: the server's request for a sign-in code (Admins and Super Admins). */
+export interface TwoFactorPrompt {
+  challenge: string;
+  channel: 'sms' | 'email';
+  sentTo: string;
+  expiresInSeconds: number;
+}
+
+/**
+ * Asks the server for its session cookie. `opened` is true when the cookie is set; `twoFactor` is set instead when the
+ * server first wants a sign-in code; `message` carries the server's refusal in plain words.
+ */
+export async function openServerSession(username: string, password: string): Promise<{ opened: boolean; twoFactor?: TwoFactorPrompt; message?: string }> {
   const res = await fetch(SESSION_ROUTE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   }).catch(() => null);
-  return res?.ok ?? false;
+  if (!res) return { opened: false };
+  const body = (await res.json().catch(() => ({}))) as { twoFactor?: TwoFactorPrompt; message?: string };
+  return { opened: res.ok && !body.twoFactor, twoFactor: body.twoFactor, message: res.ok ? undefined : body.message };
+}
+
+/** Sprint 11 Revision 12.0: sends the typed code; resolves to null on success or the server's reason. */
+export async function confirmTwoFactorCode(challenge: string, code: string): Promise<string | null> {
+  const res = await fetch('/api/auth/two-factor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ challenge, code }),
+  }).catch(() => null);
+  if (!res) return 'The portal server cannot be reached.';
+  if (res.ok) return null;
+  return ((await res.json().catch(() => ({}))) as { message?: string }).message ?? 'The code was not accepted.';
 }
 
 export async function closeServerSession(): Promise<void> {

@@ -63,7 +63,7 @@ Each step has a **?** mark next to its hard fields. Select the **?** mark to rea
 
 **Expected result:** The password goes to the **Secure Access Vault**. The vault seals it and keeps it for your home council only. The page never shows the password again.
 
-> **Note:** The wizard saves keys only for your own home council. A Super Admin of another council cannot read them.
+> **Note:** The wizard saves keys only for your own home council. A Super Admin of another council cannot read them. Council mail goes from this server; platform notices come from `tim@fairmissionsoftware.com`.
 
 ---
 

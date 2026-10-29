@@ -75,7 +75,8 @@ describe('the launch splash and the sign-in footer', () => {
     expect(about.signature).toBe(PLATFORM_ENGINEERED_BY);
     expect(PLATFORM_ENGINEERED_BY).toBe('Engineered by Fair Mission, LLC');
     expect(shell).toContain('<LegalFooter onOpen={setNotice} />');
-    expect(shell.match(/return page\(/g)).toHaveLength(4);
+    // Sprint 11 Revision 12.0: the sign-in code card is a fifth view, with the same footer.
+    expect(shell.match(/return page\(/g)).toHaveLength(5);
   });
 
   it('no longer prints the development logins on the sign-in card', () => {

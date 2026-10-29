@@ -22,6 +22,7 @@ import {
 } from '@kofc/shared';
 import { Button, cx, Empty, Input, Notice, Panel, Table, Td } from '@/components/ui';
 import { formatDecimalHours } from '@/lib/format';
+import { useTenantType } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -224,6 +225,14 @@ export function useForm1728Confirm(): { ask: (question: Form1728Question) => Pro
     />
   ) : null;
   return { ask, dialog };
+}
+
+/**
+ * Sprint 11 Revision 12.0: Form 1728 is a Knights of Columbus report, so its badges, year-to-date panel and suggestion
+ * popups appear only for a 'KofC' parent organization. A SECULAR_CHARITY tenant saves events and activities without them.
+ */
+export function useForm1728Enabled(): boolean {
+  return useTenantType() === 'KOFC';
 }
 
 /** Thrown when the officer cancels the popup: the record is not saved. */

@@ -1033,8 +1033,9 @@ const DB_NAME = 'kofc.db';
  * 108: Event.form_1728_line, the Supreme Form 1728 line an officer confirmed in the event form's suggestion popup
  *     (Sprint 11 Revision 10.0).
  * 109: Activities.form_1728_line, the same confirmed line on ongoing activities (Sprint 11 Revision 11.0).
+ * 110: Council.parent_organization, 'KofC' or 'SECULAR_CHARITY', kept in step with tenant_type (Sprint 11 Revision 12.0).
  */
-const SCHEMA_VERSION = 109;
+const SCHEMA_VERSION = 110;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1966,8 +1967,8 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         assertMayMaintainCouncils(await this.memberWriteActor(db, actorId), `change the global parameters of council ${councilId}`);
         await this.requireRecord(db, 'Council', councilId);
-        // Only the two known columns, so the names are safe to interpolate.
-        const columns = (['tenant_type', 'base_dues_rate'] as const).filter((c) => clean[c] !== undefined);
+        // Only the three known columns, so the names are safe to interpolate.
+        const columns = (['tenant_type', 'parent_organization', 'base_dues_rate'] as const).filter((c) => clean[c] !== undefined);
         await db.runAsync(`UPDATE [Council] SET ${columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...columns.map((c) => clean[c]!), councilId]);
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
@@ -4527,7 +4528,7 @@ export class SqliteDataService implements DataService {
 
   /** Sprint 6Z-Dual-Gate-Model: FRATERNAL_EXTENSION_REQUIRED unless the council is a Knights of Columbus council. */
   private async assertFraternalCouncil(db: SQLite.SQLiteDatabase, councilId: number, operation: string): Promise<void> {
-    const council = await db.getFirstAsync<GateCouncil>('SELECT [id], [tenant_type] FROM [Council] WHERE [id] = ?', [councilId]);
+    const council = await db.getFirstAsync<GateCouncil>('SELECT [id], [tenant_type], [parent_organization] FROM [Council] WHERE [id] = ?', [councilId]);
     assertFraternalExtension(councilId, operation, council);
   }
 

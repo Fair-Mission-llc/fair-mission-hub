@@ -18,14 +18,65 @@ export type TenantType = (typeof TENANT_TYPES)[number];
 /** The tenant a council row that predates the column, or has not loaded yet, belongs to. */
 export const DEFAULT_TENANT_TYPE: TenantType = 'KOFC';
 
+// ---- Parent organization (Sprint 11 Revision 12.0, schema 110) ----------------------------------------------------
+// Council.parent_organization names the umbrella organization a tenant belongs to: 'KofC' (a Knights of Columbus
+// council: the Knights lookups, the fraternal areas and the 34-line Form 1728 suggestion popups) or 'SECULAR_CHARITY'
+// (a non-denominational charity: the fraternal areas are masked and the settings read in corporate language). It is the
+// primary field; tenant_type (schema 39) is kept in step on every write (KofC <-> KOFC, SECULAR_CHARITY <-> GENERIC) so
+// older code and data keep working.
+
+export const PARENT_ORGANIZATIONS = ['KofC', 'SECULAR_CHARITY'] as const;
+export type ParentOrganization = (typeof PARENT_ORGANIZATIONS)[number];
+export const DEFAULT_PARENT_ORGANIZATION: ParentOrganization = 'KofC';
+
+export const PARENT_ORGANIZATION_LABELS: Record<ParentOrganization, string> = {
+  KofC: 'Knights of Columbus council',
+  SECULAR_CHARITY: 'Secular charity (non-denominational)',
+};
+
+/** The tenant_type kept in step with a parent organization. */
+export const tenantTypeForParent = (parent: ParentOrganization): TenantType => (parent === 'KofC' ? 'KOFC' : 'GENERIC');
+/** The parent organization a tenant_type stands for. */
+export const parentOrganizationForTenant = (tenant: TenantType): ParentOrganization => (tenant === 'KOFC' ? 'KofC' : 'SECULAR_CHARITY');
+
+const isBlank = (value: unknown) => value === undefined || value === null || String(value).trim() === '';
+
 /**
- * A council row's tenant: a missing, NULL or blank tenant_type reads as 'KOFC', any spelling of 'kofc' is 'KOFC', and
- * every other value is a white-label tenant ('GENERIC'), so an unknown type never unlocks the fraternal extensions.
+ * A council row's parent organization: parent_organization when set ('kofc' in any case is 'KofC', any other value is
+ * 'SECULAR_CHARITY', so an unknown value never unlocks the fraternal extensions), otherwise read from tenant_type.
  */
-export function councilTenantType(council: Partial<Pick<Council, 'tenant_type'>> | null | undefined): TenantType {
-  const raw = council?.tenant_type;
-  if (raw === undefined || raw === null || String(raw).trim() === '') return DEFAULT_TENANT_TYPE;
+export function councilParentOrganization(
+  council: Partial<Pick<Council, 'tenant_type' | 'parent_organization'>> | null | undefined,
+): ParentOrganization {
+  const raw = council?.parent_organization;
+  if (!isBlank(raw)) return String(raw).trim().toUpperCase() === 'KOFC' ? 'KofC' : 'SECULAR_CHARITY';
+  return parentOrganizationForTenant(tenantFromTenantType(council?.tenant_type));
+}
+
+/** A parent organization a Super Admin may save: exactly 'KofC' or 'SECULAR_CHARITY', ignoring case. */
+export function cleanParentOrganization(value: unknown): ParentOrganization {
+  const text = typeof value === 'string' ? value.trim().toUpperCase() : '';
+  const match = PARENT_ORGANIZATIONS.find((p) => p.toUpperCase() === text);
+  if (match) return match;
+  throw new BusinessRuleError('INVALID_INPUT', `The parent organization must be one of ${PARENT_ORGANIZATIONS.join(', ')}; got ${JSON.stringify(value)}.`, {
+    field: 'parent_organization',
+    value,
+  });
+}
+
+function tenantFromTenantType(raw: unknown): TenantType {
+  if (isBlank(raw)) return DEFAULT_TENANT_TYPE;
   return String(raw).trim().toUpperCase() === 'KOFC' ? 'KOFC' : 'GENERIC';
+}
+
+/**
+ * A council row's tenant. Sprint 11 Revision 12.0: parent_organization decides when it is set. Otherwise a missing,
+ * NULL or blank tenant_type reads as 'KOFC', any spelling of 'kofc' is 'KOFC', and every other value is a white-label
+ * tenant ('GENERIC'), so an unknown type never unlocks the fraternal extensions.
+ */
+export function councilTenantType(council: Partial<Pick<Council, 'tenant_type' | 'parent_organization'>> | null | undefined): TenantType {
+  if (!isBlank(council?.parent_organization)) return tenantTypeForParent(councilParentOrganization(council));
+  return tenantFromTenantType(council?.tenant_type);
 }
 
 /**

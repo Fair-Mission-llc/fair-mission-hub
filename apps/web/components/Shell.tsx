@@ -395,8 +395,61 @@ function FaceIdSignIn({ onError }: { onError: (message: string) => void }) {
   );
 }
 
+/**
+ * Sprint 11 Revision 12.0: the second sign-in step for Admins and Super Admins - the code the server texted or emailed.
+ * Six digits, at most five tries; 'Start over' returns to the password form.
+ */
+function TwoFactorCodeCard() {
+  const { twoFactor, verifyTwoFactor, cancelTwoFactor } = useSession();
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  if (!twoFactor) return null;
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const refused = await verifyTwoFactor(code);
+      if (refused) setError(refused);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-3" aria-labelledby="two-factor-title">
+      <h2 id="two-factor-title" className="font-serif text-lg font-bold">
+        Enter your sign-in code
+      </h2>
+      <p className="text-sm">
+        We {twoFactor.channel === 'sms' ? 'texted' : 'emailed'} a 6-digit code to <strong>{twoFactor.sentTo}</strong>. It expires in{' '}
+        {Math.round(twoFactor.expiresInSeconds / 60)} minutes.
+      </p>
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-bold">Sign-in code</span>
+        <Input
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={7}
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          required
+          autoFocus
+        />
+      </label>
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      <Button type="submit" disabled={busy}>
+        {busy ? 'Checking…' : 'Verify and sign in'}
+      </Button>
+      <button type="button" className="text-sm underline" onClick={cancelTwoFactor}>
+        Start over
+      </button>
+    </form>
+  );
+}
+
 function SignIn() {
-  const { signIn } = useSession();
+  const { signIn, twoFactor } = useSession();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -443,6 +496,15 @@ function SignIn() {
       <div className="flex w-full max-w-md flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
         {brand}
         <LegalNoticePanel id={notice} onClose={() => setNotice(null)} />
+      </div>,
+    );
+  }
+
+  if (twoFactor) {
+    return page(
+      <div className="flex w-full max-w-sm flex-col gap-4 rounded border-t-8 border-gold bg-white p-6">
+        {brand}
+        <TwoFactorCodeCard />
       </div>,
     );
   }

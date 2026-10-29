@@ -62,10 +62,11 @@ describe('global council parameters (pure)', () => {
   });
 
   it('cleans either field alone or both, and refuses nothing, unknowns and bad values', () => {
-    expect(cleanGlobalCouncilParameters({ tenant_type: 'generic' })).toEqual({ tenant_type: 'GENERIC' });
+    // Sprint 11 Revision 12.0: the parent organization is saved in step with the tenant type.
+    expect(cleanGlobalCouncilParameters({ tenant_type: 'generic' })).toEqual({ tenant_type: 'GENERIC', parent_organization: 'SECULAR_CHARITY' });
     expect(cleanGlobalCouncilParameters({ base_dues_rate: 45.5 })).toEqual({ base_dues_rate: 45.5 });
-    expect(cleanGlobalCouncilParameters({ tenant_type: 'KOFC', base_dues_rate: 0 })).toEqual({ tenant_type: 'KOFC', base_dues_rate: 0 });
-    expect(() => cleanGlobalCouncilParameters({})).toThrow(/tenant type, a base dues rate/);
+    expect(cleanGlobalCouncilParameters({ tenant_type: 'KOFC', base_dues_rate: 0 })).toEqual({ tenant_type: 'KOFC', parent_organization: 'KofC', base_dues_rate: 0 });
+    expect(() => cleanGlobalCouncilParameters({})).toThrow(/parent organization, a base dues rate/);
     expect(() => cleanGlobalCouncilParameters({ CouncilName: 'x' } as never)).toThrow(/Unknown council parameter/);
     expect(() => cleanGlobalCouncilParameters({ base_dues_rate: -1 })).toThrow(/whole cents/);
     expect(() => cleanGlobalCouncilParameters({ base_dues_rate: 40.005 })).toThrow(/whole cents/);

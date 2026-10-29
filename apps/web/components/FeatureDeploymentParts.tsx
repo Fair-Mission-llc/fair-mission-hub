@@ -28,6 +28,9 @@ import {
   featureDeploymentBadge,
   councilFeatureDeployment,
   FEATURE_DEPLOYMENT_MATRIX_TITLE,
+  councilParentOrganization,
+  DEPLOYMENT_MATRIX_TITLES,
+  tenantFeatureDeployment,
   PLATFORM_SCHEMA_VERSION,
   portalAreas,
   TENANT_VOCABULARY,
@@ -86,11 +89,14 @@ function StatusBadge({ row }: { row: Pick<FeatureDeploymentRow, 'deployed'> }) {
   );
 }
 
-/** The Council Feature Deployment Matrix for one council. */
+/**
+ * The Council Feature Deployment Matrix for one council. Sprint 11 Revision 12.0: a SECULAR_CHARITY tenant sees the
+ * non-denominational Organization Feature Matrix (tenantFeatureDeployment): fraternal switches masked, corporate wording.
+ */
 export function FeatureDeploymentMatrix({ council, onSaved }: { council: Council; onSaved: () => Promise<void> }) {
   const user = useUser();
   // Sprint 9 Revision 5.0: the GPS check-in row is hidden while GPS_UI_SUPPRESSED is on.
-  const rows = councilFeatureDeployment(council).filter((r) => !(GPS_UI_SUPPRESSED && r.id === 'geofence'));
+  const rows = tenantFeatureDeployment(council).filter((r) => !(GPS_UI_SUPPRESSED && r.id === 'geofence'));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
   const editable = canEditCouncilWideSettings(user);
@@ -148,12 +154,12 @@ export function FeatureDeploymentMatrix({ council, onSaved }: { council: Council
   );
 
   return (
-    <Panel title={FEATURE_DEPLOYMENT_MATRIX_TITLE} className="mt-6">
+    <Panel title={DEPLOYMENT_MATRIX_TITLES[councilParentOrganization(council)]} className="mt-6">
       <p className="mb-3 text-base">
         Which advanced capabilities and modules are switched on for {council.CouncilName}: <strong>{deployed}</strong> of {rows.length} deployed. Each
         switch keeps its own place and its own editors.
       </p>
-      <Table head={['Capability', 'Status', 'Where it is switched']} caption={`${FEATURE_DEPLOYMENT_MATRIX_TITLE} for ${council.CouncilName}`}>
+      <Table head={['Capability', 'Status', 'Where it is switched']} caption={`${DEPLOYMENT_MATRIX_TITLES[councilParentOrganization(council)]} for ${council.CouncilName}`}>
         {group('capability', 'Advanced capabilities')}
         {group('module', 'Council modules')}
       </Table>

@@ -4,24 +4,36 @@
 // white-labelled community organization; tenant.ts) and the base dues rate (dues.ts), through
 // councils.setGlobalParameters, which only an Active Super Admin may call. Saving the signed-in council reloads its
 // gates at once (featuresChanged), so the sidebar and labels switch tenant live.
+// Sprint 11 Revision 12.0: the picker sets the parent organization (Council.parent_organization, schema 110): 'KofC' or
+// 'SECULAR_CHARITY'. The data service keeps tenant_type in step.
 import { useState } from 'react';
-import { BusinessRuleError, councilLabel, councilTenantType, describeError, TENANT_TYPES, TENANT_VOCABULARY, type Council, type TenantType } from '@kofc/shared';
+import {
+  BusinessRuleError,
+  councilLabel,
+  councilParentOrganization,
+  describeError,
+  PARENT_ORGANIZATION_LABELS,
+  PARENT_ORGANIZATIONS,
+  TENANT_VOCABULARY,
+  type Council,
+  type ParentOrganization,
+} from '@kofc/shared';
 import { Button, Input, Notice, Select } from '@/components/ui';
 import { formatMoney, parseNumberField } from '@/lib/format';
 import { useSession, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-const TENANT_HINT: Record<TenantType, string> = {
-  KOFC: 'Knights of Columbus council: every fraternal extension is on.',
-  GENERIC: `White-labelled ${TENANT_VOCABULARY.GENERIC.organizationName}: fraternal extensions hidden, ${TENANT_VOCABULARY.GENERIC.unit} vocabulary.`,
+const PARENT_HINT: Record<ParentOrganization, string> = {
+  KofC: 'Knights of Columbus council: the Knights lookups, every fraternal extension and the Form 1728 suggestion popups.',
+  SECULAR_CHARITY: `Non-denominational ${TENANT_VOCABULARY.GENERIC.organizationName}: fraternal areas and Form 1728 hidden, ${TENANT_VOCABULARY.GENERIC.unit} vocabulary and Organization Settings.`,
 };
 
 /** The edit form for one council; keyed by council id so it resets when the council changes. */
 function ParametersForm({ council, onSaved }: { council: Council; onSaved: (saved: Council) => Promise<void> }) {
   const user = useUser();
   const { featuresChanged } = useSession();
-  const [tenant, setTenant] = useState<TenantType>(councilTenantType(council));
+  const [parent, setParent] = useState<ParentOrganization>(councilParentOrganization(council));
   const [rate, setRate] = useState(String(council.base_dues_rate ?? ''));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'info'; text: string } | null>(null);
@@ -32,10 +44,10 @@ function ParametersForm({ council, onSaved }: { council: Council; onSaved: (save
     try {
       const baseDuesRate = parseNumberField(rate, 'Base dues rate');
       if (baseDuesRate === null) throw new BusinessRuleError('INVALID_INPUT', 'Enter a base dues rate.');
-      const saved = await db.councils.setGlobalParameters(user.memberId, council.id, { tenant_type: tenant, base_dues_rate: baseDuesRate });
+      const saved = await db.councils.setGlobalParameters(user.memberId, council.id, { parent_organization: parent, base_dues_rate: baseDuesRate });
       await onSaved(saved);
       if (saved.id === user.councilId) featuresChanged();
-      setMessage({ tone: 'info', text: `Council ${saved.CouncilNumber} is now ${councilTenantType(saved)} with base dues of ${formatMoney(saved.base_dues_rate ?? 0)}.` });
+      setMessage({ tone: 'info', text: `Council ${saved.CouncilNumber} is now a ${PARENT_ORGANIZATION_LABELS[councilParentOrganization(saved)]} with base dues of ${formatMoney(saved.base_dues_rate ?? 0)}.` });
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     } finally {
@@ -53,15 +65,15 @@ function ParametersForm({ council, onSaved }: { council: Council; onSaved: (save
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1">
-          <span className="text-sm uppercase tracking-wide text-muted">Tenant type (tenant_type)</span>
-          <Select value={tenant} onChange={(e) => setTenant(e.target.value as TenantType)}>
-            {TENANT_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
+          <span className="text-sm uppercase tracking-wide text-muted">Parent organization (parent_organization)</span>
+          <Select value={parent} onChange={(e) => setParent(e.target.value as ParentOrganization)}>
+            {PARENT_ORGANIZATIONS.map((p) => (
+              <option key={p} value={p}>
+                {p} - {PARENT_ORGANIZATION_LABELS[p]}
               </option>
             ))}
           </Select>
-          <span className="text-sm font-normal">{TENANT_HINT[tenant]}</span>
+          <span className="text-sm font-normal">{PARENT_HINT[parent]}</span>
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-sm uppercase tracking-wide text-muted">Base dues rate (base_dues_rate, $)</span>

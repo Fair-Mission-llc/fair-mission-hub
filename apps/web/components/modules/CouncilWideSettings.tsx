@@ -78,6 +78,8 @@ import {
   type Council,
   type CustomManualKind,
   councilFeatureFlags,
+  councilParentOrganization,
+  SETTINGS_PAGE_TITLES,
 } from '@kofc/shared';
 import {
   CouncilInstanceRecord,
@@ -296,7 +298,11 @@ export function CouncilWideSettings({ embedded = false }: { embedded?: boolean }
 
   return (
     <>
-      {embedded ? (picker ? <div className="mb-3">{picker}</div> : null) : <PageTitle actions={picker}>Council Wide Settings</PageTitle>}
+      {embedded ? (
+        picker ? <div className="mb-3">{picker}</div> : null
+      ) : (
+        <PageTitle actions={picker}>{SETTINGS_PAGE_TITLES[councilParentOrganization(council)]}</PageTitle>
+      )}
       {councils.error ? <Notice tone="error">{councils.error}</Notice> : null}
       {councils.loading && !councils.data ? (
         <p className="text-sm text-muted">Loading council settings…</p>

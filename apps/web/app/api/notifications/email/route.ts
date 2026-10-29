@@ -14,8 +14,23 @@
 // server's data copy) and a saved SMTP_OUTBOUND_PASSWORD in the credentials vault (Sprint 6Y), an Admin's email goes out
 // through that SMTP server instead, with the password unsealed only here, and SendGrid is not used. The same Admin rule
 // applies; everyone else is still only logged.
+//
+// Sprint 11 Revision 12.0, mail separation: this route carries council mail. It never sends from the platform operations
+// address (PLATFORM_OPERATIONS_SENDER) unless a Super Admin is signed in; that address belongs to the platform's own
+// notices (services/server/notify.ts and the sign-in codes). Council mail goes through the council's own SMTP account
+// when the Secure Access Vault holds it, as above.
 import { NextResponse } from 'next/server';
-import { buildSendGridMailRequest, councilEmailGateway, describeError, hasAdminRights, logSendGridRequest, type EmailPayload } from '@kofc/shared';
+import {
+  buildSendGridMailRequest,
+  councilEmailGateway,
+  describeError,
+  hasAdminRights,
+  hasSuperAdminRights,
+  isPlatformOperationsSender,
+  logSendGridRequest,
+  PLATFORM_OPERATIONS_SENDER,
+  type EmailPayload,
+} from '@kofc/shared';
 import { credentialsVault } from '@/services/server/credentials-vault';
 import { liveSendGridKey } from '@/services/server/secrets';
 import { memberDirectory, readPortalSession } from '@/services/server/session';
@@ -65,6 +80,12 @@ export async function POST(req: Request) {
 
   const claims = await readPortalSession(req);
   const mayGoLive = claims !== null && hasAdminRights(sessionActor(claims));
+  if (isPlatformOperationsSender(email.from) && !(claims !== null && hasSuperAdminRights(sessionActor(claims)))) {
+    return NextResponse.json(
+      { sent: false, message: `${PLATFORM_OPERATIONS_SENDER} sends platform notices only. Council mail goes from the council's own address.` },
+      { status: 403 },
+    );
+  }
 
   const vault = credentialsVault();
   const gateway = mayGoLive ? councilEmailGateway(await (await memberDirectory()).councils.get(claims.councilId)) : null;

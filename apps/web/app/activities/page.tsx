@@ -21,6 +21,7 @@ import {
   FORM_1728_CANCELLED_MESSAGE,
   needsForm1728Confirmation,
   useForm1728Confirm,
+  useForm1728Enabled,
 } from '@/components/Form1728Parts';
 import { LocalCategoryPicker } from '@/components/MissionCategoryParts';
 import { RecordGrid, type Draft, type Selection } from '@/components/RecordGrid';
@@ -76,6 +77,7 @@ function ActivityLog({ activity }: { activity: Activities }) {
 }
 
 function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySummary[]; categoryName: Map<number, string> }) {
+  const form1728 = useForm1728Enabled();
   const [chosen, setChosen] = useState<number | null>(null);
   useEffect(() => {
     if (chosen !== null && !summaries.some((s) => s.activity.id === chosen)) setChosen(null);
@@ -87,10 +89,15 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
   }
   return (
     <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-      <div className="xl:col-span-2">
-        <Form1728YearToDatePanel activities={summaries.map((s) => s.activity)} />
-      </div>
-      <Table caption="Activities with logged time" head={['Activity', 'Category', 'Form 1728', 'Entries', 'Hours', 'Last logged']}>
+      {form1728 ? (
+        <div className="xl:col-span-2">
+          <Form1728YearToDatePanel activities={summaries.map((s) => s.activity)} />
+        </div>
+      ) : null}
+      <Table
+        caption="Activities with logged time"
+        head={form1728 ? ['Activity', 'Category', 'Form 1728', 'Entries', 'Hours', 'Last logged'] : ['Activity', 'Category', 'Entries', 'Hours', 'Last logged']}
+      >
         {summaries.map((s) => {
           const active = s.activity.id === chosen;
           return (
@@ -103,9 +110,11 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
               <Td>
                 <Pill tone="outline">{categoryName.get(s.activity.CategoryID) ?? '–'}</Pill>
               </Td>
-              <Td>
-                <Form1728Badge title={s.activity.ActivityName} description={s.activity.ActivityDescription} stored={s.activity.form_1728_line} />
-              </Td>
+              {form1728 ? (
+                <Td>
+                  <Form1728Badge title={s.activity.ActivityName} description={s.activity.ActivityDescription} stored={s.activity.form_1728_line} />
+                </Td>
+              ) : null}
               <Td>{s.entryCount}</Td>
               <Td>{formatDecimalHours(s.totalHours)}</Td>
               <Td className="whitespace-nowrap">{formatFullDate(s.lastLoggedOn)}</Td>
@@ -135,11 +144,14 @@ function ActivityCatalog() {
   const activeCount = (summaries.data?.length ?? 0) - archivedCount;
 
   const confirmLine = useForm1728Confirm();
+  // Sprint 11 Revision 12.0: a SECULAR_CHARITY tenant has no Form 1728 column, popup or panel.
+  const form1728 = useForm1728Enabled();
   const missionAreaOf = (categoryId: number) => supremeMissionAreaOf((categories.data ?? []).find((c) => c.id === categoryId));
 
   /** Opens the popup when the record needs a confirmed line; throws when the officer cancels, so nothing is saved. */
-  const confirmedLine = async (name: string, description: string, categoryId: number, row: Activities | null): Promise<string> => {
+  const confirmedLine = async (name: string, description: string, categoryId: number, row: Activities | null): Promise<string | null> => {
     const stored = row?.form_1728_line ?? null;
+    if (!form1728) return stored;
     if (!needsForm1728Confirmation(name, row?.ActivityName ?? null, stored)) return stored!;
     const renamed = row !== null && name.trim() !== row.ActivityName.trim();
     const code = await confirmLine.ask({ title: name, description, context: { missionArea: missionAreaOf(categoryId) }, initial: renamed ? null : stored });
@@ -216,9 +228,9 @@ function ActivityCatalog() {
             columns={[
               { label: 'Activity', render: (a) => a.ActivityName },
               { label: 'Category', render: (a) => <Pill tone="outline">{categoryName.get(a.CategoryID) ?? '–'}</Pill> },
-              {
+              ...(!form1728 ? [] : [{
                 label: 'Form 1728',
-                render: (a) => (
+                render: (a: Activities) => (
                   <span className="flex flex-wrap items-center gap-2">
                     <Form1728Badge title={a.ActivityName} description={a.ActivityDescription} stored={a.form_1728_line} />
                     {canEdit ? (
@@ -228,7 +240,7 @@ function ActivityCatalog() {
                     ) : null}
                   </span>
                 ),
-              },
+              }]),
               { label: 'Description', render: (a) => a.ActivityDescription, className: 'text-xs' },
             ]}
             fields={[

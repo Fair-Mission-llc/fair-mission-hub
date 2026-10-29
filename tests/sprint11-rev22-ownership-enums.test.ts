@@ -33,7 +33,7 @@ const PILOT_DAY = new Date(2026, 9, 12, 19, 0, 0);
 
 describe('Sprint 11 Revision 2.2: universal ownership classifications', () => {
   it('keeps schema 103 and holds GLAccount.ownership_type to the three tokens', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(109); // Sprint 11 Revision 11.0 moved the platform to schema 109.
+    expect(PLATFORM_SCHEMA_VERSION).toBe(110); // Sprint 11 Revision 12.0 moved the platform to schema 110.
     expect(ACCOUNT_OWNERSHIP_TYPES).toEqual(['INTERNAL_OPERATING', 'PARENT_ORGANIZATION', 'AFFILIATED_ENTITY']);
     expect(DEFAULT_ACCOUNT_OWNERSHIP_TYPE).toBe('INTERNAL_OPERATING');
     expect(TABLES.GLAccount.columns.find((c) => c.name === 'ownership_type')).toMatchObject({ notNull: true, allowed: [...ACCOUNT_OWNERSHIP_TYPES] });

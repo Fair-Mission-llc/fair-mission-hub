@@ -8,6 +8,7 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  type ScrollViewInstance,
   StyleSheet,
   Text,
   TextInput,
@@ -341,7 +342,7 @@ export function Screen({
   onRefresh?: () => void;
   contentStyle?: StyleProp<ViewStyle>;
   /** Sprint 8S Revision 10.4: lets a screen scroll itself back to the top (e.g. after recording a donation). */
-  scrollRef?: RefObject<ScrollView | null>;
+  scrollRef?: RefObject<ScrollViewInstance | null>;
 }) {
   const { color, space } = useTheme();
   return (
