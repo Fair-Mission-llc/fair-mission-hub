@@ -120,6 +120,7 @@ import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { MemberRosterOptions, MemberRosterResult } from './member-roster';
 import type { CouncilAccount, CouncilAccountInput, SplitSisterCouncil } from './council-accounts';
 import type { FileRepositorySettings } from './file-repository';
+import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter } from './member-lifecycle';
 import type { MeritThresholds } from './merit-tiers';
@@ -898,6 +899,11 @@ export interface SupremeComplianceSnapshot {
   volunteerHours: { events: number; activities: number; total: number };
   /** Those hours by the event's or activity's Category, ordered by category. */
   hoursByCategory: { category: string; hours: number }[];
+  /**
+   * Sprint 11 Revision 9.0: those hours by Supreme Form 1728 line, filed from each event's or activity's title by the
+   * interrogation engine (form-1728.ts). Lines with hours only, in report order.
+   */
+  form1728Lines: Form1728LineTotal[];
   /** Distinct members behind those hours. */
   volunteers: number;
   /** The council's events starting in the period. */

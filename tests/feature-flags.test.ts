@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ALL_FEATURES_ON,
+  COUNCIL_15295_SEED_FLAGS,
   cleanFeatureFlagChanges,
   councilFeatureFlags,
   FEATURE_FLAG_NAMES,
@@ -48,7 +49,7 @@ describe('feature flag rules', () => {
     const grandKnight = { memberId: 9, councilId: 1, memberType: 'Member' as const, isOfficer: true, roles: ['Grand Knight'] };
     const desks = (flags: FeatureFlags) => portalSidebar(grandKnight, flags).flatMap((g) => g.entries.map((e) => e.item));
     expect(desks(ALL_FEATURES_ON)).toContain('meetings/live');
-    expect(desks({ ...ALL_FEATURES_ON, flag_meeting_management: false })).not.toContain('meetings/live');
+    expect(desks({ ...COUNCIL_15295_SEED_FLAGS, flag_meeting_management: false })).not.toContain('meetings/live');
     // The two donation flags are independent: proposals off leaves the donations desk, and the reverse.
     expect(desks({ ...ALL_FEATURES_ON, flag_charity_proposals: false })).not.toContain('charities/vetting');
     const inflowOnly = portalAreas(superAdmin, { ...ALL_FEATURES_ON, flag_charity_proposals: false });
@@ -81,18 +82,18 @@ describe('feature flag rules', () => {
 });
 
 describe.each(drivers)('$name driver: councils.setFeatureFlags', (d) => {
-  it('starts every council with every module on', async () => {
+  it('starts Council 15295 on its seeded scope (Sprint 11 Revision 9.0): the eight premium switches off, the rest on', async () => {
     const db = await d.make();
     const council = await db.councils.get(1);
-    for (const name of FEATURE_FLAG_NAMES) expect(council?.[name]).toBe(1);
+    for (const name of FEATURE_FLAG_NAMES) expect(council?.[name]).toBe(COUNCIL_15295_SEED_FLAGS[name] ? 1 : 0);
   });
 
   it('lets a Super Admin switch modules off and back on, keeping the flags not named', async () => {
     const db = await d.make();
     const off = await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_meeting_management: false, flag_charity_proposals: false });
-    expect(councilFeatureFlags(off)).toEqual({ ...ALL_FEATURES_ON, flag_meeting_management: false, flag_charity_proposals: false });
+    expect(councilFeatureFlags(off)).toEqual({ ...COUNCIL_15295_SEED_FLAGS, flag_meeting_management: false, flag_charity_proposals: false });
     await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_charity_proposals: true });
-    expect(councilFeatureFlags(await db.councils.get(1))).toEqual({ ...ALL_FEATURES_ON, flag_meeting_management: false });
+    expect(councilFeatureFlags(await db.councils.get(1))).toEqual({ ...COUNCIL_15295_SEED_FLAGS, flag_meeting_management: false });
   });
 
   it('refuses Admins and unknown councils, writing nothing', async () => {
@@ -100,7 +101,7 @@ describe.each(drivers)('$name driver: councils.setFeatureFlags', (d) => {
     await expectRule(db.councils.setFeatureFlags(MEMBER.admin, 1, { flag_fundraising_inflow: false }), 'SUPER_ADMIN_REQUIRED');
     await expectRule(db.councils.setFeatureFlags(MEMBER.superAdmin, 999, { flag_fundraising_inflow: false }), 'RECORD_NOT_FOUND');
     await expectRule(db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_bogus: false } as never), 'INVALID_INPUT');
-    expect(councilFeatureFlags(await db.councils.get(1))).toEqual(ALL_FEATURES_ON);
+    expect(councilFeatureFlags(await db.councils.get(1))).toEqual(COUNCIL_15295_SEED_FLAGS);
   });
 });
 

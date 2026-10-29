@@ -6611,8 +6611,8 @@ export class SqliteDataService implements DataService {
       [councilId],
     ))!;
     const [eventTime, activityTime, events, eventExpenseItems, donations, disbursements] = await Promise.all([
-      db.getAllAsync<{ MemberID: number; Hours: number; category: string }>(
-        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category
+      db.getAllAsync<{ MemberID: number; Hours: number; category: string; title: string }>(
+        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category, e.[EventName] AS title
            FROM [EventTime] t
            JOIN [Shift] sh ON sh.[id] = t.[ShiftID]
            JOIN [Event] e ON e.[id] = sh.[EventID]
@@ -6621,8 +6621,8 @@ export class SqliteDataService implements DataService {
             AND sh.[ShiftDate] BETWEEN ? AND ?`,
         range,
       ),
-      db.getAllAsync<{ MemberID: number; Hours: number; category: string }>(
-        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category
+      db.getAllAsync<{ MemberID: number; Hours: number; category: string; title: string }>(
+        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category, a.[ActivityName] AS title
            FROM [ActivityTime] t
            JOIN [Activities] a ON a.[id] = t.[ActivityID]
            LEFT JOIN [Category] c ON c.[id] = a.[CategoryID]

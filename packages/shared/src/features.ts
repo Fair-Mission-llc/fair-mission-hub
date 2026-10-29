@@ -73,6 +73,28 @@ export const ALL_FEATURES_ON: FeatureFlags = Object.fromEntries(FEATURE_FLAG_NAM
  */
 export const LIGHTWEIGHT_FEATURE_FLAGS: FeatureFlags = Object.fromEntries(FEATURE_FLAG_NAMES.map((k) => [k, false])) as FeatureFlags;
 
+/**
+ * Sprint 11 Revision 9.0: the premium switches Council 15295 (CouncilID 1) starts with off (Seed.sql): capital assets,
+ * the charity registry, advanced financial audits, document compilation, the photo gallery, the loaner library, the
+ * marketing factory and the election center. Its other switches keep the column default (on).
+ */
+export const COUNCIL_15295_SEED_OFF_FLAGS = [
+  'feature_capital_assets',
+  'feature_charity_registry',
+  'feature_advanced_audits',
+  'feature_document_compilation',
+  'feature_photo_gallery',
+  'feature_loaner_library',
+  'feature_marketing_factory',
+  'flag_mobile_elections',
+] as const satisfies readonly FeatureFlagName[];
+
+/** Sprint 11 Revision 9.0: Council 15295's switches as seeded. */
+export const COUNCIL_15295_SEED_FLAGS: FeatureFlags = {
+  ...ALL_FEATURES_ON,
+  ...Object.fromEntries(COUNCIL_15295_SEED_OFF_FLAGS.map((k) => [k, false])),
+};
+
 /** Sprint 11 Revision 7.0: the Super Admin page's title (/feature-flags and /super-admin). */
 export const MASTER_FEATURE_GRID_TITLE = 'Master Feature Deployment Grid';
 

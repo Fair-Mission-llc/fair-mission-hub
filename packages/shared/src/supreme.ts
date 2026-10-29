@@ -23,6 +23,7 @@ import type {
   SupremeReportingPeriod,
   SupremeSyncHistoryEntry,
 } from './contract';
+import { tallyForm1728 } from './form-1728';
 import { assertInteger, BusinessRuleError, summarizeDonations, toIsoDate } from './rules';
 import type { SupremeFormType, SupremeReportingSync, SupremeSyncStatus } from './types';
 
@@ -116,10 +117,13 @@ export function supremePeriodOptions(formType: SupremeFormType, now: Date, count
 /** The raw rows a driver reads for a snapshot, already limited to the council and the period. */
 export interface SupremeSnapshotRows {
   council: { id: number; CouncilNumber: number; CouncilName: string };
-  /** EventTime on the council's events, on shifts dated in the period; `category` is the event's Category. */
-  eventTime: readonly { MemberID: number; Hours: number; category: string }[];
-  /** ActivityTime on the council's activities, dated in the period; `category` is the activity's Category. */
-  activityTime: readonly { MemberID: number; Hours: number; category: string }[];
+  /**
+   * EventTime on the council's events, on shifts dated in the period; `category` is the event's Category. Sprint 11
+   * Revision 9.0: `title` is the event's name, which the Form 1728 engine (form-1728.ts) files to its line.
+   */
+  eventTime: readonly { MemberID: number; Hours: number; category: string; title?: string }[];
+  /** ActivityTime on the council's activities, dated in the period; `category` is the activity's Category, `title` its name. */
+  activityTime: readonly { MemberID: number; Hours: number; category: string; title?: string }[];
   /** The council's events starting in the period. */
   events: readonly unknown[];
   /**
@@ -156,6 +160,13 @@ export function compileSupremeSnapshot(
     hoursByCategory: [...byCategory]
       .map(([category, hours]) => ({ category, hours: quarterHours(hours) }))
       .sort((a, b) => a.category.localeCompare(b.category)),
+    // Sprint 11 Revision 9.0: the same hours by Form 1728 line, read from each record's title. The rows are already
+    // limited to the period, so the tally takes every date.
+    form1728Lines: tallyForm1728(
+      [...rows.eventTime, ...rows.activityTime].map((r) => ({ title: r.title ?? '', date: period.fromDate, hours: r.Hours, memberId: r.MemberID })),
+      period.fromDate,
+      period.toDate,
+    ),
     volunteers: new Set([...rows.eventTime, ...rows.activityTime].map((r) => r.MemberID)).size,
     eventsHeld: rows.events.length,
     donations: summarizeDonations(rows.donations),

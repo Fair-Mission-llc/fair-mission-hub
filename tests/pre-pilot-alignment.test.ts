@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ALL_FEATURES_ON,
+  COUNCIL_15295_SEED_FLAGS,
   assertMayChangeLesson,
   canOpenFeatureFlagsControlCenter,
   canRecordLedger,
@@ -115,9 +116,9 @@ describe.each(drivers)('$name driver: Sprint 6R flags', (d) => {
   it('lets a Super Admin switch a feature_* module off and back on', async () => {
     const db = await d.make();
     const off = await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { feature_council_history: false, feature_expense_reporting: false });
-    expect(councilFeatureFlags(off)).toEqual({ ...ALL_FEATURES_ON, feature_council_history: false, feature_expense_reporting: false });
+    expect(councilFeatureFlags(off)).toEqual({ ...COUNCIL_15295_SEED_FLAGS, feature_council_history: false, feature_expense_reporting: false });
     await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { feature_council_history: true, feature_expense_reporting: true });
-    expect(councilFeatureFlags(await db.councils.get(1))).toEqual(ALL_FEATURES_ON);
+    expect(councilFeatureFlags(await db.councils.get(1))).toEqual(COUNCIL_15295_SEED_FLAGS);
     await expectRule(db.councils.setFeatureFlags(MEMBER.admin, 1, { feature_faith_center: false }), 'SUPER_ADMIN_REQUIRED');
   });
 });

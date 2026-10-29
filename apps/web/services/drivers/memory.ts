@@ -5578,13 +5578,16 @@ export class MemoryDataService implements DataService {
     const linked = new Set(s.rows('EventCouncils').filter((ec) => ec.CouncilID === councilId).map((ec) => ec.EventID));
     const councilEvents = s.rows('Event').filter((e) => linked.has(e.id));
     const eventCategory = new Map(councilEvents.map((e) => [e.id, categoryName(e.CategoryID)]));
-    const shiftCategory = new Map(
+    const eventTitle = new Map(councilEvents.map((e) => [e.id, e.EventName as string]));
+    const shiftEvent = new Map(
       s
         .rows('Shift')
         .filter((sh) => eventCategory.has(sh.EventID) && inPeriod(sh.ShiftDate))
-        .map((sh) => [sh.id, eventCategory.get(sh.EventID)!]),
+        .map((sh) => [sh.id, sh.EventID]),
     );
-    const activityCategory = new Map(s.rows('Activities').filter((a) => a.CouncilID === councilId).map((a) => [a.id, categoryName(a.CategoryID)]));
+    const councilActivities = s.rows('Activities').filter((a) => a.CouncilID === councilId);
+    const activityCategory = new Map(councilActivities.map((a) => [a.id, categoryName(a.CategoryID)]));
+    const activityTitle = new Map(councilActivities.map((a) => [a.id, a.ActivityName as string]));
     const methodKind = new Map(s.rows('DonationMethod').map((m) => [m.id, donationMethodKind(m.DonationMethod as string)]));
     const council = s.rows('Council').find((c) => c.id === councilId)!;
     const periodEvents = councilEvents.filter((e) => inPeriod(e.StartDate));
@@ -5600,12 +5603,20 @@ export class MemoryDataService implements DataService {
       council: { id: councilId, CouncilNumber: council.CouncilNumber as number, CouncilName: council.CouncilName as string },
       eventTime: s
         .rows('EventTime')
-        .filter((t) => shiftCategory.has(t.ShiftID))
-        .map((t) => ({ MemberID: t.MemberID as number, Hours: t.Hours as number, category: shiftCategory.get(t.ShiftID)! })),
+        .filter((t) => shiftEvent.has(t.ShiftID))
+        .map((t) => {
+          const eventId = shiftEvent.get(t.ShiftID)!;
+          return { MemberID: t.MemberID as number, Hours: t.Hours as number, category: eventCategory.get(eventId)!, title: eventTitle.get(eventId)! };
+        }),
       activityTime: s
         .rows('ActivityTime')
         .filter((t) => activityCategory.has(t.ActivityID) && inPeriod(t.ActivityDate))
-        .map((t) => ({ MemberID: t.MemberID as number, Hours: t.Hours as number, category: activityCategory.get(t.ActivityID)! })),
+        .map((t) => ({
+          MemberID: t.MemberID as number,
+          Hours: t.Hours as number,
+          category: activityCategory.get(t.ActivityID)!,
+          title: activityTitle.get(t.ActivityID)!,
+        })),
       events: periodEvents.map((e) => ({ id: e.id })),
       eventExpenseItems: s
         .rows('ExpenseLineItem').filter(isCouncilPaidLine)

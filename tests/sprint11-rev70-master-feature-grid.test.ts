@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import {
   adminDeskDrawersFor,
   ALL_FEATURES_ON,
+  COUNCIL_15295_SEED_FLAGS,
   ALWAYS_ON_MODULES,
   canOpenFeatureFlagsControlCenter,
   councilFeatureFlags,
@@ -88,7 +89,7 @@ describe('2. the lightweight footprint (pure)', () => {
 describe.each(drivers)('3. new councils and the switches ($name driver)', ({ make }) => {
   it('stores a new council with the lightweight footprint and leaves councils on file as they were', async () => {
     const db = await make();
-    expect(councilFeatureFlags(await db.councils.get(1))).toEqual(ALL_FEATURES_ON);
+    expect(councilFeatureFlags(await db.councils.get(1))).toEqual(COUNCIL_15295_SEED_FLAGS);
     const created = await db.councils.create(MEMBER.superAdmin, { CouncilNumber: 99701, CouncilName: 'Council 99701', State: 'OR' });
     expect(councilFeatureFlags(created)).toEqual(LIGHTWEIGHT_FEATURE_FLAGS);
     expect(councilFeatureFlags(await db.councils.get(created.id))).toEqual(LIGHTWEIGHT_FEATURE_FLAGS);

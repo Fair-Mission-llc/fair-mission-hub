@@ -82,6 +82,26 @@ function ComplianceAudit({ snapshot }: { snapshot: SupremeComplianceSnapshot }) 
           </tr>
         </Table>
 
+        <Table caption="Volunteer hours by Form 1728 line (filed from each title)" head={['Form 1728 line', 'Records', 'Hours']}>
+          {snapshot.form1728Lines.length === 0 ? (
+            <tr>
+              <Td colSpan={3} className="text-muted">
+                No hours were logged in this period.
+              </Td>
+            </tr>
+          ) : (
+            snapshot.form1728Lines.map((row) => (
+              <tr key={row.code}>
+                <Td className="whitespace-nowrap font-bold">
+                  {row.section} {row.line} · {row.label}
+                </Td>
+                <Td className="text-xs">{row.records.join(', ')}</Td>
+                <Td>{formatDecimalHours(row.hours)}</Td>
+              </tr>
+            ))
+          )}
+        </Table>
+
         <Table caption="Financial figures" head={['Ledger line', 'Amount']}>
           <tr>
             <Td>Cash receipts</Td>

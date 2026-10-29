@@ -7,9 +7,12 @@
 // and an activity with logged time cannot be deleted (RECORD_IN_USE), so its hours stay on record.
 // Sprint 6L Extension 5: the activity form's Local Category picker shows the category's fixed Supreme Mission Area as a
 // read-only badge (MissionCategoryParts).
+// Sprint 11 Revision 9.0: each activity shows the Form 1728 line its name files to (Form1728Parts), and the history tab
+// opens with the council's year-to-date hours by line.
 import { useEffect, useState } from 'react';
 import { canMaintainCouncilRecords, formatHours, type Activities, type ActivitySummary } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
+import { Form1728Badge, Form1728YearToDatePanel } from '@/components/Form1728Parts';
 import { LocalCategoryPicker } from '@/components/MissionCategoryParts';
 import { RecordGrid, type Draft, type Selection } from '@/components/RecordGrid';
 import { cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
@@ -75,7 +78,10 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
   }
   return (
     <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-      <Table caption="Activities with logged time" head={['Activity', 'Category', 'Entries', 'Hours', 'Last logged']}>
+      <div className="xl:col-span-2">
+        <Form1728YearToDatePanel activities={summaries.map((s) => s.activity)} />
+      </div>
+      <Table caption="Activities with logged time" head={['Activity', 'Category', 'Form 1728', 'Entries', 'Hours', 'Last logged']}>
         {summaries.map((s) => {
           const active = s.activity.id === chosen;
           return (
@@ -87,6 +93,9 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
               </Td>
               <Td>
                 <Pill tone="outline">{categoryName.get(s.activity.CategoryID) ?? '–'}</Pill>
+              </Td>
+              <Td>
+                <Form1728Badge title={s.activity.ActivityName} description={s.activity.ActivityDescription} />
               </Td>
               <Td>{s.entryCount}</Td>
               <Td>{formatDecimalHours(s.totalHours)}</Td>
@@ -170,6 +179,7 @@ function ActivityCatalog() {
             columns={[
               { label: 'Activity', render: (a) => a.ActivityName },
               { label: 'Category', render: (a) => <Pill tone="outline">{categoryName.get(a.CategoryID) ?? '–'}</Pill> },
+              { label: 'Form 1728', render: (a) => <Form1728Badge title={a.ActivityName} description={a.ActivityDescription} /> },
               { label: 'Description', render: (a) => a.ActivityDescription, className: 'text-xs' },
             ]}
             fields={[

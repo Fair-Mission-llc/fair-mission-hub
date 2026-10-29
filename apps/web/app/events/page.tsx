@@ -28,6 +28,7 @@ import {
   type Shift,
 } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
+import { Form1728Badge, Form1728Preview } from '@/components/Form1728Parts';
 import { LocalCategoryField } from '@/components/MissionCategoryParts';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { parseNumberField, toField } from '@/lib/format';
@@ -153,6 +154,9 @@ function EventForm({
         <Field label="Description" className="col-span-2">
           {(id) => <Textarea id={id} value={description} maxLength={255} onChange={(e) => setDescription(e.target.value)} />}
         </Field>
+        <div className="col-span-2">
+          <Form1728Preview title={name} description={description} />
+        </div>
         <Field label={multiDay ? 'Starts' : 'Date'}>
           {(id) => <Input id={id} type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />}
         </Field>
@@ -603,6 +607,9 @@ function Planner() {
                   className={cx('block w-full border-l-8 px-3 py-2 text-left', selected === e.id ? 'border-gold bg-white outline outline-1 outline-line' : 'border-transparent hover:underline')}
                 >
                   <span className="block text-sm font-bold">{e.EventName}</span>
+                  <span className="mt-0.5 block">
+                    <Form1728Badge title={e.EventName} description={e.EventDescription} />
+                  </span>
                   <span className="block text-xs text-muted">
                     {e.StartDate === e.EndDate ? formatDate(e.StartDate) : `${formatDate(e.StartDate)} – ${formatDate(e.EndDate)}`} · {e.Location}
                   </span>

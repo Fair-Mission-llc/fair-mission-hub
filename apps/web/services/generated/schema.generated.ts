@@ -9083,7 +9083,15 @@ export const SEED_DATA: readonly SeedTable[] = [
         "CouncilName": "St. Mary's Cathedral Council",
         "State": "OR",
         "Phone": "503-555-0199",
-        "Email": "kofc15295@gmail.com"
+        "Email": "kofc15295@gmail.com",
+        "feature_capital_assets": 0,
+        "feature_charity_registry": 0,
+        "feature_advanced_audits": 0,
+        "feature_document_compilation": 0,
+        "feature_photo_gallery": 0,
+        "feature_loaner_library": 0,
+        "feature_marketing_factory": 0,
+        "flag_mobile_elections": 0
       }
     ]
   },
@@ -14722,6 +14730,118 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
       {
         "EventID": 10,
         "CouncilID": 7
+      }
+    ]
+  },
+  {
+    "table": "Activities",
+    "rows": [
+      {
+        "ActivityName": "Global Wheelchair Mission",
+        "ActivityDescription": "Raising funds and delivering wheelchairs through the Global Wheelchair Mission",
+        "CategoryID": 2,
+        "CouncilID": 1
+      },
+      {
+        "ActivityName": "Habitat for Humanity Support",
+        "ActivityDescription": "Council build days with the local Habitat for Humanity affiliate",
+        "CategoryID": 2,
+        "CouncilID": 1
+      },
+      {
+        "ActivityName": "Special Olympics Staffing",
+        "ActivityDescription": "Staffing Special Olympics games, meets and award ceremonies",
+        "CategoryID": 7,
+        "CouncilID": 1
+      }
+    ]
+  },
+  {
+    "table": "ActivityTime",
+    "rows": [
+      {
+        "MemberID": 4,
+        "ActivityID": 2,
+        "ActivityDate": "2026-01-17",
+        "Hours": 3,
+        "ActivityNotes": "Coat sorting at the parish hall"
+      },
+      {
+        "MemberID": 6,
+        "ActivityID": 2,
+        "ActivityDate": "2026-01-17",
+        "Hours": 2.5,
+        "ActivityNotes": "Coat sorting at the parish hall"
+      },
+      {
+        "MemberID": 9,
+        "ActivityID": 2,
+        "ActivityDate": "2026-02-07",
+        "Hours": 4,
+        "ActivityNotes": "Delivered coats to the elementary school"
+      },
+      {
+        "MemberID": 5,
+        "ActivityID": 14,
+        "ActivityDate": "2026-03-14",
+        "Hours": 2,
+        "ActivityNotes": "Wheelchair fund collection after Mass"
+      },
+      {
+        "MemberID": 7,
+        "ActivityID": 14,
+        "ActivityDate": "2026-04-25",
+        "Hours": 5,
+        "ActivityNotes": "Wheelchair delivery to the care center"
+      },
+      {
+        "MemberID": 8,
+        "ActivityID": 14,
+        "ActivityDate": "2026-04-25",
+        "Hours": 5,
+        "ActivityNotes": "Wheelchair delivery to the care center"
+      },
+      {
+        "MemberID": 4,
+        "ActivityID": 15,
+        "ActivityDate": "2026-05-16",
+        "Hours": 6,
+        "ActivityNotes": "Habitat build day: framing"
+      },
+      {
+        "MemberID": 10,
+        "ActivityID": 15,
+        "ActivityDate": "2026-05-16",
+        "Hours": 6,
+        "ActivityNotes": "Habitat build day: framing"
+      },
+      {
+        "MemberID": 11,
+        "ActivityID": 15,
+        "ActivityDate": "2026-08-22",
+        "Hours": 4.5,
+        "ActivityNotes": "Habitat build day: painting"
+      },
+      {
+        "MemberID": 6,
+        "ActivityID": 16,
+        "ActivityDate": "2026-06-06",
+        "Hours": 4,
+        "ActivityNotes": "Special Olympics track meet"
+      },
+      {
+        "MemberID": 12,
+        "ActivityID": 16,
+        "ActivityDate": "2026-06-06",
+        "Hours": 4,
+        "ActivityNotes": "Special Olympics track meet"
+      },
+      {
+        "MemberID": 13,
+        "ActivityID": 16,
+        "ActivityDate": "2026-09-19",
+        "Hours": 3.25,
+        "ActivityNotes": "Special Olympics bowling awards"
       }
     ]
   }

@@ -102,8 +102,15 @@ GO
 -- =========================================================================
 
 -- 1. Create a Default Baseline Council for Testing
-INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email])
-VALUES (15295, 'St. Mary''s Cathedral Council', 'OR', '503-555-0199', 'kofc15295@gmail.com');
+-- Sprint 11 Revision 9.0: Council 15295 starts on the lightweight scope. Eight premium switches are off from
+-- initialization: capital assets, the charity registry, advanced financial audits, document compilation, the photo
+-- gallery, the loaner library, the marketing factory and the election center (flag_mobile_elections). The core systems
+-- (financial management dashboards, service hours, event communications, calendars) have no switch and stay open.
+-- The other premium switches keep their column default (on). A Super Admin can still turn any switch on.
+INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email], [feature_capital_assets], [feature_charity_registry],
+  [feature_advanced_audits], [feature_document_compilation], [feature_photo_gallery], [feature_loaner_library], [feature_marketing_factory],
+  [flag_mobile_elections])
+VALUES (15295, 'St. Mary''s Cathedral Council', 'OR', '503-555-0199', 'kofc15295@gmail.com', 0, 0, 0, 0, 0, 0, 0, 0);
 GO
 
 -- 2. Create the Login Credentials (Passwords should be encrypted in production, plain for dev stub)
@@ -1230,4 +1237,34 @@ GO
 INSERT INTO [EventCouncils] ([EventID], [CouncilID])
 VALUES
 (10, 7);
+GO
+
+-- ==============================================================================
+-- Sprint 11 Revision 9.0: Council 15295's Form 1728 portfolio of ongoing activities (presentation data). The Form 1728
+-- engine (form-1728.ts) files each activity from its name; nothing stores the line. 'Coats for kids' (id 2, Community
+-- line A) is already in the baseline, so it is reused rather than added twice. The three new activities are ids 14-16:
+-- Global Wheelchair Mission (Community line B), Habitat for Humanity Support (Community line C) and Special Olympics
+-- Staffing (Life line C, CategoryID 7 Life). The 2026 entries below fill the year-to-date balances.
+-- ==============================================================================
+INSERT INTO [Activities] ([ActivityName], [ActivityDescription], [CategoryID], [CouncilID])
+VALUES
+('Global Wheelchair Mission', 'Raising funds and delivering wheelchairs through the Global Wheelchair Mission', 2, 1), -- id 14
+('Habitat for Humanity Support', 'Council build days with the local Habitat for Humanity affiliate', 2, 1),           -- id 15
+('Special Olympics Staffing', 'Staffing Special Olympics games, meets and award ceremonies', 7, 1);                  -- id 16
+GO
+
+INSERT INTO [ActivityTime] ([MemberID], [ActivityID], [ActivityDate], [Hours], [ActivityNotes])
+VALUES
+(4, 2, '2026-01-17', 3.00, 'Coat sorting at the parish hall'),
+(6, 2, '2026-01-17', 2.50, 'Coat sorting at the parish hall'),
+(9, 2, '2026-02-07', 4.00, 'Delivered coats to the elementary school'),
+(5, 14, '2026-03-14', 2.00, 'Wheelchair fund collection after Mass'),
+(7, 14, '2026-04-25', 5.00, 'Wheelchair delivery to the care center'),
+(8, 14, '2026-04-25', 5.00, 'Wheelchair delivery to the care center'),
+(4, 15, '2026-05-16', 6.00, 'Habitat build day: framing'),
+(10, 15, '2026-05-16', 6.00, 'Habitat build day: framing'),
+(11, 15, '2026-08-22', 4.50, 'Habitat build day: painting'),
+(6, 16, '2026-06-06', 4.00, 'Special Olympics track meet'),
+(12, 16, '2026-06-06', 4.00, 'Special Olympics track meet'),
+(13, 16, '2026-09-19', 3.25, 'Special Olympics bowling awards');
 GO
