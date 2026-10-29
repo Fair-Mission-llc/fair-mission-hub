@@ -6,11 +6,16 @@
 // The portal session cookie says who is calling (assertHubCallAllowed): before sign-in only HUB_PUBLIC_METHODS; a call
 // that names its caller must name the signed-in member; a view-as session reads only. auth.signIn and a setup-code
 // auth.signUp that succeed also set the session cookie, so a phone signs in to the hub with the same call it always made.
+// Sprint 11 Revision 12.5: when the member must type a code (Admins and Super Admins, or everyone under
+// TWO_FACTOR_REQUIRED=1), auth.signIn sets no cookie and answers TWO_FACTOR_CODE_REQUIRED with details.twoFactor; the
+// phone posts the code to /api/auth/two-factor, which sets the cookie. A setup-code sign-up is not asked again: the
+// setup code from the welcome email already is a one-time code.
 // GET answers whether hub mode is on, for the pilot checklist. 404 while hub mode is off (npm run build:web).
 import { NextResponse } from 'next/server';
 import {
   assertHubCallAllowed,
   BusinessRuleError,
+  describeError,
   encodeHubError,
   HUB_VAULT_RELATIVE_PATH,
   PLATFORM_SCHEMA_VERSION,
@@ -19,6 +24,7 @@ import {
 } from '@kofc/shared';
 import { callHub, hubModeOn } from '@/services/server/hub/hub-vault';
 import { readPortalSession, signInOnServer } from '@/services/server/session';
+import { issueTwoFactorChallenge, TwoFactorContactMissingError } from '@/services/server/two-factor';
 
 export const runtime = 'nodejs';
 
@@ -60,6 +66,19 @@ export async function POST(req: Request) {
       }
     }
     const outcome = await signInOnServer(username, password);
+    if (outcome.ok && call.method === 'auth.signIn') {
+      try {
+        const twoFactor = await issueTwoFactorChallenge(outcome, outcome.contact);
+        if (twoFactor) {
+          const how = twoFactor.channel === 'sms' ? 'texted' : 'emailed';
+          return failure(new BusinessRuleError('TWO_FACTOR_CODE_REQUIRED', `We ${how} a 6-digit code to ${twoFactor.sentTo}.`, { twoFactor }), 200);
+        }
+      } catch (err) {
+        if (err instanceof TwoFactorContactMissingError) return failure(new BusinessRuleError('TWO_FACTOR_UNAVAILABLE', err.message, {}), 200);
+        console.error('[two-factor] the sign-in code could not be sent:', describeError(err));
+        return failure(new BusinessRuleError('TWO_FACTOR_UNAVAILABLE', 'The sign-in code could not be sent. Try again in a minute.', {}), 200);
+      }
+    }
     if (outcome.ok) return reply({ ok: true, result: outcome.user }, 200, { 'Set-Cookie': outcome.cookie });
     if (outcome.status === 429) return failure(new BusinessRuleError('INVALID_INPUT', outcome.message, {}), 429);
     return reply({ ok: true, result: null });

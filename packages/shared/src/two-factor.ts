@@ -7,7 +7,7 @@
 // The passkey method is the server-verified web FaceID of Sprint 10 Revision 5.0 (apps/web/services/server/webauthn.ts,
 // the UserPasskeys table since schema 104). Sprint 11 Revision 12.0 wires the SMS and email methods: when the server
 // holds Twilio or SendGrid tokens, an Admin's or Super Admin's password sign-in asks for a code (see the second half of
-// this file). A method's status comes from facts the page has: the member's phone and email on file, what the server
+// this file); Sprint 11 Revision 12.5 adds the universal switch that asks every member. A method's status comes from facts the page has: the member's phone and email on file, what the server
 // can deliver (GET /api/auth/two-factor), whether the member must pass the step, and whether this browser holds a passkey.
 // =========================================================================
 
@@ -64,7 +64,7 @@ export interface TwoFactorFacts {
   passkeyOnThisDevice: boolean;
   /** Sprint 11 Revision 12.0: what the server can send (GET /api/auth/two-factor); omitted reads as nothing. */
   delivery?: TwoFactorDelivery;
-  /** Sprint 11 Revision 12.0: the member is an Admin or Super Admin (twoFactorRequiredFor). */
+  /** The member must type a code at sign-in (twoFactorRequiredFor: Admin or Super Admin, or anyone under the universal switch). */
   requiredForMember?: boolean;
 }
 
@@ -86,13 +86,13 @@ export function twoFactorRows(facts: TwoFactorFacts): TwoFactorRow[] {
         if (!facts.delivery?.sms) return { method, status: 'not-wired', detail: 'Your phone is on file, but the portal has no Twilio account connected, so no code can be sent.' };
         return facts.requiredForMember
           ? { method, status: 'ready', detail: 'At each password sign-in a 6-digit code is texted to the cell phone on file.' }
-          : { method, status: 'available', detail: 'Codes are texted to Admins and Super Admins at sign-in. Members sign in with a password.' };
+          : { method, status: 'available', detail: 'Codes are texted to Admins and Super Admins at sign-in. Other members sign in with a password until the council turns on sign-in codes for everyone.' };
       case 'email':
         if (!hasText(facts.email)) return { method, status: 'needs-contact', detail: 'Add an email address under Contact details first.' };
         if (!facts.delivery?.email) return { method, status: 'not-wired', detail: `The portal has no SendGrid account connected, so no passcode can be emailed. Codes come from ${PLATFORM_OPERATIONS_SENDER} once it is.` };
         return facts.requiredForMember
           ? { method, status: 'ready', detail: `At each password sign-in a 6-digit passcode is emailed from ${PLATFORM_OPERATIONS_SENDER} when no text can be sent.` }
-          : { method, status: 'available', detail: 'Passcodes are emailed to Admins and Super Admins at sign-in. Members sign in with a password.' };
+          : { method, status: 'available', detail: 'Passcodes are emailed to Admins and Super Admins at sign-in. Other members sign in with a password until the council turns on sign-in codes for everyone.' };
       case 'passkey':
         if (!facts.passkeySupported) return { method, status: 'not-wired', detail: 'This browser cannot make a passkey. Try Chrome on Android or Safari on iOS.' };
         return facts.passkeyOnThisDevice
@@ -108,7 +108,7 @@ export function twoFactorRows(facts: TwoFactorFacts): TwoFactorRow[] {
 // delivery tokens: Twilio for SMS codes (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER) or SendGrid for
 // email passcodes (SENDGRID_API_KEY with SENDGRID_LIVE=1). With neither, sign-in stays one step, as before. The code
 // itself never leaves the server except by SMS or email; the browser holds only a signed challenge (server
-// two-factor.ts). Members sign in with their password alone.
+// two-factor.ts). Other members sign in with their password alone unless the universal switch below is on.
 //
 // Mail separation: everything the platform sends on its own behalf - Super Admin operations notices and these sign-in
 // codes - goes from PLATFORM_OPERATIONS_SENDER through SendGrid. Mail a council sends to its own members (event and
@@ -119,9 +119,26 @@ export function twoFactorRows(facts: TwoFactorFacts): TwoFactorRow[] {
 /** The only address platform operations mail is sent from (the user's choice). */
 export const PLATFORM_OPERATIONS_SENDER = 'tim@fairmissionsoftware.com';
 
-/** Member types that must pass the second step when a delivery channel is configured. */
+/** Member types that must pass the second step when a delivery channel is configured, with or without the global switch. */
 export const TWO_FACTOR_REQUIRED_TYPES: readonly string[] = ['Admin', 'Super Admin'];
-export const twoFactorRequiredFor = (memberType: string | null | undefined): boolean => TWO_FACTOR_REQUIRED_TYPES.includes(memberType ?? '');
+
+// Sprint 11 Revision 12.5: the universal switch. TWO_FACTOR_REQUIRED=1 in the server environment asks every member,
+// officer and admin for a code at each password sign-in, whatever the member type. With it off, the Admin and Super
+// Admin baseline above stays (the user's choice: the switch only widens the step). Lockout guard (the user's choice):
+// when the server can send no code at all, sign-in stays one step and the server logs a warning; when it can send but the
+// member has no usable phone or email on file, the sign-in is refused with TWO_FACTOR_NO_CONTACT_MESSAGE. A passkey
+// (web FaceID) or the phone's biometric key already is two factors, so those sign-ins never ask for a code.
+export const TWO_FACTOR_REQUIRED_ENV = 'TWO_FACTOR_REQUIRED';
+/** Whether the universal switch is on in an environment: '1' or 'true'. */
+export const universalTwoFactorOn = (env: Record<string, string | undefined>): boolean => /^(1|true)$/i.test(env[TWO_FACTOR_REQUIRED_ENV]?.trim() ?? '');
+/** Whether a member must pass the second step: everyone while the universal switch is on, else Admins and Super Admins. */
+export const twoFactorRequiredFor = (memberType: string | null | undefined, universal = false): boolean =>
+  universal || TWO_FACTOR_REQUIRED_TYPES.includes(memberType ?? '');
+export const TWO_FACTOR_NO_CONTACT_MESSAGE =
+  'Your council requires a sign-in code, but there is no cell phone or email on file that can receive one. Ask your council admin to add your cell phone, then sign in again.';
+
+/** The route that checks a typed code and opens the session (web portal and the hub phone). */
+export const TWO_FACTOR_ROUTE = '/api/auth/two-factor';
 
 export const TWO_FACTOR_CODE_LENGTH = 6;
 /** A code and its challenge expire after five minutes. */
@@ -135,6 +152,8 @@ export type TwoFactorChannel = 'sms' | 'email';
 export interface TwoFactorDelivery {
   sms: boolean;
   email: boolean;
+  /** Sprint 11 Revision 12.5: the universal switch (TWO_FACTOR_REQUIRED=1) is on; GET /api/auth/two-factor reports it. */
+  universal?: boolean;
 }
 
 /**

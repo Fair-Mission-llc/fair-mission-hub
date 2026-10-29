@@ -1,6 +1,8 @@
 // The browser half of the portal's server session (Sprint 6Z-Engine-Upgrade): sign-in also asks /api/auth/session for
 // the HttpOnly cookie the Drive vault, Supreme and email routes check, and sign-out clears it. The cookie is the server's
 // own decision; the browser never reads or writes it.
+import { TWO_FACTOR_ROUTE, type SessionUser } from '@kofc/shared';
+
 export const SESSION_ROUTE = '/api/auth/session';
 
 /** Sprint 11 Revision 12.0: the server's request for a sign-in code (Admins and Super Admins). */
@@ -15,7 +17,10 @@ export interface TwoFactorPrompt {
  * Asks the server for its session cookie. `opened` is true when the cookie is set; `twoFactor` is set instead when the
  * server first wants a sign-in code; `message` carries the server's refusal in plain words.
  */
-export async function openServerSession(username: string, password: string): Promise<{ opened: boolean; twoFactor?: TwoFactorPrompt; message?: string }> {
+export async function openServerSession(
+  username: string,
+  password: string,
+): Promise<{ opened: boolean; twoFactor?: TwoFactorPrompt; message?: string; status?: number }> {
   const res = await fetch(SESSION_ROUTE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -23,19 +28,23 @@ export async function openServerSession(username: string, password: string): Pro
   }).catch(() => null);
   if (!res) return { opened: false };
   const body = (await res.json().catch(() => ({}))) as { twoFactor?: TwoFactorPrompt; message?: string };
-  return { opened: res.ok && !body.twoFactor, twoFactor: body.twoFactor, message: res.ok ? undefined : body.message };
+  return { opened: res.ok && !body.twoFactor, twoFactor: body.twoFactor, message: res.ok ? undefined : body.message, status: res.status };
 }
 
-/** Sprint 11 Revision 12.0: sends the typed code; resolves to null on success or the server's reason. */
-export async function confirmTwoFactorCode(challenge: string, code: string): Promise<string | null> {
-  const res = await fetch('/api/auth/two-factor', {
+/**
+ * Sprint 11 Revision 12.0: sends the typed code; resolves to the signed-in member on success or the server's reason.
+ * Sprint 11 Revision 12.5: the member comes back too, for a hub sign-in that stopped at the code before the tab knew who it was.
+ */
+export async function confirmTwoFactorCode(challenge: string, code: string): Promise<{ user: SessionUser } | { message: string }> {
+  const res = await fetch(TWO_FACTOR_ROUTE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ challenge, code }),
   }).catch(() => null);
-  if (!res) return 'The portal server cannot be reached.';
-  if (res.ok) return null;
-  return ((await res.json().catch(() => ({}))) as { message?: string }).message ?? 'The code was not accepted.';
+  if (!res) return { message: 'The portal server cannot be reached.' };
+  const body = (await res.json().catch(() => ({}))) as { message?: string; user?: SessionUser };
+  if (res.ok && body.user) return { user: body.user };
+  return { message: body.message ?? 'The code was not accepted.' };
 }
 
 export async function closeServerSession(): Promise<void> {

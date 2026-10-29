@@ -1398,6 +1398,14 @@ The logging window also ends the hours reminders. A shift older than the window 
 | A member still sees the **[ 🔘 Enable FaceID / Biometric Login ]** switch. | The phone does not know the member's council before the sign-in. | No action. The phone makes no key after the sign-in. |
 | A member reads *"Your council has turned off biometric sign-in."* | Biometric sign-in is off for the council. | The member signs in with the password. |
 
+### 11.3.2 Concept: sign-in codes on your account
+- When the portal operator turns on sign-in codes for every member, each password sign-in asks for a 6-digit code. Admins and Super Admins always type a code when the portal has a text or email provider.
+- The code goes by text message to the cell phone on file. When no text can be sent, the code goes by email.
+- On a phone, the code shows above the keyboard. Tap the code once to fill the box.
+- The code expires after 5 minutes. After 5 wrong codes, sign in again for a new code.
+- Face ID, fingerprint and passkey sign-in do not ask for a code.
+- When no cell phone or email on file can receive a code, the portal refuses the sign-in. Ask your council admin to add your cell phone.
+
 ---
 
 ## 12. Asset photos and remote help

@@ -8,6 +8,8 @@
 //       └──no Member with that email──▶ contactAdmin   (halted: shows the admin's details)
 //
 // Sprint 6B Security: createPassword needs the setup code from the welcome email (auth.signUp refuses without it), and
+// Sprint 11 Revision 12.5: in hub mode, a password sign-in that needs a code goes signIn ──▶ twoFactorCode ──▶ signedIn
+// (biometric sign-in never asks: the device key already is a second factor).
 // "Forgot password?" (from enterEmail or signIn) runs the self-service reset:
 //   forgotPassword ──email──▶ resetCode ──6-digit code──▶ newPassword ──▶ signedIn
 //
@@ -46,6 +48,7 @@ export type OnboardingState =
   | { screen: 'enterEmail'; error?: string }
   | { screen: 'createPassword'; email: string; firstName: string; error?: string }
   | { screen: 'signIn'; email: string; error?: string }
+  | { screen: 'twoFactorCode'; email: string; prompt: TwoFactorCodePrompt; enableBiometric: boolean; error?: string }
   | { screen: 'contactAdmin'; email: string; message: string; contact: CouncilAdminContact | null }
   | { screen: 'forgotPassword'; email: string; error?: string }
   | { screen: 'resetCode'; email: string; error?: string }
@@ -89,6 +92,28 @@ export const isPilotPersonaEmail = (email: string): boolean => PILOT_PERSONA_EMA
 /** The label of the phone password prompt's biometric toggle (Sprint 8P Stage 2). */
 export const BIOMETRIC_TOGGLE_LABEL = '[ 🔘 Enable FaceID / Biometric Login ]';
 
+/**
+ * Sprint 11 Revision 12.5: the hub's request for a sign-in code (BusinessRuleError TWO_FACTOR_CODE_REQUIRED,
+ * details.twoFactor) - Admins and Super Admins, or every member when the server runs TWO_FACTOR_REQUIRED=1.
+ */
+export interface TwoFactorCodePrompt {
+  challenge: string;
+  channel: 'sms' | 'email';
+  sentTo: string;
+  expiresInSeconds: number;
+}
+
+/** Checks a typed code with the server (POST /api/auth/two-factor); the member on success, the server's reason otherwise. */
+export type TwoFactorVerifier = (challenge: string, code: string) => Promise<{ user: SessionUser } | { message: string }>;
+
+const twoFactorPromptOf = (err: unknown): TwoFactorCodePrompt | null => {
+  if (!(err instanceof BusinessRuleError) || err.code !== 'TWO_FACTOR_CODE_REQUIRED') return null;
+  const prompt = err.details.twoFactor as Partial<TwoFactorCodePrompt> | undefined;
+  return prompt && typeof prompt.challenge === 'string' && (prompt.channel === 'sms' || prompt.channel === 'email') && typeof prompt.sentTo === 'string'
+    ? { challenge: prompt.challenge, channel: prompt.channel, sentTo: prompt.sentTo, expiresInSeconds: Number(prompt.expiresInSeconds) || 300 }
+    : null;
+};
+
 export interface SubmitPasswordOptions {
   /** Sprint 8P Stage 2: on the password prompt, enroll this phone's biometric key after the sign-in (one scan first). */
   enableBiometric?: boolean;
@@ -102,6 +127,8 @@ export interface OnboardingDeps {
   authenticate?: () => Promise<boolean>;
   /** Sprint 6D: the biometric device key, enrolled when the setup code is spent. Omitted means no biometric sign-in. */
   biometric?: BiometricLogin;
+  /** Sprint 11 Revision 12.5: checks a sign-in code with the hub. Omitted (the phone's own database) means no code step. */
+  verifyTwoFactor?: TwoFactorVerifier;
 }
 
 const BIOMETRIC_FAILURES = {
@@ -173,16 +200,46 @@ export class OnboardingController {
       }
     }
     if (current.screen === 'signIn') {
-      const user = await this.deps.db.auth.signIn(current.email, password);
-      if (!user) return this.set({ ...current, error: 'Incorrect password. Please try again.' });
-      // Sprint 8P Stage 2: the biometric toggle was on - one scan, then this phone keeps a key. A refused scan or a
-      // keystore failure never blocks the password sign-in.
-      if (options.enableBiometric && this.deps.biometric && (await councilAllowsBiometric(this.deps.db, user.councilId))) {
-        await this.deps.biometric.enrollAfterScan(user, current.email).catch(() => false);
+      let user: SessionUser | null;
+      try {
+        user = await this.deps.db.auth.signIn(current.email, password);
+      } catch (err) {
+        // Sprint 11 Revision 12.5: the password was right and the hub texted (or emailed) a code first.
+        const prompt = twoFactorPromptOf(err);
+        if (prompt) return this.set({ screen: 'twoFactorCode', email: current.email, prompt, enableBiometric: options.enableBiometric === true });
+        if (err instanceof BusinessRuleError) return this.set({ ...current, error: err.message });
+        throw err;
       }
-      return this.finish(user);
+      if (!user) return this.set({ ...current, error: 'Incorrect password. Please try again.' });
+      return this.afterPasswordSignIn(user, current.email, options.enableBiometric === true);
     }
     return current;
+  }
+
+  /** Sprint 11 Revision 12.5: on `twoFactorCode`, checks the 6-digit code with the hub and finishes the sign-in. */
+  async submitTwoFactorCode(code: string): Promise<OnboardingState> {
+    const current = this.state;
+    if (current.screen !== 'twoFactorCode') return current;
+    if (!/^\d{6}$/.test(code.replace(/[\s-]/g, ''))) return this.set({ ...current, error: 'Type the 6-digit code.' });
+    if (!this.deps.verifyTwoFactor) return this.set({ screen: 'signIn', email: current.email, error: 'This phone cannot check sign-in codes. Sign in again.' });
+    const verdict = await this.deps.verifyTwoFactor(current.prompt.challenge, code);
+    if ('message' in verdict) return this.set({ ...current, error: verdict.message });
+    return this.afterPasswordSignIn(verdict.user, current.email, current.enableBiometric);
+  }
+
+  /** "Start over" from the code prompt: back to the password prompt; signing in again sends a new code. */
+  cancelTwoFactor(): OnboardingState {
+    const current = this.state;
+    return current.screen === 'twoFactorCode' ? this.set({ screen: 'signIn', email: current.email }) : current;
+  }
+
+  private async afterPasswordSignIn(user: SessionUser, email: string, enableBiometric: boolean): Promise<OnboardingState> {
+    // Sprint 8P Stage 2: the biometric toggle was on - one scan, then this phone keeps a key. A refused scan or a
+    // keystore failure never blocks the password sign-in.
+    if (enableBiometric && this.deps.biometric && (await councilAllowsBiometric(this.deps.db, user.councilId))) {
+      await this.deps.biometric.enrollAfterScan(user, email).catch(() => false);
+    }
+    return this.finish(user);
   }
 
   /** Sprint 8P Stage 2: whether this phone can scan a face or finger, which shows the biometric toggle. */

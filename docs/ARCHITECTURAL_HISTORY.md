@@ -490,3 +490,26 @@ CLI on zod 4 and deepmerge publishes a fix.
 
 The license footprint is unchanged in kind: LGPL-3.0 libvips binaries through sharp (14 packages, one shipped in the
 Windows desktop build), node-forge under its BSD option, and the project's own three unlabeled workspaces.
+
+## 11. Sign-in codes for every member (Sprint 11 Revision 12.5)
+
+Schema version stays 110. `TWO_FACTOR_REQUIRED=1` in the portal server's environment asks every member, officer, Admin
+and Super Admin for a 6-digit code at each password sign-in (`universalTwoFactorOn`, `twoFactorRequiredFor(type, universal)`
+in packages/shared/src/two-factor.ts). The user's choices:
+
+| Situation | Behavior |
+|---|---|
+| Switch off | Admins and Super Admins still type a code (the Revision 12.0 baseline); the switch only widens the step. |
+| Switch on, no Twilio or live SendGrid keys | Sign-in stays one step and the server logs one warning, so a missing key never locks the platform out. |
+| Switch on, keys present, member has no usable phone or email | The sign-in is refused (`TwoFactorContactMissingError`: 403 on /api/auth/session, `TWO_FACTOR_UNAVAILABLE` at the hub). |
+| Web passkey (FaceID) or the phone's biometric key | No code: the device key already is a second factor. |
+
+The hub door (`/api/sync/replicate`) now issues the challenge too: a right password answers `TWO_FACTOR_CODE_REQUIRED`
+with `details.twoFactor` and no cookie, and the device posts the code to `/api/auth/two-factor`, which sets the cookie and
+returns the member. Before this revision a hub sign-in skipped the code even for Admins. The phone app gained a
+`twoFactorCode` onboarding screen (hub mode only; a phone on its own database has no server to send a code, since the
+provider keys never leave the server). Its code box carries `textContentType="oneTimeCode"` (iOS) and
+`autoComplete="one-time-code"` (Android), so the texted code is offered above the keyboard for a single tap; the web code
+box already had `autoComplete="one-time-code"`. A setup-code sign-up is not asked again, because the welcome-email setup
+code already is a one-time code. GET /api/auth/two-factor reports `universal`, which My Profile and the Secure Access
+Vault's delivery card show.

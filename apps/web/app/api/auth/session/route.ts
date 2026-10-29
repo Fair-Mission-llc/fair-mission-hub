@@ -10,10 +10,11 @@
 // Sprint 11 Revision 12.0: an Admin or Super Admin whose password is right, on a server holding Twilio or SendGrid tokens,
 // gets no cookie yet: the answer is { signedIn: false, twoFactor: { challenge, channel, sentTo, expiresInSeconds } } and
 // the code goes by SMS or email. POST /api/auth/two-factor with the challenge and the code sets the cookie.
+// Sprint 11 Revision 12.5: TWO_FACTOR_REQUIRED=1 asks every member; a member with no usable phone or email is refused (403).
 import { NextResponse } from 'next/server';
 import { describeError } from '@kofc/shared';
 import { memberDirectory, readPortalSession, requirePortalSession, signInOnServer, signOutCookie } from '@/services/server/session';
-import { issueTwoFactorChallenge } from '@/services/server/two-factor';
+import { issueTwoFactorChallenge, TwoFactorContactMissingError } from '@/services/server/two-factor';
 import { portalSessionSecret } from '@/services/server/secrets';
 import { PORTAL_SESSION_COOKIE, secureCookies, sessionCookieHeader, signSessionToken } from '@/services/server/session-token';
 
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
     const twoFactor = await issueTwoFactorChallenge(outcome, outcome.contact, { requested: channel });
     if (twoFactor) return NextResponse.json({ signedIn: false, twoFactor });
   } catch (err) {
+    if (err instanceof TwoFactorContactMissingError) return NextResponse.json({ signedIn: false, message: err.message }, { status: 403 });
     console.error('[two-factor] the sign-in code could not be sent:', describeError(err));
     return NextResponse.json({ signedIn: false, message: 'The sign-in code could not be sent. Try again in a minute.' }, { status: 502 });
   }

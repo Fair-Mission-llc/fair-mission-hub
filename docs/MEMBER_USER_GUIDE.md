@@ -393,13 +393,39 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 
 The **Two-Factor Authentication** card on **My Profile** has one row for each second step after your password.
 
-| Row | What it is | Status today |
+| Row | What it is | Status |
 | --- | --- | --- |
-| **SMS text tokens** | A 6-digit code sent by text message to your cell phone. | **Not connected yet.** No text message is sent. |
-| **Email secure passcodes** | A one-time passcode sent to your email address. | **Not connected yet.** No passcode is sent. |
-| **WebAuthn biometric hardware passkeys** | Your device's face or fingerprint check unlocks a passkey. | Works now on Android (Chrome), iOS and iPadOS (Safari) and desktop browsers (2.5.1). |
+| **SMS text tokens** | A 6-digit code sent by text message to your cell phone. | **Set up** when the portal has a text provider and you must type a code. **Not connected yet** when the portal has no text provider. |
+| **Email secure passcodes** | A one-time passcode sent to your email address. | **Set up** when the portal has an email provider and you must type a code. **Not connected yet** when it has none. |
+| **WebAuthn biometric hardware passkeys** | Your device's face or fingerprint check unlocks a passkey. | Works on Android (Chrome), iOS and iPadOS (Safari) and desktop browsers (2.5.1). |
 
-A row that says **Add contact details first** needs a phone number or email address under **Contact details**. Sign-in does not ask for a second step yet.
+A row that says **Add contact details first** needs a phone number or email address under **Contact details**.
+
+Who types a code: Admins and Super Admins always type a code when the portal has a provider. When your council turns on sign-in codes for every member, you type a code too (2.5.3). A Face ID, fingerprint or passkey sign-in never asks for a code.
+
+### 2.5.3 Type a sign-in code
+
+> **Who can do this:** any member who must type a sign-in code (2.5.2).
+> **Warning:** the code expires after 5 minutes. After 5 wrong codes, you must sign in again for a new code.
+
+**Goal:** Finish the sign-in with the 6-digit code that the portal sends you.
+
+**Start point:** The web sign-in page, or the phone app's **Welcome back** screen, after you type your password.
+
+**Steps:**
+1. Type your email and password. Select **Sign in**. The **Enter your sign-in code** screen opens. It shows where the code went, for example ***-***-0142.
+2. On a phone, wait for the text message. The code shows above the keyboard. Tap the code once to fill the box. On a computer, type the 6 digits from the text or the email.
+3. Select **Verify and sign in**.
+
+**Expected result:** The portal opens on **Home**. On the phone, the app opens.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The code does not show above the keyboard. | The text has not come yet, or the phone keyboard does not offer codes. | Wait a few seconds. Open the text message and type the 6 digits. |
+| *"That code is not correct. 4 tries left."* | A digit is wrong. | Type the code again. |
+| *"The code has expired. Sign in again for a new one."* | More than 5 minutes passed. | Select **Start over**. Sign in again. |
+| *"Ask your council admin to add your cell phone."* | No cell phone or email on file can receive a code. | Ask your council admin to add your cell phone to the roster. |
 
 ### 2.6 Reset a forgotten password
 

@@ -1277,15 +1277,20 @@ The launchers set most keys. Set the other keys in the terminal or in `.env`. Ne
 | `CREDENTIALS_VAULT_SECRET` | You | Seals the saved council credentials. Without the key, every saved credential must be entered again after a restart. |
 | `FORM_1295_PYTHON` | You, optional | The Python program for the PDF reports and the custom guides. The default is `py` on Windows and `python3` elsewhere. |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` | You, optional | Send sign-in codes by text message. All three are necessary. With them, Admins and Super Admins type a code at each password sign-in. |
-| `SENDGRID_API_KEY`, `SENDGRID_LIVE` | You, optional | Send email through SendGrid (`SENDGRID_LIVE=1`). Sign-in codes for Admins and Super Admins go by email when no text can be sent. Platform notices always come from `tim@fairmissionsoftware.com`. |
+| `SENDGRID_API_KEY`, `SENDGRID_LIVE` | You, optional | Send email through SendGrid (`SENDGRID_LIVE=1`). Sign-in codes go by email when no text can be sent. Platform notices always come from `tim@fairmissionsoftware.com`. |
+| `TWO_FACTOR_REQUIRED` | You, optional | Set `1` to ask **every** member, officer and admin for a sign-in code at each password sign-in. Without it, only Admins and Super Admins type a code. The switch needs the Twilio keys or the SendGrid keys (13.2.1). |
 
-### 13.2.1 Concept: sign-in codes for Admins and Super Admins
-- The code step applies to **Admin** and **Super Admin** accounts only. Members sign in with a password.
-- The step is on when the server holds the Twilio keys or the SendGrid keys in the table above. Without the keys, sign-in has one step, as before.
+### 13.2.1 Concept: sign-in codes and the universal switch
+- **Switch off (default):** the code step applies to **Admin** and **Super Admin** accounts only. Other members sign in with a password.
+- **Switch on (`TWO_FACTOR_REQUIRED=1`):** the code step applies to every account: members, officers, Admins and Super Admins. Restart the portal server after you change the switch.
+- The step is on only when the server holds the Twilio keys or the SendGrid keys in the table above. When the switch is on and the server has no keys, sign-in has one step and the server log shows a warning. A missing key never locks out the platform.
+- When the switch is on, the server has keys, and a member has no valid cell phone or email on file, the portal refuses that member's sign-in. The member reads *"Ask your council admin to add your cell phone."* Add the cell phone on the **Roster & Achievements** page.
 - The code goes by text message to the phone on file. When the server has no Twilio keys, or the phone number is not valid, the code goes by email to the address on file.
 - A code has 6 digits. It expires after 5 minutes. After 5 wrong codes, the member must sign in again for a new code.
-- **Sign in with FaceID** does not ask for a code. The passkey is the second step.
-- The phone app signs in on the phone itself. It does not ask for a code.
+- **1-tap fill:** on iPhone, iPad and Android, the texted code shows above the keyboard. The member taps it once to fill the box.
+- **Sign in with FaceID** (web passkey) and the phone's Face ID or fingerprint sign-in do not ask for a code. The passkey or the phone key is the second step.
+- A phone that works on the hub laptop asks for the code. A phone that keeps its own records signs in on the phone itself and does not ask for a code, because the code keys stay on the server.
+- The **Secure Access Vault** shows the switch in the **Two-Factor Authentication: delivery channels** card.
 
 ### 13.2.2 Concept: which address sends the mail
 | Mail | Sent from | Through |

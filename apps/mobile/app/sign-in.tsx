@@ -115,13 +115,28 @@ function BiometricSignIn({ email, busy, onPress }: { email: string | null; busy:
 
 export default function SignInScreen() {
   const { color, space } = useTheme();
-  const { onboarding, biometricEmail, biometricAvailable, submitBiometric, submitEmail, submitPassword, startPasswordReset, submitResetEmail, submitResetCode, submitNewPassword, restart } = useApp();
+  const {
+    onboarding,
+    biometricEmail,
+    biometricAvailable,
+    submitBiometric,
+    submitEmail,
+    submitPassword,
+    submitTwoFactorCode,
+    cancelTwoFactor,
+    startPasswordReset,
+    submitResetEmail,
+    submitResetCode,
+    submitNewPassword,
+    restart,
+  } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [setupCode, setSetupCode] = useState('');
   const [resetEmail, setResetEmail] = useState<string | null>(null);
   const [resetCode, setResetCode] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [enableBiometric, setEnableBiometric] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
@@ -236,6 +251,47 @@ export default function SignInScreen() {
             </>
           ) : null}
 
+          {state.screen === 'twoFactorCode' ? (
+            <>
+              <AppText variant="title">Enter your sign-in code</AppText>
+              <AppText variant="small" tone="muted">
+                We {state.prompt.channel === 'sms' ? 'texted' : 'emailed'} a 6-digit code to {state.prompt.sentTo}. It expires in{' '}
+                {Math.round(state.prompt.expiresInSeconds / 60)} minutes.
+                {state.prompt.channel === 'sms' ? ' Tap the code above your keyboard when it appears.' : ''}
+              </AppText>
+              <Field label="6-DIGIT SIGN-IN CODE">
+                {/* Sprint 11 Revision 12.5: the one-time-code hints let iOS (textContentType) and Android (autoComplete) offer the
+                    texted code above the keyboard, so the member taps it once instead of typing it. */}
+                <AppInput
+                  value={twoFactorCode}
+                  onChangeText={(t) => setTwoFactorCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
+                  keyboardType="number-pad"
+                  textContentType="oneTimeCode"
+                  autoComplete="one-time-code"
+                  importantForAutofill="yes"
+                  autoFocus
+                  placeholder="123456"
+                  maxLength={6}
+                  accessibilityLabel="6-digit sign-in code"
+                />
+              </Field>
+              <Button
+                title="Verify and sign in"
+                busy={busy}
+                disabled={twoFactorCode.length !== 6}
+                onPress={() => void run(() => submitTwoFactorCode(twoFactorCode))}
+              />
+              <Button
+                title="Start over"
+                variant="secondary"
+                onPress={() => {
+                  setTwoFactorCode('');
+                  cancelTwoFactor();
+                }}
+              />
+            </>
+          ) : null}
+
           {state.screen === 'forgotPassword' ? (
             <>
               <AppText variant="title">Reset your password</AppText>
@@ -275,6 +331,7 @@ export default function SignInScreen() {
                   onChangeText={(t) => setResetCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
                   keyboardType="number-pad"
                   textContentType="oneTimeCode"
+                  autoComplete="one-time-code"
                   placeholder="123456"
                   maxLength={6}
                 />

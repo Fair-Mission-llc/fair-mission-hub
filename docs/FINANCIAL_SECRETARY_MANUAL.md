@@ -705,6 +705,14 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 | The request fails with a session message. | Your server session ended. | Sign out, then sign in again. |
 | The red button changed back by itself. | A Super Admin closed the request, or 30 minutes passed. | Send a new request if you still need help. |
 
+### 4.5 Concept: sign-in codes on your account
+- When the portal operator turns on sign-in codes for every member, each password sign-in asks for a 6-digit code. Admins and Super Admins always type a code when the portal has a text or email provider.
+- The code goes by text message to the cell phone on file. When no text can be sent, the code goes by email.
+- On a phone, the code shows above the keyboard. Tap the code once to fill the box.
+- The code expires after 5 minutes. After 5 wrong codes, sign in again for a new code.
+- Face ID, fingerprint and passkey sign-in do not ask for a code.
+- When no cell phone or email on file can receive a code, the portal refuses the sign-in. Ask your council admin to add your cell phone.
+
 ---
 
 ## 5. The Three-Signature Expense Flow

@@ -5,6 +5,7 @@
 // Vault draws TwoFactorDeliveryPanel, the council's side: which second-step channels the portal can deliver today.
 // Sprint 11 Revision 12.0: the SMS and email rows read what the server can send (GET /api/auth/two-factor) and whether
 // the member is an Admin or Super Admin, who must type a code at each password sign-in.
+// Sprint 11 Revision 12.5: the same GET reports the universal switch (TWO_FACTOR_REQUIRED=1), which asks every member.
 import type { ReactNode } from 'react';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -13,6 +14,7 @@ import {
   type TwoFactorDelivery,
   PASSKEY_PLATFORMS,
   TWO_FACTOR_METHODS,
+  TWO_FACTOR_ROUTE,
   TWO_FACTOR_SECTION_TITLE,
   TWO_FACTOR_STATUS_LABELS,
   twoFactorRows,
@@ -32,22 +34,31 @@ function StatusTag({ status }: { status: TwoFactorStatus }) {
   return <span className={cx('whitespace-nowrap rounded border px-2 py-0.5 text-xs font-bold', STATUS_TONE[status])}>{TWO_FACTOR_STATUS_LABELS[status]}</span>;
 }
 
-/** The member's own section on My Profile. `passkeySetup` is the FaceID enrolment control the passkey row holds. */
-export function TwoFactorSection({ facts, passkeySetup }: { facts: TwoFactorFacts; passkeySetup: ReactNode }) {
-  const user = useUser();
-  const delivery = useLoad(
+/** What the server can send with and whether the universal switch is on (GET /api/auth/two-factor). */
+function useTwoFactorDelivery() {
+  return useLoad(
     async (): Promise<TwoFactorDelivery> =>
-      (await fetch('/api/auth/two-factor')
+      (await fetch(TWO_FACTOR_ROUTE)
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null)) ?? { sms: false, email: false },
     [],
   );
-  const rows = twoFactorRows({ ...facts, delivery: delivery.data ?? undefined, requiredForMember: twoFactorRequiredFor(user.memberType) });
+}
+
+/** The member's own section on My Profile. `passkeySetup` is the FaceID enrolment control the passkey row holds. */
+export function TwoFactorSection({ facts, passkeySetup }: { facts: TwoFactorFacts; passkeySetup: ReactNode }) {
+  const user = useUser();
+  const delivery = useTwoFactorDelivery();
+  const rows = twoFactorRows({
+    ...facts,
+    delivery: delivery.data ?? undefined,
+    requiredForMember: twoFactorRequiredFor(user.memberType, delivery.data?.universal === true),
+  });
   return (
     <Panel title={TWO_FACTOR_SECTION_TITLE}>
       <p className="mb-3 text-sm text-muted">
-        A second step after your password keeps your council&apos;s records safe if your password is ever guessed. Passkeys work today; text and email codes
-        will follow once the council connects a provider.
+        A second step after your password keeps your council&apos;s records safe if your password is ever guessed. A passkey counts as the second step on
+        its own. Text and email codes work once the portal has a provider connected.
       </p>
       <ul className="flex flex-col divide-y divide-line rounded border border-line" aria-label="Second-step methods">
         {rows.map(({ method, status, detail }) => (
@@ -80,15 +91,30 @@ export function TwoFactorSection({ facts, passkeySetup }: { facts: TwoFactorFact
 
 /** The council's side, on the Secure Access Vault: which second-step channels the portal can deliver. */
 export function TwoFactorDeliveryPanel({ emailGatewayConnected }: { emailGatewayConnected: boolean }) {
+  const server = useTwoFactorDelivery().data;
+  const universal = server?.universal === true;
+  const who = universal ? 'every member' : 'Admins and Super Admins';
   const delivery: Record<(typeof TWO_FACTOR_METHODS)[number]['id'], { status: TwoFactorStatus; detail: string }> = {
-    sms: { status: 'not-wired', detail: 'No SMS provider is connected to the portal yet.' },
-    email: emailGatewayConnected
-      ? { status: 'available', detail: "The council's mail account above can carry passcodes once sign-in asks for them." }
-      : { status: 'not-wired', detail: 'Connect the council mail account above first.' },
-    passkey: { status: 'ready', detail: 'Members set up a passkey on My Profile (Android, iOS and desktop browsers).' },
+    sms: server?.sms
+      ? { status: 'ready', detail: `Twilio is connected. Sign-in codes are texted to ${who}.` }
+      : { status: 'not-wired', detail: 'No Twilio account is connected to the portal server.' },
+    email: server?.email
+      ? { status: 'ready', detail: `SendGrid is connected. Codes are emailed to ${who} when no text can be sent.` }
+      : emailGatewayConnected
+        ? { status: 'available', detail: "Sign-in codes go through the platform's SendGrid account, not the council mail account above. SendGrid is not connected yet." }
+        : { status: 'not-wired', detail: 'No SendGrid account is connected to the portal server.' },
+    passkey: { status: 'ready', detail: 'Members set up a passkey on My Profile (Android, iOS and desktop browsers). A passkey sign-in needs no code.' },
   };
   return (
     <Panel title={`${TWO_FACTOR_SECTION_TITLE}: delivery channels`}>
+      <p className="mb-3 text-sm" id="two-factor-universal-switch">
+        <span className="font-bold">Sign-in codes for every member:</span>{' '}
+        {universal
+          ? server?.sms || server?.email
+            ? 'On. Every member, officer and admin types a code at each password sign-in.'
+            : 'On, but no provider is connected, so sign-in stays one step until Twilio or SendGrid is connected.'
+          : 'Off. Only Admins and Super Admins type a code. The platform operator turns it on with TWO_FACTOR_REQUIRED=1 on the portal server.'}
+      </p>
       <ul className="flex flex-col divide-y divide-line rounded border border-line" aria-label="Second-step delivery channels">
         {TWO_FACTOR_METHODS.map((m) => (
           <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 p-3">

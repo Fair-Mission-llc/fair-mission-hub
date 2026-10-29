@@ -1,4 +1,5 @@
 // Sprint 11 Revision 12.0: the second sign-in step for Admins and Super Admins (shared two-factor.ts).
+// Sprint 11 Revision 12.5: TWO_FACTOR_REQUIRED=1 asks every member (universalTwoFactorOn), with the lockout guard below.
 //
 // SERVER ONLY. After a correct password, issueTwoFactorChallenge makes a 6-digit code, sends it by Twilio SMS or by
 // SendGrid email from the platform operations sender, and returns a challenge: the session it will open, the channel,
@@ -22,8 +23,10 @@ import {
   TWO_FACTOR_CODE_TTL_SECONDS,
   TWO_FACTOR_MAX_ATTEMPTS,
   twoFactorEmail,
+  TWO_FACTOR_NO_CONTACT_MESSAGE,
   twoFactorRequiredFor,
   twoFactorSmsText,
+  universalTwoFactorOn,
   type SessionUser,
   type TwoFactorChannel,
   type TwoFactorDelivery,
@@ -46,6 +49,16 @@ export function twilioCredentials(env: Env = process.env): { accountSid: string;
 
 /** What this server can send codes with. */
 export const twoFactorDelivery = (env: Env = process.env): TwoFactorDelivery => ({ sms: twilioCredentials(env) !== null, email: liveSendGridKey(env) !== null });
+
+/** Sprint 11 Revision 12.5: thrown when the universal switch is on, the server can send codes, but this member has no usable phone or email. */
+export class TwoFactorContactMissingError extends Error {
+  constructor() {
+    super(TWO_FACTOR_NO_CONTACT_MESSAGE);
+    this.name = 'TwoFactorContactMissingError';
+  }
+}
+
+let warnedNoDelivery = false;
 
 interface ChallengeBody {
   v: 1;
@@ -103,17 +116,32 @@ export interface TwoFactorPrompt {
 
 /**
  * The challenge for a member who just passed the password check, or null when the member needs no second step (not an
- * Admin or Super Admin, no delivery configured, or no usable phone or email on file).
+ * Admin or Super Admin while the universal switch is off, no delivery configured, or - switch off - no usable phone or
+ * email on file). Throws TwoFactorContactMissingError when the switch is on, the server can send, and the member has no
+ * usable phone or email.
  */
 export async function issueTwoFactorChallenge(
   found: { user: SessionUser; active: boolean },
   contact: { phone?: string | null; email?: string | null },
   options: { requested?: unknown; now?: Date; env?: Env; send?: CodeSender } = {},
 ): Promise<TwoFactorPrompt | null> {
-  if (!twoFactorRequiredFor(found.user.memberType)) return null;
   const env = options.env ?? process.env;
-  const channel = chooseTwoFactorChannel(twoFactorDelivery(env), contact, options.requested);
-  if (!channel) return null;
+  const universal = universalTwoFactorOn(env);
+  if (!twoFactorRequiredFor(found.user.memberType, universal)) return null;
+  const delivery = twoFactorDelivery(env);
+  if (!delivery.sms && !delivery.email) {
+    // Lockout guard: a switch with no provider behind it must never lock the whole platform out.
+    if (universal && !warnedNoDelivery) {
+      warnedNoDelivery = true;
+      console.warn('[two-factor] TWO_FACTOR_REQUIRED=1 is set, but no Twilio or live SendGrid keys are configured, so sign-in stays one step.');
+    }
+    return null;
+  }
+  const channel = chooseTwoFactorChannel(delivery, contact, options.requested);
+  if (!channel) {
+    if (universal) throw new TwoFactorContactMissingError();
+    return null;
+  }
   const code = generateTwoFactorCode();
   const nonce = Buffer.from(globalThis.crypto.getRandomValues(new Uint8Array(16))).toString('base64url');
   const to = channel === 'sms' ? normalizeSmsNumber(contact.phone)! : contact.email!.trim();

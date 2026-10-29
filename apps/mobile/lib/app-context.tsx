@@ -23,6 +23,7 @@ import { configureAlertDisplay, registerForPushAlerts, unregisterPushAlerts } fr
 import { db } from '@/services/db';
 import { getConfiguredCouncilNumber, OnboardingController, type OnboardingState, type SubmitPasswordOptions } from '@/services/onboarding';
 import { biometricLogin } from '@/services/biometric-login';
+import { hubTwoFactorVerifier } from '@/services/hub-two-factor';
 import { sessionStore } from '@/services/session';
 
 interface AppContextValue {
@@ -56,6 +57,9 @@ interface AppContextValue {
   /** Sprint 8P Stage 2: the phone can scan a face or finger, so the password prompt offers the biometric toggle. */
   biometricAvailable: boolean;
   submitBiometric(): Promise<void>;
+  /** Sprint 11 Revision 12.5: the sign-in code step (hub mode). */
+  submitTwoFactorCode(code: string): Promise<void>;
+  cancelTwoFactor(): void;
   /** Sprint 6B Security: the self-service password reset (OnboardingController). */
   startPasswordReset(): void;
   submitResetEmail(email: string): Promise<void>;
@@ -69,7 +73,14 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const controller = useMemo(
-    () => new OnboardingController({ db, sessions: sessionStore, councilNumber: getConfiguredCouncilNumber(), biometric: biometricLogin }),
+    () =>
+      new OnboardingController({
+        db,
+        sessions: sessionStore,
+        councilNumber: getConfiguredCouncilNumber(),
+        biometric: biometricLogin,
+        verifyTwoFactor: hubTwoFactorVerifier,
+      }),
     [],
   );
   const [onboarding, setOnboarding] = useState<OnboardingState>(controller.state);
@@ -168,6 +179,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setOnboarding(await controller.submitPassword(password, confirmation, setupCode, options)),
     [controller],
   );
+  const submitTwoFactorCode = useCallback(async (code: string) => setOnboarding(await controller.submitTwoFactorCode(code)), [controller]);
+  const cancelTwoFactor = useCallback(() => setOnboarding(controller.cancelTwoFactor()), [controller]);
   const startPasswordReset = useCallback(() => setOnboarding(controller.startPasswordReset()), [controller]);
   const submitResetEmail = useCallback(async (email: string) => setOnboarding(await controller.submitResetEmail(email)), [controller]);
   const submitResetCode = useCallback(async (code: string) => setOnboarding(await controller.submitResetCode(code)), [controller]);
@@ -212,6 +225,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       biometricEmail,
       biometricAvailable,
       submitBiometric,
+      submitTwoFactorCode,
+      cancelTwoFactor,
       startPasswordReset,
       submitResetEmail,
       submitResetCode,
@@ -235,6 +250,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       biometricEmail,
       biometricAvailable,
       submitBiometric,
+      submitTwoFactorCode,
+      cancelTwoFactor,
       startPasswordReset,
       submitResetEmail,
       submitResetCode,

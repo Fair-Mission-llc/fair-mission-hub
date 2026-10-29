@@ -55,6 +55,9 @@ export type BusinessRuleCode =
   | 'NOT_SIGNED_UP'
   | 'PASSWORD_TOO_SHORT'
   | 'ALREADY_REGISTERED'
+  // Sprint 11 Revision 12.5: the hub's password sign-in needs the texted code first (details.twoFactor), or no code can reach the member.
+  | 'TWO_FACTOR_CODE_REQUIRED'
+  | 'TWO_FACTOR_UNAVAILABLE'
   | 'CREDENTIALS_MISSING'
   | 'INVALID_INPUT'
   | 'EVENT_NOT_FOUND'

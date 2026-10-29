@@ -428,8 +428,10 @@ function TwoFactorCodeCard() {
       <label className="flex flex-col gap-1">
         <span className="text-sm font-bold">Sign-in code</span>
         <Input
+          name="one-time-code"
           inputMode="numeric"
           autoComplete="one-time-code"
+          enterKeyHint="go"
           maxLength={7}
           value={code}
           onChange={(e) => setCode(e.target.value)}

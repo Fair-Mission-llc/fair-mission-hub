@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ALL_FEATURES_ON,
+  BusinessRuleError,
   councilFeatureFlags,
   councilTenantType,
   DEFAULT_TENANT_TYPE,
@@ -116,20 +117,33 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const router = useRouter();
-  const [twoFactor, setTwoFactor] = useState<{ prompt: TwoFactorPrompt; found: SessionUser } | null>(null);
+  const [twoFactor, setTwoFactor] = useState<{ prompt: TwoFactorPrompt; found: SessionUser | null } | null>(null);
   const signIn = useCallback(
     async (username: string, password: string) => {
-      const found = await db.auth.signIn(username.trim(), password);
+      let found: SessionUser | null;
+      try {
+        found = await db.auth.signIn(username.trim(), password);
+      } catch (err) {
+        // Sprint 11 Revision 12.5: in hub mode the hub itself asks for the code before it says who signed in.
+        const prompt = err instanceof BusinessRuleError && err.code === 'TWO_FACTOR_CODE_REQUIRED' ? (err.details.twoFactor as TwoFactorPrompt | undefined) : undefined;
+        if (prompt) {
+          setTwoFactor({ prompt, found: null });
+          return true;
+        }
+        throw err;
+      }
       // Sprint 6Z-Engine-Upgrade: the server checks the same credentials and sets its own session cookie, which its Drive
       // vault, Supreme and email routes require. A member it does not know (added in this tab) simply gets no cookie.
       if (found) {
         const server = await openServerSession(username.trim(), password);
-        // Sprint 11 Revision 12.0: an Admin or Super Admin may first have to type the code the server sent.
+        // Sprint 11 Revision 12.0: the member may first have to type the code the server sent (Admins and Super Admins,
+        // or everyone under TWO_FACTOR_REQUIRED=1 since Revision 12.5).
         if (server.twoFactor) {
           setTwoFactor({ prompt: server.twoFactor, found });
           return true;
         }
-        if (server.message && !server.opened && /code could not be sent/.test(server.message)) throw new Error(server.message);
+        // 502: the code could not be sent; 403: the switch is on and no phone or email on file can receive one.
+        if (server.message && !server.opened && (server.status === 502 || server.status === 403)) throw new Error(server.message);
       }
       setUser(found);
       // Sprint 8S Corrected: every sign-in lands on the informational Home tab (/dashboard#home), never on the page or the
@@ -142,9 +156,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const verifyTwoFactor = useCallback(
     async (code: string) => {
       if (!twoFactor) return 'Sign in again.';
-      const refused = await confirmTwoFactorCode(twoFactor.prompt.challenge, code);
-      if (refused) return refused;
-      setUser(twoFactor.found);
+      const verdict = await confirmTwoFactorCode(twoFactor.prompt.challenge, code);
+      if ('message' in verdict) return verdict.message;
+      setUser(twoFactor.found ?? verdict.user);
       setTwoFactor(null);
       router.replace(HOME_LANDING_ROUTE);
       return null;
