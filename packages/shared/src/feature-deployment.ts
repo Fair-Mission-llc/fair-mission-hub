@@ -88,9 +88,9 @@ export function councilFeatureDeployment(council: Partial<DeploymentCouncil>): F
       id: 'loaner-library',
       group: 'capability',
       label: 'Cross-Council Shared Asset Libraries',
-      description: "Lends the council's listed assets to its connected councils in the Cross-Council Loaner Library.",
+      description: "Lends the council's listed assets to its connected councils in the Shared Equipment Library.",
       deployed: on(council.is_loaner_library_enabled),
-      managedOn: onDrawer('feature-controls', 'Cross-Council Loaner Library Sharing'),
+      managedOn: onDrawer('feature-controls', 'Shared Equipment Library Sharing'),
     },
     {
       id: 'biometric',
@@ -140,4 +140,4 @@ export const featureDeploymentBadge = (row: Pick<FeatureDeploymentRow, 'deployed
  * The platform's database schema version, shown under System Information. It moves with the phone database's
  * SCHEMA_VERSION (apps/mobile/services/drivers/sqlite.ts) and the Schema.sql sprint headers.
  */
-export const PLATFORM_SCHEMA_VERSION = 107;
+export const PLATFORM_SCHEMA_VERSION = 108;

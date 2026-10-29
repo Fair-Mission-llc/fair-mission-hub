@@ -7,6 +7,8 @@
 // Sprint 6L Extension 4: the Local Category picker shows the category's fixed Supreme Mission Area as a read-only badge.
 // Sprint 6P: an All-Hands shift has no volunteer target at all (stored as 0) and shows an open-ended count, and the
 // Planning Hours panel logs preparation time before the event's first day (events.logPlanningTime).
+// Sprint 11 Revision 10.0: saving the event form opens the Form 1728 suggestion popup (Form1728SuggestionDialog) when the
+// event is new, its name changed or it has no confirmed line yet. The officer's pick is saved in Event.form_1728_line.
 import { useState } from 'react';
 import {
   canLogPlanningTime,
@@ -26,9 +28,10 @@ import {
   type Member,
   type NewEvent,
   type Shift,
+  supremeMissionAreaOf,
 } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { Form1728Badge, Form1728Preview } from '@/components/Form1728Parts';
+import { Form1728Badge, Form1728Preview, Form1728SuggestionDialog } from '@/components/Form1728Parts';
 import { LocalCategoryField } from '@/components/MissionCategoryParts';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { parseNumberField, toField } from '@/lib/format';
@@ -99,8 +102,14 @@ function EventForm({
   const lastDay = multiDay ? endDate : startDate;
 
   const toggleCouncil = (id: number) => setLinked((now) => (now.includes(id) ? now.filter((c) => c !== id) : [...now, id]));
+  // Sprint 11 Revision 10.0: the confirmed Form 1728 line, and whether the suggestion popup is open.
+  const storedLine = event?.form_1728_line ?? null;
+  const [askLine, setAskLine] = useState(false);
+  const missionArea = supremeMissionAreaOf(categories.find((c) => c.id === categoryId));
+  const lineContext = { missionArea };
+  const needsLine = !event || !storedLine || name.trim() !== event.EventName;
 
-  const save = () =>
+  const save = (form1728Line: string | null) =>
     run(async () => {
       const plannedValue = parseNumberField(planned, 'Planned attendees');
       if (event) {
@@ -115,6 +124,7 @@ function EventForm({
           PlannedNumberAttendees: plannedValue,
           IsAnnual: annual ? 1 : 0,
           IsMultiDay: multiDay ? 1 : 0,
+          form_1728_line: form1728Line,
         };
         await db.events.update(event.id, changes);
         await db.events.setCouncils(event.id, linked);
@@ -130,6 +140,7 @@ function EventForm({
           OwnerID: ownerId,
           IsAnnual: annual ? 1 : 0,
           IsMultiDay: multiDay ? 1 : 0,
+          form_1728_line: form1728Line,
         };
         if (plannedValue !== null) created.PlannedNumberAttendees = plannedValue;
         onSaved((await db.events.create(created, linked)).id);
@@ -142,7 +153,8 @@ function EventForm({
         className="grid grid-cols-2 gap-4"
         onSubmit={(e) => {
           e.preventDefault();
-          void save();
+          if (needsLine) setAskLine(true);
+          else void save(storedLine);
         }}
       >
         <div className="col-span-2">
@@ -154,9 +166,27 @@ function EventForm({
         <Field label="Description" className="col-span-2">
           {(id) => <Textarea id={id} value={description} maxLength={255} onChange={(e) => setDescription(e.target.value)} />}
         </Field>
-        <div className="col-span-2">
-          <Form1728Preview title={name} description={description} />
+        <div className="col-span-2 flex flex-wrap items-end gap-3">
+          <Form1728Preview title={name} description={description} stored={needsLine ? null : storedLine} context={lineContext} />
+          {event && !needsLine ? (
+            <Button type="button" size="sm" variant="secondary" onClick={() => setAskLine(true)}>
+              Change Form 1728 line
+            </Button>
+          ) : null}
         </div>
+        {askLine ? (
+          <Form1728SuggestionDialog
+            title={name}
+            description={description}
+            context={lineContext}
+            initial={needsLine ? null : storedLine}
+            onCancel={() => setAskLine(false)}
+            onConfirm={(code) => {
+              setAskLine(false);
+              void save(code);
+            }}
+          />
+        ) : null}
         <Field label={multiDay ? 'Starts' : 'Date'}>
           {(id) => <Input id={id} type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />}
         </Field>
@@ -608,7 +638,7 @@ function Planner() {
                 >
                   <span className="block text-sm font-bold">{e.EventName}</span>
                   <span className="mt-0.5 block">
-                    <Form1728Badge title={e.EventName} description={e.EventDescription} />
+                    <Form1728Badge title={e.EventName} description={e.EventDescription} stored={e.form_1728_line} />
                   </span>
                   <span className="block text-xs text-muted">
                     {e.StartDate === e.EndDate ? formatDate(e.StartDate) : `${formatDate(e.StartDate)} – ${formatDate(e.EndDate)}`} · {e.Location}

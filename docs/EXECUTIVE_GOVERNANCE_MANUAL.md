@@ -2,7 +2,7 @@
 
 **Audience:** the Grand Knight (GK) and the Deputy Grand Knight (DGK). Recorders, Historians, Trustees and other seated officers use the chapters on their own desks.
 
-**Covers:** the navigation map, meetings and elections, events, the final release of payments, charity vetting and endorsement, performance and the executive dashboard, flagged hours, the roadmap, the Active Desks, goals, the loaner library, affiliations, the Operations Knowledge Archive and the global search bar.
+**Covers:** the navigation map, meetings and elections, events, the final release of payments, charity vetting and endorsement, performance and the executive dashboard, flagged hours, the roadmap, the Active Desks, goals, the loaner library, affiliations, the Operations Knowledge Vault and the global search bar.
 
 > **One portfolio for two seats.** The Deputy Grand Knight holds every grant of the Grand Knight. Each task in this manual that names the Grand Knight is also a task of the Deputy Grand Knight.
 > **Open this manual from your desk.** The Grand Knight Desk header has **📘 Executive Governance Manual (PDF)** and a **How do I…** search that answers from this manual only.
@@ -28,9 +28,9 @@
 - [12. Asset photos and remote help](#12-asset-photos-and-remote-help)
 - [13. Annual roadmap, meeting check-in and meeting photos](#13-annual-roadmap-meeting-check-in-and-meeting-photos)
 - [14. The Active Desks dashboard](#14-the-active-desks-dashboard)
-- [15. The Cross-Council Loaner Library and the colour-coded calendar](#15-the-cross-council-loaner-library-and-the-colour-coded-calendar)
+- [15. The Shared Equipment Library and the colour-coded calendar](#15-the-shared-equipment-library-and-the-colour-coded-calendar)
 - [16. Planning workflows and bilateral council affiliations](#16-planning-workflows-and-bilateral-council-affiliations)
-- [17. The Operations Knowledge Archive](#17-the-operations-knowledge-archive)
+- [17. The Operations Knowledge Vault](#17-the-operations-knowledge-vault)
 - [18. Revenue split profiles](#18-revenue-split-profiles)
 - [19. The global search bar](#19-the-global-search-bar)
 - [20. The Navigation Guide screen](#20-the-navigation-guide-screen)
@@ -151,7 +151,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Trustee Audit Desk** | Finances | Trustees, general ledger readers | The semiannual audit and its period locks | 4 |
+| **Financial Inspections** | Finances | Trustees, general ledger readers | The semiannual audit and its period locks | 4 |
 
 </details>
 
@@ -181,7 +181,7 @@ The categories group the links by the work you do. A link can sit in a different
 | --- | --- | --- | --- | --- |
 | **Post-event Ledger** | Performance | Every member | Event results that event owners record | 5.3 |
 | **Member Actions Hub** → **Hour ledger** tab | Faith In Action | Every member | Your logged service hours | 14.6 |
-| **Cross-Council Loaner Library** | Resources | Every member | The items the council and its connected councils lend | 15.1 |
+| **Shared Equipment Library** | Resources | Every member | The items the council and its connected councils lend | 15.1 |
 
 </details>
 
@@ -192,10 +192,10 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Council History** | Performance | Every member | Annals, the diary, oral histories and the In Memoriam roll | 5 |
-| **Operations Knowledge Archive** | System Settings | Officers, Admins | Every lesson the councils filed | 17.3 |
+| **Historical Chronology** | Performance | Every member | Annals, the diary, oral histories and the In Memoriam roll | 5 |
+| **Operations Knowledge Vault** | System Settings | Officers, Admins | Every lesson the councils filed | 17.3 |
 | **Lessons Registry** | Performance | Officers, Admins | Lessons from past events | 5.5 |
-| **Council Photo Gallery** (**Browse Gallery**, **Gallery Administration Hub**) | Top of the sidebar | Every member | Event and meeting photos, albums and photo uploads | 6.2 |
+| **Media & Memory Center** (**Browse Gallery**, **Gallery Administration Hub**) | Top of the sidebar | Every member | Event and meeting photos, albums and photo uploads | 6.2 |
 | **Council Artifacts** | Resources | Every member | Flyers, minutes and photo albums filed in Google Drive | 6.2 |
 | **Constitutional Bylaws** | Governance | Every member | The council's bylaws | 2.8 |
 | **SOP Center** | Answers | Every member | The standard operating procedures | 4.2 (Administrator User Guide) |
@@ -212,7 +212,7 @@ The categories group the links by the work you do. A link can sit in a different
 | --- | --- | --- | --- | --- |
 | **Standalone Activities** | Faith In Action | Admins, activity keepers | The council's standing activities | 3.4 |
 | **Faith Center** | Faith In Action | Every member | The feast day, the daily verse and the prayer intentions | 3 |
-| **Marketing Factory** | Resources | Officers, Admins | Event flyers | 6.3 |
+| **Recruitment Factory** | Resources | Officers, Admins | Event flyers | 6.3 |
 | **Constitutional Advisor** | Governance | Officers, Admins, Super Admins | Parliamentary answers with citations | 2 |
 
 </details>
@@ -259,18 +259,18 @@ The categories group the links by the work you do. A link can sit in a different
 | --- | --- |
 | **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Election Center, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
 | **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
-| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Trustee Audit Desk, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Center |
-| **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
-| **Resources** | Council Artifacts, Marketing Factory, Cross-Council Loaner Library |
+| **Finances** | General Ledger Spreadsheet, Balance Sheet, Financial Dashboard, Financial Inspections, Treasurer Ledger Audit Desk, My Expense Reports, Bulk Check Payments Made, FS Expense Audit, GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, Charity Payments Made Ledger, Donations History, Annual Budget Center |
+| **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Historical Chronology, Post-event Ledger, Lessons Registry |
+| **Resources** | Council Artifacts, Recruitment Factory, Shared Equipment Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
-| **System Settings** | Councils, Master Feature Deployment Grid, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Archive, Supreme Council Sync, Council Lookup Tables, Credentials Vault, 🛠️ Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |
+| **System Settings** | Councils, Master Feature Deployment Grid, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Vault, Supreme Council Sync, Council Lookup Tables, Credentials Vault, 🛠️ Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |
 
 The **System Settings** pillar had the name **Setup** in earlier versions of the portal.
 
 Two changes came with Sprint 10:
 
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page.
-- **Council Photo Gallery** sits above the pillars, under **Navigation Guide**. Its two links are **Browse Gallery** and **Gallery Administration Hub**.
+- **Media & Memory Center** sits above the pillars, under **Navigation Guide**. Its two links are **Browse Gallery** and **Gallery Administration Hub**.
 - The sidebar shows its links as plain text, with no icons. Admins and Super Admins see **Admin Desk** first under **System Settings**.
 
 The menu button (three lines) at the top of the sidebar hides the sidebar. Select the menu button again to show the sidebar. The portal remembers the choice on each computer.
@@ -285,7 +285,7 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | --- | --- | --- | --- |
 | **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, [ 📅 Upcoming Event Agenda ], Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 14.2 |
 | **Super Admin Desk** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
-| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, [ 📈 Council Goals & Targets ], Shared Loaner Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **[ 📖 Reference Workflows ]**: Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ] | 14.5 |
+| **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, [ 📈 Council Goals & Targets ], Shared Equipment Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **[ 📖 Reference Workflows ]**: Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ] | 14.5 |
 | **Financial Secretary Desk** | The FS, Admins, Super Admins | Auditing & Return Queue, Expense Report (ER) Routing Track, Charitable Donation Records, FS/GK Compliance Endorsements, Charity Check Issuance Console, Excel Roster Imports; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
 | **Treasurer Desk** | The Treasurer, Admins, Super Admins | Ledger Line Coder, Expense Report (ER) Settlement, Charitable Contribution Matches, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **[ 🔧 Accounting Configuration ]**: Chart of Accounts & GL Setup; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.8 |
@@ -611,7 +611,13 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 4. Optional: enter **Budget ($)** and **Planned attendees**.
 5. Tick each council in **Councils sharing this event**.
 6. Tick **Is Annual** for an event that repeats each year (see section 2.10 of the Treasurer Manual).
-7. Save.
+7. Select **Create event**. The **Confirm the Form 1728 line** window opens.
+8. Read the **Best guess**. The system reads it from the event name and the category.
+9. Do one of these:
+   - To keep the best guess, select **Confirm line and save**.
+   - To use a different line, choose it under **Suggested lines**, or type a word in **Or choose any line** and choose it from the list. Then select **Confirm line and save**.
+
+> **Note:** the window opens again when you change the event name. To change only the line, select **Change Form 1728 line** under the event name.
 
 <!-- KEEP_IMAGE: event planner capture -->
 ![Event Planner split screen (/events)](../generated/dashboard_visual_catalog/events.png)
@@ -628,6 +634,8 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 | --- | --- | --- |
 | The date is refused. | **Ends** is before **Starts**. | Correct the dates. |
 | The save is refused. | No council is ticked. | Tick at least one council. |
+| The best guess is *Community line N - Miscellaneous Community Activities*. | The event name does not name a Form 1728 program. | Choose the correct line in the list. The Form 1728 report uses the line that you confirm. |
+| You select **Cancel** in the Form 1728 window. | The event is not saved. | Select **Create event** again and confirm a line. |
 
 ### 3.2 Add shifts to an event
 > **Prerequisite (who can do this):** You must have council Admin privileges for the council, or Super Admin privileges.
@@ -994,12 +1002,12 @@ A budget gauge turns gold at 85% of the cap. The gauge turns red past 100%.
 | A council artifact card is missing. | The meeting or the event has no Drive link. | Add the link on the meeting or the event. |
 
 ### 6.3 Ask the Microsoft Co-Pilot for collateral
-> **Prerequisite (who can do this):** You must be a seated officer, a council Admin or a Super Admin. Other members do not see the **Marketing Factory**.
+> **Prerequisite (who can do this):** You must be a seated officer, a council Admin or a Super Admin. Other members do not see the **Recruitment Factory**.
 > **Warning:** the Microsoft Co-Pilot is an AI service from Microsoft (Copilot Studio). The portal sends your request and the facts of the chosen event to Microsoft.
 
 **Goal:** Get a draft of a notice, a post or other collateral for a council event.
 
-**Start point:** Sidebar → Resources → **Marketing Factory**.
+**Start point:** Sidebar → Resources → **Recruitment Factory**.
 
 **Steps:**
 1. Choose the **Event**.
@@ -1661,7 +1669,7 @@ A drawer shows only to a reader who may open the module. A reader who may not op
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. Officers only. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils and answer their invites (section 16). |
-| **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **📊 Budget Allocation & YOY Variance Analyzer**. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. Only the FS, the Treasurer and Super Admins can run the match. |
@@ -1714,11 +1722,11 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2). |
 | **Grand Knight Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 4.3.1). |
 | **Grand Knight Desk** | **[ 📈 Council Goals & Targets ]** | Read the Star Council objectives of this fraternal year: Membership Intake, Charitable Dollars (funds raised) and Volunteer Hours, each against its target. |
-| **Grand Knight Desk** | **Shared Loaner Library** | List, lend and check in council assets (section 15.3). |
+| **Grand Knight Desk** | **Shared Equipment Library** | List, lend and check in council assets (section 15.3). |
 | **Grand Knight Desk** | **Affiliation Invites** | Accept or decline invites from nearby councils. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils (section 16). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. For example, *How much notice does a motion need?* returns the Section 122(b) rule: 10 days' previous notice and a two-thirds vote. |
-| **Grand Knight Desk** | **Operations Knowledge Archive** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 17). |
+| **Grand Knight Desk** | **Operations Knowledge Vault** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 17). |
 | **Grand Knight Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
 | **Grand Knight Desk** (reference) | **Planning & Budgeting Workflow** | Read the planning steps, the goals and the budget status. Read only. Set and review the goals on **Council Wide Settings** (section 16). |
 | **Grand Knight Desk** (reference) | **[ 🗳️ Council Election Workflow ]** | Read the four election steps, the progress wheels and the nominees. Read only. Nominate in the **Council Election Center** (section 14.3.3). |
@@ -1727,9 +1735,9 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 4.3.1). |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
-| **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Upload the Supreme roster CSV. |
-| **Financial Secretary Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 17). |
+| **Financial Secretary Desk** | **Operations Knowledge Vault** | Search the signed operating notes of every council (section 17). |
 | **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **Auditing & Return Queue** (section 14.3.3). |
 | **Financial Secretary Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
 | **Treasurer Desk** | **Ledger Line Coder** | Pick the ledger account. Read the green **Inferred Budget** line. Select **🏷️ Categorize & Lock Expense**. Log concluded revenue. |
@@ -2171,10 +2179,10 @@ The goals card and the **Year-over-Year Trends** card show money. Only the counc
 
 ---
 
-## 15. The Cross-Council Loaner Library and the colour-coded calendar
+## 15. The Shared Equipment Library and the colour-coded calendar
 
-### 15.1 Concept: the Cross-Council Loaner Library
-The **Cross-Council Loaner Library** lets councils lend equipment to each other. Tents, sound systems and fryers are examples. Each item is an asset in the council's asset inventory.
+### 15.1 Concept: the Shared Equipment Library
+The **Shared Equipment Library** lets councils lend equipment to each other. Tents, sound systems and fryers are examples. Each item is an asset in the council's asset inventory.
 
 | Status | Meaning |
 | --- | --- |
@@ -2192,7 +2200,7 @@ Only the council's GK, the council's DGK and Super Admins lend the council's ite
 
 **Goal:** Find an item that a brother council lends.
 
-**Start point:** Sidebar → Resources → **Cross-Council Loaner Library**. The address is `/inventory/loaner-library`.
+**Start point:** Sidebar → Resources → **Shared Equipment Library**. The address is `/inventory/loaner-library`.
 
 **Steps:**
 1. Read the **Shared inventory directory**. Available items show first.
@@ -2213,7 +2221,7 @@ Only the council's GK, the council's DGK and Super Admins lend the council's ite
 
 **Goal:** Put an item in the library, check the item out to a borrower and log its return.
 
-**Start point:** Active Desks → **Grand Knight Desk** → **Cross-Council Loaner Library**. The same controls are on Sidebar → Resources → **Cross-Council Loaner Library**, under the directory.
+**Start point:** Active Desks → **Grand Knight Desk** → **Shared Equipment Library**. The same controls are on Sidebar → Resources → **Shared Equipment Library**, under the directory.
 
 **Steps:**
 1. Find the item in **Loaner library: our items**.
@@ -2417,14 +2425,14 @@ A Super Admin enters the district number on the **Councils** page.
 | The **Accept** button does not show. | You are an Admin, not the GK or the DGK. | Ask the GK to accept the invite. |
 
 ### 16.8 Concept: loaner library sharing
-Each council has a **Cross-Council Loaner Library Sharing** switch on **Council Wide Settings**. The switch is off for a new council.
+Each council has a **Shared Equipment Library Sharing** switch on **Council Wide Settings**. The switch is off for a new council.
 
 Your members always see your own council's items. A brother council's item shows in your library only when all three rules are true:
 
 | Rule | Where to set it |
 | --- | --- |
 | The two councils are **Affiliated**. | **Connected Councils** |
-| Your council has sharing on. | **Council Wide Settings** → **Feature Controls** → **Cross-Council Loaner Library Sharing** |
+| Your council has sharing on. | **Council Wide Settings** → **Feature Controls** → **Shared Equipment Library Sharing** |
 | The brother council has sharing on. | The brother council's **Council Wide Settings** |
 
 ### 16.9 Switch loaner library sharing on
@@ -2432,7 +2440,7 @@ Your members always see your own council's items. A brother council's item shows
 
 **Goal:** Share your council's items with affiliated councils, and see their items.
 
-**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Feature Controls** → **Cross-Council Loaner Library Sharing**.
+**Start point:** Sidebar → System Settings → **Council Wide Settings** → **Feature Controls** → **Shared Equipment Library Sharing**.
 
 **Steps:**
 1. Select the switch. The switch shows **Sharing is on**.
@@ -2446,10 +2454,10 @@ Your members always see your own council's items. A brother council's item shows
 
 ---
 
-## 17. The Operations Knowledge Archive
+## 17. The Operations Knowledge Vault
 
-### 17.1 Concept: the Operations Knowledge Archive
-Officers change every year. The **Operations Knowledge Archive** keeps what each leader learned, so the next chairman does not start over.
+### 17.1 Concept: the Operations Knowledge Vault
+Officers change every year. The **Operations Knowledge Vault** keeps what each leader learned, so the next chairman does not start over.
 
 Each entry is one note under one governance tag:
 
@@ -2503,7 +2511,7 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 
 **Goal:** Save a signed note for the leaders who come after you.
 
-**Start point:** Active Desks → **Grand Knight Desk** → **Operations Knowledge Archive** drawer → **🗝️ Operations Knowledge Archive · New Entry**.
+**Start point:** Active Desks → **Grand Knight Desk** → **Operations Knowledge Vault** drawer → **🗝️ Operations Knowledge Vault · New Entry**.
 
 **Steps:**
 1. Select a tag in **Governance tag**.
@@ -2524,12 +2532,12 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 | The **New Entry** form does not show in the drawer. | You are not the GK, the DGK or an Admin. | Ask the GK to write the entry. |
 | The note is cut off. | An entry holds at most 8,000 characters. | Split the note into two entries. |
 
-### 17.3 Search the Operations Knowledge Archive
+### 17.3 Search the Operations Knowledge Vault
 > **Who can do this:** the officers and Admins of every council, and Super Admins. Other members do not see this page.
 
 **Goal:** Find the notes past leaders of your council, or of brother councils, saved about one subject or one year.
 
-**Start point:** Sidebar → System Settings → **Operations Knowledge Archive**. The address is `/system-settings/knowledge-archive`. The **Open the archive** link on the vault card opens the same page.
+**Start point:** Sidebar → System Settings → **Operations Knowledge Vault**. The address is `/system-settings/knowledge-archive`. The **Open the archive** link on the vault card opens the same page.
 
 **Steps:**
 1. Select **Filter by My Home Council Only** to see only your council's entries. Clear the box to see every council.
@@ -2546,7 +2554,7 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 | The grid says **No entry matches these filters.** | No entry has all the selected filters. | Select **Every tag** or **Every year**, or clear **Search**. |
 | Entries from other councils show. | The archive shows every council. | Select **Filter by My Home Council Only**. |
 | Your council's entries do not show. | The search words or filters exclude them. | Clear **Search**, and select **Every tag** and **Every year**. |
-| You cannot add an entry here. | This page is read-only. | Write entries in the **Operations Knowledge Archive** drawer of the **Grand Knight Desk** (section 17.2). |
+| You cannot add an entry here. | This page is read-only. | Write entries in the **Operations Knowledge Vault** drawer of the **Grand Knight Desk** (section 17.2). |
 
 ---
 
@@ -2792,9 +2800,9 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 12. Asset photos and remote help
 - 13. Annual roadmap, meeting check-in and meeting photos
 - 14. The Active Desks dashboard
-- 15. The Cross-Council Loaner Library and the colour-coded calendar
+- 15. The Shared Equipment Library and the colour-coded calendar
 - 16. Planning workflows and bilateral council affiliations
-- 17. The Operations Knowledge Archive
+- 17. The Operations Knowledge Vault
 - 18. Parish fundraiser split setup
 - 19. The global search bar
 - 20. The Navigation Guide screen
@@ -2808,7 +2816,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 5. The Three-Signature Expense Flow
 - 6. The Active Desks and the Financial Secretary Desk
 - 7. The budget review and vote
-- 8. The Operations Knowledge Archive
+- 8. The Operations Knowledge Vault
 - 9. Revenue split profiles
 - 10. Payment account ownership
 - 11. Budget categories and payment account names
@@ -2822,7 +2830,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 5. The Three-Signature Expense Flow
 - 6. The Active Desks and the Treasurer Desk
 - 7. The budget review and vote
-- 8. The Operations Knowledge Archive
+- 8. The Operations Knowledge Vault
 - 9. Parish fundraiser splits
 - 10. Batch coding and cash box audits
 - 11. Account ownership and parish-held revenue

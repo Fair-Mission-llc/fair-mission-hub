@@ -5,7 +5,7 @@ import { BusinessRuleError, type DriveVaultKind, type SessionUser } from '@kofc/
 export const DRIVE_VAULT_ROUTE = '/api/drive-vault';
 /** Oral History Testimonials (Sprint 6K): open to every Active member, unlike DRIVE_VAULT_ROUTE. */
 export const DRIVE_VAULT_ORAL_HISTORY_ROUTE = '/api/drive-vault/oral-history';
-/** The Marketing Factory's past-photo scan (Sprint 6C). */
+/** The Recruitment Factory's past-photo scan (Sprint 6C). */
 export const DRIVE_VAULT_MEDIA_ROUTE = '/api/drive-vault/media';
 /** The Historian Desk's meeting photos (Sprint 8B): open to the Council Historian as well as Admins. */
 export const DRIVE_VAULT_MEETING_PHOTOS_ROUTE = '/api/drive-vault/meeting-photos';
@@ -13,7 +13,7 @@ export const DRIVE_VAULT_MEETING_PHOTOS_ROUTE = '/api/drive-vault/meeting-photos
 /**
  * The Drive file id for `file`, or null when the vault is not in use (not an Admin, or the server has the vault
  * switched off), so the caller keeps its pre-vault blob link. A file the server refuses throws INVALID_INPUT.
- * Sprint 6C: media may name its event (`folder`), filing it under Media / <event name> for the Marketing Factory.
+ * Sprint 6C: media may name its event (`folder`), filing it under Media / <event name> for the Recruitment Factory.
  */
 export async function archiveToDriveVault(user: SessionUser, kind: DriveVaultKind, file: File, folder?: string): Promise<string | null> {
   if (user.memberType !== 'Admin' && user.memberType !== 'Super Admin') return null;

@@ -249,7 +249,9 @@ describe('server-held secrets', () => {
         else if (/\.tsx?$/.test(name)) {
           const rel = relative(webRoot, path).replace(/\\/g, '/');
           // Sprint 11 Revision 2.0: instrumentation.ts runs only on the server (the nightly manual rebuild).
-          const serverSide = rel.startsWith('app/api/') || rel.startsWith('services/server/') || rel === 'instrumentation.ts';
+          // Sprint 11 Revision 10.0: next.config.ts runs only at build time (KOFC_DESKTOP_BUILD) and is never bundled.
+          const serverSide =
+            rel.startsWith('app/api/') || rel.startsWith('services/server/') || rel === 'instrumentation.ts' || rel === 'next.config.ts';
           const text = readFileSync(path, 'utf8');
           if (!serverSide && /from ['"][^'"]*services\/server\/|from ['"]\.\/server\//.test(text)) offenders.push(rel);
           if (!serverSide && /process\.env\.(?!NEXT_PUBLIC_|NODE_ENV)/.test(text) && rel !== 'services/google-drive.ts') offenders.push(`${rel} (process.env)`);

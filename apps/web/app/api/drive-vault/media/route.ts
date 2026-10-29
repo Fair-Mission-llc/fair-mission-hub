@@ -1,4 +1,4 @@
-// GET /api/drive-vault/media?folder=<past event name> - the Marketing Factory's historical photo scan (Sprint 6C).
+// GET /api/drive-vault/media?folder=<past event name> - the Recruitment Factory's historical photo scan (Sprint 6C).
 // Answers { available: true, fileIds } with up to FLYER_MAX_PHOTOS image ids filed under
 // Fraternal Enterprise Suite / Media / <past event name> in the council's shared drive (an empty list when the folder
 // does not exist; nothing is created). The page shows them through Drive's thumbnail service, so the viewer's own

@@ -30,3 +30,6 @@ packages/backend/data/*
 
 # Sprint 9 Master Hardening Pass: the CycloneDX SBOM npm run build:pilot (or npm run sbom) writes; stamped per build.
 /sbom.json
+
+# Sprint 11 Revision 10.0: the desktop executable npm run build:exe writes.
+/dist-desktop/

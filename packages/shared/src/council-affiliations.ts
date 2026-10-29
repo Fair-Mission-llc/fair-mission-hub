@@ -15,7 +15,7 @@
 // council when the home council has none, follow in district order: same district first, then by district number
 // (Council.district_number, kept on the Councils page), then by council number.
 //
-// An ACTIVE affiliation unlocks asset sharing: the Cross-Council Loaner Library shows a brother council's listed items
+// An ACTIVE affiliation unlocks asset sharing: the Shared Equipment Library shows a brother council's listed items
 // only to an ACTIVE affiliate, and only while both councils have is_loaner_library_enabled on (loaner-library.ts).
 // =========================================================================
 import type { SessionUser } from './contract';

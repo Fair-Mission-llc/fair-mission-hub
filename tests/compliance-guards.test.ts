@@ -1,4 +1,4 @@
-// Sprint 8J (schema version 80): the cross-council Operations Knowledge Archive with originating council stamps and the
+// Sprint 8J (schema version 80): the cross-council Operations Knowledge Vault with originating council stamps and the
 // home-council toggle, the vault's content guard, and the two-stage KofC Charter compliance gate.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

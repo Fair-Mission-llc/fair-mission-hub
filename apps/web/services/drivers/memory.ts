@@ -5579,6 +5579,7 @@ export class MemoryDataService implements DataService {
     const councilEvents = s.rows('Event').filter((e) => linked.has(e.id));
     const eventCategory = new Map(councilEvents.map((e) => [e.id, categoryName(e.CategoryID)]));
     const eventTitle = new Map(councilEvents.map((e) => [e.id, e.EventName as string]));
+    const eventLine = new Map(councilEvents.map((e) => [e.id, (e.form_1728_line as string | null | undefined) ?? null]));
     const shiftEvent = new Map(
       s
         .rows('Shift')
@@ -5606,7 +5607,13 @@ export class MemoryDataService implements DataService {
         .filter((t) => shiftEvent.has(t.ShiftID))
         .map((t) => {
           const eventId = shiftEvent.get(t.ShiftID)!;
-          return { MemberID: t.MemberID as number, Hours: t.Hours as number, category: eventCategory.get(eventId)!, title: eventTitle.get(eventId)! };
+          return {
+            MemberID: t.MemberID as number,
+            Hours: t.Hours as number,
+            category: eventCategory.get(eventId)!,
+            title: eventTitle.get(eventId)!,
+            line: eventLine.get(eventId) ?? null,
+          };
         }),
       activityTime: s
         .rows('ActivityTime')
@@ -7528,7 +7535,7 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       return s.transaction(() => {
         const actor = this.memberWriteActor(s, actorId);
-        assertMayWriteOperationsKnowledge(actor, councilId, `write in the Operations Knowledge Archive of council ${councilId}`);
+        assertMayWriteOperationsKnowledge(actor, councilId, `write in the Operations Knowledge Vault of council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
         const member = this.requireMember(s, actorId);
         const council = s.rows('Council').find((c) => c.id === councilId) as unknown as Council;

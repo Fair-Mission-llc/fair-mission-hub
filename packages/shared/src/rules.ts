@@ -748,18 +748,24 @@ export const holdsGrandKnightAuthority = (roles: readonly string[] | undefined):
 const isCouncilExecutive = (actor: MemberWriteActor, councilId: number): boolean =>
   actor.active && holdsExecutiveRole(actor.roles) && actor.councilId === councilId;
 
+/** Sprint 11 Revision 10.0: the member types only a Super Admin may grant or take away. */
+export const SUPER_ADMIN_GRANTED_TYPES: readonly string[] = [SUPER_ADMIN_TYPE, 'Admin'];
+
 /**
- * Only an Active Super Admin may create a Super Admin or promote a member to Super Admin. `grantedType` is
- * the MemberType.Type being written; `currentType` is the target's type before an update (omit on create),
- * so saving a Super Admin's other fields is not a promotion.
+ * Only an Active Super Admin may create a Super Admin or promote a member to Super Admin. Sprint 11 Revision 10.0: the
+ * same now holds for the Admin type - only a Super Admin creates a council Admin, promotes a member to Admin or moves
+ * an Admin back to Member, so a council Admin can no longer designate another. `grantedType` is the MemberType.Type
+ * being written; `currentType` is the target's type before an update (omit on create), so saving a member's other
+ * fields without changing the type is not a grant.
  */
 export function assertMayGrantMemberType(actor: MemberWriteActor, grantedType: string | undefined, currentType?: string): void {
-  if (grantedType !== SUPER_ADMIN_TYPE || currentType === SUPER_ADMIN_TYPE) return;
-  if (hasSuperAdminRights(actor)) return;
+  if (grantedType === currentType) return;
+  const touchesAdminTier = SUPER_ADMIN_GRANTED_TYPES.includes(grantedType ?? '') || SUPER_ADMIN_GRANTED_TYPES.includes(currentType ?? '');
+  if (!touchesAdminTier || hasSuperAdminRights(actor)) return;
   throw new SecurityPrivilegeError(
     'SUPER_ADMIN_REQUIRED',
-    `Only an active Super Admin can grant the Super Admin member type; member ${actor.memberId} is ${describeActor(actor)}.`,
-    { actorId: actor.memberId, actorType: actor.memberType ?? null, grantedType },
+    `Only an active Super Admin can ${SUPER_ADMIN_GRANTED_TYPES.includes(grantedType ?? '') ? `grant the ${grantedType} member type` : `change a ${currentType}'s member type`}; member ${actor.memberId} is ${describeActor(actor)}.`,
+    { actorId: actor.memberId, actorType: actor.memberType ?? null, grantedType, currentType: currentType ?? null },
   );
 }
 

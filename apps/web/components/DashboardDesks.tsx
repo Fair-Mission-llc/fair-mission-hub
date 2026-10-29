@@ -27,18 +27,18 @@
 // high-contrast Top 5 Fraternal Volunteers card - the council's Active members with the most hours logged this month
 // (reports.councilEngagement monthlyLeaderboard). The desk status badges move to the top of the Oversight Desk.
 //
-// Sprint 8F: the Grand Knight Desk (shared by the Deputy Grand Knight) gains the Cross-Council Loaner Library's lending
+// Sprint 8F: the Grand Knight Desk (shared by the Deputy Grand Knight) gains the Shared Equipment Library's lending
 // desk (LoanerLibraryManager): list an asset, pause it, check it out and log its return in one click.
 //
 // Sprints 8G/8H: the Grand Knight Desk also answers the council's incoming affiliation invites
 // (IncomingAffiliationInvites): Accept makes the pair ACTIVE and unlocks loaner library sharing between the councils.
 //
-// Sprint 8I: the Oversight Desk carries the high-contrast Operations Knowledge Archive card for the council's Admins,
+// Sprint 8I: the Oversight Desk carries the high-contrast Operations Knowledge Vault card for the council's Admins,
 // Grand Knight and Deputy Grand Knight (OperationsKnowledgeArchiveEntryForm, canWriteOperationsKnowledge): a governance tag, a
 // markdown note and an automatic signature stamp. The read-only archive is under System Settings.
 // Sprint 8L - Omnipresent Officer Desks: each desk opens with its module folders (DeskModuleShelf, DESK_MODULES): the
 // Grand Knight Desk carries the Charitable Grant Requests Vetting Board, the Constitutional Advisor Panels and Connected
-// Councils; the Financial Secretary Desk the Semiannual Audit Form 1295 Center and the Charity Check Issuance Console; the
+// Councils; the Financial Secretary Desk the Financial Inspections and the Charity Check Issuance Console; the
 // Treasurer Desk the Annual Budget vs Actuals Ledger Grid and the Bank Statement Match-Window; the Recorder Desk the
 // Council Resolutions and Motions Ledger; the Historian Desk the Google Drive Media Gallery Sync Board. Home gains the
 // '📿 Community Prayer Request List' card (Faith Center content, like the verse and the feast tracker).
@@ -59,7 +59,7 @@
 // featured Historical Meeting Minutes Archive; the Historian's by the Fraternal Diary Entry Logs reader. The Oversight
 // Desk is dissolved: the Flagged Hours Review, Shifts Awaiting Hours and the Inbound Council Mail Center are Grand Knight
 // Desk drawers that light while they hold work, the desk status badges are gone (each drawer carries its own count), and
-// the Operations Knowledge Archive drawer holds the entry form for its writers. The Member Desk puts its two shift
+// the Operations Knowledge Vault drawer holds the entry form for its writers. The Member Desk puts its two shift
 // trackers side by side at the top and keeps plain panels.
 import Link from 'next/link';
 import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
@@ -675,7 +675,7 @@ function CouncilGoalsDrawer({ user, councilId }: { user: SessionUser; councilId:
   );
 }
 
-/** The Shared Loaner Library drawer: the lending desk (LoanerLibraryManager) and the way to the brother councils' items. */
+/** The Shared Equipment Library drawer: the lending desk (LoanerLibraryManager) and the way to the brother councils' items. */
 function LoanerLibraryDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
   return (
     <>
@@ -705,7 +705,7 @@ function RosterImportsDrawer({ user, councilId }: { user: SessionUser; councilId
 }
 
 /**
- * The Operations Knowledge Archive drawer (Sprint 8P Stage 3): the entry form for its writers (the council's Admins,
+ * The Operations Knowledge Vault drawer (Sprint 8P Stage 3): the entry form for its writers (the council's Admins,
  * Grand Knight and Deputy Grand Knight, and Super Admins - canWriteOperationsKnowledge) over the read-only archive.
  */
 function KnowledgeArchiveDrawer({ user, councilId }: { user: SessionUser; councilId: number }) {
@@ -726,8 +726,8 @@ function FlaggedHoursDrawer({ user, councilId }: { user: SessionUser; councilId:
  * The Grand Knight Desk (shared by the Deputy Grand Knight). Sprint 8P Stage 2: a desk blotter of slide-out drawers
  * (desk-drawers.ts DESK_DRAWERS) - Approved Expenses (counter-sign and release in place, with the Alert Boundary Accent
  * while a sheet waits on the reader's signature), the Charitable Grant Requests Vetting Board, the Planning & Budgeting
- * Workflow, the Council Election Workflow (the Council Election Tracker until Sprint 8S Revision 2), the Shared Loaner Library, Affiliation Invites, Connected Councils, the
- * Constitutional Advisor Panels and the Operations Knowledge Archive. Sprint 8P Stage 3: the dissolved Oversight Desk's
+ * Workflow, the Council Election Workflow (the Council Election Tracker until Sprint 8S Revision 2), the Shared Equipment Library, Affiliation Invites, Connected Councils, the
+ * Constitutional Advisor Panels and the Operations Knowledge Vault. Sprint 8P Stage 3: the dissolved Oversight Desk's
  * audits join it - the Flagged Hours Review (lit while an entry is held), Shifts Awaiting Hours (lit while one is
  * overdue) and, for Super Admins, the Inbound Council Mail Center (lit while a request is pending). Sprint 10 Revision
  * 1.0 removed the Inbound Council Mail Center drawer: access requests are read on the Super Admin Desk only.
@@ -833,7 +833,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
  * The Financial Secretary Desk. Sprint 8P Stage 2: a desk blotter of slide-out drawers - Payment Requests (verify and
  * sign in place, with the Alert Boundary Accent while a sheet waits on the reader's signature), the Expense Report (ER)
  * Routing Track, Charitable Donation Records, the Charity Check Issuance Console, the
- * Semiannual Audit Form 1295 Center, Excel Roster Imports and the Operations Knowledge Archive. Sprint 8A moved the
+ * Financial Inspections, Excel Roster Imports and the Operations Knowledge Vault. Sprint 8A moved the
  * inactivity sweep to System Settings > Council Wide Settings. Sprint 8S Revision 2: the Expense Report (ER) Workflow
  * (lit like Payment Requests) and the Charitable Donation Workflow drawers (FinanceWorkflowParts.tsx) follow Payment Requests.
  */
@@ -1850,7 +1850,7 @@ function OralHistories({ user, councilId }: { user: SessionUser; councilId: numb
       <p className="text-xs text-muted">
         Recordings are filed in Google Drive under Oral Histories. Each member records one.{' '}
         <Link href="/history" className="font-bold underline">
-          Open Council History
+          Open Historical Chronology
         </Link>
       </p>
     </section>

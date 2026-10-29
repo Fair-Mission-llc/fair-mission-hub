@@ -91,7 +91,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'lessons-registry': { member: 'Searches the lessons learned that councils recorded after their events.' },
   gallery: {
-    member: 'Opens the Council Photo Gallery. Browse Gallery shows the photos by event or meeting, by year, or by album, with slideshows; the Gallery Administration Hub is where you upload photos and save albums.',
+    member: 'Opens the Media & Memory Center. Browse Gallery shows the photos by event or meeting, by year, or by album, with slideshows; the Gallery Administration Hub is where you upload photos and save albums.',
   },
   'resources/bulletins': { member: "Opens the council's Google Drive files and the reports the portal prepares." },
   'resources/marketing': { member: 'Turns an event into a printable flyer with photos from past events.' },
@@ -149,7 +149,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   },
   'system-settings/knowledge-archive': {
     member:
-      "Shows the signed operating notes your council's leaders saved in the Operations Knowledge Archive. Filter by tag and fraternal year, or type words to search. Read-only.",
+      "Shows the signed operating notes your council's leaders saved in the Operations Knowledge Vault. Filter by tag and fraternal year, or type words to search. Read-only.",
   },
   'supreme-sync': { member: 'Checks and files the Supreme Council reports (Forms 1728 and 1295). The roster sync is on the Financial Secretary Desk.' },
   'council-lookups': { member: "Keeps the council's own lists: activities, donation types, payment methods and agenda templates." },
@@ -194,6 +194,19 @@ export interface NavigationGuideEntry {
 export interface NavigationGuideGroup extends Pick<PortalNavGroup, 'id' | 'label'> {
   entries: NavigationGuideEntry[];
 }
+
+/**
+ * Sprint 11 Revision 10.0: the six screen names that read the same in the sidebar link, the page title, the officer
+ * desk drawers and the feature switch label, keyed by portal area.
+ */
+export const STANDARD_SCREEN_NAMES = {
+  gallery: 'Media & Memory Center',
+  'system-settings/knowledge-archive': 'Operations Knowledge Vault',
+  'resources/marketing': 'Recruitment Factory',
+  'inventory/loaner-library': 'Shared Equipment Library',
+  'finance/audit': 'Financial Inspections',
+  history: 'Historical Chronology',
+} as const satisfies Partial<Record<PortalNavItem, string>>;
 
 /** Sprint 10 Revision 1.0: the links pinned at the top of the sidebar, outside the seven pillars. */
 export const PINNED_SIDEBAR_ITEMS: readonly PortalNavItem[] = ['gallery'];

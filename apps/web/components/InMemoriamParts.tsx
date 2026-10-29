@@ -1,5 +1,5 @@
 'use client';
-// Sprint 6L Extension 5: the In Memoriam card deck on the Council History page. One black card with gold type per
+// Sprint 6L Extension 5: the In Memoriam card deck on the Historical Chronology page. One black card with gold type per
 // deceased brother on the roster (history.getInMemoriamRoll): a photo, the officer seats held, the compiled
 // summary of the council's accomplishments and totals in those leadership years, a biography and past councils. The
 // history keepers edit the photo, biography and past councils, and recompile the stored snapshot of the roll.

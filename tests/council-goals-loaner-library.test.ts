@@ -1,4 +1,4 @@
-// Sprint 8F (schema version 77): Annual Council Goals, the Cross-Council Loaner Library, the colour-coded calendar and
+// Sprint 8F (schema version 77): Annual Council Goals, the Shared Equipment Library, the colour-coded calendar and
 // the year-over-year trends.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -367,7 +367,7 @@ describe('the portal pages', () => {
   it('documents the sprint in the admin guide', () => {
     const guide = readOfficerManuals();
     expect(guide).toContain('Annual Council Goals Progress Center');
-    expect(guide).toContain('Cross-Council Loaner Library');
+    expect(guide).toContain('Shared Equipment Library');
     expect(guide).toContain('Year-over-Year Trends');
   });
 });

@@ -2593,7 +2593,7 @@ export interface DataService {
      */
     setCouncilWideSettings(actorId: number, councilId: number, settings: Partial<CouncilWideSettings>): Promise<Council>;
     /**
-     * Sprints 8G/8H: switches the council's Cross-Council Loaner Library sharing (Council.is_loaner_library_enabled) on or
+     * Sprints 8G/8H: switches the council's Shared Equipment Library sharing (Council.is_loaner_library_enabled) on or
      * off from Council Wide Settings. Its editors (assertMayEditCouncilWideSettings: ADMIN_REQUIRED,
      * COUNCIL_ACCESS_DENIED). RECORD_NOT_FOUND for an unknown council, INVALID_INPUT for a value that is not a boolean.
      */
@@ -3032,7 +3032,7 @@ export interface DataService {
      */
     setAssetPhoto(actorId: number, assetId: number, photoUrl: string | null): Promise<CouncilAssetsInventory>;
     /**
-     * Sprint 8F: the Cross-Council Loaner Library - the listed ACTIVE assets of every council (loaner-library.ts
+     * Sprint 8F: the Shared Equipment Library - the listed ACTIVE assets of every council (loaner-library.ts
      * buildLoanerLibrary), available first, with no cost, serial number, notes or storage place. Any Active member of any
      * council (NOT_ACTIVE_COUNCIL_MEMBER otherwise).
      */
@@ -3105,7 +3105,7 @@ export interface DataService {
      */
     uploadPhotos(actorId: number, eventId: number, photoPaths: readonly string[]): Promise<Event>;
     /**
-     * Sprint 6C: records the Drive file id of the event's flyer from the Marketing Factory in GoogleDriveFlyerFileID
+     * Sprint 6C: records the Drive file id of the event's flyer from the Recruitment Factory in GoogleDriveFlyerFileID
      * (`null` clears it) and resolves to the updated event. The same writers as uploadPhotos (ADMIN_REQUIRED,
      * COUNCIL_ACCESS_DENIED); MEMBER_NOT_FOUND for an unknown actor, EVENT_NOT_FOUND for an unknown event, INVALID_INPUT
      * for a value that is not a bare Drive file id (isDriveFileId). Nothing is written when it rejects.
@@ -4409,7 +4409,7 @@ export interface DataService {
      */
     listBulletinFeed(actorId: number, councilId: number): Promise<CouncilHistorianBulletin[]>;
     /**
-     * Sprint 8I, the Operations Knowledge Archive's archive (CouncilOperationsKnowledge), newest first. Read-only.
+     * Sprint 8I, the Operations Knowledge Vault's archive (CouncilOperationsKnowledge), newest first. Read-only.
      * Sprint 8J: every council's entries (the multi-tenant archive), each carrying origin_council_stamp, which is filled
      * from the Council table for a row saved without one. Any Active officer or Admin of any council, and any Active
      * Super Admin (assertMayReadOperationsKnowledge: ADMIN_REQUIRED). Callers narrow to one council by council_id.

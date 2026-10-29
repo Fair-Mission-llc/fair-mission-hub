@@ -29,7 +29,7 @@
 //
 // Sprints 8G/8H: the Fraternal Planning & Budgeting Workflow banner leads the page (FraternalPlanningWorkflow): Draft in
 // May, Review in June, the July 1 lock that freezes the year's Annual Council Goals as read-only information blocks, and
-// the council's final budget vote by July 10. The Cross-Council Loaner Library Sharing card switches
+// the council's final budget vote by July 10. The Shared Equipment Library Sharing card switches
 // Council.is_loaner_library_enabled; a brother council's item shows only when both affiliated councils have it on.
 //
 // Sprint 8M Core: the Parish Fundraiser Split card (ParishSplitSettingsCard) sets the split's switch, percentage and GL

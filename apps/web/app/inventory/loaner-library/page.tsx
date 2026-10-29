@@ -1,5 +1,5 @@
 'use client';
-// The Cross-Council Loaner Library (Sprint 8F, loaner-library.ts): the shared inventory directory every member reads -
+// The Shared Equipment Library (Sprint 8F, loaner-library.ts): the shared inventory directory every member reads -
 // the equipment each council lends to brother councils, who has each item and when it is due back. The council's Grand
 // Knight and Deputy Grand Knight (and any Super Admin, for the council they pick) also get the lending desk: list an
 // asset, pause it, check it out with a return date and log its return in one click. The same desk sits on the Grand
@@ -19,7 +19,7 @@ function LoanerLibrary() {
   const tick = useLoad(async () => Date.now(), []);
   return (
     <>
-      <PageTitle actions={lender ? <CouncilSelect scope={scope} /> : null}>Cross-Council Loaner Library</PageTitle>
+      <PageTitle actions={lender ? <CouncilSelect scope={scope} /> : null}>Shared Equipment Library</PageTitle>
       <div className="flex flex-col gap-4">
         <p className="text-sm">
           Councils lend tents, sound systems, fryers and other equipment to each other. Find an item below and call the owning council&apos;s Grand Knight to

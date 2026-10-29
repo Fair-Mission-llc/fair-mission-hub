@@ -2,7 +2,7 @@
 // JWT exchanged for an access token), finds or creates Fraternal Enterprise Suite / Minutes | Vouchers | Media in the
 // council's shared drive, and uploads a file there with Drive API v3, returning the new file id. Sprint 6C: media may go
 // to an event's own folder (Media / <event name>), finished flyers go to Flyers, and listImages reads the image ids in an
-// existing folder (the Marketing Factory's past-photo scan) without creating anything.
+// existing folder (the Recruitment Factory's past-photo scan) without creating anything.
 //
 // The credentials are read on the server from GOOGLE_DRIVE_CLIENT_EMAIL, GOOGLE_DRIVE_PRIVATE_KEY (the service
 // account's PEM key; literal \n sequences are accepted) and GOOGLE_DRIVE_SHARED_DRIVE_ID (the shared drive the service

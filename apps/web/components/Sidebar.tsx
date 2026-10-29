@@ -11,11 +11,11 @@
 // member-center link is labelled Council Dashboard, and a click on Executive Dashboard always resets the Active Desks
 // to the Home landing deck (EXECUTIVE_DASHBOARD_HOME_HREF), even on /dashboard itself.
 // Sprint 8D/8E: Executive Dashboard is a plain link again, to the Executive Summary's own page (EXECUTIVE_DASHBOARD_HREF).
-// Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it). The '📸 Council Photo Gallery' node is
+// Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it). The '📸 Media & Memory Center' node is
 // pinned under the Navigation Guide with its two views, Browse Albums and Gallery Management Center (GALLERY_VIEWS). The
 // sidebar collapses: the hamburger button at its top hides or shows the links, and this browser remembers the choice.
 // Sprint 11 Revision 2.0: a text-only rail. Every link label is drawn through plainNavLabel, which strips icon glyphs
-// ('📸 Council Photo Gallery' reads 'Council Photo Gallery'); external links lost their arrow and the collapsed legal
+// ('📸 Media & Memory Center' reads 'Media & Memory Center'); external links lost their arrow and the collapsed legal
 // button reads 'Legal'. The Admin Desk link heads the System Settings pillar for Admins and Super Admins.
 // Sprint 11 Revision 2.1: no hamburger. An open rail shows a left arrow (◀, SIDEBAR_HIDE_GLYPH) at its top right that
 // hides it; the hidden rail shrinks to a slim strip on the left edge whose right arrow (▶, SIDEBAR_SHOW_GLYPH) brings it back.
@@ -104,7 +104,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'finance/dashboard': { href: '/finance/dashboard', label: 'Financial Dashboard', hint: 'Liquidity tanks, balance scale, transfers, bank audits' },
   'finance/ledger': { href: '/finance/ledger', label: 'General Ledger Spreadsheet', hint: 'Chart of accounts with every posting' },
   'finance/balance-sheet': { href: '/finance/balance-sheet', label: 'Balance Sheet', hint: 'Assets against liabilities and equity' },
-  'finance/audit': { href: '/finance/audit', label: 'Trustee Audit Desk', hint: 'Semiannual Form 1295 audit: verify ledger lines, sign and lock' },
+  'finance/audit': { href: '/finance/audit', label: 'Financial Inspections', hint: 'Semiannual Form 1295 audit: verify ledger lines, sign and lock' },
   'finance/treasurer-desk': {
     href: '/finance/treasurer-desk',
     label: 'Treasurer Ledger Audit Desk',
@@ -229,7 +229,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'system-settings/knowledge-archive': {
     href: '/system-settings/knowledge-archive',
-    label: 'Operations Knowledge Archive',
+    label: 'Operations Knowledge Vault',
     hint: "Search past officers' signed operating notes by tag and year",
     restrictedTo: 'council officers, Admins and Super Admins',
   },
@@ -246,7 +246,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'resources/bulletins': { href: '/resources/bulletins', label: 'Council Artifacts', hint: 'Google Drive files and the compliance reports the portal compiles' },
   'resources/marketing': {
     href: '/resources/marketing',
-    label: 'Marketing Factory',
+    label: 'Recruitment Factory',
     hint: 'Turn an event into a printable flyer with past photos, and file it in Google Drive',
   },
   'member-center': {
@@ -254,9 +254,9 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     label: 'Council Dashboard',
     hint: "The council's volunteers, hours, devotions and Top 5 leaderboard, and your own impact card",
   },
-  'inventory/loaner-library': { href: '/inventory/loaner-library', label: 'Cross-Council Loaner Library', hint: 'Equipment councils lend to each other' },
+  'inventory/loaner-library': { href: '/inventory/loaner-library', label: 'Shared Equipment Library', hint: 'Equipment councils lend to each other' },
   'performance/charts': { href: '/performance/charts', label: 'Growth & Hours Charts', hint: 'Membership growth velocity and council hours by month' },
-  history: { href: '/history', label: 'Council History', hint: "Each year's officer core, collective accomplishments and oral histories" },
+  history: { href: '/history', label: 'Historical Chronology', hint: "Each year's officer core, collective accomplishments and oral histories" },
   profile: { href: '/profile', label: 'My Profile', hint: 'Photo, biography, contact details, skills' },
 };
 
@@ -370,14 +370,14 @@ function useCollapsed(): [boolean, () => void] {
 }
 
 /**
- * The top-level '📸 Council Photo Gallery' node (Sprint 10 Revision 1.0): the gallery link and its two views. On the
+ * The top-level '📸 Media & Memory Center' node (Sprint 10 Revision 1.0): the gallery link and its two views. On the
  * gallery page a view link changes only the anchor, which the page hears as a hashchange.
  */
 function GalleryNode({ pathname, hash, tenant }: { pathname: string; hash: string; tenant: TenantType }) {
   const onGallery = pathname === NAV.gallery.href;
   const open = galleryViewFromAnchor(hash);
   return (
-    <ul aria-label="Council Photo Gallery" className="flex flex-col border-t border-t-gold pb-2 pt-1">
+    <ul aria-label="Media & Memory Center" className="flex flex-col border-t border-t-gold pb-2 pt-1">
       <NavLink item="gallery" current={onGallery && hash === ''} tenant={tenant} />
       {GALLERY_VIEWS.map((v) => {
         const current = onGallery && hash !== '' && open === v.id;

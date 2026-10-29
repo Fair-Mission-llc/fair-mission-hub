@@ -1,5 +1,5 @@
 // Sprint 10 Revision 1.0 (schema 100): verified registry charities and the Propose Charity Grant auto-fill, the
-// collapsible sidebar with its top-level Council Photo Gallery node, the gallery's two views, the Grand Knight Desk
+// collapsible sidebar with its top-level Media & Memory Center node, the gallery's two views, the Grand Knight Desk
 // without the Inbound Council Mail Center, and the Executive Dashboard's compact drawers.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -192,7 +192,7 @@ describe.each(drivers)('$name driver: charities.setCharityVerified', (d) => {
   });
 });
 
-describe('the collapsible sidebar and the Council Photo Gallery node', () => {
+describe('the collapsible sidebar and the Media & Memory Center node', () => {
   it('drops the Home link and moves the gallery out of the pillars', () => {
     const filed = PORTAL_NAV_GROUPS.flatMap((g) => g.items as readonly string[]);
     expect(filed).not.toContain('home');
@@ -200,7 +200,7 @@ describe('the collapsible sidebar and the Council Photo Gallery node', () => {
   });
 
   it('pins the gallery node with its two views and a persistent arrow toggle', () => {
-    expect(COUNCIL_PHOTO_GALLERY_TITLE).toBe('📸 Council Photo Gallery');
+    expect(COUNCIL_PHOTO_GALLERY_TITLE).toBe('📸 Media & Memory Center');
     // Sprint 11 Revision 2.0: renamed.
     expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['📸 Browse Gallery', 'Gallery Administration Hub']);
     expect(galleryViewFromAnchor('#manage')).toBe('manage');

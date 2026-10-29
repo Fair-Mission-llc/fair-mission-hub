@@ -20,6 +20,9 @@ const config: NextConfig = {
   },
   // 90 lets the emblem render crisply (see BrandMark); 75 is Next's default for everything else.
   images: { qualities: [75, 90] },
+  // Sprint 11 Revision 10.0: npm run build:exe sets KOFC_DESKTOP_BUILD=1 for a self-contained server (.next/standalone)
+  // that the Electron shell runs without npm or node_modules. Other builds keep the default output.
+  ...(process.env.KOFC_DESKTOP_BUILD === '1' ? { output: 'standalone' as const } : {}),
 };
 
 export default config;

@@ -13,6 +13,7 @@ import {
   BusinessRuleError,
   toIsoDate,
 } from './rules';
+import { cleanForm1728LineCode } from './form-1728';
 import type { Event, Shift } from './types';
 
 /** Columns a caller may write on Event. The only names a driver interpolates into SQL for an update. */
@@ -31,6 +32,7 @@ export const EVENT_COLUMNS = [
   'ActualNumberAttendees',
   'IsAnnual',
   'IsMultiDay',
+  'form_1728_line',
 ] as const satisfies readonly (keyof NewEvent)[];
 
 export const SHIFT_COLUMNS = [
@@ -108,6 +110,8 @@ export function cleanEventFields(input: EventChanges): EventChanges {
   if (has('Highlights')) out.Highlights = input.Highlights === null ? null : assertText(input.Highlights, 'Highlights', 10_000, false);
   if (has('IsAnnual')) out.IsAnnual = bitFlag(input.IsAnnual, 'IsAnnual');
   if (has('IsMultiDay')) out.IsMultiDay = bitFlag(input.IsMultiDay, 'IsMultiDay');
+  // Sprint 11 Revision 10.0: the confirmed Form 1728 line, a catalog code or null to clear it.
+  if (has('form_1728_line')) out.form_1728_line = cleanForm1728LineCode(input.form_1728_line);
   return out;
 }
 

@@ -19,7 +19,7 @@ export const IN_MEMORIAM_TEXT_MAX_LENGTH = 4000;
 export const IN_MEMORIAM_PAST_COUNCILS_MAX_LENGTH = 1000;
 /** How much of one year's collective accomplishments the compiled summary quotes. */
 export const IN_MEMORIAM_ACCOMPLISHMENT_EXCERPT = 400;
-/** The heading of the roll on the Council History page. */
+/** The heading of the roll on the Historical Chronology page. */
 export const IN_MEMORIAM_TITLE = 'In Memoriam';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);

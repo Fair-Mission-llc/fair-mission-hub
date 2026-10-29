@@ -4342,3 +4342,13 @@ ALTER TABLE [Council] ADD [feature_loaner_library] BIT NOT NULL DEFAULT 1;
 GO
 ALTER TABLE [Council] ADD [feature_advanced_audits] BIT NOT NULL DEFAULT 1;
 GO
+-- =========================================================================
+-- Sprint 11 Revision 10.0: THE UNIFIED FORM 1728 MATRIX (schema version 108)
+--
+-- Event.form_1728_line holds the Supreme Form 1728 line an officer confirmed in the event form's suggestion popup, as
+-- a form-1728.ts code (FAITH_A..FAITH_G, FAMILY_A..FAMILY_F, COMMUNITY_A..COMMUNITY_N, LIFE_A..LIFE_G). NULL while no
+-- choice is confirmed: reports then read the line from the event's title (resolveForm1728Line). Activities have no
+-- column; their line is always read from the title.
+-- =========================================================================
+ALTER TABLE [Event] ADD [form_1728_line] VARCHAR(20) NULL;
+GO

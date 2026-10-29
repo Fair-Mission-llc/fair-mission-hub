@@ -12,7 +12,7 @@
 // Mounted folders (DESK_MODULES in officer-desks.ts names them for the manuals and tests):
 //   Grand Knight Desk (and the Deputy's)  Charitable Grant Requests Vetting Board, Constitutional Advisor Panels,
 //                                         Connected Councils
-//   Financial Secretary Desk               Semiannual Audit Form 1295 Center, Charity Check Issuance Console
+//   Financial Secretary Desk               Financial Inspections, Charity Check Issuance Console
 //   Treasurer Desk                         Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window
 //   Recorder Desk                          Council Resolutions and Motions Ledger
 //   Historian Desk                         Google Drive Media Gallery Sync Board

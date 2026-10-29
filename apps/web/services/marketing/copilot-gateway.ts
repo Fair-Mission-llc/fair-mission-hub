@@ -1,6 +1,6 @@
 // The Microsoft Co-Pilot gateway (Sprint 6L Extension 2). SERVER ONLY, like services/server/credentials-vault.ts.
 //
-// Connects the Marketing Factory to the council's own Microsoft Copilot Studio agent through the Bot Framework Direct
+// Connects the Recruitment Factory to the council's own Microsoft Copilot Studio agent through the Bot Framework Direct
 // Line 3.0 API, which the agent's web channel exposes:
 //   1. POST {endpoint}/conversations with the council's Direct Line secret starts a conversation and returns a token
 //      scoped to that one conversation; the secret is used for nothing else.

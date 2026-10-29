@@ -14,9 +14,9 @@
 // Sprint 11 Revision 8.0 (schema 107) retires three switches - event shifts (flag_complex_shifts), flagged hours review
 // (feature_volunteer_quarantine, Sprint 7B) and the financial management dashboards (feature_financial_management) - as
 // permanent core systems. Their columns stay on the Council table, unread (RETIRED_FEATURE_COLUMNS). It adds five
-// premium switches - the Photo Gallery & Media Center, the Lessons & Knowledge Registries, the Marketing Factory (split
-// from the document compilation pipelines), the Cross-Council Loaner Library (split from capital asset tracking) and the
-// Advanced Financial Audits - and widens Council History to the Council History & Archive Vault. A switch that is off
+// premium switches - the Media & Memory Center, the Lessons & Knowledge Registries, the Recruitment Factory (split
+// from the document compilation pipelines), the Shared Equipment Library (split from capital asset tracking) and the
+// Advanced Financial Audits (now Financial Inspections) - and widens the Council History switch (now Historical Chronology, Revision 10.0). A switch that is off
 // also hides its officer desk drawers (desk-drawers.ts, by portal area), its Navigation Guide entries (portalSidebar) and
 // adds a 'disabled' banner to the matching sections of the council's custom manuals (scripts/compile_all_manuals.py).
 // =========================================================================
@@ -139,7 +139,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   feature_constitutional_advisor: { label: 'Constitutional Advisor', hint: 'The parliamentary question desk that cites the bylaws' },
   feature_council_bylaws: { label: 'Council bylaws', hint: "The council's constitutional bylaws page" },
   feature_council_history: {
-    label: 'Council History & Archive Vault',
+    label: 'Historical Chronology',
     hint: "The Team Legacy history page (annals, diary, oral histories, In Memoriam) and the Historian Desk's diary and oral history drawers",
   },
   feature_live_meeting_console: { label: 'Live meeting console', hint: 'The live meeting console: agenda, check-ins, secret ballots and hand tallies' },
@@ -153,17 +153,17 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
     hint: 'The printable custom guide compiler on Council Wide Settings and its PDF route',
   },
   feature_photo_gallery: {
-    label: 'Photo Gallery & Media Center',
+    label: 'Media & Memory Center',
     hint: "The photo gallery page and the Historian Desk's media gallery and meeting photo drawers",
   },
   feature_lessons_registry: {
     label: 'Lessons & Knowledge Registries',
-    hint: 'The lessons-learned registry and the Operations Knowledge Archive with its officer desk drawers',
+    hint: 'The lessons-learned registry and the Operations Knowledge Vault with its officer desk drawers',
   },
-  feature_marketing_factory: { label: 'Marketing Factory', hint: 'The marketing flyer factory and its co-pilot route' },
-  feature_loaner_library: { label: 'Cross-Council Loaner Library', hint: "The shared loaner library page and the Grand Knight Desk's loaner drawer" },
+  feature_marketing_factory: { label: 'Recruitment Factory', hint: 'The marketing flyer factory and its co-pilot route' },
+  feature_loaner_library: { label: 'Shared Equipment Library', hint: "The shared loaner library page and the Grand Knight Desk's loaner drawer" },
   feature_advanced_audits: {
-    label: 'Advanced Financial Audits',
+    label: 'Financial Inspections',
     hint: "The Trustees' semiannual audit and Form 1295 center, on its page and the Financial Secretary Desk",
   },
 };

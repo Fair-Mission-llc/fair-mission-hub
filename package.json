@@ -1,6 +1,8 @@
 {
   "name": "kofc-tracking-platform",
   "version": "1.0.0",
+  "description": "Knights of Columbus council event, service-hour and stewardship tracking platform",
+  "author": "Knights of Columbus Council 15295",
   "private": true,
   "workspaces": [
     "apps/mobile",
@@ -16,11 +18,14 @@
     "build:shared": "npm run build --workspace=packages/shared",
     "build:web": "npm run build --workspace=apps/web",
     "build:pilot": "node scripts/build-pilot.mjs",
+    "build:exe": "node scripts/build-exe.mjs",
     "sbom": "node scripts/generate-sbom.mjs",
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspace=apps/web && npm run typecheck --workspace=apps/mobile"
   },
   "devDependencies": {
+    "electron": "^37.10.3",
+    "electron-builder": "^26.18.0",
     "typescript": "^5.0.0",
     "vitest": "^3.2.4"
   }

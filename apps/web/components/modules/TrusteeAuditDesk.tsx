@@ -155,7 +155,7 @@ export function AuditDesk() {
           </div>
         }
       >
-        Trustee Audit Desk
+        Financial Inspections
       </PageTitle>
       {desk.error ? <Notice tone="error">{desk.error}</Notice> : null}
       {message ? (

@@ -1,5 +1,5 @@
 'use client';
-// Council History - the Team Legacy dashboard (Sprint 6K). One summary card per fraternal year, newest first: the
+// Historical Chronology - the Team Legacy dashboard (Sprint 6K). One summary card per fraternal year, newest first: the
 // year's seated officer core (CouncilLeadershipHistory) as a single roster grid beside the officers' collective
 // accomplishments and team metrics (CouncilHistoryAnnals), then the year's diary entries and Oral History Testimonials
 // (CouncilSpiritualDiary). It is a team record: no member's hours, signups or scores appear.
@@ -287,7 +287,7 @@ function CouncilHistory() {
   const m = matrix.data;
   return (
     <>
-      <PageTitle>Council History</PageTitle>
+      <PageTitle>Historical Chronology</PageTitle>
       <div className="flex flex-col gap-6">
         {matrix.error ? <Notice tone="error">{matrix.error}</Notice> : null}
         {m ? (

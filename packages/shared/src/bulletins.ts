@@ -4,7 +4,7 @@
 //   - meeting flyers (Meeting.GoogleDriveFlyerURL) and minutes (Meeting.GoogleDriveMinutesURL, or Meeting.MinutesURL
 //     when it holds a Drive vault file id);
 //   - event photo albums (Event.PhotoGalleryURL when it holds a Drive file id or a Drive link);
-//   - event flyers filed by the Marketing Factory (Event.GoogleDriveFlyerFileID, Sprint 6C).
+//   - event flyers filed by the Recruitment Factory (Event.GoogleDriveFlyerFileID, Sprint 6C).
 // Only Drive references become cards: a bare file id opens in the Drive viewer and a drive.google.com or
 // docs.google.com link opens as stored. Anything else (a local blob, a gallery path) is left out.
 // =========================================================================

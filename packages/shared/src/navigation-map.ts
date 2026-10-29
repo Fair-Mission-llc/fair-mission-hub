@@ -173,7 +173,7 @@ export function navigationGuideMap(u: Viewer, flags: FeatureFlags = ALL_FEATURES
   const categories: NavigationMapCategory[] = NAVIGATION_MAP_CATEGORIES.map(({ id, label }) => ({
     id,
     label,
-    // Sprint 10 Revision 1.0: the pinned links (the Council Photo Gallery) first, then the pillars' links.
+    // Sprint 10 Revision 1.0: the pinned links (the Media & Memory Center) first, then the pillars' links.
     entries: [{ label: PINNED_SIDEBAR_LABEL, entries: guide.pinned }, ...guide.groups].flatMap((g) =>
       g.entries
         .filter((e) => NAVIGATION_ITEM_CATEGORY[e.item] === id)

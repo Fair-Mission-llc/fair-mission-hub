@@ -38,7 +38,7 @@ export const LITURGICAL_COLORS = {
 } as const;
 
 /**
- * Sprint 6L Extension 5: the In Memoriam card deck on the Council History page - gold type and rules on a black card
+ * Sprint 6L Extension 5: the In Memoriam card deck on the Historical Chronology page - gold type and rules on a black card
  * (about 9.6:1). Used only there; the web portal has no high-contrast mode (the phone keeps HIGH_CONTRAST).
  */
 export const MEMORIAL_COLORS = {

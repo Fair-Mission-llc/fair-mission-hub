@@ -141,16 +141,16 @@ MODULE_SECTIONS: dict[str, tuple[str, str]] = {
     'feature_faith_center': ('Faith Center', r'faith center|prayer|devotion'),
     'feature_constitutional_advisor': ('Constitutional Advisor', r'constitutional advisor'),
     'feature_council_bylaws': ('Council bylaws', r'bylaws'),
-    'feature_council_history': ('Council History & Archive Vault', r'annals|diary|oral histor|in memoriam|team legacy|council history'),
+    'feature_council_history': ('Historical Chronology', r'annals|diary|oral histor|in memoriam|team legacy|council history|historical chronology'),
     'feature_live_meeting_console': ('Live meeting console', r'live meeting|secret ballot|hand tall'),
     'feature_capital_assets': ('Capital asset tracking', r'\basset'),
     'feature_charity_registry': ('Global charity registry', r'verified charit|charities registry|global charit'),
     'feature_document_compilation': ('Document compilation pipelines', r'custom guide'),
-    'feature_photo_gallery': ('Photo Gallery & Media Center', r'gallery|share photos|meeting photo|photo from the meeting'),
-    'feature_lessons_registry': ('Lessons & Knowledge Registries', r'lessons registry|knowledge archive'),
-    'feature_marketing_factory': ('Marketing Factory', r'marketing|flyer'),
-    'feature_loaner_library': ('Cross-Council Loaner Library', r'loaner'),
-    'feature_advanced_audits': ('Advanced Financial Audits', r'1295|semiannual audit|trustee audit'),
+    'feature_photo_gallery': ('Media & Memory Center', r'gallery|share photos|meeting photo|photo from the meeting|media & memory'),
+    'feature_lessons_registry': ('Lessons & Knowledge Registries', r'lessons registry|knowledge archive|knowledge vault'),
+    'feature_marketing_factory': ('Recruitment Factory', r'marketing|flyer|recruitment factory'),
+    'feature_loaner_library': ('Shared Equipment Library', r'loaner|equipment library'),
+    'feature_advanced_audits': ('Financial Inspections', r'1295|semiannual audit|trustee audit|financial inspections'),
 }
 
 DISABLED_BANNER = '⚠️ This premium module is currently disabled'

@@ -9,7 +9,7 @@
 // Sprint 8P Stage 3 - Universal Desk Drawers: the Treasurer, Recorder and Historian Desks become blotters too, so the
 // Sprint 8L <details> folders are gone from every desk (DESK_MODULES still names those modules; each is a drawer now).
 // The standalone Oversight Desk is dissolved: the Flagged Hours Review, Shifts Awaiting Hours and the Inbound Council Mail
-// Center are Grand Knight Desk drawers that light up while they hold work, and the Operations Knowledge Archive drawer
+// Center are Grand Knight Desk drawers that light up while they hold work, and the Operations Knowledge Vault drawer
 // carries the entry form for its writers. A 'featured' drawer (the Recorder's Historical Meeting Minutes Archive) spans
 // the top row of its blotter. The Member Desk keeps plain panels, no drawers.
 //
@@ -72,7 +72,7 @@ export const DESK_RETURN_STORAGE_KEY = 'kofc.deskReturn';
 /** Sprint 8S Revision 8: the Grand Knight Desk folder of the Star Council objectives. */
 export const COUNCIL_GOALS_FOLDER_TITLE = '[ 📈 Council Goals & Targets ]';
 /** The one name of the operating-notes archive and its entry form, on every desk, page and guide (Sprint 8P Stage 3). */
-export const OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE = 'Operations Knowledge Archive';
+export const OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE = 'Operations Knowledge Vault';
 
 /** Who sees a drawer besides its portal area (when it has one). */
 export type DeskDrawerGate = 'loaner-library' | 'planning' | 'council-goals' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'charity-endorsement' | 'always';
@@ -217,7 +217,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
   { desk: 'grand-knight', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-charity-endorsements', alerts: true },
   { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },
-  { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Loaner Library', summary: 'List, lend and check in council assets', area: 'inventory/loaner-library', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
+  { desk: 'grand-knight', id: 'loaner-library', title: 'Shared Equipment Library', summary: 'List, lend and check in council assets', area: 'inventory/loaner-library', gate: 'loaner-library', rowId: 'grand-knight-loaner-library' },
   { desk: 'grand-knight', id: 'affiliation-invites', title: 'Affiliation Invites', summary: 'Accept or decline invites from nearby councils', gate: 'affiliations', rowId: 'grand-knight-affiliations' },
   { desk: 'grand-knight', id: 'connected-councils', title: 'Connected Councils', summary: 'Invite and answer nearby councils', area: 'system-settings/affiliations', rowId: 'module-connected-councils' },
   { desk: 'grand-knight', id: 'meeting-pin', title: 'Meeting PIN (Recorder Absent)', summary: 'Set the check-in PIN yourself when the Recorder is away', gate: 'always', rowId: 'drawer-gk-meeting-pin' },
@@ -232,7 +232,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'financial-secretary', id: 'donation-records', title: 'Charitable Donation Records', summary: 'Record, check and correct council donations', area: 'donations', rowId: 'drawer-donation-records', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/queue', gate: 'charity-endorsement', rowId: 'drawer-fs-charity-endorsements', alerts: true, cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'charity-checks', title: 'Charity Check Issuance Console', summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks', cabinet: 'outbound' },
-  { desk: 'financial-secretary', id: 'form-1295', title: 'Semiannual Audit Form 1295 Center', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
+  { desk: 'financial-secretary', id: 'form-1295', title: 'Financial Inspections', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'roster-imports', title: 'Excel Roster Imports', summary: 'The roster template and the Supreme roster sync', gate: 'always', rowId: 'drawer-roster-imports', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'knowledge-archive', title: ARCHIVE, summary: ARCHIVE_SUMMARY, area: 'system-settings/knowledge-archive', rowId: 'drawer-fs-knowledge-archive', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: ER_WORKFLOW_SUMMARY, area: 'expenses/queue', rowId: 'drawer-fs-er-workflow', cabinet: 'reference' },

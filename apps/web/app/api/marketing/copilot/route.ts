@@ -5,7 +5,7 @@
 //
 // The request is checked (cleanCopilotPrompt), wrapped with the event's facts and the council's voice rules
 // (buildCollateralPrompt), and sent to the council's Microsoft Copilot Studio agent by services/marketing/copilot-gateway.
-// Only the portal session of a member who may open the Marketing Factory (Admins, Super Admins, seated officers) may call
+// Only the portal session of a member who may open the Recruitment Factory (Admins, Super Admins, seated officers) may call
 // it (401 without a session, 403 otherwise). The session's own council is the one whose key is used.
 import { NextResponse } from 'next/server';
 import { buildCollateralPrompt, canOpenMarketingFactory, cleanCopilotPrompt, describeError } from '@kofc/shared';

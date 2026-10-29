@@ -33,7 +33,7 @@ const admin = { memberId: 2, councilId: 1, memberType: 'Admin' as const, isOffic
 
 describe('1. schema 106', () => {
   it('adds the four premium switches as BIT DEFAULT 1 Council columns', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(107); // Sprint 11 Revision 8.0
+    expect(PLATFORM_SCHEMA_VERSION).toBe(108); // Sprint 11 Revision 10.0 (was 107 in Revision 8.0)
     expect(read('Schema.sql')).toContain('(schema version 106)');
     expect(TABLES.Council!.columns.find((c) => c.name === 'feature_financial_management')).toMatchObject({ kind: 'bit' }); // kept, unread
     for (const name of NEW_FLAGS) {

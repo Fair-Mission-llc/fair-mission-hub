@@ -1,6 +1,6 @@
 // Sprint 6L Extension 3: the Council Prayer Intentions List - schema 52's CouncilPrayerIntention and its Praying Hands
 // counter (CouncilPrayerIntentionPrayer, one tap per member per intention per day) - shown on the web Faith Center page
-// and on the phone's Home screen. Also the Marketing Factory's Co-Pilot wording and the feast day widget leaving the
+// and on the phone's Home screen. Also the Recruitment Factory's Co-Pilot wording and the feast day widget leaving the
 // finance screens.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -144,7 +144,7 @@ describe('schema 52 and the screens', () => {
     }
   });
 
-  it('names the Co-Pilot after Microsoft and drops GYST from the Marketing Factory', () => {
+  it('names the Co-Pilot after Microsoft and drops GYST from the Recruitment Factory', () => {
     expect(COPILOT_PROMPT_LABEL).toBe('🤖 Ask Microsoft Co-Pilot to Design Advanced Collateral');
     for (const path of ['apps/web/components/CopilotPrompt.tsx', 'apps/web/app/resources/marketing/page.tsx', 'apps/web/components/modules/CredentialsVaultPanel.tsx', 'packages/shared/src/copilot.ts']) {
       expect(read(path)).not.toMatch(/GYST/);

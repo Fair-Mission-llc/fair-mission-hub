@@ -121,7 +121,7 @@ export interface SupremeSnapshotRows {
    * EventTime on the council's events, on shifts dated in the period; `category` is the event's Category. Sprint 11
    * Revision 9.0: `title` is the event's name, which the Form 1728 engine (form-1728.ts) files to its line.
    */
-  eventTime: readonly { MemberID: number; Hours: number; category: string; title?: string }[];
+  eventTime: readonly { MemberID: number; Hours: number; category: string; title?: string; line?: string | null }[];
   /** ActivityTime on the council's activities, dated in the period; `category` is the activity's Category, `title` its name. */
   activityTime: readonly { MemberID: number; Hours: number; category: string; title?: string }[];
   /** The council's events starting in the period. */
@@ -160,10 +160,14 @@ export function compileSupremeSnapshot(
     hoursByCategory: [...byCategory]
       .map(([category, hours]) => ({ category, hours: quarterHours(hours) }))
       .sort((a, b) => a.category.localeCompare(b.category)),
-    // Sprint 11 Revision 9.0: the same hours by Form 1728 line, read from each record's title. The rows are already
+    // Sprint 11 Revision 9.0: the same hours by Form 1728 line, read from each record's title (Revision 10.0: an event's
+    // confirmed form_1728_line wins over its title). The rows are already
     // limited to the period, so the tally takes every date.
     form1728Lines: tallyForm1728(
-      [...rows.eventTime, ...rows.activityTime].map((r) => ({ title: r.title ?? '', date: period.fromDate, hours: r.Hours, memberId: r.MemberID })),
+      [
+        ...rows.eventTime.map((r) => ({ title: r.title ?? '', line: r.line ?? null, date: period.fromDate, hours: r.Hours, memberId: r.MemberID })),
+        ...rows.activityTime.map((r) => ({ title: r.title ?? '', date: period.fromDate, hours: r.Hours, memberId: r.MemberID })),
+      ],
       period.fromDate,
       period.toDate,
     ),

@@ -40,7 +40,7 @@
 // Sprint 8P Stage 3 (schema version 89): every officer desk is a desk blotter of slide-out drawers (desk-drawers.ts). The
 // standalone Oversight Desk tab is dissolved: its Flagged Hours Review, Shifts Awaiting Hours and Inbound Council Mail
 // Center are Grand Knight Desk drawers, the desk status badges are each desk's own drawer counts and alerts, and the
-// Operations Knowledge Archive drawer takes the entry form for its writers.
+// Operations Knowledge Vault drawer takes the entry form for its writers.
 //
 // Sprint 8L (schema version 82): Omnipresent Officer Desks. Every advanced module a seat works in is mounted as a folder
 // at the top of its Active Desk (DESK_MODULES), so the desks never send anyone to the sidebar for it. Each folder is
@@ -195,7 +195,7 @@ export const DESK_MODULES: readonly DeskModuleSpec[] = [
   { desk: 'grand-knight', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
   { desk: 'grand-knight', title: 'Constitutional Advisor Panels', summary: 'Ask a parliamentary or bylaws question', area: 'governance/advisor', rowId: 'module-advisor' },
   { desk: 'grand-knight', title: 'Connected Councils', summary: 'Invite and answer nearby councils', area: 'system-settings/affiliations', rowId: 'module-connected-councils' },
-  { desk: 'financial-secretary', title: 'Semiannual Audit Form 1295 Center', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295' },
+  { desk: 'financial-secretary', title: 'Financial Inspections', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295' },
   { desk: 'financial-secretary', title: 'Charity Check Issuance Console', summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks' },
   { desk: 'treasurer', title: 'Annual Budget vs Actuals Ledger Grid', summary: 'Budgeted vs actual spend and the YOY variance analyzer', area: 'finance/dashboard', rowId: 'module-budget-vs-actuals' },
   { desk: 'treasurer', title: 'Bank Statement Match-Window', summary: 'Match a bank statement CSV against the ledger', area: 'finance/dashboard', rowId: 'module-bank-match' },

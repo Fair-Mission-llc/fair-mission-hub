@@ -64,10 +64,15 @@ describe('assertMayGrantMemberType', () => {
   const superAdmin = { memberId: 1, memberType: SUPER_ADMIN_TYPE, active: true };
   const admin = { memberId: 2, memberType: 'Admin', active: true };
 
-  it('lets an active Super Admin grant Super Admin and anyone grant the other types', () => {
+  it('lets an active Super Admin grant Super Admin and Admin, and a Council Admin grant Member only (Sprint 11 Revision 10.0)', () => {
     expect(() => assertMayGrantMemberType(superAdmin, SUPER_ADMIN_TYPE)).not.toThrow();
-    expect(() => assertMayGrantMemberType(admin, 'Admin')).not.toThrow();
+    expect(() => assertMayGrantMemberType(superAdmin, 'Admin')).not.toThrow();
+    expect(() => assertMayGrantMemberType(superAdmin, 'Member', 'Admin')).not.toThrow();
     expect(() => assertMayGrantMemberType(admin, 'Member')).not.toThrow();
+    expect(() => assertMayGrantMemberType(admin, 'Admin')).toThrow(SecurityPrivilegeError);
+    expect(() => assertMayGrantMemberType(admin, 'Admin', 'Member')).toThrow(SecurityPrivilegeError);
+    expect(() => assertMayGrantMemberType(admin, 'Member', 'Admin')).toThrow(SecurityPrivilegeError);
+    expect(() => assertMayGrantMemberType(admin, 'Admin', 'Admin')).not.toThrow();
   });
 
   it('refuses a Council Admin, a Member and an inactive Super Admin, as a BusinessRuleError', () => {
@@ -207,12 +212,19 @@ describe.each(drivers)('$name driver: Super Admin privilege guard', (d) => {
     expect(ext).toEqual({ workingStatus: null, skills: [], training: [] });
   });
 
-  it('still lets a Council Admin create Admins and Members', async () => {
+  it('lets a Council Admin create Members but leaves creating and designating Admins to a Super Admin (Sprint 11 Revision 10.0)', async () => {
     const db = await d.make();
     const member = await db.members.create(MEMBER.admin, await recruit(db, 'Member'));
-    const admin = await db.members.create(MEMBER.admin, { ...(await recruit(db, 'Admin', 'second.admin@example.org')), MemberNumber: 9920002 });
     expect(member.MemberTypeID).toBe(await typeId(db, 'Member'));
+    const adminDraft = { ...(await recruit(db, 'Admin', 'second.admin@example.org')), MemberNumber: 9920002 };
+    await expectPrivilegeError(db.members.create(MEMBER.admin, adminDraft));
+    await expectPrivilegeError(db.members.update(MEMBER.admin, member.id, { MemberTypeID: await typeId(db, 'Admin') }));
+    expect((await db.members.get(member.id))!.MemberTypeID).toBe(await typeId(db, 'Member'));
+    const admin = await db.members.create(MEMBER.superAdmin, adminDraft);
     expect(admin.MemberTypeID).toBe(await typeId(db, 'Admin'));
+    await expectPrivilegeError(db.members.update(MEMBER.admin, admin.id, { MemberTypeID: await typeId(db, 'Member') }));
+    const promoted = await db.members.update(MEMBER.superAdmin, member.id, { MemberTypeID: await typeId(db, 'Admin') });
+    expect(promoted.MemberTypeID).toBe(await typeId(db, 'Admin'));
   });
 
   it('refuses a Council Admin promoting a member, or themselves, to Super Admin and leaves the row unchanged', async () => {
@@ -306,7 +318,9 @@ describe('member UI gates (permissions.ts)', () => {
   it('hides type and promotion controls from Members, and from Admins on a Super Admin', () => {
     expect(grantableMemberTypes(member)).toEqual([]);
     expect(grantableMemberTypes(member, 'Member')).toEqual([]);
-    expect(grantableMemberTypes(admin)).toEqual(['Admin', 'Member']);
+    expect(grantableMemberTypes(admin)).toEqual(['Member']);
+    expect(grantableMemberTypes(admin, 'Member')).toEqual(['Member']);
+    expect(grantableMemberTypes(admin, 'Admin')).toEqual([]);
     expect(grantableMemberTypes(admin, 'Super Admin')).toEqual([]);
     expect(grantableMemberTypes(superAdmin, 'Super Admin')).toEqual(['Super Admin', 'Admin', 'Member']);
   });

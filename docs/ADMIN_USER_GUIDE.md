@@ -25,6 +25,7 @@
 - [9. Access requests, impersonation and remote help](#9-access-requests-impersonation-and-remote-help)
 - [10. Feedback loops and the Super Admin Desk](#10-feedback-loops-and-the-super-admin-desk)
 - [11. Run a room pilot on the hub laptop](#11-run-a-room-pilot-on-the-hub-laptop)
+- [11.3 Build the desktop trial executable](#113-build-the-desktop-trial-executable)
 - [12. Reset the database to the seed data](#12-reset-the-database-to-the-seed-data)
 - [13. Network addresses, ports and configuration keys](#13-network-addresses-ports-and-configuration-keys)
 - [14. Firewall clearance](#14-firewall-clearance)
@@ -53,6 +54,8 @@ A member has one member type. A member may also hold one or more officer roles.
 | **Member** | The member's own records and the shared member pages. |
 | **Admin** | The Admin's own council only. |
 | **Super Admin** | Every council. |
+
+> **Note:** only a Super Admin makes a council Admin. A council Admin adds members of the type **Member** only, and cannot change the member type of another Admin.
 
 | Officer role | Extra access |
 | --- | --- |
@@ -105,16 +108,16 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
-| `feature_council_history` | **Council History & Archive Vault** | Council history (Team Legacy), the **Fraternal Diary Entry Logs** and **Oral History Recordings** drawers of the **Historian Desk** | None |
+| `feature_council_history` | **Historical Chronology** | Council history (Team Legacy), the **Fraternal Diary Entry Logs** and **Oral History Recordings** drawers of the **Historian Desk** | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
 | `feature_capital_assets` | **Capital asset tracking** | Council Asset Management, the **Council Asset Management** drawer of the **Admin Desk** | The **Council assets** button and screen |
 | `feature_charity_registry` | **Global charity registry** | Global Charities Registry, the **Global Charities Registry** drawer of the **Admin Desk** | None |
 | `feature_document_compilation` | **Document compilation pipelines** | The **Custom user guides** card on **Council Wide Settings**. The server also refuses the guide requests. | None |
-| `feature_photo_gallery` | **Photo Gallery & Media Center** | Photo Gallery, the **Google Drive Media Gallery Sync Board** and **Meeting Photos** drawers of the **Historian Desk** | None |
-| `feature_lessons_registry` | **Lessons & Knowledge Registries** | Lessons Registry, Operations Knowledge Archive, the archive drawers of the officer desks | None |
-| `feature_marketing_factory` | **Marketing Factory** | Marketing Factory. The server also refuses the flyer co-pilot requests. | None |
-| `feature_loaner_library` | **Cross-Council Loaner Library** | Loaner Library, the **Shared Loaner Library** drawer of the **Grand Knight Desk** | None |
-| `feature_advanced_audits` | **Advanced Financial Audits** | Financial Audits, the **Semiannual Audit Form 1295 Center** drawer of the **Financial Secretary Desk** | None |
+| `feature_photo_gallery` | **Media & Memory Center** | Photo Gallery, the **Google Drive Media Gallery Sync Board** and **Meeting Photos** drawers of the **Historian Desk** | None |
+| `feature_lessons_registry` | **Lessons & Knowledge Registries** | Lessons Registry, Operations Knowledge Vault, the archive drawers of the officer desks | None |
+| `feature_marketing_factory` | **Recruitment Factory** | Recruitment Factory. The server also refuses the flyer co-pilot requests. | None |
+| `feature_loaner_library` | **Shared Equipment Library** | Loaner Library, the **Shared Equipment Library** drawer of the **Grand Knight Desk** | None |
+| `feature_advanced_audits` | **Financial Inspections** | Financial Audits, the **Financial Inspections** drawer of the **Financial Secretary Desk** | None |
 
 The retired columns `flag_complex_shifts`, `feature_volunteer_quarantine` and `feature_financial_management` stay in the database, but the portal does not read them. Their modules are core systems now.
 
@@ -504,7 +507,7 @@ A number that you typed but did not save stays in its card when you close the dr
 | **Standard Bank Accounts** | The **Account Owners Matrix** (8.10) and the **Payment QR Codes** card (8.12). |
 | **User Access & Roster Control** | The **Roster Inactivity Sweep** card. The merit tier milestones are on **Council Lookup Tables** → **Merit Tier Milestones** (5.6). The meeting PIN is on the **Recorder Desk** (and the **Grand Knight Desk** when the Recorder is absent). |
 | **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **File Repository Mode** card (8.9) and the **Custom User Guides** card. |
-| **Feature Controls** | The **Cross-Council Loaner Library Sharing** card and the **Module & Platform Switches** links. |
+| **Feature Controls** | The **Shared Equipment Library Sharing** card and the **Module & Platform Switches** links. |
 | **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
 
 The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances).
@@ -527,7 +530,7 @@ The **Council Feature Deployment Matrix** has its own drawer. The matrix shows w
 
 | Row | 🟢 DEPLOYED when | Where it is switched |
 | --- | --- | --- |
-| **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Cross-Council Loaner Library Sharing** card, in the **Feature Controls** drawer |
+| **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Shared Equipment Library Sharing** card, in the **Feature Controls** drawer |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Credentials Vault** → **Email Gateway** (the link opens the vault) |
 
@@ -1149,6 +1152,31 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 | You need a record from an archived session. | The archive keeps the old vault as a file. | Ask the developer to open the vault file in the dated folder under `packages/backend/data/archive`. |
 | The hub stops with *"The hub vault is at database version 98, but this build needs version 99 …"* | A new release changed the tables. The hub never rebuilds the vault. | Stop the hub. Run `npm run hub:archive`. Start the hub again. |
 
+### 11.3 Build the desktop trial executable
+> **Who can do this:** the developer or the pilot facilitator, on a Windows computer with the project folder. Other members do not do this task.
+
+**Goal:** Make one program file that runs the full portal on a computer with no network and no Node.js.
+
+**Start point:** A terminal in the project folder.
+
+**Steps:**
+1. Run `npm install` once, so that Electron and electron-builder are on the computer.
+2. Run `npm run build:exe`. The build does five steps: the type checks, the schema check, the portal build, the asset copy and the packaging. A failed step stops the build.
+3. Wait for the line `[build:exe] done: see dist-desktop/`.
+4. Copy `dist-desktop\KofC-Tracking-Platform-1.0.0-portable.exe` to the trial computer.
+5. On the trial computer, open the file. Sign in with a pilot persona.
+
+**Expected result:** The portal opens in its own window. The records stay in the vault of that computer after the program closes.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| Windows shows *"Windows protected your PC"*. | The file has no code-signing certificate. | Select **More info**, then **Run anyway**. |
+| The program shows *"The portal stopped unexpectedly"*. | The portal server stopped. | Read `portal.log` in `%APPDATA%\kofc-tracking-platform`. Send the file to the developer. |
+| The build stops at step 1 or step 2. | A type error, or the generated database files do not match `Schema.sql`. | Fix the error. For step 2, run `node scripts/gen-db-assets.mjs`. Run the build again. |
+
+> **Note:** after `npm run build:exe`, run `npm run build:web` or `npm run build:pilot` again before you use `npm run dev:pilot`. The desktop build replaces the normal portal build.
+
 ---
 
 ## 12. Reset the database to the seed data
@@ -1161,10 +1189,11 @@ The platform has three kinds of build. Each kind keeps its records in a differen
 | Demo portal | `npm run build:web` | In each browser tab. Each tab has its own copy. | A reload of the tab (F5). |
 | Room pilot hub | `npm run build:pilot` | In one vault file on the hub laptop: `packages/backend/data/central-hub-vault.db`. | `npm run hub:archive` (section 12.2). |
 | Production | `NEXT_PUBLIC_DATA_DRIVER=remote` | In the council's Azure SQL database. | Never from the platform. Ask the database owner. |
+| Desktop trial executable | `npm run build:exe` | In one vault file on each trial computer: `%APPDATA%\kofc-tracking-platform\vault\central-hub-vault.db`. | Close the program. Delete the `vault` folder. The next start makes a fresh vault. |
 
 Every new database starts from two files: `Schema.sql` makes the tables, and `Seed.sql` adds the seed records. The seed records include the pilot personas and the scripted records of the pilot kit.
 
-The database version is 99. A hub vault made by an older version is refused at start (section 11.2).
+The database version is 108. A hub vault made by an older version is refused at start (section 11.2).
 
 ### 12.2 Reset the hub vault to the seed data
 > **Who can do this:** the pilot facilitator, on the hub laptop. Other members do not do this task.
@@ -1591,9 +1620,9 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 12. Asset photos and remote help
 - 13. Annual roadmap, meeting check-in and meeting photos
 - 14. The Active Desks dashboard
-- 15. The Cross-Council Loaner Library and the colour-coded calendar
+- 15. The Shared Equipment Library and the colour-coded calendar
 - 16. Planning workflows and bilateral council affiliations
-- 17. The Operations Knowledge Archive
+- 17. The Operations Knowledge Vault
 - 18. Parish fundraiser split setup
 - 19. The global search bar
 - 20. The Navigation Guide screen
@@ -1607,7 +1636,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 5. The Three-Signature Expense Flow
 - 6. The Active Desks and the Financial Secretary Desk
 - 7. The budget review and vote
-- 8. The Operations Knowledge Archive
+- 8. The Operations Knowledge Vault
 - 9. Revenue split profiles
 - 10. Payment account ownership
 - 11. Budget categories and payment account names
@@ -1621,7 +1650,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 5. The Three-Signature Expense Flow
 - 6. The Active Desks and the Treasurer Desk
 - 7. The budget review and vote
-- 8. The Operations Knowledge Archive
+- 8. The Operations Knowledge Vault
 - 9. Parish fundraiser splits
 - 10. Batch coding and cash box audits
 - 11. Account ownership and parish-held revenue

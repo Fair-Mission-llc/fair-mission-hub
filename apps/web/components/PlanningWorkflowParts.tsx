@@ -15,7 +15,7 @@
 // Sprint 8S Revision 10.6: `readOnly` (the desks' Planning & Budgeting Workflow reference folder) hides every edit and
 // review button; the goals are set and reviewed on Council Wide Settings.
 //
-// LoanerLibrarySharingCard - the council's Cross-Council Loaner Library switch (Council.is_loaner_library_enabled).
+// LoanerLibrarySharingCard - the council's Shared Equipment Library switch (Council.is_loaner_library_enabled).
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
@@ -235,7 +235,7 @@ export function FraternalPlanningWorkflow({ user, council, readOnly = false }: {
   );
 }
 
-/** The council's switch for the Cross-Council Loaner Library. */
+/** The council's switch for the Shared Equipment Library. */
 export function LoanerLibrarySharingCard({ user, council, onSaved }: { user: SessionUser; council: Council; onSaved: () => Promise<void> }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -253,7 +253,7 @@ export function LoanerLibrarySharingCard({ user, council, onSaved }: { user: Ses
     }
   };
   return (
-    <Panel title="Cross-Council Loaner Library Sharing" className="mt-6">
+    <Panel title="Shared Equipment Library Sharing" className="mt-6">
       <div className="flex flex-col gap-3">
         <Switch
           checked={on}

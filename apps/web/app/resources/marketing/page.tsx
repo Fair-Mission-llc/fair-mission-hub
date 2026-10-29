@@ -1,5 +1,5 @@
 'use client';
-// AI Generative Marketing Factory (Sprint 6C, Phase 4): an officer picks one of the council's events and the factory
+// Recruitment Factory (Sprint 6C, Phase 4): an officer picks one of the council's events and the factory
 // writes the flyer copy (composeFlyerCopy, shared marketing.ts - a deterministic template engine, no LLM), sets the
 // date, time and address as large type, and lays it all out as a printable navy and gold HTML page (buildFlyerHtml).
 // For an annual or duplicated event it embeds past photos: first the image ids filed in the Drive vault under
@@ -295,7 +295,7 @@ function MarketingFactory() {
 
   return (
     <>
-      <PageTitle>AI Generative Marketing Factory</PageTitle>
+      <PageTitle>Recruitment Factory</PageTitle>
       <div className="flex flex-col gap-4">
         {data.error ? <Notice tone="error">{data.error}</Notice> : null}
         <section aria-labelledby="factory-title" data-surface="navy" className="rounded border-4 border-gold bg-navy p-4 text-white sm:p-6">

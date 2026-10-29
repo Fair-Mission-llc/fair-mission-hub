@@ -304,7 +304,7 @@ export const calendarHidesEnded = (u: Actor): boolean => !isAdmin(u) && !u.isOff
 export const canOpenArchiveVault = (u: Actor): boolean => isAdmin(u) || u.isOfficer;
 
 /**
- * The AI Generative Marketing Factory (Sprint 6C, Phase 4): the council's event planners and officers - Admins, Super
+ * The Recruitment Factory (Sprint 6C, Phase 4): the council's event planners and officers - Admins, Super
  * Admins and seated officers, the Council Archive Vault's audience. Filing a flyer on an event follows
  * canAttachEventMedia (events.setFlyerFile), and only an Admin's flyer reaches the Drive vault.
  */
@@ -333,7 +333,7 @@ export const canEditCouncilWideSettings = (u: Actor): boolean => canOpenOfficerT
 export const canOpenAffiliationsDesk = (u: Actor): boolean => isAdmin(u) || holdsGrandKnightSeat(u);
 
 /**
- * The Operations Knowledge Archive (Sprint 8I, /system-settings/knowledge-archive), mirroring
+ * The Operations Knowledge Vault (Sprint 8I, /system-settings/knowledge-archive), mirroring
  * assertMayReadOperationsKnowledge for the viewer's own council: its officers and Admins, and any Super Admin (who picks
  * the council). Writing stays with the archive drawer's entry form (canWriteOperationsKnowledge).
  */
@@ -357,11 +357,13 @@ export const canEditMember = (u: Actor, member: Pick<Member, 'id' | 'CouncilID'>
 /**
  * Member types the user may pick for a member now of `currentType` (omit when adding one). Empty means
  * hide the type and promotion controls: Members never change types, and Admins cannot touch a Super Admin's.
+ * Sprint 11 Revision 10.0: only a Super Admin designates council Admins (assertMayGrantMemberType), so an Admin adds
+ * Members only and cannot change another Admin's type.
  */
 export function grantableMemberTypes(u: Actor, currentType?: MemberType['Type']): MemberType['Type'][] {
   if (isSuperAdmin(u)) return ['Super Admin', 'Admin', 'Member'];
-  if (!isAdmin(u) || currentType === 'Super Admin') return [];
-  return ['Admin', 'Member'];
+  if (!isAdmin(u) || currentType === 'Super Admin' || currentType === 'Admin') return [];
+  return ['Member'];
 }
 
 /** Holds the Financial Secretary or Treasurer role (FINANCE_ROLE_NAMES). */
@@ -787,7 +789,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   if (canEditCouncilWideSettings(u)) areas.push('system-settings/council-settings');
   // Sprints 8G/8H: the affiliations desk - council Admins, the Grand Knight and Deputy Grand Knight, Super Admins.
   if (canOpenAffiliationsDesk(u)) areas.push('system-settings/affiliations');
-  // Sprint 8I: the read-only Operations Knowledge Archive - the council's officers and Admins, and Super Admins.
+  // Sprint 8I: the read-only Operations Knowledge Vault - the council's officers and Admins, and Super Admins.
   if (canOpenKnowledgeArchive(u)) areas.push('system-settings/knowledge-archive');
   if (isAdmin(u) || canViewExecutiveDashboard(u, u.councilId)) areas.push('performance/charts');
   // Sprint 6K: every member reads the council's Team Legacy history and records oral history; the annals' keepers are
@@ -800,7 +802,7 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   // Sprint 7A Extension: the Council Dashboard (named the Shared Member Center until Sprint 8C) - collective, non-financial council figures and the member's own impact
   // card - is every member's. The executive dashboard and the finance screens stay with their own audiences above.
   areas.push('member-center');
-  // Sprint 8F: every member browses the Cross-Council Loaner Library; only the Grand Knight and Deputy Grand Knight lend
+  // Sprint 8F: every member browses the Shared Equipment Library; only the Grand Knight and Deputy Grand Knight lend
   // (canLendCouncilAssets, inside the page and on the Grand Knight Desk).
   areas.push('inventory/loaner-library');
   // Sprint 7C Extension: the Navigation Guide explains the viewer's own sidebar, so every member has it, pinned above the pillars.
@@ -834,7 +836,7 @@ export interface PortalNavGroup {
 export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
   // Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it), and the gallery is the sidebar's own
-  // top-level '📸 Council Photo Gallery' node (Sidebar.tsx) instead of a Resources link. Sprint 10 Revision 2.0: the
+  // top-level '📸 Media & Memory Center' node (Sidebar.tsx) instead of a Resources link. Sprint 10 Revision 2.0: the
   // Member Roster directory heads the pillar, directly under its header, for every member.
   { id: 'faith', label: 'Faith In Action', items: ['roster', 'activities', 'member-actions', 'events', 'calendar', 'faith-center'] },
   {

@@ -884,7 +884,7 @@ const DB_NAME = 'kofc.db';
  * 33: PasswordResetToken - self-service password resets; the welcome setup code becomes mandatory (Sprint 6B Security).
  * 34: Member.flag_large_text_mode - the member's Large Text Layout Mode preference (Sprint 6C).
  * 35: Council.BylawsMarkdown and Council.BylawsUpdatedAt - the Council Bylaws Data Vault (Sprint 6Z).
- * 36: Event.GoogleDriveFlyerFileID - the Marketing Factory's filed flyer (Sprint 6C, Phase 4).
+ * 36: Event.GoogleDriveFlyerFileID - the Recruitment Factory's filed flyer (Sprint 6C, Phase 4).
  * 37: Council.EmailProvider, SmtpHost, SmtpPort, SmtpUsername and EmailPasswordEncrypted - the council's outbound
  *     email gateway (Sprint 6Z-Email-Proxy).
  * 38: Shift.IsAllHands - All-Hands shifts with no volunteer cap (Phase 4.5).
@@ -953,10 +953,10 @@ const DB_NAME = 'kofc.db';
  *     (councilEngagement monthlyLeaderboard), the desk badges move to the Oversight Desk and the Executive Summary to
  *     its own /executive-dashboard page (Sprint 8D/8E); phones rebuild in step.
  * 77: CouncilGoals (the Annual Council Goals Progress Center) and CouncilAssetsInventory.is_loanable, loan_status,
- *     borrower_name, borrower_council and expected_return_date (the Cross-Council Loaner Library) (Sprint 8F).
+ *     borrower_name, borrower_council and expected_return_date (the Shared Equipment Library) (Sprint 8F).
  * 78: Council.is_loaner_library_enabled and district_number, CouncilAffiliations (the bilateral handshake) and
  *     budget_status on CouncilGoals and CouncilBudgetForecast (the planning workflow) (Sprints 8G/8H).
- * 79: CouncilOperationsKnowledge (the Operations Knowledge Archive and its archive) (Sprint 8I).
+ * 79: CouncilOperationsKnowledge (the Operations Knowledge Vault and its archive) (Sprint 8I).
  * 80: CouncilOperationsKnowledge.origin_council_stamp (the cross-council archive's badge) (Sprint 8J).
  * 81: no table change. Plain-English lexicon pass on screen labels; phones rebuild so seeded text matches (Sprint 8K).
  * 82: no table change. Seed adds three prayer intentions, Member Beta's large text flag, four September expense
@@ -975,7 +975,7 @@ const DB_NAME = 'kofc.db';
  * 88: no table change - the password prompt's '[ 🔘 Enable FaceID / Biometric Login ]' toggle and the Grand Knight and
  *     Financial Secretary Desks' slide-out action drawers (Sprint 8P Stage 2); phones rebuild in step.
  * 89: no table change - every officer desk becomes a drawer blotter, the Oversight Desk tab is dissolved into Grand
- *     Knight Desk drawers, CouncilOperationsKnowledge is the Operations Knowledge Archive everywhere and the Member
+ *     Knight Desk drawers, CouncilOperationsKnowledge is the Operations Knowledge Vault everywhere and the Member
  *     Desk's shift trackers sit side by side (Sprint 8P Stage 3); phones rebuild in step.
  * 90: Council.biometric_login_enabled and CouncilHistorianBulletin.headline and body_format - the Council Feature
  *     Deployment Matrix's biometric switch, structured newsletters and the Home bulletin feed; the missing-receipt flag
@@ -1030,8 +1030,10 @@ const DB_NAME = 'kofc.db';
  * 107: Council.feature_photo_gallery, feature_lessons_registry, feature_marketing_factory, feature_loaner_library and
  *     feature_advanced_audits (Sprint 11 Revision 8.0); flag_complex_shifts, feature_volunteer_quarantine and
  *     feature_financial_management are retired as core systems and no longer read.
+ * 108: Event.form_1728_line, the Supreme Form 1728 line an officer confirmed in the event form's suggestion popup
+ *     (Sprint 11 Revision 10.0).
  */
-const SCHEMA_VERSION = 107;
+const SCHEMA_VERSION = 108;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -6611,8 +6613,9 @@ export class SqliteDataService implements DataService {
       [councilId],
     ))!;
     const [eventTime, activityTime, events, eventExpenseItems, donations, disbursements] = await Promise.all([
-      db.getAllAsync<{ MemberID: number; Hours: number; category: string; title: string }>(
-        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category, e.[EventName] AS title
+      db.getAllAsync<{ MemberID: number; Hours: number; category: string; title: string; line: string | null }>(
+        `SELECT t.[MemberID], t.[Hours], COALESCE(c.[Category], 'Uncategorized') AS category, e.[EventName] AS title,
+                e.[form_1728_line] AS line
            FROM [EventTime] t
            JOIN [Shift] sh ON sh.[id] = t.[ShiftID]
            JOIN [Event] e ON e.[id] = sh.[EventID]
@@ -8984,7 +8987,7 @@ export class SqliteDataService implements DataService {
       let entryId = 0;
       await db.withTransactionAsync(async () => {
         const actor = await this.memberWriteActor(db, actorId);
-        assertMayWriteOperationsKnowledge(actor, councilId, `write in the Operations Knowledge Archive of council ${councilId}`);
+        assertMayWriteOperationsKnowledge(actor, councilId, `write in the Operations Knowledge Vault of council ${councilId}`);
         await this.assertCouncilsExist(db, [councilId]);
         const member = await db.getFirstAsync<{ MemberFirstName: string; MemberLastName: string }>('SELECT [MemberFirstName], [MemberLastName] FROM [Member] WHERE [id] = ?', [
           actorId,

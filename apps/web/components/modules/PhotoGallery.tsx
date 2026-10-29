@@ -16,7 +16,7 @@
 // Christmas party, a campout) or nothing at all. Only events and meetings that have already started are offered.
 // Standalone photos are open to every member of the council (canUploadStandaloneMedia) and carry a year and an
 // optional location tag of their own.
-// Sprint 10 Revision 1.0: the page is the sidebar's top-level '📸 Council Photo Gallery' node, split into two views
+// Sprint 10 Revision 1.0: the page is the sidebar's top-level '📸 Media & Memory Center' node, split into two views
 // (GALLERY_VIEWS, chosen by the '#browse' or '#manage' anchor): Browse Albums - the photos, the Smart Albums to open and
 // the filters - and the Gallery Management Center - the upload block, whose drop zone now comes first, above the
 // fields that tag the photos, then the Smart Album name field, the filters it saves and the albums to delete.

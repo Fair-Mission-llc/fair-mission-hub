@@ -1,4 +1,4 @@
-// Sprint 6C (Phase 4, Schema 36): the AI Generative Marketing Factory - flyer copy and facts (composeFlyerCopy,
+// Sprint 6C (Phase 4, Schema 36): the Recruitment Factory - flyer copy and facts (composeFlyerCopy,
 // flyerFacts), the historical photo loop (pastEditions, pastEditionPhotos, GoogleDriveVault.listImages over
 // Media / <past event name>), the vector icon fallback, the printable HTML layout (buildFlyerHtml) and the flyer's
 // Drive file id column (Event.GoogleDriveFlyerFileID, events.setFlyerFile).
@@ -216,8 +216,8 @@ describe('portal wiring', () => {
     expect(canOpenMarketingFactory({ ...base, memberType: 'Member' })).toBe(false);
     expect(portalAreas({ ...base, memberType: 'Member' })).not.toContain('resources/marketing');
     expect(PORTAL_NAV_GROUPS.find((g) => g.id === 'resources')?.items).toContain('resources/marketing');
-    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/'resources\/marketing': \{\s*href: '\/resources\/marketing',\s*label: 'Marketing Factory'/);
-    expect(read('apps/web/app/resources/marketing/page.tsx')).toContain('AI Generative Marketing Factory');
+    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/'resources\/marketing': \{\s*href: '\/resources\/marketing',\s*label: 'Recruitment Factory'/);
+    expect(read('apps/web/app/resources/marketing/page.tsx')).toContain('Recruitment Factory');
   });
 
   it('adds the flyer column at schema 36 and shows filed flyers on the bulletins board', () => {

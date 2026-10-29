@@ -199,5 +199,5 @@ export function eventAttendeeRecipientIds(turnout: readonly Pick<VolunteerTurnou
 /** Pictographs, emoji presentation and their joiners, variation selectors and keycaps, plus the arrows and marks used as icons. */
 const ICON_GLYPHS = /[\p{Extended_Pictographic}\p{Emoji_Presentation}\u{1F1E6}-\u{1F1FF}\u{FE0E}\u{FE0F}\u{200D}\u{20E3}↗↘→←▸▾⚖✓]/gu;
 
-/** A sidebar label with every icon glyph removed and the spaces tidied: '📸 Council Photo Gallery' -> 'Council Photo Gallery'. */
+/** A sidebar label with every icon glyph removed and the spaces tidied: '📸 Media & Memory Center' -> 'Media & Memory Center'. */
 export const plainNavLabel = (label: string): string => label.replace(ICON_GLYPHS, '').replace(/\s{2,}/g, ' ').trim();

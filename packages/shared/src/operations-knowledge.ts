@@ -3,10 +3,10 @@
 //
 // A council's long-term operating notes (CouncilOperationsKnowledge), so a new chairman inherits what the last one
 // learned. Each entry is filed under one of six governance tags and carries an automatic signature stamp.
-//   - Writing   the entry form in the Operations Knowledge Archive drawer of the Grand Knight Desk: the council's Active Admins, Grand Knight
+//   - Writing   the entry form in the Operations Knowledge Vault drawer of the Grand Knight Desk: the council's Active Admins, Grand Knight
 //               and Deputy Grand Knight, and any Active Super Admin (assertMayWriteOperationsKnowledge). Entries are
 //               append-only: there is no edit or delete, so the record a chair leaves stays as written.
-//   - Reading   System Settings > Operations Knowledge Archive (/system-settings/knowledge-archive), read-only: every
+//   - Reading   System Settings > Operations Knowledge Vault (/system-settings/knowledge-archive), read-only: every
 //               Active officer and Admin of any council and any Active Super Admin (assertMayReadOperationsKnowledge),
 //               filtered by tag, fraternal year (July 1 - June 30 of date_logged) and text (filterOperationsKnowledge).
 //
@@ -92,7 +92,7 @@ export function assertMayReadOperationsKnowledge(actor: MemberWriteActor, action
   );
 }
 
-/** The portal's twin of assertMayWriteOperationsKnowledge: the entry form in the Operations Knowledge Archive drawer. */
+/** The portal's twin of assertMayWriteOperationsKnowledge: the entry form in the Operations Knowledge Vault drawer. */
 export const canWriteOperationsKnowledge = (u: Actor, councilId: number): boolean =>
   isSuperAdmin(u) || (u.councilId === councilId && (isAdmin(u) || holdsGrandKnightSeat(u)));
 

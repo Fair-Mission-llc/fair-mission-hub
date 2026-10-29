@@ -119,7 +119,7 @@ describe('schema 43: ExpenseReport.is_long_term_asset and CouncilAssetsInventory
       'serial_number',
       'storage_location',
       'photo_url',
-      // Sprint 8F: the Cross-Council Loaner Library.
+      // Sprint 8F: the Shared Equipment Library.
       'is_loanable',
       'loan_status',
       'borrower_name',

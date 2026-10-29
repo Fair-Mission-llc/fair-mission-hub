@@ -1,5 +1,5 @@
 // Sprint 8P Stage 3 (schema version 89): drawers on every officer desk, the Oversight Desk dissolved into Grand Knight
-// Desk drawers, the Operations Knowledge Archive lexicon and the side-by-side Member Desk shift trackers.
+// Desk drawers, the Operations Knowledge Vault lexicon and the side-by-side Member Desk shift trackers.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -116,9 +116,9 @@ describe('the Oversight Desk is dissolved', () => {
   });
 });
 
-describe('the Operations Knowledge Archive lexicon', () => {
+describe('the Operations Knowledge Vault lexicon', () => {
   it('uses one name in code, components and guides', () => {
-    expect(OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE).toBe('Operations Knowledge Archive');
+    expect(OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE).toBe('Operations Knowledge Vault');
     expect(readdirSync(join(__dirname, '..', 'apps/web/components'))).not.toContain('KnowledgeVaultParts.tsx');
     const parts = read('apps/web/components/KnowledgeArchiveParts.tsx');
     expect(parts).toContain('export function OperationsKnowledgeArchiveEntryForm(');
@@ -135,7 +135,8 @@ describe('the Operations Knowledge Archive lexicon', () => {
       'docs/TREASURER_MANUAL.md',
       'data_dictionary.md',
     ])
-      expect(read(file), file).not.toMatch(/Knowledge Vault|KnowledgeVault/);
+      // Sprint 11 Revision 10.0: the screen name is the Operations Knowledge Vault again; the old label must be gone.
+      expect(read(file), file).not.toMatch(/Operations Knowledge Archive/);
     expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<OperationsKnowledgeArchiveEntryForm user={user} councilId={councilId} />');
   });
 });
@@ -193,7 +194,7 @@ describe('docs and phone schema', () => {
     const admin = readOfficerManuals();
     expect(admin).toContain('### 14.8.1 Read the Historical Meeting Minutes Archive');
     expect(admin).toContain('### 14.10.1 Read the Fraternal Diary Entry Logs');
-    expect(admin).toContain('## 17. The Operations Knowledge Archive');
+    expect(admin).toContain('## 17. The Operations Knowledge Vault');
     expect(admin).not.toContain('`/dashboard#oversight` |');
     expect(read('scripts/pilot_kit_pdf.py')).not.toContain("{DESKS} > Oversight Desk");
   });

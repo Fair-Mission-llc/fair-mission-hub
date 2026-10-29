@@ -196,7 +196,7 @@ describe('3. the gallery', () => {
 
 describe('4. the sidebar and Council Lookups', () => {
   it('draws the sidebar as plain text with no icon glyphs', () => {
-    expect(plainNavLabel('📸 Council Photo Gallery')).toBe('Council Photo Gallery');
+    expect(plainNavLabel('📸 Media & Memory Center')).toBe('Media & Memory Center');
     expect(plainNavLabel('🛠️ Council Asset Management')).toBe('Council Asset Management');
     expect(plainNavLabel('📂 Council Archive Vault')).toBe('Council Archive Vault');
     expect(plainNavLabel('📸 Browse Gallery')).toBe('Browse Gallery');

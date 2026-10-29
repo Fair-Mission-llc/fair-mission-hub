@@ -124,12 +124,12 @@ const COPILOT_CARD: SecretCard = {
   credentialKey: 'COPILOT_STUDIO_DIRECT_LINE_SECRET',
   title: 'Microsoft Co-Pilot (Copilot Studio)',
   intro:
-    "Paste the Direct Line secret of the council's Copilot Studio agent (in Copilot Studio: Settings, Security, Web channel security). It is locked away once saved, and only the Marketing Factory uses it.",
+    "Paste the Direct Line secret of the council's Copilot Studio agent (in Copilot Studio: Settings, Security, Web channel security). It is locked away once saved, and only the Recruitment Factory uses it.",
   label: 'Co-Pilot key',
   placeholder: 'Direct Line secret',
   multiLine: false,
   maxLength: 500,
-  savedText: 'Saved. The Marketing Factory can now ask the Microsoft Co-Pilot.',
+  savedText: 'Saved. The Recruitment Factory can now ask the Microsoft Co-Pilot.',
   removedText: 'Removed. The Microsoft Co-Pilot is switched off for this council.',
 };
 

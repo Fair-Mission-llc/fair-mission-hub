@@ -20,7 +20,7 @@
 - [5. The Three-Signature Expense Flow](#5-the-three-signature-expense-flow)
 - [6. The Active Desks and the Financial Secretary Desk](#6-the-active-desks-and-the-financial-secretary-desk)
 - [7. The budget review and vote](#7-the-budget-review-and-vote)
-- [8. The Operations Knowledge Archive](#8-the-operations-knowledge-archive)
+- [8. The Operations Knowledge Vault](#8-the-operations-knowledge-vault)
 - [9. Revenue split profiles](#9-revenue-split-profiles)
 - [10. Payment account ownership](#10-payment-account-ownership)
 - [11. Budget categories and payment account names](#11-budget-categories-and-payment-account-names)
@@ -397,7 +397,7 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 **Steps:**
 1. Select **Add Member** at the top of the roster. The form opens in a drawer. A Super Admin first chooses the council in **Council**.
 2. Fill in the form. **Email (also the login)** is the member's sign-in name.
-3. Choose the **Member type**. Admins grant Admin or Member. Only a Super Admin grants Super Admin.
+3. Choose the **Member type**. Admins grant Member only. Only a Super Admin grants Admin or Super Admin.
 4. Select **Add member**.
 
 The form has no **Designated Budget Director** box. An Admin assigns the Budget Director on the **Annual Budget Center** (section 1.10).
@@ -769,7 +769,7 @@ A drawer shows only to a reader who may open the module. A reader who may not op
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. Officers only. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils and answer their invites (section 7). |
-| **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **📊 Budget Allocation & YOY Variance Analyzer**. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. Only the FS, the Treasurer and Super Admins can run the match. |
@@ -822,11 +822,11 @@ The drawers on each desk:
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 1.7.1). |
 | **Grand Knight Desk** | **[ 📈 Council Goals & Targets ]** | Read the Star Council objectives of this fraternal year: Membership Intake, Charitable Dollars (funds raised) and Volunteer Hours, each against its target. |
-| **Grand Knight Desk** | **Shared Loaner Library** | List, lend and check in council assets (section 15.3 of the Executive Governance Manual). |
+| **Grand Knight Desk** | **Shared Equipment Library** | List, lend and check in council assets (section 15.3 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **Affiliation Invites** | Accept or decline invites from nearby councils. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils (section 7). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. For example, *How much notice does a motion need?* returns the Section 122(b) rule: 10 days' previous notice and a two-thirds vote. |
-| **Grand Knight Desk** | **Operations Knowledge Archive** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 8). |
+| **Grand Knight Desk** | **Operations Knowledge Vault** | Write a new entry (the GK, the DGK and Admins). Search the signed operating notes of every council (section 8). |
 | **Grand Knight Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
 | **Grand Knight Desk** (reference) | **Planning & Budgeting Workflow** | Read the planning steps, the goals and the budget status. Read only. Set and review the goals on **Council Wide Settings** (section 7). |
 | **Grand Knight Desk** (reference) | **[ 🗳️ Council Election Workflow ]** | Read the four election steps, the progress wheels and the nominees. Read only. Nominate in the **Council Election Center** (section 6.2.3). |
@@ -835,9 +835,9 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 1.7.1). |
 | **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
-| **Financial Secretary Desk** | **Semiannual Audit Form 1295 Center** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Upload the Supreme roster CSV. |
-| **Financial Secretary Desk** | **Operations Knowledge Archive** | Search the signed operating notes of every council (section 8). |
+| **Financial Secretary Desk** | **Operations Knowledge Vault** | Search the signed operating notes of every council (section 8). |
 | **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **Auditing & Return Queue** (section 6.2.3). |
 | **Financial Secretary Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
 | **Treasurer Desk** | **Ledger Line Coder** | Pick the ledger account. Read the green **Inferred Budget** line. Select **🏷️ Categorize & Lock Expense**. Log concluded revenue. |
@@ -1027,14 +1027,14 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 ---
 
-## 8. The Operations Knowledge Archive
+## 8. The Operations Knowledge Vault
 
-### 8.1 Search the Operations Knowledge Archive
+### 8.1 Search the Operations Knowledge Vault
 > **Who can do this:** the officers and Admins of every council, and Super Admins. Other members do not see this page.
 
 **Goal:** Find the notes past leaders of your council, or of brother councils, saved about one subject or one year.
 
-**Start point:** Sidebar → System Settings → **Operations Knowledge Archive**. The address is `/system-settings/knowledge-archive`. The **Open the archive** link on the vault card opens the same page.
+**Start point:** Sidebar → System Settings → **Operations Knowledge Vault**. The address is `/system-settings/knowledge-archive`. The **Open the archive** link on the vault card opens the same page.
 
 **Steps:**
 1. Select **Filter by My Home Council Only** to see only your council's entries. Clear the box to see every council.
@@ -1051,7 +1051,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 | The grid says **No entry matches these filters.** | No entry has all the selected filters. | Select **Every tag** or **Every year**, or clear **Search**. |
 | Entries from other councils show. | The archive shows every council. | Select **Filter by My Home Council Only**. |
 | Your council's entries do not show. | The search words or filters exclude them. | Clear **Search**, and select **Every tag** and **Every year**. |
-| You cannot add an entry here. | This page is read-only. | Write entries in the **Operations Knowledge Archive** drawer of the **Grand Knight Desk** (section 17.2 of the Executive Governance Manual). |
+| You cannot add an entry here. | This page is read-only. | Write entries in the **Operations Knowledge Vault** drawer of the **Grand Knight Desk** (section 17.2 of the Executive Governance Manual). |
 
 ---
 
@@ -1278,9 +1278,9 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 12. Asset photos and remote help
 - 13. Annual roadmap, meeting check-in and meeting photos
 - 14. The Active Desks dashboard
-- 15. The Cross-Council Loaner Library and the colour-coded calendar
+- 15. The Shared Equipment Library and the colour-coded calendar
 - 16. Planning workflows and bilateral council affiliations
-- 17. The Operations Knowledge Archive
+- 17. The Operations Knowledge Vault
 - 18. Parish fundraiser split setup
 - 19. The global search bar
 - 20. The Navigation Guide screen
@@ -1294,7 +1294,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 5. The Three-Signature Expense Flow
 - 6. The Active Desks and the Financial Secretary Desk
 - 7. The budget review and vote
-- 8. The Operations Knowledge Archive
+- 8. The Operations Knowledge Vault
 - 9. Revenue split profiles
 - 10. Payment account ownership
 - 11. Budget categories and payment account names
@@ -1308,7 +1308,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 5. The Three-Signature Expense Flow
 - 6. The Active Desks and the Treasurer Desk
 - 7. The budget review and vote
-- 8. The Operations Knowledge Archive
+- 8. The Operations Knowledge Vault
 - 9. Parish fundraiser splits
 - 10. Batch coding and cash box audits
 - 11. Account ownership and parish-held revenue

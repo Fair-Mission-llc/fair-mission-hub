@@ -162,7 +162,7 @@ export interface Council {
   meeting_pin_token?: string | null;
   /**
    * Sprints 8G/8H (Schema 78): INT DEFAULT 0 - 1 shares the council's listed assets with its ACTIVE affiliates in the
-   * Cross-Council Loaner Library. A brother council's item shows only when both councils have it on (loaner-library.ts).
+   * Shared Equipment Library. A brother council's item shows only when both councils have it on (loaner-library.ts).
    */
   is_loaner_library_enabled?: number | null;
   /** Sprints 8G/8H (Schema 78): the council's state district number (INT NULL), the affiliations directory's tiebreak. */
@@ -306,10 +306,16 @@ export interface Event {
    */
   IntakeSessionStatus?: EventIntakeSessionStatus;
   /**
-   * VARCHAR(128) (Sprint 6C, Schema 36): the Drive file id of the event's flyer from the Marketing Factory; written only
+   * VARCHAR(128) (Sprint 6C, Schema 36): the Drive file id of the event's flyer from the Recruitment Factory; written only
    * by events.setFlyerFile. NULL until a flyer is filed.
    */
   GoogleDriveFlyerFileID?: string | null;
+  /**
+   * VARCHAR(20) (Sprint 11 Revision 10.0, schema 108): the Supreme Form 1728 line the officer confirmed in the event
+   * form's suggestion popup (a form-1728.ts code such as 'COMMUNITY_A'). NULL until confirmed; reports then read the
+   * line from the title.
+   */
+  form_1728_line?: string | null;
   /**
    * Sprint 8N (Schema 84): the collection's lifecycle (cash-audit.ts EVENT_COLLECTION_WORKFLOW). VARCHAR(20) DEFAULT
    * 'OPEN'; 'CONCLUDED' after '[ 🛑 Conclude Event Session & Lock Logs ]' on a phone, 'RECONCILED' after the Treasurer's
@@ -853,7 +859,7 @@ export interface CouncilAssetsInventory {
   serial_number?: string | null; // VARCHAR(100), Sprint 6P
   storage_location?: string | null; // VARCHAR(255), Sprint 6P: where the item is kept
   photo_url?: string | null; // VARCHAR(2000), Sprint 7F: since the Extension a /api/media/assets/<council>/<file> path on the portal server
-  is_loanable?: number; // INT DEFAULT 0, Sprint 8F: 1 when the item is in the Cross-Council Loaner Library
+  is_loanable?: number; // INT DEFAULT 0, Sprint 8F: 1 when the item is in the Shared Equipment Library
   loan_status?: CouncilAssetLoanStatus; // VARCHAR(20) DEFAULT 'AVAILABLE', Sprint 8F
   borrower_name?: string | null; // VARCHAR(255), Sprint 8F: who has it while CHECKED_OUT
   borrower_council?: string | null; // VARCHAR(255), Sprint 8F: the borrower's council while CHECKED_OUT
@@ -892,7 +898,7 @@ export type CouncilAffiliationStatus = 'PENDING' | 'ACTIVE' | 'DECLINED';
 /**
  * A bilateral handshake between two councils (Sprints 8G/8H, schema 78): the requesting council invites, the target
  * council's Grand Knight (or Deputy Grand Knight) accepts or declines. An ACTIVE row unlocks asset sharing between the
- * two in the Cross-Council Loaner Library (council-affiliations.ts).
+ * two in the Shared Equipment Library (council-affiliations.ts).
  */
 export interface CouncilAffiliations {
   id: number;
@@ -1544,10 +1550,10 @@ export interface TransactionAttachment {
   captured_at: string; // DATETIME, 'YYYY-MM-DD HH:MM:SS'
 }
 
-/** Sprint 8I: the six governance tags of the Operations Knowledge Archive. */
+/** Sprint 8I: the six governance tags of the Operations Knowledge Vault. */
 export type OperationsKnowledgeCategory = 'RECRUITING' | 'TREASURY' | 'CLERGY' | 'COMPLIANCE' | 'DEVOTIONAL' | 'LOGISTICS';
 
-/** Sprint 8I: one signed, append-only entry in a council's Operations Knowledge Archive (operations-knowledge.ts). */
+/** Sprint 8I: one signed, append-only entry in a council's Operations Knowledge Vault (operations-knowledge.ts). */
 export interface CouncilOperationsKnowledge {
   entry_id: number;
   council_id: number; // Council

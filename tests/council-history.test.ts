@@ -1,4 +1,4 @@
-// Sprint 6K (Phase 6): Council History Legacy Matrix and the Oral History recorder - schema 48's CouncilHistoryAnnals
+// Sprint 6K (Phase 6): Historical Chronology Legacy Matrix and the Oral History recorder - schema 48's CouncilHistoryAnnals
 // (one row per council and fraternal year: the officer core's collective accomplishments and team metrics) and
 // CouncilSpiritualDiary (one entry per member per day, carrying the recorded testimonial's asset link). The Team Legacy
 // dashboard (/history) shows each year's seated officers beside that prose and never an individual scorecard.
@@ -191,7 +191,7 @@ describe('history rules (pure)', () => {
 });
 
 describe('portal navigation', () => {
-  it('opens Council History to every member under the Performance pillar', () => {
+  it('opens Historical Chronology to every member under the Performance pillar', () => {
     const member = { memberId: 3, councilId: OWN, memberType: 'Member' as const, isOfficer: false };
     expect(portalAreas(member)).toContain('history');
     const performance = portalSidebar(member).find((g) => g.id === 'performance')!;

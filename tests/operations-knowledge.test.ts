@@ -1,5 +1,5 @@
-// Sprint 8I (schema version 79): the Operations Knowledge Archive on the Oversight Desk and its read-only
-// Operations Knowledge Archive under System Settings.
+// Sprint 8I (schema version 79): the Operations Knowledge Vault on the Oversight Desk and its read-only
+// Operations Knowledge Vault under System Settings.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -153,7 +153,7 @@ describe('the vault rules (pure)', () => {
   });
 });
 
-describe.each(drivers)('the Operations Knowledge Archive in the $name driver', (d) => {
+describe.each(drivers)('the Operations Knowledge Vault in the $name driver', (d) => {
   it('appends signed entries and lists them newest first', async () => {
     const db = await d.make(); // 2026-09-20 12:00
     // The seeded Super Admin holds the Grand Knight seat; the Council Admin is the Financial Secretary.
@@ -203,7 +203,7 @@ describe('the vault and archive screens', () => {
     expect(desks).toContain('OperationsKnowledgeArchiveEntryForm');
     expect(desks).toContain('canWriteOperationsKnowledge(user, councilId)');
     const parts = read('apps/web/components/KnowledgeArchiveParts.tsx');
-    expect(parts).toContain('Operations Knowledge Archive');
+    expect(parts).toContain('Operations Knowledge Vault');
     expect(parts).toContain('addOperationsKnowledge');
     expect(parts).toContain('<Markdown');
     expect(parts).toContain('data-surface="navy"');
@@ -224,7 +224,7 @@ describe('the vault and archive screens', () => {
 
   it('documents the sprint in the admin guide', () => {
     const guide = read('docs/ADMIN_USER_GUIDE.md');
-    expect(guide).toContain('Operations Knowledge Archive');
-    expect(guide).toContain('Operations Knowledge Archive');
+    expect(guide).toContain('Operations Knowledge Vault');
+    expect(guide).toContain('Operations Knowledge Vault');
   });
 });

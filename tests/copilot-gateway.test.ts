@@ -136,7 +136,7 @@ describe('askCopilotStudio', () => {
 });
 
 describe('portal wiring', () => {
-  it('puts the labelled prompt box on the Marketing Factory and the key on the Credentials Vault page', () => {
+  it('puts the labelled prompt box on the Recruitment Factory and the key on the Credentials Vault page', () => {
     expect(read('apps/web/app/resources/marketing/page.tsx')).toContain('<CopilotPrompt');
     const box = read('apps/web/components/CopilotPrompt.tsx');
     expect(box).toContain('label={COPILOT_PROMPT_LABEL}');

@@ -31,7 +31,7 @@ describe('module folders on the Active Desks', () => {
       'Constitutional Advisor Panels',
       'Connected Councils',
     ]);
-    expect(deskModulesFor('financial-secretary').map((m) => m.title)).toEqual(['Semiannual Audit Form 1295 Center', 'Charity Check Issuance Console']);
+    expect(deskModulesFor('financial-secretary').map((m) => m.title)).toEqual(['Financial Inspections', 'Charity Check Issuance Console']);
     expect(deskModulesFor('treasurer').map((m) => m.title)).toEqual(['Annual Budget vs Actuals Ledger Grid', 'Bank Statement Match-Window']);
     expect(deskModulesFor('recorder').map((m) => m.title)).toEqual(['Council Resolutions and Motions Ledger']);
     expect(deskModulesFor('historian').map((m) => m.title)).toEqual(['Google Drive Media Gallery Sync Board']);

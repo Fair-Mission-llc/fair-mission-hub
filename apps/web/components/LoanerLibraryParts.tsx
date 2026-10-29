@@ -1,5 +1,5 @@
 'use client';
-// The Cross-Council Loaner Library (Sprint 8F, loaner-library.ts). LoanerLibraryDirectory is the shared directory every
+// The Shared Equipment Library (Sprint 8F, loaner-library.ts). LoanerLibraryDirectory is the shared directory every
 // member reads at /inventory/loaner-library: the listed items of every council, available first, with who has each one
 // and when it is due back. LoanerLibraryManager is the lending desk of one council - on the Grand Knight Desk (which
 // the Deputy Grand Knight shares) and on the library page for those leaders: an "In the loaner library" switch per

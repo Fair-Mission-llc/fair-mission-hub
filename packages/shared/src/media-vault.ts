@@ -5,7 +5,7 @@
 //
 // Each CouncilMediaVault row is one photo tagged with its council, an optional event or meeting, a location and a
 // calendar year. The library also lists the event photos stored before the vault, in Event.PhotoGalleryURL (also where
-// the phone and the Marketing Factory still read and write them), tagged from the event's own Location and StartDate.
+// the phone and the Recruitment Factory still read and write them), tagged from the event's own Location and StartDate.
 // A Smart Album is a saved filter (MediaAlbumCriteria): the photos it shows are worked out again each time it opens, so
 // new photos that match are added.
 // =========================================================================
@@ -286,10 +286,10 @@ export function assertMayDeleteSmartAlbum(actor: MemberWriteActor, album: Pick<M
 export const mayDeleteSmartAlbum = (actor: MemberWriteActor, album: Pick<MediaSmartAlbums, 'id' | 'council_id' | 'created_by_member_id'>): boolean =>
   albumDeleteDenial(actor, album) === null;
 
-// ---- the Council Photo Gallery's two views (Sprint 10 Revision 1.0) ----
+// ---- the Media & Memory Center's two views (Sprint 10 Revision 1.0) ----
 
 /** The sidebar's top-level gallery node and the gallery page's title. */
-export const COUNCIL_PHOTO_GALLERY_TITLE = '📸 Council Photo Gallery';
+export const COUNCIL_PHOTO_GALLERY_TITLE = '📸 Media & Memory Center';
 
 /** The gallery's two views: looking at photos and albums, or adding photos and saving albums. */
 export type GalleryViewId = 'browse' | 'manage';
