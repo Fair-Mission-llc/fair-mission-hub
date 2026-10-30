@@ -419,7 +419,7 @@ function useLegalDocument(id: LegalNoticeId | null): { markdown: string | null; 
   useEffect(() => {
     if (!isLegalDocumentId(id) || id in docs) return;
     let current = true;
-    void fetch(`${LEGAL_DOCUMENT_ROUTE}?notice=${id}`)
+    void fetch(`${LEGAL_DOCUMENT_ROUTE}?notice=${id}`, { cache: 'no-store' })
       .then(async (res) => (res.ok ? ((await res.json()) as { markdown?: string }).markdown ?? null : null))
       .catch(() => null)
       .then((markdown) => {

@@ -6,6 +6,9 @@ import { isLegalDocumentId, LEGAL_DOCUMENT_FILES, LEGAL_DOCUMENTS_EFFECTIVE_DATE
 import { readDocsFile } from '@/lib/docs-files';
 
 export const runtime = 'nodejs';
+// Sprint 11 Revision 15.5: read the file from disk on every request, in development and in the built pilot alike, so an
+// edited Terms or Privacy Policy shows without a rebuild.
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const notice = new URL(req.url).searchParams.get('notice');
