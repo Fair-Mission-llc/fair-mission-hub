@@ -57,7 +57,9 @@ Depending on your geographic location or state of residence (including Californi
 
 **The Right to Non-Discrimination:** The Company strictly guarantees we will never deny service, alter pricing, or degrade performance if you choose to exercise your privacy choices.
 
-To submit a formal consumer privacy request, please contact our data compliance desk at tim@fairmissionsoftware.com. We verify and respond to all validated state requests within forty-five (45) days of receipt.**6. CHILDREN'S PRIVACY**
+To submit a formal consumer privacy request, please contact our data compliance desk at tim@fairmissionsoftware.com. We verify and respond to all vvalidated state requests within forty-five (45) days of receipt.
+
+**6. CHILDREN'S PRIVACY**
 
 Our Software is not intended for or directed toward individuals under the age of 13. We do not knowingly collect personal data from children. If we discover that a child under 13 has provided us with personal information, we will delete it from our systems immediately.
 

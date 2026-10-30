@@ -16,8 +16,8 @@ export type LegalNoticeId = 'about' | 'terms' | 'privacy';
 export const LEGAL_DOCUMENT_FILES: Partial<Record<LegalNoticeId, string>> = {
   // Sprint 11 Revision 2.0: the owner's own Terms and Privacy Policy, converted from the .docx originals in docs/legal/.
   // Relative to docs/: readDocsFile adds the docs/ folder itself.
-  terms: 'legal/transformed_doc/TERMS_OF_SERVICE.md',
-  privacy: 'legal/transformed_doc/PRIVACY_POLICY.md',
+  terms: 'legal/TERMS_OF_SERVICE.md',
+  privacy: 'legal/PRIVACY_POLICY.md',
 };
 export const LEGAL_DOCUMENTS_EFFECTIVE_DATE = '2026-10-26';
 export const LEGAL_DOCUMENT_ROUTE = '/api/legal';
@@ -46,7 +46,7 @@ export const LEGAL_NOTICES: readonly LegalNotice[] = [
   {
     id: 'terms',
     title: 'Terms of Service',
-    // Sprint 11 Revision 15.5: a short form of docs/legal/transformed_doc/TERMS_OF_SERVICE.md (October 26, 2026), shown
+    // Sprint 11 Revision 15.5: a short form of docs/legal/TERMS_OF_SERVICE.md (October 26, 2026), shown
     // only when that file cannot be read. The file is the governing text.
     paragraphs: [
       `Last Updated: October 26, 2026. These Terms govern your use of ${PLATFORM_APP_NAME}, Mission Clarity™ and Clarity Giving™ (the "Software"), owned and operated by Fair Mission, LLC. By using the Software, you agree to these Terms and to our Privacy Policy.`,
@@ -62,7 +62,7 @@ export const LEGAL_NOTICES: readonly LegalNotice[] = [
   {
     id: 'privacy',
     title: 'Privacy Policy',
-    // Sprint 11 Revision 15.5: a short form of docs/legal/transformed_doc/PRIVACY_POLICY.md (October 26, 2026), shown only
+    // Sprint 11 Revision 15.5: a short form of docs/legal/PRIVACY_POLICY.md (October 26, 2026), shown only
     // when that file cannot be read. The file is the governing text.
     paragraphs: [
       `Last Updated: October 26, 2026. Fair Mission LLC operates ${PLATFORM_APP_NAME}, Mission Clarity™ and Clarity Giving™ (the "Software"). This policy explains how we collect, use, disclose and safeguard your information. By using the Software, you agree to it.`,

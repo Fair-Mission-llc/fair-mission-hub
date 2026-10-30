@@ -236,7 +236,7 @@ describe('4. the sidebar and Council Lookups', () => {
   });
 
   it("reads the owner's own Terms and Privacy Policy", () => {
-    expect(LEGAL_DOCUMENT_FILES).toEqual({ terms: 'legal/transformed_doc/TERMS_OF_SERVICE.md', privacy: 'legal/transformed_doc/PRIVACY_POLICY.md' });
+    expect(LEGAL_DOCUMENT_FILES).toEqual({ terms: 'legal/TERMS_OF_SERVICE.md', privacy: 'legal/PRIVACY_POLICY.md' });
   });
 });
 
