@@ -360,3 +360,88 @@ export function form1728YearToDate(now: Date): { fromDate: string; toDate: strin
   const pad = (n: number) => String(n).padStart(2, '0');
   return { fromDate: `${now.getFullYear()}-01-01`, toDate: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` };
 }
+
+/** Sprint 11 Revision 15.0: one section of the compiled report, with its lines and subtotals. */
+export interface Form1728SectionTotal {
+  section: Form1728Section;
+  hours: number;
+  entries: number;
+  /** Distinct members with hours on any line of the section. */
+  volunteers: number;
+  /** The section's lines with hours (every line when the report keeps empty lines), in report order. */
+  lines: Form1728LineTotal[];
+}
+
+/** Sprint 11 Revision 15.0: the print-ready Form 1728 report for a span, built from the synced time rows. */
+export interface Form1728Report {
+  fromDate: string;
+  toDate: string;
+  sections: Form1728SectionTotal[];
+  totals: { hours: number; entries: number; volunteers: number; lines: number };
+}
+
+/**
+ * Compiles the Form 1728 report for the rows dated `fromDate` to `toDate` (inclusive): lines grouped under Faith, Family,
+ * Community and Life, each section with its hours, entries and distinct volunteers, and the grand totals. Hours are
+ * rounded to the quarter hour, as tallyForm1728 rounds them. With `includeEmptyLines` every catalog line is listed, so
+ * the printed sheet mirrors the paper form; otherwise only lines with hours appear.
+ */
+export function compileForm1728Report(
+  rows: readonly Form1728HoursRow[],
+  fromDate: string,
+  toDate: string,
+  options: { includeEmptyLines?: boolean } = {},
+): Form1728Report {
+  const tallied = new Map(tallyForm1728(rows, fromDate, toDate).map((l) => [l.code, l]));
+  const sectionMembers = new Map<Form1728Section, Set<number>>(FORM_1728_SECTIONS.map((s) => [s, new Set<number>()]));
+  const allMembers = new Set<number>();
+  for (const row of rows) {
+    if (row.date < fromDate || row.date > toDate) continue;
+    const section = form1728Line(resolveForm1728Line(row.line, row.title, row.description).code).section;
+    sectionMembers.get(section)!.add(row.memberId);
+    allMembers.add(row.memberId);
+  }
+  const sections = FORM_1728_SECTIONS.map((section) => {
+    const lines = FORM_1728_LINES.filter((l) => l.section === section)
+      .map((l) => tallied.get(l.code) ?? (options.includeEmptyLines ? { ...l, hours: 0, entries: 0, volunteers: 0, records: [] } : null))
+      .filter((l): l is Form1728LineTotal => l !== null);
+    return {
+      section,
+      hours: quarterHours(lines.reduce((n, l) => n + l.hours, 0)),
+      entries: lines.reduce((n, l) => n + l.entries, 0),
+      volunteers: sectionMembers.get(section)!.size,
+      lines,
+    };
+  });
+  return {
+    fromDate,
+    toDate,
+    sections,
+    totals: {
+      hours: quarterHours(sections.reduce((n, s) => n + s.hours, 0)),
+      entries: sections.reduce((n, s) => n + s.entries, 0),
+      volunteers: allMembers.size,
+      lines: tallied.size,
+    },
+  };
+}
+
+/** A CSV cell: quoted when it holds a comma, quote or line break. */
+const csvCell = (value: string | number): string => {
+  const text = String(value);
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+/**
+ * The compiled report as CSV, one row per line plus a subtotal row per section and a grand total row, for the
+ * one-click export beside the printed sheet.
+ */
+export function form1728ReportCsv(report: Form1728Report): string {
+  const out: (string | number)[][] = [['Section', 'Line', 'Label', 'Records', 'Entries', 'Volunteers', 'Hours']];
+  for (const s of report.sections) {
+    for (const l of s.lines) out.push([s.section, l.line, l.label, l.records.join('; '), l.entries, l.volunteers, l.hours]);
+    out.push([s.section, '', `${s.section} subtotal`, '', s.entries, s.volunteers, s.hours]);
+  }
+  out.push(['All', '', `Total ${report.fromDate} to ${report.toDate}`, '', report.totals.entries, report.totals.volunteers, report.totals.hours]);
+  return `${out.map((r) => r.map(csvCell).join(',')).join('\r\n')}\r\n`;
+}

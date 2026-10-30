@@ -6,19 +6,23 @@
 // Event.form_1728_line. A badge for a record with a confirmed line shows that line, marked 'Confirmed'.
 // Sprint 11 Revision 11.0: the same popup confirms an activity's line (Activities.form_1728_line, schema 109) through
 // useForm1728Confirm, on the Activities page and the Admin Desk's Council Lookup Tables.
+// Sprint 11 Revision 15.0: the year-to-date panel reads compileForm1728Report (section subtotals and grand totals) and
+// offers one-click Print (a print-ready sheet listing every line, as the paper form does) and CSV export.
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
+  compileForm1728Report,
   form1728Line,
+  form1728ReportCsv,
   form1728YearToDate,
   FORM_1728_LINES,
   isForm1728LineCode,
   resolveForm1728Line,
   searchForm1728Lines,
   suggestForm1728Lines,
-  tallyForm1728,
   type Form1728Context,
   type Form1728HoursRow,
   type Form1728LineCode,
+  type Form1728Report,
 } from '@kofc/shared';
 import { Button, cx, Empty, Input, Notice, Panel, Table, Td } from '@/components/ui';
 import { formatDecimalHours } from '@/lib/format';
@@ -246,47 +250,122 @@ export function needsForm1728Confirmation(name: string, storedName: string | nul
   return storedName === null || !isForm1728LineCode(storedLine) || name.trim() !== storedName.trim();
 }
 
-/** The council's activity hours from January 1 to today, by Form 1728 line. */
+const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+/** The report as a standalone, print-ready page: every line of the form, section subtotals and the grand total. */
+export function form1728PrintHtml(report: Form1728Report, heading: string): string {
+  const hours = (n: number) => escapeHtml(formatDecimalHours(n));
+  const body = report.sections
+    .map(
+      (s) =>
+        `<tr class="sec"><th colspan="5">${s.section}</th></tr>` +
+        s.lines
+          .map(
+            (l) =>
+              `<tr><td>${l.line}. ${escapeHtml(l.label)}</td><td>${escapeHtml(l.records.join(', '))}</td><td>${l.entries}</td><td>${l.volunteers}</td><td>${hours(l.hours)}</td></tr>`,
+          )
+          .join('') +
+        `<tr class="sub"><td colspan="2">${s.section} subtotal</td><td>${s.entries}</td><td>${s.volunteers}</td><td>${hours(s.hours)}</td></tr>`,
+    )
+    .join('');
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(heading)}</title><style>
+body{font:11pt Georgia,serif;margin:0.6in}h1{font-size:16pt;margin:0 0 4pt}p{margin:0 0 12pt;color:dimgray}
+table{width:100%;border-collapse:collapse}th,td{border:1px solid gray;padding:3pt 5pt;text-align:left;vertical-align:top}
+td:nth-child(n+3){text-align:right;white-space:nowrap}.sec th{background:gainsboro}.sub td,.tot td{font-weight:bold}
+tr{page-break-inside:avoid}</style></head><body><h1>${escapeHtml(heading)}</h1>
+<p>Activity hours ${report.fromDate} to ${report.toDate}. ${report.totals.volunteers} volunteers, ${report.totals.entries} entries.</p>
+<table><thead><tr><th>Line</th><th>Activities</th><th>Entries</th><th>Volunteers</th><th>Hours</th></tr></thead><tbody>${body}
+<tr class="tot"><td colspan="2">Total</td><td>${report.totals.entries}</td><td>${report.totals.volunteers}</td><td>${hours(report.totals.hours)}</td></tr>
+</tbody></table></body></html>`;
+}
+
+/** The council's activity hours from January 1 to today, by Form 1728 line, with Print and CSV export. */
 export function Form1728YearToDatePanel({ activities }: { activities: { id: number; ActivityName: string; ActivityDescription: string }[] }) {
   const ids = activities.map((a) => a.id).join(',');
   const logs = useLoad(() => Promise.all(activities.map((a) => db.activityTime.listByActivity(a.id))), [ids]);
   const span = form1728YearToDate(new Date());
+  const rows: Form1728HoursRow[] = useMemo(
+    () =>
+      (logs.data ?? []).flatMap((log) =>
+        log.entries.map((e) => ({
+          title: log.activity.ActivityName,
+          description: log.activity.ActivityDescription,
+          line: log.activity.form_1728_line ?? null,
+          date: e.row.ActivityDate,
+          hours: e.row.Hours,
+          memberId: e.row.MemberID,
+        })),
+      ),
+    [logs.data],
+  );
   if (logs.error) return <Notice tone="error">{logs.error}</Notice>;
   if (!logs.data) return <p className="text-sm text-muted">Totaling the Form 1728 lines…</p>;
-  const rows: Form1728HoursRow[] = logs.data.flatMap((log) =>
-    log.entries.map((e) => ({
-      title: log.activity.ActivityName,
-      description: log.activity.ActivityDescription,
-      line: log.activity.form_1728_line ?? null,
-      date: e.row.ActivityDate,
-      hours: e.row.Hours,
-      memberId: e.row.MemberID,
-    })),
-  );
-  const lines = tallyForm1728(rows, span.fromDate, span.toDate);
-  const total = lines.reduce((n, l) => n + l.hours, 0);
+  const year = span.fromDate.slice(0, 4);
+  const heading = `Form 1728 year to date (${year})`;
+  const report = compileForm1728Report(rows, span.fromDate, span.toDate);
+  const print = () => {
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(form1728PrintHtml(compileForm1728Report(rows, span.fromDate, span.toDate, { includeEmptyLines: true }), heading));
+    win.document.close();
+    win.focus();
+    win.print();
+  };
+  const exportCsv = () => {
+    const url = URL.createObjectURL(new Blob([form1728ReportCsv(report)], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `form-1728-${span.fromDate}-to-${span.toDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const actions =
+    report.totals.lines > 0 ? (
+      <div className="flex gap-2">
+        <Button size="sm" variant="secondary" onClick={print}>
+          Print
+        </Button>
+        <Button size="sm" variant="secondary" onClick={exportCsv}>
+          Export CSV
+        </Button>
+      </div>
+    ) : undefined;
   return (
-    <Panel title={`Form 1728 year to date (${span.fromDate.slice(0, 4)})`}>
-      {lines.length === 0 ? (
+    <Panel title={heading} actions={actions}>
+      {report.totals.lines === 0 ? (
         <Empty>No activity hours have been logged since January 1.</Empty>
       ) : (
         <Table caption="Activity hours by Form 1728 line" head={['Line', 'Activities', 'Entries', 'Volunteers', 'Hours']}>
-          {lines.map((l) => (
-            <tr key={l.code}>
-              <Td className="whitespace-nowrap font-bold">
-                {l.section} {l.line} · {l.label}
-              </Td>
-              <Td className="text-xs">{l.records.join(', ')}</Td>
-              <Td>{l.entries}</Td>
-              <Td>{l.volunteers}</Td>
-              <Td>{formatDecimalHours(l.hours)}</Td>
-            </tr>
-          ))}
+          {report.sections
+            .filter((s) => s.lines.length > 0)
+            .flatMap((s) => [
+              ...s.lines.map((l) => (
+                <tr key={l.code}>
+                  <Td className="whitespace-nowrap font-bold">
+                    {l.section} {l.line} · {l.label}
+                  </Td>
+                  <Td className="text-xs">{l.records.join(', ')}</Td>
+                  <Td>{l.entries}</Td>
+                  <Td>{l.volunteers}</Td>
+                  <Td>{formatDecimalHours(l.hours)}</Td>
+                </tr>
+              )),
+              <tr key={`${s.section}-subtotal`} className="italic">
+                <Td colSpan={2} className="text-right">
+                  {s.section} subtotal
+                </Td>
+                <Td>{s.entries}</Td>
+                <Td>{s.volunteers}</Td>
+                <Td>{formatDecimalHours(s.hours)}</Td>
+              </tr>,
+            ])}
           <tr className="font-bold">
-            <Td colSpan={4} className="text-right">
+            <Td colSpan={2} className="text-right">
               Total
             </Td>
-            <Td>{formatDecimalHours(total)}</Td>
+            <Td>{report.totals.entries}</Td>
+            <Td>{report.totals.volunteers}</Td>
+            <Td>{formatDecimalHours(report.totals.hours)}</Td>
           </tr>
         </Table>
       )}

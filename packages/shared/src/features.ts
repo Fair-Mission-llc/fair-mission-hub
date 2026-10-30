@@ -164,7 +164,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   feature_loaner_library: { label: 'Shared Equipment Library', hint: "The shared loaner library page and the Grand Knight Desk's loaner drawer" },
   feature_advanced_audits: {
     label: 'Financial Inspections',
-    hint: "The Trustees' semiannual audit and Form 1295 center, on its page and the Financial Secretary Desk",
+    hint: "The Trustees' semiannual audit and Form 1295 center, and the inspection drawers of the Financial Secretary and Treasurer desks",
   },
 };
 

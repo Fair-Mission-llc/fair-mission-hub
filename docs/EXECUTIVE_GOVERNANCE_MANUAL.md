@@ -728,6 +728,27 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 | A sister council does not see the activity. | Activities belong to one council. | Add the activity in each council. |
 | The message *"Not saved. Confirm a Form 1728 line to save the activity."* shows. | You selected **Cancel** in the Form 1728 window. | Save again and confirm a line. |
 
+### 3.5 Print the Form 1728 year-to-date report
+> **Prerequisite (who can do this):** You must have council Admin privileges for the council, or Super Admin privileges. The panel shows only for a Knights of Columbus council.
+
+**Goal:** Print or export the activity hours from January 1 to today, by Form 1728 line.
+
+**Start point:** Sidebar → Faith In Action → **Standalone Activities** → the **Form 1728 year to date** panel.
+
+**Steps:**
+1. Read the table. Each section (Faith, Family, Community, Life) ends with a subtotal row. The last row is the total.
+2. To print, select **Print**. A print-ready page opens with every line of the form. Lines with no hours show 0.
+3. To keep a spreadsheet copy, select **Export CSV**. The file name starts with `form-1728-`.
+
+**Expected result:** The printer prints the report, or the CSV file is in your downloads folder.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Print** and **Export CSV** do not show. | No activity hours are logged since January 1. | Log hours first. The buttons show when the panel has hours. |
+| The print page does not open. | The browser blocked the new window. | Allow pop-ups for the portal. Select **Print** again. |
+| Event shift hours are not in the panel. | The panel totals activity hours only. | Use **Supreme Council Sync** for the full report with event hours. |
+
 ---
 
 ## 4. Finances: release, vetting and endorsement
@@ -1676,6 +1697,15 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 The desks no longer use module folders. Each advanced module below is a drawer on its desk (section 14.3.2). The module's own page also stays at its web address.
 
 A drawer shows only to a reader who may open the module. A reader who may not open a module does not see its drawer.
+
+**Financial Inspections switch.** When a Super Admin turns off **Financial Inspections**, five inspection drawers leave the desks. The drawers leave for every reader, including Admins and Super Admins.
+
+| Desk | Drawers that leave when **Financial Inspections** is off |
+| --- | --- |
+| **Financial Secretary Desk** | **Financial Inspections**, **Expense Report (ER) Routing Track**, **Charitable Donation Records** |
+| **Treasurer Desk** | **Cash Box Audit Closure Panel**, **Bank Statement Match-Window** |
+
+The drawers that move money stay on the desks: **Auditing & Return Queue**, **Charity Check Issuance Console**, **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches**. An expense sheet therefore never stops in the queue. The **Donations History** page stays in the sidebar. The switch deletes no records.
 
 | Desk | Module drawer | What the module does |
 | --- | --- | --- |

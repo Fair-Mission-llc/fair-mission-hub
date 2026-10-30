@@ -291,10 +291,27 @@ function clearedBy(u: Actor, spec: DeskDrawerSpec, councilId: number, areas: Rea
   }
 }
 
+/**
+ * Sprint 11 Revision 15.0: the inner inspection drawers of the Financial Secretary and Treasurer desks. They go with
+ * feature_advanced_audits (Financial Inspections): when the switch is off they leave the desk even for a reader whose
+ * portal areas would clear them. The drawers that move money (payment requests, ledger coding, ER settlement, charity
+ * checks) stay; they follow feature_expense_reporting and the charity switches, so a sheet is never stranded.
+ */
+export const FINANCIAL_INSPECTION_DRAWERS: Readonly<Partial<Record<DrawerDeskId, readonly DeskDrawerId[]>>> = {
+  'financial-secretary': ['form-1295', 'er-routing-track', 'donation-records'],
+  treasurer: ['cash-box-audit', 'bank-match'],
+};
+
+/** True when Financial Inspections is off and `id` is one of `desk`'s inspection drawers. No flags reads as all on. */
+export function deskDrawerMasked(desk: DrawerDeskId, id: DeskDrawerId, flags?: FeatureFlags): boolean {
+  if (!flags || flags.feature_advanced_audits) return false;
+  return FINANCIAL_INSPECTION_DRAWERS[desk]?.includes(id) ?? false;
+}
+
 /** The drawers of one desk the reader may open, in display order. */
 export function deskDrawersFor(u: Actor, desk: DrawerDeskId, councilId: number, flags?: FeatureFlags, tenant?: TenantType): DeskDrawerSpec[] {
   const areas = new Set<string>(portalAreas(u, flags, tenant));
-  return DESK_DRAWERS.filter((d) => d.desk === desk && clearedBy(u, d, councilId, areas));
+  return DESK_DRAWERS.filter((d) => d.desk === desk && !deskDrawerMasked(desk, d.id, flags) && clearedBy(u, d, councilId, areas));
 }
 
 type Sheet = Pick<ExpenseReportDetail, 'report'>;

@@ -13,30 +13,57 @@
   "files": [
     "apps/desktop/main.cjs",
     "package.json",
-    "!**/node_modules/**/*"
+    "!**/node_modules/**/*",
+    "!**/*.map"
   ],
   "extraResources": [
     {
       "from": "apps/web/.next/standalone",
       "to": "portal",
-      "filter": ["**/*"]
+      "filter": [
+        "**/*",
+        "!**/*.map",
+        "!**/.next/cache/**",
+        "!**/.cache/**",
+        "!**/vitest/**",
+        "!**/@vitest/**",
+        "!**/__tests__/**",
+        "!**/*.test.*",
+        "!**/*.spec.*",
+        "!**/*.tsbuildinfo"
+      ]
     }
   ],
   "afterPack": "apps/desktop/after-pack.cjs",
   "asar": true,
+  "compression": "maximum",
+  "electronLanguages": [
+    "en-US"
+  ],
   "npmRebuild": false,
   "win": {
-    "target": [{ "target": "portable", "arch": ["x64"] }],
+    "target": [
+      {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
     "artifactName": "KofC-Tracking-Platform-${version}-portable.${ext}"
   },
   "portable": {
     "artifactName": "KofC-Tracking-Platform-${version}-portable.${ext}"
   },
   "mac": {
-    "target": ["dir"]
+    "target": [
+      "dir"
+    ]
   },
   "linux": {
-    "target": ["AppImage"],
+    "target": [
+      "AppImage"
+    ],
     "category": "Office"
   }
 }

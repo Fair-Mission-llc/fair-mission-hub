@@ -117,7 +117,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `feature_lessons_registry` | **Lessons & Knowledge Registries** | Lessons Registry, Operations Knowledge Vault, the archive drawers of the officer desks | None |
 | `feature_marketing_factory` | **Recruitment Factory** | Recruitment Factory. The server also refuses the flyer co-pilot requests. | None |
 | `feature_loaner_library` | **Shared Equipment Library** | Loaner Library, the **Shared Equipment Library** drawer of the **Grand Knight Desk** | None |
-| `feature_advanced_audits` | **Financial Inspections** | Financial Audits, the **Financial Inspections** drawer of the **Financial Secretary Desk** | None |
+| `feature_advanced_audits` | **Financial Inspections** | Financial Audits; the **Financial Inspections**, **Expense Report (ER) Routing Track** and **Charitable Donation Records** drawers of the **Financial Secretary Desk**; the **Cash Box Audit Closure Panel** and **Bank Statement Match-Window** drawers of the **Treasurer Desk** | None |
 
 The retired columns `flag_complex_shifts`, `feature_volunteer_quarantine` and `feature_financial_management` stay in the database, but the portal does not read them. Their modules are core systems now.
 
@@ -1188,6 +1188,8 @@ The pilot scripts use seeded records, for example report 21 at the Financial Sec
 5. On the trial computer, open the file. Sign in with a pilot persona.
 
 **Expected result:** The portal opens in its own window. The records stay in the vault of that computer after the program closes.
+
+> **Note:** the program file is compact. The build packs the file with maximum compression. The build keeps only the US English language pack of the window shell. The build leaves out source maps, build caches and test tool folders. The portal does not use these files when it runs.
 
 **Common problems:**
 | Problem | Cause | Fix |

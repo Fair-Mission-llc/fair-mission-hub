@@ -73,6 +73,7 @@ import {
   bulletinMonthOf,
   COMMUNITY_PRAYER_CARD_TITLE,
   councilWideSettings,
+  deskDrawerMasked,
   deskDrawersFor,
   DESK_ALERT_POLL_MS,
   diaryLogRows,
@@ -872,6 +873,8 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
           void charity.reload();
         }}
         render={(spec) => {
+          // Sprint 11 Revision 15.0: an inspection drawer never renders while Financial Inspections is off.
+          if (deskDrawerMasked('financial-secretary', spec.id, flags)) return null;
           switch (spec.id) {
             case 'payment-requests':
               return <PaymentRequestDesk />;
@@ -967,6 +970,8 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
           void charityPipeline.reload();
         }}
         render={(spec) => {
+          // Sprint 11 Revision 15.0: an inspection drawer never renders while Financial Inspections is off.
+          if (deskDrawerMasked('treasurer', spec.id, flags)) return null;
           switch (spec.id) {
             case 'ledger-coder':
               return <LedgerLineCoder />;

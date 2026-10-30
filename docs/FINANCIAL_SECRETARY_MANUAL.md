@@ -772,6 +772,15 @@ The desks no longer use module folders. Each advanced module below is a drawer o
 
 A drawer shows only to a reader who may open the module. A reader who may not open a module does not see its drawer.
 
+**Financial Inspections switch.** When a Super Admin turns off **Financial Inspections**, five inspection drawers leave the desks. The drawers leave for every reader, including Admins and Super Admins.
+
+| Desk | Drawers that leave when **Financial Inspections** is off |
+| --- | --- |
+| **Financial Secretary Desk** | **Financial Inspections**, **Expense Report (ER) Routing Track**, **Charitable Donation Records** |
+| **Treasurer Desk** | **Cash Box Audit Closure Panel**, **Bank Statement Match-Window** |
+
+The drawers that move money stay on the desks: **Auditing & Return Queue**, **Charity Check Issuance Console**, **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches**. An expense sheet therefore never stops in the queue. The **Donations History** page stays in the sidebar. The switch deletes no records.
+
 | Desk | Module drawer | What the module does |
 | --- | --- | --- |
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2 of the Executive Governance Manual). |
