@@ -29,7 +29,7 @@
 //     the drawer is opened.
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
-import { buildLiquidityGauges, canOpenTreasurerDesk, canPostGeneralLedger } from '@kofc/shared';
+import { buildLiquidityGauges, canOpenTreasurerDesk, canPostGeneralLedger, TRANSFER_FUNDS_TITLE } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { BalanceScale, LiquidityGaugeCard, TransferDrawer } from '@/components/FinanceParts';
 import { NetWorthCard } from '@/components/NetWorthParts';
@@ -140,7 +140,7 @@ function FinanceDashboard() {
         actions={
           canPost && chart.data ? (
             <Button variant="primary" onClick={() => setTransferring(true)}>
-              Transfer between accounts
+              {TRANSFER_FUNDS_TITLE}
             </Button>
           ) : undefined
         }

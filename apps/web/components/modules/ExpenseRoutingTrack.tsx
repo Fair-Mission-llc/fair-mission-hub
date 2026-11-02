@@ -19,6 +19,7 @@ import {
   listExpenseReferences,
   sumAmounts,
   type ExpenseReferenceOptions,
+  DISBURSED_CHECK_REGISTRY_TITLE,
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { ExpenseSheetItems, ExpenseStatusPill, HonoraryExpenseBadge, ReturnToMemberForm, SignatureTrail, submitterName } from '@/components/ExpenseParts';
@@ -85,7 +86,7 @@ export function AuditQueue() {
                 <>
                   .{' '}
                   <Link href="/expenses/disbursements" className="font-bold underline">
-                    Open Bulk Check Payments Made
+                    Open the {DISBURSED_CHECK_REGISTRY_TITLE}
                   </Link>
                 </>
               ) : (

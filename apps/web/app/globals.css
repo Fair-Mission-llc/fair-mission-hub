@@ -162,3 +162,16 @@
     }
   }
 }
+
+/*
+ * Sprint 11 Revision 16.0: one-line labels in narrow side columns (the Event Planner's event list and the portal
+ * sidebar's links). Long text ends in an ellipsis instead of spilling out; the full text stays in the title tooltip.
+ */
+@layer components {
+  .sidebar-truncate {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    min-width: 0;
+  }
+}

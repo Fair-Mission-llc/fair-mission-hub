@@ -14,12 +14,8 @@ export function KnowledgeArchive() {
   return (
     <>
       <PageTitle>Operations Knowledge Vault</PageTitle>
-      <p className="mb-4 text-base">
-        Signed notes from the past and present leaders of every council on the platform: recruiting, treasury, clergy, compliance, devotional and logistics.
-        Each note carries the badge of the council that wrote it. Tick &quot;Filter by My Home Council Only&quot; to see only your council&apos;s notes, pick a
-        tag or a fraternal year, or type words to search. This archive is read-only; each council&apos;s Grand Knight, Deputy Grand Knight and Admins add
-        entries from the Operations Knowledge Vault drawer of its Grand Knight Desk.
-      </p>
+      {/* Sprint 11 Revision 16.0: one short line in place of the long introduction. */}
+      <p className="mb-4 text-base">Signed operating notes from council leaders across the platform. Read-only: search, or filter by tag, year or your home council.</p>
       <KnowledgeArchiveGrid user={user} />
     </>
   );

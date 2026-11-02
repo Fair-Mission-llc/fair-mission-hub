@@ -166,7 +166,7 @@ describe('3. schema 108', () => {
     expect(page).toContain('<Form1728SuggestionDialog');
     expect(page).toContain('form_1728_line: form1728Line');
     const parts = read('apps/web/components/Form1728Parts.tsx');
-    expect(parts).toContain('suggestForm1728Lines(');
+    expect(parts).toContain('topForm1728Suggestions(');
     expect(parts).toContain('searchForm1728Lines(');
     expect(parts).toContain('showModal()');
   });

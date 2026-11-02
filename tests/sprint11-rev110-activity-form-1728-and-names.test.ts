@@ -136,14 +136,15 @@ describe('5. five more unified screen names', () => {
   const sidebar = read('apps/web/components/Sidebar.tsx');
   const manuals = ['docs/ADMIN_USER_GUIDE.md', 'docs/EXECUTIVE_GOVERNANCE_MANUAL.md', 'docs/FINANCIAL_SECRETARY_MANUAL.md', 'docs/TREASURER_MANUAL.md', 'docs/MEMBER_USER_GUIDE.md'];
 
-  it('Transaction Ledger names the general ledger link and page', () => {
-    expect(sidebar).toContain("'finance/ledger': { href: '/finance/ledger', label: 'Transaction Ledger'");
-    expect(read('apps/web/app/finance/ledger/page.tsx')).toContain('Transaction Ledger');
+  // Sprint 11 Revision 16.0: 'Transaction Ledger' became '[ 📊 Chart of Accounts & General Ledger ]' (GENERAL_LEDGER_TITLE).
+  it('GENERAL_LEDGER_TITLE names the general ledger link and page', () => {
+    expect(sidebar).toContain("'finance/ledger': { href: '/finance/ledger', label: GENERAL_LEDGER_TITLE");
+    expect(read('apps/web/app/finance/ledger/page.tsx')).toContain('{GENERAL_LEDGER_TITLE}');
   });
 
   it('Roster & Achievements names the roster link, page and directory', () => {
-    expect(MEMBER_ROSTER_TITLE).toBe('Roster & Achievements');
-    expect(sidebar).toContain("roster: { href: '/roster', label: 'Roster & Achievements'");
+    expect(MEMBER_ROSTER_TITLE).toBe('[ 👥 Council Roster ]');
+    expect(sidebar).toContain("roster: { href: '/roster', label: '[ 👥 Council Roster ]'");
   });
 
   it('Chamber Check-In names the PIN drawers and the phone check-in panel', () => {

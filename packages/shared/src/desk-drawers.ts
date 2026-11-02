@@ -152,10 +152,26 @@ export const DESK_CABINET_LABELS: Readonly<Record<DeskCabinetId, string>> = {
   accounting: '[ 🔧 Accounting Configuration ]',
   reference: '[ 📖 Reference Workflows ]',
 };
+// Sprint 11 Revision 16.0: the accounting names, one spelling for the sidebar, the desk drawers and the page titles.
+/** The chart of accounts and the general ledger (was 'Transaction Ledger' and 'Chart of Accounts & GL Setup'). */
+export const GENERAL_LEDGER_TITLE = '[ 📊 Chart of Accounts & General Ledger ]';
+/** The transfer between two asset accounts (finance.transferAssetFunds). */
+export const TRANSFER_FUNDS_TITLE = '[ 💸 Transfer Funds ]';
+/** The Treasurer's ledger coding desk (was 'Treasurer Ledger Audit Desk' and 'Ledger Line Coder'). */
+export const TREASURER_LEDGER_AUDIT_TITLE = '[ 🔍 Treasurer Ledger Audit ]';
+/** Paying fully signed sheets by check (was 'Bulk Check Payments Made' and 'Expense Report (ER) Settlement'). */
+export const DISBURSED_CHECK_REGISTRY_TITLE = '[ 🧾 Disbursed Check Registry ]';
+/** Paying charity grants by check (was 'Charity Payments Made Ledger' and 'Charitable Contribution Matches'). */
+export const CHARITABLE_GRANTS_REGISTRY_TITLE = '[ 🕊️ Charitable Grants Registry ]';
+/** The Financial Secretary's audit of submitted sheets (was 'FS Expense Audit' and 'Auditing & Return Queue'). */
+export const FS_EXPENSE_AUDIT_QUEUE_TITLE = '[ 📋 FS Expense Audit Queue ]';
+/** The sidebar accordion that groups the financial views inside the Finances pillar. */
+export const FINANCIAL_VIEWS_ACCORDION_TITLE = 'Financial Views';
+
 /** Sprint 8S Revision 10.4: the Treasurer's general ledger folder (the chart of accounts on the Treasurer Desk). */
-export const CHART_OF_ACCOUNTS_FOLDER_TITLE = 'Chart of Accounts & GL Setup';
+export const CHART_OF_ACCOUNTS_FOLDER_TITLE = GENERAL_LEDGER_TITLE;
 /** Sprint 8S Revision 10.4: the Financial Secretary's audit folder - verify and sign each submitted sheet, or return it. */
-export const FS_AUDIT_FOLDER_TITLE = 'Auditing & Return Queue';
+export const FS_AUDIT_FOLDER_TITLE = FS_EXPENSE_AUDIT_QUEUE_TITLE;
 /** True for a passive reference folder: it shows its count but never lights or floats. */
 export const isReferenceDrawer = (spec: Pick<DeskDrawerSpec, 'cabinet'>): boolean => spec.cabinet === 'reference';
 /** The heading of the spine's Dynamic Priority Float. */
@@ -231,16 +247,16 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'financial-secretary', id: 'er-routing-track', title: 'Expense Report (ER) Routing Track', summary: 'Every open sheet and the signature it waits for', area: 'expenses/queue', rowId: 'drawer-er-routing-track', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'donation-records', title: 'Charitable Donation Records', summary: 'Record, check and correct council donations', area: 'donations', rowId: 'drawer-donation-records', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/queue', gate: 'charity-endorsement', rowId: 'drawer-fs-charity-endorsements', alerts: true, cabinet: 'outbound' },
-  { desk: 'financial-secretary', id: 'charity-checks', title: 'Charity Check Issuance Console', summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks', cabinet: 'outbound' },
+  { desk: 'financial-secretary', id: 'charity-checks', title: CHARITABLE_GRANTS_REGISTRY_TITLE, summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'form-1295', title: 'Financial Inspections', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'roster-imports', title: 'Excel Roster Imports', summary: 'The roster template and the Supreme roster sync', gate: 'always', rowId: 'drawer-roster-imports', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'knowledge-archive', title: ARCHIVE, summary: ARCHIVE_SUMMARY, area: 'system-settings/knowledge-archive', rowId: 'drawer-fs-knowledge-archive', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: ER_WORKFLOW_SUMMARY, area: 'expenses/queue', rowId: 'drawer-fs-er-workflow', cabinet: 'reference' },
   { desk: 'financial-secretary', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-fs-donation-workflow', cabinet: 'reference' },
   // ---- Treasurer Desk
-  { desk: 'treasurer', id: 'ledger-coder', title: 'Ledger Line Coder', summary: 'Give each signed sheet its ledger account; the budget line follows', area: 'finance/treasurer-desk', rowId: DESK_FOCUS_TARGETS.coding.rowId, alerts: true, cabinet: 'inbound' },
-  { desk: 'treasurer', id: 'er-settlement', title: 'Expense Report (ER) Settlement', summary: 'Pay fully signed sheets by check', area: 'expenses/disbursements', rowId: 'drawer-er-settlement', alerts: true, cabinet: 'outbound' },
-  { desk: 'treasurer', id: 'charity-matches', title: 'Charitable Contribution Matches', summary: 'Match approved charity requests and gifts to their checks', area: 'charities/queue', rowId: 'drawer-charity-matches', alerts: true, cabinet: 'outbound' },
+  { desk: 'treasurer', id: 'ledger-coder', title: TREASURER_LEDGER_AUDIT_TITLE, summary: 'Give each signed sheet its ledger account; the budget line follows', area: 'finance/treasurer-desk', rowId: DESK_FOCUS_TARGETS.coding.rowId, alerts: true, cabinet: 'inbound' },
+  { desk: 'treasurer', id: 'er-settlement', title: DISBURSED_CHECK_REGISTRY_TITLE, summary: 'Pay fully signed sheets by check', area: 'expenses/disbursements', rowId: 'drawer-er-settlement', alerts: true, cabinet: 'outbound' },
+  { desk: 'treasurer', id: 'charity-matches', title: CHARITABLE_GRANTS_REGISTRY_TITLE, summary: 'Match approved charity requests and gifts to their checks', area: 'charities/queue', rowId: 'drawer-charity-matches', alerts: true, cabinet: 'outbound' },
   { desk: 'treasurer', id: 'cash-box-audit', title: 'Cash Box Audit Closure Panel', summary: 'Count each concluded event’s cash box and log any variance', gate: 'always', rowId: 'treasurer-cash-box-audit', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'batch-coder', title: 'High-Volume Batch Transaction Coder', summary: 'Code many electronic donations to one Revenue line', gate: 'always', rowId: 'treasurer-batch-coder', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'budget-vs-actuals', title: 'Annual Budget vs Actuals Ledger Grid', summary: 'Budgeted vs actual spend and the YOY variance analyzer', area: 'finance/dashboard', rowId: 'module-budget-vs-actuals', cabinet: 'inbound' },

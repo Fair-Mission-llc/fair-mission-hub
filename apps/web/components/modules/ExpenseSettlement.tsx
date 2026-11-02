@@ -24,6 +24,7 @@ import {
   type ExpenseDisbursementResult,
   type ExpenseReferenceOptions,
   type ExpenseReportDetail,
+  DISBURSED_CHECK_REGISTRY_TITLE,
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { ExpenseSheetItems, SignatureTrail, submitterName } from '@/components/ExpenseParts';
@@ -138,7 +139,7 @@ export function DisbursementLedger() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Bulk Check Payments Made</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{DISBURSED_CHECK_REGISTRY_TITLE}</PageTitle>
       {!canDisburse ? (
         <Notice tone="error">Only this council&apos;s Financial Secretary or Treasurer, or a Super Admin, issues expense checks.</Notice>
       ) : (

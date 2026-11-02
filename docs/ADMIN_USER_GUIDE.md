@@ -104,7 +104,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
 | `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console | **Mtgs** |
-| `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit, Treasurer Ledger Audit Desk, GK Expense Authorize, Bulk Check Payments Made | The expense screen and the **Expense reports** card on **Home** |
+| `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, [ 📋 FS Expense Audit Queue ], [ 🔍 Treasurer Ledger Audit ], GK Expense Authorize, [ 🧾 Disbursed Check Registry ] | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
@@ -413,7 +413,14 @@ Each member holds the highest tier that the member qualifies for:
 | 3 | ⚓ Anchor Knight | Default: 20 hours, 4 events, 4 meetings. |
 | 4 | 🏆 Fraternal Champion | Default: 60 hours, 8 events, 8 meetings. |
 | 5 | 🛡️ Shining Armor Companion | Meetings, separate events and new members recruited this year. Default: 3 meetings, 3 events, 1 recruit. |
-| 6 | 👑 Shield Circle / Honorary | The Grand Knight or Deputy Grand Knight seat, 25 or more years since the join date, or the **Shield Circle / Honorary (Tier 6)** switch on the member record. Fixed. |
+| 6 | 👑 Shield Circle / Honorary | The Grand Knight or Deputy Grand Knight seat, or 25 or more years since the join date. Fixed. |
+
+**Locked checkboxes on the member record:** The **📜 Charter Member** and **👑 Shield Circle / Honorary (Tier 6)** checkboxes are locked. You cannot tick them. The portal ticks them from the dates on the record:
+- **📜 Charter Member:** the **First Degree / Initiation Date** is on or before the council's institution date + 30 days.
+- **👑 Shield Circle / Honorary (Tier 6):** the join date is 25 or more years ago.
+
+To change a checkbox, correct the date. A checkbox that was ticked before the lock stays ticked.
+
 
 A meeting counts when the member checks in to it. A recruit counts when the recruit's member record names the member in **Recruited by** and the recruit joined in this fraternal year.
 
@@ -861,14 +868,14 @@ The view uses the member's own council. The member can belong to a council other
 
 The gold bar names the member's council. When you select **Return to my account**, the portal switches back to your own council.
 
-Impersonation is only for a Super Admin who helps a local council Admin. Super Admins find the Admin in two places. The **Roster & Achievements** shows the **👥 Impersonate Admin** button on each council Admin's row. The **Impersonate Council Admin** page shows the Admins of every council in one tree.
+Impersonation is only for a Super Admin who helps a local council Admin. Super Admins find the Admin in two places. The **[ 👥 Council Roster ]** shows the **👥 Impersonate Admin** button on each council Admin's row. The **Impersonate Council Admin** page shows the Admins of every council in one tree.
 
 ### 9.4 View the portal as a council Admin
 > **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate Admin** button.
 
 **Goal:** See the portal with one council Admin's sidebar, pages and permissions while you help the Admin.
 
-**Start point:** Sidebar → Faith In Action → **Roster & Achievements**.
+**Start point:** Sidebar → Faith In Action → **[ 👥 Council Roster ]**.
 
 **Steps:**
 1. Choose the Admin's council in **Council**, or keep **All councils on the platform**.
@@ -1302,7 +1309,7 @@ The launchers set most keys. Set the other keys in the terminal or in `.env`. Ne
 - **Switch off (default):** the code step applies to **Admin** and **Super Admin** accounts only. Other members sign in with a password.
 - **Switch on (`TWO_FACTOR_REQUIRED=1`):** the code step applies to every account: members, officers, Admins and Super Admins. Restart the portal server after you change the switch.
 - The step is on only when the server holds the Twilio keys or the SendGrid keys in the table above. When the switch is on and the server has no keys, sign-in has one step and the server log shows a warning. A missing key never locks out the platform.
-- When the switch is on, the server has keys, and a member has no valid cell phone or email on file, the portal refuses that member's sign-in. The member reads *"Ask your council admin to add your cell phone."* Add the cell phone on the **Roster & Achievements** page.
+- When the switch is on, the server has keys, and a member has no valid cell phone or email on file, the portal refuses that member's sign-in. The member reads *"Ask your council admin to add your cell phone."* Add the cell phone on the **[ 👥 Council Roster ]** page.
 - The code goes by text message to the phone on file. When the server has no Twilio keys, or the phone number is not valid, the code goes by email to the address on file.
 - A code has 6 digits. It expires after 5 minutes. After 5 wrong codes, the member must sign in again for a new code.
 - **1-tap fill:** on iPhone, iPad and Android, the texted code shows above the keyboard. The member taps it once to fill the box.

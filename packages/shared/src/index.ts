@@ -31,6 +31,7 @@ export * from './onboarding';
 export * from './drive-vault';
 export * from './copilot';
 export * from './bylaws';
+export * from './bylaws-template';
 export * from './advisor';
 export * from './docs';
 export * from './role-manuals';

@@ -12,7 +12,9 @@ import {
   canCreateMembers,
   canEditMember,
   describeError,
+  evaluatedMeritFlags,
   grantableMemberTypes,
+  HONORARY_TENURE_YEARS,
   type Degree,
   type Member,
   type MemberStatus,
@@ -179,15 +181,27 @@ export function MemberForm({
   const { message, setMessage, run } = useAction();
   useEffect(() => setDraft(draftFrom(member, councilId, lookups)), [member, councilId, lookups]);
   // Sprint 7A: Charter Member, kept by the council's Admins and Super Admins.
-  const [charter, setCharter] = useState(member?.flag_charter_member === 1);
-  useEffect(() => setCharter(member?.flag_charter_member === 1), [member]);
+  // Sprint 11 Revision 16.0: Charter Member and Shield Circle are locked checkboxes read from the membership dates
+  // (evaluatedMeritFlags): the First Degree / Initiation Date (or the council join date) against the council's
+  // institution date, and 25+ years of membership. A flag stored before the lock stays on.
+  const council = useLoad(() => db.councils.get(member?.CouncilID ?? councilId), [member?.CouncilID ?? councilId]);
+  const evaluated = evaluatedMeritFlags(
+    {
+      join_date: draft.join_date.trim() === '' ? null : draft.join_date,
+      DateJoinedCouncil: draft.DateJoinedCouncil.trim() === '' ? null : draft.DateJoinedCouncil,
+      flag_charter_member: member?.flag_charter_member,
+      flag_honorary_shield: member?.flag_honorary_shield,
+    },
+    council.data?.institution_date,
+    new Date(),
+  );
+  const charter = evaluated.charter;
+  const honorary = evaluated.shield;
   const mayMarkCharter = canCreateMembers(user, member?.CouncilID ?? councilId);
   // Sprint 11 Revision 6.0: the recruiter (Tier 5 recruitment credit) and the Admin's Honorary (Tier 6) switch.
   const [recruiter, setRecruiter] = useState(member?.recruited_by_member_id == null ? '' : String(member.recruited_by_member_id));
-  const [honorary, setHonorary] = useState(member?.flag_honorary_shield === 1);
   useEffect(() => {
     setRecruiter(member?.recruited_by_member_id == null ? '' : String(member.recruited_by_member_id));
-    setHonorary(member?.flag_honorary_shield === 1);
   }, [member]);
   const recruiters = useLoad(() => db.members.listByCouncil(member?.CouncilID ?? councilId), [member?.CouncilID ?? councilId]);
 
@@ -216,9 +230,7 @@ export function MemberForm({
     setBusy(false);
     if (ok && !member) {
       setDraft(draftFrom(null, councilId, lookups));
-      setCharter(false);
       setRecruiter('');
-      setHonorary(false);
     }
   };
 
@@ -289,11 +301,12 @@ export function MemberForm({
         {mayMarkCharter ? (
           <>
             <label className="flex items-center gap-3 text-sm">
-              <input type="checkbox" className="size-5" checked={charter} onChange={(e) => setCharter(e.target.checked)} />
+              <input type="checkbox" className="size-5" checked={charter} disabled readOnly aria-describedby="charter-rule" />
               <span className="font-bold">{CHARTER_MEMBER_BADGE}</span>
-              <span className="text-xs text-muted">
-                One of the brothers who founded the council. Set automatically on save when the First Degree / Initiation Date is within {CHARTER_WINDOW_DAYS} days
-                of the council&apos;s institution date.
+              <span id="charter-rule" className="text-xs text-muted">
+                Locked. Ticked when the First Degree / Initiation Date is within {CHARTER_WINDOW_DAYS} days of the council&apos;s institution date
+                {council.data && !council.data.institution_date ? ' (the council has no institution date yet)' : ''}.
+                {evaluated.charterKept ? ' Kept from an earlier record.' : ''}
               </span>
             </label>
             <Field label="Recruited by (optional)" hint="Gives the recruiter the Tier 5 recruitment credit in the fraternal year this member joined." className="max-w-sm">
@@ -311,9 +324,12 @@ export function MemberForm({
               )}
             </Field>
             <label className="flex items-center gap-3 text-sm">
-              <input type="checkbox" className="size-5" checked={honorary} onChange={(e) => setHonorary(e.target.checked)} />
+              <input type="checkbox" className="size-5" checked={honorary} disabled readOnly aria-describedby="shield-rule" />
               <span className="font-bold">👑 Shield Circle / Honorary (Tier 6)</span>
-              <span className="text-xs text-muted">Awards Tier 6 on demand. Executive officers and members of 25+ years hold it automatically.</span>
+              <span id="shield-rule" className="text-xs text-muted">
+                Locked. Ticked when the member joined {HONORARY_TENURE_YEARS} or more years ago. Executive officers hold Tier 6 through their office.
+                {evaluated.shieldKept ? ' Kept from an earlier record.' : ''}
+              </span>
             </label>
           </>
         ) : (

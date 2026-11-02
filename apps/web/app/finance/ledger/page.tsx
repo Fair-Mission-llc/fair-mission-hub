@@ -6,12 +6,23 @@
 // running balance, and each line's whole multi-line posting. Same readers as the Financial Management Center
 // (canReadGeneralLedger). Sprint 9 Revision 6.0: a Split Account carries a tag; the Treasurer edits its profile on the
 // Treasurer Desk's Chart of Accounts & GL Setup folder.
+// Sprint 11 Revision 16.0: titled '[ 📊 Chart of Accounts & General Ledger ]' (GENERAL_LEDGER_TITLE), with the
+// '[ 💸 Transfer Funds ]' button for those who post to the books (canPostGeneralLedger); it opens TransferDrawer.
 import Link from 'next/link';
 import { useState } from 'react';
-import { GL_ACCOUNT_TYPE_LABELS, GL_ACCOUNT_TYPES, GL_SPLIT_ACCOUNT_LABEL, type GLAccount, type GLAccountType } from '@kofc/shared';
+import {
+  canPostGeneralLedger,
+  GENERAL_LEDGER_TITLE,
+  GL_ACCOUNT_TYPE_LABELS,
+  GL_ACCOUNT_TYPES,
+  GL_SPLIT_ACCOUNT_LABEL,
+  TRANSFER_FUNDS_TITLE,
+  type GLAccount,
+  type GLAccountType,
+} from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { AccountLedgerDrawer, flattenChart, Money } from '@/components/FinanceParts';
-import { Empty, Notice, PageTitle, Pill, Table, Td } from '@/components/ui';
+import { AccountLedgerDrawer, flattenChart, Money, TransferDrawer } from '@/components/FinanceParts';
+import { Button, Empty, Notice, PageTitle, Pill, Table, Td } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -33,6 +44,8 @@ function LedgerSpreadsheet() {
   const splitIds = new Set((profiles.data ?? []).map((p) => p.accountId));
   const [drill, setDrill] = useState<GLAccount | null>(null);
   const nodes = flattenChart(chart.data);
+  const canPost = canPostGeneralLedger(user, scope.councilId);
+  const [transferring, setTransferring] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,13 +53,18 @@ function LedgerSpreadsheet() {
         actions={
           <div className="flex flex-wrap items-end gap-3">
             <CouncilSelect scope={scope} />
+            {canPost && chart.data ? (
+              <Button variant="gold" onClick={() => setTransferring(true)}>
+                {TRANSFER_FUNDS_TITLE}
+              </Button>
+            ) : null}
             <Link href="/finance/dashboard" className="text-sm font-bold underline">
               Financial Management Center
             </Link>
           </div>
         }
       >
-        Transaction Ledger
+        {GENERAL_LEDGER_TITLE}
       </PageTitle>
       {chart.error ? <Notice tone="error">{chart.error}</Notice> : null}
       {chart.loading && !chart.data ? <p className="text-sm">Loading…</p> : null}
@@ -104,6 +122,9 @@ function LedgerSpreadsheet() {
           })
         : null}
 
+      {transferring && chart.data ? (
+        <TransferDrawer councilId={scope.councilId} chart={chart.data} onClose={() => setTransferring(false)} onDone={() => chart.reload()} />
+      ) : null}
       {drill ? <AccountLedgerDrawer account={drill} onClose={() => setDrill(null)} /> : null}
     </div>
   );

@@ -33,6 +33,7 @@ import {
   type ExpenseReportDetail,
   type FinanceWorkflowDesk,
   type SessionUser,
+  CHARITABLE_GRANTS_REGISTRY_TITLE,
 } from '@kofc/shared';
 import { Button, Empty, Notice, Table, Td } from '@/components/ui';
 import { stepsWheel, WorkflowActionBar, WorkflowStepRow, WorkflowWheels } from '@/components/WorkflowParts';
@@ -209,7 +210,7 @@ export function CharityPipelineWorkflow({
   const toSettle = at('settlement');
   const approved = toEndorse.length + toSettle.length + (flow.paid ?? 0);
   const yours = (key: string) => (flow.steps.find((s) => s.key === key)?.yours ? `${key === 'settlement' ? CHARITY_SETTLEMENT_STEP_LABEL : CHARITY_ENDORSEMENT_STEP_LABEL} · Your step` : null);
-  const settleFolder = desk === 'financial-secretary' ? 'Charity Check Issuance Console' : 'Charitable Contribution Matches';
+  const settleFolder = CHARITABLE_GRANTS_REGISTRY_TITLE;
   return (
     <div className="flex flex-col gap-4">
       <WorkflowActionBar headline={flow.headline} />

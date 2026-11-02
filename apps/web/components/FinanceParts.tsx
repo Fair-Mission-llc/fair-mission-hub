@@ -17,6 +17,7 @@ import {
   type ChartOfAccountsNode,
   type GLAccount,
   type LiquidityGauge,
+  TRANSFER_FUNDS_TITLE,
 } from '@kofc/shared';
 import { Drawer } from '@/components/Drawer';
 import { Button, cx, Empty, Field, Input, Notice, Pill, Select, Table, Td } from '@/components/ui';
@@ -229,7 +230,7 @@ export function TransferDrawer({ councilId, chart, onClose, onDone }: { councilI
   );
 
   return (
-    <Drawer title="Transfer between asset accounts" onClose={onClose}>
+    <Drawer title={TRANSFER_FUNDS_TITLE} onClose={onClose}>
       <p className="text-sm">
         Posts a balanced pair of journal lines for council {councilId}: a debit to the account receiving the money and a credit to the account it leaves. A
         transfer never overdraws the source.

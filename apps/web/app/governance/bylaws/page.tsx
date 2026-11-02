@@ -4,28 +4,31 @@
 // in a markdown panel with a live preview, saved by councils.setBylaws.
 // Under the text, the Parliamentary Engine Feed lists the clauses exactly as bylawsTokenFeed hands them to the Phase 4
 // parliamentary engines: one id per article and section ('A2.S3'), so a motion or ruling can cite a clause.
+// Sprint 11 Revision 16.0: the feed panel is titled '[ 🤖 AI Parliamentary Reasoning Stream ]' with a tip, and an empty
+// vault shows the standard council bylaws template (bylaws-template.ts) as a preview; editors start from it.
 import { useState } from 'react';
-import { BYLAWS_MAX_LENGTH, bylawsTokenFeed, canEditBylaws, councilLabel, describeError, type Council } from '@kofc/shared';
+import {
+  BYLAWS_MAX_LENGTH,
+  bylawsTokenFeed,
+  canEditBylaws,
+  councilLabel,
+  describeError,
+  STANDARD_BYLAWS_TEMPLATE,
+  STANDARD_BYLAWS_TEMPLATE_TITLE,
+  type Council,
+} from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { Markdown } from '@/components/Markdown';
-import { Button, Empty, Field, Notice, PageTitle, Panel, Table, Td, Textarea } from '@/components/ui';
+import { Button, Empty, Field, HelpTip, Notice, PageTitle, Panel, Table, Td, Textarea } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-const STARTER = `# Article I - Name and Purpose
+/** The panel title for the clause feed (Sprint 11 Revision 16.0). */
+const AI_REASONING_STREAM_TITLE = '[ 🤖 AI Parliamentary Reasoning Stream ]';
 
-## Section 1 - Name
-This council is known as ...
-
-## Section 2 - Purpose
-...
-
-# Article II - Officers
-
-## Section 1 - Elected officers
-...
-`;
+const AI_REASONING_STREAM_TIP =
+  'The AI parliamentary tools read your bylaws as numbered clauses. When the Constitutional Advisor answers a question or rules on a motion, it cites the clause id shown here, so you can check its reasoning against the text.';
 
 const formatSaved = (iso: string | null | undefined): string =>
   iso ? new Date(iso).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }) : 'Never saved';
@@ -33,8 +36,12 @@ const formatSaved = (iso: string | null | undefined): string =>
 function EngineFeed({ council }: { council: Council }) {
   const feed = bylawsTokenFeed(council);
   return (
-    <Panel title="Parliamentary engine feed">
+    <Panel title={AI_REASONING_STREAM_TITLE}>
       <div className="flex flex-col gap-3">
+        <p className="flex items-center gap-2 text-sm font-bold">
+          <HelpTip text={AI_REASONING_STREAM_TIP} label="About the AI Parliamentary Reasoning Stream" />
+          Tip: the AI cites a clause by its id, so keep one topic per section.
+        </p>
         <p className="text-sm text-muted">
           The parliamentary engines read the bylaws as numbered clauses. Each article heading (#) and section heading (##) starts a new clause. Cite a clause by
           its id.
@@ -102,7 +109,7 @@ function BylawsVault() {
               title={`Bylaws of ${councilLabel(row)}`}
               actions={
                 mayEdit && draft === null ? (
-                  <Button variant="gold" onClick={() => setDraft(text || STARTER)}>
+                  <Button variant="gold" onClick={() => setDraft(text || STANDARD_BYLAWS_TEMPLATE)}>
                     Edit bylaws
                   </Button>
                 ) : null
@@ -143,11 +150,20 @@ function BylawsVault() {
                   <Markdown source={text} idPrefix="bylaws" />
                 </div>
               ) : (
-                <Empty>
-                  {mayEdit
-                    ? 'The council has not entered its bylaws yet. Select Edit bylaws to start from an outline.'
-                    : 'The council has not entered its bylaws yet. The Grand Knight or a council Admin can add them.'}
-                </Empty>
+                <div className="flex flex-col gap-3">
+                  <Empty>
+                    {mayEdit
+                      ? 'The council has not entered its bylaws yet. Below is the standard template. Select Edit bylaws to start from it.'
+                      : 'The council has not entered its bylaws yet. The Grand Knight or a council Admin can add them. Below is the standard template.'}
+                  </Empty>
+                  <section aria-label={STANDARD_BYLAWS_TEMPLATE_TITLE} className="rounded border-2 border-dashed border-navy p-4">
+                    <h2 className="mb-1 text-xs font-bold uppercase tracking-wide">{STANDARD_BYLAWS_TEMPLATE_TITLE}</h2>
+                    <p className="mb-3 text-xs text-muted">
+                      A starting point only. Fill in the bracketed fields. Your bylaws stay subject to the Charter, Constitution and Laws of the Order.
+                    </p>
+                    <Markdown source={STANDARD_BYLAWS_TEMPLATE} idPrefix="template" />
+                  </section>
+                </div>
               )}
             </Panel>
             <EngineFeed council={draft !== null ? { ...row, BylawsMarkdown: draft } : row} />

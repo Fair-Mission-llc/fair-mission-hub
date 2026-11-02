@@ -176,7 +176,7 @@ import { AdvisoryInviteCard } from '@/components/AdvisoryInviteCard';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { MemberRosterDirectory } from '@/components/modules/MemberRosterDirectory';
 import { SupremeRosterUploader } from '@/components/modules/SupremeRosterUploader';
-import { Button, cx, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
+import { Button, cx, EmbeddedModuleContext, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { DeskRow } from '@/components/WorkspaceTabs';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { photoName, photoSrc } from '@/lib/media';
@@ -212,7 +212,7 @@ export function VacantSeatCard({ role }: { role: string }) {
       </p>
       <p className="mt-2 flex flex-wrap gap-4 text-sm">
         <Link href="/roster" className="font-bold underline">
-          Open the Roster & Achievements
+          Open the Council Roster
         </Link>
         <Link href="/elections/appointments" className="font-bold underline">
           Appointed Leadership Matrix
@@ -899,8 +899,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
           }
         }}
       />
-      {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
-      <MemberRosterDirectory compact />
+      {/* Sprint 11 Revision 16.0: the member roster table no longer sits at the foot of this desk. */}
     </div>
   );
 }
@@ -1001,6 +1000,14 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
           }
         }}
       />
+      {/* Sprint 11 Revision 16.0: the '[ 🧾 Disbursed Check Registry ]' sits on the desk itself, under the drawers. */}
+      {drawers.some((d) => d.id === 'er-settlement') ? (
+        <section id="treasurer-disbursed-check-registry" className="rounded border border-line bg-white p-4">
+          <EmbeddedModuleContext.Provider value={true}>
+            <ExpenseSettlement />
+          </EmbeddedModuleContext.Provider>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -53,7 +53,7 @@ describe('the drawer catalogue', () => {
       expect.arrayContaining(['Approved Expenses', 'Shared Equipment Library', 'Planning & Budgeting Workflow', '[ 🗳️ Council Election Workflow ]', 'Operations Knowledge Vault']),
     );
     expect(DESK_DRAWERS.filter((d) => d.desk === 'financial-secretary').map((d) => d.title)).toEqual(
-      expect.arrayContaining(['Auditing & Return Queue', 'Expense Report (ER) Routing Track', 'Charitable Donation Records', 'Operations Knowledge Vault']),
+      expect.arrayContaining(['[ 📋 FS Expense Audit Queue ]', 'Expense Report (ER) Routing Track', 'Charitable Donation Records', 'Operations Knowledge Vault']),
     );
     expect(new Set(DESK_DRAWERS.map((d) => d.rowId)).size).toBe(DESK_DRAWERS.length);
     expect(BACK_TO_DESK_BLOTTER_LABEL).toBe('[ 🔀 Back to Desk Blotter ]');

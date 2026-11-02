@@ -272,6 +272,63 @@ export function suggestForm1728Lines(title: string, description?: string | null,
   return out;
 }
 
+/** Sprint 11 Revision 16.0: how many suggestions the event form shows, each as its own selection target. */
+export const FORM_1728_TOP_SUGGESTION_COUNT = 3;
+
+/** Where a top suggestion came from: the engine's reading of the record, or the council's own compiled report. */
+export type Form1728SuggestionSource = 'engine' | 'report';
+
+export interface Form1728TopSuggestion extends Form1728Classification {
+  /** 1 for the first choice. */
+  rank: number;
+  source: Form1728SuggestionSource;
+  /** A stable id for the suggestion's selection target ('form-1728-pick-COMMUNITY_N'). */
+  targetId: string;
+}
+
+/**
+ * Sprint 11 Revision 16.0: the event form's Top 3 suggestions, in priority order and never repeating a line:
+ *   1. the lines the engine matched with confidence (suggestForm1728Lines), best first;
+ *   2. Community line N, the general line;
+ *   3. when a slot is still open, the lines with the most hours in the council's compiled report
+ *      (compileForm1728Report), so the form offers the lines the council actually files under;
+ *   4. then any line the engine matched below the bar, then the other lines of the best line's section.
+ * Always exactly `limit` entries (default FORM_1728_TOP_SUGGESTION_COUNT).
+ */
+export function topForm1728Suggestions(
+  title: string,
+  description?: string | null,
+  context?: Form1728Context,
+  report?: Form1728Report | null,
+  limit = FORM_1728_TOP_SUGGESTION_COUNT,
+): Form1728TopSuggestion[] {
+  const scores = scoreRecord(title, description, context);
+  const picks: { line: Form1728Classification; source: Form1728SuggestionSource }[] = [];
+  const add = (line: Form1728Classification, source: Form1728SuggestionSource) => {
+    if (picks.length < limit && !picks.some((p) => p.line.code === line.code)) picks.push({ line, source });
+  };
+  for (const s of suggestForm1728Lines(title, description, context, limit)) add(s, 'engine');
+  if (report) {
+    const used = report.sections
+      .flatMap((section) => section.lines)
+      .filter((l) => l.hours > 0)
+      .sort((a, b) => b.hours - a.hours || b.entries - a.entries);
+    for (const l of used) add(reportSuggestion(l.code as Form1728LineCode, scores.get(l.code)), 'report');
+  }
+  for (const r of ranked(scores)) add(reportSuggestion(r.code, r.entry), 'engine');
+  const section = picks[0]?.line.section ?? form1728Line(FORM_1728_DEFAULT_LINE).section;
+  for (const l of FORM_1728_LINES) if (l.section === section) add(reportSuggestion(l.code as Form1728LineCode, scores.get(l.code)), 'engine');
+  for (const l of FORM_1728_LINES) add(reportSuggestion(l.code as Form1728LineCode, scores.get(l.code)), 'engine');
+  return picks.map((p, i) => ({ ...p.line, rank: i + 1, source: p.source, targetId: `form-1728-pick-${p.line.code}` }));
+}
+
+/** A line offered below the confidence bar (or from the report): its own line, with whatever cues matched. */
+function reportSuggestion(code: Form1728LineCode, entry: Entry | undefined): Form1728Classification {
+  const score = Math.round((entry?.score ?? 0) * 100) / 100;
+  const cues = entry ? [...entry.cues].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([cue]) => cue) : [];
+  return { ...form1728Line(code), code, score, confidence: code === FORM_1728_DEFAULT_LINE ? 'default' : 'likely', cues };
+}
+
 /**
  * The line a record counts under: the officer's confirmed choice when one is stored (Event.form_1728_line), otherwise
  * the engine's reading of the title. `confirmed` says which.

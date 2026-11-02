@@ -28,6 +28,7 @@ import {
   TREASURER_CODE_EXPENSE_LABEL,
   type ExpenseReferenceOptions,
   type ExpenseReportDetail,
+  TREASURER_LEDGER_AUDIT_TITLE,
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import {
@@ -170,7 +171,7 @@ export function TreasurerDesk() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Treasurer Ledger Audit Desk</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{TREASURER_LEDGER_AUDIT_TITLE}</PageTitle>
       {!canOpen ? (
         <Notice tone="error">Only this council&apos;s Treasurer and Admins, or a Super Admin, open its Treasurer desk.</Notice>
       ) : (

@@ -35,8 +35,8 @@ describe('drawers on every officer desk', () => {
     expect(treasurer.slice(0, 3)).toEqual(['ledger-coder', 'er-settlement', 'charity-matches']);
     expect(treasurer).toEqual(expect.arrayContaining(['planning-budgeting', 'cash-box-audit', 'batch-coder', 'budget-vs-actuals', 'bank-match']));
     for (const id of ['ledger-coder', 'er-settlement', 'charity-matches'] as const) expect(DESK_DRAWERS.find((d) => d.desk === 'treasurer' && d.id === id)?.alerts).toBe(true);
-    expect(DESK_DRAWERS.find((d) => d.id === 'er-settlement')?.title).toBe('Expense Report (ER) Settlement');
-    expect(DESK_DRAWERS.find((d) => d.id === 'charity-matches')?.title).toBe('Charitable Contribution Matches');
+    expect(DESK_DRAWERS.find((d) => d.id === 'er-settlement')?.title).toBe('[ 🧾 Disbursed Check Registry ]');
+    expect(DESK_DRAWERS.find((d) => d.id === 'charity-matches')?.title).toBe('[ 🕊️ Charitable Grants Registry ]');
   });
 
   it('leads the Recorder Desk with the featured Historical Meeting Minutes Archive', () => {

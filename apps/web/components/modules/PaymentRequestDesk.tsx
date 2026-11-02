@@ -22,6 +22,8 @@ import {
   sumAmounts,
   type ExpenseReferenceOptions,
   type ExpenseReportDetail,
+  TREASURER_LEDGER_AUDIT_TITLE,
+  FS_EXPENSE_AUDIT_QUEUE_TITLE,
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { EXPENSE_APPROVE_LABEL, ReturnToMemberForm, SignatureDeskTable, submitterName } from '@/components/ExpenseParts';
@@ -98,7 +100,7 @@ export function AuditDesk() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Financial Secretary Audit Desk</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{FS_EXPENSE_AUDIT_QUEUE_TITLE}</PageTitle>
       {!canOpen ? (
         <Notice tone="error">Only this council&apos;s Financial Secretary and Admins, or a Super Admin, open its audit desk.</Notice>
       ) : (
@@ -113,7 +115,7 @@ export function AuditDesk() {
                 <>
                   {' '}
                   <Link href="/finance/treasurer-desk" className="font-bold underline">
-                    Open the Treasurer Ledger Audit Desk
+                    Open the {TREASURER_LEDGER_AUDIT_TITLE}
                   </Link>
                 </>
               ) : null}

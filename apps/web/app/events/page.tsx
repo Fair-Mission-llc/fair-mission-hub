@@ -627,27 +627,29 @@ function Planner() {
 
   return (
     <>
+      {/* Sprint 11 Revision 16.0: the event list is a fixed side column; each line truncates (.sidebar-truncate). */}
       <PageTitle actions={<CouncilSelect scope={scope} />}>Event planner</PageTitle>
       <div className="grid grid-cols-[20rem_minmax(0,1fr)] items-start gap-4">
         <Panel title="Events" actions={<Button size="sm" onClick={() => setSelected('new')}>New event</Button>}>
           {events.error ? <Notice tone="error">{events.error}</Notice> : null}
           {events.data?.length === 0 ? <Empty>No events yet for this council.</Empty> : null}
-          <ul className="flex flex-col gap-1">
+          <ul className="flex min-w-0 flex-col gap-1">
             {(events.data ?? []).map((e) => (
-              <li key={e.id}>
+              <li key={e.id} className="min-w-0">
                 <button
                   type="button"
                   aria-current={selected === e.id ? 'true' : undefined}
                   onClick={() => setSelected(e.id)}
-                  className={cx('block w-full border-l-8 px-3 py-2 text-left', selected === e.id ? 'border-gold bg-white outline outline-1 outline-line' : 'border-transparent hover:underline')}
+                  title={`${e.EventName} · ${e.Location}`}
+                  className={cx('block w-full min-w-0 overflow-hidden border-l-8 px-3 py-2 text-left', selected === e.id ? 'border-gold bg-white outline outline-1 outline-line' : 'border-transparent hover:underline')}
                 >
-                  <span className="block text-sm font-bold">{e.EventName}</span>
+                  <span className="sidebar-truncate block text-sm font-bold">{e.EventName}</span>
                   {form1728 ? (
-                    <span className="mt-0.5 block">
+                    <span className="sidebar-truncate mt-0.5 block">
                       <Form1728Badge title={e.EventName} description={e.EventDescription} stored={e.form_1728_line} />
                     </span>
                   ) : null}
-                  <span className="block text-xs text-muted">
+                  <span className="sidebar-truncate block text-xs text-muted">
                     {e.StartDate === e.EndDate ? formatDate(e.StartDate) : `${formatDate(e.StartDate)} – ${formatDate(e.EndDate)}`} · {e.Location}
                   </span>
                 </button>

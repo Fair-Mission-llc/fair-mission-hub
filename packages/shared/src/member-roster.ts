@@ -21,7 +21,8 @@
 import type { Council, Member } from './types';
 
 export const MEMBER_ROSTER_HREF = '/roster';
-export const MEMBER_ROSTER_TITLE = 'Roster & Achievements';
+/** Sprint 11 Revision 16.0: was 'Roster & Achievements'. */
+export const MEMBER_ROSTER_TITLE = '[ 👥 Council Roster ]';
 
 /** Sprint 10 Revision 3.0: the budget page's name (the Annual Budget Forecast Center / Annual Budget Projections before). */
 export const ANNUAL_BUDGET_CENTER_TITLE = 'Annual Budget Center';
@@ -32,7 +33,8 @@ export const ASSIGN_BUDGET_DIRECTOR_LABEL = 'Assign Designated Budget Director';
 export type MemberRosterScope = 'global' | 'fraternal';
 
 /** The desks that mount the roster directory under their own tools. */
-export const MEMBER_ROSTER_DESKS = ['member', 'grand-knight', 'financial-secretary'] as const;
+// Sprint 11 Revision 16.0: the Financial Secretary Desk no longer carries the roster table at its foot.
+export const MEMBER_ROSTER_DESKS = ['member', 'grand-knight'] as const;
 export type MemberRosterDesk = (typeof MEMBER_ROSTER_DESKS)[number];
 
 export interface MemberRosterViewer {

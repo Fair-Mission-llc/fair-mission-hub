@@ -41,16 +41,16 @@ A **Warning** line comes before the steps when the task deletes data, sends mess
 | Step | Who acts | Where | Status tag |
 | --- | --- | --- | --- |
 | 1. File | The member | **My Expense Reports** | **Submitted** |
-| 2. Payment request | The Financial Secretary | **FS Expense Audit** → **📝 Verify & Sign Expense** | **RECORDED BY FS** |
-| 3. Categorize | The Treasurer | **Treasurer Ledger Audit Desk** → **🏷️ Categorize & Lock Expense** | **CODED BY TREASURER** |
+| 2. Payment request | The Financial Secretary | **[ 📋 FS Expense Audit Queue ]** → **📝 Verify & Sign Expense** | **RECORDED BY FS** |
+| 3. Categorize | The Treasurer | **[ 🔍 Treasurer Ledger Audit ]** → **🏷️ Categorize & Lock Expense** | **CODED BY TREASURER** |
 | 4. Final release | The Grand Knight | **GK Expense Authorize** → **✍️ Final Release for Payment** | **Approved** |
-| 5. Pay | The FS or the Treasurer | **Bulk Check Payments Made** | **Reimbursed** |
+| 5. Pay | The FS or the Treasurer | **[ 🧾 Disbursed Check Registry ]** | **Reimbursed** |
 | Return | Council leadership | **Leadership Auditing Queue** → **Reject & Return** | **Returned** |
 
 - A Super Admin may sign either line, but never both lines of the same report.
 - Each signer chooses the budget line in **Assign Ledger Budget Line Item**. The report saves the line.
 - The budget counts the report only against the saved line.
-- The Treasurer chooses the ledger account before the Grand Knight signs. The account decides the budget line. A green line on the **Ledger Line Coder** names the line, for example **[ Inferred Budget: Automatically Mapped to Monthly Council Meetings ]**. **🏷️ Categorize & Lock Expense** locks the account and the line.
+- The Treasurer chooses the ledger account before the Grand Knight signs. The account decides the budget line. A green line on the **[ 🔍 Treasurer Ledger Audit ]** names the line, for example **[ Inferred Budget: Automatically Mapped to Monthly Council Meetings ]**. **🏷️ Categorize & Lock Expense** locks the account and the line.
 - The officer who issued the order sees a **🔒 Collusion Guard** tag. That officer sees no **✍️ Final Release for Payment** button.
 - Council Admins open both desks to follow the work. Only the seat holders or a Super Admin sign.
 - A signer sees no button on a report the signer cannot sign. A tag tells who signs the report.
@@ -66,7 +66,7 @@ A **Warning** line comes before the steps when the task deletes data, sends mess
 
 **Goal:** Approve a report's receipts as the first signature.
 
-**Start point:** Sidebar → Finances → **FS Expense Audit**.
+**Start point:** Sidebar → Finances → **[ 📋 FS Expense Audit Queue ]**.
 
 **Steps:**
 1. Open the submitted report.
@@ -117,7 +117,7 @@ A **Warning** line comes before the steps when the task deletes data, sends mess
 
 **Goal:** Record the checks for dual-signed reports.
 
-**Start point:** Sidebar → Finances → **Bulk Check Payments Made**.
+**Start point:** Sidebar → Finances → **[ 🧾 Disbursed Check Registry ]**.
 
 **Steps:**
 1. Tick the reports to pay. The page lists only reports with both signatures.
@@ -125,7 +125,7 @@ A **Warning** line comes before the steps when the task deletes data, sends mess
 3. Save.
 
 <!-- KEEP_IMAGE: bulk check payments made capture -->
-![Bulk Check Payments Made (/expenses/disbursements)](../generated/dashboard_visual_catalog/expenses_disbursements.png)
+![[ 🧾 Disbursed Check Registry ] (/expenses/disbursements)](../generated/dashboard_visual_catalog/expenses_disbursements.png)
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** The member sees **Reimbursed** with the check number.
@@ -141,7 +141,7 @@ A shared transaction id groups the lines.
 
 | Page | Shows |
 | --- | --- |
-| **Transaction Ledger** | The chart of accounts with every posting |
+| **[ 📊 Chart of Accounts & General Ledger ]** | The chart of accounts with every posting |
 | **Balance Sheet** | Assets against liabilities and equity |
 | **Financial Dashboard** | Cash flow liquidity, the balance sheet summary and **Quick actions** (the transfer between accounts) |
 
@@ -152,7 +152,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: general ledger spreadsheet capture -->
-![Transaction Ledger (/finance/ledger)](../generated/dashboard_visual_catalog/finance_ledger.png)
+![[ 📊 Chart of Accounts & General Ledger ] (/finance/ledger)](../generated/dashboard_visual_catalog/finance_ledger.png)
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: balance sheet capture -->
@@ -169,7 +169,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Steps:**
 1. To post: choose the debit account and the credit account. Enter the amount and the description. Save.
-2. To transfer: choose two asset accounts. Enter the amount. Save.
+2. To transfer: select **[ 💸 Transfer Funds ]**. Choose two asset accounts. Enter the amount. Select **Post transfer**. The button is also on the **[ 📊 Chart of Accounts & General Ledger ]** page and in its Treasurer Desk folder.
 3. To reconcile: open **Active Desks** → **Treasurer Desk** → **Bank Statement Match-Window**. Upload the bank CSV file. The Financial Dashboard has no bank statement table.
 4. Read the matched rows and the unmatched rows.
 
@@ -218,7 +218,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Clear a grant that the council approved for its check. This is the **[ ✍️ FS/GK Compliance Endorsement ]** step.
 
-**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**.
+**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**. Or: Sidebar → Finances → **Financial Views** → **FS/GK Compliance Endorsements**.
 
 **Steps:**
 1. Select the **FS/GK Compliance Endorsements** folder. A red border means that an approved request waits for your endorsement. The folder then moves to the top of the spine.
@@ -226,7 +226,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 3. Check the organization and the approved amount.
 4. Select **✍️ Endorse for payment**. You cannot undo the endorsement.
 
-**Expected result:** The request moves to **[ ⛪ Treasurer Check Settlement ]**. The Treasurer sees it in the **Charity Check Issuance Console** with its endorsement date.
+**Expected result:** The request moves to **[ ⛪ Treasurer Check Settlement ]**. The Treasurer sees it in the **[ 🕊️ Charitable Grants Registry ]** with its endorsement date.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -241,7 +241,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Pay a grant that the council approved and an FS or GK endorsed. This is the **[ ⛪ Treasurer Check Settlement ]** step.
 
-**Start point:** **Active Desks** → **Treasurer Desk** → **Charitable Contribution Matches**, or **Financial Secretary Desk** → **Charity Check Issuance Console**. The same console is on Sidebar → Finances → **Charity Payments Made Ledger**.
+**Start point:** **Active Desks** → **Treasurer Desk** → **[ 🕊️ Charitable Grants Registry ]**, or **Financial Secretary Desk** → **[ 🕊️ Charitable Grants Registry ]**. The same console is on Sidebar → Finances → **[ 🕊️ Charitable Grants Registry ]**.
 
 **Steps:**
 1. Find the request in **Approved requests awaiting payment**. A request without its endorsement shows **Waiting for the FS/GK compliance endorsement** and has no pay button (section 1.7.1).
@@ -280,6 +280,7 @@ The check is always for the amount the council approved. The Knight Shepherd of 
 2. Choose the **Date** and the **Event**, or *Standalone (no event)*.
 3. Optional: add the **Donor**, a **Description** and a **Photo link**. Items need a description.
 4. Save.
+5. To find a donation, type in **Search events** or **Search donations**. Each table shows 10 rows a page. Select **Next** or **Previous** to change the page. Select **View** on an event row to see its donations.
 
 <!-- KEEP_IMAGE: recorded donations history capture -->
 ![Donations History (/donations)](../generated/dashboard_visual_catalog/donations.png)
@@ -392,7 +393,7 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 
 **Goal:** Put a new Brother Knight on the roster.
 
-**Start point:** Sidebar → Faith In Action → **Roster & Achievements**.
+**Start point:** Sidebar → Faith In Action → **[ 👥 Council Roster ]**.
 
 **Steps:**
 1. Select **Add Member** at the top of the roster. The form opens in a drawer. A Super Admin first chooses the council in **Council**.
@@ -403,7 +404,7 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 The form has no **Designated Budget Director** box. An Admin assigns the Budget Director on the **Annual Budget Center** (section 1.10).
 
 <!-- KEEP_IMAGE: affiliated roster capture -->
-![Member records (captured before the records moved to the Roster & Achievements, /roster)](../generated/dashboard_visual_catalog/members.png)
+![Member records (captured before the records moved to the [ 👥 Council Roster ], /roster)](../generated/dashboard_visual_catalog/members.png)
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** A message confirms that a welcome email was queued. The member shows a **🆕 New Member** badge for 180 days.
@@ -420,7 +421,7 @@ The form has no **Designated Budget Director** box. An Admin assigns the Budget 
 
 **Goal:** Help a member who lost or used up the setup code.
 
-**Start point:** Sidebar → Faith In Action → **Roster & Achievements**. The Financial Secretary finds **Send new setup code** on the member's row. An Admin selects **Edit** on the row first.
+**Start point:** Sidebar → Faith In Action → **[ 👥 Council Roster ]**. The Financial Secretary finds **Send new setup code** on the member's row. An Admin selects **Edit** on the row first.
 
 **Steps:**
 1. Find the member's row. An Admin selects **Edit**; the record opens in a drawer.
@@ -527,7 +528,7 @@ The platform keeps a history of every council that a member belongs to. The hist
 
 **Goal:** See every council a member belonged to.
 
-**Start point:** Sidebar → Faith In Action → **Roster & Achievements** → **Edit** on the member's row.
+**Start point:** Sidebar → Faith In Action → **[ 👥 Council Roster ]** → **Edit** on the member's row.
 
 **Steps:**
 1. Select **Edit** on the member's row.
@@ -760,12 +761,12 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 
 | Tab | Who gets the tab | What the tab shows | Full desk page |
 | --- | --- | --- | --- |
-| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **Approved Expenses** first. Under the drawers: the **Roster & Achievements** panel. | None. You work inside the drawers. |
-| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **Auditing & Return Queue** first. Under the drawers: the **Roster & Achievements** panel. | None. You work inside the drawers. |
-| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches** first. | None. You work inside the drawers. |
+| **Grand Knight Desk** | The council's GK and DGK, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **Approved Expenses** first. Under the drawers: the **[ 👥 Council Roster ]** panel. | None. You work inside the drawers. |
+| **Financial Secretary Desk** | The council's FS, the council's Admins and Super Admins | The desk blotter: one drawer for each module (section 6.2.2), with **[ 📋 FS Expense Audit Queue ]** first. | None. You work inside the drawers. |
+| **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **[ 🔍 Treasurer Ledger Audit ]**, **[ 🧾 Disbursed Check Registry ]** and **[ 🕊️ Charitable Grants Registry ]** first. Under the drawers: the **[ 🧾 Disbursed Check Registry ]** panel. | None. You work inside the drawers. |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** first on the spine. | None. You work inside the drawers. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The desk blotter, with the **Fraternal Diary Entry Logs** first. | None. You work inside the drawers. |
-| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **Roster & Achievements** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
+| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **[ 👥 Council Roster ]** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 ### 6.2.1 Concept: the advanced modules on the desks
 The desks no longer use module folders. Each advanced module below is a drawer on its desk (section 6.2.2). The module's own page also stays at its web address.
@@ -779,7 +780,7 @@ A drawer shows only to a reader who may open the module. A reader who may not op
 | **Financial Secretary Desk** | **Financial Inspections**, **Expense Report (ER) Routing Track**, **Charitable Donation Records** |
 | **Treasurer Desk** | **Cash Box Audit Closure Panel**, **Bank Statement Match-Window** |
 
-The drawers that move money stay on the desks: **Auditing & Return Queue**, **Charity Check Issuance Console**, **Ledger Line Coder**, **Expense Report (ER) Settlement** and **Charitable Contribution Matches**. An expense sheet therefore never stops in the queue. The **Donations History** page stays in the sidebar. The switch deletes no records.
+The drawers that move money stay on the desks: **[ 📋 FS Expense Audit Queue ]**, **[ 🕊️ Charitable Grants Registry ]**, **[ 🔍 Treasurer Ledger Audit ]**, **[ 🧾 Disbursed Check Registry ]** and **[ 🕊️ Charitable Grants Registry ]**. An expense sheet therefore never stops in the queue. The **Donations History** page stays in the sidebar. The switch deletes no records.
 
 | Desk | Module drawer | What the module does |
 | --- | --- | --- |
@@ -787,7 +788,7 @@ The drawers that move money stay on the desks: **Auditing & Return Queue**, **Ch
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. Officers only. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils and answer their invites (section 7). |
 | **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
-| **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
+| **Financial Secretary Desk** | **[ 🕊️ Charitable Grants Registry ]** | Pay approved charity requests and gifts by check. |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **📊 Budget Allocation & YOY Variance Analyzer**. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. Only the FS, the Treasurer and Super Admins can run the match. |
 | **Recorder Desk** | **Council Resolutions and Motions Ledger** | Every motion on the council's meetings of this fraternal year, with its meeting, presenter, source and result. |
@@ -808,7 +809,7 @@ The spine has this order from the top:
    - **[ 📥 Inbound Operations ]**: work that comes in to you. For example, payment requests, coding, cash box counts, donation records and bank matches.
    - **[ 📤 Outbound Operations ]**: money and reports that go out. For example, checks, charity matches and the Form 1295.
 3. **The other folders.** On the **Grand Knight Desk**, the **Recorder Desk** and the **Historian Desk**, the other folders show in one flat list.
-4. **[ 🔧 Accounting Configuration ]** (the **Treasurer Desk** only). This block holds the **Chart of Accounts & GL Setup** folder (section 6.4.1 of the Treasurer Manual).
+4. **[ 🔧 Accounting Configuration ]** (the **Treasurer Desk** only). This block holds the **[ 📊 Chart of Accounts & General Ledger ]** folder (section 6.4.1 of the Treasurer Manual).
 5. **[ 📖 Reference Workflows ]** (every officer desk). This block is always at the bottom of the spine. It holds the workflow drawers that you read for reference (section 6.2.3). A reference folder shows its count in grey. A reference folder never gets a red border and never moves to the top. The same sheet therefore lights only one folder: the folder where you sign.
 
 To close a folder, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the blotter. You can also select **Close** or push **Esc**.
@@ -818,13 +819,13 @@ To close a folder, select **[ 🔀 Back to Desk Blotter ]** at the bottom of the
 | Desk | Folder with the alert boundary | The red border shows when |
 | --- | --- | --- |
 | **Grand Knight Desk** | **Approved Expenses** | A sheet in the release queue waits for your final release, and you may sign it. A sheet that you submitted, ordered or coded does not light the border. |
-| **Financial Secretary Desk** | **Auditing & Return Queue** | A sheet waits for its payment request, and you may sign it. Your own sheet does not light the border. |
+| **Financial Secretary Desk** | **[ 📋 FS Expense Audit Queue ]** | A sheet waits for its payment request, and you may sign it. Your own sheet does not light the border. |
 | **Grand Knight Desk** | **Flagged Hours Review** | A time entry is held for review (section 10 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **Shifts Awaiting Hours** | A volunteer is past the first hours reminder and has not logged time. |
 | **Grand Knight Desk** and **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | An approved charity grant waits for your endorsement, and you do not shepherd it. |
-| **Treasurer Desk** | **Ledger Line Coder** | A signed sheet waits for your ledger account, and you may code it. |
-| **Treasurer Desk** | **Expense Report (ER) Settlement** | A fully signed sheet waits for your check, and you may pay it. Your own sheet does not light the border. |
-| **Treasurer Desk** | **Charitable Contribution Matches** | A charity request or gift waits for its check. |
+| **Treasurer Desk** | **[ 🔍 Treasurer Ledger Audit ]** | A signed sheet waits for your ledger account, and you may code it. |
+| **Treasurer Desk** | **[ 🧾 Disbursed Check Registry ]** | A fully signed sheet waits for your check, and you may pay it. Your own sheet does not light the border. |
+| **Treasurer Desk** | **[ 🕊️ Charitable Grants Registry ]** | A charity request or gift waits for its check. |
 | **Recorder Desk** | **Meeting Minutes Entry Desk** | The minutes of a meeting are due or overdue. The red line counts the overdue meetings. |
 
 The folders in **[ 📖 Reference Workflows ]** never show the alert boundary. They are read only: they have no fields and no buttons. Open a reference folder to see the work that waits on each step. Do the work in the working folder that the step names. For example, the **Charitable Donation Workflow** folder counts the approved charity requests that wait for your endorsement. You endorse them in **FS/GK Compliance Endorsements**.
@@ -847,26 +848,26 @@ The drawers on each desk:
 | **Grand Knight Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
 | **Grand Knight Desk** (reference) | **Planning & Budgeting Workflow** | Read the planning steps, the goals and the budget status. Read only. Set and review the goals on **Council Wide Settings** (section 7). |
 | **Grand Knight Desk** (reference) | **[ 🗳️ Council Election Workflow ]** | Read the four election steps, the progress wheels and the nominees. Read only. Nominate in the **Council Election Center** (section 6.2.3). |
-| **Financial Secretary Desk** | **Auditing & Return Queue** | Select **📝 Verify & Sign Expense** on each sheet, or return a sheet to its member with a reason. The sidebar link **FS Expense Audit** opens the same queue. |
+| **Financial Secretary Desk** | **[ 📋 FS Expense Audit Queue ]** | Select **📝 Verify & Sign Expense** on each sheet, or return a sheet to its member with a reason. The sidebar link **[ 📋 FS Expense Audit Queue ]** opens the same queue. |
 | **Financial Secretary Desk** | **Expense Report (ER) Routing Track** | Read each open sheet and the signature that it waits for. |
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 1.7.1). |
-| **Financial Secretary Desk** | **Charity Check Issuance Console** | Pay approved charity requests and gifts by check. |
+| **Financial Secretary Desk** | **[ 🕊️ Charitable Grants Registry ]** | Pay approved charity requests and gifts by check. |
 | **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Upload the Supreme roster CSV. |
 | **Financial Secretary Desk** | **Operations Knowledge Vault** | Search the signed operating notes of every council (section 8). |
-| **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **Auditing & Return Queue** (section 6.2.3). |
+| **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **[ 📋 FS Expense Audit Queue ]** (section 6.2.3). |
 | **Financial Secretary Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. |
-| **Treasurer Desk** | **Ledger Line Coder** | Pick the ledger account. Read the green **Inferred Budget** line. Select **🏷️ Categorize & Lock Expense**. Log concluded revenue. |
-| **Treasurer Desk** | **Expense Report (ER) Settlement** | Pay fully signed sheets by check. |
-| **Treasurer Desk** | **Charitable Contribution Matches** | Match approved charity requests and gifts to their checks, and pay them. |
+| **Treasurer Desk** | **[ 🔍 Treasurer Ledger Audit ]** | Pick the ledger account. Read the green **Inferred Budget** line. Select **🏷️ Categorize & Lock Expense**. Log concluded revenue. |
+| **Treasurer Desk** | **[ 🧾 Disbursed Check Registry ]** | Pay fully signed sheets by check. |
+| **Treasurer Desk** | **[ 🕊️ Charitable Grants Registry ]** | Match approved charity requests and gifts to their checks, and pay them. |
 | **Treasurer Desk** | **Cash Box Audit Closure Panel** | Count each concluded event's cash box and log any variance (section 10 of the Treasurer Manual). |
 | **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 10 of the Treasurer Manual). |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | Read budgeted against actual spend and the variance analyzer. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. |
-| **Treasurer Desk** (accounting) | **Chart of Accounts & GL Setup** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
-| **Treasurer Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Code in **Ledger Line Coder** and pay in **Expense Report (ER) Settlement** (section 6.2.3). |
-| **Treasurer Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. Pay in **Charitable Contribution Matches** (section 1.8). |
+| **Treasurer Desk** (accounting) | **[ 📊 Chart of Accounts & General Ledger ]** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
+| **Treasurer Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Code in **[ 🔍 Treasurer Ledger Audit ]** and pay in **[ 🧾 Disbursed Check Registry ]** (section 6.2.3). |
+| **Treasurer Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. Pay in **[ 🕊️ Charitable Grants Registry ]** (section 1.8). |
 | **Treasurer Desk** (reference) | **Planning & Budgeting Workflow** | Read the planning steps and the budget status. Read only. Mark the budget reviewed on **Council Wide Settings** (section 7). |
 | **Recorder Desk** | **Historical Meeting Minutes Archive** | Read the published minutes of every past meeting before you open a session (section 14.8.1 of the Executive Governance Manual). This drawer spans the top row of the desk. |
 | **Recorder Desk** | **Meeting Minutes Entry Desk** | Write, save and publish the minutes (section 14.8 of the Executive Governance Manual). |
@@ -914,11 +915,11 @@ Three drawers show a whole workflow in one place. Each workflow drawer uses the 
 
 | Drawer | Desks | Steps | What you do in the drawer |
 | --- | --- | --- | --- |
-| **Expense Report (ER) Workflow** | **Financial Secretary Desk** and **Treasurer Desk** (in **[ 📖 Reference Workflows ]**) | 1. **Payment request** (FS). 2. **Ledger coding** (Treasurer). 3. **GK approval** (Grand Knight). 4. **Check issued** (Treasurer). | Read **Every open sheet**: each sheet, its total, the step it waits at and who acts. The Financial Secretary signs in **Auditing & Return Queue**. The Treasurer codes in **Ledger Line Coder** and pays in **Expense Report (ER) Settlement**. |
-| **Charitable Donation Workflow** | **Financial Secretary Desk**, **Treasurer Desk** and **Grand Knight Desk** (in **[ 📖 Reference Workflows ]**) | 1. **[ 📋 Member Charity Request ]** (Knight Shepherd, vetters, council vote). 2. **[ ✍️ FS/GK Compliance Endorsement ]** (FS, GK or DGK). 3. **[ ⛪ Treasurer Check Settlement ]** (Treasurer). | Read where each outgoing charity grant waits. The FS, GK and DGK endorse in **FS/GK Compliance Endorsements**. The Treasurer pays in **Charitable Contribution Matches** (the FS in **Charity Check Issuance Console**). Gifts coming in stay on the batch coder and cash box drawers. |
+| **Expense Report (ER) Workflow** | **Financial Secretary Desk** and **Treasurer Desk** (in **[ 📖 Reference Workflows ]**) | 1. **Payment request** (FS). 2. **Ledger coding** (Treasurer). 3. **GK approval** (Grand Knight). 4. **Check issued** (Treasurer). | Read **Every open sheet**: each sheet, its total, the step it waits at and who acts. The Financial Secretary signs in **[ 📋 FS Expense Audit Queue ]**. The Treasurer codes in **[ 🔍 Treasurer Ledger Audit ]** and pays in **[ 🧾 Disbursed Check Registry ]**. |
+| **Charitable Donation Workflow** | **Financial Secretary Desk**, **Treasurer Desk** and **Grand Knight Desk** (in **[ 📖 Reference Workflows ]**) | 1. **[ 📋 Member Charity Request ]** (Knight Shepherd, vetters, council vote). 2. **[ ✍️ FS/GK Compliance Endorsement ]** (FS, GK or DGK). 3. **[ ⛪ Treasurer Check Settlement ]** (Treasurer). | Read where each outgoing charity grant waits. The FS, GK and DGK endorse in **FS/GK Compliance Endorsements**. The Treasurer pays in **[ 🕊️ Charitable Grants Registry ]** (the FS in **[ 🕊️ Charitable Grants Registry ]**). Gifts coming in stay on the batch coder and cash box drawers. |
 | **[ 🗳️ Council Election Workflow ]** | **Grand Knight Desk**, **Recorder Desk** and **Historian Desk** (in **[ 📖 Reference Workflows ]**) | 1. **Open the ballot** (before May 1). 2. **Nominations** (May 1 - 31). 3. **Election** (June). 4. **New term** (July 1). | Read the wheels **Offices on the ballot** and **Offices with a nominee**, and the nominees of each office. Nominate in the **Council Election Center** (Sidebar). Admins set the ballot on **Council Lookups**. |
 
-The workflow drawers have no fields and no buttons. They read the same records as the working folders, so a sheet signed in **Auditing & Return Queue**, **Ledger Line Coder** or **Expense Report (ER) Settlement** moves to its next step in the workflow drawer.
+The workflow drawers have no fields and no buttons. They read the same records as the working folders, so a sheet signed in **[ 📋 FS Expense Audit Queue ]**, **[ 🔍 Treasurer Ledger Audit ]** or **[ 🧾 Disbursed Check Registry ]** moves to its next step in the workflow drawer.
 
 The workflow drawers are reference folders. They sit in the **[ 📖 Reference Workflows ]** block at the bottom of the spine. They never get the red border, so a waiting sheet lights only its signing folder.
 
@@ -957,8 +958,8 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 
 **Steps:**
 1. Select the **Financial Secretary Desk** tab.
-2. Find the **Auditing & Return Queue** folder. A red glowing border means that a sheet waits for your signature.
-3. Select the **Auditing & Return Queue** folder. The queue opens on the Desk Blotter.
+2. Find the **[ 📋 FS Expense Audit Queue ]** folder. A red glowing border means that a sheet waits for your signature.
+3. Select the **[ 📋 FS Expense Audit Queue ]** folder. The queue opens on the Desk Blotter.
 4. Select **📝 Verify & Sign Expense** on each sheet. To send a sheet back, type the reason and select **Return to member**.
 5. Select **[ 🔀 Back to Desk Blotter ]**.
 6. To follow a sheet, select the **Expense Report (ER) Workflow** folder under **[ 📖 Reference Workflows ]**, or the **Expense Report (ER) Routing Track** folder. To record a donation, select the **Charitable Donation Records** tile. To endorse an approved charity grant, select the **FS/GK Compliance Endorsements** folder (section 1.7.1).
@@ -966,7 +967,7 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 8. Fill in the template. Save the **Roster** sheet as CSV.
 9. In the same drawer, drag the CSV file onto **Import Supreme Roster CSV**. Select **Sync *n* roster rows from Supreme**. Each new member gets a welcome email.
 
-**Expected result:** The signed sheets move to the Treasurer. The count on the **Auditing & Return Queue** folder drops when you close the folder. The new members show in the roster.
+**Expected result:** The signed sheets move to the Treasurer. The count on the **[ 📋 FS Expense Audit Queue ]** folder drops when you close the folder. The new members show in the roster.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1079,7 +1080,7 @@ Some fundraisers use parish property, for example the cathedral parking lot. The
 
 | Way to split | Where | What it does |
 | --- | --- | --- |
-| Split profile | **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
+| Split profile | **Treasurer Desk** → **[ 📊 Chart of Accounts & General Ledger ]** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
 | Event Split Override | **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **⚖️ Override Event Split** | One posting of one event's gifts is shared out by the shares you choose. Nothing is saved to the account. |
 
 The destinations of a split are other Revenue accounts of the council. Since schema 103, a destination can also be an affiliated council. That council's share goes to a **Due to Sister Council** account in this council's own books. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.
@@ -1089,7 +1090,7 @@ The destinations of a split are other Revenue accounts of the council. Since sch
 
 **Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages.
 
-**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on the Revenue account.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **[ 📊 Chart of Accounts & General Ledger ]** → **Edit split** on the Revenue account.
 
 **Steps:**
 1. Select **Edit split** on the Revenue account that receives the fundraiser's money.
@@ -1132,7 +1133,7 @@ The destinations of a split are other Revenue accounts of the council. Since sch
 
 **Goal:** Send a part of each posting to an affiliated council, for example for a joint fundraiser.
 
-**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & GL Setup** → **Edit split** on the Revenue account.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **[ 📊 Chart of Accounts & General Ledger ]** → **Edit split** on the Revenue account.
 
 **Steps:**
 1. Select **Edit split** on the Revenue account that receives the money.

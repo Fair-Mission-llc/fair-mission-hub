@@ -218,6 +218,34 @@ export function applyCharterRule<T extends { join_date?: string | null; flag_cha
   return { ...row, flag_charter_member: 1 };
 }
 
+/** Sprint 11 Revision 16.0: true when the join date is HONORARY_TENURE_YEARS or more before `today` (YYYY-MM-DD or Date). */
+export function isShieldCircleTenure(joinDate: string | null | undefined, today: Date | string): boolean {
+  if (typeof joinDate !== 'string' || !ISO.test(joinDate)) return false;
+  const t = isoOf(today);
+  return joinDate.slice(0, 10) <= `${Number(t.slice(0, 4)) - HONORARY_TENURE_YEARS}${t.slice(4)}`;
+}
+
+/**
+ * Sprint 11 Revision 16.0: the Charter Member and Shield Circle checkboxes on the member form are locked and read from
+ * the membership dates, not ticked by hand:
+ *   charter  the join date (meritJoinDate) falls in the charter window (isCharterJoinDate);
+ *   shield   the join date is HONORARY_TENURE_YEARS or more ago (isShieldCircleTenure).
+ * A flag already stored stays on (`kept`), as applyCharterRule never turns a flag off, so a save never strips an honor
+ * recorded before the lock.
+ */
+export function evaluatedMeritFlags(
+  member: Partial<Pick<Member, 'join_date' | 'DateJoinedCouncil' | 'flag_charter_member' | 'flag_honorary_shield'>>,
+  institutionDate: string | null | undefined,
+  today: Date | string,
+): { charter: boolean; shield: boolean; charterKept: boolean; shieldKept: boolean } {
+  const joinDate = meritJoinDate(member);
+  const charterByDate = isCharterJoinDate(joinDate, institutionDate);
+  const shieldByDate = isShieldCircleTenure(joinDate, today);
+  const charterKept = !charterByDate && member.flag_charter_member === 1;
+  const shieldKept = !shieldByDate && member.flag_honorary_shield === 1;
+  return { charter: charterByDate || charterKept, shield: shieldByDate || shieldKept, charterKept, shieldKept };
+}
+
 // ---- metrics and standing ---------------------------------------------------------------------------------------
 
 export interface MeritMetrics {

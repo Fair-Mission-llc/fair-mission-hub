@@ -34,7 +34,7 @@ describe('Roster & Achievements link', () => {
 
   it('has its page and sidebar entry', () => {
     expect(read('apps/web/app/roster/page.tsx')).toContain('<RequireArea area="roster">');
-    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/roster: \{ href: '\/roster', label: 'Roster & Achievements'/);
+    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/roster: \{ href: '\/roster', label: '\[ 👥 Council Roster \]'/);
   });
 });
 
@@ -98,16 +98,17 @@ describe.each(drivers)('members.listRoster ($name driver)', ({ make }) => {
 });
 
 describe('desk mounts', () => {
-  it('puts the directory on the Member, Grand Knight and Financial Secretary Desks only', () => {
+  // Sprint 11 Revision 16.0: the Financial Secretary Desk lost its roster table.
+  it('puts the directory on the Member and Grand Knight Desks only', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const body = (name: string, next: string) => desks.slice(desks.indexOf(`export function ${name}`), desks.indexOf(`export function ${next}`));
     for (const [desk, next] of [
       ['GrandKnightDesk', 'FinancialSecretaryDesk'],
-      ['FinancialSecretaryDesk', 'TreasurerDesk'],
       ['MemberDesk', 'AwaitingHours'],
     ]) {
       expect(body(desk, next)).toContain('<MemberRosterDirectory compact />');
     }
+    expect(body('FinancialSecretaryDesk', 'TreasurerDesk')).not.toContain('<MemberRosterDirectory');
     expect(body('TreasurerDesk', 'MemberDesk')).not.toContain('MemberRosterDirectory');
   });
 

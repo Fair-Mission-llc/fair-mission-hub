@@ -20,6 +20,10 @@
 // Sprint 11 Revision 2.1: no hamburger. An open rail shows a left arrow (◀, SIDEBAR_HIDE_GLYPH) at its top right that
 // hides it; the hidden rail shrinks to a slim strip on the left edge whose right arrow (▶, SIDEBAR_SHOW_GLYPH) brings it back.
 // The strip keeps the legal documents as vertical tabs (schema 103 pass).
+// Sprint 11 Revision 16.0: inside the Finances pillar the ledger, audit, check-registry and donation views fold into one
+// 'Financial Views' accordion (FINANCIAL_VIEW_ITEMS), and the FS/GK Compliance Endorsements folder has its own link
+// (it opens the Financial Secretary or Grand Knight Desk with that folder open, DESK_FOLDER_PARAM). Labels end in an
+// ellipsis instead of spilling past the rail (.sidebar-truncate).
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -45,13 +49,22 @@ import {
   type SessionUser,
   type TenantType,
   ADVISORY_PANEL_HREF,
+  CHARITY_ENDORSEMENT_FOLDER_TITLE,
+  deskDrawersFor,
+  FINANCIAL_VIEWS_ACCORDION_TITLE,
   ADVISORY_PANEL_TITLE,
   LEGAL_NOTICES,
   LEGAL_DOCUMENT_ROUTE,
   isLegalDocumentId,
   plainNavLabel,
   type LegalNoticeId,
+  GENERAL_LEDGER_TITLE,
+  TREASURER_LEDGER_AUDIT_TITLE,
+  FS_EXPENSE_AUDIT_QUEUE_TITLE,
+  DISBURSED_CHECK_REGISTRY_TITLE,
+  CHARITABLE_GRANTS_REGISTRY_TITLE,
 } from '@kofc/shared';
+import { DESK_FOLDER_PARAM } from '@/components/DeskDrawers';
 import { Drawer } from '@/components/Drawer';
 import { Markdown } from '@/components/Markdown';
 import { cx } from '@/components/ui';
@@ -72,7 +85,7 @@ export interface NavEntry {
 export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue', NavEntry> = {
   home: { href: '/dashboard#home', label: 'Home', hint: 'Newsletters, feast days, reminders, the prayer list and the honor board' },
   'member-actions': { href: '/member-actions', label: 'Member Actions Hub', hint: 'My shifts, sign-ups, charity requests, sheets, roster and hours' },
-  roster: { href: '/roster', label: 'Roster & Achievements', hint: 'Brother Knights of your council and sister councils, with phone and email' },
+  roster: { href: '/roster', label: '[ 👥 Council Roster ]', hint: 'Brother Knights of your council and sister councils, with phone and email' },
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },
@@ -102,12 +115,12 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'The Executive Summary: Faith-in-Action, monthly hours, members and funds, budget tracking, roadmap and audits',
   },
   'finance/dashboard': { href: '/finance/dashboard', label: 'Financial Dashboard', hint: 'Liquidity tanks, balance scale, transfers, bank audits' },
-  'finance/ledger': { href: '/finance/ledger', label: 'Transaction Ledger', hint: 'Chart of accounts with every posting' },
+  'finance/ledger': { href: '/finance/ledger', label: GENERAL_LEDGER_TITLE, hint: 'Chart of accounts with every posting, and fund transfers' },
   'finance/balance-sheet': { href: '/finance/balance-sheet', label: 'Balance Sheet', hint: 'Assets against liabilities and equity' },
   'finance/audit': { href: '/finance/audit', label: 'Financial Inspections', hint: 'Semiannual Form 1295 audit: verify ledger lines, sign and lock' },
   'finance/treasurer-desk': {
     href: '/finance/treasurer-desk',
-    label: 'Treasurer Ledger Audit Desk',
+    label: TREASURER_LEDGER_AUDIT_TITLE,
     hint: 'Code ordered expense reports to a budget line and ledger account',
     restrictedTo: 'the Treasurer and Admins',
   },
@@ -116,7 +129,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'expenses/queue': { href: '/expenses/queue', label: 'Leadership Auditing Queue', hint: 'Track signatures and return reports' },
   'expenses/audit': {
     href: '/expenses/audit',
-    label: 'FS Expense Audit',
+    label: FS_EXPENSE_AUDIT_QUEUE_TITLE,
     hint: 'Issue payment requests on submitted reports',
     restrictedTo: 'the Financial Secretary and Admins',
   },
@@ -126,10 +139,10 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
     hint: 'Counter-sign ordered reports',
     restrictedTo: 'the Grand Knight, the Deputy Grand Knight and Admins',
   },
-  'expenses/disbursements': { href: '/expenses/disbursements', label: 'Bulk Check Payments Made', hint: 'Pay dual-signed reports by check' },
+  'expenses/disbursements': { href: '/expenses/disbursements', label: DISBURSED_CHECK_REGISTRY_TITLE, hint: 'Pay dual-signed reports by check' },
   'charities/propose': { href: '/charities/propose', label: 'Propose Charity Grant', hint: "Shepherd an organization's request to the council and follow it" },
   'charities/registry': { href: '/charities/registry', label: 'Global Charities Registry', hint: 'Search, suggest and add charities' },
-  'charities/queue': { href: '/charities/queue', label: 'Charity Payments Made Ledger', hint: 'Pay charity proposals by check' },
+  'charities/queue': { href: '/charities/queue', label: CHARITABLE_GRANTS_REGISTRY_TITLE, hint: 'Pay charity proposals by check' },
   'charities/vetting': {
     href: '/charities/vetting',
     label: 'Charity Vetting Queue',
@@ -329,13 +342,78 @@ const navLinkClass = (current: boolean) =>
   cx('flex items-center gap-2 border-l-8 py-1.5 pl-6 pr-3 text-sm', current ? 'border-gold bg-white font-bold text-navy' : 'border-transparent hover:underline');
 
 /** One dense sidebar link: the label only, with its description as the tooltip; gold marker when current. */
-function NavLink({ item, current, tenant }: { item: PortalNavItem | 'navigation-guide'; current: boolean; tenant: TenantType }) {
+function NavLink({ item, current, tenant, nested = false }: { item: PortalNavItem | 'navigation-guide'; current: boolean; tenant: TenantType; nested?: boolean }) {
   const { href, label, hint } = NAV[item];
   return (
     <li>
-      <Link href={href} title={whiteLabel(hint, tenant)} aria-current={current ? 'page' : undefined} className={navLinkClass(current)}>
-        {plainNavLabel(whiteLabel(label, tenant))}
+      <Link href={href} title={whiteLabel(hint, tenant)} aria-current={current ? 'page' : undefined} className={cx(navLinkClass(current), nested && 'pl-10 text-xs')}>
+        <span className="sidebar-truncate">{plainNavLabel(whiteLabel(label, tenant))}</span>
       </Link>
+    </li>
+  );
+}
+
+/** Sprint 11 Revision 16.0: the Finances links that fold into the 'Financial Views' accordion, in display order. */
+export const FINANCIAL_VIEW_ITEMS: readonly PortalNavItem[] = [
+  'finance/ledger',
+  'finance/balance-sheet',
+  'finance/dashboard',
+  'finance/audit',
+  'finance/treasurer-desk',
+  'expenses/audit',
+  'expenses/disbursements',
+  'charities/queue',
+  'donations',
+];
+
+/**
+ * The FS/GK Compliance Endorsements link (Sprint 11 Revision 16.0): the endorsement folder of the Financial Secretary
+ * Desk, or of the Grand Knight Desk, whichever the viewer has; null when they have neither.
+ */
+function endorsementLink(user: SessionUser, features: FeatureFlags, tenant: TenantType): { href: string; rowId: string } | null {
+  for (const desk of ['financial-secretary', 'grand-knight'] as const) {
+    const spec = deskDrawersFor(user, desk, user.councilId, features, tenant).find((d) => d.id === 'charity-endorsements');
+    if (spec) return { href: `/dashboard?${DESK_FOLDER_PARAM}=${encodeURIComponent(spec.rowId)}#${desk}`, rowId: spec.rowId };
+  }
+  return null;
+}
+
+/** The 'Financial Views' accordion: the financial links of the Finances pillar, open while one of them is the page. */
+function FinancialViewsAccordion({
+  items,
+  pathname,
+  hash,
+  tenant,
+  endorsements,
+}: {
+  items: readonly PortalNavItem[];
+  pathname: string;
+  hash: string;
+  tenant: TenantType;
+  endorsements: { href: string; rowId: string } | null;
+}) {
+  const holdsCurrent = items.some((item) => isCurrent(pathname, item, hash));
+  const [open, setOpen] = useState(holdsCurrent);
+  useEffect(() => {
+    if (holdsCurrent) setOpen(true);
+  }, [holdsCurrent]);
+  return (
+    <li>
+      <details open={open} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
+        <summary className="sidebar-truncate cursor-pointer list-inside py-1.5 pl-6 pr-3 text-sm font-bold hover:underline">{FINANCIAL_VIEWS_ACCORDION_TITLE}</summary>
+        <ul aria-label={FINANCIAL_VIEWS_ACCORDION_TITLE} className="flex flex-col">
+          {items.map((item) => (
+            <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} nested />
+          ))}
+          {endorsements ? (
+            <li>
+              <Link href={endorsements.href} title="Endorse approved charity grants for their check" className={cx(navLinkClass(false), 'pl-10 text-xs')}>
+                <span className="sidebar-truncate">{plainNavLabel(whiteLabel(CHARITY_ENDORSEMENT_FOLDER_TITLE, tenant))}</span>
+              </Link>
+            </li>
+          ) : null}
+        </ul>
+      </details>
     </li>
   );
 }
@@ -501,6 +579,36 @@ function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
   );
 }
 
+/** The Finances pillar: its other links flat, then the 'Financial Views' accordion. */
+function FinancesEntries({
+  items,
+  pathname,
+  hash,
+  tenant,
+  user,
+  features,
+}: {
+  items: readonly PortalNavItem[];
+  pathname: string;
+  hash: string;
+  tenant: TenantType;
+  user: SessionUser;
+  features: FeatureFlags;
+}) {
+  const views = FINANCIAL_VIEW_ITEMS.filter((item) => items.includes(item));
+  const endorsements = endorsementLink(user, features, tenant);
+  return (
+    <>
+      {items
+        .filter((item) => !FINANCIAL_VIEW_ITEMS.includes(item))
+        .map((item) => (
+          <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
+        ))}
+      {views.length > 0 || endorsements ? <FinancialViewsAccordion items={views} pathname={pathname} hash={hash} tenant={tenant} endorsements={endorsements} /> : null}
+    </>
+  );
+}
+
 export function Sidebar({ user, pathname, features, tenant }: { user: SessionUser; pathname: string; features: FeatureFlags; tenant: TenantType }) {
   const groups = portalSidebar(user, features, tenant);
   const hash = useHash();
@@ -555,9 +663,11 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
                 {plainNavLabel(whiteLabel(group.label, tenant))}
               </h2>
               <ul aria-labelledby={headingId} className="flex flex-col">
-                {group.entries.map(({ item }) => (
-                  <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
-                ))}
+                {group.id === 'finances' ? (
+                  <FinancesEntries items={group.entries.map((e) => e.item)} pathname={pathname} hash={hash} tenant={tenant} user={user} features={features} />
+                ) : (
+                  group.entries.map(({ item }) => <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />)
+                )}
                 {(EXTERNAL_NAV[group.id] ?? [])
                   .filter((link) => !link.visible || link.visible(user))
                   .map(({ href, label, hint }) => (

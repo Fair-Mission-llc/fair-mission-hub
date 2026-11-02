@@ -127,6 +127,9 @@ function BlotterStage({ spec, onClose, children }: { spec: DeskDrawerSpec; onClo
  * opens in place. `render` mounts a folder's module only while it is open; `onClosed` lets the desk re-read its counts.
  * A badge click-through that focuses a folder's row (DESK_FOCUS_TARGETS) opens that folder.
  */
+/** Sprint 11 Revision 16.0: the query parameter naming a desk folder to open on arrival. */
+export const DESK_FOLDER_PARAM = 'folder';
+
 export function DeskBlotter({
   desk,
   drawers,
@@ -160,6 +163,13 @@ export function DeskBlotter({
     setOpenId(null);
     onClosed?.();
   };
+  // Sprint 11 Revision 16.0: a link with ?folder=<rowId> (the sidebar's FS/GK Compliance Endorsements link) opens that
+  // folder when this desk has it.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get(DESK_FOLDER_PARAM);
+    if (wanted && drawers.some((d) => d.rowId === wanted)) setOpenId(wanted);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawers.map((d) => d.rowId).join(',')]);
   const onRowFocus = (spec: DeskDrawerSpec) => (e: FocusEvent<HTMLLIElement>) => {
     // Only the click-through's focus on the row itself opens it, never tabbing onto the folder link.
     if ((e.target as HTMLElement).id === spec.rowId) openDrawer(spec);

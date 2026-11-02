@@ -27,6 +27,7 @@ import {
   sumAmounts,
   type ExpenseReferenceOptions,
   type ExpenseReportDetail,
+  DISBURSED_CHECK_REGISTRY_TITLE,
 } from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import {
@@ -160,7 +161,7 @@ export function AuthorizationDesk() {
                 <>
                   {' '}
                   <Link href="/expenses/disbursements" className="font-bold underline">
-                    Open Bulk Check Payments Made
+                    Open the {DISBURSED_CHECK_REGISTRY_TITLE}
                   </Link>
                 </>
               ) : null}

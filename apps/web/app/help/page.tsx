@@ -175,7 +175,7 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
     topics: [
       {
         q: 'How do I reach another Brother Knight?',
-        a: ['Sidebar → Faith In Action → Roster & Achievements lists active members of your council and its sister councils with phone and email. The same list is on the Member Desk and the Member Actions Hub Fraternal roster tab. You can also message them through the Communications Hub.'],
+        a: ['Sidebar → Faith In Action → Council Roster lists active members of your council and its sister councils with phone and email. The same list is on the Member Desk and the Member Actions Hub Fraternal roster tab. You can also message them through the Communications Hub.'],
       },
       {
         q: 'What is the bell next to my name?',
@@ -233,14 +233,14 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
       {
         q: 'How do I find members with a particular trade?',
         a: [
-          'Roster & Achievements → Skills opens the Council skills drawer with every skill and how many members hold it. Choose one to see the holders.',
+          'Council Roster → Skills opens the Council skills drawer with every skill and how many members hold it. Choose one to see the holders.',
           'Write a note and select Send to message all of them at once. Only active members receive it, never you, and replies arrive in the Communications Hub.',
         ],
       },
       {
         q: 'How do I add a new member?',
         a: [
-          'Roster & Achievements → Add Member (council Admins and Super Admins). The email you enter is the member’s login; they then create their password on the phone.',
+          'Council Roster → Add Member (council Admins and Super Admins). The email you enter is the member’s login; they then create their password on the phone.',
           'Admins may grant Admin or Member; only a Super Admin may grant Super Admin.',
         ],
       },

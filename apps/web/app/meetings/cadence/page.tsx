@@ -188,7 +188,7 @@ function DripCanvas({ config, year, meetings, today }: { config: CouncilCadenceC
   const times = cadenceMeetingTimes(config.DefaultStartTime);
   const byDate = new Map(meetings.filter((m) => m.MeetingTypeID === config.MeetingTypeID).map((m) => [m.Date.slice(0, 10), m]));
   return (
-    <ol className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4" aria-label={`Drip-release canvas for ${year}`}>
+    <ol className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4" aria-label={`Scheduled releases for ${year}`}>
       {cadenceDatesForYear(config.CadencePattern, year).map((date) => {
         const meeting = byDate.get(date);
         const release = meeting?.InviteReleaseDate ?? cadenceInviteReleaseDate(date, leadDays);
@@ -201,7 +201,7 @@ function DripCanvas({ config, year, meetings, today }: { config: CouncilCadenceC
             <p className="text-xs">{formatTimeRange(meeting?.['Time Start'] ?? times['Time Start'], meeting?.['Time End'] ?? times['Time End'])}</p>
             <div className="mt-2 flex flex-wrap gap-1">
               {!meeting ? (
-                <Pill tone="outline">Not laid down</Pill>
+                <Pill tone="outline">[ ⏳ Scheduled ]</Pill>
               ) : past ? (
                 <Pill tone="outline">Held</Pill>
               ) : released ? (
@@ -314,7 +314,7 @@ function CadenceEngine() {
                       <Td>
                         <div className="flex justify-end gap-1">
                           <Button size="sm" variant="secondary" onClick={() => setSelectedId(c.id)}>
-                            Canvas
+                            [ 👁️ View Scheduled Releases ]
                           </Button>
                           <Button size="sm" variant="secondary" onClick={() => setEditing(c)}>
                             Edit
@@ -378,7 +378,7 @@ function CadenceEngine() {
           </div>
 
           {selected ? (
-            <Panel title={`Drip-release canvas: ${typeName.get(selected.MeetingTypeID) ?? ''} ${year}`}>
+            <Panel title={`Scheduled releases: ${typeName.get(selected.MeetingTypeID) ?? ''} ${year}`}>
               <DripCanvas config={selected} year={year} meetings={meetings.data ?? []} today={today} />
             </Panel>
           ) : null}

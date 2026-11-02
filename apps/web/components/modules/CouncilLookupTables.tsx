@@ -292,6 +292,15 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows.data, columns === null]);
 
+  // Sprint 11 Revision 16.0: these hooks run before the loading return below. Called after it, the first render (columns
+  // still loading) ran fewer hooks than the next, and React threw 'Rendered more hooks than during the previous render',
+  // which crashed /council-lookups on every open.
+  // Sprint 11 Revision 11.0: a new or renamed activity, or one without a confirmed line, goes through the Form 1728
+  // suggestion popup before the batch is saved. Cancel on any row saves nothing.
+  const confirmLine = useForm1728Confirm();
+  // Sprint 11 Revision 12.0: only a Knights of Columbus tenant confirms Form 1728 lines.
+  const form1728 = useForm1728Enabled();
+
   if (!columns) return columnsError ? <Notice tone="error">{columnsError}</Notice> : <p className="text-sm text-muted">Loading…</p>;
 
   const noun = NOUNS[table];
@@ -329,11 +338,6 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
     }
   };
 
-  // Sprint 11 Revision 11.0: a new or renamed activity, or one without a confirmed line, goes through the Form 1728
-  // suggestion popup before the batch is saved. Cancel on any row saves nothing.
-  const confirmLine = useForm1728Confirm();
-  // Sprint 11 Revision 12.0: only a Knights of Columbus tenant confirms Form 1728 lines.
-  const form1728 = useForm1728Enabled();
   const save = () =>
     void act(async () => {
       const records = pending.map((d) => toRecord(d, columns, accountNames)) as CouncilLookupRecord<typeof table>[];

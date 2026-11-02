@@ -6,7 +6,7 @@
 // and Treasurer, and any Super Admin (canManageFinances). A donation can be corrected or deleted by those people,
 // by the member who recorded it and by its event's owner; the drivers enforce the same rule, and every write
 // re-totals the event's FundsRaised columns, so the post-event ledger always matches the donations.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   canChangeDonation,
   canManageFinances,
@@ -16,6 +16,7 @@ import {
   type Donation,
   type DonationHistoryEntry,
   type DonationType,
+  type EventDonationSummary,
   type Event,
   type NewDonation,
 } from '@kofc/shared';
@@ -216,6 +217,74 @@ function DonationForm({
   );
 }
 
+/** Sprint 11 Revision 16.0: rows per page in the donation ledger tables. */
+export const DONATION_LEDGER_PAGE_SIZE = 10;
+
+/** One page of `rows` that match `query` (every word, case-insensitive, against `text(row)`), with the pager's state. */
+function usePagedSearch<T>(rows: readonly T[], text: (row: T) => string, pageSize = DONATION_LEDGER_PAGE_SIZE) {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matched = words.length ? rows.filter((r) => words.every((w) => text(r).toLowerCase().includes(w))) : rows;
+  const pages = Math.max(1, Math.ceil(matched.length / pageSize));
+  const current = Math.min(page, pages - 1);
+  return {
+    query,
+    setQuery: (q: string) => {
+      setQuery(q);
+      setPage(0);
+    },
+    matched,
+    shown: matched.slice(current * pageSize, current * pageSize + pageSize),
+    page: current,
+    pages,
+    setPage,
+  };
+}
+
+/** The search box and pager around a ledger table. */
+function LedgerControls({
+  id,
+  label,
+  paged,
+  total,
+  children,
+}: {
+  id: string;
+  label: string;
+  paged: { query: string; setQuery: (q: string) => void; matched: readonly unknown[]; page: number; pages: number; setPage: (p: number) => void };
+  total: number;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <label htmlFor={id} className="flex flex-col gap-1 text-xs font-bold uppercase tracking-wide">
+          {label}
+          <Input id={id} type="search" value={paged.query} onChange={(e) => paged.setQuery(e.target.value)} className="w-64 normal-case" />
+        </label>
+        <p className="text-xs text-muted" aria-live="polite">
+          {paged.matched.length === total ? `${total} rows` : `${paged.matched.length} of ${total} rows match`}
+        </p>
+      </div>
+      {paged.matched.length === 0 ? <Empty>Nothing matches the search.</Empty> : children}
+      {paged.pages > 1 ? (
+        <nav aria-label={`${label} pages`} className="flex items-center justify-end gap-2 text-sm">
+          <Button size="sm" variant="secondary" disabled={paged.page === 0} onClick={() => paged.setPage(paged.page - 1)}>
+            Previous
+          </Button>
+          <span>
+            Page {paged.page + 1} of {paged.pages}
+          </span>
+          <Button size="sm" variant="secondary" disabled={paged.page >= paged.pages - 1} onClick={() => paged.setPage(paged.page + 1)}>
+            Next
+          </Button>
+        </nav>
+      ) : null}
+    </div>
+  );
+}
+
 /** Donation rows with per-row correct and two-step delete where the signed-in member has the right. */
 function DonationTable({
   caption,
@@ -237,9 +306,14 @@ function DonationTable({
   const user = useUser();
   const [confirming, setConfirming] = useState<number | null>(null);
   const head = ['Date', 'Method', 'Type', ...(showEvent ? ['Event'] : []), 'Donor / description', 'Amount', 'Recorded by', ''];
+  // Sprint 11 Revision 16.0: searchable and paginated.
+  const paged = usePagedSearch(entries, (e) =>
+    [e.donation.DonationDate, formatFullDate(e.donation.DonationDate), e.methodName, e.typeName, e.donation.Donor, e.donation.DonationDesciption, e.recordedByName, eventName(e.donation.EventID), String(e.donation.DonationAmount)].join(' '),
+  );
   return (
+    <LedgerControls id={`search-${caption.replace(/\W+/g, '-').toLowerCase()}`} label="Search donations" paged={paged} total={entries.length}>
     <Table caption={caption} head={head}>
-      {entries.map(({ donation: d, methodName, kind, typeName, recordedByName }) => {
+      {paged.shown.map(({ donation: d, methodName, kind, typeName, recordedByName }) => {
         const allowed = canChangeDonation(user, d, eventOwner(d.EventID));
         return (
           <tr key={d.id}>
@@ -289,6 +363,47 @@ function DonationTable({
         );
       })}
     </Table>
+    </LedgerControls>
+  );
+}
+
+/**
+ * Sprint 11 Revision 16.0: the event donation totals as a searchable, paginated ledger table (was a grid of cards).
+ * View opens the event's own donations below; the chosen row carries the thick gold border.
+ */
+function EventDonationLedger({ summaries, eventId, onPick }: { summaries: EventDonationSummary[]; eventId: number | null; onPick: (id: number | null) => void }) {
+  const paged = usePagedSearch(summaries, (s) => `${s.event.EventName} ${s.event.StartDate} ${formatFullDate(s.event.StartDate)}`);
+  return (
+    <LedgerControls id="search-event-donations" label="Search events" paged={paged} total={summaries.length}>
+      <Table caption="Event donation summaries" head={['Event', 'Date', 'Donations', 'Cash', 'Electronic', 'Items (est.)', 'Raised', '']}>
+        {paged.shown.map(({ event, totals, fundsManaged }) => {
+          const chosen = event.id === eventId;
+          return (
+            <tr key={event.id} className={cx(chosen && 'outline outline-[6px] outline-gold')}>
+              <Td className="font-bold">
+                {event.EventName}
+                {fundsManaged ? (
+                  <span className="mt-1 block">
+                    <Pill tone="gold">✓ Automatically Logged to Treasury Ledger</Pill>
+                  </span>
+                ) : null}
+              </Td>
+              <Td className="whitespace-nowrap">{formatFullDate(event.StartDate)}</Td>
+              <Td className="text-right">{totals.count}</Td>
+              <Td className="whitespace-nowrap text-right">{formatMoney(totals.cash)}</Td>
+              <Td className="whitespace-nowrap text-right">{formatMoney(totals.electronic)}</Td>
+              <Td className="whitespace-nowrap text-right">{formatMoney(totals.itemValue)}</Td>
+              <Td className="whitespace-nowrap text-right font-bold">{formatMoney(totals.raised)}</Td>
+              <Td className="text-right">
+                <Button size="sm" variant={chosen ? 'gold' : 'secondary'} aria-pressed={chosen} onClick={() => onPick(chosen ? null : event.id)}>
+                  {chosen ? 'Hide' : 'View'}
+                </Button>
+              </Td>
+            </tr>
+          );
+        })}
+      </Table>
+    </LedgerControls>
   );
 }
 
@@ -361,50 +476,7 @@ export function DonationsWorkspace() {
             {summaries.length === 0 ? (
               <Empty>No donations have been recorded against an event yet.</Empty>
             ) : (
-              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2" aria-label="Event donation summaries">
-                {summaries.map(({ event, totals, fundsManaged }) => {
-                  const chosen = event.id === eventId;
-                  return (
-                    <li key={event.id}>
-                      <button
-                        type="button"
-                        aria-pressed={chosen}
-                        onClick={() => setEventId(chosen ? null : event.id)}
-                        className={cx('w-full rounded bg-white text-left', chosen ? 'border-[6px] border-gold p-[calc(0.75rem-4px)] shadow-md' : 'border-2 border-line p-3 hover:border-navy')}
-                      >
-                        <span className="flex items-start justify-between gap-2">
-                          <span>
-                            <span className="block font-serif text-base font-bold">{event.EventName}</span>
-                            <span className="block text-xs text-muted">
-                              {formatFullDate(event.StartDate)} · {totals.count} donation{totals.count === 1 ? '' : 's'}
-                            </span>
-                          </span>
-                          <span className="text-right text-lg font-bold">{formatMoney(totals.raised)}</span>
-                        </span>
-                        <span className="mt-2 grid grid-cols-3 gap-2 text-xs">
-                          <span>
-                            <span className="block font-bold uppercase tracking-wide text-muted">Cash</span>
-                            {formatMoney(totals.cash)}
-                          </span>
-                          <span>
-                            <span className="block font-bold uppercase tracking-wide text-muted">Electronic</span>
-                            {formatMoney(totals.electronic)}
-                          </span>
-                          <span>
-                            <span className="block font-bold uppercase tracking-wide text-muted">Items (est.)</span>
-                            {formatMoney(totals.itemValue)}
-                          </span>
-                        </span>
-                        {fundsManaged ? (
-                          <span className="mt-2 block">
-                            <Pill tone="gold">✓ Automatically Logged to Treasury Ledger</Pill>
-                          </span>
-                        ) : null}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              <EventDonationLedger summaries={summaries} eventId={eventId} onPick={setEventId} />
             )}
             {eventId !== null && eventHistory.data ? (
               <div

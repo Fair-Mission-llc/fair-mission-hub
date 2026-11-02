@@ -8,6 +8,8 @@
 // useForm1728Confirm, on the Activities page and the Admin Desk's Council Lookup Tables.
 // Sprint 11 Revision 15.0: the year-to-date panel reads compileForm1728Report (section subtotals and grand totals) and
 // offers one-click Print (a print-ready sheet listing every line, as the paper form does) and CSV export.
+// Sprint 11 Revision 16.0: the popup offers the Top 3 suggestions (topForm1728Suggestions), each a separate selection
+// card with its own id; a caller holding the council's compiled report passes it, and its busiest lines fill open slots.
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   compileForm1728Report,
@@ -18,7 +20,7 @@ import {
   isForm1728LineCode,
   resolveForm1728Line,
   searchForm1728Lines,
-  suggestForm1728Lines,
+  topForm1728Suggestions,
   type Form1728Context,
   type Form1728HoursRow,
   type Form1728LineCode,
@@ -98,6 +100,7 @@ export function Form1728SuggestionDialog({
   description,
   context,
   initial,
+  report,
   onConfirm,
   onCancel,
 }: {
@@ -105,11 +108,13 @@ export function Form1728SuggestionDialog({
   description?: string | null;
   context?: Form1728Context;
   initial?: string | null;
+  /** The council's compiled Form 1728 report, when the caller has it: its busiest lines fill open suggestion slots. */
+  report?: Form1728Report | null;
   onConfirm: (code: Form1728LineCode) => void;
   onCancel: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const suggestions = useMemo(() => suggestForm1728Lines(title, description, context), [title, description, context]);
+  const suggestions = useMemo(() => topForm1728Suggestions(title, description, context, report), [title, description, context, report]);
   const best = suggestions[0];
   const [chosen, setChosen] = useState<Form1728LineCode>(isForm1728LineCode(initial) ? initial : best.code);
   const [query, setQuery] = useState('');
@@ -137,25 +142,41 @@ export function Form1728SuggestionDialog({
         <p className="text-sm">
           For <span className="font-bold">{title || 'this event'}</span>, the system suggests:
         </p>
-        <div className="rounded border-l-8 border-gold bg-white px-4 py-3 ring-1 ring-line">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
-            Best guess{best.confidence === 'default' ? ' (no clear match, so the general line)' : best.confidence === 'strong' ? ' (strong match)' : ' (likely match)'}
-          </p>
-          <p className="text-lg font-bold">
-            {best.section} line {best.line} · {best.label}
-          </p>
-          {best.cues.length > 0 ? <p className="text-xs text-muted">Read from: {best.cues.join(', ')}</p> : null}
-        </div>
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-navy">Suggested lines</legend>
-          {suggestions.map((s) => (
-            <label key={s.code} className="flex items-center gap-2 text-sm">
-              <input type="radio" name="form-1728-suggestion" className="size-4" checked={chosen === s.code} onChange={() => setChosen(s.code)} />
-              <span>
-                {s.section} line {s.line} · {s.label}
-              </span>
-            </label>
-          ))}
+          <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-navy">
+            Top {suggestions.length} suggestions
+            {best.confidence === 'default' ? ' (no clear match, so the general line comes first)' : best.confidence === 'strong' ? ' (strong match first)' : ' (likely match first)'}
+          </legend>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {suggestions.map((s) => (
+              <button
+                key={s.code}
+                id={s.targetId}
+                type="button"
+                aria-pressed={chosen === s.code}
+                onClick={() => setChosen(s.code)}
+                className={cx(
+                  'flex min-w-0 flex-col gap-1 rounded border-2 px-3 py-2 text-left text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
+                  chosen === s.code ? 'border-navy bg-gold/20' : 'border-line bg-white hover:border-navy',
+                )}
+              >
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">
+                  #{s.rank} {s.source === 'report' ? '· council favorite' : s.rank === 1 ? '· best guess' : ''}
+                </span>
+                <span className="font-bold">
+                  {s.section} line {s.line}
+                </span>
+                <span className="truncate" title={s.label}>
+                  {s.label}
+                </span>
+                {s.cues.length > 0 ? (
+                  <span className="truncate text-xs text-muted" title={`Read from: ${s.cues.join(', ')}`}>
+                    Read from: {s.cues.join(', ')}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </div>
         </fieldset>
         <div className="flex flex-col gap-2">
           <label htmlFor="form-1728-search" className="text-xs font-bold uppercase tracking-wide text-navy">

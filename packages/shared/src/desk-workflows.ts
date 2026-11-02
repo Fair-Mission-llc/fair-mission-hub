@@ -64,8 +64,8 @@ export function expenseWorkflowStepOf(sheet: Sheet): { key: ExpenseWorkflowStepK
 
 /** Sprint 8S Revision 10.6: the working folders where each finance desk does its own ER steps (the reference drawer is read only). */
 export const EXPENSE_WORKFLOW_WORK_FOLDERS: Record<FinanceWorkflowDesk, string> = {
-  'financial-secretary': 'the Auditing & Return Queue folder',
-  treasurer: 'the Ledger Line Coder and Expense Report (ER) Settlement folders',
+  'financial-secretary': "the '[ 📋 FS Expense Audit Queue ]' folder",
+  treasurer: "the '[ 🔍 Treasurer Ledger Audit ]' and '[ 🧾 Disbursed Check Registry ]' folders",
 };
 
 /** The steps each finance desk acts on. */

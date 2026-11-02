@@ -38,6 +38,7 @@ import {
   type CharityDraft,
   type CharityProposalDetail,
   type GlobalCharityRegistry,
+  CHARITABLE_GRANTS_REGISTRY_TITLE,
 } from '@kofc/shared';
 import { CharityRecordFields, CharityStatusPill, CharitySummary } from '@/components/CharityParts';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
@@ -487,7 +488,7 @@ export function CharityQueue() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Charity Payments Made Ledger</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{CHARITABLE_GRANTS_REGISTRY_TITLE}</PageTitle>
       {!canDisburse ? (
         <Notice tone="error">Only this council&apos;s Financial Secretary or Treasurer, or a Super Admin, issues charity checks.</Notice>
       ) : (

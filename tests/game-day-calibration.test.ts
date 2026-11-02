@@ -172,7 +172,7 @@ describe('4. read-only Reference Workflows and the endorsement folder', () => {
 
   it('points every own step to its working folder instead of working it below', () => {
     expect(buildExpenseWorkflow('financial-secretary', [{ report: { Status: 'Submitted', FinancialSecretaryMemberID: null } as never }]).headline).toContain(
-      'in the Auditing & Return Queue folder',
+      "in the '[ 📋 FS Expense Audit Queue ]' folder",
     );
     expect(expenseWorkflowStepOf({ report: { Status: 'Submitted', FinancialSecretaryMemberID: null } as never })).toMatchObject({ key: 'payment-request' });
     const approved = { request: { id: 1, RequestStatus: 'Approved', VoteStatus: 'Approved', PaymentOrderId: null, ShepherdMemberID: 3, compliance_endorsed_by_member_id: null } as never };

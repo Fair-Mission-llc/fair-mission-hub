@@ -182,7 +182,7 @@ export function buildCharityPipeline(
   const waiting = requests ? own.reduce((sum, stage) => sum + (count(stage) ?? 0), 0) : null;
   const paid = count('paid');
   const ownLabel = own.includes('settlement') ? 'check' : 'endorsement';
-  const workIn = own.includes('settlement') ? 'the Charitable Contribution Matches folder' : `the ${CHARITY_ENDORSEMENT_FOLDER_TITLE} folder`;
+  const workIn = own.includes('settlement') ? "the '[ 🕊️ Charitable Grants Registry ]' folder" : `the ${CHARITY_ENDORSEMENT_FOLDER_TITLE} folder`;
   const headline =
     requests === null
       ? 'Loading the council’s charity requests…'

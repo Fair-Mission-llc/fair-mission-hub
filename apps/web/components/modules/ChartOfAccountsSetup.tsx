@@ -22,6 +22,9 @@ import {
   accountOwnershipLabel,
   accountOwnershipOf,
   canBatchCodeDonations,
+  canPostGeneralLedger,
+  TRANSFER_FUNDS_TITLE,
+  TREASURER_LEDGER_AUDIT_TITLE,
   isShieldedOwnership,
   describeError,
   GL_ACCOUNT_TYPE_LABELS,
@@ -33,7 +36,7 @@ import {
   type GLSplitProfile,
   type SplitSisterCouncil,
 } from '@kofc/shared';
-import { AccountLedgerDrawer, flattenChart, Money } from '@/components/FinanceParts';
+import { AccountLedgerDrawer, flattenChart, Money, TransferDrawer } from '@/components/FinanceParts';
 import { SplitShareRows, splitRowsOf, splitRowsToDestinations, type SplitRow } from '@/components/SplitShareRows';
 import { Button, Empty, Notice, Pill, Table, Td } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/session';
@@ -120,6 +123,9 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
   const sisters = useLoad(() => db.finance.listSplitSisterCouncils(memberId, councilId).catch(() => [] as SplitSisterCouncil[]), [memberId, councilId]);
   const [drill, setDrill] = useState<GLAccount | null>(null);
   const [editing, setEditing] = useState<GLAccount | null>(null);
+  // Sprint 11 Revision 16.0: the '[ 💸 Transfer Funds ]' modal, for those who post to the books.
+  const [transferring, setTransferring] = useState(false);
+  const canPost = canPostGeneralLedger(user, councilId);
   const nodes = flattenChart(chart.data);
   const assets = nodes.filter((n) => n.account.AccountType === 'Asset');
   const mayEdit = canBatchCodeDonations(user, councilId);
@@ -129,13 +135,23 @@ export function ChartOfAccountsSetup({ memberId, councilId }: { memberId: number
 
   return (
     <div className="flex flex-col gap-4">
+      {canPost && chart.data ? (
+        <div>
+          <Button variant="gold" onClick={() => setTransferring(true)}>
+            {TRANSFER_FUNDS_TITLE}
+          </Button>
+        </div>
+      ) : null}
+      {transferring && chart.data ? (
+        <TransferDrawer councilId={councilId} chart={chart.data} onClose={() => setTransferring(false)} onDone={() => chart.reload()} />
+      ) : null}
       {chart.error ? <Notice tone="error">{chart.error}</Notice> : null}
       {profiles.error ? <Notice tone="error">{profiles.error}</Notice> : null}
       {chart.loading && !chart.data ? <p className="text-sm">Loading the chart of accounts…</p> : null}
       {chart.data && nodes.length === 0 ? <Empty>This council has no chart of accounts yet.</Empty> : null}
       {chart.data && nodes.length > 0 ? (
         <p className="text-sm">
-          {nodes.length} accounts, {assets.length} of them asset lines. Expense coding on the Ledger Line Coder uses the Expense accounts below; each one
+          {nodes.length} accounts, {assets.length} of them asset lines. Expense coding on the {TREASURER_LEDGER_AUDIT_TITLE} uses the Expense accounts below; each one
           also decides the budget line the sheet is charged to. A Revenue line may be a {GL_SPLIT_ACCOUNT_LABEL}: every posting to it is shared out to its destinations.
         </p>
       ) : null}

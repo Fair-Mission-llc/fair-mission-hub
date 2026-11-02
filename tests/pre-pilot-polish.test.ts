@@ -96,7 +96,8 @@ describe('navigation wording', () => {
 describe('donations history and debug buttons', () => {
   it('marks the chosen event with a thick gold border and scrolls its drill-down into view', () => {
     const page = read('apps/web/components/modules/DonationRecords.tsx');
-    expect(page).toContain("'border-[6px] border-gold");
+    // Sprint 11 Revision 16.0: the event cards became a ledger table; the chosen row carries the thick gold outline.
+    expect(page).toContain("'outline outline-[6px] outline-gold'");
     expect(page).toContain('scrollIntoView(');
     expect(page).toContain('prefers-reduced-motion: reduce');
     // Sprint 6L Extension 3: the feast day widget moved off the finance screens to the web Faith Center page.

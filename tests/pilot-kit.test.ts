@@ -375,7 +375,8 @@ describe('Sprint 8L pilot kit', () => {
       'Constitutional Advisor Panels',
       'Connected Councils',
       'Financial Inspections',
-      'Charity Check Issuance Console',
+      // Sprint 11 Revision 16.0: was 'Charity Check Issuance Console'.
+      '[ 🕊️ Charitable Grants Registry ]',
       'Annual Budget vs Actuals Ledger Grid',
       'Bank Statement Match-Window',
       'Google Drive Media Gallery Sync Board',
