@@ -1,5 +1,5 @@
 'use client';
-// Financial Management Center (Sprint 5Z-8): the council's general ledger at a glance for its Admins, every seated
+// Financial Dashboard (Sprint 5Z-8; named Financial Management Center until Sprint 11 Revision 17.0): the council's general ledger at a glance for its Admins, every seated
 // officer and any Super Admin (canReadGeneralLedger; the drivers: assertMayReadGeneralLedger). Three parts:
 //   - Cash flow liquidity baffle gauges (buildLiquidityGauges): each bank account's cash beside what its virtual goals
 //     reserve, leaving the true liquid operating cash, with every goal's progress toward its target.
@@ -27,20 +27,21 @@
 //   - Sprint 11 Revision 2.0: the Membership Dues Revenue Forecast and the Budget Allocation & YOY Variance Analyzer are
 //     gone from this page. Budgeted vs. Current Actual Spend is a closed drawer (FinanceDrawer); its grid loads only once
 //     the drawer is opened.
-import Link from 'next/link';
+//   - Sprint 11 Revision 17.0: titled Financial Dashboard; the title-bar links and the Quick actions panel are gone
+//     (Transfer Funds stays on the Chart of Accounts & General Ledger page).
 import { useState, type ReactNode } from 'react';
-import { buildLiquidityGauges, canOpenTreasurerDesk, canPostGeneralLedger, TRANSFER_FUNDS_TITLE } from '@kofc/shared';
+import { buildLiquidityGauges, FINANCIAL_DASHBOARD_TITLE } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
-import { BalanceScale, LiquidityGaugeCard, TransferDrawer } from '@/components/FinanceParts';
+import { BalanceScale, LiquidityGaugeCard } from '@/components/FinanceParts';
 import { NetWorthCard } from '@/components/NetWorthParts';
 import { ConcludedPerformanceGrid } from '@/components/DuesParts';
-import { Button, Empty, Notice, PageTitle, Panel } from '@/components/ui';
+import { Empty, Notice, PageTitle, Panel } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-/** Sprint 11 Revision 2.0: a closed drawer of the Financial Management Center; the body mounts only while it is open. */
+/** Sprint 11 Revision 2.0: a closed drawer of the Financial Dashboard; the body mounts only while it is open. */
 function FinanceDrawer({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
@@ -73,38 +74,12 @@ function FinanceDashboard() {
   const chart = useLoad(() => db.finance.listChartOfAccounts(user.memberId, councilId), [user.memberId, councilId]);
   const sheet = useLoad(() => db.finance.getLatestBalanceSheet(user.memberId, councilId), [user.memberId, councilId]);
   const worth = useLoad(() => db.finance.getCouncilNetWorth(user.memberId, councilId), [user.memberId, councilId]);
-  const [transferring, setTransferring] = useState(false);
-  const canPost = canPostGeneralLedger(user, councilId);
-  const reload = async () => {
-    await Promise.all([chart.reload(), sheet.reload(), worth.reload()]);
-  };
   const gauges = chart.data ? buildLiquidityGauges(chart.data) : [];
 
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle
-        actions={
-          <div className="flex flex-wrap items-end gap-3">
-            <CouncilSelect scope={scope} />
-            <Link href="/finance/ledger" className="text-sm font-bold underline">
-              General ledger
-            </Link>
-            <Link href="/finance/balance-sheet" className="text-sm font-bold underline">
-              Full balance sheet
-            </Link>
-            <Link href="/finance/audit" className="text-sm font-bold underline">
-              Trustee audit desk
-            </Link>
-            {canOpenTreasurerDesk(user, councilId) ? (
-              <Link href="/finance/treasurer-desk" className="text-sm font-bold underline">
-                Treasurer desk
-              </Link>
-            ) : null}
-          </div>
-        }
-      >
-        Financial Management Center
-      </PageTitle>
+      {/* Sprint 11 Revision 17.0: no corner links and no quick actions; the sidebar's Financial Views reach the other pages. */}
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{FINANCIAL_DASHBOARD_TITLE}</PageTitle>
       {chart.error ? <Notice tone="error">{chart.error}</Notice> : null}
       {sheet.error ? <Notice tone="error">{sheet.error}</Notice> : null}
 
@@ -135,29 +110,6 @@ function FinanceDashboard() {
         <ConcludedPerformance actorId={user.memberId} councilId={councilId} />
       </FinanceDrawer>
 
-      <Panel
-        title="Quick actions"
-        actions={
-          canPost && chart.data ? (
-            <Button variant="primary" onClick={() => setTransferring(true)}>
-              {TRANSFER_FUNDS_TITLE}
-            </Button>
-          ) : undefined
-        }
-      >
-        {!canPost ? (
-          <Notice tone="info">
-            Posting transfers belongs to the council&apos;s Financial Secretary and Treasurer (and Super Admins). You can read every figure on this page.
-          </Notice>
-        ) : (
-          <p className="text-sm">
-            Lump-sum revenue and cash bag corrections are posted from the Treasurer Desk&apos;s batch coder; bank statements are matched in its Bank Statement
-            Match-Window.
-          </p>
-        )}
-      </Panel>
-
-      {transferring && chart.data ? <TransferDrawer councilId={councilId} chart={chart.data} onClose={() => setTransferring(false)} onDone={reload} /> : null}
     </div>
   );
 }

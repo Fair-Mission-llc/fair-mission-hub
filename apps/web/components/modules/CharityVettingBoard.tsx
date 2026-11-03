@@ -1,6 +1,6 @@
 'use client';
 // Sprint 8L: moved from app/charities/vetting/page.tsx so the Active Desks can mount the same module; the page renders VettingDesk.
-// Pooled Vetting Desk (Sprint 5Z-2): the council's shared triage spreadsheet of charitable intake requests
+// Charity Vetting Queue (Sprint 5Z-2; the Pooled Vetting Desk until Sprint 11 Revision 17.0): the council's shared triage spreadsheet of charitable intake requests
 // (charities.listCharitableRequestsQueue), for its officers (Trustees included), Admins and any Super Admin.
 //   - Unassigned rows carry a gold "Claim & Audit" button (charities.triageRequestStatus 'claim').
 //   - Claimed rows show who is reviewing them; the assigned vetter opens the vetting drawer to log notes, name the
@@ -16,6 +16,8 @@
 //     forum on the request, which every officer and Admin of the council can read and join.
 import { useState } from 'react';
 import {
+  CHARITY_VETTING_QUEUE_HELP,
+  CHARITY_VETTING_QUEUE_TITLE,
   CHARITABLE_REQUEST_MAX_TIER,
   CHARITABLE_REQUEST_STATUSES,
   CHARITABLE_VETTING_NOTES_MAX_LENGTH,
@@ -32,7 +34,7 @@ import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { Drawer } from '@/components/Drawer';
 import { RequestStatusPill, RequestSummary, SponsorRestriction } from '@/components/IntakeParts';
 import { RequestThreadButtons, RequestThreadDrawer } from '@/components/RequestThreads';
-import { Button, cx, Empty, Field, Notice, PageTitle, Panel, Select, Table, Td, Textarea } from '@/components/ui';
+import { Button, cx, Empty, Field, HelpTip, Notice, PageTitle, Panel, Select, Table, Td, Textarea } from '@/components/ui';
 import { formatFullDate, formatMoney } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -249,7 +251,7 @@ export function VettingDesk() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Pooled Vetting Desk</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{CHARITY_VETTING_QUEUE_TITLE}</PageTitle>
       <div className="flex flex-col gap-4">
         <ul className="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Requests by stage">
           {CHARITABLE_REQUEST_STATUSES.map((status) => {
@@ -271,7 +273,8 @@ export function VettingDesk() {
         ) : null}
         {queue.error ? <Notice tone="error">{queue.error}</Notice> : null}
 
-        <Panel title={`Triage queue (${rows.length})`}>
+        {/* Sprint 11 Revision 17.0: the long footer became the help question mark. */}
+        <Panel title={`Triage queue (${rows.length})`} actions={<HelpTip text={CHARITY_VETTING_QUEUE_HELP} label="How the Charity Vetting Queue works" />}>
           {queue.loading && !queue.data ? (
             <p className="text-sm text-muted">Loading the queue…</p>
           ) : rows.length === 0 ? (
@@ -323,11 +326,6 @@ export function VettingDesk() {
               })}
             </Table>
           )}
-          <p className="mt-2 text-xs text-muted">
-            Four-Eyes Principle: a Knight Shepherd never vets their own request, so those rows are locked for you. A claimed request&apos;s drawer opens for
-            its vetter and for the council&apos;s Admins, Grand Knight and Deputy Grand Knight. &ldquo;Request More Info&rdquo; is the vetting officer&apos;s
-            private thread with the Knight Shepherd; &ldquo;Request Officer Input&rdquo; is open to every officer and Admin, never to the Shepherd.
-          </p>
         </Panel>
       </div>
 

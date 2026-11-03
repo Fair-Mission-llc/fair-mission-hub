@@ -12,8 +12,10 @@
 // Sprint 11 Revision 11.0: saving a new or renamed activity, or one with no confirmed line, opens the Form 1728
 // suggestion popup (useForm1728Confirm). The pick is saved in Activities.form_1728_line (schema 109); Cancel saves
 // nothing. Each row's 'Change line' button reopens the popup for that activity alone.
+// Sprint 11 Revision 17.0: both tabs are full-width data tables with search and pages; the activity form opens in a
+// side drawer.
 import { useEffect, useState } from 'react';
-import { canMaintainCouncilRecords, formatHours, supremeMissionAreaOf, type Activities, type ActivitySummary } from '@kofc/shared';
+import { canMaintainCouncilRecords, formatHours, matchesEveryWord, supremeMissionAreaOf, WORKSPACE_TABLE_PAGE_SIZE, type Activities, type ActivitySummary } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import {
   Form1728Badge,
@@ -24,6 +26,7 @@ import {
   useForm1728Enabled,
 } from '@/components/Form1728Parts';
 import { LocalCategoryPicker } from '@/components/MissionCategoryParts';
+import { PagedTableControls, usePagedSearch } from '@/components/PagedTable';
 import { RecordGrid, type Draft, type Selection } from '@/components/RecordGrid';
 import { Button, cx, Empty, Field, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td } from '@/components/ui';
 import { formatDecimalHours, formatFullDate, formatPersonName } from '@/lib/format';
@@ -83,22 +86,21 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
     if (chosen !== null && !summaries.some((s) => s.activity.id === chosen)) setChosen(null);
   }, [summaries, chosen]);
   const current = summaries.find((s) => s.activity.id === chosen)?.activity;
+  // Sprint 11 Revision 17.0: a full-width table with search and pages; the chosen activity's log opens under it.
+  const paged = usePagedSearch(summaries, (s) => `${s.activity.ActivityName} ${s.activity.ActivityDescription} ${categoryName.get(s.activity.CategoryID) ?? ''}`);
 
   if (summaries.length === 0) {
     return <Empty>No activity has logged time yet. An activity moves here as soon as a member logs hours against it.</Empty>;
   }
   return (
-    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-      {form1728 ? (
-        <div className="xl:col-span-2">
-          <Form1728YearToDatePanel activities={summaries.map((s) => s.activity)} />
-        </div>
-      ) : null}
+    <div className="flex flex-col gap-4">
+      {form1728 ? <Form1728YearToDatePanel activities={summaries.map((s) => s.activity)} /> : null}
+      <PagedTableControls id="activity-history-search" label="Search activities" paged={paged} total={summaries.length} noun="activities">
       <Table
         caption="Activities with logged time"
         head={form1728 ? ['Activity', 'Category', 'Form 1728', 'Entries', 'Hours', 'Last logged'] : ['Activity', 'Category', 'Entries', 'Hours', 'Last logged']}
       >
-        {summaries.map((s) => {
+        {paged.shown.map((s) => {
           const active = s.activity.id === chosen;
           return (
             <tr key={s.activity.id} className={cx(active && 'outline outline-2 -outline-offset-2 outline-gold')}>
@@ -122,6 +124,7 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
           );
         })}
       </Table>
+      </PagedTableControls>
       {current ? <ActivityLog key={current.id} activity={current} /> : <Empty>Choose an activity to see who logged time against it.</Empty>}
     </div>
   );
@@ -269,7 +272,9 @@ function ActivityCatalog() {
             })}
             toDraft={(a) => ({ ActivityName: a.ActivityName, ActivityDescription: a.ActivityDescription, CategoryID: String(a.CategoryID) })}
             rowLabel={(a) => a.ActivityName}
-            matches={(a, q) => `${a.ActivityName} ${a.ActivityDescription}`.toLowerCase().includes(q)}
+            matches={(a, q) => matchesEveryWord(`${a.ActivityName} ${a.ActivityDescription} ${categoryName.get(a.CategoryID) ?? ''}`, q)}
+            wide
+            pageSize={WORKSPACE_TABLE_PAGE_SIZE}
             onSave={save}
             onRemove={async (a) => {
               await db.activities.remove(user.memberId, a.id);

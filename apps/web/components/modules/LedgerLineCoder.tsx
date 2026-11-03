@@ -15,6 +15,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
+  GK_EXPENSE_AUTHORIZE_TITLE,
   canAuditCouncilExpenses,
   canOpenExpenseAuthorizeDesk,
   canOpenTreasurerDesk,
@@ -184,7 +185,7 @@ export function TreasurerDesk() {
                 <>
                   {' '}
                   <Link href="/expenses/authorize" className="font-bold underline">
-                    Open the Grand Knight Authorization Desk
+                    Open {GK_EXPENSE_AUTHORIZE_TITLE}
                   </Link>
                 </>
               ) : null}

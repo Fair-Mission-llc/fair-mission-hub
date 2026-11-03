@@ -408,6 +408,7 @@ import {
   shiftDefaultLengthHours,
   assertMayManageAgendaTemplates,
   cleanAgendaTemplateText,
+  cleanMeetingCustomization,
   cleanMeetingSpan,
   meetingLastDate,
   assertExpenseSubmissionWindow,
@@ -4695,6 +4696,23 @@ export class MemoryDataService implements DataService {
         assertMayLinkMeetingDrive(actor, row as unknown as Meeting, `link Google Drive files to meeting ${meetingId}`);
         (row as Row).GoogleDriveMinutesURL = minutes;
         (row as Row).GoogleDriveFlyerURL = flyer;
+        return { ...row } as unknown as Meeting;
+      });
+    },
+
+    customizeAgendaAndLocation: async (actorId, meetingId, input) => {
+      const clean = cleanMeetingCustomization(input);
+      const s = await this.ready();
+      return s.transaction(() => {
+        const actor = this.memberWriteActor(s, actorId);
+        const row = s.rows('Meeting').find((m) => m.id === meetingId);
+        if (!row) throw new BusinessRuleError('MEETING_NOT_FOUND', `No meeting with id ${meetingId}.`, { meetingId });
+        assertMayManageAgendaTemplates(actor, row.CouncilID as number);
+        if (String(row.Date).slice(0, 10) < toIsoDate(this.now())) {
+          throw new BusinessRuleError('MEETING_ALREADY_HELD', `Meeting ${meetingId} is already past; its agenda and location are on record.`, { meetingId });
+        }
+        (row as Row).Agenda = clean.Agenda;
+        (row as Row).Location = clean.Location;
         return { ...row } as unknown as Meeting;
       });
     },

@@ -4,11 +4,13 @@
 // The form is the paper intake document's Sections 1-3 without the request tier (the vetter sets it). The member is
 // the request's Knight Shepherd: the data service records the signed-in caller as ShepherdMemberID, so the form
 // carries no Shepherd field and nobody can file in another member's name. Saving calls charities.submitCharitableRequest
-// (Submitted, in the council's Pooled Vetting Desk) and dispatches the Shepherd's 3-step tracking notice
+// (Submitted, in the council's Charity Vetting Queue) and dispatches the Shepherd's 3-step tracking notice
 // (dispatchCharitableTrackingNotice: Vetting -> Presentation -> Disbursement, plus the date the Trustees are prompted
 // for a status report). My requests (charities.listMyCharitableRequests) follows each request along that track.
 // Sprint 6H: each request's "Request More Info" button opens the private thread its vetting officer started with the
 // Shepherd, to read and answer it. The officers' "Request Officer Input" forum is never shown here.
+// Sprint 11 Revision 17.0: the duplicate My requests panel is gone; the Member Desk's My Charity Requests card lists the
+// member's requests and carries the Request More Info thread.
 // Sprint 10 Revision 1.0 (schema 100): Section 1 opens with a State dropdown and an Organization dropdown that lists the
 // state's verified registry charities (charities.searchGlobalRegistry with verified: true). Picking one fills the
 // name, mission, mailing address, EIN and the Section 2 contact fields from the registry row (charityGrantAutoFill).
@@ -16,10 +18,8 @@
 import { useState, type ReactNode } from 'react';
 import {
   CHARITABLE_FORM_TEXT_MAX_LENGTH,
-  CHARITABLE_TRUSTEE_FOLLOWUP_MONTHS,
   CHARITY_NAME_MAX_LENGTH,
   CHARITY_SEARCH_MAX_LIMIT,
-  charitableTrusteeFollowUpDate,
   charityGrantAutoFill,
   describeError,
   dispatchCharitableTrackingNotice,
@@ -28,9 +28,7 @@ import {
   type GlobalCharityRegistry,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
-import { TrackingSteps } from '@/components/IntakeParts';
-import { RequestThreadButtons, RequestThreadDrawer } from '@/components/RequestThreads';
-import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Select, Table, Td, Textarea } from '@/components/ui';
+import { Button, Field, Input, Notice, PageTitle, Select, Textarea } from '@/components/ui';
 import { blankToNull, formatFullDate, formatMoney, parseNumberField } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -112,7 +110,6 @@ function GrantProposal() {
   const user = useUser();
   const types = useLoad(() => db.charities.listCouncilRelationshipTypes(user.councilId), [user.councilId]);
   const areas = useLoad(() => db.charities.listCouncilMissionAreas(user.councilId), [user.councilId]);
-  const mine = useLoad(() => db.charities.listMyCharitableRequests(user.memberId), [user.memberId]);
   const verified = useLoad(() => db.charities.searchGlobalRegistry(user.memberId, { verified: true, limit: CHARITY_SEARCH_MAX_LIMIT }), [user.memberId]);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   // Sprint 10 Revision 1.0: the cascading pickers. charityId '' = nothing picked yet, 'other' = typed in by hand.
@@ -139,11 +136,8 @@ function GrantProposal() {
   };
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
-  const [threadId, setThreadId] = useState<number | null>(null);
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
   const text = (key: keyof Draft) => draft[key] as string;
-  const rows = mine.data ?? [];
-  const threadRequest = rows.find((d) => d.request.id === threadId)?.request ?? null;
 
   const submit = async () => {
     setBusy(true);
@@ -173,11 +167,10 @@ function GrantProposal() {
         tone: 'info',
         text:
           `Request #${saved.request.id} from ${saved.request.OrganizationName} for ${formatMoney(saved.request.AmountRequested)} is filed. ` +
-          `It moves through Vetting, Presentation and Payment Made; follow it under My requests. ` +
+          `It moves through Vetting, Presentation and Payment Made; follow it on the Member Desk under My Charity Requests. ` +
           `The Trustees will ask for a status report on ${formatFullDate(notice.trusteeFollowUpDate)}.`,
       });
       resetForm();
-      await mine.reload();
     } catch (err) {
       setMessage({ tone: 'error', text: describeError(err) });
     } finally {
@@ -335,38 +328,7 @@ function GrantProposal() {
           </div>
         </form>
 
-        <Panel title={`My requests (${rows.length})`}>
-          {mine.error ? <Notice tone="error">{mine.error}</Notice> : null}
-          {mine.loading && !mine.data ? (
-            <p className="text-sm text-muted">Loading…</p>
-          ) : rows.length === 0 ? (
-            <Empty>You have not proposed a charity grant yet.</Empty>
-          ) : (
-            <Table caption="Your charity grant requests, newest first" head={['Request', 'Organization / Ministry', 'Amount', 'Tracking', 'Trustee follow-up', 'Vetting messages']}>
-              {rows.map(({ request }) => (
-                <tr key={request.id}>
-                  <Td className="font-bold">#{request.id}</Td>
-                  <Td>{request.OrganizationName}</Td>
-                  <Td className="whitespace-nowrap text-right font-bold">{formatMoney(request.AmountRequested)}</Td>
-                  <Td>
-                    <TrackingSteps request={request} />
-                  </Td>
-                  <Td className="whitespace-nowrap">{formatFullDate(charitableTrusteeFollowUpDate(request))}</Td>
-                  <Td>
-                    <RequestThreadButtons request={request} types={['MORE_INFO']} onOpen={() => setThreadId(request.id)} />
-                  </Td>
-                </tr>
-              ))}
-            </Table>
-          )}
-          <p className="mt-3 text-xs text-muted">
-            An officer or Trustee other than you vets each request, the council votes on it at a Monthly meeting, and the Financial Secretary or Treasurer issues
-            the check. The Trustees ask for a status report {CHARITABLE_TRUSTEE_FOLLOWUP_MONTHS} months after you file. If the vetting officer needs more
-            information, their questions appear under Request More Info; answer them there.
-          </p>
-        </Panel>
       </div>
-      {threadRequest ? <RequestThreadDrawer key={threadRequest.id} request={threadRequest} threadType="MORE_INFO" onClose={() => setThreadId(null)} /> : null}
     </>
   );
 }

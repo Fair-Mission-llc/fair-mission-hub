@@ -12,7 +12,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { ACCESS_REQUEST_LINK_LABEL, councilLabel, type LegalNoticeId, PLATFORM_APP_NAME, countUnreadMessages, describeError, isFraternalTenant, portalAreas, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
+import { ACCESS_REQUEST_LINK_LABEL, councilLabel, type LegalNoticeId, PLATFORM_APP_NAME, countUnreadMessages, describeError, isFraternalTenant, portalAreas, showsSuperAdminHeaderLink, SUPER_ADMIN_HEADER_HREF, SUPER_ADMIN_HEADER_LINK_LABEL, TENANT_VOCABULARY, whiteLabel } from '@kofc/shared';
 import { AlertBell } from '@/components/AlertBell';
 import { BackToDeskBlotterAnchor } from '@/components/DeskDrawers';
 import { GlobalSearch } from '@/components/GlobalSearch';
@@ -592,6 +592,16 @@ function Frame({ children }: { children: ReactNode }) {
         </div>
         {/* Sprint 7F: officers and Admins may share their screen with the Super Admins; not inside a view-as session. */}
         {!impersonator && user.memberType !== 'Super Admin' && (user.isOfficer || user.memberType === 'Admin') ? <RemoteAssistButton /> : null}
+        {/* Sprint 11 Revision 17.0: every Super Admin session reaches its desk from the header row. */}
+        {showsSuperAdminHeaderLink(user, Boolean(impersonator)) ? (
+          <Link
+            href={SUPER_ADMIN_HEADER_HREF}
+            aria-current={pathname === SUPER_ADMIN_HEADER_HREF ? 'page' : undefined}
+            className="shrink-0 whitespace-nowrap rounded border border-gold px-2 py-1.5 text-sm font-bold text-white hover:bg-white/10"
+          >
+            {SUPER_ADMIN_HEADER_LINK_LABEL}
+          </Link>
+        ) : null}
         <MessagingMenu pathname={pathname} />
         <HelpLink current={pathname === '/help'} />
         <AlertBell />

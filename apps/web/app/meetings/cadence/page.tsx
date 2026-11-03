@@ -9,7 +9,12 @@
 import { useState } from 'react';
 import {
   platformSettings,
+  CADENCE_CARD_BADGES,
   CADENCE_LOCATION_MAX_LENGTH,
+  cadenceCardCustomizable,
+  cadenceCardStatus,
+  CUSTOMIZE_AGENDA_LOCATION_LABEL,
+  MEETING_AGENDA_MAX_LENGTH,
   CADENCE_ORDINALS,
   CADENCE_RECIPIENT_GROUPS,
   CADENCE_WEEKDAYS,
@@ -23,9 +28,7 @@ import {
   formatDate,
   formatTimeRange,
   fraternalYearBounds,
-  isInvitationReleased,
   parseCadencePattern,
-  toIsoDate,
   type CadenceOrdinal,
   type CadenceRecipientGroup,
   type CadenceWeekday,
@@ -34,8 +37,9 @@ import {
   type Meeting,
 } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
+import { Drawer } from '@/components/Drawer';
 import { usePlatformSettings } from '@/components/SettingsParts';
-import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td } from '@/components/ui';
+import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -183,37 +187,107 @@ function CadenceForm({
 
 // ---- the drip-release canvas -----------------------------------------------------
 
-function DripCanvas({ config, year, meetings, today }: { config: CouncilCadenceConfig; year: string; meetings: Meeting[]; today: string }) {
+function CustomizeMeetingDrawer({ meeting, onClose, onSaved }: { meeting: Meeting; onClose: () => void; onSaved: (saved: Meeting) => void }) {
+  const user = useUser();
+  const [agenda, setAgenda] = useState(meeting.Agenda ?? '');
+  const [location, setLocation] = useState(meeting.Location ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const save = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      onSaved(await db.meetings.customizeAgendaAndLocation(user.memberId, meeting.id, { Agenda: agenda, Location: location }));
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Drawer title={`${CUSTOMIZE_AGENDA_LOCATION_LABEL} ${formatDate(meeting.Date.slice(0, 10))}`} onClose={onClose}>
+      {error ? (
+        <Notice tone="error" onDismiss={() => setError(null)}>
+          {error}
+        </Notice>
+      ) : null}
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void save();
+        }}
+      >
+        <Field label="Location" hint="This meeting only. The cadence's default location stays as it is.">
+          {(id) => <Input id={id} value={location} maxLength={CADENCE_LOCATION_MAX_LENGTH} onChange={(e) => setLocation(e.target.value)} required />}
+        </Field>
+        <Field label="Agenda">
+          {(id) => <Textarea id={id} rows={12} value={agenda} maxLength={MEETING_AGENDA_MAX_LENGTH} onChange={(e) => setAgenda(e.target.value)} />}
+        </Field>
+        <div className="flex gap-2">
+          <Button type="submit" disabled={busy}>
+            Save
+          </Button>
+          <Button variant="secondary" disabled={busy} onClick={onClose}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Drawer>
+  );
+}
+
+function DripCanvas({ config, year, meetings, now, onChanged }: { config: CouncilCadenceConfig; year: string; meetings: Meeting[]; now: Date; onChanged: () => void }) {
   const leadDays = platformSettings(usePlatformSettings()).cadence_invitation_horizon_days;
   const times = cadenceMeetingTimes(config.DefaultStartTime);
   const byDate = new Map(meetings.filter((m) => m.MeetingTypeID === config.MeetingTypeID).map((m) => [m.Date.slice(0, 10), m]));
+  const [customizing, setCustomizing] = useState<Meeting | null>(null);
   return (
-    <ol className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4" aria-label={`Scheduled releases for ${year}`}>
-      {cadenceDatesForYear(config.CadencePattern, year).map((date) => {
-        const meeting = byDate.get(date);
-        const release = meeting?.InviteReleaseDate ?? cadenceInviteReleaseDate(date, leadDays);
-        const past = date < today;
-        const released = meeting ? isInvitationReleased(meeting, today) : release <= today;
-        return (
-          <li key={date} className={`rounded border-2 p-3 ${meeting ? 'border-navy bg-white' : 'border-dashed border-line bg-white'}`}>
-            <p className="text-xs font-bold uppercase tracking-wide text-muted">{monthLabel(date)}</p>
-            <p className="font-serif text-lg font-bold">{formatDate(date)}</p>
-            <p className="text-xs">{formatTimeRange(meeting?.['Time Start'] ?? times['Time Start'], meeting?.['Time End'] ?? times['Time End'])}</p>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {!meeting ? (
-                <Pill tone="outline">[ ⏳ Scheduled ]</Pill>
-              ) : past ? (
-                <Pill tone="outline">Held</Pill>
-              ) : released ? (
-                <Pill tone="navy">Invitations released</Pill>
-              ) : (
-                <Pill tone="gold">Hidden until {formatDate(release)}</Pill>
-              )}
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+    <>
+      <ol className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4" aria-label={`Scheduled releases for ${year}`}>
+        {cadenceDatesForYear(config.CadencePattern, year).map((date) => {
+          const meeting = byDate.get(date);
+          const release = meeting?.InviteReleaseDate ?? cadenceInviteReleaseDate(date, leadDays);
+          const end = meeting?.['Time End'] ?? times['Time End'];
+          // Sprint 11 Revision 17.0: the badge follows the clock, so a card whose meeting is over never reads Scheduled.
+          const status = cadenceCardStatus(date, meeting, now, end);
+          const over = status === 'held' || status === 'past';
+          return (
+            <li key={date} className={`rounded border-2 p-3 ${meeting && !over ? 'border-navy bg-white' : over ? 'border-line bg-line/30' : 'border-dashed border-line bg-white'}`}>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted">{monthLabel(date)}</p>
+              <p className="font-serif text-lg font-bold">{formatDate(date)}</p>
+              <p className="text-xs">{formatTimeRange(meeting?.['Time Start'] ?? times['Time Start'], end)}</p>
+              {meeting ? <p className="sidebar-truncate text-xs text-muted" title={meeting.Location}>{meeting.Location}</p> : null}
+              <div className="mt-2 flex flex-wrap gap-1">
+                {status === 'hidden' ? (
+                  <Pill tone="gold">
+                    {CADENCE_CARD_BADGES.hidden} {formatDate(release)}
+                  </Pill>
+                ) : (
+                  <Pill tone={status === 'released' ? 'navy' : 'outline'}>{CADENCE_CARD_BADGES[status]}</Pill>
+                )}
+              </div>
+              {meeting && cadenceCardCustomizable(status) ? (
+                <Button size="sm" variant="secondary" className="mt-2" onClick={() => setCustomizing(meeting)}>
+                  {CUSTOMIZE_AGENDA_LOCATION_LABEL}
+                </Button>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+      {customizing ? (
+        <CustomizeMeetingDrawer
+          key={customizing.id}
+          meeting={customizing}
+          onClose={() => setCustomizing(null)}
+          onSaved={() => {
+            setCustomizing(null);
+            onChanged();
+          }}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -225,7 +299,6 @@ function CadenceEngine() {
   const scope = useCouncilScope();
   const councilId = scope.councilId;
   const now = new Date();
-  const today = toIsoDate(now);
   const thisYear = currentFraternalYear(now);
   const [year, setYear] = useState(thisYear);
   const types = useLoad(() => db.meetings.listCouncilMeetingTypes(councilId), [councilId]);
@@ -379,7 +452,7 @@ function CadenceEngine() {
 
           {selected ? (
             <Panel title={`Scheduled releases: ${typeName.get(selected.MeetingTypeID) ?? ''} ${year}`}>
-              <DripCanvas config={selected} year={year} meetings={meetings.data ?? []} today={today} />
+              <DripCanvas config={selected} year={year} meetings={meetings.data ?? []} now={now} onChanged={() => void meetings.reload()} />
             </Panel>
           ) : null}
         </div>

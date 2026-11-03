@@ -168,6 +168,13 @@ export const FS_EXPENSE_AUDIT_QUEUE_TITLE = '[ 📋 FS Expense Audit Queue ]';
 /** The sidebar accordion that groups the financial views inside the Finances pillar. */
 export const FINANCIAL_VIEWS_ACCORDION_TITLE = 'Financial Views';
 
+/**
+ * Sprint 11 Revision 17.0: the two halves of the Financial Views accordion. Reports read the books; registries list
+ * what was recorded and paid. The links under them are drawn as plain text (sidebarLinkLabel: no icons, no brackets).
+ */
+export const FINANCIAL_REPORTS_SECTION_TITLE = '📊 FINANCIAL REPORTS';
+export const RECORDED_REGISTRIES_SECTION_TITLE = '⚡ RECORDED REGISTRIES';
+
 /** Sprint 8S Revision 10.4: the Treasurer's general ledger folder (the chart of accounts on the Treasurer Desk). */
 export const CHART_OF_ACCOUNTS_FOLDER_TITLE = GENERAL_LEDGER_TITLE;
 /** Sprint 8S Revision 10.4: the Financial Secretary's audit folder - verify and sign each submitted sheet, or return it. */
@@ -400,3 +407,15 @@ export function diaryLogRows(years: readonly Pick<LegacyYear, 'fraternalYear' | 
     })
     .sort((a, b) => b.entry.entry_date.localeCompare(a.entry.entry_date) || b.entry.id - a.entry.id);
 }
+
+// ---- Sprint 11 Revision 17.0: the synchronized page names ---------------------------------------------------------
+export const GK_EXPENSE_AUTHORIZE_TITLE = 'GK Expense Authorize';
+export const CHARITY_VETTING_QUEUE_TITLE = 'Charity Vetting Queue';
+export const FINANCIAL_DASHBOARD_TITLE = 'Financial Dashboard';
+export const DONATIONS_HISTORY_TITLE = 'Donations History';
+/** The help question mark on the Charity Vetting Queue (replaces the description footer under the table). */
+export const CHARITY_VETTING_QUEUE_HELP =
+  "Four-Eyes Principle: a Knight Shepherd never vets their own request, so those rows are locked for you. A claimed request's drawer opens for its vetter and for the council's Admins, Grand Knight and Deputy Grand Knight. Request More Info is the vetting officer's private thread with the Knight Shepherd; Request Officer Input is open to every officer and Admin, never to the Shepherd.";
+/** The tabs of the Charitable Grants Registry page; the endorsements folder is its second tab. */
+export const CHARITABLE_GRANTS_REGISTRY_TABS = ['registry', 'endorsements'] as const;
+export type CharitableGrantsRegistryTab = (typeof CHARITABLE_GRANTS_REGISTRY_TABS)[number];

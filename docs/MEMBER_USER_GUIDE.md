@@ -1009,10 +1009,12 @@ The **Agenda** sub-tab opens on the live meeting by default. With no live meetin
 **Start point:** Sidebar → Governance → **Meeting Center**.
 
 **Steps:**
-1. Select the meeting in the list.
-2. Read the agenda and the minutes link.
+1. Type a name, date, type or place in **Search meetings** to narrow the table.
+2. Select **Next** or **Previous** to move between pages. Each page shows 15 meetings.
+3. Select the meeting name in the table.
+4. Read the agenda and the minutes link.
 
-**Expected result:** The meeting details open on the right side.
+**Expected result:** The meeting details open under the table.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1193,17 +1195,20 @@ A split receipt saves as two lines: one council line for the requested amount, a
 
 **Steps:**
 1. Select **New expense report**.
-2. Choose the event, the meeting or **General council expense (no event or meeting)** in **Spent for**.
-3. Fill in one line for each receipt. Select **+ Add line item** for more lines.
-4. Attach the receipt file to each line.
-5. Select **Submit for approval**. You cannot change the report after this. Select **Save draft** to finish later.
+2. Choose the event, the meeting or **General council expense (no event, meeting or activity)** in **Spent for**.
+3. Fill in one row for each receipt: the date, the merchant and a description.
+4. Type the receipt total in **Gross Total Amount ($)**. **Reimbursement Requested ($)** copies the same amount.
+5. If part of the receipt was for you, type a smaller amount in **Reimbursement Requested ($)**. The council keeps the difference on record as personal.
+6. Select **Attach receipt…** in the row. Select **+ Add receipt** for more rows.
+7. Select **Submit for approval**. You cannot change the report after this. Select **Save draft** to finish later.
 
-**Expected result:** A message shows *"Submitted report #n for $x to your council's leadership."*
+**Expected result:** A message shows *"Submitted report #n for $x to your council's leadership."* The total under the rows reads **Council reimburses**.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The submit is refused. | The submission window is closed or not open. | Save a draft. Check the dates of the event or meeting. |
+| The report refuses the reimbursement. | **Reimbursement Requested ($)** is more than **Gross Total Amount ($)**. | Type an amount from 0.00 up to the gross total. |
 
 ### 6.3 Check the status of an expense report
 
@@ -1461,7 +1466,7 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 > **Before you start**
 > - **Access:** any active member. The page shows only when your council keeps the **Charity proposals** module on.
 > - **Access:** you cannot vet your own request. Another officer or a Trustee vets the request.
-> - **Data loss:** none. A filed request stays in **My requests**.
+> - **Data loss:** none. A filed request stays on the Member Desk under **[ 📥 My Charity Requests ]**.
 
 ### Concept: the Knight Shepherd
 
@@ -1493,12 +1498,13 @@ For an organization that is not on the list, select **Another organization (type
 6. Fill in **The Request**: the amount, the date and the specific use.
 7. Select **Save and submit for vetting**.
 
-**Expected result:** A tracking message names the three steps and the follow-up date. The request shows in **My requests**.
+**Expected result:** A tracking message names the three steps and the follow-up date. The request shows on the Member Desk under **[ 📥 My Charity Requests ]**.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The request stops at one step. | Vetting declined the request, or the council voted no. | Read the step in **My requests**. |
+| The request stops at one step. | Vetting declined the request, or the council voted no. | Read the step on the Member Desk under **[ 📥 My Charity Requests ]**. |
+| The vetting officer asks a question. | The officer needs more information. | Select **Request More Info** on the request in **[ 📥 My Charity Requests ]** and answer there. |
 | The **State** list shows **No verified charities yet**. | No Admin has verified a charity yet. | Select **Another organization (type it in)** after you choose a state, or ask an Admin to verify the charity. |
 | The organization is not in the **Organization** list. | The charity is not verified, or it is in another state. | Select **Another organization (type it in)** and type the details. |
 
@@ -1767,7 +1773,7 @@ Still stuck? Open **Answers → Online Help Center**. You can also message your 
 
 | When | What you get | Where to check |
 | --- | --- | --- |
-| You save a request | A tracking message with the three steps and the follow-up date | **Propose Charity Grant** → **My requests** |
+| You save a request | A tracking message with the three steps and the follow-up date | Member Desk → **[ 📥 My Charity Requests ]** |
 | 6 months after filing | The Trustees ask you for a status report. The app sends no reminder. | The date in your tracking message |
 
 ### Expense reports

@@ -71,3 +71,19 @@ export const superAdminDeskFolder = (id: string | null | undefined): SuperAdminD
 
 /** The Administrative Feedback Loops page title (System Settings > Administrative Feedback Loops). */
 export const ADMINISTRATIVE_FEEDBACK_TITLE = 'Administrative Feedback Loops';
+
+// ---- Sprint 11 Revision 17.0: the header shortcut ----------------------------------------------------------------
+
+/** The header button every Super Admin session carries, beside Messaging and Help. */
+export const SUPER_ADMIN_HEADER_LINK_LABEL = '[ 🛠️ Super Admin Desk ]';
+
+/** Where it goes: the Super Admin address of the Master Feature Deployment Grid (Super Admins only). */
+export const SUPER_ADMIN_HEADER_HREF = '/super-admin';
+
+/**
+ * True when the header draws the Super Admin Desk button: the session's own clearance is Super Admin. While a Super
+ * Admin views the portal as someone else, the session is that member's, so the button is gone with the rest of the
+ * Super Admin tools.
+ */
+export const showsSuperAdminHeaderLink = (u: Pick<SessionUser, 'memberType'>, impersonating = false): boolean =>
+  !impersonating && u.memberType === 'Super Admin';

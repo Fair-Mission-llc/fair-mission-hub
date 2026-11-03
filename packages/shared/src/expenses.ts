@@ -855,3 +855,139 @@ export function expenseReferenceSpan(key: string, refs: ExpenseReferenceOptions)
   }
   return null;
 }
+
+// ---- Sprint 11 Revision 17.0: the web's single receipt row --------------------------------------------------------
+//
+// One row per receipt: date, merchant (typed once), description, Gross Total Amount ($), Reimbursement Requested ($)
+// and the file. Reimbursement Requested mirrors the gross total until the member types their own figure. On save each
+// row becomes one stored receipt and one council line for the requested amount, plus a personal line for any
+// difference, so the split-ticket rule (assertExpenseSplitTicket) still holds without itemisation or checkboxes.
+
+export const GROSS_TOTAL_LABEL = 'Gross Total Amount ($)';
+export const REIMBURSEMENT_REQUESTED_LABEL = 'Reimbursement Requested ($)';
+/** The description given to the personal remainder of a receipt (gross less the reimbursement requested). */
+export const RECEIPT_PERSONAL_REMAINDER_NOTE = 'Not reimbursed (personal share)';
+
+export interface ReceiptRowDraft {
+  DateOfExpense: string;
+  Merchant: string;
+  Description: string;
+  GrossTotal: string;
+  Reimbursement: string;
+  /** False while Reimbursement still follows GrossTotal. */
+  ReimbursementEdited: boolean;
+  receipt_file_url: string;
+}
+
+export const blankReceiptRow = (today: string): ReceiptRowDraft => ({
+  DateOfExpense: today,
+  Merchant: '',
+  Description: '',
+  GrossTotal: '',
+  Reimbursement: '',
+  ReimbursementEdited: false,
+  receipt_file_url: '',
+});
+
+/** A new gross total: Reimbursement Requested follows it unless the member has typed their own figure. */
+export const withGrossTotal = (row: ReceiptRowDraft, gross: string): ReceiptRowDraft => ({
+  ...row,
+  GrossTotal: gross,
+  Reimbursement: row.ReimbursementEdited ? row.Reimbursement : gross,
+});
+
+/** A typed reimbursement: it stops following the gross total (clearing it starts following again). */
+export const withReimbursement = (row: ReceiptRowDraft, value: string): ReceiptRowDraft => ({
+  ...row,
+  Reimbursement: value.trim() === '' ? row.GrossTotal : value,
+  ReimbursementEdited: value.trim() !== '',
+});
+
+const rowIsBlank = (r: ReceiptRowDraft) => [r.Merchant, r.Description, r.GrossTotal, r.receipt_file_url].every((v) => v.trim() === '');
+
+/**
+ * Receipt rows to expenses.submitReport receipts and line items. Blank rows are dropped. Refuses a gross total that is
+ * not a dollar amount, and a reimbursement below 0 or above the receipt's gross total, naming the receipt.
+ */
+export function receiptRowsToSubmission(rows: readonly ReceiptRowDraft[]): { receipts: ExpenseReceiptInput[]; items: ExpenseLineItemInput[] } {
+  const used = rows.filter((r) => !rowIsBlank(r));
+  const receipts: ExpenseReceiptInput[] = [];
+  const items: ExpenseLineItemInput[] = [];
+  used.forEach((r, i) => {
+    const gross = typedDollars(r.GrossTotal);
+    if (r.GrossTotal.trim() === '' || !Number.isFinite(gross)) {
+      throw invalid(`Receipt ${i + 1} needs its ${GROSS_TOTAL_LABEL} as a dollar amount such as 42.50.`, { receiptIndex: i, field: 'GrossTotal' });
+    }
+    const requestedText = r.Reimbursement.trim() === '' ? r.GrossTotal : r.Reimbursement;
+    const requested = typedDollars(requestedText);
+    if (!Number.isFinite(requested) || requested < 0 || cents(requested) > cents(gross)) {
+      throw invalid(`Receipt ${i + 1}: ${REIMBURSEMENT_REQUESTED_LABEL} must be from 0.00 up to its gross total of ${r.GrossTotal.trim()}; received "${requestedText}".`, {
+        receiptIndex: i,
+        field: 'Reimbursement',
+      });
+    }
+    receipts.push({ merchant_name: r.Merchant, gross_total: gross, receipt_file_url: r.receipt_file_url.trim() || null });
+    const base = { DateOfExpense: r.DateOfExpense.trim(), VendorName: r.Merchant, ExpenseDescription: r.Description, ReceiptPhotoURL: null, receipt_index: i };
+    const personalCents = cents(gross) - cents(requested);
+    if (cents(requested) > 0) items.push({ ...base, Amount: cents(requested) / 100 });
+    if (personalCents > 0) {
+      items.push({ ...base, ExpenseDescription: r.Description.trim() || RECEIPT_PERSONAL_REMAINDER_NOTE, Amount: personalCents / 100, is_personal_exclusion: 1 });
+    }
+  });
+  return { receipts, items };
+}
+
+/**
+ * A stored sheet back to receipt rows. Each receipt's council lines add up to its Reimbursement Requested; the first
+ * line gives the date and description. A legacy line with no receipt becomes a row of its own.
+ */
+export function receiptRowsFromSheet(
+  receipts: readonly Pick<ExpenseReceipts, 'id' | 'merchant_name' | 'gross_total' | 'receipt_file_url'>[],
+  lines: readonly (Pick<ExpenseLineItem, 'DateOfExpense' | 'Amount' | 'VendorName' | 'ExpenseDescription'> &
+    Partial<Pick<ExpenseLineItem, 'receipt_id' | 'is_personal_exclusion' | 'ReceiptPhotoURL'>>)[],
+  today: string,
+): ReceiptRowDraft[] {
+  const rows: ReceiptRowDraft[] = receipts.map((r) => {
+    const mine = lines.filter((l) => l.receipt_id === r.id);
+    const council = mine.filter((l) => !l.is_personal_exclusion);
+    const first = council[0] ?? mine[0];
+    const requested = sumAmounts(council.map((l) => l.Amount));
+    return {
+      DateOfExpense: first?.DateOfExpense ?? today,
+      Merchant: r.merchant_name,
+      Description: first?.ExpenseDescription ?? '',
+      GrossTotal: String(r.gross_total),
+      Reimbursement: String(requested),
+      ReimbursementEdited: cents(requested) !== cents(r.gross_total),
+      receipt_file_url: r.receipt_file_url ?? '',
+    };
+  });
+  for (const l of lines) {
+    if (l.receipt_id != null && receipts.some((r) => r.id === l.receipt_id)) continue;
+    if (l.is_personal_exclusion) continue;
+    rows.push({
+      DateOfExpense: l.DateOfExpense,
+      Merchant: l.VendorName,
+      Description: l.ExpenseDescription,
+      GrossTotal: String(l.Amount),
+      Reimbursement: String(l.Amount),
+      ReimbursementEdited: false,
+      receipt_file_url: l.ReceiptPhotoURL ?? '',
+    });
+  }
+  return rows;
+}
+
+/** The running totals under the rows: gross, what the council pays back, and the personal remainder. */
+export function receiptRowTotals(rows: readonly ReceiptRowDraft[]): { gross: number; reimbursed: number; personal: number } {
+  let gross = 0;
+  let reimbursed = 0;
+  for (const r of rows) {
+    const g = typedDollars(r.GrossTotal);
+    if (r.GrossTotal.trim() === '' || !Number.isFinite(g)) continue;
+    const q = typedDollars(r.Reimbursement.trim() === '' ? r.GrossTotal : r.Reimbursement);
+    gross += cents(g);
+    reimbursed += Number.isFinite(q) ? Math.min(Math.max(cents(q), 0), cents(g)) : 0;
+  }
+  return { gross: gross / 100, reimbursed: reimbursed / 100, personal: (gross - reimbursed) / 100 };
+}

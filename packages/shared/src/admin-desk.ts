@@ -201,3 +201,6 @@ const ICON_GLYPHS = /[\p{Extended_Pictographic}\p{Emoji_Presentation}\u{1F1E6}-\
 
 /** A sidebar label with every icon glyph removed and the spaces tidied: '📸 Media & Memory Center' -> 'Media & Memory Center'. */
 export const plainNavLabel = (label: string): string => label.replace(ICON_GLYPHS, '').replace(/\s{2,}/g, ' ').trim();
+
+/** Sprint 11 Revision 17.0: a sidebar link as plain words - no icon glyphs and no '[ ... ]' brackets. */
+export const sidebarLinkLabel = (label: string): string => plainNavLabel(label.replace(/[[\]]/g, ' '));

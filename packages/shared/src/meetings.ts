@@ -293,3 +293,55 @@ export function cleanCadenceConfigInput(input: CadenceConfigInput): Required<Cad
     DefaultRecipientGroup: group,
   };
 }
+
+// ---- Sprint 11 Revision 17.0: the Recurring Meetings cards ------------------------------------------------------
+
+/** What a card on the Recurring Meetings release canvas shows. */
+export type CadenceCardStatus = 'held' | 'past' | 'scheduled' | 'released' | 'hidden';
+
+/** The badge text of each card status. */
+export const CADENCE_CARD_BADGES: Readonly<Record<CadenceCardStatus, string>> = {
+  held: '[ 🟢 Held ]',
+  past: '[ 🛑 Past ]',
+  scheduled: '[ ⏳ Scheduled ]',
+  released: 'Invitations released',
+  hidden: 'Hidden until',
+};
+
+/** The drawer action on an upcoming card. */
+export const CUSTOMIZE_AGENDA_LOCATION_LABEL = '[ ⚙️ Customize Agenda & Location ]';
+
+/**
+ * A card's status at the moment `now`. A card is over once its end time (HH:MM[:SS], local) has passed: a meeting on
+ * the calendar then reads Held, a date that never got a meeting reads Past. Before that, a date with no meeting reads
+ * Scheduled and a meeting reads Invitations released or Hidden, by its drip-release day.
+ */
+export function cadenceCardStatus(date: string, meeting: Partial<Pick<Meeting, 'InviteReleaseDate'>> | null | undefined, now: Date, endTime: string): CadenceCardStatus {
+  const [h = 0, m = 0] = endTime.split(':').map(Number);
+  const end = new Date(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, Number(date.slice(8, 10)), h, m);
+  if (end.getTime() <= now.getTime()) return meeting ? 'held' : 'past';
+  if (!meeting) return 'scheduled';
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return isInvitationReleased(meeting, today) ? 'released' : 'hidden';
+}
+
+/** True when the card still takes the Customize Agenda & Location drawer: a meeting on the calendar that is not over. */
+export const cadenceCardCustomizable = (status: CadenceCardStatus): boolean => status === 'released' || status === 'hidden';
+
+/** What meetings.customizeAgendaAndLocation writes on one meeting. */
+export interface MeetingCustomizationInput {
+  Agenda: string;
+  Location: string;
+}
+
+/** Longest agenda the drawer saves (Meeting.Agenda is VARCHAR(MAX); the cap matches the agenda templates). */
+export const MEETING_AGENDA_MAX_LENGTH = AGENDA_TEMPLATE_MAX_LENGTH;
+
+/** meetings.customizeAgendaAndLocation: a required location of at most 100 characters and an optional agenda. */
+export function cleanMeetingCustomization(input: MeetingCustomizationInput): MeetingCustomizationInput {
+  if (typeof input !== 'object' || input === null) throw new BusinessRuleError('INVALID_INPUT', 'An agenda and location are required.');
+  return {
+    Agenda: assertText(input.Agenda ?? '', 'Agenda', MEETING_AGENDA_MAX_LENGTH, false),
+    Location: assertText(input.Location, 'Location', CADENCE_LOCATION_MAX_LENGTH),
+  };
+}

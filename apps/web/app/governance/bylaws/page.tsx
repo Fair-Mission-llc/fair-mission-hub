@@ -8,6 +8,7 @@
 // vault shows the standard council bylaws template (bylaws-template.ts) as a preview; editors start from it.
 import { useState } from 'react';
 import {
+  BYLAWS_PREVIEW_SCROLL_STYLE,
   BYLAWS_MAX_LENGTH,
   bylawsTokenFeed,
   canEditBylaws,
@@ -128,11 +129,12 @@ function BylawsVault() {
                         value={draft}
                         maxLength={BYLAWS_MAX_LENGTH}
                         onChange={(e) => setDraft(e.target.value)}
-                        className="min-h-[32rem] border-2 border-navy bg-white text-base leading-relaxed text-navy"
+                        className="h-[500px] border-2 border-navy bg-white text-base leading-relaxed text-navy"
                       />
                     )}
                   </Field>
-                  <section aria-label="Preview" className="rounded border-2 border-navy p-4">
+                  {/* Sprint 11 Revision 17.0: the preview scrolls inside a fixed height, so Save and Cancel stay on screen. */}
+                  <section aria-label="Preview" className="rounded border-2 border-navy p-4" style={BYLAWS_PREVIEW_SCROLL_STYLE}>
                     <h2 className="mb-2 text-xs font-bold uppercase tracking-wide">Preview</h2>
                     <Markdown source={draft} idPrefix="preview" />
                   </section>

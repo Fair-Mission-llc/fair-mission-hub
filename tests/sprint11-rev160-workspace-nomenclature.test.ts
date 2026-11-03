@@ -88,7 +88,8 @@ describe('2. cadence, bylaws and knowledge vault', () => {
   it('renames the cadence button and status pill', () => {
     const page = read('apps/web/app/meetings/cadence/page.tsx');
     expect(page).toContain('[ 👁️ View Scheduled Releases ]');
-    expect(page).toContain('[ ⏳ Scheduled ]');
+    // Sprint 11 Revision 17.0: the badge text lives in CADENCE_CARD_BADGES (Scheduled, Held, Past).
+    expect(page).toContain('CADENCE_CARD_BADGES');
     expect(page).not.toMatch(/>\s*Canvas\s*</);
     expect(page).not.toContain('Not laid down');
   });
@@ -197,12 +198,12 @@ describe('4. the treasurer and FS drawers', () => {
     }
   });
 
-  it('folds the financial views into an accordion and links the endorsements folder', () => {
+  it('folds the financial views into an accordion; the endorsements folder still opens by ?folder=', () => {
     const sidebar = read('apps/web/components/Sidebar.tsx');
     expect(sidebar).toContain('<details open={open}');
     expect(sidebar).toContain('FINANCIAL_VIEWS_ACCORDION_TITLE');
-    expect(sidebar).toContain('CHARITY_ENDORSEMENT_FOLDER_TITLE');
-    expect(sidebar).toContain('DESK_FOLDER_PARAM');
+    // Sprint 11 Revision 17.0: the endorsements link moved into the Charitable Grants Registry page as a tab.
+    expect(read('apps/web/components/modules/CharityCheckConsole.tsx')).toContain('CHARITY_ENDORSEMENT_FOLDER_TITLE');
     expect(read('apps/web/components/DeskDrawers.tsx')).toContain('new URLSearchParams(window.location.search).get(DESK_FOLDER_PARAM)');
   });
 

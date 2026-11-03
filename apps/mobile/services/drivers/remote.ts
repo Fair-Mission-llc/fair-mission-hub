@@ -217,6 +217,7 @@ export function createRemoteDataService(): DataService {
       setAttended: notImplemented('meetings.setAttended'),
       setMinutes: notImplemented('meetings.setMinutes'),
       linkGoogleDrive: notImplemented('meetings.linkGoogleDrive'),
+      customizeAgendaAndLocation: notImplemented('meetings.customizeAgendaAndLocation'),
       memberHours: notImplemented('meetings.memberHours'),
       listCouncilMeetingTypes: notImplemented('meetings.listCouncilMeetingTypes'),
       rsvpToInvite: notImplemented('meetings.rsvpToInvite'),

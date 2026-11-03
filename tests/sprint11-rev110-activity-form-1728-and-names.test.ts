@@ -166,7 +166,8 @@ describe('5. five more unified screen names', () => {
   });
 
   it('drops the old names from the screens, the phone and the manuals', () => {
-    const old = /General Ledger Spreadsheet|Member Roster|Credentials Vault|Super Admin Desk|Meeting Check-In PIN|Meeting PIN \(Recorder Absent\)/;
+    // Sprint 11 Revision 17.0 restored the header button '[ 🛠️ Super Admin Desk ]'; the bare old name stays retired.
+    const old = /General Ledger Spreadsheet|Member Roster|Credentials Vault|(?<!🛠️ )Super Admin Desk|Meeting Check-In PIN|Meeting PIN \(Recorder Absent\)/u;
     for (const file of ['apps/web/components/Sidebar.tsx', 'packages/shared/src/desk-drawers.ts', 'packages/shared/src/admin-desk.ts', 'apps/mobile/components/GeofenceCheckIn.tsx', ...manuals])
       expect(read(file), file).not.toMatch(old);
   });

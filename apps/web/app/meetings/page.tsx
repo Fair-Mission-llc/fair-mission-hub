@@ -12,6 +12,7 @@
 // Sprint 5Z-6: a meeting's detail shows its Proposed Motions (ProposedMotionsSection) and, for a cadence meeting whose
 // invitations are still held back by the drip release, the day they reach members' feeds. Cadences live at
 // /meetings/cadence (Cadence Engine).
+// Sprint 11 Revision 17.0: the meeting list is a full-width data table with search and pages (PagedTable).
 import { useEffect, useRef, useState } from 'react';
 import {
   canLinkMeetingDrive,
@@ -36,6 +37,7 @@ import {
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import { DriveButtons, DriveLinkEditor } from '@/components/DriveLinks';
 import { ProposedMotionsSection } from '@/components/MotionParts';
+import { PagedTableControls, usePagedSearch } from '@/components/PagedTable';
 import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, PageTitle, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
 import { minutesFileName } from '@/lib/format';
 import { useUser } from '@/lib/session';
@@ -480,6 +482,10 @@ function MeetingCenter() {
   const editable = canManageMeetings(user, scope.councilId);
   const typeName = new Map((types.data ?? []).map((t) => [t.id, t.Type]));
   const councilTypeName = new Map((councilTypes.data ?? []).map((t) => [t.id, t.TypeName]));
+  const list = meetings.data ?? [];
+  const dateOf = (m: Meeting) => (m.IsMultiDay === 1 && m.EndDate ? `${formatDate(m.Date)} – ${formatDate(m.EndDate)}` : formatDate(m.Date));
+  const typeOf = (m: Meeting) => (m.MeetingTypeID != null ? councilTypeName.get(m.MeetingTypeID) : undefined) ?? typeName.get(m.MeetingType) ?? '';
+  const paged = usePagedSearch(list, (m) => `${m['Meeting Name']} ${dateOf(m)} ${m.Date} ${typeOf(m)} ${m.Location} ${meetingLastDate(m) < today ? 'past' : 'upcoming'}`);
 
   return (
     <>
@@ -487,39 +493,46 @@ function MeetingCenter() {
       {!editable ? (
         <Notice tone="info">You can view this council&apos;s meetings. Its officers and admins schedule them, and a meeting&apos;s owner manages that meeting.</Notice>
       ) : null}
-      <div className="mt-4 grid grid-cols-[20rem_minmax(0,1fr)] items-start gap-4">
+      {/* Sprint 11 Revision 17.0: a full-width data table with search and pages; the chosen meeting opens under it. */}
+      <div className="mt-4 flex flex-col gap-4">
         <Panel title="Meetings" actions={editable ? <Button size="sm" onClick={() => setSelected('new')}>New meeting</Button> : undefined}>
           {meetings.error ? <Notice tone="error">{meetings.error}</Notice> : null}
           {meetings.data?.length === 0 ? <Empty>No meetings scheduled for this council.</Empty> : null}
-          <ul className="flex flex-col gap-1">
-            {(meetings.data ?? []).map((m) => (
-              <li key={m.id}>
-                <button
-                  type="button"
-                  aria-current={selected === m.id ? 'true' : undefined}
-                  onClick={() => setSelected(m.id)}
-                  className={cx('block w-full border-l-8 px-3 py-2 text-left', selected === m.id ? 'border-gold bg-white outline outline-1 outline-line' : 'border-transparent hover:underline')}
-                >
-                  <span className="block text-sm font-bold">{m['Meeting Name']}</span>
-                  <span className="block text-xs text-muted">
-                    {m.IsMultiDay === 1 && m.EndDate ? `${formatDate(m.Date)} – ${formatDate(m.EndDate)}` : formatDate(m.Date)} ·{' '}
-                    {(m.MeetingTypeID != null ? councilTypeName.get(m.MeetingTypeID) : undefined) ?? typeName.get(m.MeetingType) ?? ''}
-                  </span>
-                  <span className="mt-1 flex gap-1">
-                    {meetingLastDate(m) < today ? <Pill tone="outline">Past</Pill> : <Pill tone="navy">Upcoming</Pill>}
-                    {m.IsMultiDay === 1 ? <Pill tone="gold">Multi-day</Pill> : null}
-                    {meetingLastDate(m) < today && !m.MinutesURL && !m.GoogleDriveMinutesURL ? <Pill tone="redOutline">No minutes</Pill> : null}
-                    {m.GoogleDriveMinutesURL || m.GoogleDriveFlyerURL ? <Pill tone="gold">Drive</Pill> : null}
-                    {m.OwnerID === user.memberId ? <Pill tone="outline">Mine</Pill> : null}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {list.length > 0 ? (
+            <PagedTableControls id="meeting-center-search" label="Search meetings" paged={paged} total={list.length} noun="meetings">
+              <Table caption="Council meetings, upcoming first" head={['Meeting', 'Date', 'Type', 'Location', 'Status']}>
+                {paged.shown.map((m) => {
+                  const active = selected === m.id;
+                  const past = meetingLastDate(m) < today;
+                  return (
+                    <tr key={m.id} className={cx(active && 'outline outline-2 -outline-offset-2 outline-gold')}>
+                      <Td>
+                        <button type="button" aria-current={active ? 'true' : undefined} onClick={() => setSelected(m.id)} className="text-left font-bold underline">
+                          {m['Meeting Name']}
+                        </button>
+                      </Td>
+                      <Td className="whitespace-nowrap">{dateOf(m)}</Td>
+                      <Td>{typeOf(m)}</Td>
+                      <Td className="text-xs">{m.Location}</Td>
+                      <Td>
+                        <span className="flex flex-wrap gap-1">
+                          {past ? <Pill tone="outline">Past</Pill> : <Pill tone="navy">Upcoming</Pill>}
+                          {m.IsMultiDay === 1 ? <Pill tone="gold">Multi-day</Pill> : null}
+                          {past && !m.MinutesURL && !m.GoogleDriveMinutesURL ? <Pill tone="redOutline">No minutes</Pill> : null}
+                          {m.GoogleDriveMinutesURL || m.GoogleDriveFlyerURL ? <Pill tone="gold">Drive</Pill> : null}
+                          {m.OwnerID === user.memberId ? <Pill tone="outline">Mine</Pill> : null}
+                        </span>
+                      </Td>
+                    </tr>
+                  );
+                })}
+              </Table>
+            </PagedTableControls>
+          ) : null}
         </Panel>
         <div>
           {selected === null ? (
-            <Empty>Choose a meeting on the left{editable ? ', or schedule a new one' : ''}.</Empty>
+            <Empty>Choose a meeting in the table{editable ? ', or schedule a new one' : ''}.</Empty>
           ) : selected === 'new' ? (
             <NewMeetingForm
               key={`${scope.councilId}-${types.data?.length ?? 0}-${councilTypes.data?.length ?? 0}`}

@@ -102,3 +102,15 @@ export function filterRosterMembers(members: readonly Member[], councilId: numbe
   const q = query.trim().toLowerCase();
   return members.filter((m) => (councilId === null || m.CouncilID === councilId) && (!q || `${m.MemberFirstName} ${m.MemberLastName} ${m.MemberNumber}`.toLowerCase().includes(q)));
 }
+
+/**
+ * Sprint 11 Revision 17.0: with the council picker on 'All councils', Add Member is disabled until one council is
+ * chosen, so a new member is never filed under the reader's own council by default.
+ */
+export const rosterAddMemberLocked = (pickerShown: boolean, councilId: number | null): boolean => pickerShown && councilId === null;
+
+/** The hint beside the disabled Add Member button. */
+export const ROSTER_ADD_MEMBER_PICK_COUNCIL_HINT = 'Choose one council in the Council list to add a member.';
+
+/** Sprint 11 Revision 17.0: true only for the desks listed in MEMBER_ROSTER_DESKS; the Financial Secretary Desk never mounts the roster. */
+export const deskMountsMemberRoster = (desk: string): desk is MemberRosterDesk => (MEMBER_ROSTER_DESKS as readonly string[]).includes(desk);

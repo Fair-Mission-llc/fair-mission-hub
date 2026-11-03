@@ -98,3 +98,10 @@ export function bylawsTokenFeed(council: { id: number; BylawsMarkdown?: string |
     clauses,
   };
 }
+
+/**
+ * Sprint 11 Revision 17.0: the bylaws editor's right-hand preview scrolls inside a fixed height
+ * ('overflow-y: scroll; max-height: 500px;'), so the Save and Cancel buttons under it stay on screen.
+ */
+export const BYLAWS_PREVIEW_MAX_HEIGHT_PX = 500;
+export const BYLAWS_PREVIEW_SCROLL_STYLE = { overflowY: 'scroll', maxHeight: `${BYLAWS_PREVIEW_MAX_HEIGHT_PX}px` } as const;

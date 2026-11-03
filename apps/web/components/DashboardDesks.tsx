@@ -138,6 +138,7 @@ import {
   type MinutesCountdown,
   type SessionUser,
   canSyncSupremeRoster,
+  deskMountsMemberRoster,
   SEAT_VACANT_MESSAGE,
   vacantDeskSeat,
   type DashboardTabId,
@@ -169,6 +170,7 @@ import { OperationsKnowledgeArchiveEntryForm } from '@/components/KnowledgeArchi
 import { BatchTransactionCoder, CashBoxAuditPanel } from '@/components/CashAuditParts';
 import { BulletinBody, LatestBulletinsFeed } from '@/components/BulletinParts';
 import { TrackingSteps } from '@/components/IntakeParts';
+import { RequestThreadButtons, RequestThreadDrawer } from '@/components/RequestThreads';
 import { Markdown } from '@/components/Markdown';
 import { OralHistoryRecorder } from '@/components/OralHistoryRecorder';
 import { QuarantineDesk } from '@/components/QuarantineDesk';
@@ -825,7 +827,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
         }}
       />
       {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
-      <MemberRosterDirectory compact />
+      {deskMountsMemberRoster('grand-knight') ? <MemberRosterDirectory compact /> : null}
     </div>
   );
 }
@@ -899,7 +901,8 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
           }
         }}
       />
-      {/* Sprint 11 Revision 16.0: the member roster table no longer sits at the foot of this desk. */}
+      {/* Sprint 11 Revision 16.0: the member roster table no longer sits at the foot of this desk. Sprint 11 Revision 17.0:
+          deskMountsMemberRoster('financial-secretary') is false, so no roster component is mounted here. */}
     </div>
   );
 }
@@ -1084,6 +1087,10 @@ function OpenShiftsCard({ user }: { user: SessionUser }) {
 function MyCharityRequestsCard({ user }: { user: SessionUser }) {
   const mine = useLoad(() => db.charities.listMyCharitableRequests(user.memberId), [user.memberId]);
   const rows = mine.data ?? [];
+  // Sprint 11 Revision 17.0: the only list of the member's requests (Propose Charity Grant no longer repeats it), so the
+  // vetting officer's Request More Info thread is answered here.
+  const [threadId, setThreadId] = useState<number | null>(null);
+  const threadRequest = rows.find((d) => d.request.id === threadId)?.request ?? null;
   return (
     <Panel title={`[ 📥 My Charity Requests ] (${rows.length})`}>
       {mine.error ? <Notice tone="error">{mine.error}</Notice> : null}
@@ -1099,15 +1106,17 @@ function MyCharityRequestsCard({ user }: { user: SessionUser }) {
                 <span className="font-bold">{formatMoney(request.AmountRequested)}</span>
               </p>
               <TrackingSteps request={request} />
+              <RequestThreadButtons request={request} types={['MORE_INFO']} onOpen={() => setThreadId(request.id)} />
             </li>
           ))}
         </ul>
       ) : null}
       <p className="mt-2 text-sm">
         <Link href="/charities/propose" className="font-bold underline">
-          Propose or follow a charity grant
+          Propose a charity grant
         </Link>
       </p>
+      {threadRequest ? <RequestThreadDrawer key={threadRequest.id} request={threadRequest} threadType="MORE_INFO" onClose={() => setThreadId(null)} /> : null}
     </Panel>
   );
 }
@@ -1186,7 +1195,7 @@ export function MemberDesk({ user }: { user: SessionUser }) {
         </DeskRow>
       </div>
       {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
-      <MemberRosterDirectory compact />
+      {deskMountsMemberRoster('member') ? <MemberRosterDirectory compact /> : null}
     </div>
   );
 }

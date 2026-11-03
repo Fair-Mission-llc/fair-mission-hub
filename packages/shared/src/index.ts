@@ -81,6 +81,7 @@ export * from './account-ownership';
 export * from './super-admin-desk';
 export * from './global-search';
 export * from './desk-drawers';
+export * from './workspace-tables';
 export * from './desk-workflows';
 export * from './charity-pipeline';
 export * from './old-business';

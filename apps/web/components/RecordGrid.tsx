@@ -4,7 +4,8 @@
 // draft into typed fields and the driver validates them again, so a refusal (bad field, SUPER_ADMIN_REQUIRED,
 // COUNCIL_ACCESS_DENIED, RECORD_IN_USE) is reported in the form, never hidden.
 import { useEffect, useState, type ReactNode } from 'react';
-import { describeError } from '@kofc/shared';
+import { describeError, paginateRows } from '@kofc/shared';
+import { Drawer } from '@/components/Drawer';
 import { Button, cx, Empty, Field, Input, Notice, Panel, Select, Table, Td } from '@/components/ui';
 
 export type Draft = Record<string, string>;
@@ -53,6 +54,8 @@ export function RecordGrid<T extends { id: number }>({
   matches,
   rowLabel,
   aside,
+  wide = false,
+  pageSize,
 }: {
   /** Singular, lower case: "parish". */
   noun: string;
@@ -80,8 +83,17 @@ export function RecordGrid<T extends { id: number }>({
   rowLabel: (row: T) => string;
   /** Shown under the form, e.g. the selected parish's pastors. */
   aside?: ReactNode;
+  /** Sprint 11 Revision 17.0: the table takes the full width and the form opens in a side drawer. */
+  wide?: boolean;
+  /** Sprint 11 Revision 17.0: rows per page; omit to show every row. */
+  pageSize?: number;
 }) {
-  const [query, setQuery] = useState('');
+  const [query, setQueryState] = useState('');
+  const [page, setPage] = useState(0);
+  const setQuery = (q: string) => {
+    setQueryState(q);
+    setPage(0);
+  };
   // Lives here, not in the form, because adding or deleting a row remounts the form.
   const [message, setMessage] = useState<Message | null>(null);
   const select = (next: Selection) => {
@@ -90,9 +102,47 @@ export function RecordGrid<T extends { id: number }>({
   };
   const current = typeof selected === 'number' ? (rows?.find((r) => r.id === selected) ?? null) : null;
   const shown = (rows ?? []).filter((r) => !matches || !query.trim() || matches(r, query.trim().toLowerCase()));
+  const view = pageSize ? paginateRows(shown, page, pageSize) : { shown, page: 0, pages: 1 };
+
+  const formSide = (
+    <div className="flex flex-col gap-4">
+      {message ? (
+        <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
+          {message.text}
+        </Notice>
+      ) : null}
+      {selected === 'new' || current ? (
+        <RecordForm
+          key={current ? current.id : 'new'}
+          noun={noun}
+          row={current}
+          heading={current ? rowLabel(current) : `Add ${noun}`}
+          fields={fields}
+          initial={current ? toDraft(current) : blank()}
+          canEdit={current ? (canEditRow ? canEditRow(current) : canEdit) : canCreate}
+          report={setMessage}
+          onSave={async (draft) => onSelect((await onSave(draft, current)).id)}
+          onRemove={
+            current
+              ? async () => {
+                  await onRemove(current);
+                  onSelect(null);
+                }
+              : null
+          }
+          onCancel={() => select(null)}
+        />
+      ) : wide ? null : (
+        <Empty>
+          Choose a {noun} to view{canCreate ? ` or change it, or add a new one` : ''}.
+        </Empty>
+      )}
+      {current ? aside : null}
+    </div>
+  );
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_30rem] items-start gap-4">
+    <div className={cx('grid items-start gap-4', wide ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_30rem]')}>
       <Panel
         title={`${title} (${shown.length}${query.trim() ? ` of ${rows?.length ?? 0}` : ''})`}
         actions={canCreate ? <Button size="sm" onClick={() => select('new')}>Add {noun}</Button> : null}
@@ -108,7 +158,7 @@ export function RecordGrid<T extends { id: number }>({
         ) : null}
         {shown.length > 0 ? (
           <Table caption={title} head={columns.map((c) => c.label)}>
-            {shown.map((row) => {
+            {view.shown.map((row) => {
               const active = selected === row.id;
               return (
                 <tr
@@ -132,42 +182,30 @@ export function RecordGrid<T extends { id: number }>({
             })}
           </Table>
         ) : null}
+        {view.pages > 1 ? (
+          <nav aria-label={`${title} pages`} className="mt-2 flex items-center justify-end gap-2 text-sm">
+            <Button size="sm" variant="secondary" disabled={view.page === 0} onClick={() => setPage(view.page - 1)}>
+              Previous
+            </Button>
+            <span>
+              Page {view.page + 1} of {view.pages}
+            </span>
+            <Button size="sm" variant="secondary" disabled={view.page >= view.pages - 1} onClick={() => setPage(view.page + 1)}>
+              Next
+            </Button>
+          </nav>
+        ) : null}
       </Panel>
 
-      <div className="flex flex-col gap-4">
-        {message ? (
-          <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
-            {message.text}
-          </Notice>
-        ) : null}
-        {selected === 'new' || current ? (
-          <RecordForm
-            key={current ? current.id : 'new'}
-            noun={noun}
-            row={current}
-            heading={current ? rowLabel(current) : `Add ${noun}`}
-            fields={fields}
-            initial={current ? toDraft(current) : blank()}
-            canEdit={current ? (canEditRow ? canEditRow(current) : canEdit) : canCreate}
-            report={setMessage}
-            onSave={async (draft) => onSelect((await onSave(draft, current)).id)}
-            onRemove={
-              current
-                ? async () => {
-                    await onRemove(current);
-                    onSelect(null);
-                  }
-                : null
-            }
-            onCancel={() => select(null)}
-          />
-        ) : (
-          <Empty>
-            Choose a {noun} to view{canCreate ? ` or change it, or add a new one` : ''}.
-          </Empty>
-        )}
-        {current ? aside : null}
-      </div>
+      {wide ? (
+        selected === 'new' || current || message ? (
+          <Drawer title={current ? rowLabel(current) : selected === 'new' ? `Add ${noun}` : title} onClose={() => select(null)} wide>
+            {formSide}
+          </Drawer>
+        ) : null
+      ) : (
+        formSide
+      )}
     </div>
   );
 }

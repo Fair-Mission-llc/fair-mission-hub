@@ -30,7 +30,9 @@ import {
   mayImpersonateMember,
   MEMBER_ROSTER_TITLE,
   rosterAllCouncilsLabel,
+  rosterAddMemberLocked,
   rosterShowsCouncilPicker,
+  ROSTER_ADD_MEMBER_PICK_COUNCIL_HINT,
   type Member,
 } from '@kofc/shared';
 import { Drawer } from '@/components/Drawer';
@@ -171,6 +173,8 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
   const shown = filterRosterMembers(data?.members ?? [], picker ? councilId : null, query);
   const addTo = councilId ?? user.councilId;
   const mayAdd = manager && canCreateMembers(user, addTo);
+  // Sprint 11 Revision 17.0: 'All councils' names no council to add to, so Add Member waits for a choice.
+  const addLocked = rosterAddMemberLocked(picker, councilId);
   const lookups: Lookups | null = data && manager ? { statuses: data.statuses, degrees: data.degrees, types: data.types } : null;
   const showStatus = manager;
   // Sprint 10 Revision 3.1: the council's Financial Secretary sends setup codes on their own, without Admin rights.
@@ -226,7 +230,14 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
               Skills
             </Button>
             {mayAdd && lookups ? (
-              <Button size="sm" onClick={() => setEditing({ kind: 'new', councilId: addTo })}>
+              <Button
+                size="sm"
+                disabled={addLocked}
+                title={addLocked ? ROSTER_ADD_MEMBER_PICK_COUNCIL_HINT : undefined}
+                onClick={() => {
+                  if (!addLocked) setEditing({ kind: 'new', councilId: addTo });
+                }}
+              >
                 Add Member
               </Button>
             ) : null}
@@ -252,7 +263,13 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
         <Field label="Search by name or number" className="w-full sm:w-72">
           {(id) => <Input id={id} type="search" value={query} onChange={(e) => setQuery(e.target.value)} />}
         </Field>
-        {mayAdd && byId.get(addTo) ? <p className="pb-2 text-xs text-muted">Add Member adds to {councilLabel(byId.get(addTo)!)}.</p> : null}
+        {mayAdd && addLocked ? (
+          <p role="status" className="pb-2 text-xs font-bold">
+            {ROSTER_ADD_MEMBER_PICK_COUNCIL_HINT}
+          </p>
+        ) : mayAdd && byId.get(addTo) ? (
+          <p className="pb-2 text-xs text-muted">Add Member adds to {councilLabel(byId.get(addTo)!)}.</p>
+        ) : null}
       </div>
       {roster.error ? <Notice tone="error">{roster.error}</Notice> : null}
       {error ? (

@@ -8,6 +8,7 @@
 // re-totals the event's FundsRaised columns, so the post-event ledger always matches the donations.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
+  DONATIONS_HISTORY_TITLE,
   canChangeDonation,
   canManageFinances,
   describeError,
@@ -460,7 +461,7 @@ export function DonationsWorkspace() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>Donations</PageTitle>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{DONATIONS_HISTORY_TITLE}</PageTitle>
       {failure ? <Notice tone="error">{failure}</Notice> : null}
       {message ? (
         <div className="mb-4">

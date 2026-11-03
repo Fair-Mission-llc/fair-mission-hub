@@ -202,8 +202,9 @@ describe('4. the sidebar and Council Lookups', () => {
     expect(plainNavLabel('📸 Browse Gallery')).toBe('Browse Gallery');
     expect(plainNavLabel("St. Mary's Council")).toBe("St. Mary's Council");
     const sidebar = read('apps/web/components/Sidebar.tsx');
-    expect(sidebar).toContain('{plainNavLabel(whiteLabel(label, tenant))}');
-    expect(sidebar).toContain('{plainNavLabel(whiteLabel(v.label, tenant))}');
+    // Sprint 11 Revision 17.0: sidebarLinkLabel is plainNavLabel that also drops '[ ]' brackets.
+    expect(sidebar).toContain('{sidebarLinkLabel(whiteLabel(label, tenant))}');
+    expect(sidebar).toContain('{sidebarLinkLabel(whiteLabel(v.label, tenant))}');
     expect(sidebar).not.toContain('<span aria-hidden="true">↗</span>');
     expect(sidebar).not.toMatch(/>\s*⚖\s*</);
   });

@@ -39,10 +39,14 @@ import {
   type CharityProposalDetail,
   type GlobalCharityRegistry,
   CHARITABLE_GRANTS_REGISTRY_TITLE,
+  CHARITY_ENDORSEMENT_FOLDER_TITLE,
+  canEndorseCharityRequest,
+  type CharitableGrantsRegistryTab,
 } from '@kofc/shared';
 import { CharityRecordFields, CharityStatusPill, CharitySummary } from '@/components/CharityParts';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
-import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
+import { CharityEndorsementDesk } from '@/components/FinanceWorkflowParts';
+import { Button, Empty, Field, Input, Notice, PageTitle, Panel, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { formatFullDate, formatMoney, formatPersonName, parseNumberField } from '@/lib/format';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -451,9 +455,9 @@ function ApprovedRequestRow({ request, onPaid }: { request: CharitableRequest; o
   );
 }
 
-export function CharityQueue() {
+/** The registry tab: approved requests awaiting payment, pending gift requests, and the paid and returned ones. */
+function GrantsRegistryBody({ scope }: { scope: ReturnType<typeof useCouncilScope> }) {
   const user = useUser();
-  const scope = useCouncilScope();
   const councilId = scope.councilId;
   const canDisburse = canDisburseCharity(user, councilId);
   const proposals = useLoad(
@@ -488,7 +492,6 @@ export function CharityQueue() {
 
   return (
     <>
-      <PageTitle actions={<CouncilSelect scope={scope} />}>{CHARITABLE_GRANTS_REGISTRY_TITLE}</PageTitle>
       {!canDisburse ? (
         <Notice tone="error">Only this council&apos;s Financial Secretary or Treasurer, or a Super Admin, issues charity checks.</Notice>
       ) : (
@@ -572,6 +575,47 @@ export function CharityQueue() {
           </Panel>
         </div>
       )}
+    </>
+  );
+}
+
+/** The endorsements tab: the council's voted grants waiting for the FS, Grand Knight or Deputy Grand Knight to endorse. */
+function GrantsEndorsementsBody({ councilId }: { councilId: number }) {
+  const user = useUser();
+  const requests = useLoad(() => db.charities.listCharitableRequestsQueue(user.memberId, councilId), [user.memberId, councilId]);
+  return <CharityEndorsementDesk user={user} councilId={councilId} requests={requests.data ?? null} error={requests.error} onChanged={requests.reload} />;
+}
+
+/**
+ * The Charitable Grants Registry. Sprint 11 Revision 17.0: the FS/GK Compliance Endorsements folder is its second tab,
+ * shown to the readers who may endorse (canEndorseCharityRequest); everyone else sees the registry alone.
+ */
+export function CharityQueue() {
+  const user = useUser();
+  const scope = useCouncilScope();
+  const mayEndorse = canEndorseCharityRequest(user, scope.councilId);
+  const [tab, setTab] = useState<CharitableGrantsRegistryTab>('registry');
+  const open = mayEndorse ? tab : 'registry';
+  return (
+    <>
+      <PageTitle actions={<CouncilSelect scope={scope} />}>{CHARITABLE_GRANTS_REGISTRY_TITLE}</PageTitle>
+      {mayEndorse ? (
+        <div className="mb-4">
+          <Tabs
+            label={`${CHARITABLE_GRANTS_REGISTRY_TITLE} views`}
+            idPrefix="grants-registry"
+            value={open}
+            onChange={setTab}
+            tabs={[
+              { id: 'registry', label: CHARITABLE_GRANTS_REGISTRY_TITLE },
+              { id: 'endorsements', label: CHARITY_ENDORSEMENT_FOLDER_TITLE },
+            ]}
+          />
+        </div>
+      ) : null}
+      <div id="grants-registry-panel" role={mayEndorse ? 'tabpanel' : undefined} aria-labelledby={mayEndorse ? `grants-registry-tab-${open}` : undefined}>
+        {open === 'endorsements' ? <GrantsEndorsementsBody key={scope.councilId} councilId={scope.councilId} /> : <GrantsRegistryBody scope={scope} />}
+      </div>
     </>
   );
 }

@@ -464,7 +464,9 @@ The **Your time limits** part of the guide lists the time windows and reminder d
 4. Set **Start time**, **Default location** and **Default recipient group**.
 5. Select **Save cadence**.
 6. Choose the **Fraternal year**. Select **Populate the year**.
-7. To see the year's dates, select **[ 👁️ View Scheduled Releases ]** on the cadence row. A date with no meeting yet shows **[ ⏳ Scheduled ]**.
+7. To see the year's dates, select **[ 👁️ View Scheduled Releases ]** on the cadence row. A future date with no meeting yet shows **[ ⏳ Scheduled ]**.
+8. Read the badge on each card. The badge changes when the meeting's end time passes. A held meeting shows **[ 🟢 Held ]**. A past date with no meeting shows **[ 🛑 Past ]**.
+9. To change one upcoming meeting, select **[ ⚙️ Customize Agenda & Location ]** on its card. Change **Location** or **Agenda**. Select **Save**. The cadence's default location does not change.
 
 <!-- KEEP_IMAGE: annual cadence manager capture -->
 ![Recurring Meetings (/meetings/cadence)](../generated/dashboard_visual_catalog/meetings_cadence.png)
@@ -477,6 +479,7 @@ Invitations are released 5 days before each meeting by default. A Super Admin se
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A month has no new meeting. | A meeting of the same type already exists on that date. | No action. The platform skips the date. |
+| A card has no **[ ⚙️ Customize Agenda & Location ]** button. | The meeting is over, or the date has no meeting yet. | Populate the year first. A past meeting stays as recorded. |
 
 ### 2.5 Schedule a single meeting
 > **Prerequisite (who can do this):** You must be a seated officer of the council, a council Admin or a Super Admin.
@@ -580,7 +583,7 @@ The vault holds one bylaws document per council. Every member of the council rea
 1. Copy the current text to a file as a backup.
 2. Select **Edit bylaws**. An empty vault starts from the standard Knights of Columbus council bylaws template. The empty vault also shows the template as a preview. Replace each bracketed field, for example **[Council Name]**.
 3. Change the text in **Bylaws text**.
-4. Check the **Preview** panel.
+4. Check the **Preview** panel. The panel scrolls inside a fixed height of 500 pixels, so **Save bylaws** and **Cancel** stay on the screen.
 5. Check the clause ids in **[ 🤖 AI Parliamentary Reasoning Stream ]**.
 6. Select **Save bylaws**.
 
@@ -838,7 +841,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Clear a grant that the council approved for its check. This is the **[ ✍️ FS/GK Compliance Endorsement ]** step.
 
-**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**. Or: Sidebar → Finances → **Financial Views** → **FS/GK Compliance Endorsements**.
+**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**. Or (Financial Secretary): Sidebar → Finances → **Financial Views** → **RECORDED REGISTRIES** → **Charitable Grants Registry** → the **FS/GK Compliance Endorsements** tab.
 
 **Steps:**
 1. Select the **FS/GK Compliance Endorsements** folder. A red border means that an approved request waits for your endorsement. The folder then moves to the top of the spine.

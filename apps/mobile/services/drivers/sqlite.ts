@@ -412,6 +412,7 @@ import {
   shiftDefaultLengthHours,
   assertMayManageAgendaTemplates,
   cleanAgendaTemplateText,
+  cleanMeetingCustomization,
   cleanMeetingSpan,
   assertExpenseSubmissionWindow,
   assertMayScheduleCouncilCadence,
@@ -5599,6 +5600,22 @@ export class SqliteDataService implements DataService {
       const db = await this.ready();
       const res = await db.runAsync('UPDATE [Meeting] SET [MinutesURL] = ? WHERE [id] = ?', [url, meetingId]);
       if (res.changes === 0) throw new BusinessRuleError('MEETING_NOT_FOUND', `No meeting with id ${meetingId}.`, { meetingId });
+      return (await db.getFirstAsync<Meeting>('SELECT * FROM [Meeting] WHERE [id] = ?', [meetingId]))!;
+    },
+
+    customizeAgendaAndLocation: async (actorId, meetingId, input) => {
+      const clean = cleanMeetingCustomization(input);
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const meeting = await db.getFirstAsync<Meeting>('SELECT * FROM [Meeting] WHERE [id] = ?', [meetingId]);
+        if (!meeting) throw new BusinessRuleError('MEETING_NOT_FOUND', `No meeting with id ${meetingId}.`, { meetingId });
+        assertMayManageAgendaTemplates(actor, meeting.CouncilID);
+        if (String(meeting.Date).slice(0, 10) < toIsoDate(this.now())) {
+          throw new BusinessRuleError('MEETING_ALREADY_HELD', `Meeting ${meetingId} is already past; its agenda and location are on record.`, { meetingId });
+        }
+        await db.runAsync('UPDATE [Meeting] SET [Agenda] = ?, [Location] = ? WHERE [id] = ?', [clean.Agenda, clean.Location, meetingId]);
+      });
       return (await db.getFirstAsync<Meeting>('SELECT * FROM [Meeting] WHERE [id] = ?', [meetingId]))!;
     },
 

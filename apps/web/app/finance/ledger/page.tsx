@@ -11,6 +11,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import {
+  FINANCIAL_DASHBOARD_TITLE,
   canPostGeneralLedger,
   GENERAL_LEDGER_TITLE,
   GL_ACCOUNT_TYPE_LABELS,
@@ -59,7 +60,7 @@ function LedgerSpreadsheet() {
               </Button>
             ) : null}
             <Link href="/finance/dashboard" className="text-sm font-bold underline">
-              Financial Management Center
+              {FINANCIAL_DASHBOARD_TITLE}
             </Link>
           </div>
         }

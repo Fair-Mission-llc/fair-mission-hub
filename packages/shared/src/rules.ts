@@ -62,6 +62,7 @@ export type BusinessRuleCode =
   | 'INVALID_INPUT'
   | 'EVENT_NOT_FOUND'
   | 'MEETING_NOT_FOUND'
+  | 'MEETING_ALREADY_HELD'
   | 'NOT_INVITED'
   | 'THREAD_NOT_FOUND'
   | 'MESSAGE_NOT_FOUND'

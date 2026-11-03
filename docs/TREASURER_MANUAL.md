@@ -271,7 +271,7 @@ The check is always for the amount the council approved. The Knight Shepherd of 
 ![Charity funding queue (/charities/queue)](../generated/dashboard_visual_catalog/charities_queue.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The request leaves **Approved requests awaiting payment**. The check is listed against the charity, the charity is added to the registry if it was not there, the request's target budget line is charged, and the Shepherd's **My requests** shows the request as paid.
+**Expected result:** The request leaves **Approved requests awaiting payment**. The check is listed against the charity, the charity is added to the registry if it was not there, the request's target budget line is charged, and the Shepherd's **[ 📥 My Charity Requests ]** card on the Member Desk shows the request as paid.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -386,10 +386,12 @@ A report holds one or more receipts. Each receipt has a merchant, a gross total 
 | Item | What it means | What the signers see |
 | --- | --- | --- |
 | Receipt | One ticket from one merchant, with its full total and its file. | A **Receipts** table with **R1**, **R2** and so on. |
-| Split ticket | One receipt with council items and personal items. The member lists all items and ticks **Personal** on the member's own items. | Personal lines are struck through. The total reads **Council reimburses**. |
+| Split ticket | One receipt with council items and personal items. The member types the receipt total in **Gross Total Amount ($)** and a smaller amount in **Reimbursement Requested ($)**. | The difference shows as a struck-through personal line. The total reads **Council reimburses**. |
 | Honorary Expense | The member has no receipt. The member ticks **⚠️ I have no receipt (Honorary Expense)** and writes the reason. | **⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED** with the member's reason. |
 
-- The council pays only the lines without **Personal**. Checks, budgets, asset costs and the balance sheet leave personal lines out.
+- The council pays only **Reimbursement Requested ($)**. Checks, budgets, asset costs and the balance sheet leave personal lines out.
+- **Reimbursement Requested ($)** copies **Gross Total Amount ($)** until the member types a different amount.
+- The expense form has no charity-request link and no item-by-item grid. The member types each merchant once.
 - On a submitted report, the lines of each receipt must add up to the receipt's gross total.
 - On a submitted report, each receipt needs its file. An Honorary Expense lifts this rule. The reason is mandatory.
 - The **⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED** badge also shows on a report that has no receipt file at all.

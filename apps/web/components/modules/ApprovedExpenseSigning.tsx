@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
+  GK_EXPENSE_AUTHORIZE_TITLE,
   assetFormPath,
   canAuditCouncilExpenses,
   canManageCouncilAssets,
@@ -145,7 +146,7 @@ export function AuthorizationDesk() {
           </div>
         }
       >
-        Grand Knight Authorization Desk
+        {GK_EXPENSE_AUTHORIZE_TITLE}
       </PageTitle>
       {!canOpen ? (
         <Notice tone="error">Only this council&apos;s Grand Knight and Admins, or a Super Admin, open its authorization desk.</Notice>

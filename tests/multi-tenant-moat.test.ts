@@ -180,7 +180,7 @@ describe('6. the Application Advisory Panel', () => {
     expect(portalAreas(viewer('Member', [ADVISORY_PANELIST_ROLE]))).toContain('advisory-panel');
     expect(portalAreas(viewer('Member'))).not.toContain('advisory-panel');
     expect(existsSync(join(__dirname, '..', 'apps/web/app/advisory-panel/page.tsx'))).toBe(true);
-    expect(read('apps/web/components/Sidebar.tsx')).toContain('{plainNavLabel(ADVISORY_PANEL_TITLE)}');
+    expect(read('apps/web/components/Sidebar.tsx')).toContain('{sidebarLinkLabel(ADVISORY_PANEL_TITLE)}') // Sprint 11 Revision 17.0: plainNavLabel plus bracket stripping;
   });
 });
 

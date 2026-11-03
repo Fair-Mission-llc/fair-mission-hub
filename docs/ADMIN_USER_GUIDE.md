@@ -87,6 +87,12 @@ Most management pages have a **Council** selector at the top.
 
 The navy header shows your own council, your name, your member type and your officer status.
 
+- A Super Admin also sees **[ 🛠️ Super Admin Desk ]** in the header row. The button opens the **Master Feature Deployment Grid**. The button is not shown while a Super Admin views the portal as another member.
+- On the **[ 👥 Council Roster ]**, **Add Member** is disabled while the **Council** list reads **All councils on the platform** or **All: my council and sister councils**. Choose one council first. The new member joins that council.
+- In the sidebar, Finances → **Financial Views** has two groups. **📊 FINANCIAL REPORTS** holds **Financial Dashboard**, **Balance Sheet**, the general ledger and **Financial Inspections**. **⚡ RECORDED REGISTRIES** holds the Treasurer ledger audit, the FS expense audit queue, the disbursed check registry, the **Charitable Grants Registry** and **Donations History**.
+- Sidebar links show plain words only, with no icons and no brackets. A long name ends in "…".
+- **Activities** and **Meeting Center** list their rows in full-width tables. Each table has a search box and shows 15 rows per page.
+
 ---
 
 ## 2. Module feature flags

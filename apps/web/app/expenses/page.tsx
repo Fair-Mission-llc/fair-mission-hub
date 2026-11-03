@@ -6,45 +6,43 @@
 // red banner quoting their reason until it is resubmitted. The drivers show a member only their own sheets.
 // Sprint 5Z-6: a sheet naming an event or meeting outside its submission window (from the day it starts through the council's
 // er_submission_window_days, DEFAULT 30, after it ends; Sprint 7E) shows a padlock and its submit button is disabled; it can still be saved as a draft.
-// Sprint 6H: 'Link to Vetted Charity Request' names the council's vetted charitable request the receipts were spent for
-// (charities.listLinkableCharitableRequests), saved as ExpenseReport.charity_request_id. The signature desks then
+// Sprint 6H: a charity-request dropdown named the council's vetted charitable request the receipts were spent for
+// (saved as ExpenseReport.charity_request_id); Sprint 11 Revision 17.0 removed the dropdown. The signature desks then
 // pre-select that request's target budget line.
 // Sprint 6S: a sheet holds several receipts (merchant, gross total, file), and each line item may be itemised from one
 // of them; a line bought for personal use on a shared ticket is ticked 'Personal' and the council does not pay it. The
 // Honorary Expense box covers a sheet with no receipt and asks why. With receipt reading connected on the Credentials
 // Vault page, 'Read receipt' sends an attached file to Azure Document Intelligence and pre-fills the receipt and lines.
+// Sprint 11 Revision 17.0: one row per receipt (Gross Total Amount and Reimbursement Requested, the latter following
+// the gross until changed); the itemisation grid, the Personal checkboxes and the charity link are gone.
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
+  blankReceiptRow,
   canAttachAssetPhoto,
-  blankExpenseLine,
-  blankExpenseReceipt,
   describeError,
-  expenseDraftPersonalTotal,
-  expenseDraftTotal,
-  expenseLineDraftFrom,
-  expenseLinesFromDrafts,
-  expenseReceiptDraftFrom,
-  expenseReceiptsFromDrafts,
-  MISSING_RECEIPT_REASON_MAX_LENGTH,
-  RECEIPT_MERCHANT_MAX_LENGTH,
-  type ExpenseReceiptDraft,
-  type ReceiptOcrResult,
+  EXPENSE_DESCRIPTION_MAX_LENGTH,
   expenseReferenceChoices,
   expenseReferenceKey,
   expenseReferenceLabel,
   expenseReferenceSpan,
-  isLongTermAssetExpense,
   expenseWindowLockMessage,
+  GROSS_TOTAL_LABEL,
+  isLongTermAssetExpense,
   listExpenseReferences,
+  MISSING_RECEIPT_REASON_MAX_LENGTH,
   parseExpenseReferenceKey,
+  receiptRowsFromSheet,
+  receiptRowsToSubmission,
+  receiptRowTotals,
+  RECEIPT_MERCHANT_MAX_LENGTH,
+  REIMBURSEMENT_REQUESTED_LABEL,
   toIsoDate,
-  EXPENSE_DESCRIPTION_MAX_LENGTH,
-  EXPENSE_VENDOR_MAX_LENGTH,
-  type ExpenseLineDraft,
+  withGrossTotal,
+  withReimbursement,
   type ExpenseReferenceOptions,
   type ExpenseReportDetail,
-  type LinkableCharitableRequest,
+  type ReceiptRowDraft,
 } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { ExpenseSheetItems, ExpenseStatusPill, HonoraryExpenseBadge, ReceiptLink } from '@/components/ExpenseParts';
@@ -58,68 +56,40 @@ import { archiveToDriveVault, localFileLink } from '@/services/drive-vault-trans
 import { readReceipt, receiptOcrAvailable } from '@/services/receipt-ocr-transport';
 
 type Message = { tone: 'error' | 'info'; text: string };
-type Row = ExpenseLineDraft & { key: number };
-/** A receipt on the form; `file` is the attached file while the page is open, for 'Read receipt'. */
-type ReceiptRow = ExpenseReceiptDraft & { key: number; file?: File };
-
-/**
- * Lines pre-filled from a read receipt (Sprint 6S): one per item Azure found with an amount, else one for the whole
- * total, each itemised from receipt `index`. Empty when Azure found no amount at all.
- */
-function linesFromOcr(result: ReceiptOcrResult, index: number, today: string): ExpenseLineDraft[] {
-  const date = result.transactionDate && result.transactionDate <= today ? result.transactionDate : today;
-  const vendor = result.merchantName ?? '';
-  const base = { ...blankExpenseLine(date), VendorName: vendor, ReceiptIndex: String(index) };
-  const items = result.items.filter((i) => i.amount !== null && i.amount > 0);
-  if (items.length > 0) return items.map((i) => ({ ...base, ExpenseDescription: i.description, Amount: (i.amount as number).toFixed(2) }));
-  return result.total !== null && result.total > 0 ? [{ ...base, Amount: result.total.toFixed(2) }] : [];
-}
+/** A receipt row on the form; `file` is the attached file while the page is open, for 'Read receipt'. */
+type Row = ReceiptRowDraft & { key: number; file?: File };
 
 const NO_REFS: ExpenseReferenceOptions = { events: [], meetings: [], activities: [] };
-const NO_CHARITIES: LinkableCharitableRequest[] = [];
-
-/** "St. Mary's Cathedral Youth Ministry · $800.00 (#7)" for the charity link dropdown and the read-only sheet. */
-const charityLabel = (r: Pick<LinkableCharitableRequest, 'id' | 'OrganizationName' | 'AmountRequested'>) =>
-  `${r.OrganizationName} · ${formatMoney(r.AmountRequested)} (#${r.id})`;
-
-/** The linked request's label, or its number when it is no longer open for linking. */
-const linkedCharityLabel = (requestId: number, charities: readonly LinkableCharitableRequest[]) => {
-  const found = charities.find((c) => c.id === requestId);
-  return found ? charityLabel(found) : `Charitable request #${requestId}`;
-};
 
 // ---- the sheet editor ------------------------------------------------------------------
 
-/** A new sheet (no `detail`) or one of the member's drafts: the reference picker and the receipt grid. */
+/**
+ * A new sheet (no `detail`) or one of the member's drafts. Sprint 11 Revision 17.0: one row per receipt - date,
+ * merchant, description, Gross Total Amount ($) and Reimbursement Requested ($), which follows the gross total until
+ * the member types their own figure. No itemisation grid, no Personal checkboxes, no charity link.
+ */
 function ExpenseSheetForm({
   detail,
   refs,
-  charities,
   today,
   onSaved,
   onCancel,
 }: {
   detail: ExpenseReportDetail | null;
   refs: ExpenseReferenceOptions;
-  charities: readonly LinkableCharitableRequest[];
   today: string;
   onSaved: (saved: ExpenseReportDetail) => Promise<void>;
   onCancel: () => void;
 }) {
   const user = useUser();
   const nextKey = useRef(0);
-  const keyed = (line: ExpenseLineDraft): Row => ({ ...line, key: nextKey.current++ });
+  const keyed = (row: ReceiptRowDraft): Row => ({ ...row, key: nextKey.current++ });
   const [reference, setReference] = useState(() => (detail ? expenseReferenceKey(detail.report) : ''));
-  const [charityRequestId, setCharityRequestId] = useState(() => (detail?.report.charity_request_id != null ? String(detail.report.charity_request_id) : ''));
   const [longTermAsset, setLongTermAsset] = useState(() => isLongTermAssetExpense(detail?.report ?? {}));
-  const [rows, setRows] = useState<Row[]>(() =>
-    detail && detail.lineItems.length > 0
-      ? detail.lineItems.map((li) => keyed(expenseLineDraftFrom(li, detail.receipts)))
-      : [keyed(blankExpenseLine(today))],
-  );
-  const [receipts, setReceipts] = useState<ReceiptRow[]>(() =>
-    (detail?.receipts ?? []).map((r) => ({ ...expenseReceiptDraftFrom(r), key: nextKey.current++ })),
-  );
+  const [rows, setRows] = useState<Row[]>(() => {
+    const loaded = detail ? receiptRowsFromSheet(detail.receipts, detail.lineItems, today) : [];
+    return (loaded.length > 0 ? loaded : [blankReceiptRow(today)]).map(keyed);
+  });
   const [honoraryExpense, setHonoraryExpense] = useState(() => Boolean(detail?.report.flag_missing_receipt));
   const [missingReason, setMissingReason] = useState(() => detail?.report.missing_receipt_reason ?? '');
   const ocr = useLoad(receiptOcrAvailable, []);
@@ -131,61 +101,34 @@ function ExpenseSheetForm({
   const span = expenseReferenceSpan(reference, refs);
   const windowDays = useCouncilTimings().er_submission_window_days;
   const locked = span ? expenseWindowLockMessage(span, today, windowDays) : null;
+  const totals = receiptRowTotals(rows);
 
-  const setCell = <K extends keyof ExpenseLineDraft>(key: number, field: K, value: ExpenseLineDraft[K]) =>
-    setRows((now) => now.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
-  const setReceipt = (key: number, patch: Partial<ReceiptRow>) => setReceipts((now) => now.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+  const update = (key: number, change: (row: Row) => Row) => setRows((now) => now.map((r) => (r.key === key ? change(r) : r)));
   /** Sprint 6D: an Admin's receipt goes to the Drive vault's Vouchers folder; otherwise it is a browser blob link. */
   const storeFile = async (file: File) => (await archiveToDriveVault(user, 'voucher', file)) ?? localFileLink(file);
   const attach = async (key: number, file: File | undefined) => {
     if (!file) return;
     try {
-      setCell(key, 'ReceiptPhotoURL', await storeFile(file));
+      const url = await storeFile(file);
+      update(key, (r) => ({ ...r, receipt_file_url: url, file }));
     } catch (err) {
       setError(describeError(err));
     }
   };
-  const attachReceipt = async (key: number, file: File | undefined) => {
-    if (!file) return;
-    try {
-      setReceipt(key, { receipt_file_url: await storeFile(file), file });
-    } catch (err) {
-      setError(describeError(err));
-    }
-  };
-  /** Drops receipt `index`: its lines lose their receipt, and later receipts' lines move up one. */
-  const removeReceipt = (index: number) => {
-    setReceipts((now) => now.filter((_, i) => i !== index));
-    setRows((now) =>
-      now.map((r) => {
-        if (r.ReceiptIndex === '') return r;
-        const at = Number(r.ReceiptIndex);
-        return { ...r, ReceiptIndex: at === index ? '' : at > index ? String(at - 1) : r.ReceiptIndex };
-      }),
-    );
-  };
-  /** 'Read receipt': Azure's merchant and total fill the receipt; its items become lines, unless lines already name it. */
-  const ocrReceipt = async (index: number, row: ReceiptRow) => {
+  /** 'Read receipt': Azure's merchant, date and total fill the row. */
+  const ocrReceipt = async (index: number, row: Row) => {
     if (!row.file) return;
     setReading(row.key);
     setError(null);
     setNotice(null);
     try {
       const result = await readReceipt(row.file);
-      setReceipt(row.key, {
-        merchant_name: row.merchant_name.trim() || result.merchantName || '',
-        gross_total: result.total !== null ? result.total.toFixed(2) : row.gross_total,
+      update(row.key, (r) => {
+        const filled: Row = { ...r, Merchant: r.Merchant.trim() || result.merchantName || '' };
+        if (result.transactionDate && result.transactionDate <= today) filled.DateOfExpense = result.transactionDate;
+        return result.total !== null ? { ...withGrossTotal(filled, result.total.toFixed(2)), key: r.key, file: r.file } : filled;
       });
-      const hasLines = rows.some((r) => r.ReceiptIndex === String(index));
-      const added = hasLines ? [] : linesFromOcr(result, index, today);
-      if (added.length > 0) {
-        setRows((now) => [...now.filter((r) => [r.Amount, r.VendorName, r.ExpenseDescription, r.ReceiptPhotoURL].some((v) => v.trim() !== '')), ...added.map(keyed)]);
-      }
-      setNotice(
-        `Read receipt R${index + 1}${result.merchantName ? ` from ${result.merchantName}` : ''}. ` +
-          (added.length > 0 ? `Added ${added.length} line item${added.length === 1 ? '' : 's'}. ` : '') +
-          'Check every figure, and tick Personal on anything that was not for the council.',
-      );
+      setNotice(`Read receipt ${index + 1}${result.merchantName ? ` from ${result.merchantName}` : ''}. Check every figure before you submit.`);
     } catch (err) {
       setError(describeError(err));
     } finally {
@@ -197,7 +140,7 @@ function ExpenseSheetForm({
     setBusy(status);
     setError(null);
     try {
-      const items = expenseLinesFromDrafts(rows);
+      const { receipts, items } = receiptRowsToSubmission(rows);
       const saved = await db.expenses.submitReport(
         user.memberId,
         {
@@ -205,8 +148,9 @@ function ExpenseSheetForm({
           Status: status,
           ...parseExpenseReferenceKey(reference),
           is_long_term_asset: longTermAsset,
-          charity_request_id: charityRequestId ? Number(charityRequestId) : null,
-          receipts: expenseReceiptsFromDrafts(receipts),
+          // The charity link left the form; a draft that already carries one keeps it.
+          charity_request_id: detail?.report.charity_request_id ?? null,
+          receipts,
           flag_missing_receipt: honoraryExpense,
           missing_receipt_reason: honoraryExpense ? missingReason : null,
         },
@@ -262,26 +206,6 @@ function ExpenseSheetForm({
         )}
       </Field>
 
-      <Field
-        label="Link to Vetted Charity Request"
-        hint={charities.length === 0 ? 'Your council has no vetted charity requests open right now.' : 'The vetted charity request these receipts were spent for, if any.'}
-        className="max-w-xl"
-      >
-        {(id) => (
-          <Select id={id} value={charityRequestId} onChange={(e) => setCharityRequestId(e.target.value)}>
-            <option value="">Not for a charity request</option>
-            {charities.map((c) => (
-              <option key={c.id} value={c.id}>
-                {charityLabel(c)}
-              </option>
-            ))}
-            {charityRequestId && !charities.some((c) => String(c.id) === charityRequestId) ? (
-              <option value={charityRequestId}>{linkedCharityLabel(Number(charityRequestId), charities)} (no longer open)</option>
-            ) : null}
-          </Select>
-        )}
-      </Field>
-
       <label className="flex max-w-xl items-start gap-2 text-sm">
         <input type="checkbox" className="mt-0.5 size-4" checked={longTermAsset} onChange={(e) => setLongTermAsset(e.target.checked)} />
         <span>
@@ -303,76 +227,115 @@ function ExpenseSheetForm({
           Receipts
         </h3>
         <p className="text-sm text-muted">
-          Add each receipt with its merchant and full total, then itemise it below. On a shared ticket, list your own items too and tick Personal; the
-          council pays only the rest.
+          One row per receipt. {REIMBURSEMENT_REQUESTED_LABEL} matches the gross total unless you change it; the difference stays on record as personal.
         </p>
-        {receipts.length > 0 ? (
-          <Table caption="Receipts on this report" head={['#', 'Merchant', 'Gross total ($)', 'Receipt file', '']}>
-            {receipts.map((r, i) => (
-              <tr key={r.key}>
-                <Td className="text-xs font-bold">R{i + 1}</Td>
-                <Td className="min-w-40">
-                  <Input
-                    aria-label={`Receipt ${i + 1} merchant`}
-                    maxLength={RECEIPT_MERCHANT_MAX_LENGTH}
-                    placeholder="e.g. Costco"
-                    value={r.merchant_name}
-                    onChange={(e) => setReceipt(r.key, { merchant_name: e.target.value })}
-                  />
-                </Td>
-                <Td className="w-32">
-                  <Input
-                    aria-label={`Receipt ${i + 1} gross total`}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    className="text-right"
-                    value={r.gross_total}
-                    onChange={(e) => setReceipt(r.key, { gross_total: e.target.value })}
-                  />
-                </Td>
-                <Td className="min-w-56">
-                  {r.receipt_file_url ? (
-                    <span className="flex flex-wrap items-center gap-2">
-                      <ReceiptLink url={r.receipt_file_url} />
-                      {r.file && ocr.data ? (
-                        <Button size="sm" disabled={reading !== null} onClick={() => void ocrReceipt(i, r)}>
-                          {reading === r.key ? 'Reading…' : '🔍 Read receipt'}
-                        </Button>
-                      ) : null}
-                      <Button size="sm" variant="secondary" onClick={() => setReceipt(r.key, { receipt_file_url: '', file: undefined })}>
-                        Remove file
+        <Table caption="Receipts on this report" head={['#', 'Date', 'Merchant', 'Description', GROSS_TOTAL_LABEL, REIMBURSEMENT_REQUESTED_LABEL, 'Receipt file', '']}>
+          {rows.map((r, i) => (
+            <tr key={r.key}>
+              <Td className="text-xs font-bold">{i + 1}</Td>
+              <Td className="w-40">
+                <Input
+                  type="date"
+                  aria-label={`Receipt ${i + 1} date`}
+                  required
+                  max={today}
+                  value={r.DateOfExpense}
+                  onChange={(e) => update(r.key, (x) => ({ ...x, DateOfExpense: e.target.value }))}
+                />
+              </Td>
+              <Td className="min-w-36">
+                <Input
+                  aria-label={`Receipt ${i + 1} merchant`}
+                  maxLength={RECEIPT_MERCHANT_MAX_LENGTH}
+                  placeholder="e.g. Costco"
+                  value={r.Merchant}
+                  onChange={(e) => update(r.key, (x) => ({ ...x, Merchant: e.target.value }))}
+                />
+              </Td>
+              <Td className="min-w-48">
+                <Input
+                  aria-label={`Receipt ${i + 1} description`}
+                  maxLength={EXPENSE_DESCRIPTION_MAX_LENGTH}
+                  placeholder="What was bought"
+                  value={r.Description}
+                  onChange={(e) => update(r.key, (x) => ({ ...x, Description: e.target.value }))}
+                />
+              </Td>
+              <Td className="w-32">
+                <Input
+                  aria-label={`Receipt ${i + 1} gross total`}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  className="text-right"
+                  value={r.GrossTotal}
+                  onChange={(e) => update(r.key, (x) => ({ ...withGrossTotal(x, e.target.value), key: x.key, file: x.file }))}
+                />
+              </Td>
+              <Td className="w-32">
+                <Input
+                  aria-label={`Receipt ${i + 1} reimbursement requested`}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  className="text-right"
+                  value={r.Reimbursement}
+                  onChange={(e) => update(r.key, (x) => ({ ...withReimbursement(x, e.target.value), key: x.key, file: x.file }))}
+                />
+              </Td>
+              <Td className="min-w-48">
+                {r.receipt_file_url ? (
+                  <span className="flex flex-wrap items-center gap-2">
+                    <ReceiptLink url={r.receipt_file_url} />
+                    {r.file && ocr.data ? (
+                      <Button size="sm" disabled={reading !== null} onClick={() => void ocrReceipt(i, r)}>
+                        {reading === r.key ? 'Reading…' : '🔍 Read receipt'}
                       </Button>
-                    </span>
-                  ) : (
-                    <label className="inline-block cursor-pointer rounded border-2 border-navy bg-white px-2 py-0.5 text-xs font-bold text-navy focus-within:outline-2">
-                      Attach receipt…
-                      <input
-                        type="file"
-                        accept="image/*,application/pdf"
-                        aria-label={`Receipt ${i + 1} file`}
-                        className="sr-only"
-                        onChange={(e) => {
-                          void attachReceipt(r.key, e.target.files?.[0]);
-                          e.target.value = '';
-                        }}
-                      />
-                    </label>
-                  )}
-                </Td>
-                <Td className="text-right">
-                  <Button size="sm" variant="secondary" aria-label={`Remove receipt ${i + 1}`} onClick={() => removeReceipt(i)}>
-                    ×
-                  </Button>
-                </Td>
-              </tr>
-            ))}
-          </Table>
-        ) : null}
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant="secondary" size="sm" onClick={() => setReceipts((now) => [...now, { ...blankExpenseReceipt(), key: nextKey.current++ }])}>
-            + Add receipt
-          </Button>
-          {ocr.data ? <span className="text-xs text-muted">Attach a receipt photo, then choose Read receipt to fill it in.</span> : null}
+                    ) : null}
+                    <Button size="sm" variant="secondary" onClick={() => update(r.key, (x) => ({ ...x, receipt_file_url: '', file: undefined }))}>
+                      Remove file
+                    </Button>
+                  </span>
+                ) : (
+                  <label className="inline-block cursor-pointer rounded border-2 border-navy bg-white px-2 py-0.5 text-xs font-bold text-navy focus-within:outline-2">
+                    Attach receipt…
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      aria-label={`Receipt ${i + 1} file`}
+                      className="sr-only"
+                      onChange={(e) => {
+                        void attach(r.key, e.target.files?.[0]);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                )}
+              </Td>
+              <Td className="text-right">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  aria-label={`Remove receipt ${i + 1}`}
+                  disabled={rows.length === 1}
+                  onClick={() => setRows((now) => now.filter((x) => x.key !== r.key))}
+                >
+                  ×
+                </Button>
+              </Td>
+            </tr>
+          ))}
+        </Table>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="flex flex-wrap items-center gap-3">
+            <Button variant="secondary" size="sm" onClick={() => setRows((now) => [...now, keyed(blankReceiptRow(today))])}>
+              + Add receipt
+            </Button>
+            {ocr.data ? <span className="text-xs text-muted">Attach a receipt photo, then choose Read receipt to fill it in.</span> : null}
+          </span>
+          <p className="text-sm">
+            {totals.personal > 0 ? <span className="mr-4 text-muted">Personal, not reimbursed: {formatMoney(totals.personal)}</span> : null}
+            <span className="text-xs font-bold uppercase tracking-wide">Council reimburses </span>
+            <span className="text-lg font-bold">{formatMoney(totals.reimbursed)}</span>
+          </p>
         </div>
       </section>
 
@@ -400,93 +363,6 @@ function ExpenseSheetForm({
         ) : null}
       </div>
 
-      <Table caption="Line items" head={['#', 'Expense date', 'Vendor name', 'Description', 'Amount ($)', 'Receipt', 'Personal', '']}>
-        {rows.map((row, i) => (
-          <tr key={row.key}>
-            <Td className="text-xs font-bold">{i + 1}</Td>
-            <Td className="w-40">
-              <Input type="date" aria-label={`Line ${i + 1} expense date`} required max={today} value={row.DateOfExpense} onChange={(e) => setCell(row.key, 'DateOfExpense', e.target.value)} />
-            </Td>
-            <Td className="min-w-40">
-              <Input aria-label={`Line ${i + 1} vendor name`} maxLength={EXPENSE_VENDOR_MAX_LENGTH} placeholder="e.g. Costco" value={row.VendorName} onChange={(e) => setCell(row.key, 'VendorName', e.target.value)} />
-            </Td>
-            <Td className="min-w-56">
-              <Input
-                aria-label={`Line ${i + 1} description`}
-                maxLength={EXPENSE_DESCRIPTION_MAX_LENGTH}
-                placeholder="What was bought"
-                value={row.ExpenseDescription}
-                onChange={(e) => setCell(row.key, 'ExpenseDescription', e.target.value)}
-              />
-            </Td>
-            <Td className="w-32">
-              <Input aria-label={`Line ${i + 1} amount`} inputMode="decimal" placeholder="0.00" className="text-right" value={row.Amount} onChange={(e) => setCell(row.key, 'Amount', e.target.value)} />
-            </Td>
-            <Td className="min-w-44">
-              {receipts.length > 0 && !row.ReceiptPhotoURL ? (
-                <Select aria-label={`Line ${i + 1} receipt`} value={row.ReceiptIndex} onChange={(e) => setCell(row.key, 'ReceiptIndex', e.target.value)}>
-                  <option value="">No receipt</option>
-                  {receipts.map((r, ri) => (
-                    <option key={r.key} value={String(ri)}>
-                      R{ri + 1}
-                      {r.merchant_name.trim() ? ` · ${r.merchant_name.trim()}` : ''}
-                    </option>
-                  ))}
-                </Select>
-              ) : row.ReceiptPhotoURL ? (
-                <span className="flex flex-wrap items-center gap-2">
-                  <ReceiptLink url={row.ReceiptPhotoURL} />
-                  <Button size="sm" variant="secondary" onClick={() => setCell(row.key, 'ReceiptPhotoURL', '')}>
-                    Remove
-                  </Button>
-                </span>
-              ) : (
-                <label className="inline-block cursor-pointer rounded border-2 border-navy bg-white px-2 py-0.5 text-xs font-bold text-navy focus-within:outline-2">
-                  Attach receipt…
-                  <input
-                    type="file"
-                    accept="image/*,application/pdf"
-                    aria-label={`Line ${i + 1} receipt file`}
-                    className="sr-only"
-                    onChange={(e) => {
-                      void attach(row.key, e.target.files?.[0]);
-                      e.target.value = '';
-                    }}
-                  />
-                </label>
-              )}
-            </Td>
-            <Td className="text-center">
-              <input
-                type="checkbox"
-                className="size-4"
-                aria-label={`Line ${i + 1} is personal, not for the council`}
-                checked={row.IsPersonal}
-                onChange={(e) => setCell(row.key, 'IsPersonal', e.target.checked)}
-              />
-            </Td>
-            <Td className="text-right">
-              <Button size="sm" variant="secondary" aria-label={`Remove line ${i + 1}`} disabled={rows.length === 1} onClick={() => setRows((now) => now.filter((r) => r.key !== row.key))}>
-                ×
-              </Button>
-            </Td>
-          </tr>
-        ))}
-      </Table>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="secondary" size="sm" onClick={() => setRows((now) => [...now, keyed(blankExpenseLine(today))])}>
-          + Add line item
-        </Button>
-        <p className="text-sm">
-          {expenseDraftPersonalTotal(rows) > 0 ? (
-            <span className="mr-4 text-muted">Personal, not reimbursed: {formatMoney(expenseDraftPersonalTotal(rows))}</span>
-          ) : null}
-          <span className="text-xs font-bold uppercase tracking-wide">Council reimburses </span>
-          <span className="text-lg font-bold">{formatMoney(expenseDraftTotal(rows))}</span>
-        </p>
-      </div>
-
       {locked ? (
         <p role="status" className="flex items-center gap-2 rounded border-2 border-navy px-3 py-2 text-sm font-bold">
           <span aria-hidden="true">🔒</span>
@@ -510,7 +386,7 @@ function ExpenseSheetForm({
 
 // ---- a sheet that is no longer the member's to edit ------------------------------------
 
-function ExpenseSheetView({ detail, refs, charities }: { detail: ExpenseReportDetail; refs: ExpenseReferenceOptions; charities: readonly LinkableCharitableRequest[] }) {
+function ExpenseSheetView({ detail, refs }: { detail: ExpenseReportDetail; refs: ExpenseReferenceOptions }) {
   const { report, disbursement } = detail;
   const note: Record<typeof report.Status, string> = {
     Draft: '',
@@ -525,7 +401,7 @@ function ExpenseSheetView({ detail, refs, charities }: { detail: ExpenseReportDe
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <ExpenseStatusPill report={report} />
         <span>{expenseReferenceLabel(report, refs)}</span>
-        {report.charity_request_id != null ? <span className="font-bold">Charity: {linkedCharityLabel(report.charity_request_id, charities)}</span> : null}
+        {report.charity_request_id != null ? <span className="font-bold">Charitable request #{report.charity_request_id}</span> : null}
         {isLongTermAssetExpense(report) ? <span className="text-xs font-bold uppercase tracking-wide">Long-term Council Asset</span> : null}
         <span className="text-muted">{note[report.Status]}</span>
       </div>
@@ -548,8 +424,6 @@ function MyExpenses() {
   const reports = useLoad(() => db.expenses.listUserReports(user.memberId), [user.memberId]);
   const refsLoad = useLoad(() => listExpenseReferences(db, user.councilId), [user.councilId]);
   const refs = refsLoad.data ?? NO_REFS;
-  const charitiesLoad = useLoad(() => db.charities.listLinkableCharitableRequests(user.memberId, user.councilId), [user.memberId, user.councilId]);
-  const charities = charitiesLoad.data ?? NO_CHARITIES;
   const [openId, setOpenId] = useState<number | 'new' | null>(null);
   const [message, setMessage] = useState<Message | null>(null);
 
@@ -579,7 +453,7 @@ function MyExpenses() {
       >
         My Expense Reports
       </PageTitle>
-      {reports.error ?? refsLoad.error ?? charitiesLoad.error ? <Notice tone="error">{reports.error ?? refsLoad.error ?? charitiesLoad.error}</Notice> : null}
+      {reports.error ?? refsLoad.error ? <Notice tone="error">{reports.error ?? refsLoad.error}</Notice> : null}
 
       {returned.map(({ report, total }) => (
         <section key={report.id} role="alert" aria-labelledby={`returned-${report.id}`} className="mb-4 overflow-hidden rounded border-4 border-brand-red bg-white">
@@ -644,7 +518,6 @@ function MyExpenses() {
               key={String(openId)}
               detail={selected ?? null}
               refs={refs}
-              charities={charities}
               today={today}
               onCancel={() => open(null)}
               onSaved={async (saved) => {
@@ -662,7 +535,7 @@ function MyExpenses() {
           </Panel>
         ) : selected ? (
           <Panel title={`Expense report #${selected.report.id}`} actions={<Button size="sm" variant="secondary" onClick={() => open(null)}>Close</Button>}>
-            <ExpenseSheetView detail={selected} refs={refs} charities={charities} />
+            <ExpenseSheetView detail={selected} refs={refs} />
           </Panel>
         ) : null}
       </div>

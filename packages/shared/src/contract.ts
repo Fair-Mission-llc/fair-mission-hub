@@ -113,7 +113,7 @@ import type {
 } from './types';
 import type { BudgetAlert, BudgetWindowState } from './budget';
 import type { ConcludedBudgetPerformance } from './dues';
-import type { CadenceConfigInput } from './meetings';
+import type { CadenceConfigInput, MeetingCustomizationInput } from './meetings';
 import type { DistributionGroup } from './messaging';
 import type { FeatureFlagChanges, FeatureFlagName } from './features';
 import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
@@ -3354,6 +3354,14 @@ export interface DataService {
      * meeting. Nothing is written when it rejects.
      */
     linkGoogleDrive(actorId: number, meetingId: number, minutesUrl: string | null, flyerUrl: string | null): Promise<Meeting>;
+    /**
+     * Sprint 11 Revision 17.0: the Recurring Meetings card drawer ([ ⚙️ Customize Agenda & Location ]). Saves one
+     * meeting's Agenda and Location (cleanMeetingCustomization: INVALID_INPUT). `actorId` must keep the council's
+     * meeting cadence: an Active Admin or Grand Knight of the meeting's council, or an Active Super Admin
+     * (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED). Rejects MEMBER_NOT_FOUND, MEETING_NOT_FOUND, and MEETING_ALREADY_HELD
+     * once the meeting's date has passed. Nothing is written when it rejects.
+     */
+    customizeAgendaAndLocation(actorId: number, meetingId: number, input: MeetingCustomizationInput): Promise<Meeting>;
     /**
      * Meeting hours for a member: every invitation marked Attended = 1, each worth its meeting's
      * Time End - Time Start, oldest first with a running total. Optional inclusive date range.

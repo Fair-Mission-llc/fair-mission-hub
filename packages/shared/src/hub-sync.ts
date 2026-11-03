@@ -102,7 +102,7 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'lessonsLearned.remove', 'lookups.remove', 'lookups.removeCouncilSpecific', 'media.deleteSmartAlbum',
   'media.getLibrary', 'media.listSmartAlbums', 'media.saveSmartAlbum', 'media.uploadToVault',
   'meetings.addAgendaLine', 'meetings.applyAgendaBlueprint', 'meetings.castAnonymousMobileVote',
-  'meetings.closeLiveAssemblyConsole', 'meetings.editAgendaLine', 'meetings.finalizeProposedMotionVote',
+  'meetings.closeLiveAssemblyConsole', 'meetings.customizeAgendaAndLocation', 'meetings.editAgendaLine', 'meetings.finalizeProposedMotionVote',
   'meetings.geofencedCheckIn', 'meetings.getLiveAssemblyState', 'meetings.getMeetingAgenda',
   'meetings.launchLiveMeeting', 'meetings.launchSecretSmartphoneBallot', 'meetings.linkGoogleDrive',
   'meetings.linkHandTallyTransaction', 'meetings.logLiveAttendanceOverride', 'meetings.populateAnnualCadence',

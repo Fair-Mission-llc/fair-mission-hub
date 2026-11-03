@@ -24,6 +24,9 @@
 // 'Financial Views' accordion (FINANCIAL_VIEW_ITEMS), and the FS/GK Compliance Endorsements folder has its own link
 // (it opens the Financial Secretary or Grand Knight Desk with that folder open, DESK_FOLDER_PARAM). Labels end in an
 // ellipsis instead of spilling past the rail (.sidebar-truncate).
+// Sprint 11 Revision 17.0: the accordion splits into '📊 FINANCIAL REPORTS' and '⚡ RECORDED REGISTRIES'; every link
+// reads as plain words (sidebarLinkLabel: no icons, no brackets) and truncates; the endorsements link moved into the
+// Charitable Grants Registry page as a tab.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -49,14 +52,14 @@ import {
   type SessionUser,
   type TenantType,
   ADVISORY_PANEL_HREF,
-  CHARITY_ENDORSEMENT_FOLDER_TITLE,
-  deskDrawersFor,
+  FINANCIAL_REPORTS_SECTION_TITLE,
   FINANCIAL_VIEWS_ACCORDION_TITLE,
+  RECORDED_REGISTRIES_SECTION_TITLE,
   ADVISORY_PANEL_TITLE,
   LEGAL_NOTICES,
   LEGAL_DOCUMENT_ROUTE,
   isLegalDocumentId,
-  plainNavLabel,
+  sidebarLinkLabel,
   type LegalNoticeId,
   GENERAL_LEDGER_TITLE,
   TREASURER_LEDGER_AUDIT_TITLE,
@@ -64,7 +67,6 @@ import {
   DISBURSED_CHECK_REGISTRY_TITLE,
   CHARITABLE_GRANTS_REGISTRY_TITLE,
 } from '@kofc/shared';
-import { DESK_FOLDER_PARAM } from '@/components/DeskDrawers';
 import { Drawer } from '@/components/Drawer';
 import { Markdown } from '@/components/Markdown';
 import { cx } from '@/components/ui';
@@ -307,7 +309,7 @@ function ExternalNavLink({ href, label, hint }: Omit<ExternalNavEntry, 'visible'
         title={hint}
         className="flex items-center gap-2 border-l-8 border-transparent py-1.5 pl-6 pr-3 text-sm hover:underline"
       >
-        {plainNavLabel(label)}
+        <span className="sidebar-truncate">{sidebarLinkLabel(label)}</span>
         <span className="sr-only">(opens in a new tab)</span>
       </a>
     </li>
@@ -347,51 +349,60 @@ function NavLink({ item, current, tenant, nested = false }: { item: PortalNavIte
   return (
     <li>
       <Link href={href} title={whiteLabel(hint, tenant)} aria-current={current ? 'page' : undefined} className={cx(navLinkClass(current), nested && 'pl-10 text-xs')}>
-        <span className="sidebar-truncate">{plainNavLabel(whiteLabel(label, tenant))}</span>
+        <span className="sidebar-truncate">{sidebarLinkLabel(whiteLabel(label, tenant))}</span>
       </Link>
     </li>
   );
 }
 
-/** Sprint 11 Revision 16.0: the Finances links that fold into the 'Financial Views' accordion, in display order. */
-export const FINANCIAL_VIEW_ITEMS: readonly PortalNavItem[] = [
-  'finance/ledger',
-  'finance/balance-sheet',
-  'finance/dashboard',
-  'finance/audit',
+/**
+ * Sprint 11 Revision 17.0: the Financial Views accordion in two halves, each in display order. Reports read the books;
+ * registries list what was recorded, audited and paid. The FS/GK Compliance Endorsements folder is a tab inside the
+ * Charitable Grants Registry page now, so it has no sidebar link of its own.
+ */
+export const FINANCIAL_REPORT_ITEMS: readonly PortalNavItem[] = ['finance/dashboard', 'finance/balance-sheet', 'finance/ledger', 'finance/audit'];
+export const RECORDED_REGISTRY_ITEMS: readonly PortalNavItem[] = [
   'finance/treasurer-desk',
   'expenses/audit',
   'expenses/disbursements',
   'charities/queue',
   'donations',
 ];
+/** Every link the accordion holds. */
+export const FINANCIAL_VIEW_ITEMS: readonly PortalNavItem[] = [...FINANCIAL_REPORT_ITEMS, ...RECORDED_REGISTRY_ITEMS];
 
-/**
- * The FS/GK Compliance Endorsements link (Sprint 11 Revision 16.0): the endorsement folder of the Financial Secretary
- * Desk, or of the Grand Knight Desk, whichever the viewer has; null when they have neither.
- */
-function endorsementLink(user: SessionUser, features: FeatureFlags, tenant: TenantType): { href: string; rowId: string } | null {
-  for (const desk of ['financial-secretary', 'grand-knight'] as const) {
-    const spec = deskDrawersFor(user, desk, user.councilId, features, tenant).find((d) => d.id === 'charity-endorsements');
-    if (spec) return { href: `/dashboard?${DESK_FOLDER_PARAM}=${encodeURIComponent(spec.rowId)}#${desk}`, rowId: spec.rowId };
-  }
-  return null;
-}
-
-/** The 'Financial Views' accordion: the financial links of the Finances pillar, open while one of them is the page. */
-function FinancialViewsAccordion({
+/** One half of the accordion: its heading, then its links (plain text, ellipsis past the rail). */
+function FinancialViewsSection({
+  title,
   items,
   pathname,
   hash,
   tenant,
-  endorsements,
 }: {
+  title: string;
   items: readonly PortalNavItem[];
   pathname: string;
   hash: string;
   tenant: TenantType;
-  endorsements: { href: string; rowId: string } | null;
 }) {
+  if (items.length === 0) return null;
+  const headingId = `financial-views-${title.replace(/[^A-Za-z]+/g, '-').toLowerCase()}`;
+  return (
+    <li>
+      <p id={headingId} className="sidebar-truncate py-1 pl-8 pr-3 text-[0.6875rem] font-bold uppercase tracking-wide" title={title}>
+        {title}
+      </p>
+      <ul aria-labelledby={headingId} className="flex flex-col">
+        {items.map((item) => (
+          <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} nested />
+        ))}
+      </ul>
+    </li>
+  );
+}
+
+/** The 'Financial Views' accordion: Financial Reports and Recorded Registries, open while one of their links is the page. */
+function FinancialViewsAccordion({ items, pathname, hash, tenant }: { items: readonly PortalNavItem[]; pathname: string; hash: string; tenant: TenantType }) {
   const holdsCurrent = items.some((item) => isCurrent(pathname, item, hash));
   const [open, setOpen] = useState(holdsCurrent);
   useEffect(() => {
@@ -402,16 +413,20 @@ function FinancialViewsAccordion({
       <details open={open} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
         <summary className="sidebar-truncate cursor-pointer list-inside py-1.5 pl-6 pr-3 text-sm font-bold hover:underline">{FINANCIAL_VIEWS_ACCORDION_TITLE}</summary>
         <ul aria-label={FINANCIAL_VIEWS_ACCORDION_TITLE} className="flex flex-col">
-          {items.map((item) => (
-            <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} nested />
-          ))}
-          {endorsements ? (
-            <li>
-              <Link href={endorsements.href} title="Endorse approved charity grants for their check" className={cx(navLinkClass(false), 'pl-10 text-xs')}>
-                <span className="sidebar-truncate">{plainNavLabel(whiteLabel(CHARITY_ENDORSEMENT_FOLDER_TITLE, tenant))}</span>
-              </Link>
-            </li>
-          ) : null}
+          <FinancialViewsSection
+            title={FINANCIAL_REPORTS_SECTION_TITLE}
+            items={FINANCIAL_REPORT_ITEMS.filter((i) => items.includes(i))}
+            pathname={pathname}
+            hash={hash}
+            tenant={tenant}
+          />
+          <FinancialViewsSection
+            title={RECORDED_REGISTRIES_SECTION_TITLE}
+            items={RECORDED_REGISTRY_ITEMS.filter((i) => items.includes(i))}
+            pathname={pathname}
+            hash={hash}
+            tenant={tenant}
+          />
         </ul>
       </details>
     </li>
@@ -472,7 +487,7 @@ function GalleryNode({ pathname, hash, tenant }: { pathname: string; hash: strin
               }}
               className={cx(navLinkClass(current), 'pl-10 text-xs')}
             >
-              {plainNavLabel(whiteLabel(v.label, tenant))}
+              <span className="sidebar-truncate">{sidebarLinkLabel(whiteLabel(v.label, tenant))}</span>
             </Link>
           </li>
         );
@@ -585,18 +600,13 @@ function FinancesEntries({
   pathname,
   hash,
   tenant,
-  user,
-  features,
 }: {
   items: readonly PortalNavItem[];
   pathname: string;
   hash: string;
   tenant: TenantType;
-  user: SessionUser;
-  features: FeatureFlags;
 }) {
   const views = FINANCIAL_VIEW_ITEMS.filter((item) => items.includes(item));
-  const endorsements = endorsementLink(user, features, tenant);
   return (
     <>
       {items
@@ -604,7 +614,7 @@ function FinancesEntries({
         .map((item) => (
           <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
         ))}
-      {views.length > 0 || endorsements ? <FinancialViewsAccordion items={views} pathname={pathname} hash={hash} tenant={tenant} endorsements={endorsements} /> : null}
+      {views.length > 0 ? <FinancialViewsAccordion items={views} pathname={pathname} hash={hash} tenant={tenant} /> : null}
     </>
   );
 }
@@ -649,7 +659,7 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
                 aria-current={pathname === ADVISORY_PANEL_HREF ? 'page' : undefined}
                 className={navLinkClass(pathname === ADVISORY_PANEL_HREF)}
               >
-                {plainNavLabel(ADVISORY_PANEL_TITLE)}
+                <span className="sidebar-truncate">{sidebarLinkLabel(ADVISORY_PANEL_TITLE)}</span>
               </Link>
             </li>
           ) : null}
@@ -659,12 +669,12 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
           const headingId = `nav-group-${group.id}`;
           return (
             <div key={group.id} className="border-t border-t-gold pb-2 pt-1 first:border-t-0 first:pt-0">
-              <h2 id={headingId} className="px-4 py-2 text-xs font-bold uppercase tracking-wide">
-                {plainNavLabel(whiteLabel(group.label, tenant))}
+              <h2 id={headingId} className="sidebar-truncate px-4 py-2 text-xs font-bold uppercase tracking-wide">
+                {sidebarLinkLabel(whiteLabel(group.label, tenant))}
               </h2>
               <ul aria-labelledby={headingId} className="flex flex-col">
                 {group.id === 'finances' ? (
-                  <FinancesEntries items={group.entries.map((e) => e.item)} pathname={pathname} hash={hash} tenant={tenant} user={user} features={features} />
+                  <FinancesEntries items={group.entries.map((e) => e.item)} pathname={pathname} hash={hash} tenant={tenant} />
                 ) : (
                   group.entries.map(({ item }) => <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />)
                 )}
