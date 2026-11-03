@@ -32,7 +32,7 @@ export const MEETING_PIN_MAX_ATTEMPTS = 5;
 /** Longest LiveAttendance.photo_url and Meeting.photo_url (VARCHAR(2000)). */
 export const MEETING_PHOTO_URL_MAX_LENGTH = 2000;
 /** The phone's check-in button, word for word. */
-export const CHECK_IN_BUTTON_LABEL = '📍 Check In to Meeting';
+export const CHECK_IN_BUTTON_LABEL = 'Check In to Meeting';
 /**
  * Sprint 9 Revision 5.0: GPS check-in is hidden from every screen. The phone's check-in drawer goes straight to the
  * meeting PIN, and the web Meeting Check-In card shows only the PIN. The location math below, the stored meeting point

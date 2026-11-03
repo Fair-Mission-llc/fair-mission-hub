@@ -225,7 +225,7 @@ export const BULLETIN_BODY_FORMAT_LABELS: Record<BulletinBodyFormat, string> = {
   PLAIN: 'Plain text as typed',
 };
 /** The title of the Home and Member Actions feed. */
-export const BULLETIN_FEED_TITLE = '[ 📰 Latest Council Newsletters & Bulletins ]';
+export const BULLETIN_FEED_TITLE = 'Latest Council Newsletters & Bulletins';
 /** How many bulletins the feed shows, newest first. */
 export const BULLETIN_FEED_LIMIT = 3;
 

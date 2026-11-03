@@ -53,7 +53,7 @@ export function MeritTierInfo({ council }: { council: Council }) {
       <ul className="mt-1 flex flex-col gap-0.5">
         {rules.map((r) => (
           <li key={r.label}>
-            <span aria-hidden>{r.icon}</span> <span className="font-bold">{r.label}</span> - {r.rule}
+            <span className="font-bold">{r.label}</span> - {r.rule}
           </li>
         ))}
       </ul>

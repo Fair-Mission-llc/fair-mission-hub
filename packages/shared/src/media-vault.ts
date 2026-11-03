@@ -289,7 +289,7 @@ export const mayDeleteSmartAlbum = (actor: MemberWriteActor, album: Pick<MediaSm
 // ---- the Media & Memory Center's two views (Sprint 10 Revision 1.0) ----
 
 /** The sidebar's top-level gallery node and the gallery page's title. */
-export const COUNCIL_PHOTO_GALLERY_TITLE = '📸 Media & Memory Center';
+export const COUNCIL_PHOTO_GALLERY_TITLE = 'Media & Memory Center';
 
 /** The gallery's two views: looking at photos and albums, or adding photos and saving albums. */
 export type GalleryViewId = 'browse' | 'manage';
@@ -297,7 +297,7 @@ export type GalleryViewId = 'browse' | 'manage';
 // Sprint 11 Revision 2.0: 'Browse Albums' is '📸 Browse Gallery' (tabs: Event/Meeting, Year, Album Picker) and the
 // 'Gallery Management Center' is the 'Gallery Administration Hub'.
 export const GALLERY_VIEWS: readonly { id: GalleryViewId; label: string; hint: string }[] = [
-  { id: 'browse', label: '📸 Browse Gallery', hint: 'Look through the council photos by event or meeting, by year, or by album, and play a slideshow' },
+  { id: 'browse', label: 'Browse Gallery', hint: 'Look through the council photos by event or meeting, by year, or by album, and play a slideshow' },
   { id: 'manage', label: 'Gallery Administration Hub', hint: 'Upload photos, pick selections and save them as an album' },
 ];
 

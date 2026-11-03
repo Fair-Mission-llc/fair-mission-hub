@@ -80,14 +80,13 @@ function SpineFolder({ spec, status, selected, onOpen }: { spec: DeskDrawerSpec;
     >
       <span className="flex items-start justify-between gap-2">
         <span className="font-serif font-bold leading-tight">
-          {spec.featured ? <span aria-hidden="true">⭐ </span> : null}
           {spec.title}
         </span>
         {status?.count != null ? (
           <span className={cx('rounded px-2 py-0.5 text-sm font-bold', status.count > 0 && !isReferenceDrawer(spec) ? 'bg-brand-red text-white' : 'bg-line text-navy')}>{status.count}</span>
         ) : null}
       </span>
-      {alert ? <span className="text-xs font-bold text-brand-red">🔴 {alertText}</span> : null}
+      {alert ? <span className="text-xs font-bold text-brand-red">{alertText}</span> : null}
     </button>
   );
 }
@@ -192,7 +191,6 @@ export function DeskBlotter({
           >
             {section.label ? (
               <h3 className={cx('font-serif text-sm font-bold uppercase', section.id === 'priority' ? 'text-brand-red' : 'text-navy')}>
-                {section.id === 'priority' ? '🔴 ' : ''}
                 {section.label}
               </h3>
             ) : null}

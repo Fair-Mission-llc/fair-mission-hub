@@ -28,8 +28,8 @@ import { concludedRevenueAccounts } from './treasurer-desk';
 import type { Donation, Event, EventCollectionStatus, GLAccount } from './types';
 import { defineWorkflow, nextWorkflowState } from './workflow';
 
-export const CONCLUDE_EVENT_SESSION_LABEL = '[ 🛑 Conclude Event Session & Lock Logs ]';
-export const BATCH_CODER_TITLE = '🧮 High-Volume Batch Transaction Coder';
+export const CONCLUDE_EVENT_SESSION_LABEL = 'Conclude Event Session & Lock Logs';
+export const BATCH_CODER_TITLE = 'High-Volume Batch Transaction Coder';
 
 /**
  * Sprint 10 Revision 3.0: the Lump-Sum Financial Override row at the top of the batch coder. The Treasurer posts one
@@ -38,7 +38,7 @@ export const BATCH_CODER_TITLE = '🧮 High-Volume Batch Transaction Coder';
  * or an activity, with the payment method on both lines). It replaces the '💰 Log Concluded Event Revenues' card that
  * sat on the Financial Management Center.
  */
-export const LUMP_SUM_OVERRIDE_TITLE = '🧾 Lump-Sum Financial Override';
+export const LUMP_SUM_OVERRIDE_TITLE = 'Lump-Sum Financial Override';
 export const LUMP_SUM_OVERRIDE_MODES = [
   { id: 'cash-bag', label: 'Corrected cash bag count', kinds: ['cash'] },
   { id: 'electronic-block', label: 'Bulk electronic revenue block', kinds: ['card', 'qr'] },
@@ -50,9 +50,9 @@ export function lumpSumMethodChoices<T extends { kind: DonationMethodKind }>(opt
   const kinds: readonly DonationMethodKind[] = LUMP_SUM_OVERRIDE_MODES.find((m) => m.id === mode)!.kinds;
   return options.filter((o) => kinds.includes(o.kind));
 }
-export const SELECT_ALL_UNCODED_LABEL = '[✓ Select All Un-coded Transactions]';
+export const SELECT_ALL_UNCODED_LABEL = 'Select All Un-coded Transactions';
 export const BATCH_CODE_BUTTON_LABEL = 'Code selected to this Revenue line';
-export const CASH_AUDIT_PANEL_TITLE = '💵 Cash Box Audit Closure Panel';
+export const CASH_AUDIT_PANEL_TITLE = 'Cash Box Audit Closure Panel';
 export const CLOSE_CASH_AUDIT_LABEL = 'Close cash audit & lock';
 export const OVER_SHORT_LINE_NAME = 'Over/Short Reconciliation Line';
 

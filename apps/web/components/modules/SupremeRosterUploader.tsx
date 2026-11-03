@@ -74,9 +74,6 @@ export function SupremeRosterUploader({ councilId }: { councilId: number }) {
             dragging ? 'border-gold bg-gold/20' : 'border-navy bg-white hover:bg-gold/10',
           )}
         >
-          <span className="text-3xl" aria-hidden="true">
-            📥
-          </span>
           <span className="font-serif text-lg font-bold text-navy">Drop the Supreme roster CSV here, or click to choose it</span>
           <span className="text-sm text-muted">
             {rows ? `${rows.length} roster row${rows.length === 1 ? '' : 's'} read. New members get the New Member badge and the welcome email.` : "Supreme Headquarters' export, or the Excel roster template saved as CSV."}

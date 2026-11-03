@@ -27,7 +27,7 @@ export const CALENDAR_FEED_REFRESH = 'PT1H';
 /** How far back the feed reaches, so last month's shifts stay on the calendar. */
 export const CALENDAR_FEED_LOOKBACK_DAYS = 30;
 /** The card title on the web calendar page. */
-export const CALENDAR_SYNC_CARD_TITLE = '🗓️ Sync with Your Phone Calendar';
+export const CALENDAR_SYNC_CARD_TITLE = 'Sync with Your Phone Calendar';
 
 /** One invited meeting and the member's answer to the invitation, if known. */
 export interface CalendarFeedMeeting {

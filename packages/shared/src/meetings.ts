@@ -301,15 +301,15 @@ export type CadenceCardStatus = 'held' | 'past' | 'scheduled' | 'released' | 'hi
 
 /** The badge text of each card status. */
 export const CADENCE_CARD_BADGES: Readonly<Record<CadenceCardStatus, string>> = {
-  held: '[ 🟢 Held ]',
-  past: '[ 🛑 Past ]',
-  scheduled: '[ ⏳ Scheduled ]',
+  held: 'Held',
+  past: 'Past',
+  scheduled: 'Scheduled',
   released: 'Invitations released',
   hidden: 'Hidden until',
 };
 
 /** The drawer action on an upcoming card. */
-export const CUSTOMIZE_AGENDA_LOCATION_LABEL = '[ ⚙️ Customize Agenda & Location ]';
+export const CUSTOMIZE_AGENDA_LOCATION_LABEL = 'Customize Agenda & Location';
 
 /**
  * A card's status at the moment `now`. A card is over once its end time (HH:MM[:SS], local) has passed: a meeting on

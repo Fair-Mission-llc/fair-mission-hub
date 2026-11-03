@@ -387,7 +387,7 @@ function CadenceEngine() {
                       <Td>
                         <div className="flex justify-end gap-1">
                           <Button size="sm" variant="secondary" onClick={() => setSelectedId(c.id)}>
-                            [ 👁️ View Scheduled Releases ]
+                            View Scheduled Releases
                           </Button>
                           <Button size="sm" variant="secondary" onClick={() => setEditing(c)}>
                             Edit

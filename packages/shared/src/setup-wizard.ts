@@ -54,7 +54,7 @@ export const SETUP_WIZARD_STEPS: readonly SetupWizardStep[] = [
 ];
 
 export const SETUP_WIZARD_TITLE = 'Council Setup Wizard';
-export const CLONE_FOUNDING_TEMPLATE_LABEL = '⚡ Clone Founding Template';
+export const CLONE_FOUNDING_TEMPLATE_LABEL = 'Clone Founding Template';
 export const ACTIVATE_PRACTICE_SANDBOX_LABEL = 'Activate Safe Practice Sandbox';
 export const PURGE_PRACTICE_SANDBOX_LABEL = 'Practice Sandbox';
 

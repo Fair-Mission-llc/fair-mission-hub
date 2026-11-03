@@ -385,7 +385,7 @@ function EventDonationLedger({ summaries, eventId, onPick }: { summaries: EventD
                 {event.EventName}
                 {fundsManaged ? (
                   <span className="mt-1 block">
-                    <Pill tone="gold">✓ Automatically Logged to Treasury Ledger</Pill>
+                    <Pill tone="gold">Automatically Logged to Treasury Ledger</Pill>
                   </span>
                 ) : null}
               </Td>

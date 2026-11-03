@@ -26,14 +26,14 @@ import type { CharitableRequest } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
 
-export const CHARITY_REQUEST_STEP_LABEL = '[ 📋 Member Charity Request ]';
-export const CHARITY_ENDORSEMENT_STEP_LABEL = '[ ✍️ FS/GK Compliance Endorsement ]';
-export const CHARITY_SETTLEMENT_STEP_LABEL = '[ ⛪ Treasurer Check Settlement ]';
+export const CHARITY_REQUEST_STEP_LABEL = 'Member Charity Request';
+export const CHARITY_ENDORSEMENT_STEP_LABEL = 'FS/GK Compliance Endorsement';
+export const CHARITY_SETTLEMENT_STEP_LABEL = 'Treasurer Check Settlement';
 /** Sprint 8S Revision 10.6: the working folder of the endorse button on the FS and GK Desks (the workflow drawer is read only). */
 export const CHARITY_ENDORSEMENT_FOLDER_TITLE = 'FS/GK Compliance Endorsements';
 
 /** The endorsement button. */
-export const ENDORSE_CHARITY_REQUEST_LABEL = '✍️ Endorse for payment';
+export const ENDORSE_CHARITY_REQUEST_LABEL = 'Endorse for payment';
 
 /** The roles whose holders endorse an approved request for payment (with the Super Admins). */
 export const CHARITY_ENDORSER_ROLE_NAMES = ['Financial Secretary', 'Grand Knight', 'Deputy Grand Knight'] as const;
@@ -182,7 +182,7 @@ export function buildCharityPipeline(
   const waiting = requests ? own.reduce((sum, stage) => sum + (count(stage) ?? 0), 0) : null;
   const paid = count('paid');
   const ownLabel = own.includes('settlement') ? 'check' : 'endorsement';
-  const workIn = own.includes('settlement') ? "the '[ 🕊️ Charitable Grants Registry ]' folder" : `the ${CHARITY_ENDORSEMENT_FOLDER_TITLE} folder`;
+  const workIn = own.includes('settlement') ? "the 'Charitable Grants Registry' folder" : `the ${CHARITY_ENDORSEMENT_FOLDER_TITLE} folder`;
   const headline =
     requests === null
       ? 'Loading the council’s charity requests…'

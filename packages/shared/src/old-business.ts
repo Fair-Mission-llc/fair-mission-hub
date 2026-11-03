@@ -19,7 +19,7 @@ import type { Meeting } from './types';
 /** The heading the launch writes above the carried items in the minutes draft. */
 export const OLD_BUSINESS_HEADING = '# Old Business (carried from last month)';
 /** The Home card's title (Sprint 8S Revision 3; "Today's Event Agenda" until then). */
-export const UPCOMING_EVENT_AGENDA_TITLE = '[ 📅 Upcoming Event Agenda ]';
+export const UPCOMING_EVENT_AGENDA_TITLE = 'Upcoming Event Agenda';
 /** How many days the Home card's agenda looks ahead, today included. */
 export const UPCOMING_AGENDA_DAYS = 7;
 /** The longest item text kept, so a runaway line cannot flood the card or the draft. */

@@ -131,7 +131,7 @@ function InactivitySweepCard({ council }: { council: Council }) {
       </p>
       {canAdministerCouncil(user, council.id) ? (
         <Button variant="secondary" disabled={sweeping} onClick={() => void sweep()}>
-          {sweeping ? 'Checking…' : '🔍 Check for Inactive Members'}
+          {sweeping ? 'Checking…' : 'Check for Inactive Members'}
         </Button>
       ) : (
         <p className="text-sm text-muted">Only the council&apos;s Admins and Super Admins run the sweep.</p>
@@ -196,7 +196,7 @@ function CustomGuidesCard({ council }: { council: Council }) {
       <div className="flex flex-wrap gap-3">
         {CUSTOM_GUIDE_BUTTONS.map(({ guide, label }) => (
           <Button key={guide} variant="gold" disabled={busy !== null} onClick={() => void generate(guide)}>
-            {busy === guide ? 'Compiling…' : `📥 Generate Custom ${label} PDF`}
+            {busy === guide ? 'Compiling…' : `Generate Custom ${label} PDF`}
           </Button>
         ))}
       </div>

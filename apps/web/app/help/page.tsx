@@ -261,7 +261,7 @@ const helpSections = (t: CouncilWideSettings): Section[] => [
         q: 'What is the Shifts awaiting hours list?',
         a: [
           'Volunteers who worked a past shift (not no-shows) and have not logged hours, with their phone number.',
-          `From day ${t.reminder_delay_days} the row turns red as ⚠ Overdue and shows the log-by date. Rows past ${t.volunteer_logging_window_days} days show Closed because the hours can no longer be recorded.`,
+          `From day ${t.reminder_delay_days} the row turns red as Overdue and shows the log-by date. Rows past ${t.volunteer_logging_window_days} days show Closed because the hours can no longer be recorded.`,
         ],
       },
       {

@@ -200,9 +200,9 @@ describe('the collapsible sidebar and the Media & Memory Center node', () => {
   });
 
   it('pins the gallery node with its two views and a persistent arrow toggle', () => {
-    expect(COUNCIL_PHOTO_GALLERY_TITLE).toBe('📸 Media & Memory Center');
+    expect(COUNCIL_PHOTO_GALLERY_TITLE).toBe('Media & Memory Center');
     // Sprint 11 Revision 2.0: renamed.
-    expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['📸 Browse Gallery', 'Gallery Administration Hub']);
+    expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['Browse Gallery', 'Gallery Administration Hub']);
     expect(galleryViewFromAnchor('#manage')).toBe('manage');
     expect(galleryViewFromAnchor('#browse')).toBe('browse');
     expect(galleryViewFromAnchor('')).toBe('browse');

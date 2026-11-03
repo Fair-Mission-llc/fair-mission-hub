@@ -92,7 +92,7 @@ export function BudgetCategoryCharts({ progress }: { progress: BudgetYearPerform
                   </span>
                   <span className="tabular-nums">
                     {formatMoney(s.actual)} of {formatMoney(s.approved)}
-                    {s.overBudget ? <span className="ml-2 font-bold text-brand-red">✖ Over</span> : null}
+                    {s.overBudget ? <span className="ml-2 font-bold text-brand-red">Over</span> : null}
                   </span>
                 </div>
                 <div className="relative h-3 w-full">
@@ -141,7 +141,7 @@ export function BudgetCategoryCharts({ progress }: { progress: BudgetYearPerform
                 <td className="px-3 py-2 text-right tabular-nums">{formatMoney(s.actual)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">
                   {s.percentUsed === null ? '—' : formatPercent(s.percentUsed)}
-                  {s.overBudget ? <span className="ml-2 font-bold text-brand-red">✖ Over</span> : null}
+                  {s.overBudget ? <span className="ml-2 font-bold text-brand-red">Over</span> : null}
                 </td>
               </tr>
             ))}

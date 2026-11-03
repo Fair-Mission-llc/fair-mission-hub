@@ -77,7 +77,7 @@ export function DeskManualHeader({ manual: token, show = 'both' }: { manual: Des
       <div className="flex flex-wrap items-center gap-2">
         {show !== 'search' ? (
           <a href={pdfHref} target="_blank" rel="noopener noreferrer" className="rounded border-2 border-navy bg-navy px-3 py-1 text-sm font-bold text-white">
-            📘 {manual.title} (PDF)
+            {manual.title} (PDF)
           </a>
         ) : null}
         {show !== 'pdf' ? (

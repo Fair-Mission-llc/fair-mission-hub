@@ -132,7 +132,7 @@ describe('4. the custom manual banners', () => {
     const entries = [...script.matchAll(/^    '([a-z_]+)': \('([^']+)', r'/gm)].map((m) => [m[1], m[2]]);
     expect(entries.map(([name]) => name)).toEqual([...FEATURE_FLAG_NAMES]);
     for (const [name, label] of entries) expect(label).toBe(FEATURE_FLAG_LABELS[name as keyof typeof FEATURE_FLAG_LABELS].label);
-    expect(script).toContain("DISABLED_BANNER = '⚠️ This premium module is currently disabled'");
+    expect(script).toContain("DISABLED_BANNER = 'This premium module is currently disabled'");
     expect(script).toContain("'--disabled-modules'");
     // A generic guide (no --disabled-modules) comes back unchanged.
     expect(script).toContain('if not disabled:\n        return markdown');

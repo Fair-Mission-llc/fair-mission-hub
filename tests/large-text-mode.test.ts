@@ -79,7 +79,7 @@ describe('large text layout tokens', () => {
     expect(prefersLargeText({})).toBe(false);
     expect(prefersLargeText({ flag_large_text_mode: 0 })).toBe(false);
     expect(prefersLargeText({ flag_large_text_mode: 1 })).toBe(true);
-    expect(LARGE_TEXT_TOGGLE_LABEL).toBe('[ 👓 Enable Large Text Layout Mode ]');
+    expect(LARGE_TEXT_TOGGLE_LABEL).toBe('Enable Large Text Layout Mode');
   });
 });
 

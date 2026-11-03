@@ -35,11 +35,11 @@ describe('1. Super Admins on the Admin Desk', () => {
 
 describe('2. Plain titles, headings and notices', () => {
   it('strips icons and brackets from a whole title, and from one piece of a longer one', () => {
-    expect(plainTitle('[ 🚗 Open Shifts Needing Volunteers ] (3)')).toBe('Open Shifts Needing Volunteers (3)');
-    expect(plainTitle('🔎 Semiannual Trustee Audit Desk (Form 1295)')).toBe('Semiannual Trustee Audit Desk (Form 1295)');
+    expect(plainTitle('\u005B \u{1F697} Open Shifts Needing Volunteers \u005D (3)')).toBe('Open Shifts Needing Volunteers (3)');
+    expect(plainTitle('\u{1F50E} Semiannual Trustee Audit Desk (Form 1295)')).toBe('Semiannual Trustee Audit Desk (Form 1295)');
     expect(plainTextPiece('🔊 ')).toBe('');
     expect(plainTextPiece('Total: ')).toBe('Total: ');
-    expect(plainTextPiece('[ 📥 My Charity Requests ] ')).toBe(' My Charity Requests ');
+    expect(plainTextPiece('\u005B \u{1F4E5} My Charity Requests \u005D ')).toBe(' My Charity Requests ');
   });
 
   it('draws page titles, panel headings, notices, drawers and desk drawers through the clean-up', () => {

@@ -396,7 +396,7 @@ export function AdvisoryPanelWorkspace() {
       {owner ? (
         <div className="flex justify-end">
           <Button variant="gold" onClick={() => setInviting(true)} aria-expanded={inviting}>
-            ✉️ {INVITE_PANELIST_LABEL}
+            {INVITE_PANELIST_LABEL}
           </Button>
         </div>
       ) : null}

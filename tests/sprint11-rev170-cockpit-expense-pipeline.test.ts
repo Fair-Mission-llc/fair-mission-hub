@@ -51,7 +51,7 @@ describe('0. schema', () => {
 
 describe('1. Super Admin header and Recurring Meetings', () => {
   it('draws the Super Admin Desk button for Super Admin sessions only', () => {
-    expect(SUPER_ADMIN_HEADER_LINK_LABEL).toBe('[ 🛠️ Super Admin Desk ]');
+    expect(SUPER_ADMIN_HEADER_LINK_LABEL).toBe('Super Admin Desk');
     expect(SUPER_ADMIN_HEADER_HREF).toBe('/super-admin');
     expect(showsSuperAdminHeaderLink({ memberType: 'Super Admin' })).toBe(true);
     expect(showsSuperAdminHeaderLink({ memberType: 'Super Admin' }, true)).toBe(false);
@@ -71,16 +71,16 @@ describe('1. Super Admin header and Recurring Meetings', () => {
     expect(cadenceCardStatus('2026-09-20', meeting, at('2026-09-20T21:31'), '21:30')).toBe('held');
     expect(cadenceCardStatus('2026-10-06', null, at('2026-09-20T12:00'), '21:30')).toBe('scheduled');
     expect(cadenceCardStatus('2026-10-06', { InviteReleaseDate: '2026-10-01' }, at('2026-09-20T12:00'), '21:30')).toBe('hidden');
-    expect(CADENCE_CARD_BADGES.held).toBe('[ 🟢 Held ]');
-    expect(CADENCE_CARD_BADGES.past).toBe('[ 🛑 Past ]');
-    expect(CADENCE_CARD_BADGES.scheduled).toBe('[ ⏳ Scheduled ]');
+    expect(CADENCE_CARD_BADGES.held).toBe('Held');
+    expect(CADENCE_CARD_BADGES.past).toBe('Past');
+    expect(CADENCE_CARD_BADGES.scheduled).toBe('Scheduled');
     expect(cadenceCardCustomizable('released')).toBe(true);
     expect(cadenceCardCustomizable('hidden')).toBe(true);
     for (const s of ['held', 'past', 'scheduled'] as const) expect(cadenceCardCustomizable(s)).toBe(false);
   });
 
   it('puts the Customize Agenda & Location drawer on upcoming cards', () => {
-    expect(CUSTOMIZE_AGENDA_LOCATION_LABEL).toBe('[ ⚙️ Customize Agenda & Location ]');
+    expect(CUSTOMIZE_AGENDA_LOCATION_LABEL).toBe('Customize Agenda & Location');
     const page = read('apps/web/app/meetings/cadence/page.tsx');
     expect(page).toContain('cadenceCardStatus(date, meeting, now, end)');
     expect(page).toContain('<CustomizeMeetingDrawer');
@@ -197,10 +197,10 @@ describe('3. roster gate, Financial Views and widescreen tables', () => {
 
   it('splits the accordion into reports and registries, with plain link text', () => {
     // Sprint 11 Revision 17.5: the registries half is now the separate Financial Actions accordion.
-    expect(FINANCIAL_REPORTS_ACCORDION_TITLE).toBe('📊 FINANCIAL REPORTS');
-    expect(FINANCIAL_ACTIONS_ACCORDION_TITLE).toBe('⚡ FINANCIAL ACTIONS');
-    expect(sidebarLinkLabel('[ 👥 Council Roster ]')).toBe('Council Roster');
-    expect(sidebarLinkLabel('🛠️ Council Asset Management')).toBe('Council Asset Management');
+    expect(FINANCIAL_REPORTS_ACCORDION_TITLE).toBe('FINANCIAL REPORTS');
+    expect(FINANCIAL_ACTIONS_ACCORDION_TITLE).toBe('FINANCIAL ACTIONS');
+    expect(sidebarLinkLabel('Council Roster')).toBe('Council Roster');
+    expect(sidebarLinkLabel('Council Asset Management')).toBe('Council Asset Management');
     const sidebar = read('apps/web/components/Sidebar.tsx');
     expect(sidebar).toContain('FINANCIAL_REPORT_ITEMS');
     expect(sidebar).toContain('FINANCIAL_ACTION_ITEMS');

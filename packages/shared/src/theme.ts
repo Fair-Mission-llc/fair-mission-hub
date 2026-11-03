@@ -189,4 +189,4 @@ export const prefersLargeText = (member: { flag_large_text_mode?: number | null 
   member?.flag_large_text_mode === 1;
 
 /** The label of the Large Text Layout Mode switch on the web profile and the phone settings screen. */
-export const LARGE_TEXT_TOGGLE_LABEL = '[ 👓 Enable Large Text Layout Mode ]';
+export const LARGE_TEXT_TOGGLE_LABEL = 'Enable Large Text Layout Mode';

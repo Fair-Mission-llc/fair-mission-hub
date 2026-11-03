@@ -65,8 +65,8 @@ describe('the Honorary Expense lexicon', () => {
     const files = ['Schema.sql', 'data_dictionary.md', 'user_guide.md', ...sourceFiles('apps'), ...sourceFiles('packages/shared/src'), ...sourceFiles('docs'), ...sourceFiles('scripts')];
     const hits = files.filter((f) => !f.endsWith('ARCHITECTURAL_HISTORY.md') && banned.test(read(f)));
     expect(hits).toEqual([]);
-    expect(HONORARY_EXPENSE_BADGE).toBe('⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED');
-    expect(read('apps/web/app/expenses/page.tsx')).toContain('⚠️ I have no receipt (Honorary Expense)');
+    expect(HONORARY_EXPENSE_BADGE).toBe('HONORARY EXPENSE - NO RECEIPT ATTACHED');
+    expect(read('apps/web/app/expenses/page.tsx')).toContain('I have no receipt (Honorary Expense)');
   });
 });
 
@@ -95,7 +95,7 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     expect(on.find((r) => r.id === 'flag_mobile_elections')!.deployed).toBe(false);
     expect(featureDeploymentBadge({ deployed: true })).toBe(FEATURE_DEPLOYED_BADGE);
     expect(featureDeploymentBadge({ deployed: false })).toBe(FEATURE_OFF_BADGE);
-    expect([FEATURE_DEPLOYED_BADGE, FEATURE_OFF_BADGE]).toEqual(['🟢 DEPLOYED', '⚪ AVAILABLE / OFF']);
+    expect([FEATURE_DEPLOYED_BADGE, FEATURE_OFF_BADGE]).toEqual(['DEPLOYED', 'AVAILABLE / OFF']);
   });
 
   it('reads a missing biometric switch as on', () => {
@@ -169,7 +169,7 @@ describe('structured bulletins (pure)', () => {
     expect(BULLETIN_FEED_LIMIT).toBe(3);
     expect(bulletinTitle({ bulletin_month: '2026-09', headline: null })).toBe('September 2026 Newsletter');
     expect(bulletinTitle({ bulletin_month: '2026-09', headline: 'Fall Drive' })).toBe('Fall Drive');
-    expect(BULLETIN_FEED_TITLE).toBe('[ 📰 Latest Council Newsletters & Bulletins ]');
+    expect(BULLETIN_FEED_TITLE).toBe('Latest Council Newsletters & Bulletins');
   });
 
   it('leads Home with the feed (Sprint 8R: the Member Actions page is gone)', () => {

@@ -177,7 +177,7 @@ describe('2. financial calibration and messaging perimeters', () => {
 
 describe('3. the gallery', () => {
   it('renames the views and gives Browse Gallery its three tabs', () => {
-    expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['📸 Browse Gallery', 'Gallery Administration Hub']);
+    expect(GALLERY_VIEWS.map((v) => v.label)).toEqual(['Browse Gallery', 'Gallery Administration Hub']);
     expect(GALLERY_BROWSE_TABS.map((t) => t.label)).toEqual(['Event/Meeting', 'Year', 'Album Picker']);
     expect(GALLERY_SELECTION_TITLE).toBe('Pick Selections for Album');
     expect(GALLERY_SAVE_ALBUM_TITLE).toBe('Save as Album');
@@ -196,10 +196,10 @@ describe('3. the gallery', () => {
 
 describe('4. the sidebar and Council Lookups', () => {
   it('draws the sidebar as plain text with no icon glyphs', () => {
-    expect(plainNavLabel('📸 Media & Memory Center')).toBe('Media & Memory Center');
-    expect(plainNavLabel('🛠️ Council Asset Management')).toBe('Council Asset Management');
-    expect(plainNavLabel('📂 Council Archive Vault')).toBe('Council Archive Vault');
-    expect(plainNavLabel('📸 Browse Gallery')).toBe('Browse Gallery');
+    expect(plainNavLabel('Media & Memory Center')).toBe('Media & Memory Center');
+    expect(plainNavLabel('Council Asset Management')).toBe('Council Asset Management');
+    expect(plainNavLabel('Council Archive Vault')).toBe('Council Archive Vault');
+    expect(plainNavLabel('Browse Gallery')).toBe('Browse Gallery');
     expect(plainNavLabel("St. Mary's Council")).toBe("St. Mary's Council");
     const sidebar = read('apps/web/components/Sidebar.tsx');
     // Sprint 11 Revision 17.0: sidebarLinkLabel is plainNavLabel that also drops '[ ]' brackets.
@@ -224,7 +224,7 @@ describe('4. the sidebar and Council Lookups', () => {
     expect(lookups).not.toContain("label: 'Officer Election Parameters'");
     expect(lookups).toContain('orderPaymentMethodRows(rows.data, methodName)');
     const elections = read('apps/web/components/modules/ElectionWorkflow.tsx');
-    expect(elections).toContain("label: '⚙️ Officer Election Parameters'");
+    expect(elections).toContain("label: 'Officer Election Parameters'");
     expect(elections).toContain('db.elections.toggleRoleBallotStatus');
   });
 

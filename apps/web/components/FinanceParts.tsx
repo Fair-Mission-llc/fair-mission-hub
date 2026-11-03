@@ -47,13 +47,13 @@ export function LedgerBalanceBadge({ sheet }: { sheet: Pick<BalanceSheet, 'isBal
   if (sheet.isBalanced) {
     return (
       <span role="status" className="inline-block rounded-full border-2 border-green bg-green px-3 py-1 text-sm font-bold text-white">
-        ✓ Ledger Balanced (Zero Leaks)
+        Ledger Balanced (Zero Leaks)
       </span>
     );
   }
   return (
     <span role="alert" className="inline-block rounded-full border-2 border-brand-red bg-brand-red px-3 py-1 text-sm font-bold text-white">
-      ⚠ Out of balance by {formatMoney(Math.abs(sheet.difference))}
+      Out of balance by {formatMoney(Math.abs(sheet.difference))}
     </span>
   );
 }

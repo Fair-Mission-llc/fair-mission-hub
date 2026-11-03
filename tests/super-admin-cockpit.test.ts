@@ -231,9 +231,9 @@ describe('Platform Management', () => {
   it('holds the three top horizontal action folders', () => {
     expect(SUPER_ADMIN_DESK_TITLE).toBe('Platform Management');
     expect(SUPER_ADMIN_DESK_FOLDERS.map((f) => f.label)).toEqual([
-      '[ 📥 Feedback Communication Center ]',
-      '[ 🔑 Council Access Request Approval Queue ]',
-      '[ 🛠️ System Feature Flag Control Panel ]',
+      'Feedback Communication Center',
+      'Council Access Request Approval Queue',
+      'System Feature Flag Control Panel',
     ]);
     const desk = read('apps/web/components/SuperAdminDesk.tsx');
     expect(desk).toContain('showsSuperAdminDeskTab(user)');

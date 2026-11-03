@@ -325,7 +325,7 @@ export function MemberForm({
             </Field>
             <label className="flex items-center gap-3 text-sm">
               <input type="checkbox" className="size-5" checked={honorary} disabled readOnly aria-describedby="shield-rule" />
-              <span className="font-bold">👑 Shield Circle / Honorary (Tier 6)</span>
+              <span className="font-bold">Shield Circle / Honorary (Tier 6)</span>
               <span id="shield-rule" className="text-xs text-muted">
                 Locked. Ticked when the member joined {HONORARY_TENURE_YEARS} or more years ago. Executive officers hold Tier 6 through their office.
                 {evaluated.shieldKept ? ' Kept from an earlier record.' : ''}
@@ -341,7 +341,7 @@ export function MemberForm({
             ) : null}
             {member?.flag_honorary_shield === 1 ? (
               <p className="text-sm">
-                <Pill tone="gold">👑 Shield Circle / Honorary</Pill>
+                <Pill tone="gold">Shield Circle / Honorary</Pill>
               </p>
             ) : null}
           </>

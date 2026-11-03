@@ -50,13 +50,13 @@ const sheet = (over: Partial<ExpenseReport> = {}) => ({
 describe('the drawer catalogue', () => {
   it('names every drawer the two desks were asked for', () => {
     expect(DESK_DRAWERS.filter((d) => d.desk === 'grand-knight').map((d) => d.title)).toEqual(
-      expect.arrayContaining(['Approved Expenses', 'Shared Equipment Library', 'Planning & Budgeting Workflow', '[ 🗳️ Council Election Workflow ]', 'Operations Knowledge Vault']),
+      expect.arrayContaining(['Approved Expenses', 'Shared Equipment Library', 'Planning & Budgeting Workflow', 'Council Election Workflow', 'Operations Knowledge Vault']),
     );
     expect(DESK_DRAWERS.filter((d) => d.desk === 'financial-secretary').map((d) => d.title)).toEqual(
-      expect.arrayContaining(['[ 📋 FS Expense Audit Queue ]', 'Expense Report (ER) Routing Track', 'Charitable Donation Records', 'Operations Knowledge Vault']),
+      expect.arrayContaining(['FS Expense Audit Queue', 'Expense Report (ER) Routing Track', 'Charitable Donation Records', 'Operations Knowledge Vault']),
     );
     expect(new Set(DESK_DRAWERS.map((d) => d.rowId)).size).toBe(DESK_DRAWERS.length);
-    expect(BACK_TO_DESK_BLOTTER_LABEL).toBe('[ 🔀 Back to Desk Blotter ]');
+    expect(BACK_TO_DESK_BLOTTER_LABEL).toBe('Back to Desk Blotter');
   });
 
   it('keeps the badge click-throughs landing on the signing drawers', () => {
@@ -175,6 +175,7 @@ const PASSWORD = 'dev-pass-secure-9912';
 
 describe.each(drivers)('$name driver: the biometric toggle', (d) => {
   it('labels the toggle and shows it on the password prompt', () => {
+    // The phone app's own label (apps/mobile) - outside the Sprint 11 Revision 17.7 web and shared icon pass.
     expect(BIOMETRIC_TOGGLE_LABEL).toBe('[ 🔘 Enable FaceID / Biometric Login ]');
     const screen = read('apps/mobile/app/sign-in.tsx');
     expect(screen).toContain('label={BIOMETRIC_TOGGLE_LABEL}');
@@ -223,7 +224,7 @@ describe('the guides', () => {
     const admin = readOfficerManuals();
     // Sprint 8S Revision 7: the section now explains the filing spine and the Desk Blotter stage.
     expect(admin).toContain('### 14.3.2 Concept: the filing spine, the Desk Blotter and the alert boundary');
-    expect(admin).toContain('**[ 🔀 Back to Desk Blotter ]**');
+    expect(admin).toContain('**Back to Desk Blotter**');
     expect(admin).not.toContain('Release approved expenses on the full desk');
     expect(admin).not.toContain('Verify & sign on the full desk');
     expect(read('docs/MEMBER_USER_GUIDE.md')).toContain('### 2.4.1 Turn on Face ID sign-in from the password screen');

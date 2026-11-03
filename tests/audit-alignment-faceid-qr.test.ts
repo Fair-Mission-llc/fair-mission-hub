@@ -45,7 +45,7 @@ describe('1. Council Asset Management in the sidebar', () => {
     expect(portalAreas(trustee)).toContain('expenses/assets');
     expect(portalAreas(member)).not.toContain('expenses/assets');
     const sidebar = read('apps/web/components/Sidebar.tsx');
-    expect(sidebar).toContain("'expenses/assets': { href: '/expenses/assets', label: '🛠️ Council Asset Management'");
+    expect(sidebar).toContain("'expenses/assets': { href: '/expenses/assets', label: 'Council Asset Management'");
     expect(read('apps/web/app/expenses/assets/page.tsx')).toContain('<RequireArea area="expenses/assets">');
   });
 });
@@ -120,7 +120,7 @@ describe('3. the manual header and the roster drop zone', () => {
 
 describe('4. payment QR code uploads', () => {
   it('builds and reads portal-server QR links, refusing anything else', () => {
-    expect(UPLOAD_QR_CODE_LABEL).toBe('📁 Upload QR Code Image');
+    expect(UPLOAD_QR_CODE_LABEL).toBe('Upload QR Code Image');
     expect(repositoryFolderName('Payment_QR_Codes')).toBe('Payment QR Codes');
     expect(parsePaymentQrServerUrl(paymentQrServerUrl(1, 'qr-1-abc.png'))).toEqual({ councilId: 1, fileName: 'qr-1-abc.png' });
     expect(parsePaymentQrServerUrl('/api/council/payment-qr?file=c1/../../secret.png')).toBeNull();

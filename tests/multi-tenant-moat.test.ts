@@ -172,7 +172,7 @@ describe('5. vacant seats and the legal footer', () => {
 
 describe('6. the Application Advisory Panel', () => {
   it('opens to Super Admins and panelists of any council', () => {
-    expect(ADVISORY_PANEL_TITLE).toBe('🔊 Application Advisory Panel');
+    expect(ADVISORY_PANEL_TITLE).toBe('Application Advisory Panel');
     expect(ADVISORY_PANEL_VIEWS.map((v) => v.label)).toEqual(['Development Roadmap', 'Future Feature Releases', 'Panel Meeting Dates', 'Consultation Feedback']);
     expect(canOpenAdvisoryPanel(viewer('Super Admin'))).toBe(true);
     expect(canOpenAdvisoryPanel(viewer('Member', [ADVISORY_PANELIST_ROLE], 2))).toBe(true);

@@ -197,7 +197,7 @@ describe('portal navigation', () => {
     const performance = portalSidebar(member).find((g) => g.id === 'performance')!;
     expect(performance.entries.map((e) => e.item)).toContain('history');
     expect(read('apps/web/app/history/page.tsx')).toContain('RequireArea area="history"');
-    expect(read('apps/web/components/OralHistoryRecorder.tsx')).toContain('🎙️ Record Oral History Testimonial');
+    expect(read('apps/web/components/OralHistoryRecorder.tsx')).toContain('Record Oral History Testimonial');
     expect(read('apps/web/components/OralHistoryRecorder.tsx')).toContain('new MediaRecorder(');
   });
 });

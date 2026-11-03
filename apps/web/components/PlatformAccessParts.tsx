@@ -162,7 +162,7 @@ export function ViewAsBanner() {
   return (
     <div role="status" className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-navy bg-gold px-6 py-2 text-navy">
       <p className="text-sm font-bold">
-        👥 You are viewing the portal as {user.firstName} {user.lastName} ({user.memberType})
+        You are viewing the portal as {user.firstName} {user.lastName} ({user.memberType})
         {viewAsCouncil ? ` of ${viewAsCouncil.label}${viewAsCouncil.crossCouncil ? ", under that council's own settings, flags and branding" : ''}` : ''}. Nothing can
         be saved in this view.
       </p>
@@ -264,7 +264,7 @@ export function RemoteAssistButton() {
   return (
     <div className="relative">
       <button type="button" onClick={() => setAsking((a) => !a)} aria-expanded={asking} className="rounded border-2 border-white px-3 py-1 text-sm font-bold hover:underline">
-        ❓ Request Remote Officer Assistance
+        Request Remote Officer Assistance
       </button>
       {asking ? (
         <div className="absolute right-0 z-20 mt-2 flex w-80 flex-col gap-3 rounded border-2 border-navy border-t-4 border-t-gold bg-white p-4 text-navy shadow-xl">

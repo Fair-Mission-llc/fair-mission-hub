@@ -91,7 +91,7 @@ function MemorialCard({ card, roll, reload }: { card: InMemoriamCard; roll: InMe
       <div className="flex items-start gap-4">
         <Photo card={card} />
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-widest">✝ In loving memory</p>
+          <p className="text-xs font-bold uppercase tracking-widest">In loving memory</p>
           <h3 id={headingId} className="font-serif text-2xl font-bold">
             Brother {card.firstName} {card.lastName}
           </h3>

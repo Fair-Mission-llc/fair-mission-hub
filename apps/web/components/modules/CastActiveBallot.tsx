@@ -14,7 +14,7 @@ import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 /** The drawer's title. */
-export const CAST_ACTIVE_BALLOT_TITLE = '🗳️ Cast Active Ballot';
+export const CAST_ACTIVE_BALLOT_TITLE = 'Cast Active Ballot';
 /** How often the drawer re-reads the meeting, in milliseconds. */
 export const ACTIVE_BALLOT_POLL_MS = 4_000;
 /** The meeting PIN is exactly four digits. */
@@ -75,7 +75,7 @@ function PinUnlock({ meetingId, onUnlocked }: { meetingId: number; onUnlocked: (
         />
       </label>
       <Button type="submit" disabled={busy || !isMeetingPinShape(pin)} className="min-h-12 text-lg">
-        {busy ? 'Checking…' : '🔓 Unlock Ballot'}
+        {busy ? 'Checking…' : 'Unlock Ballot'}
       </Button>
       {error ? <Notice tone="error">{error}</Notice> : null}
     </form>
@@ -109,7 +109,7 @@ function OpenBallots({ councilId, state, onCast }: { councilId: number; state: L
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm">
-        ✅ You are checked in to <strong>{state.meeting['Meeting Name']}</strong>.
+        You are checked in to <strong>{state.meeting['Meeting Name']}</strong>.
       </p>
       {message ? (
         <Notice tone={message.tone} onDismiss={() => setMessage(null)}>
@@ -126,7 +126,7 @@ function OpenBallots({ councilId, state, onCast }: { councilId: number; state: L
             <h3 className="font-serif text-lg font-bold">{motion.MotionText}</h3>
             {viewerHasVoted ? (
               <p role="status" className="text-base font-bold text-navy">
-                🔒 Your ballot on this motion is recorded.
+                Your ballot on this motion is recorded.
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">

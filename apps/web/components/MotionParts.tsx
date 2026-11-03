@@ -38,7 +38,6 @@ export function StrictTimeBadge({ minutes }: { minutes: number }) {
         spent ? 'border-brand-red bg-brand-red text-white' : 'border-navy bg-navy text-white',
       )}
     >
-      <span aria-hidden="true">⏱</span>
       <span>{left === null ? label : spent ? 'Time — yield the floor' : `${clock(left)} · ${label}`}</span>
     </button>
   );

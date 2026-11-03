@@ -221,7 +221,7 @@ function BudgetRow({
           <span className="font-bold">{formatMoney(line.ApprovedBudgetAmount)}</span>
         ) : (
           <span className="text-xs text-muted" title="Set when leadership approves and finalizes the budget">
-            🔒 Locked
+            Locked
           </span>
         )}
       </Td>

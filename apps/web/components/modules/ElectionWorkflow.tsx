@@ -334,10 +334,10 @@ export const COUNCIL_ELECTION_CENTER_TITLE = 'Council Election Center';
 
 /** The Election Center's drawers, in order; every one lands closed. */
 export const ELECTION_CENTER_DRAWERS = [
-  { id: 'positions', label: '📋 Election Positions', hint: 'Each elected office, its sitting officer and whether it is on the ballot.' },
-  { id: 'nominations', label: '✍️ Candidate Nominations', hint: 'Nominate a brother Knight while a window is open, and see who is nominated.' },
+  { id: 'positions', label: 'Election Positions', hint: 'Each elected office, its sitting officer and whether it is on the ballot.' },
+  { id: 'nominations', label: 'Candidate Nominations', hint: 'Nominate a brother Knight while a window is open, and see who is nominated.' },
   { id: 'ballot', label: CAST_ACTIVE_BALLOT_TITLE, hint: 'At a live meeting: unlock with the meeting PIN and cast a secret ballot.' },
-  { id: 'parameters', label: '⚙️ Officer Election Parameters', hint: 'Choose which elected offices are open for nomination this season.' },
+  { id: 'parameters', label: 'Officer Election Parameters', hint: 'Choose which elected offices are open for nomination this season.' },
 ] as const;
 type ElectionCenterDrawerId = (typeof ELECTION_CENTER_DRAWERS)[number]['id'];
 

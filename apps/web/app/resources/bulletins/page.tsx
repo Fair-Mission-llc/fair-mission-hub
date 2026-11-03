@@ -26,7 +26,6 @@ import { db } from '@/services/db';
 import { compileForm1295 } from '@/services/form-1295-transport';
 
 const KINDS: readonly ArtifactKind[] = ['Flyer', 'Minutes', 'Photo album', 'Form 1295 audit'];
-const KIND_ICON: Record<ArtifactKind, string> = { Flyer: '📣', Minutes: '📝', 'Photo album': '📷', 'Form 1295 audit': '🧾' };
 
 const cardLook = 'flex h-full w-full flex-col gap-2 rounded border-2 border-navy border-t-8 bg-white p-4 text-left hover:underline';
 
@@ -35,7 +34,6 @@ function CardHeader({ entry }: { entry: ArtifactEntry }) {
     <>
       <span className="flex items-center justify-between gap-2">
         <Pill tone="outline">
-          <span aria-hidden="true">{KIND_ICON[entry.kind]} </span>
           {entry.kind}
         </Pill>
         <span className="text-xs text-muted">{formatFullDate(entry.date)}</span>

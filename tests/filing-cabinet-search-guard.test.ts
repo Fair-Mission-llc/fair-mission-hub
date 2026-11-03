@@ -36,10 +36,10 @@ describe('the left filing spine', () => {
       else expect([undefined, 'reference']).toContain(d.cabinet);
     }
     expect(DESK_CABINET_LABELS).toEqual({
-      inbound: '[ 📥 Inbound Operations ]',
-      outbound: '[ 📤 Outbound Operations ]',
-      accounting: '[ 🔧 Accounting Configuration ]',
-      reference: '[ 📖 Reference Workflows ]',
+      inbound: 'Inbound Operations',
+      outbound: 'Outbound Operations',
+      accounting: 'Accounting Configuration',
+      reference: 'Reference Workflows',
     });
   });
 

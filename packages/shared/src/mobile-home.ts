@@ -9,8 +9,8 @@
 // Both drawers start closed and follow feature_faith_center like the sections they replace.
 
 export const MY_ACTIVE_SHIFTS_TITLE = 'My Active Shifts';
-export const SPIRITUAL_INTENTIONS_DRAWER_LABEL = '[ 📿 Active Spiritual Intentions Drawer ]';
-export const DAILY_DEVOTIONAL_DRAWER_LABEL = '[ 📖 Daily Devotional Drawer ]';
+export const SPIRITUAL_INTENTIONS_DRAWER_LABEL = 'Active Spiritual Intentions Drawer';
+export const DAILY_DEVOTIONAL_DRAWER_LABEL = 'Daily Devotional Drawer';
 
 export type MobileHomeSection = 'my-active-shifts' | 'liturgical-banner' | 'greeting' | 'spiritual-intentions' | 'daily-devotional' | 'council-dashboard' | 'expense-reports';
 

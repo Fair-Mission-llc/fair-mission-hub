@@ -362,7 +362,7 @@ describe('Sprint 7G screens and manuals', () => {
     expect(drawer).toContain('geofencedCheckIn');
     expect(drawer).toContain('setCheckInPhoto');
     expect(read('apps/mobile/components/AgendaSheet.tsx')).toContain('<GeofenceCheckIn');
-    expect(CHECK_IN_BUTTON_LABEL).toBe('📍 Check In to Meeting');
+    expect(CHECK_IN_BUTTON_LABEL).toBe('Check In to Meeting');
   });
 
   it('documents the sprint in both guides and compiles both PDFs', () => {

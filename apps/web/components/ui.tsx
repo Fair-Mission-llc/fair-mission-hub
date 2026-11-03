@@ -19,7 +19,7 @@ import {
   type SelectHTMLAttributes,
 } from 'react';
 
-import { isNewMember, NEW_MEMBER_BADGE_LABEL, plainTextPiece, plainTitle, type Member } from '@kofc/shared';
+import { CHARTER_MEMBER_BADGE, isNewMember, NEW_MEMBER_BADGE_LABEL, plainTextPiece, plainTitle, type Member } from '@kofc/shared';
 export const cx = (...parts: (string | false | null | undefined)[]): string => parts.filter(Boolean).join(' ');
 
 /**
@@ -163,6 +163,7 @@ export function Button({
   variant = 'primary',
   size = 'md',
   className,
+  children,
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: 'sm' | 'md' }) {
   const look: Record<ButtonVariant, string> = {
@@ -182,7 +183,10 @@ export function Button({
         look[variant],
         className,
       )}
-    />
+    >
+      {/* Sprint 11 Revision 17.7: button text is plain words, never an icon or a bracketed label. */}
+      {plainText(children)}
+    </button>
   );
 }
 
@@ -200,6 +204,23 @@ export function NewMemberBadge({ member }: { member: Pick<Member, 'DateJoinedCou
       className="ml-1.5 inline-block whitespace-nowrap rounded-full border border-navy bg-gold px-2 py-0.5 align-middle text-xs font-bold text-navy"
     >
       [{NEW_MEMBER_BADGE_LABEL}]
+    </span>
+  );
+}
+
+/**
+ * Sprint 11 Revision 17.7: '📜 Charter Member' beside a founding member's name on the roster rows (Member.flag_charter_member,
+ * set from the First Degree / Initiation Date against the council's institution date). Renders nothing otherwise. Like the
+ * New Member badge it is a data marker, so it keeps its icon while navigation and headings read as plain words.
+ */
+export function CharterMemberBadge({ member }: { member: Pick<Member, 'flag_charter_member'> | null | undefined }) {
+  if (member?.flag_charter_member !== 1) return null;
+  return (
+    <span
+      title="A founding member of the council"
+      className="ml-1.5 inline-block whitespace-nowrap rounded-full border border-navy bg-white px-2 py-0.5 align-middle text-xs font-bold text-navy"
+    >
+      {CHARTER_MEMBER_BADGE}
     </span>
   );
 }
@@ -316,7 +337,7 @@ export function Tabs<T extends string>({
               selected ? 'border-gold bg-white text-navy' : 'border-transparent bg-white text-muted hover:text-navy',
             )}
           >
-            {tab.label}
+            {plainTitle(tab.label)}
           </button>
         );
       })}

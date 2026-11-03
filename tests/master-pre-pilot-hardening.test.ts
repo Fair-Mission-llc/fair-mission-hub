@@ -38,8 +38,8 @@ const seat = (roles: string[]) => ({ memberId: 7, councilId: OWN, memberType: 'M
 describe('1. the Chart of Accounts & GL Setup folder on the Treasurer Desk', () => {
   it('files the folder under Accounting Configuration and mounts the ledger grid on the blotter', () => {
     expect(DESK_DRAWERS.find((d) => d.id === 'chart-of-accounts')).toMatchObject({ desk: 'treasurer', title: CHART_OF_ACCOUNTS_FOLDER_TITLE, cabinet: 'accounting' });
-    expect(CHART_OF_ACCOUNTS_FOLDER_TITLE).toBe('[ 📊 Chart of Accounts & General Ledger ]');
-    expect(DESK_CABINET_LABELS.accounting).toBe('[ 🔧 Accounting Configuration ]');
+    expect(CHART_OF_ACCOUNTS_FOLDER_TITLE).toBe('Chart of Accounts & General Ledger');
+    expect(DESK_CABINET_LABELS.accounting).toBe('Accounting Configuration');
     const sections = deskSpineSections('treasurer', deskDrawersFor(seat(['Treasurer']), 'treasurer', OWN));
     expect(sections.find((s) => s.id === 'accounting')?.drawers.map((d) => d.id)).toEqual(['chart-of-accounts']);
     expect(read('apps/web/components/DashboardDesks.tsx')).toContain('<ChartOfAccountsSetup memberId={user.memberId} councilId={councilId} />');
@@ -62,7 +62,7 @@ describe('2. the Reference Workflows block and the Auditing & Return Queue', () 
   };
 
   it('ends every officer desk with the passive reference block, which never floats', () => {
-    expect(DESK_CABINET_LABELS.reference).toBe('[ 📖 Reference Workflows ]');
+    expect(DESK_CABINET_LABELS.reference).toBe('Reference Workflows');
     for (const [desk, roles] of Object.entries(SEATS) as [DrawerDeskId, string[]][]) {
       const drawers = deskDrawersFor(seat(roles), desk, OWN);
       const sections = deskSpineSections(desk, drawers, () => true);
@@ -84,7 +84,7 @@ describe('2. the Reference Workflows block and the Auditing & Return Queue', () 
 
   it("titles the Financial Secretary's audit folder and keeps the sidebar link", () => {
     expect(DESK_DRAWERS.find((d) => d.id === 'payment-requests')).toMatchObject({ title: FS_AUDIT_FOLDER_TITLE, area: 'expenses/audit', cabinet: 'inbound', alerts: true });
-    expect(FS_AUDIT_FOLDER_TITLE).toBe('[ 📋 FS Expense Audit Queue ]');
+    expect(FS_AUDIT_FOLDER_TITLE).toBe('FS Expense Audit Queue');
     expect(read('apps/web/components/Sidebar.tsx')).toContain("href: '/expenses/audit'");
   });
 });
@@ -117,7 +117,7 @@ describe('3. the inferred budget line on the Ledger Line Coder', () => {
   });
 
   it('reads the line out in green instead of a dropdown', () => {
-    expect(inferredBudgetLabel({ LineItemName: 'Monthly Council Meetings' })).toBe('[ Inferred Budget: Automatically Mapped to Monthly Council Meetings ]');
+    expect(inferredBudgetLabel({ LineItemName: 'Monthly Council Meetings' })).toBe('Inferred Budget: Automatically Mapped to Monthly Council Meetings');
     const coder = read('apps/web/components/modules/LedgerLineCoder.tsx');
     expect(coder).not.toContain('<BudgetLinePicker');
     expect(coder).toContain('inferExpenseBudgetLine(budgetLines.lines, account');
@@ -180,14 +180,14 @@ describe('6. the pilot kit', () => {
 
   it("adds the chart review before the Treasurer's ledger coding and the reports the user named", () => {
     const treasurer = kit.slice(kit.indexOf("key='treasurer'"), kit.indexOf("key='dgk'"));
-    const review = treasurer.indexOf('[ 🔧 Accounting Configuration ] › [ 📊 Chart of Accounts & General Ledger ]');
+    const review = treasurer.indexOf('Accounting Configuration › Chart of Accounts & General Ledger');
     expect(review).toBeGreaterThan(0);
-    expect(review).toBeLessThan(treasurer.indexOf('Treasurer Desk > [ 🔍 Treasurer Ledger Audit ]'));
+    expect(review).toBeLessThan(treasurer.indexOf('Treasurer Desk > Treasurer Ledger Audit'));
     expect(treasurer).toContain('Reports 12 (');
     expect(treasurer).toContain('[ Inferred Budget: Automatically Mapped to');
     expect(treasurer).not.toContain('in Assign Ledger Budget Line Item');
     const fs = kit.slice(kit.indexOf("key='fs'"), kit.indexOf("key='treasurer'"));
-    expect(fs).toContain('[ 📋 FS Expense Audit Queue ]');
+    expect(fs).toContain('FS Expense Audit Queue');
     expect(fs).toContain('Reports 11 (');
   });
 });

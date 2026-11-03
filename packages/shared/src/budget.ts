@@ -1103,7 +1103,7 @@ export function defaultExpenseBudgetLineId(assignable: readonly CouncilBudgetFor
 
 /** Sprint 8S Revision 10.4: the green read-out that replaces the Treasurer's budget line dropdown. */
 export const inferredBudgetLabel = (line: Pick<CouncilBudgetForecast, 'LineItemName'> | null | undefined): string =>
-  line ? `[ Inferred Budget: Automatically Mapped to ${line.LineItemName} ]` : '[ Inferred Budget: choose a general ledger account first ]';
+  line ? `Inferred Budget: Automatically Mapped to ${line.LineItemName}` : 'Inferred Budget: choose a general ledger account first';
 
 /**
  * Sprint 8S Revision 10.4 - the decoupled accounting rule: the Treasurer chooses only the general ledger account, and the

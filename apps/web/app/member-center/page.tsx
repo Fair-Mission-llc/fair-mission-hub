@@ -57,9 +57,9 @@ function MonthOverview({ c, label }: { c: MemberCenter; label: string }) {
 
 function Devotions({ d }: { d: NonNullable<MemberCenter['devotions']> }) {
   const tiles: [string, number][] = [
-    ['📿 Rosaries said', d.rosaries],
-    ['🕯️ Hours of adoration', d.adorations],
-    ['✝️ Confessions', d.confessions],
+    ['Rosaries said', d.rosaries],
+    ['Hours of adoration', d.adorations],
+    ['Confessions', d.confessions],
   ];
   return (
     <section aria-label="Our combined devotions" className="rounded border-2 border-navy bg-white px-5 py-4">

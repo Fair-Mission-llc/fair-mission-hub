@@ -115,7 +115,7 @@ export function FileRepositoryCard({ council, onSaved }: { council: Council; onS
                 {!home
                   ? 'Saved in that council’s own Secure Access Vault, which only its Admins open.'
                   : secrets.data?.has(f.key)
-                    ? '✓ Saved in the Secure Access Vault.'
+                    ? 'Saved in the Secure Access Vault.'
                     : secrets.data
                       ? '○ Not saved yet.'
                       : 'Kept in the Secure Access Vault.'}{' '}

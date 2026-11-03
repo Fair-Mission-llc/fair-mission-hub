@@ -59,7 +59,7 @@ const fast = { sleep: async () => {}, pollMs: 0, timeoutMs: 1000, env: {} };
 describe('co-pilot prompt rules', () => {
   it('keeps the vault key and the prompt box label', () => {
     expect(CREDENTIAL_KEYS).toContain('COPILOT_STUDIO_DIRECT_LINE_SECRET');
-    expect(COPILOT_PROMPT_LABEL).toBe('🤖 Ask Microsoft Co-Pilot to Design Advanced Collateral');
+    expect(COPILOT_PROMPT_LABEL).toBe('Ask Microsoft Co-Pilot to Design Advanced Collateral');
   });
 
   it('trims the request and refuses an empty or oversized one', () => {

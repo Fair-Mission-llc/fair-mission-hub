@@ -26,7 +26,7 @@ interface Exchange {
 function WarningBox({ text, authority }: { text: string; authority: string }) {
   return (
     <div role="alert" className="rounded border-4 border-gold bg-brand-red p-4 text-white">
-      <p className="font-serif text-xl font-bold tracking-wide">⚠ PARLIAMENTARY COMPLIANCE WARNING</p>
+      <p className="font-serif text-xl font-bold tracking-wide">PARLIAMENTARY COMPLIANCE WARNING</p>
       <p className="mt-2 text-lg font-bold">{text}</p>
       <p className="mt-2 text-base">Source Authority: {authority}</p>
     </div>

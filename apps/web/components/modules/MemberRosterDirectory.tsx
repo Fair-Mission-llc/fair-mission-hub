@@ -40,7 +40,7 @@ import { AffiliationHistoryCard } from '@/components/EngagementParts';
 import { MemberForm, type Lookups } from '@/components/modules/MemberRecordForm';
 import { ProfileExtensionsEditor } from '@/components/ProfileExtensionsEditor';
 import { SkillFilterDrawer } from '@/components/SkillFilterDrawer';
-import { Button, cx, Empty, Field, Input, NewMemberBadge, Notice, Panel, Pill, Select, Table, Td } from '@/components/ui';
+import { Button, cx, Empty, Field, Input, CharterMemberBadge, NewMemberBadge, Notice, Panel, Pill, Select, Table, Td } from '@/components/ui';
 import { formatPersonName, formatPhone } from '@/lib/format';
 import { useSession, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -84,7 +84,7 @@ function RecordDrawer({ editing, lookups, onClose, onSaved }: { editing: Editing
 }
 
 /** Sprint 11 Revision 16.0: the roster's deactivation action. */
-export const DEACTIVATE_MEMBER_LABEL = '[ 🚫 Deactivate Member ]';
+export const DEACTIVATE_MEMBER_LABEL = 'Deactivate Member';
 
 /** The confirmation modal for DEACTIVATE_MEMBER_LABEL. Esc, Cancel or the backdrop close it without a change. */
 function DeactivateMemberDialog({ member, onConfirm, onClose }: { member: Member; onConfirm: () => Promise<void>; onClose: () => void }) {
@@ -298,6 +298,7 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
                   <Td className="font-bold">
                     {formatPersonName(m.MemberFirstName, m.MemberLastName)}
                     <NewMemberBadge member={m} />
+                    <CharterMemberBadge member={m} />
                   </Td>
                   <Td>{m.MemberNumber}</Td>
                   <Td>{council ? councilLabel(council) : m.CouncilID}</Td>
@@ -333,7 +334,7 @@ export function MemberRosterDirectory({ compact = false }: { compact?: boolean }
                         ) : null}
                         {mayImpersonateMember(user, { memberId: m.id, memberType: typeName }) ? (
                           <Button size="sm" variant="secondary" onClick={() => void viewAs(m.id)} aria-label={`Impersonate ${m.MemberFirstName} ${m.MemberLastName}`}>
-                            👥 Impersonate Admin
+                            Impersonate Admin
                           </Button>
                         ) : null}
                       </div>

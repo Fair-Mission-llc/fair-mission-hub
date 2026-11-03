@@ -79,8 +79,8 @@ describe('2. My Active Shifts first on phone Home', () => {
 
 describe('3. prayers and devotions in closed drawers', () => {
   it('names the drawers', () => {
-    expect(SPIRITUAL_INTENTIONS_DRAWER_LABEL).toBe('[ 📿 Active Spiritual Intentions Drawer ]');
-    expect(DAILY_DEVOTIONAL_DRAWER_LABEL).toBe('[ 📖 Daily Devotional Drawer ]');
+    expect(SPIRITUAL_INTENTIONS_DRAWER_LABEL).toBe('Active Spiritual Intentions Drawer');
+    expect(DAILY_DEVOTIONAL_DRAWER_LABEL).toBe('Daily Devotional Drawer');
   });
 
   it('gives the phone a Drawer that starts closed', () => {

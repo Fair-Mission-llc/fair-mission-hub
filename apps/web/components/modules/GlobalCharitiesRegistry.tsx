@@ -120,7 +120,7 @@ export function GlobalCharitiesRegistry({ embedded = false }: { embedded?: boole
 
   const verifiedCell = (charity: GlobalCharityRegistry) => (
     <div className="flex flex-col items-start gap-1">
-      {isVerifiedCharity(charity) ? <Pill tone="navy">✓ Verified</Pill> : <Pill tone="outline">Not verified</Pill>}
+      {isVerifiedCharity(charity) ? <Pill tone="navy">Verified</Pill> : <Pill tone="outline">Not verified</Pill>}
       <Button size="sm" variant="secondary" onClick={() => void toggleVerified(charity)}>
         {isVerifiedCharity(charity) ? 'Remove verification' : 'Verify'}
       </Button>

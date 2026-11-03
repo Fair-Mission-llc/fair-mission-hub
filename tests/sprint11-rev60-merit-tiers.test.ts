@@ -155,7 +155,7 @@ describe('4. the six tiers (pure)', () => {
     expect(stand({}, { join_date: '2001-09-20' })).toMatchObject({ tier: { number: 6 }, honoraryReason: 'tenure' }); // exactly 25 years
     expect(stand({}, { join_date: '2001-09-21' }).tier).toBeNull();
     expect(stand({}, { join_date: '2015-01-01', flag_honorary_shield: 1 })).toMatchObject({ tier: { number: 6 }, honoraryReason: 'override' });
-    expect(meritBadgeText(stand({}, { join_date: '2001-01-01' }))).toBe('👑 Tier 6: Shield Circle / Honorary (25+ years)');
+    expect(meritBadgeText(stand({}, { join_date: '2001-01-01' }))).toBe('Tier 6: Shield Circle / Honorary (25+ years)');
     expect(meritBadgeText(stand({}))).toBe('No merit tier yet this fraternal year');
   });
 

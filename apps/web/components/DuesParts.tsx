@@ -15,9 +15,9 @@ import { formatFullDate, formatMoney } from '@/lib/format';
 
 const STATUS_LABEL: Record<BudgetAlert, string> = {
   None: 'No spend',
-  'On Track': '✓ On track',
-  Warning: '⚠ Near cap',
-  'Over Budget': '✖ Over budget',
+  'On Track': 'On track',
+  Warning: 'Near cap',
+  'Over Budget': 'Over budget',
   Unbudgeted: '○ No budget set',
 };
 

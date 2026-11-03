@@ -37,7 +37,7 @@ export const RECEIPT_MERCHANT_MAX_LENGTH = 255;
 /** Longest ExpenseReport.missing_receipt_reason; the column is TEXT, the cap keeps a sheet readable (Sprint 6S). */
 export const MISSING_RECEIPT_REASON_MAX_LENGTH = 2000;
 /** The badge the Treasurer and Grand Knight desks print on a sheet with no receipt (Sprint 6S). */
-export const HONORARY_EXPENSE_BADGE = '⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED';
+export const HONORARY_EXPENSE_BADGE = 'HONORARY EXPENSE - NO RECEIPT ATTACHED';
 
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);
 /** Dollars to whole cents, so amounts compare and subtract exactly. */

@@ -22,7 +22,7 @@ import type { Council, Member } from './types';
 
 export const MEMBER_ROSTER_HREF = '/roster';
 /** Sprint 11 Revision 16.0: was 'Roster & Achievements'. */
-export const MEMBER_ROSTER_TITLE = '[ 👥 Council Roster ]';
+export const MEMBER_ROSTER_TITLE = 'Council Roster';
 
 /** Sprint 10 Revision 3.0: the budget page's name (the Annual Budget Forecast Center / Annual Budget Projections before). */
 export const ANNUAL_BUDGET_CENTER_TITLE = 'Annual Budget Center';

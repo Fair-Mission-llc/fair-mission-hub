@@ -244,7 +244,7 @@ describe('the cross-council view-as lookup (pure)', () => {
     expect(page).toContain('<RequireArea area="system-settings/impersonate">');
     expect(page).toContain('buildImpersonationTree(');
     expect(page).toContain('impersonationSuggestions(');
-    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('[ 🚀 Start Live Meeting Sequence ]');
+    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('Start Live Meeting Sequence');
     expect(read('apps/web/app/api/drive-vault/meeting-photos/route.ts')).toContain('MEETING_PHOTO_DRIVE_FOLDER');
   });
 });

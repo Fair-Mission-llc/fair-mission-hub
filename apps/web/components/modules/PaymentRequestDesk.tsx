@@ -80,7 +80,7 @@ export function AuditDesk() {
   };
 
   const action = (d: ExpenseReportDetail) => {
-    if (ordered.has(d.report.id)) return <Pill tone="navy">✓ Payment request issued</Pill>;
+    if (ordered.has(d.report.id)) return <Pill tone="navy">Payment request issued</Pill>;
     const block = expenseOrderBlock(user, d.report);
     // A row the viewer may not sign shows no signing control at all, only who signs it.
     if (block === 'own-report') {

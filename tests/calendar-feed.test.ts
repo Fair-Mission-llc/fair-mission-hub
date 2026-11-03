@@ -194,7 +194,7 @@ describe('/api/calendar/link and /api/calendar/sync', () => {
   });
 
   it('puts the sync card on the Calendar page', () => {
-    expect(CALENDAR_SYNC_CARD_TITLE).toBe('🗓️ Sync with Your Phone Calendar');
+    expect(CALENDAR_SYNC_CARD_TITLE).toBe('Sync with Your Phone Calendar');
     expect(read('apps/web/app/calendar/page.tsx')).toContain('<CalendarSyncCard />');
     const card = read('apps/web/components/CalendarSyncCard.tsx');
     expect(card).toContain('CALENDAR_SYNC_CARD_TITLE');

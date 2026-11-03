@@ -52,7 +52,7 @@ export function CouncilStampBadge({ stamp, home }: { stamp: string; home: boolea
         home ? 'border-navy bg-navy text-white' : 'border-navy bg-white text-navy',
       )}
     >
-      🏛 {stamp}
+      {stamp}
     </span>
   );
 }
@@ -67,7 +67,7 @@ export function CharterAdvisoryPanel({ review }: { review: CharterReview }) {
   return (
     <div role="alert" aria-label={CHARTER_ADVISORY_PANEL_TITLE} className={cx('rounded border-4 border-gold p-3 text-white', severe ? 'bg-brand-red' : 'bg-navy')}>
       <p className="font-serif text-lg font-bold tracking-wide">
-        ⚠ {CHARTER_ADVISORY_PANEL_TITLE.toUpperCase()} {severe ? '- SAVING IS BLOCKED' : '- ADVISORY'}
+        {CHARTER_ADVISORY_PANEL_TITLE.toUpperCase()} {severe ? '- SAVING IS BLOCKED' : '- ADVISORY'}
       </p>
       <p className="mt-1 text-sm">
         {severe
@@ -78,7 +78,8 @@ export function CharterAdvisoryPanel({ review }: { review: CharterReview }) {
         {review.findings.map((f) => (
           <li key={f.id} className="rounded border-2 border-gold bg-white px-3 py-2 text-navy">
             <p className="font-bold">
-              {f.severity === 'SEVERE' ? '⛔' : 'ℹ'} {f.title}
+              {f.severity === 'SEVERE' ? 'Severe: ' : 'Note: '}
+              {f.title}
             </p>
             <p className="text-sm">{f.rule}</p>
             {f.quotation ? <blockquote className="mt-1 border-l-4 border-gold pl-2 text-sm italic">{f.quotation}</blockquote> : null}

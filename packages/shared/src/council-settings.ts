@@ -194,7 +194,7 @@ export const COUNCIL_WIDE_SETTING_RULES: Record<CouncilWideSettingName, SettingR
     group: 'operations',
     inUse: true,
     help:
-      'Used by the 🔍 Check for Inactive Members button on the member roster. The check marks a plain member Inactive when the member has ' +
+      'Used by the Check for Inactive Members button on the member roster. The check marks a plain member Inactive when the member has ' +
       'logged no service for more than this many days. Admins and Super Admins are never marked. Nothing changes until a leader clicks the button.',
   },
   er_submission_window_days: {

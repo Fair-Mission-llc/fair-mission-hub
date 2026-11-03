@@ -210,14 +210,14 @@ export function SignatureTrail({ detail }: { detail: ExpenseReportDetail }) {
   return (
     <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3" aria-label={`Signatures on expense report ${report.id}`}>
       <SignatureLine
-        label="📜 Payment request · Financial Secretary"
+        label="Payment request · Financial Secretary"
         memberId={report.FinancialSecretaryMemberID}
         name={detail.financialSecretaryName}
         at={report.FinancialSecretaryApprovedAt}
       />
-      <SignatureLine label="🧾 Ledger coding · Treasurer" memberId={report.TreasurerMemberID} name={detail.treasurerName} at={report.TreasurerReviewedAt} />
+      <SignatureLine label="Ledger coding · Treasurer" memberId={report.TreasurerMemberID} name={detail.treasurerName} at={report.TreasurerReviewedAt} />
       <SignatureLine
-        label="✍️ Counter-signature · Grand Knight"
+        label="Counter-signature · Grand Knight"
         memberId={report.GrandKnightMemberID}
         name={detail.grandKnightName}
         at={report.GrandKnightApprovedAt}
@@ -371,8 +371,8 @@ export const ASSIGN_BUDGET_LINE_LABEL = 'Assign Ledger Budget Line Item';
  * The signing commands of the two dual-approval desks (Sprint 6G Extension), in plain English since Sprint 7C (were
  * '📜 Approve Expense' and '✍️ Countersign Expense').
  */
-export const EXPENSE_APPROVE_LABEL = '📝 Verify & Sign Expense';
-export const EXPENSE_COUNTERSIGN_LABEL = '✍️ Final Release for Payment';
+export const EXPENSE_APPROVE_LABEL = 'Verify & Sign Expense';
+export const EXPENSE_COUNTERSIGN_LABEL = 'Final Release for Payment';
 
 export interface ExpenseBudgetLineAssignments {
   fraternalYear: string;

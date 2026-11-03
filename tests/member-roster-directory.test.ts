@@ -34,7 +34,7 @@ describe('Roster & Achievements link', () => {
 
   it('has its page and sidebar entry', () => {
     expect(read('apps/web/app/roster/page.tsx')).toContain('<RequireArea area="roster">');
-    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/roster: \{ href: '\/roster', label: '\[ 👥 Council Roster \]'/);
+    expect(read('apps/web/components/Sidebar.tsx')).toMatch(/roster: \{ href: '\/roster', label: 'Council Roster'/);
   });
 });
 

@@ -25,13 +25,13 @@ type Viewer = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOff
 
 /** The sidebar categories, in display order. */
 export const NAVIGATION_MAP_CATEGORIES = [
-  { id: 'dashboard', label: '🏠 Dashboard' },
-  { id: 'calendars', label: '📅 Calendars' },
-  { id: 'rosters', label: '👥 Rosters' },
-  { id: 'vetting', label: '✅ Vetting' },
-  { id: 'ledgers', label: '📒 Ledgers' },
-  { id: 'archives', label: '🗄️ Archives' },
-  { id: 'settings', label: '⚙️ Settings, planning and help' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'calendars', label: 'Calendars' },
+  { id: 'rosters', label: 'Rosters' },
+  { id: 'vetting', label: 'Vetting' },
+  { id: 'ledgers', label: 'Ledgers' },
+  { id: 'archives', label: 'Archives' },
+  { id: 'settings', label: 'Settings, planning and help' },
 ] as const;
 export type NavigationMapCategoryId = (typeof NAVIGATION_MAP_CATEGORIES)[number]['id'];
 

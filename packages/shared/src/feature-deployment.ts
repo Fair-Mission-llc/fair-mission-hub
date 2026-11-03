@@ -41,8 +41,8 @@ export type CouncilSettingsDrawerId = (typeof COUNCIL_SETTINGS_DRAWERS)[number][
 /** The matrix section's title. */
 export const FEATURE_DEPLOYMENT_MATRIX_TITLE = 'Council Feature Deployment Matrix';
 /** The two status badges. */
-export const FEATURE_DEPLOYED_BADGE = '🟢 DEPLOYED';
-export const FEATURE_OFF_BADGE = '⚪ AVAILABLE / OFF';
+export const FEATURE_DEPLOYED_BADGE = 'DEPLOYED';
+export const FEATURE_OFF_BADGE = 'AVAILABLE / OFF';
 
 /** Whether the council lets its members sign in with FaceID / biometrics (Council.biometric_login_enabled; missing reads as on). */
 export function biometricLoginEnabled(council: Pick<Council, 'biometric_login_enabled'> | null | undefined): boolean {

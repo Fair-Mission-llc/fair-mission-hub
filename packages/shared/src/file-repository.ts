@@ -119,7 +119,7 @@ export const PAYMENT_QR_FOLDER = 'Payment QR Codes';
 export const PAYMENT_QR_ROUTE = '/api/council/payment-qr';
 export const PAYMENT_QR_MAX_BYTES = 5 * 1024 * 1024;
 export const PAYMENT_QR_TYPES: Readonly<Record<string, string>> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
-export const UPLOAD_QR_CODE_LABEL = '📁 Upload QR Code Image';
+export const UPLOAD_QR_CODE_LABEL = 'Upload QR Code Image';
 
 /** A link to a QR image kept on the portal server: c<council>/<file>. */
 export const paymentQrServerUrl = (councilId: number, fileName: string): string => `${PAYMENT_QR_ROUTE}?file=c${councilId}/${fileName}`;

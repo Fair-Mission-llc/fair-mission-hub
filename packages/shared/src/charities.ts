@@ -1032,8 +1032,8 @@ export const CHARITABLE_THREAD_TYPES: readonly CharitableThreadType[] = ['MORE_I
 
 /** The vetting desk's buttons that start each thread. */
 export const CHARITABLE_THREAD_BUTTON_LABELS: Record<CharitableThreadType, string> = {
-  MORE_INFO: '💬 Request More Info',
-  OFFICER_INPUT: '📣 Request Officer Input',
+  MORE_INFO: 'Request More Info',
+  OFFICER_INPUT: 'Request Officer Input',
 };
 
 /** Thread headings on the vetting desk and the Shepherd's page. */

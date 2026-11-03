@@ -54,9 +54,9 @@ export interface SuperAdminDeskFolder {
 
 /** The desk's three top horizontal action folders, in the order they are drawn. */
 export const SUPER_ADMIN_DESK_FOLDERS: readonly SuperAdminDeskFolder[] = [
-  { id: 'feedback', label: '[ 📥 Feedback Communication Center ]', hint: 'Read the notes council Admins send from System Settings > Administrative Feedback Loops.' },
-  { id: 'access-requests', label: '[ 🔑 Council Access Request Approval Queue ]', hint: 'Approve or decline the councils asking for a license to join the platform.' },
-  { id: 'feature-flags', label: '[ 🛠️ System Feature Flag Control Panel ]', hint: "Switch each active council's optional modules on and off." },
+  { id: 'feedback', label: 'Feedback Communication Center', hint: 'Read the notes council Admins send from System Settings > Administrative Feedback Loops.' },
+  { id: 'access-requests', label: 'Council Access Request Approval Queue', hint: 'Approve or decline the councils asking for a license to join the platform.' },
+  { id: 'feature-flags', label: 'System Feature Flag Control Panel', hint: "Switch each active council's optional modules on and off." },
 ];
 
 /**
@@ -82,7 +82,7 @@ export const ADMINISTRATIVE_FEEDBACK_TITLE = 'Administrative Feedback Loops';
 // ---- Sprint 11 Revision 17.0: the header shortcut ----------------------------------------------------------------
 
 /** The header button every Super Admin session carries, beside Messaging and Help. */
-export const SUPER_ADMIN_HEADER_LINK_LABEL = '[ 🛠️ Super Admin Desk ]';
+export const SUPER_ADMIN_HEADER_LINK_LABEL = 'Super Admin Desk';
 
 /** Where it goes: the Super Admin address of the Master Feature Deployment Grid (Super Admins only). */
 export const SUPER_ADMIN_HEADER_HREF = '/super-admin';

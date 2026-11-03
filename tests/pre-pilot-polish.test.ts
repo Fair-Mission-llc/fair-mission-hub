@@ -88,7 +88,7 @@ describe('navigation wording', () => {
     expect(sidebar).not.toMatch(/label: 'Bulletins'|Recorded Donations History/);
     expect(read('apps/web/app/resources/bulletins/page.tsx')).toContain('<PageTitle>Council Artifacts</PageTitle>');
     const donations = read('apps/web/components/modules/DonationRecords.tsx');
-    expect(donations).toContain('✓ Automatically Logged to Treasury Ledger');
+    expect(donations).toContain('Automatically Logged to Treasury Ledger');
     expect(donations).not.toMatch(/Ledger synced from donations/i);
   });
 });

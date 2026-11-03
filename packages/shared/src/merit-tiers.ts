@@ -39,12 +39,12 @@ export interface MeritTier {
 
 /** The six tiers, lowest first. */
 export const MERIT_TIERS: readonly MeritTier[] = [
-  { id: 'TIER_1_NEW', number: 1, label: 'New Member', icon: '🌱' },
-  { id: 'TIER_2_ACTIVE', number: 2, label: 'Active Knight', icon: '⚔️' },
-  { id: 'TIER_3_ANCHOR', number: 3, label: 'Anchor Knight', icon: '⚓' },
-  { id: 'TIER_4_CHAMPION', number: 4, label: 'Fraternal Champion', icon: '🏆' },
-  { id: 'TIER_5_DISTINGUISHED', number: 5, label: 'Shining Armor Companion', icon: '🛡️' },
-  { id: 'TIER_6_LEADERSHIP', number: 6, label: 'Shield Circle / Honorary', icon: '👑' },
+  { id: 'TIER_1_NEW', number: 1, label: 'New Member', icon: '1' },
+  { id: 'TIER_2_ACTIVE', number: 2, label: 'Active Knight', icon: '2' },
+  { id: 'TIER_3_ANCHOR', number: 3, label: 'Anchor Knight', icon: '3' },
+  { id: 'TIER_4_CHAMPION', number: 4, label: 'Fraternal Champion', icon: '4' },
+  { id: 'TIER_5_DISTINGUISHED', number: 5, label: 'Shining Armor Companion', icon: '5' },
+  { id: 'TIER_6_LEADERSHIP', number: 6, label: 'Shield Circle / Honorary', icon: '6' },
 ];
 
 export const meritTier = (number: number): MeritTier => MERIT_TIERS[number - 1] ?? MERIT_TIERS[0]!;
@@ -371,5 +371,5 @@ export function meritStanding(input: {
 export function meritBadgeText(s: Pick<MeritStanding, 'tier' | 'honoraryReason'>): string {
   if (!s.tier) return 'No merit tier yet this fraternal year';
   const why = s.honoraryReason === 'office' ? ' (executive office)' : s.honoraryReason === 'tenure' ? ` (${HONORARY_TENURE_YEARS}+ years)` : s.honoraryReason === 'override' ? ' (awarded)' : '';
-  return `${s.tier.icon} Tier ${s.tier.number}: ${s.tier.label}${s.tier.number === 6 ? why : ''}`;
+  return `Tier ${s.tier.number}: ${s.tier.label}${s.tier.number === 6 ? why : ''}`;
 }

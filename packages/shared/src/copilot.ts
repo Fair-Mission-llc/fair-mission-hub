@@ -7,7 +7,7 @@ import { BusinessRuleError } from './rules';
 import type { Event } from './types';
 
 /** The prompt box's label on the Recruitment Factory. */
-export const COPILOT_PROMPT_LABEL = '🤖 Ask Microsoft Co-Pilot to Design Advanced Collateral';
+export const COPILOT_PROMPT_LABEL = 'Ask Microsoft Co-Pilot to Design Advanced Collateral';
 
 /** The longest request a member may type (the event facts the portal adds come on top). */
 export const COPILOT_PROMPT_MAX_LENGTH = 2000;

@@ -38,7 +38,7 @@ is written. An image the guide names but the disk does not have is left out with
 
 Sprint 11 Revision 8.0: the generic guides in docs/ always describe every module. A council's custom copy names the
 council's switched-off modules (--disabled-modules, the feature flag names of packages/shared/src/features.ts), and
-every section whose heading matches one of them gets a '⚠️ This premium module is currently disabled' banner right
+every section whose heading matches one of them gets a 'This premium module is currently disabled' banner right
 under its heading (disabled_module_banners). The text of the section itself is left as it is.
 """
 from __future__ import annotations
@@ -153,7 +153,7 @@ MODULE_SECTIONS: dict[str, tuple[str, str]] = {
     'feature_advanced_audits': ('Trustee Semiannual Audit', r'1295|semiannual audit|trustee audit|trustee semiannual audit'),
 }
 
-DISABLED_BANNER = '⚠️ This premium module is currently disabled'
+DISABLED_BANNER = 'This premium module is currently disabled'
 
 HEADING = re.compile(r'^(#{2,4})\s+(.*\S)\s*$')
 

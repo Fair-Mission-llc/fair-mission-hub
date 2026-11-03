@@ -91,7 +91,7 @@ export interface NavEntry {
 export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-lists' | 'navigation-guide' | 'expenses/queue', NavEntry> = {
   home: { href: '/dashboard#home', label: 'Home', hint: 'Newsletters, feast days, reminders, the prayer list and the honor board' },
   'member-actions': { href: '/member-actions', label: 'Member Actions Hub', hint: 'My shifts, sign-ups, charity requests, sheets, roster and hours' },
-  roster: { href: '/roster', label: '[ 👥 Council Roster ]', hint: 'Brother Knights of your council and sister councils, with phone and email' },
+  roster: { href: '/roster', label: 'Council Roster', hint: 'Brother Knights of your council and sister councils, with phone and email' },
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },
@@ -166,7 +166,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'elections/appointments': { href: '/elections/appointments', label: 'Appointed Leadership Matrix', hint: "The Grand Knight's appointments and vacant seats" },
   'supreme-sync': { href: '/supreme-sync', label: 'Supreme Council Sync', hint: 'Audit and file Forms 1728 and 1295' },
   lookups: { href: '/lookups', label: 'Global Lookup Tables', hint: 'Maintain the global lookup tables' },
-  'expenses/assets': { href: '/expenses/assets', label: '🛠️ Council Asset Management', hint: "The council's capital assets: serial numbers, locations and photos" },
+  'expenses/assets': { href: '/expenses/assets', label: 'Council Asset Management', hint: "The council's capital assets: serial numbers, locations and photos" },
   parishes: { href: '/parishes', label: 'Parish & Pastors Linkage', hint: 'Parishes and their pastors' },
   councils: { href: '/councils', label: 'Councils', hint: 'Add, edit and delete councils and their registration profiles' },
   'feature-flags': {
@@ -295,7 +295,7 @@ export const EXTERNAL_NAV: Partial<Record<PortalNavGroup['id'], ExternalNavEntry
   resources: [
     {
       href: 'https://drive.google.com/drive/u/3/folders/1ZGDjpkJG61hzWvDFRg4IZHI440ZYDjyH',
-      label: '📂 Council Archive Vault',
+      label: 'Council Archive Vault',
       hint: "The council's shared Google Drive archive folder (opens in a new tab)",
       visible: canOpenArchiveVault,
     },

@@ -515,7 +515,7 @@ export function LiveAgendaBoard({
                 </h3>
                 {canEdit ? (
                   <Button size="sm" variant="secondary" disabled={busy} onClick={() => void addLine(s.key)} aria-label={`Add a last-minute line to ${s.title}`}>
-                    [ ➕ Add Last-Minute Agenda Line ]
+                    Add Last-Minute Agenda Line
                   </Button>
                 ) : null}
               </div>

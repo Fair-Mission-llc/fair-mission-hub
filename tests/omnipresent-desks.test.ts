@@ -57,7 +57,7 @@ describe('module folders on the Active Desks', () => {
     expect(desks).toContain('<BankStatementMatchWindow');
     expect(desks).toContain('<MotionsLedgerModule');
     expect(desks).toContain('db.prayers.getBoard(user.memberId, councilId)');
-    expect(COMMUNITY_PRAYER_CARD_TITLE).toBe('📿 Community Prayer Request List');
+    expect(COMMUNITY_PRAYER_CARD_TITLE).toBe('Community Prayer Request List');
     // Sprint 8P Stage 3: the folders became drawers; the drawer gate and the embedded context moved with them.
     expect(read('packages/shared/src/desk-drawers.ts')).toContain('if (spec.area && !areas.has(spec.area)) return false;');
     expect(read('apps/web/components/DeskDrawers.tsx')).toContain('EmbeddedModuleContext.Provider');

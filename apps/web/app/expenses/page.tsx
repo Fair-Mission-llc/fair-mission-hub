@@ -287,7 +287,7 @@ function ExpenseSheetForm({
                     <ReceiptLink url={r.receipt_file_url} />
                     {r.file && ocr.data ? (
                       <Button size="sm" disabled={reading !== null} onClick={() => void ocrReceipt(i, r)}>
-                        {reading === r.key ? 'Reading…' : '🔍 Read receipt'}
+                        {reading === r.key ? 'Reading…' : 'Read receipt'}
                       </Button>
                     ) : null}
                     <Button size="sm" variant="secondary" onClick={() => update(r.key, (x) => ({ ...x, receipt_file_url: '', file: undefined }))}>
@@ -343,7 +343,7 @@ function ExpenseSheetForm({
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" className="mt-0.5 size-4" checked={honoraryExpense} onChange={(e) => setHonoraryExpense(e.target.checked)} />
           <span>
-            <span className="font-bold">⚠️ I have no receipt (Honorary Expense)</span>
+            <span className="font-bold">I have no receipt (Honorary Expense)</span>
             <span className="block text-xs text-muted">The receipt was lost or never given. Leadership sees an Honorary Expense warning on this report.</span>
           </span>
         </label>
@@ -365,13 +365,12 @@ function ExpenseSheetForm({
 
       {locked ? (
         <p role="status" className="flex items-center gap-2 rounded border-2 border-navy px-3 py-2 text-sm font-bold">
-          <span aria-hidden="true">🔒</span>
           {locked}
         </p>
       ) : null}
       <div className="flex flex-wrap gap-2 border-t border-line pt-3">
         <Button type="submit" disabled={busy !== null || locked !== null} title={locked ?? undefined}>
-          {locked ? '🔒 Submission locked' : busy === 'Submitted' ? 'Submitting…' : 'Submit for approval'}
+          {locked ? 'Submission locked' : busy === 'Submitted' ? 'Submitting…' : 'Submit for approval'}
         </Button>
         <Button variant="secondary" disabled={busy !== null} onClick={() => void save('Draft')}>
           {busy === 'Draft' ? 'Saving…' : 'Save draft'}

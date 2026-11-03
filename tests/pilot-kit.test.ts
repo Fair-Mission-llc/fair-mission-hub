@@ -376,7 +376,7 @@ describe('Sprint 8L pilot kit', () => {
       'Connected Councils',
       'Trustee Semiannual Audit',
       // Sprint 11 Revision 16.0: was 'Charity Check Issuance Console'.
-      '[ 🕊️ Charitable Grants Registry ]',
+      'Charitable Grants Registry',
       'Annual Budget vs Actuals Ledger Grid',
       'Bank Statement Match-Window',
       'Google Drive Media Gallery Sync Board',
@@ -411,7 +411,7 @@ describe('Sprint 8L pilot kit', () => {
     const alpha = personas.slice(personas.indexOf("key='alpha'"), personas.indexOf("key='beta'"));
     const at = (text: string) => alpha.indexOf(text);
     expect(at('type 180.00 in AMOUNT')).toBeGreaterThan(at('tap the Venmo tile yourself'));
-    expect(at('[ 🛑 Conclude Event Session & Lock Logs ]')).toBeGreaterThan(at('type 180.00 in AMOUNT'));
+    expect(at('Conclude Event Session & Lock Logs')).toBeGreaterThan(at('type 180.00 in AMOUNT'));
   });
 
   it("reviews the budget sheet on the Treasurer's script and prints Member Beta's pages in large type", () => {
@@ -440,7 +440,7 @@ describe('Sprint 8M Extension pilot kit', () => {
     expect(treasurer).toContain('check number 1201');
     expect(treasurer).not.toMatch(/After the Grand Knight releases|report 19/);
     expect(treasurer).toContain("chapter_title='Chapter 2 - Sharing Fundraiser Revenue with the Parish'");
-    expect(treasurer).toContain('⚖️ Override Event Split');
+    expect(treasurer).toContain('Override Event Split');
     expect(treasurer).toContain('$75.00 to Parish Fundraiser Share');
     expect(treasurer).not.toMatch(/Church Disbursement|Revenue Split Console/);
   });

@@ -116,12 +116,12 @@ export function TreasurerDesk() {
   };
 
   const action = (d: ExpenseReportDetail) => {
-    if (coded.has(d.report.id)) return <Pill tone="navy">✓ Coded to the ledger</Pill>;
+    if (coded.has(d.report.id)) return <Pill tone="navy">Coded to the ledger</Pill>;
     const block = expenseLedgerCodeBlock(user, d.report);
     if (block === 'collusion') {
       return (
         <span title="Collusion Guard: you issued the payment request on this report, so another officer must code it.">
-          <Pill tone="redOutline">🔒 Collusion Guard</Pill>
+          <Pill tone="redOutline">Collusion Guard</Pill>
         </span>
       );
     }

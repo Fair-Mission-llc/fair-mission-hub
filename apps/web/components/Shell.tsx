@@ -383,7 +383,7 @@ function FaceIdSignIn({ onError }: { onError: (message: string) => void }) {
             .finally(() => setBusy(false));
         }}
       >
-        {busy ? 'Waiting for FaceID…' : '🔐 Sign in with FaceID'}
+        {busy ? 'Waiting for FaceID…' : 'Sign in with FaceID'}
       </Button>
       <p className="text-center text-xs text-muted">{remembered ? `Set up on this computer for ${remembered}.` : 'Set FaceID up on My Profile after you sign in.'}</p>
       <div className="flex items-center gap-2 text-xs text-muted" aria-hidden="true">

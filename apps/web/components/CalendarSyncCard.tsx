@@ -45,7 +45,7 @@ export function CalendarSyncCard() {
                 className="min-w-0 flex-1 text-xs"
               />
               <Button variant="gold" disabled={!link.data} onClick={() => void copy()}>
-                {copied === 'yes' ? '✓ Copied' : 'Copy link'}
+                {copied === 'yes' ? 'Copied' : 'Copy link'}
               </Button>
               {link.data ? (
                 <a

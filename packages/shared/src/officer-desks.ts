@@ -160,7 +160,7 @@ export const HOME_UNIVERSAL_CARDS = [
  * page shows only the four-tab Volunteer Check-In & Service Center under one master heading.
  */
 export const MEMBER_ACTIONS_NAV_LABEL = 'Member Actions Hub';
-export const MEMBER_ACTIONS_HUB_HEADING = '[ 🙋 Member Actions Hub ]';
+export const MEMBER_ACTIONS_HUB_HEADING = 'Member Actions Hub';
 export const MEMBER_ACTIONS_HREF = '/member-actions';
 
 /**
@@ -169,14 +169,14 @@ export const MEMBER_ACTIONS_HREF = '/member-actions';
  * longer shown twice.
  */
 export const MEMBER_DESK_SECTIONS = [
-  '🚗 Open Shifts Needing Volunteers',
+  'Open Shifts Needing Volunteers',
   'My shifts',
-  '📥 My Charity Requests',
+  'My Charity Requests',
   'My open expense sheets',
 ] as const;
 
 /** The Home card over the council's open prayer intentions (Sprint 8L). */
-export const COMMUNITY_PRAYER_CARD_TITLE = '📿 Community Prayer Request List';
+export const COMMUNITY_PRAYER_CARD_TITLE = 'Community Prayer Request List';
 
 /** One module folder mounted on an Active Desk (Sprint 8L): its title, the portal area that clears it, and its desk row. */
 export interface DeskModuleSpec {
@@ -236,7 +236,7 @@ export const DESK_FOCUS_TARGETS: Record<DeskBadgeKey, { anchor: DashboardTabId; 
 export const HOME_LANDING_ROUTE = '/dashboard#home';
 
 /** The title of the volunteer section (components/VolunteerCenter.tsx); since Sprint 8S Revision only on the Member Actions Hub. */
-export const VOLUNTEER_CENTER_TITLE = '🙋 Volunteer Check-In & Service Center';
+export const VOLUNTEER_CENTER_TITLE = 'Volunteer Check-In & Service Center';
 
 /**
  * Where the portal root (/) sends a signed-in reader. Sprint 8A sent plain members to the Member Actions page; Sprint 8R

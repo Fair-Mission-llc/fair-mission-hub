@@ -157,7 +157,7 @@ describe('4. the meeting PIN on the Recorder Desk (Sprint 10 Revision 4.0)', () 
     const gk = { memberId: 8, councilId: 1, memberType: 'Member' as const, isOfficer: true, roles: ['Grand Knight'] };
     expect(deskDrawersFor(recorder, 'recorder', 1).map((d) => d.id)).toContain('meeting-pin');
     expect(deskDrawersFor(gk, 'grand-knight', 1).map((d) => d.id)).toContain('meeting-pin');
-    expect(read('apps/web/components/MeetingCheckInCard.tsx')).toContain('🔢 Generate new PIN');
+    expect(read('apps/web/components/MeetingCheckInCard.tsx')).toContain('Generate new PIN');
   });
 });
 

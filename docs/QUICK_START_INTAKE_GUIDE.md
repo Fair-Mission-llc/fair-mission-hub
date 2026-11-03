@@ -74,7 +74,7 @@ Each step has a **?** mark next to its hard fields. Select the **?** mark to rea
 **Goal:** Copy the setup of Founding Council 15295 in one click.
 
 **Steps:**
-1. Select **⚡ Clone Founding Template**.
+1. Select **Clone Founding Template**.
 2. Wait for the message.
 
 **Expected result:** The message shows how many items were copied:

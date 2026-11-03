@@ -39,8 +39,8 @@ describe('2. Member Activities wording', () => {
 
 describe('3. Two Finances accordions and the vetting queue under Governance', () => {
   it('titles the two accordions', () => {
-    expect(FINANCIAL_REPORTS_ACCORDION_TITLE).toBe('📊 FINANCIAL REPORTS');
-    expect(FINANCIAL_ACTIONS_ACCORDION_TITLE).toBe('⚡ FINANCIAL ACTIONS');
+    expect(FINANCIAL_REPORTS_ACCORDION_TITLE).toBe('FINANCIAL REPORTS');
+    expect(FINANCIAL_ACTIONS_ACCORDION_TITLE).toBe('FINANCIAL ACTIONS');
   });
 
   it('fills each accordion with its own links, in order, and drops the Financial Views accordion', () => {

@@ -46,7 +46,7 @@ function StatusBanner({ connections, unknown }: { connections: Connection[]; unk
         {connections.map((c) => (
           <li key={c.name} className="flex items-center gap-2">
             <span aria-hidden="true" className={c.connected ? 'font-bold text-green' : 'font-bold text-muted'}>
-              {c.connected ? '✓' : '○'}
+              {c.connected ? 'Connected' : 'Not connected'}
             </span>
             <span>
               <span className="font-bold">{c.name}:</span> {unknown ? 'Checking…' : c.connected ? c.on : c.off}

@@ -14,7 +14,7 @@
 import { isPlatformOwner } from './super-admin-desk';
 import { assertIsoDate, assertText, BusinessRuleError, describeActor, hasSuperAdminRights, optionalText, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 
-export const ADVISORY_PANEL_TITLE = '🔊 Application Advisory Panel';
+export const ADVISORY_PANEL_TITLE = 'Application Advisory Panel';
 export const ADVISORY_PANEL_HREF = '/advisory-panel';
 /** The Role row that makes a member a panelist (Seed.sql). */
 export const ADVISORY_PANELIST_ROLE = 'Application Advisory Panelist';

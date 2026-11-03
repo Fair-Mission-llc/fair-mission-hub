@@ -87,12 +87,12 @@ Most management pages have a **Council** selector at the top.
 
 The navy header shows your own council, your name, your member type and your officer status.
 
-- A Super Admin also sees **[ 🛠️ Super Admin Desk ]** in the header row. The button opens the **Master Feature Deployment Grid**. The button is not shown while a Super Admin views the portal as another member.
-- On the **[ 👥 Council Roster ]**, **Add Member** is disabled while the **Council** list reads **All councils on the platform** or **All: my council and sister councils**. Choose one council first. The new member joins that council.
-- In the sidebar, the Finances pillar starts with the two links every member uses: **My Expense Reports** and **Propose Charity Grant**. They always stay at the top, above the accordions. Below them are two separate accordions. **📊 FINANCIAL REPORTS** holds the views that only show information: **Chart of Accounts & GL**, **Balance Sheet**, **Financial Dashboard** and **Annual Budget Center**. **⚡ FINANCIAL ACTIONS** holds the desks where officers must act: **Treasurer Ledger Audit**, **FS Expense Audit Queue**, **GK Expense Authorize**, **Trustee Semiannual Audit**, **Disbursed Check Registry**, **Charitable Grants Registry** and **Donations History**. The **Charity Vetting Queue** is in the **Governance** pillar.
+- A Super Admin also sees **Super Admin Desk** in the header row. The button opens the **Master Feature Deployment Grid**. The button is not shown while a Super Admin views the portal as another member.
+- On the **Council Roster**, **Add Member** is disabled while the **Council** list reads **All councils on the platform** or **All: my council and sister councils**. Choose one council first. The new member joins that council.
+- In the sidebar, the Finances pillar starts with the two links every member uses: **My Expense Reports** and **Propose Charity Grant**. They always stay at the top, above the accordions. Below them are two separate accordions. **FINANCIAL REPORTS** holds the views that only show information: **Chart of Accounts & GL**, **Balance Sheet**, **Financial Dashboard** and **Annual Budget Center**. **FINANCIAL ACTIONS** holds the desks where officers must act: **Treasurer Ledger Audit**, **FS Expense Audit Queue**, **GK Expense Authorize**, **Trustee Semiannual Audit**, **Disbursed Check Registry**, **Charitable Grants Registry** and **Donations History**. The **Charity Vetting Queue** is in the **Governance** pillar.
 - **Financial Inspections** is now **Trustee Semiannual Audit**: the sidebar link, the page title, the Financial Secretary Desk drawer and the module switch on the **Master Feature Deployment Grid**.
 - A Super Admin has full Admin access on the **Admin Desk** and every one of its drawers. In **Council Wide Settings**, choose the council in the **Council** list. The **Secure Access Vault** drawer shows only your own home council.
-- Page titles, panel headings and notices show plain words only, with no icons and no brackets. Buttons and tabs keep their labels.
+- Navigation and headings show plain words only, with no icons, emojis or brackets: sidebar links, the two Finances accordions (**FINANCIAL REPORTS** and **FINANCIAL ACTIONS**), the **Active Desks** folder tabs, desk drawer names, page titles, panel headings, notices, buttons and tabs. Data markers keep their icons: the calendar day markers (the **⚑** needs-volunteers flag, holidays, feast days, birthdays and the **🟥 HOLY DAY OF OBLIGATION** badge) and the member badges (**🆕 New Member** and **📜 Charter Member**, both shown on the roster rows).
 - The Faith In Action link **Standalone Activities** is now **Member Activities**. The page title reads **Member Activities**, and its first tab reads **Current Activities**.
 - Every Super Admin sign-in has the **Platform Management** tab on the **Active Desks** row, beside the council desks.
 - Sidebar links show plain words only, with no icons and no brackets. A long name ends in "…".
@@ -115,7 +115,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
 | `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console | **Mtgs** |
-| `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, [ 📋 FS Expense Audit Queue ], [ 🔍 Treasurer Ledger Audit ], GK Expense Authorize, [ 🧾 Disbursed Check Registry ] | The expense screen and the **Expense reports** card on **Home** |
+| `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit Queue, Treasurer Ledger Audit, GK Expense Authorize, Disbursed Check Registry | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
@@ -139,7 +139,7 @@ The flags follow four rules.
 3. A hidden page refuses a typed web address. The phone sends a member on a hidden screen back to **Home**.
 4. A flag never deletes data. A flag that is switched back on restores the module with all records.
 
-The council's custom manuals follow the flags too. When an Admin prints a council copy (8.11), each section about a switched-off module starts with the banner **⚠️ This premium module is currently disabled**. The general guides always describe every module.
+The council's custom manuals follow the flags too. When an Admin prints a council copy (8.11), each section about a switched-off module starts with the banner **This premium module is currently disabled**. The general guides always describe every module.
 
 ### 2.2 Switch a module on or off
 > **Prerequisite (who can do this):** You must have Super Admin privileges. Council Admins do not see the **Master Feature Deployment Grid**.
@@ -300,7 +300,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 
 **Expected result:** The changes save. Phones show the new values on the next load. If **Account Name Members See** is empty, it takes the name of the selected account.
 
-Budget categories are not on this page. Keep them on the **Annual Budget Center** (Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center**). On **Meeting Agenda Templates**, the **Preview** box under the outline shows the agenda with its formatting while you type.
+Budget categories are not on this page. Keep them on the **Annual Budget Center** (Sidebar → Finances → **FINANCIAL REPORTS** → **Annual Budget Center**). On **Meeting Agenda Templates**, the **Preview** box under the outline shows the agenda with its formatting while you type.
 
 The outbound email settings are not on this page. Set them on the **Secure Access Vault** page (5.2). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (8.8).
 
@@ -320,7 +320,7 @@ The outbound email settings are not on this page. Set them on the **Secure Acces
 **Start point:** Sidebar → System Settings → **Secure Access Vault**.
 
 **Steps:**
-1. Read the status lines at the top. A line with ✓ is a connection that is on.
+1. Read the status lines at the top. A line with is a connection that is on.
 2. For email, go to the **Outbound email** panel.
 3. Choose the **Email service**. Google Workspace and Microsoft 365 fill in the **Mail server**.
 4. Enter the **Sign-in email** and the **Password**. Use an app password if the service asks for one.
@@ -332,7 +332,7 @@ The outbound email settings are not on this page. Set them on the **Secure Acces
 10. Paste **KEY 1** in **Azure key**. Select **Save**.
 11. For the council's file repository (8.9), save its key in its panel: **Network file server** (service account password), **OneDrive / SharePoint** (client secret) or **Dropbox Business** (access token). Select **Save**.
 
-**Expected result:** The status line of each saved connection shows ✓. **Receipt reading** shows ✓ only when both Azure values are saved. The page never shows a saved password or key again.
+**Expected result:** The status line of each saved connection shows . **Receipt reading** shows only when both Azure values are saved. The page never shows a saved password or key again.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -399,7 +399,7 @@ The registry keeps the date of each verification and the Admin who verified the 
 4. In the **Verified** column, select **Verify**.
 5. To take a charity off the form, select **Remove verification**.
 
-**Expected result:** The row shows **✓ Verified**. Members see the charity in the **Organization** list for its state.
+**Expected result:** The row shows **Verified**. Members see the charity in the **Organization** list for its state.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -419,16 +419,16 @@ Each member holds the highest tier that the member qualifies for:
 
 | Tier | Name | What the member needs |
 | --- | --- | --- |
-| 1 | 🌱 New Member | 180 days or fewer since the **First Degree / Initiation Date**. Fixed. |
-| 2 | ⚔️ Active Knight | Hours, events and meetings this year. Default: 1 hour, 1 event, 1 meeting. |
-| 3 | ⚓ Anchor Knight | Default: 20 hours, 4 events, 4 meetings. |
-| 4 | 🏆 Fraternal Champion | Default: 60 hours, 8 events, 8 meetings. |
-| 5 | 🛡️ Shining Armor Companion | Meetings, separate events and new members recruited this year. Default: 3 meetings, 3 events, 1 recruit. |
-| 6 | 👑 Shield Circle / Honorary | The Grand Knight or Deputy Grand Knight seat, or 25 or more years since the join date. Fixed. |
+| 1 | New Member | 180 days or fewer since the **First Degree / Initiation Date**. Fixed. |
+| 2 | Active Knight | Hours, events and meetings this year. Default: 1 hour, 1 event, 1 meeting. |
+| 3 | Anchor Knight | Default: 20 hours, 4 events, 4 meetings. |
+| 4 | Fraternal Champion | Default: 60 hours, 8 events, 8 meetings. |
+| 5 | Shining Armor Companion | Meetings, separate events and new members recruited this year. Default: 3 meetings, 3 events, 1 recruit. |
+| 6 | Shield Circle / Honorary | The Grand Knight or Deputy Grand Knight seat, or 25 or more years since the join date. Fixed. |
 
-**Locked checkboxes on the member record:** The **📜 Charter Member** and **👑 Shield Circle / Honorary (Tier 6)** checkboxes are locked. You cannot tick them. The portal ticks them from the dates on the record:
+**Locked checkboxes on the member record:** The **📜 Charter Member** and **Shield Circle / Honorary (Tier 6)** checkboxes are locked. You cannot tick them. The portal ticks them from the dates on the record:
 - **📜 Charter Member:** the **First Degree / Initiation Date** is on or before the council's institution date + 30 days.
-- **👑 Shield Circle / Honorary (Tier 6):** the join date is 25 or more years ago.
+- **Shield Circle / Honorary (Tier 6):** the join date is 25 or more years ago.
 
 To change a checkbox, correct the date. A checkbox that was ticked before the lock stays ticked.
 
@@ -528,7 +528,7 @@ A number that you typed but did not save stays in its card when you close the dr
 | **Feature Controls** | The **Shared Equipment Library Sharing** card and the **Module & Platform Switches** links. |
 | **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
 
-The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances → **📊 FINANCIAL REPORTS**).
+The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances → **FINANCIAL REPORTS**).
 
 The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
@@ -541,12 +541,12 @@ The **Council Feature Deployment Matrix** has its own drawer. The matrix shows w
 
 | Badge | Meaning |
 | --- | --- |
-| **🟢 DEPLOYED** | The capability or module is on for this council. |
-| **⚪ AVAILABLE / OFF** | The platform has the capability, but this council has it off. |
+| **DEPLOYED** | The capability or module is on for this council. |
+| **AVAILABLE / OFF** | The platform has the capability, but this council has it off. |
 
 **Advanced capabilities** rows:
 
-| Row | 🟢 DEPLOYED when | Where it is switched |
+| Row | DEPLOYED when | Where it is switched |
 | --- | --- | --- |
 | **Cross-Council Shared Asset Libraries** | Loaner library sharing is on. | **Shared Equipment Library Sharing** card, in the **Feature Controls** drawer |
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
@@ -572,7 +572,7 @@ The card counts the rows that are on, for example *"14 of 17 deployed"*. The mat
 | **Most activities a member may report in one day** | 5 | 1 to 24 | The 5-activity rule (section 10.2 of the Executive Governance Manual) |
 | **Most hours a member may report on one activity in one day** | 5.0 hours | 0.25 to 24, in quarter hours | The 5.0-hour rule (section 10.2 of the Executive Governance Manual) |
 | **Extra hours allowed past a scheduled shift** | 1.0 hour | 0 to 8, in quarter hours | The shift padding rule (section 10.3 of the Executive Governance Manual) |
-| **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **🔍 Check for Inactive Members** (section 3.4 of the Financial Secretary Manual) |
+| **Days without service before a member counts as inactive** | 365 days | 30 to 3,650 | **Check for Inactive Members** (section 3.4 of the Financial Secretary Manual) |
 | **Days back a member may log volunteer time** | 90 days | 7 to 730 | The logging window. A member may log shift time and activity time this many days back. |
 | **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Collect** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
 | **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | The **Recorder Desk** counts down to the due date: the meeting's last day plus this number. Minutes not published by then show as overdue. |
@@ -631,13 +631,13 @@ The logging window also ends the hours reminders. A shift older than the window 
 2. Find the **Biometric Authentication** row.
 3. Select **Turn off** to stop biometric sign-in. Select **Turn on** to allow it again.
 
-**Expected result:** The badge changes to **⚪ AVAILABLE / OFF** or **🟢 DEPLOYED**. While it is off, a phone makes no new biometric key for a member of the council. A key that a phone already holds is deleted at its next use, and the member signs in with the password.
+**Expected result:** The badge changes to **AVAILABLE / OFF** or **DEPLOYED**. While it is off, a phone makes no new biometric key for a member of the council. A key that a phone already holds is deleted at its next use, and the member signs in with the password.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | The row has no button. | You are not an Admin or an officer of the council. | Ask a council Admin to make the change. |
-| A member still sees the **[ 🔘 Enable FaceID / Biometric Login ]** switch. | The phone does not know the member's council before the sign-in. | No action. The phone makes no key after the sign-in. |
+| A member still sees the **Enable FaceID / Biometric Login** switch. | The phone does not know the member's council before the sign-in. | No action. The phone makes no key after the sign-in. |
 | A member reads *"Your council has turned off biometric sign-in."* | Biometric sign-in is off for the council. | The member signs in with the password. |
 
 ### 8.5 Concept: the Global System Parameters page
@@ -787,7 +787,7 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 
 **Steps:**
 1. Save any changed card first.
-2. Select the guide's button, for example **📥 Generate Custom Treasurer Manual PDF**.
+2. Select the guide's button, for example **Generate Custom Treasurer Manual PDF**.
 3. Wait a few seconds while the server compiles the PDF.
 
 **Expected result:** The PDF downloads. The server also files a copy in the **Official Manuals** folder of the council's file repository (8.9): Google Drive, OneDrive / SharePoint, Dropbox Business or the Local Network Server. A newer copy of the same guide replaces the older one where the provider allows it. The message names the place, or says why the copy was not filed.
@@ -806,7 +806,7 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 
 **Steps:**
 1. Find the payment method's row, for example **Venmo**.
-2. Drag the QR code image onto **📁 Upload QR Code Image**, or click the box and choose the image (PNG, JPEG or WebP, up to 5 MB).
+2. Drag the QR code image onto **Upload QR Code Image**, or click the box and choose the image (PNG, JPEG or WebP, up to 5 MB).
 3. Wait for the message.
 
 **Expected result:** The new code shows in the row. The phone's collection screen shows it to donors. The image is kept in the council's file repository, or on the portal server for a Google Drive council.
@@ -820,11 +820,11 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 ## 9. Access requests, impersonation and remote help
 
 ### 9.1 Concept: council access requests
-A council that is not on the platform can ask for access from the sign-in page. The sign-in page has a small **[ 🔑 Request Access ]** link under the sign-in prompts, on the web and on the phone. Select the link to open the form.
+A council that is not on the platform can ask for access from the sign-in page. The sign-in page has a small **Request Access** link under the sign-in prompts, on the web and on the phone. Select the link to open the form.
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
-The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests on the **Platform Management** tab, in the **[ 🔑 Council Access Request Approval Queue ]** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests on the **Platform Management** tab, in the **Council Access Request Approval Queue** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
 
 Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
 
@@ -841,7 +841,7 @@ Approving a request marks the request as reviewed. Approving does not create the
 
 **Goal:** Mark a council's access request as reviewed.
 
-**Start point:** **Active Desks** row → **Platform Management** → **[ 🔑 Council Access Request Approval Queue ]**.
+**Start point:** **Active Desks** row → **Platform Management** → **Council Access Request Approval Queue**.
 
 **Steps:**
 1. Read the council name, the city, the state and the contact email of the request.
@@ -879,19 +879,19 @@ The view uses the member's own council. The member can belong to a council other
 
 The gold bar names the member's council. When you select **Return to my account**, the portal switches back to your own council.
 
-Impersonation is only for a Super Admin who helps a local council Admin. Super Admins find the Admin in two places. The **[ 👥 Council Roster ]** shows the **👥 Impersonate Admin** button on each council Admin's row. The **Impersonate Council Admin** page shows the Admins of every council in one tree.
+Impersonation is only for a Super Admin who helps a local council Admin. Super Admins find the Admin in two places. The **Council Roster** shows the **Impersonate Admin** button on each council Admin's row. The **Impersonate Council Admin** page shows the Admins of every council in one tree.
 
 ### 9.4 View the portal as a council Admin
-> **Who can do this:** Super Admins. Other members do not see the **👥 Impersonate Admin** button.
+> **Who can do this:** Super Admins. Other members do not see the **Impersonate Admin** button.
 
 **Goal:** See the portal with one council Admin's sidebar, pages and permissions while you help the Admin.
 
-**Start point:** Sidebar → Faith In Action → **[ 👥 Council Roster ]**.
+**Start point:** Sidebar → Faith In Action → **Council Roster**.
 
 **Steps:**
 1. Choose the Admin's council in **Council**, or keep **All councils on the platform**.
 2. Find the Admin in the roster table.
-3. Select **👥 Impersonate Admin** in the **Actions** column.
+3. Select **Impersonate Admin** in the **Actions** column.
 4. Look at the pages. The portal opens on the Admin's **Home**.
 5. Select **Return to my account** in the gold bar to end the view.
 
@@ -901,7 +901,7 @@ Impersonation is only for a Super Admin who helps a local council Admin. Super A
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A save fails with "You are viewing the portal as another member, so nothing can be saved." | The view is read-only. | Select **Return to my account**, then make the change as yourself. |
-| The row has no **👥 Impersonate Admin** button. | The member is not a council Admin, or is you. | Impersonate council Admins only. To see a member's view, ask the council's Admin to use **View As Member**. |
+| The row has no **Impersonate Admin** button. | The member is not a council Admin, or is you. | Impersonate council Admins only. To see a member's view, ask the council's Admin to use **View As Member**. |
 | An error says "The server did not answer, so the view could not start." | The portal server cannot see the member or your session ended. | Sign out, sign in again, then try again. |
 
 ### 9.4.1 Find a council Admin in any council and impersonate the Admin
@@ -914,10 +914,10 @@ Impersonation is only for a Super Admin who helps a local council Admin. Super A
 **Steps:**
 1. Type part of a name, member number, email, role or council number in the search box.
 2. Read the suggested names under the box. Names that start with your text come first.
-3. Select **👥 Impersonate** beside the Admin. Go to step 7.
+3. Select **Impersonate** beside the Admin. Go to step 7.
 4. To browse without a search, select a council in the **Council directory**. The council opens.
 5. Select a group in the council. Each group lists only the council's Admins.
-6. Select **👥 Impersonate** beside the Admin.
+6. Select **Impersonate** beside the Admin.
 7. Look at the pages. The portal opens on the Admin's **Home**, with the Admin's council settings.
 8. Select **Return to my account** in the gold bar to end the view.
 
@@ -963,16 +963,16 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 
 **Goal:** Let a Super Admin see your screen while you get help.
 
-**Start point:** The portal header → **❓ Request Remote Officer Assistance**.
+**Start point:** The portal header → **Request Remote Officer Assistance**.
 
 **Steps:**
-1. Select **❓ Request Remote Officer Assistance**.
+1. Select **Request Remote Officer Assistance**.
 2. Enter what you need in **What do you need help with? (optional)**.
 3. Select **Share my screen**.
 4. Go to the page you need help with. The Super Admin sees each page you open.
 5. Select **Stop sharing** when you finish.
 
-**Expected result:** The header button turns red and says **● Sharing screen · Stop sharing**. After **Stop sharing**, the button goes back to **❓ Request Remote Officer Assistance**.
+**Expected result:** The header button turns red and says **● Sharing screen · Stop sharing**. After **Stop sharing**, the button goes back to **Request Remote Officer Assistance**.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1041,9 +1041,9 @@ The desk has three folders across the top:
 
 | Folder | What it does |
 | --- | --- |
-| **[ 📥 Feedback Communication Center ]** | Shows the notes that council Admins send, newest first. |
-| **[ 🔑 Council Access Request Approval Queue ]** | Shows the councils that ask to join the platform. Each pending request has an **Approve** button. |
-| **[ 🛠️ System Feature Flag Control Panel ]** | Shows each council's modules. A checkbox switches a module on or off at once. |
+| **Feedback Communication Center** | Shows the notes that council Admins send, newest first. |
+| **Council Access Request Approval Queue** | Shows the councils that ask to join the platform. Each pending request has an **Approve** button. |
+| **System Feature Flag Control Panel** | Shows each council's modules. A checkbox switches a module on or off at once. |
 
 Under the folders, the desk has four drawers. Select a drawer's title to open or close it:
 
@@ -1074,7 +1074,7 @@ Under the folders, the desk has four drawers. Select a drawer's title to open or
 
 **Goal:** Share the roadmap and the coming releases with the advisory panel, set its meeting dates and read its feedback.
 
-**Start point:** Sidebar → **🔊 Application Advisory Panel** (under **Navigation Guide**).
+**Start point:** Sidebar → **Application Advisory Panel** (under **Navigation Guide**).
 
 The panel has four views:
 
@@ -1090,15 +1090,15 @@ The panel has four views:
 2. To add a meeting, select **Add meeting** on **Panel Meeting Dates**. Enter the date and the title. Select **Save meeting**.
 3. To send feedback, open **Consultation Feedback**. Type the **Topic** and **Your feedback**. Select **Send feedback**.
 4. To add a panelist (Super Admins), choose the **Council** and the **Member** under **Panelists**. Select **Add panelist**.
-5. To invite a member of any council (the platform owner), select **✉️ Invite Panelist**. Choose the **Council** and the **Member**. Select **Post invitation**. No email is sent: the invitation card appears on the member's alert bell and **Home**, and on their phone's **Home**. It stays open for 14 days.
-6. The invited member selects **Accept** on the card. The member becomes a panelist at once, and **🔊 Application Advisory Panel** appears in the sidebar.
+5. To invite a member of any council (the platform owner), select **Invite Panelist**. Choose the **Council** and the **Member**. Select **Post invitation**. No email is sent: the invitation card appears on the member's alert bell and **Home**, and on their phone's **Home**. It stays open for 14 days.
+6. The invited member selects **Accept** on the card. The member becomes a panelist at once, and **Application Advisory Panel** appears in the sidebar.
 
 **Expected result:** The meeting shows in the list. The feedback shows at the top of **Feedback received**. A panelist added under **Panelists** sees the panel after the next sign-in; a member who selects **Accept** on an invitation sees it at once.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The sidebar has no **🔊 Application Advisory Panel** link. | You are not a panelist or a Super Admin, or you signed in before you were added. | Ask a Super Admin. Sign out and sign in again. |
+| The sidebar has no **Application Advisory Panel** link. | You are not a panelist or a Super Admin, or you signed in before you were added. | Ask a Super Admin. Sign out and sign in again. |
 | **Add meeting** is missing. | Only Super Admins keep the meeting dates. | Ask a Super Admin. |
 | *"This invitation is older than 14 days."* | The invitation expired. | Ask the platform owner for a new invitation. |
 | An alert cannot use the title **Advisory Panel invitation**. | The title is reserved for invitations. | Choose another title for the alert. |
@@ -1320,7 +1320,7 @@ The launchers set most keys. Set the other keys in the terminal or in `.env`. Ne
 - **Switch off (default):** the code step applies to **Admin** and **Super Admin** accounts only. Other members sign in with a password.
 - **Switch on (`TWO_FACTOR_REQUIRED=1`):** the code step applies to every account: members, officers, Admins and Super Admins. Restart the portal server after you change the switch.
 - The step is on only when the server holds the Twilio keys or the SendGrid keys in the table above. When the switch is on and the server has no keys, sign-in has one step and the server log shows a warning. A missing key never locks out the platform.
-- When the switch is on, the server has keys, and a member has no valid cell phone or email on file, the portal refuses that member's sign-in. The member reads *"Ask your council admin to add your cell phone."* Add the cell phone on the **[ 👥 Council Roster ]** page.
+- When the switch is on, the server has keys, and a member has no valid cell phone or email on file, the portal refuses that member's sign-in. The member reads *"Ask your council admin to add your cell phone."* Add the cell phone on the **Council Roster** page.
 - The code goes by text message to the phone on file. When the server has no Twilio keys, or the phone number is not valid, the code goes by email to the address on file.
 - A code has 6 digits. It expires after 5 minutes. After 5 wrong codes, the member must sign in again for a new code.
 - **1-tap fill:** on iPhone, iPad and Android, the texted code shows above the keyboard. The member taps it once to fill the box.
@@ -1509,7 +1509,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 **Steps:**
 1. **Supreme CSV Roster Ingestion:** drop the Supreme roster CSV file. Select **Sync**.
 2. **File Storage and Email Gateway:** choose the file repository provider. Type the mail server, the sign-in email and the password. Select **Save**. The password goes to the **Secure Access Vault** for your home council only.
-3. **Clone Founding Template:** select **⚡ Clone Founding Template**. The platform copies the chart of accounts, the **Council Lookup Tables** rows and the **Council Wide Settings** of Founding Council 15295.
+3. **Clone Founding Template:** select **Clone Founding Template**. The platform copies the chart of accounts, the **Council Lookup Tables** rows and the **Council Wide Settings** of Founding Council 15295.
 4. **Practice Sandbox:** to try the desks first, select **Activate Safe Practice Sandbox**.
 5. **Quick-Start Guide:** select **Download the Quick-Start Intake Guide**. Select **Open the Admin Desk**.
 

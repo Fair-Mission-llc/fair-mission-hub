@@ -46,7 +46,7 @@ export function WorkflowStepRow({ steps, label }: { steps: readonly WorkflowStep
           )}
         >
           <p className="text-xs font-bold uppercase tracking-wide">
-            {step.state === 'done' ? '✓ ' : `${i + 1}. `}
+            {`${i + 1}. `}
             {step.label}
             {step.state === 'current' ? <span className="ml-1 text-navy">(now)</span> : null}
           </p>

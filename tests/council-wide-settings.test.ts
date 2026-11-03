@@ -182,18 +182,18 @@ describe('Council Wide Settings page and plain-English labels', () => {
   });
 
   it('uses the new button text everywhere', () => {
-    expect(read('apps/web/components/QuarantineDesk.tsx')).toContain('[ 🟢 Approve & Add to Time Log ]');
-    expect(read('apps/web/components/QuarantineDesk.tsx')).toContain('[ 🔴 Reject & Return to Member ]');
+    expect(read('apps/web/components/QuarantineDesk.tsx')).toContain('Approve & Add to Time Log');
+    expect(read('apps/web/components/QuarantineDesk.tsx')).toContain('Reject & Return to Member');
     // Sprint 9 Revision 1.1: a reject asks for a reason first.
     expect(QUARANTINE_RETURN_REASON_LABEL).toBe('Reason for returning time report (required)');
-    expect(TREASURER_CODE_EXPENSE_LABEL).toBe('🏷️ Categorize & Lock Expense');
+    expect(TREASURER_CODE_EXPENSE_LABEL).toBe('Categorize & Lock Expense');
     const parts = read('apps/web/components/ExpenseParts.tsx');
-    expect(parts).toContain("EXPENSE_APPROVE_LABEL = '📝 Verify & Sign Expense'");
-    expect(parts).toContain("EXPENSE_COUNTERSIGN_LABEL = '✍️ Final Release for Payment'");
+    expect(parts).toContain("EXPENSE_APPROVE_LABEL = 'Verify & Sign Expense'");
+    expect(parts).toContain("EXPENSE_COUNTERSIGN_LABEL = 'Final Release for Payment'");
     // Sprint 8A: the sweep lives only on System Settings > Council Wide Settings.
-    expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('🔍 Check for Inactive Members');
+    expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('Check for Inactive Members');
     const guide = read('docs/ADMIN_USER_GUIDE.md');
-    for (const old of ['Clear Hours to Ledger', 'Delete Fraudulent Time', 'Code to Ledger', '📜 Approve Expense', 'Countersign Expense', 'Run inactivity sweep']) {
+    for (const old of ['Clear Hours to Ledger', 'Delete Fraudulent Time', 'Code to Ledger', 'Approve Expense', 'Countersign Expense', 'Run inactivity sweep']) {
       expect(guide).not.toContain(old);
     }
     expect(guide).toContain('## 8. Council Wide Settings and platform settings'); // renamed in Sprint 7E

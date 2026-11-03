@@ -71,9 +71,9 @@ const detail = (r: CharitableRequest) => ({ request: r });
 describe('1. the outgoing charity pipeline (pure)', () => {
   it('names the three steps exactly', () => {
     expect([CHARITY_REQUEST_STEP_LABEL, CHARITY_ENDORSEMENT_STEP_LABEL, CHARITY_SETTLEMENT_STEP_LABEL]).toEqual([
-      '[ 📋 Member Charity Request ]',
-      '[ ✍️ FS/GK Compliance Endorsement ]',
-      '[ ⛪ Treasurer Check Settlement ]',
+      'Member Charity Request',
+      'FS/GK Compliance Endorsement',
+      'Treasurer Check Settlement',
     ]);
   });
 
@@ -255,7 +255,7 @@ describe('2. the Old Business engine (pure)', () => {
   });
 
   it('renames the Home card and shows the next seven days with the priorities', () => {
-    expect(UPCOMING_EVENT_AGENDA_TITLE).toBe('[ 📅 Upcoming Event Agenda ]');
+    expect(UPCOMING_EVENT_AGENDA_TITLE).toBe('Upcoming Event Agenda');
     expect(HOME_UNIVERSAL_CARDS).toContain('Upcoming Event Agenda');
     expect(HOME_UNIVERSAL_CARDS).not.toContain("Today's Event Agenda");
     const e = (id: number, startDate: string, endDate = startDate, startTime: string | null = null) => ({ id, kind: 'event', title: `E${id}`, startDate, endDate, startTime }) as unknown as CalendarEntry;

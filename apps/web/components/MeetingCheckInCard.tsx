@@ -104,7 +104,7 @@ function CheckInForm({ user, councilId, fence, onSaved }: { user: SessionUser; c
             void submit(null, next);
           }}
         >
-          🔢 Generate new PIN
+          Generate new PIN
         </Button>
         <Button type="submit" disabled={busy}>
           {busy ? 'Saving…' : 'Save meeting check-in'}
@@ -123,7 +123,7 @@ export function MeetingCheckInCard({ user, councilId }: { user: SessionUser; cou
     <section aria-labelledby="meeting-check-in" className="mt-5 rounded border-2 border-navy bg-white text-black">
       <header className="border-b-2 border-navy bg-navy px-4 py-2 text-white" data-surface="navy">
         <h2 id="meeting-check-in" className="font-serif text-xl font-bold">
-          {GPS_UI_SUPPRESSED ? '🔢' : '📍'} Meeting Check-In
+          Meeting Check-In
         </h2>
         <p className="text-sm">
           {GPS_UI_SUPPRESSED ? 'The 4-digit PIN members type on the phone to check in to a meeting.' : 'Where members check in by GPS from the phone, and the PIN for members outside the circle.'}

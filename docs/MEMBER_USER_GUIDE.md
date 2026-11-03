@@ -86,11 +86,11 @@ The navy header at the top of the phone has two more controls.
 Each block below is collapsible. Only the overview is open. Select a title to open it.
 
 <details open>
-<summary>📍 Overview — read this first</summary>
+<summary>Overview — read this first</summary>
 
-- Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **[ 🙏 Praying Hands ]** on the prayer list to pray for an intention. When more cards are below the first screen, the line **Scroll down for more council info ↓** shows at the bottom. The line fades away when you start to scroll down.
+- Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **Praying Hands** on the prayer list to pray for an intention. When more cards are below the first screen, the line **Scroll down for more council info ↓** shows at the bottom. The line fades away when you start to scroll down.
 - Your volunteer check-in is on the **Member Actions Hub**. Select **Member Actions Hub** in the sidebar to open it. The page has four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. Your shift trackers, charity requests and sheets are on the **Member Desk** tab.
-- **[ 👥 Council Roster ]** is the first link in the **Faith In Action** pillar. It lists the phone and email of active brothers of your council and its sister councils.
+- **Council Roster** is the first link in the **Faith In Action** pillar. It lists the phone and email of active brothers of your council and its sister councils.
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
@@ -99,24 +99,24 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
 - Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
 - If the platform owner invites you to the **Application Advisory Panel**, an invitation card shows at the top of **Home**, on your alert bell and on your phone's **Home**. Select **Accept** to join.
-- **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **⚖** to read them. Both are dated October 26, 2026.
-- If a Super Admin made you an **Application Advisory Panelist**, **🔊 Application Advisory Panel** shows under **Navigation Guide**.
+- **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **** to read them. Both are dated October 26, 2026.
+- If a Super Admin made you an **Application Advisory Panelist**, **Application Advisory Panel** shows under **Navigation Guide**.
 
 </details>
 
 <details>
-<summary>🏠 Dashboard</summary>
+<summary>Dashboard</summary>
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **Home** tab (tab row above every page) | None | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **[ 🙏 Praying Hands ]** |
+| **Home** tab (tab row above every page) | None | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **Praying Hands** |
 | **Member Actions Hub** | Faith In Action | Its own page: your active shifts, sign-ups, the roster and your hours |
 | **Council Dashboard** | Performance | Your impact and the council's engagement |
 
 </details>
 
 <details>
-<summary>📅 Calendars and meetings</summary>
+<summary>Calendars and meetings</summary>
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
@@ -126,18 +126,18 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 </details>
 
 <details>
-<summary>👥 Rosters and offices</summary>
+<summary>Rosters and offices</summary>
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
-| **[ 👥 Council Roster ]** | Faith In Action (first link) | The phone, email and degree of active brothers of your council and its sister councils. The same list is on the **Member Desk** tab |
-| **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | The same list as **[ 👥 Council Roster ]** |
+| **Council Roster** | Faith In Action (first link) | The phone, email and degree of active brothers of your council and its sister councils. The same list is on the **Member Desk** tab |
+| **Member Actions Hub** → **Fraternal roster** tab | Faith In Action | The same list as **Council Roster** |
 | **Council Election Center** | Governance | Election progress, nominations and the secret ballot at a live meeting |
 
 </details>
 
 <details>
-<summary>📒 Ledgers and money</summary>
+<summary>Ledgers and money</summary>
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
@@ -150,7 +150,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 </details>
 
 <details>
-<summary>🗄️ Archives and answers</summary>
+<summary>Archives and answers</summary>
 
 | Link | Pillar | What it holds |
 | --- | --- | --- |
@@ -186,7 +186,7 @@ The **Navigation Guide** explains each link in your sidebar. Use it when you can
 
 - **Where:** select **Navigation Guide** at the top of the sidebar, above the pillars.
 - **What you see:** one short sentence for each page and desk that you can open. Officers see more: the sidebar pillar of each link and every drawer of their desks. You see only the pages that your role can open.
-- **How it opens:** all of the category groups are closed. Only **Overview** is open. Select a group title, for example **📅 Calendars**, to open it. Select the title again to close it.
+- **How it opens:** all of the category groups are closed. Only **Overview** is open. Select a group title, for example **Calendars**, to open it. Select the title again to close it.
 - **The order:** the overview, then the sidebar categories, then **Your desks**, **Your time limits** and **Phone app tabs**.
 
 **To find a page:**
@@ -306,7 +306,7 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 **Start point:** Phone app → the email screen or the **Welcome back** screen.
 
 **Steps:**
-1. Tap **🔑 Sign In with FaceID / Biometrics**.
+1. Tap **Sign In with FaceID / Biometrics**.
 2. Look at the phone, or touch the fingerprint sensor.
 
 **Expected result:** The **Home** tab opens.
@@ -314,7 +314,7 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The biometric button does not show. | You created your password on another phone, or before biometric sign-in existed. | Sign in with your password, with the **[ 🔘 Enable FaceID / Biometric Login ]** switch on (2.4.1). |
+| The biometric button does not show. | You created your password on another phone, or before biometric sign-in existed. | Sign in with your password, with the **Enable FaceID / Biometric Login** switch on (2.4.1). |
 | *"The biometric check did not pass."* | The phone did not recognize your face or finger. | Try again, or sign in with your password. |
 | *"Face ID or fingerprint is not available on this phone right now."* | The phone has no enrolled face or finger. | Sign in with your password. |
 | *"Your council has turned off biometric sign-in."* | Your council's leaders turned off biometric sign-in. The phone deletes its biometric key. | Sign in with your password. |
@@ -329,11 +329,11 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 
 **Steps:**
 1. Type your password.
-2. Tap the **[ 🔘 Enable FaceID / Biometric Login ]** switch. The switch turns dark.
+2. Tap the **Enable FaceID / Biometric Login** switch. The switch turns dark.
 3. Tap **Sign in**.
 4. Look at the phone, or touch the fingerprint sensor.
 
-**Expected result:** The **Home** tab opens. The next time, the sign-in screen shows **🔑 Sign In with FaceID / Biometrics** (2.4).
+**Expected result:** The **Home** tab opens. The next time, the sign-in screen shows **Sign In with FaceID / Biometrics** (2.4).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -377,8 +377,8 @@ The phone also turns on biometric sign-in for your account (see 2.4).
 
 **Steps:**
 1. Sign in with your password (2.5). Open **My Profile**.
-2. Select **🔐 Set up FaceID sign-in**. Look at the camera or touch the sensor when the computer asks.
-3. Next time, select **🔐 Sign in with FaceID** on the sign-in page. Look at the camera or touch the sensor.
+2. Select **Set up FaceID sign-in**. Look at the camera or touch the sensor when the computer asks.
+3. Next time, select **Sign in with FaceID** on the sign-in page. Look at the camera or touch the sensor.
 
 **Expected result:** The portal opens with the sidebar on the left. Your password is not asked.
 
@@ -472,7 +472,7 @@ Who types a code: Admins and Super Admins always type a code when the portal has
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The header shows no **Sign out** button. | Large Text Layout Mode hides the header text. | Tap **⚙ Settings**. Then tap **Sign out**. |
+| The header shows no **Sign out** button. | Large Text Layout Mode hides the header text. | Tap **Settings**. Then tap **Sign out**. |
 
 ---
 
@@ -607,7 +607,7 @@ The link is private. A person who has your link can read your schedule. Do not s
 
 **Goal:** See your shifts and meetings in Google Calendar, Apple Calendar or Outlook.
 
-**Start point:** Web portal → Sidebar → Faith In Action → **Visual Master Calendar** → **🗓️ Sync with Your Phone Calendar** card, below the calendar.
+**Start point:** Web portal → Sidebar → Faith In Action → **Visual Master Calendar** → **Sync with Your Phone Calendar** card, below the calendar.
 
 **Steps:**
 1. Open the start point.
@@ -826,7 +826,7 @@ Time that you saved earlier today stays saved.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The button shows **🔒 Reporting locked**. | The event has not started, or the event ended more than 30 days ago. | Use the web **Hour ledger** within 90 days of the shift. |
+| The button shows **Reporting locked**. | The event has not started, or the event ended more than 30 days ago. | Use the web **Hour ledger** within 90 days of the shift. |
 | The **A shift I worked** sub-tab is missing. | Your council switched off the **Event shifts** module. | Log activity time only. |
 | *"You have no shifts in the last 90 days to report time for."* | You have no shift in the window. | Log activity time instead. |
 
@@ -933,10 +933,10 @@ The phone reads the agenda again every 3 seconds. The phone marks the line on th
 
 **Steps:**
 1. Find the meeting card.
-2. Tap **👍 Count Me In**.
-3. To withdraw your answer, tap **✓ Attending**.
+2. Tap **Count Me In**.
+3. To withdraw your answer, tap **Attending**.
 
-**Expected result:** The button changes to a green **✓ Attending** banner. The app saves the answer at once.
+**Expected result:** The button changes to a green **Attending** banner. The app saves the answer at once.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -954,7 +954,7 @@ The phone reads the agenda again every 3 seconds. The phone marks the line on th
 
 **Steps:**
 1. Find the meeting card under **My Invites** or **All Schedules**.
-2. Tap **📋 Full agenda**. The **Agenda** sub-tab opens on the meeting.
+2. Tap **Full agenda**. The **Agenda** sub-tab opens on the meeting.
 3. Or: tap the **Agenda** sub-tab. Tap the meeting date and name in the row of buttons at the top.
 4. Read the navy header. The header shows the meeting name, the date, the time and the location.
 5. Scroll down through the sections and the lines.
@@ -1061,7 +1061,7 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 ![Phone: the CHECK IN box with the MEETING PIN field and number pad (placeholder)](../generated/mobile_app_catalog/meeting_check_in_pin_pad.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The box turns navy and shows **✓ You are checked in**. A message says *"Checked in with the meeting PIN."*
+**Expected result:** The box turns navy and shows **You are checked in**. A message says *"Checked in with the meeting PIN."*
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1077,7 +1077,7 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 
 **Goal:** Keep one photo from the meeting with your check-in.
 
-**Start point:** Phone app → **Mtgs** tab → **● Follow the live agenda** → the **✓ You are checked in** box.
+**Start point:** Phone app → **Mtgs** tab → **● Follow the live agenda** → the **You are checked in** box.
 
 **Steps:**
 1. Tap **Add a meeting photo**.
@@ -1085,7 +1085,7 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 3. Take the photo.
 4. Confirm the photo in the camera screen.
 
-**Expected result:** The photo shows in the **✓ You are checked in** box. To change the photo, tap **Replace my meeting photo**.
+**Expected result:** The photo shows in the **You are checked in** box. To change the photo, tap **Replace my meeting photo**.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1099,23 +1099,23 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 
 **Goal:** Vote by secret ballot on a motion at a live meeting.
 
-**Start point:** Web portal on your phone or computer → Sidebar → Governance → **Council Election Center** → **🗳️ Cast Active Ballot**.
+**Start point:** Web portal on your phone or computer → Sidebar → Governance → **Council Election Center** → **Cast Active Ballot**.
 
 **Steps:**
-1. Select **🗳️ Cast Active Ballot** to open the drawer.
+1. Select **Cast Active Ballot** to open the drawer.
 2. Listen for the meeting PIN. The chair reads out the PIN.
 3. Type the 4 digits in **Enter the meeting PIN**.
-4. Select **🔓 Unlock Ballot**. This checks you in to the meeting.
+4. Select **Unlock Ballot**. This checks you in to the meeting.
 5. Wait for the chair to open the ballot. The motion shows in the drawer.
 6. Select **Approve**, **Deny** or **Abstain**.
 
-**Expected result:** The drawer shows *"Your secret ballot is cast. It is counted without your name."* The motion shows **🔒 Your ballot on this motion is recorded.**
+**Expected result:** The drawer shows *"Your secret ballot is cast. It is counted without your name."* The motion shows **Your ballot on this motion is recorded.**
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"No council meeting is in session."* | The meeting is not live yet. | Wait for the chair to start the meeting. Select **Check again**. |
-| **🔓 Unlock Ballot** stays grey. | The PIN has fewer than 4 digits. | Type all 4 digits. |
+| **Unlock Ballot** stays grey. | The PIN has fewer than 4 digits. | Type all 4 digits. |
 | *"No ballot is open right now."* | The chair has not opened the ballot. | Keep the drawer open. The ballot shows when the chair opens it. |
 | You cannot vote again. | You can vote one time on each motion. | No action. Your first ballot counts. |
 
@@ -1359,7 +1359,7 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 3. Enter the number printed on the check in **CHECK NUMBER (REQUIRED)**.
 4. Choose the **DONATION TYPE**.
 5. Optional: fill in **DONOR NAME (OPTIONAL)**.
-6. Optional: under **DEPOSIT PHOTO (OPTIONAL)**, tap **📸 Attach Deposit Photo**. Photograph the front of the check. The Cash form has no photo button.
+6. Optional: under **DEPOSIT PHOTO (OPTIONAL)**, tap **Attach Deposit Photo**. Photograph the front of the check. The Cash form has no photo button.
 7. Tap **Record donation**. The gift saves at once.
 
 **Expected result:** A message says *"Recorded $50.00 by Check for … Thank the donor!"* with the amount and the event. With a photo, the message also says *"Deposit photo attached."*. In a room pilot, the photo is kept on the hub laptop.
@@ -1415,7 +1415,7 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"Cash is not enabled"* | The council has no Cash method. | Ask your council Admin to enable Cash. |
-| The **🎬 Start Active Intake Session** switch is gone. | The tiles now open as soon as you tap **Start**. | Use the tiles. |
+| The **Start Active Intake Session** switch is gone. | The tiles now open as soon as you tap **Start**. | Use the tiles. |
 | You recorded one gift too many. | Each **Record donation** saves a donation. | Ask the Treasurer, the Financial Secretary or an Admin to correct the donation. |
 
 ### 7.4.1 Record a cash box drop
@@ -1573,7 +1573,7 @@ For an organization that is not on the list, select **Another organization (type
 
 **Goal:** Contact another member.
 
-**Start point:** Sidebar → Faith In Action → **[ 👥 Council Roster ]**. The same list is on the **Member Desk** tab and on the **Fraternal roster** tab of the **Member Actions Hub**.
+**Start point:** Sidebar → Faith In Action → **Council Roster**. The same list is on the **Member Desk** tab and on the **Fraternal roster** tab of the **Member Actions Hub**.
 
 **Steps:**
 1. Enter a name or a member number in **Search by name or number**.
@@ -1626,7 +1626,7 @@ For an organization that is not on the list, select **Another organization (type
 **Start point:** Phone app → your name in the header → **Settings** → **Display**. Web portal → **My Profile** → **Display settings**.
 
 **Steps:**
-1. Turn on **[ 👓 Enable Large Text Layout Mode ]**.
+1. Turn on **Enable Large Text Layout Mode**.
 
 **Expected result:** The phone app shows larger bold white text on black, with gold borders and taller buttons.
 The activity tiles fill the screen width, one tile per row. The web portal stores the setting only. The web portal does not change size.
@@ -1634,7 +1634,7 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The header shows no title or **Sign out**. | Large text mode hides the header text. | Tap **⚙ Settings** to sign out or to turn the mode off. |
+| The header shows no title or **Sign out**. | Large text mode hides the header text. | Tap **Settings** to sign out or to turn the mode off. |
 
 ### 9.6 Report a problem or share an idea
 
@@ -1688,7 +1688,7 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 **Start point:** Web portal → **Home** (the portal opens there after you sign in).
 
 **Steps:**
-1. Open **Home**. The **[ 📰 Latest Council Newsletters & Bulletins ]** card is at the top of the page.
+1. Open **Home**. The **Latest Council Newsletters & Bulletins** card is at the top of the page.
 2. Read the newest newsletter. It shows in full.
 3. To read an older newsletter, select its headline.
 
@@ -1706,8 +1706,8 @@ The phone **Home** tab keeps the first screen short. Two drawers sit under the g
 
 | Drawer | What the drawer holds | Closed drawer shows |
 | --- | --- | --- |
-| **[ 📿 Active Spiritual Intentions Drawer ]** | The council's open prayer intentions, **[ 🙏 Praying Hands ]** and the box to post an intention | The number of open intentions |
-| **[ 📖 Daily Devotional Drawer ]** | Today's Bible verse (NABRE), your devotional tally and your shield | Today's verse reference |
+| **Active Spiritual Intentions Drawer** | The council's open prayer intentions, **Praying Hands** and the box to post an intention | The number of open intentions |
+| **Daily Devotional Drawer** | Today's Bible verse (NABRE), your devotional tally and your shield | Today's verse reference |
 
 The drawers show only when your council uses the Faith Center.
 
@@ -1720,8 +1720,8 @@ The drawers show only when your council uses the Faith Center.
 **Start point:** Phone app → **Home** → under the greeting.
 
 **Steps:**
-1. Tap **[ 📿 Active Spiritual Intentions Drawer ]** or **[ 📖 Daily Devotional Drawer ]**. The drawer opens.
-2. Use the drawer. For example, tap **[ 🙏 Praying Hands ]** or tap **Log devotions**.
+1. Tap **Active Spiritual Intentions Drawer** or **Daily Devotional Drawer**. The drawer opens.
+2. Use the drawer. For example, tap **Praying Hands** or tap **Log devotions**.
 3. Tap the drawer name again to close the drawer.
 
 **Expected result:** The open drawer shows its list or its form under the drawer name. The arrow at the right points down.
@@ -1746,7 +1746,7 @@ The drawers show only when your council uses the Faith Center.
 | A tab is missing on the phone | Your council switched off the module. | Ask your council Admin. |
 | Taps say **QUEUED** | Taps wait for the slide bar. The platform has not saved the taps yet. | Drag **Slide to Log Hours** to the right end (4.2). |
 | The slide circle springs back | You let go too early. | Drag the circle all the way to the right end. |
-| **🔒 Reporting locked** on a shift | The 30-day phone window is closed. | Use the web **Hour ledger** within 90 days. |
+| **Reporting locked** on a shift | The 30-day phone window is closed. | Use the web **Hour ledger** within 90 days. |
 | Hours refused as an invalid step | The value is not a 15-minute step. | Use :00, :15, :30 or :45. |
 | Activity date refused | The date is older than the logging window (90 days by default). | The window is closed. Ask your council Admin. |
 | The gold agenda highlight does not move | The phone lost its connection. | Check your data or Wi-Fi connection. |

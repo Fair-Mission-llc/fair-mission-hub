@@ -250,11 +250,11 @@ describe('Sprint 8N: schema 84, the desk panels and the phone button', () => {
     expect(desks.indexOf('<CashBoxAuditPanel')).toBeLessThan(desks.indexOf('<BatchTransactionCoder'));
     expect(desks).not.toContain('<ParishSplitConsoleCard');
     expect(read('apps/web/components/CashAuditParts.tsx')).toContain('SELECT_ALL_UNCODED_LABEL');
-    expect(SELECT_ALL_UNCODED_LABEL).toBe('[✓ Select All Un-coded Transactions]');
+    expect(SELECT_ALL_UNCODED_LABEL).toBe('Select All Un-coded Transactions');
   });
 
   it("puts the conclude button on the phone's Donate tab", () => {
-    expect(CONCLUDE_EVENT_SESSION_LABEL).toBe('[ 🛑 Conclude Event Session & Lock Logs ]');
+    expect(CONCLUDE_EVENT_SESSION_LABEL).toBe('Conclude Event Session & Lock Logs');
     const donate = read('apps/mobile/app/(app)/donate.tsx');
     expect(donate).toContain('CONCLUDE_EVENT_SESSION_LABEL');
     expect(donate).toContain('db.events.concludeCollectionSession');

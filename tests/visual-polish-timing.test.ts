@@ -28,7 +28,7 @@ const gkIds = (u: ReturnType<typeof seat>, councilId = OWN) => deskDrawersFor(u,
 
 describe('the Council Goals & Targets folder', () => {
   it('files a flat folder on the Grand Knight Desk spine', () => {
-    expect(COUNCIL_GOALS_FOLDER_TITLE).toBe('[ 📈 Council Goals & Targets ]');
+    expect(COUNCIL_GOALS_FOLDER_TITLE).toBe('Council Goals & Targets');
     const spec = DESK_DRAWERS.find((d) => d.id === 'council-goals');
     expect(spec).toMatchObject({ desk: 'grand-knight', title: COUNCIL_GOALS_FOLDER_TITLE, gate: 'council-goals' });
     expect(spec?.cabinet).toBeUndefined();

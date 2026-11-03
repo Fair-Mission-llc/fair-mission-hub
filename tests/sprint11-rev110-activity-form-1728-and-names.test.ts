@@ -143,8 +143,8 @@ describe('5. five more unified screen names', () => {
   });
 
   it('Roster & Achievements names the roster link, page and directory', () => {
-    expect(MEMBER_ROSTER_TITLE).toBe('[ 👥 Council Roster ]');
-    expect(sidebar).toContain("roster: { href: '/roster', label: '[ 👥 Council Roster ]'");
+    expect(MEMBER_ROSTER_TITLE).toBe('Council Roster');
+    expect(sidebar).toContain("roster: { href: '/roster', label: 'Council Roster'");
   });
 
   it('Chamber Check-In names the PIN drawers and the phone check-in panel', () => {
@@ -167,7 +167,8 @@ describe('5. five more unified screen names', () => {
 
   it('drops the old names from the screens, the phone and the manuals', () => {
     // Sprint 11 Revision 17.0 restored the header button '[ 🛠️ Super Admin Desk ]'; the bare old name stays retired.
-    const old = /General Ledger Spreadsheet|Member Roster|Credentials Vault|(?<!🛠️ )Super Admin Desk|Meeting Check-In PIN|Meeting PIN \(Recorder Absent\)/u;
+    // Sprint 11 Revision 17.7: the header button reads the plain words 'Super Admin Desk', so that name is no longer retired.
+    const old = /General Ledger Spreadsheet|Member Roster|Credentials Vault|Meeting Check-In PIN|Meeting PIN \(Recorder Absent\)/u;
     for (const file of ['apps/web/components/Sidebar.tsx', 'packages/shared/src/desk-drawers.ts', 'packages/shared/src/admin-desk.ts', 'apps/mobile/components/GeofenceCheckIn.tsx', ...manuals])
       expect(read(file), file).not.toMatch(old);
   });

@@ -125,7 +125,7 @@ describe('schema 52 and the screens', () => {
     for (const piece of ['liturgicalBanner(today)', 'dailyVerse(today)', 'NABRE_NOTICE', 'HOLY_DAY_BADGE', 'db.prayers.getBoard(', 'db.prayers.pray(', 'db.prayers.addIntention(', 'PRAYING_HANDS_LABEL']) {
       expect(page).toContain(piece);
     }
-    expect(PRAYING_HANDS_LABEL).toBe('[ 🙏 Praying Hands ]');
+    expect(PRAYING_HANDS_LABEL).toBe('Praying Hands');
   });
 
   it('renders the prayer list with its Praying Hands counters on the phone Home screen', () => {
@@ -145,7 +145,7 @@ describe('schema 52 and the screens', () => {
   });
 
   it('names the Co-Pilot after Microsoft and drops GYST from the Recruitment Factory', () => {
-    expect(COPILOT_PROMPT_LABEL).toBe('🤖 Ask Microsoft Co-Pilot to Design Advanced Collateral');
+    expect(COPILOT_PROMPT_LABEL).toBe('Ask Microsoft Co-Pilot to Design Advanced Collateral');
     for (const path of ['apps/web/components/CopilotPrompt.tsx', 'apps/web/app/resources/marketing/page.tsx', 'apps/web/components/modules/CredentialsVaultPanel.tsx', 'packages/shared/src/copilot.ts']) {
       expect(read(path)).not.toMatch(/GYST/);
     }

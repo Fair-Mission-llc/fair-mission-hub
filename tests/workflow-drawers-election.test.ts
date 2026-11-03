@@ -136,7 +136,7 @@ describe('2. the ER and donation workflow drawers on both finance desks', () => 
 
 describe('3. the Council Election Workflow', () => {
   it('renames the Grand Knight drawer', () => {
-    expect(COUNCIL_ELECTION_WORKFLOW_TITLE).toBe('[ 🗳️ Council Election Workflow ]');
+    expect(COUNCIL_ELECTION_WORKFLOW_TITLE).toBe('Council Election Workflow');
     expect(DESK_DRAWERS.find((d) => d.id === 'election-workflow')).toMatchObject({ desk: 'grand-knight', title: COUNCIL_ELECTION_WORKFLOW_TITLE, area: 'elections' });
     expect(DESK_DRAWERS.some((d) => (d.id as string) === 'election-tracker' || d.title === 'Council Election Tracker')).toBe(false);
     expect(ids(GK, 'grand-knight')).toContain('election-workflow');

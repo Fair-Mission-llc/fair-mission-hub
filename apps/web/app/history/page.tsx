@@ -121,7 +121,7 @@ function DiaryEntry({ d }: { d: DiaryEntryDetail }) {
       {audio ? (
         isDriveFileId(audio) ? (
           <a href={driveFileViewUrl(audio)} target="_blank" rel="noreferrer" className="mt-2 inline-block underline">
-            🎧 Listen to the testimonial in Google Drive
+            Listen to the testimonial in Google Drive
           </a>
         ) : (
           <audio controls preload="none" src={assetHref(audio)} className="mt-2 w-full" aria-label={`Oral history testimonial by ${d.authorFirstName} ${d.authorLastName}`}>

@@ -573,7 +573,6 @@ function LiveConsole() {
                   return (
                     <li key={m.id} className={cx('flex items-center justify-between gap-2 rounded border-2 px-3 py-2', here ? 'border-navy bg-white' : 'border-line')}>
                       <span className={cx('text-sm', here && 'font-bold')}>
-                        {here ? '✓ ' : ''}
                         {formatPersonName(m.MemberFirstName, m.MemberLastName)}
                         <NewMemberBadge member={m} />
                       </span>

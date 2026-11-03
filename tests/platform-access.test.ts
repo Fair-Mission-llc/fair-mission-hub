@@ -391,7 +391,7 @@ describe('impersonation', () => {
     expect(route).toContain("actor.memberType !== 'Super Admin'");
     expect(route).toContain('db.auth.impersonate(claims.memberId, memberId)');
     expect(read('apps/web/services/server/session.ts')).toContain("claims.impersonatorId !== undefined && req.method !== 'GET'");
-    expect(read('apps/web/components/modules/MemberRosterDirectory.tsx')).toContain('👥 Impersonate Admin');
+    expect(read('apps/web/components/modules/MemberRosterDirectory.tsx')).toContain('Impersonate Admin');
     expect(read('apps/web/services/db.ts')).toContain('guardViewAsWrites(createDataService(), () => viewAsActive)');
   });
 });
@@ -433,17 +433,17 @@ describe('remote assistance', () => {
 
   it('puts the request button in the header for officers and Admins and draws the copy in a sandboxed frame', () => {
     expect(read('apps/web/components/Shell.tsx')).toContain("user.memberType !== 'Super Admin' && (user.isOfficer || user.memberType === 'Admin') ? <RemoteAssistButton />");
-    expect(read('apps/web/components/PlatformAccessParts.tsx')).toContain('❓ Request Remote Officer Assistance');
+    expect(read('apps/web/components/PlatformAccessParts.tsx')).toContain('Request Remote Officer Assistance');
     expect(read('apps/web/app/system-settings/remote-assistance/page.tsx')).toContain('sandbox=""');
   });
 });
 
 describe('sign-in gates and the mail center', () => {
   it('puts the understated access request link on both sign-in screens (Sprint 8P Stage 1)', () => {
-    expect(ACCESS_REQUEST_LINK_LABEL).toBe('[ 🔑 Request Access ]');
+    expect(ACCESS_REQUEST_LINK_LABEL).toBe('Request Access');
     for (const screen of ['apps/web/components/Shell.tsx', 'apps/mobile/app/sign-in.tsx']) {
       expect(read(screen)).toContain('{ACCESS_REQUEST_LINK_LABEL}');
-      expect(read(screen)).not.toContain('🏢 Register Your Council / Request Access');
+      expect(read(screen)).not.toContain('Register Your Council / Request Access');
     }
     expect(read('apps/mobile/app/sign-in.tsx')).toContain('db.accessRequests.submit(draft)');
   });

@@ -25,7 +25,7 @@ import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
-const MEDALS = ['🥇', '🥈', '🥉'];
+const MEDALS = ['1st', '2nd', '3rd'];
 
 export function EngagementCards({
   councilId,

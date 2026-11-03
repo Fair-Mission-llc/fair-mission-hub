@@ -62,7 +62,7 @@ import type { TenantType } from './tenant';
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[] };
 
 /** The safety anchor at the foot of every drawer and in the portal frame after a deep traverse. */
-export const BACK_TO_DESK_BLOTTER_LABEL = '[ 🔀 Back to Desk Blotter ]';
+export const BACK_TO_DESK_BLOTTER_LABEL = 'Back to Desk Blotter';
 /** The accessible name of a handle's Alert Boundary Accent when work waits on the reader's signature. */
 export const ALERT_BOUNDARY_LABEL = 'Waiting for your signature';
 /** How often an alerting desk re-reads its queues, so the accent lights while the desk stays open. */
@@ -70,7 +70,7 @@ export const DESK_ALERT_POLL_MS = 30_000;
 /** The sessionStorage key that remembers the desk a drawer deep-traversed from. */
 export const DESK_RETURN_STORAGE_KEY = 'kofc.deskReturn';
 /** Sprint 8S Revision 8: the Grand Knight Desk folder of the Star Council objectives. */
-export const COUNCIL_GOALS_FOLDER_TITLE = '[ 📈 Council Goals & Targets ]';
+export const COUNCIL_GOALS_FOLDER_TITLE = 'Council Goals & Targets';
 /** The one name of the operating-notes archive and its entry form, on every desk, page and guide (Sprint 8P Stage 3). */
 export const OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE = 'Operations Knowledge Vault';
 
@@ -147,31 +147,31 @@ export interface DeskDrawerSpec {
  */
 export type DeskCabinetId = 'inbound' | 'outbound' | 'accounting' | 'reference';
 export const DESK_CABINET_LABELS: Readonly<Record<DeskCabinetId, string>> = {
-  inbound: '[ 📥 Inbound Operations ]',
-  outbound: '[ 📤 Outbound Operations ]',
-  accounting: '[ 🔧 Accounting Configuration ]',
-  reference: '[ 📖 Reference Workflows ]',
+  inbound: 'Inbound Operations',
+  outbound: 'Outbound Operations',
+  accounting: 'Accounting Configuration',
+  reference: 'Reference Workflows',
 };
 // Sprint 11 Revision 16.0: the accounting names, one spelling for the sidebar, the desk drawers and the page titles.
 /** The chart of accounts and the general ledger (was 'Transaction Ledger' and 'Chart of Accounts & GL Setup'). */
-export const GENERAL_LEDGER_TITLE = '[ 📊 Chart of Accounts & General Ledger ]';
+export const GENERAL_LEDGER_TITLE = 'Chart of Accounts & General Ledger';
 /** The transfer between two asset accounts (finance.transferAssetFunds). */
-export const TRANSFER_FUNDS_TITLE = '[ 💸 Transfer Funds ]';
+export const TRANSFER_FUNDS_TITLE = 'Transfer Funds';
 /** The Treasurer's ledger coding desk (was 'Treasurer Ledger Audit Desk' and 'Ledger Line Coder'). */
-export const TREASURER_LEDGER_AUDIT_TITLE = '[ 🔍 Treasurer Ledger Audit ]';
+export const TREASURER_LEDGER_AUDIT_TITLE = 'Treasurer Ledger Audit';
 /** Paying fully signed sheets by check (was 'Bulk Check Payments Made' and 'Expense Report (ER) Settlement'). */
-export const DISBURSED_CHECK_REGISTRY_TITLE = '[ 🧾 Disbursed Check Registry ]';
+export const DISBURSED_CHECK_REGISTRY_TITLE = 'Disbursed Check Registry';
 /** Paying charity grants by check (was 'Charity Payments Made Ledger' and 'Charitable Contribution Matches'). */
-export const CHARITABLE_GRANTS_REGISTRY_TITLE = '[ 🕊️ Charitable Grants Registry ]';
+export const CHARITABLE_GRANTS_REGISTRY_TITLE = 'Charitable Grants Registry';
 /** The Financial Secretary's audit of submitted sheets (was 'FS Expense Audit' and 'Auditing & Return Queue'). */
-export const FS_EXPENSE_AUDIT_QUEUE_TITLE = '[ 📋 FS Expense Audit Queue ]';
+export const FS_EXPENSE_AUDIT_QUEUE_TITLE = 'FS Expense Audit Queue';
 /**
  * Sprint 11 Revision 17.5: the Finances pillar holds two separate sidebar accordions (the single 'Financial Views'
  * accordion is gone). Reports only read the books; actions are the desks where officers audit, sign, pay and record.
  * The links under them are drawn as plain text (sidebarLinkLabel: no icons, no brackets).
  */
-export const FINANCIAL_REPORTS_ACCORDION_TITLE = '📊 FINANCIAL REPORTS';
-export const FINANCIAL_ACTIONS_ACCORDION_TITLE = '⚡ FINANCIAL ACTIONS';
+export const FINANCIAL_REPORTS_ACCORDION_TITLE = 'FINANCIAL REPORTS';
+export const FINANCIAL_ACTIONS_ACCORDION_TITLE = 'FINANCIAL ACTIONS';
 
 /** Sprint 8S Revision 10.4: the Treasurer's general ledger folder (the chart of accounts on the Treasurer Desk). */
 export const CHART_OF_ACCOUNTS_FOLDER_TITLE = GENERAL_LEDGER_TITLE;

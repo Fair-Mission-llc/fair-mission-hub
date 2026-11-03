@@ -53,7 +53,7 @@ export function AdvisoryInviteCard({ className }: { className?: string }) {
     return (
       <div className={className}>
         <Notice tone="info">
-          Welcome to the Application Advisory Panel. Open it from <a href={ADVISORY_PANEL_HREF} className="font-bold underline">🔊 Application Advisory Panel</a> in the
+          Welcome to the Application Advisory Panel. Open it from <a href={ADVISORY_PANEL_HREF} className="font-bold underline">Application Advisory Panel</a> in the
           sidebar.
         </Notice>
       </div>

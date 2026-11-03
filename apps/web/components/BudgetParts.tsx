@@ -13,8 +13,8 @@ export const formatPercent = (percent: number | null): string => (percent === nu
 const ALERT_LABEL: Record<BudgetAlert, string> = {
   None: 'No activity',
   'On Track': 'On track',
-  Warning: `⚠ ${BUDGET_WARNING_THRESHOLD_PERCENT}%+ of cap`,
-  'Over Budget': '⚠ Over budget',
+  Warning: `${BUDGET_WARNING_THRESHOLD_PERCENT}%+ of cap`,
+  'Over Budget': 'Over budget',
   Unbudgeted: 'No approved cap',
 };
 

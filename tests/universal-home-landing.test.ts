@@ -98,7 +98,7 @@ describe('Member Actions folded into Home', () => {
   });
 
   it('keeps the twin shift trackers on the Member Desk and the Volunteer Center off it (Sprint 8S Revision)', () => {
-    expect(VOLUNTEER_CENTER_TITLE).toBe('🙋 Volunteer Check-In & Service Center');
+    expect(VOLUNTEER_CENTER_TITLE).toBe('Volunteer Check-In & Service Center');
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const memberDesk = desks.slice(desks.indexOf('export function MemberDesk('));
     const trackers = memberDesk.indexOf('aria-label="Shift trackers" className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2"');
@@ -119,7 +119,7 @@ describe('the collapsible left-navigation guides', () => {
 
   it('maps the left navigation by category before the desks and the phone tabs', () => {
     expect(executive).toContain('- [1. Left navigation map](#1-left-navigation-map)');
-    const order = ['🏠 Dashboard', '📅 Calendars', '👥 Rosters', '✅ Vetting', '📒 Ledgers', '🗄️ Archives', '🗂️ The desk tabs', '⏱️ The time windows', '📱 The five phone tabs'].map((t) =>
+    const order = ['Dashboard', 'Calendars', 'Rosters', 'Vetting', 'Ledgers', 'Archives', 'The desk tabs', 'The time windows', 'The five phone tabs'].map((t) =>
       part2.indexOf(`<summary>${t}`),
     );
     expect(order.every((at) => at > -1)).toBe(true);
@@ -129,11 +129,11 @@ describe('the collapsible left-navigation guides', () => {
   it('opens only the overview, in both guides', () => {
     for (const blocks of [detailsBlocks(part2), detailsBlocks(read('docs/MEMBER_USER_GUIDE.md'))]) {
       expect(blocks.length).toBeGreaterThan(5);
-      expect(blocks[0]).toEqual({ open: true, summary: '📍 Overview — read this first' });
+      expect(blocks[0]).toEqual({ open: true, summary: 'Overview — read this first' });
       expect(blocks.slice(1).every((b) => !b.open)).toBe(true);
     }
     // Multi-tiered: some categories hold nested blocks.
-    expect(part2).toMatch(/<summary>✅ Vetting<\/summary>\s+<details>\s+<summary>Expense signatures<\/summary>/);
+    expect(part2).toMatch(/<summary>Vetting<\/summary>\s+<details>\s+<summary>Expense signatures<\/summary>/);
     expect((part2.match(/<details/g) ?? []).length).toBe((part2.match(/<\/details>/g) ?? []).length);
   });
 
@@ -148,7 +148,7 @@ describe('the collapsible left-navigation guides', () => {
     // Sprint 8S Revision: the sidebar link reads plain 'Member Actions Hub'.
     for (const guide of [admin, read('docs/MEMBER_USER_GUIDE.md')]) {
       expect(guide).toContain('**Member Actions Hub**');
-      expect(guide).not.toContain('[ 🙋 Member Actions ]');
+      expect(guide).not.toContain('**Member Actions**');
     }
   });
 });
@@ -179,7 +179,7 @@ describe('the purely informational Home (Sprint 8R Corrected)', () => {
   });
 
   it('restores the Member Desk: twin shift trackers on top, then the volunteer tools', () => {
-    expect(MEMBER_DESK_SECTIONS.slice(0, 2)).toEqual(['🚗 Open Shifts Needing Volunteers', 'My shifts']);
+    expect(MEMBER_DESK_SECTIONS.slice(0, 2)).toEqual(['Open Shifts Needing Volunteers', 'My shifts']);
     expect(MEMBER_DESK_SECTIONS).not.toContain(VOLUNTEER_CENTER_TITLE);
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const memberDesk = desks.slice(desks.indexOf('export function MemberDesk('));
@@ -197,7 +197,7 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
   const superAdmin = { ...plain, memberType: 'Super Admin' as const, username: 'testsuperadmin@kofc.org' };
 
   it('files every sidebar link in a category, sidebar categories first', () => {
-    expect(NAVIGATION_MAP_CATEGORIES.map((c) => c.label).slice(0, 6)).toEqual(['🏠 Dashboard', '📅 Calendars', '👥 Rosters', '✅ Vetting', '📒 Ledgers', '🗄️ Archives']);
+    expect(NAVIGATION_MAP_CATEGORIES.map((c) => c.label).slice(0, 6)).toEqual(['Dashboard', 'Calendars', 'Rosters', 'Vetting', 'Ledgers', 'Archives']);
     for (const item of PORTAL_NAV_GROUPS.flatMap((g) => g.items)) expect(NAVIGATION_ITEM_CATEGORY[item]).toBeDefined();
   });
 
@@ -220,7 +220,7 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
     expect(gk.depth).toBe('full');
     expect(gk.categories.flatMap((c) => c.entries).every((e) => typeof e.pillar === 'string')).toBe(true);
     const desk = gk.desks.find((d) => d.id === 'grand-knight')!;
-    expect(desk.sections).toEqual(expect.arrayContaining(['Approved Expenses', '[ 🗳️ Council Election Workflow ]']));
+    expect(desk.sections).toEqual(expect.arrayContaining(['Approved Expenses', 'Council Election Workflow']));
     expect(gk.desks.find((d) => d.id === 'member')!.sections).toEqual([...MEMBER_DESK_SECTIONS]);
     const sa = navigationGuideMap(superAdmin);
     expect(sa.depth).toBe('full');
@@ -318,7 +318,7 @@ describe('Sprint 8S Revision: Member Actions Hub, plain expense tags and the pho
   });
 
   it('heads the hub with one master heading over the four-tab Volunteer Center', () => {
-    expect(MEMBER_ACTIONS_HUB_HEADING).toBe('[ 🙋 Member Actions Hub ]');
+    expect(MEMBER_ACTIONS_HUB_HEADING).toBe('Member Actions Hub');
     expect(MEMBER_ACTIONS_NAV_LABEL).not.toMatch(/\p{Extended_Pictographic}/u);
     const vc = read('apps/web/components/VolunteerCenter.tsx');
     expect(vc).toContain('aria-label={VOLUNTEER_CENTER_TITLE}');

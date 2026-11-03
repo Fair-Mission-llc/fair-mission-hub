@@ -104,7 +104,7 @@ describe('split-ticket and Honorary Expense rules (pure)', () => {
   });
 
   it('shows the Honorary Expense badge when the sheet is flagged or carries no receipt at all', () => {
-    expect(HONORARY_EXPENSE_BADGE).toBe('⚠️ HONORARY EXPENSE - NO RECEIPT ATTACHED');
+    expect(HONORARY_EXPENSE_BADGE).toBe('HONORARY EXPENSE - NO RECEIPT ATTACHED');
     expect(isHonoraryExpenseSheet({ flag_missing_receipt: 1 }, [costco], [])).toBe(true);
     expect(isHonoraryExpenseSheet({}, [], [{ ReceiptPhotoURL: null }])).toBe(true);
     expect(isHonoraryExpenseSheet({}, [{ receipt_file_url: null }], [])).toBe(true);

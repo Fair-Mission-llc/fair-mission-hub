@@ -42,7 +42,7 @@ export const GL_SPLIT_MAX_DESTINATIONS = 10;
 /** The label the chart of accounts shows on a split account. */
 export const GL_SPLIT_ACCOUNT_LABEL = 'Split Account';
 /** Sprint 9 Revision 6.2: the batch coder's one-time override control. */
-export const OVERRIDE_EVENT_SPLIT_LABEL = '⚖️ Override Event Split';
+export const OVERRIDE_EVENT_SPLIT_LABEL = 'Override Event Split';
 
 const cents = (n: number) => Math.round(n * 100);
 const dollars = (c: number) => c / 100;

@@ -174,11 +174,11 @@ export function OralHistoryRecorder({
       <div className="flex flex-wrap items-center gap-3">
         {phase === 'recording' ? (
           <Button variant="danger" onClick={stop} aria-label={`Stop recording and save (recording for ${clock(elapsed)})`}>
-            ⏹ Stop and save
+            Stop and save
           </Button>
         ) : (
           <Button variant="gold" onClick={() => void start()} disabled={phase !== 'idle' || !!blocked} className="text-base">
-            🎙️ Record Oral History Testimonial
+            Record Oral History Testimonial
           </Button>
         )}
         <span role="status" aria-live="polite" className="text-sm font-bold">
@@ -216,14 +216,14 @@ function CountdownMeter({ countdown, maxSeconds }: { countdown: ReturnType<typeo
   return (
     <div className="rounded border-2 border-navy bg-white p-4 text-navy" role="timer" aria-label={`Time left before the recording stops: ${remainingSpoken}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="text-base uppercase tracking-wide">⏱ Time left before automatic stop</span>
+        <span className="text-base uppercase tracking-wide">Time left before automatic stop</span>
         <span className={cx('text-5xl tabular-nums', warning ? 'text-brand-red' : 'text-navy')}>{remainingLabel}</span>
       </div>
       <div className="mt-3 h-4 w-full overflow-hidden rounded border-2 border-line bg-white" aria-hidden="true">
         <div className={cx('h-full', warning ? 'bg-brand-red' : 'bg-navy')} style={{ width: `${percentRemaining}%` }} />
       </div>
       <p className={cx('mt-2 text-base', warning && 'text-brand-red')}>
-        {warning ? `⚠ Under one minute left: the recording stops and saves at 00:00.` : `The recording stops and saves on its own at 00:00 (${minutesText(maxSeconds)} limit).`}
+        {warning ? `Under one minute left: the recording stops and saves at 00:00.` : `The recording stops and saves on its own at 00:00 (${minutesText(maxSeconds)} limit).`}
       </p>
       <span className="sr-only" aria-live="polite">
         {announce ? `${remainingSpoken} left` : ''}

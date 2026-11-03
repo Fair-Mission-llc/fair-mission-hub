@@ -417,7 +417,6 @@ function UpcomingEventAgenda({ councilId, today }: { councilId: number; today: s
           <ul className="mt-1 flex flex-col gap-1 text-sm" aria-label="Unresolved items, read only">
             {items.map((i) => (
               <li key={`${i.meetingId}-${i.text}`} className="flex gap-2">
-                <span aria-hidden="true">☐</span>
                 <span>
                   {i.text}
                   <span className="block text-xs text-muted">
@@ -436,7 +435,7 @@ function UpcomingEventAgenda({ councilId, today }: { councilId: number; today: s
   );
 }
 
-const HONOR_MEDALS = ['🥇', '🥈', '🥉'];
+const HONOR_MEDALS = ['1st', '2nd', '3rd'];
 
 /**
  * The Top 5 Fraternal Volunteers card on Home (Sprint 8D/8E): the council's Active members with the most hours logged at
@@ -1238,7 +1237,7 @@ export function AwaitingHours({ councilId }: { councilId: number }) {
                       <Pill tone="outline">Closed: past {windowDays} days</Pill>
                     ) : late ? (
                       <>
-                        <Pill tone="red">⚠ Overdue</Pill>
+                        <Pill tone="red">Overdue</Pill>
                         <span className="block text-xs text-brand-red">
                           {due} text reminder{due === 1 ? '' : 's'} due so far · log by {formatFullDate(r.loggableThrough)}
                         </span>
@@ -1369,7 +1368,7 @@ function LiveMeetingLaunch({ user, meeting }: { user: SessionUser; meeting: Meet
           disabled={busy}
           className={cx('rounded border-2 border-navy bg-brand-red px-4 py-2 text-base font-black text-white shadow', busy ? 'opacity-60' : 'hover:bg-crimson')}
         >
-          {busy ? 'Starting…' : '[ 🚀 Start Live Meeting Sequence ]'}
+          {busy ? 'Starting…' : 'Start Live Meeting Sequence'}
         </button>
       </div>
       {error ? <Notice tone="error">{error}</Notice> : null}

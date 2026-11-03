@@ -38,8 +38,8 @@ describe('Schema 98', () => {
     expect(DEPOSIT_PHOTO_QUALITY).toBeLessThan(0.8);
   });
 
-  it("puts '📸 Attach Deposit Photo' on the phone's Check form only and binds it after recording", () => {
-    expect(DEPOSIT_PHOTO_TITLE).toBe('📸 Attach Deposit Photo');
+  it("puts 'Attach Deposit Photo' on the phone's Check form only and binds it after recording", () => {
+    expect(DEPOSIT_PHOTO_TITLE).toBe('Attach Deposit Photo');
     const phone = read('apps/mobile/app/(app)/donate.tsx');
     expect(phone).toContain('title={DEPOSIT_PHOTO_TITLE}');
     expect(phone).toContain('quality={DEPOSIT_PHOTO_QUALITY}');

@@ -38,7 +38,7 @@ export interface WorkflowStep {
 
 export const EXPENSE_REPORT_WORKFLOW_TITLE = 'Expense Report (ER) Workflow';
 export const CHARITABLE_DONATION_WORKFLOW_TITLE = 'Charitable Donation Workflow';
-export const COUNCIL_ELECTION_WORKFLOW_TITLE = '[ 🗳️ Council Election Workflow ]';
+export const COUNCIL_ELECTION_WORKFLOW_TITLE = 'Council Election Workflow';
 
 /** The two finance desks that carry the ER and donation workflow drawers. */
 export type FinanceWorkflowDesk = 'financial-secretary' | 'treasurer';
@@ -64,8 +64,8 @@ export function expenseWorkflowStepOf(sheet: Sheet): { key: ExpenseWorkflowStepK
 
 /** Sprint 8S Revision 10.6: the working folders where each finance desk does its own ER steps (the reference drawer is read only). */
 export const EXPENSE_WORKFLOW_WORK_FOLDERS: Record<FinanceWorkflowDesk, string> = {
-  'financial-secretary': "the '[ 📋 FS Expense Audit Queue ]' folder",
-  treasurer: "the '[ 🔍 Treasurer Ledger Audit ]' and '[ 🧾 Disbursed Check Registry ]' folders",
+  'financial-secretary': "the 'FS Expense Audit Queue' folder",
+  treasurer: "the 'Treasurer Ledger Audit' and 'Disbursed Check Registry' folders",
 };
 
 /** The steps each finance desk acts on. */

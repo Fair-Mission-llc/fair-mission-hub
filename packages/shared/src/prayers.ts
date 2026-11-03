@@ -17,7 +17,7 @@ import type { CouncilPrayerIntention, CouncilPrayerIntentionPrayer, Member } fro
 export const PRAYER_INTENTION_MAX_LENGTH = 500;
 
 /** The Praying Hands button's text, the same on the web and the phone (bracketed like HOLY_DAY_BADGE). */
-export const PRAYING_HANDS_LABEL = '[ 🙏 Praying Hands ]';
+export const PRAYING_HANDS_LABEL = 'Praying Hands';
 
 // ---- access ---------------------------------------------------------------------------------------------------
 

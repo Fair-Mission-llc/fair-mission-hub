@@ -107,13 +107,13 @@ export function AuthorizationDesk() {
   };
 
   const action = (d: ExpenseReportDetail) => {
-    if (released.has(d.report.id)) return <Pill tone="navy">✓ Released to the Treasurer</Pill>;
+    if (released.has(d.report.id)) return <Pill tone="navy">Released to the Treasurer</Pill>;
     const block = expenseCounterSignBlock(user, d.report);
     // A row the viewer may not sign shows no signing control at all, only why.
     if (block === 'collusion') {
       return (
         <span title="Collusion Guard: you already signed this report as Financial Secretary or Treasurer, so another officer must counter-sign it.">
-          <Pill tone="redOutline">🔒 Collusion Guard</Pill>
+          <Pill tone="redOutline">Collusion Guard</Pill>
         </span>
       );
     }

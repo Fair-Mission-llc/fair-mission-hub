@@ -15,7 +15,7 @@ import { BusinessRuleError } from './rules';
 import type { DonationMethodKind } from './contract';
 
 /** The button on the phone's Check donation form. */
-export const DEPOSIT_PHOTO_TITLE = '📸 Attach Deposit Photo';
+export const DEPOSIT_PHOTO_TITLE = 'Attach Deposit Photo';
 /** The donation method kinds that take a deposit photo. */
 export const DEPOSIT_PHOTO_METHOD_KINDS: readonly DonationMethodKind[] = ['check'];
 /**

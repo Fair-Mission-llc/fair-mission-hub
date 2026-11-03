@@ -394,7 +394,7 @@ function FaceIdSetup({ remembered, onChange }: { remembered: string | null; onCh
       <p className="text-sm">
         Sign in next time with this computer&apos;s face or fingerprint check (Face ID, Touch ID or Windows Hello) instead of typing your password.
       </p>
-      {remembered ? <p className="text-sm font-bold">✓ FaceID sign-in is set up on this computer.</p> : null}
+      {remembered ? <p className="text-sm font-bold">FaceID sign-in is set up on this computer.</p> : null}
       <div className="flex flex-wrap gap-2">
         <Button
           variant="gold"
@@ -411,7 +411,7 @@ function FaceIdSetup({ remembered, onChange }: { remembered: string | null; onCh
               .finally(() => setBusy(false));
           }}
         >
-          {busy ? 'Waiting for FaceID…' : remembered ? 'Set FaceID up again' : '🔐 Set up FaceID sign-in'}
+          {busy ? 'Waiting for FaceID…' : remembered ? 'Set FaceID up again' : 'Set up FaceID sign-in'}
         </Button>
         {remembered ? (
           <Button

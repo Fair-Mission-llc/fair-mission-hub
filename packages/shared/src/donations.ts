@@ -139,8 +139,8 @@ export const GATE_INTAKE_AMOUNTS: readonly number[] = [5, 10, 20, 25, 50, 100];
 
 /** The overlay's two targets: which method kind each logs, and the description stamped on the donation. */
 export const GATE_INTAKE_TARGETS = {
-  cash: { kind: 'cash', label: '💵 Log Cash Transaction', description: 'Gate intake: cash' },
-  card: { kind: 'card', label: '💳 Log Stripe CC Swipe', description: 'Gate intake: Stripe card swipe' },
+  cash: { kind: 'cash', label: 'Log Cash Transaction', description: 'Gate intake: cash' },
+  card: { kind: 'card', label: 'Log Stripe CC Swipe', description: 'Gate intake: Stripe card swipe' },
 } as const satisfies Record<string, { kind: DonationMethodKind; label: string; description: string }>;
 
 export type GateIntakeTarget = keyof typeof GATE_INTAKE_TARGETS;

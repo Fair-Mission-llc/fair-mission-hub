@@ -181,7 +181,7 @@ function RowAction({
   if (r.RequestStatus === 'Submitted') {
     return (
       <Button onClick={onClaim} disabled={busy} className="whitespace-nowrap border-gold bg-gold text-navy">
-        🔎 Claim &amp; Audit
+        Claim &amp; Audit
       </Button>
     );
   }
@@ -199,7 +199,7 @@ function RowAction({
     return (
       <div className="flex flex-col items-start gap-1">
         <Button size="sm" onClick={onRoute} disabled={busy} className="whitespace-nowrap">
-          📅 Place on next agenda
+          Place on next agenda
         </Button>
         {vetted}
       </div>

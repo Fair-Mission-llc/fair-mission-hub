@@ -63,7 +63,7 @@ function MilestoneNode({ milestone, index }: { milestone: RoadmapMilestone; inde
         aria-hidden="true"
         className={cx('z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full font-serif text-xl font-bold', NODE_LOOK[s])}
       >
-        {s === 'complete' ? '✓' : s === 'overdue' ? '!' : index + 1}
+        {index + 1}
       </div>
       <div className={cx('flex w-full flex-col gap-1 rounded bg-white px-3 py-2 md:text-center', CARD_LOOK[s])}>
         <div className="flex flex-wrap items-center gap-2 md:justify-center">
@@ -182,7 +182,7 @@ export function RoadmapRibbon({ user, councilId, fullLink }: { user: SessionUser
       title={alertNote ?? undefined}
       className="flex items-center gap-3 overflow-x-auto whitespace-nowrap rounded border-2 border-navy bg-white px-3 py-1.5 text-sm"
     >
-      <span className="shrink-0 font-serif font-bold">🗺️ Roadmap{r ? ` ${r.cycleYear}` : ''}</span>
+      <span className="shrink-0 font-serif font-bold">Roadmap{r ? ` ${r.cycleYear}` : ''}</span>
       {roadmap.error ? <span className="text-brand-red">{roadmap.error}</span> : null}
       {!r ? (
         roadmap.error ? null : <span className="text-muted">Loading…</span>
@@ -192,7 +192,6 @@ export function RoadmapRibbon({ user, councilId, fullLink }: { user: SessionUser
             <li key={m.id} className="flex items-center">
               {i > 0 ? <span aria-hidden="true" className="h-1 w-6 bg-navy" /> : null}
               <span className={cx('rounded-full border-2 px-2.5 py-0.5 font-bold', CHIP_LOOK[m.status])}>
-                {m.status === 'complete' ? '✓ ' : m.status === 'overdue' ? '! ' : ''}
                 {m.title} · {STATUS_TEXT[m.status]} · {shortDate(m.dueOn)}
               </span>
             </li>

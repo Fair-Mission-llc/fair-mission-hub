@@ -180,7 +180,7 @@ describe('custom user guides', () => {
     expect(route).toContain("'compile_all_manuals.py'");
     expect(route).toContain('runPythonScript(');
     const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
-    expect(page).toContain('📥 Generate Custom ${label} PDF');
+    expect(page).toContain('Generate Custom ${label} PDF');
     for (const kind of CUSTOM_MANUAL_KINDS) expect(page).toContain(`{ guide: '${kind}', label: `);
     expect(read('scripts/compile_all_manuals.py')).toContain("key='financial-secretary'");
     const script = read('scripts/compile_all_manuals.py');

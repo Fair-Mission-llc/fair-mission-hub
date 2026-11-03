@@ -87,7 +87,7 @@ function Directory() {
 
   const ViewAsButton = ({ p }: { p: ImpersonationCandidate }) => (
     <Button size="sm" variant="secondary" disabled={busy !== null} onClick={() => void viewAs(p)} aria-label={`View the portal as ${p.firstName} ${p.lastName}`}>
-      {busy === p.memberId ? 'Opening…' : '👥 Impersonate'}
+      {busy === p.memberId ? 'Opening…' : 'Impersonate'}
     </Button>
   );
 

@@ -26,7 +26,7 @@ import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 /** The panel title for the clause feed (Sprint 11 Revision 16.0). */
-const AI_REASONING_STREAM_TITLE = '[ 🤖 AI Parliamentary Reasoning Stream ]';
+const AI_REASONING_STREAM_TITLE = 'AI Parliamentary Reasoning Stream';
 
 const AI_REASONING_STREAM_TIP =
   'The AI parliamentary tools read your bylaws as numbered clauses. When the Constitutional Advisor answers a question or rules on a motion, it cites the clause id shown here, so you can check its reasoning against the text.';

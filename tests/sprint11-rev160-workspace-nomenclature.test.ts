@@ -87,7 +87,7 @@ describe('1b. Event Planner truncation', () => {
 describe('2. cadence, bylaws and knowledge vault', () => {
   it('renames the cadence button and status pill', () => {
     const page = read('apps/web/app/meetings/cadence/page.tsx');
-    expect(page).toContain('[ 👁️ View Scheduled Releases ]');
+    expect(page).toContain('View Scheduled Releases');
     // Sprint 11 Revision 17.0: the badge text lives in CADENCE_CARD_BADGES (Scheduled, Held, Past).
     expect(page).toContain('CADENCE_CARD_BADGES');
     expect(page).not.toMatch(/>\s*Canvas\s*</);
@@ -100,7 +100,7 @@ describe('2. cadence, bylaws and knowledge vault', () => {
     expect(STANDARD_BYLAWS_TEMPLATE).toContain('# Article I - Name and Authority');
     const page = read('apps/web/app/governance/bylaws/page.tsx');
     expect(page).toContain('<Markdown source={STANDARD_BYLAWS_TEMPLATE}');
-    expect(page).toContain("'[ 🤖 AI Parliamentary Reasoning Stream ]'");
+    expect(page).toContain("'AI Parliamentary Reasoning Stream'");
     expect(page).toContain('<HelpTip');
     expect(page).not.toContain('Parliamentary engine feed');
   });
@@ -130,9 +130,9 @@ describe('3. /council-lookups and the roster', () => {
   });
 
   it('renames the roster and adds the deactivation modal', () => {
-    expect(MEMBER_ROSTER_TITLE).toBe('[ 👥 Council Roster ]');
+    expect(MEMBER_ROSTER_TITLE).toBe('Council Roster');
     const dir = read('apps/web/components/modules/MemberRosterDirectory.tsx');
-    expect(dir).toContain("DEACTIVATE_MEMBER_LABEL = '[ 🚫 Deactivate Member ]'");
+    expect(dir).toContain("DEACTIVATE_MEMBER_LABEL = 'Deactivate Member'");
     expect(dir).toContain('showModal()');
     expect(dir).toContain('db.members.update(user.memberId, m.id, { StatusID: inactiveStatusId })');
   });
@@ -158,13 +158,13 @@ describe('3. /council-lookups and the roster', () => {
 
 describe('4. the treasurer and FS drawers', () => {
   it('spells each accounting name exactly', () => {
-    expect(GENERAL_LEDGER_TITLE).toBe('[ 📊 Chart of Accounts & General Ledger ]');
+    expect(GENERAL_LEDGER_TITLE).toBe('Chart of Accounts & General Ledger');
     expect(CHART_OF_ACCOUNTS_FOLDER_TITLE).toBe(GENERAL_LEDGER_TITLE);
-    expect(TRANSFER_FUNDS_TITLE).toBe('[ 💸 Transfer Funds ]');
-    expect(TREASURER_LEDGER_AUDIT_TITLE).toBe('[ 🔍 Treasurer Ledger Audit ]');
-    expect(DISBURSED_CHECK_REGISTRY_TITLE).toBe('[ 🧾 Disbursed Check Registry ]');
-    expect(CHARITABLE_GRANTS_REGISTRY_TITLE).toBe('[ 🕊️ Charitable Grants Registry ]');
-    expect(FS_EXPENSE_AUDIT_QUEUE_TITLE).toBe('[ 📋 FS Expense Audit Queue ]');
+    expect(TRANSFER_FUNDS_TITLE).toBe('Transfer Funds');
+    expect(TREASURER_LEDGER_AUDIT_TITLE).toBe('Treasurer Ledger Audit');
+    expect(DISBURSED_CHECK_REGISTRY_TITLE).toBe('Disbursed Check Registry');
+    expect(CHARITABLE_GRANTS_REGISTRY_TITLE).toBe('Charitable Grants Registry');
+    expect(FS_EXPENSE_AUDIT_QUEUE_TITLE).toBe('FS Expense Audit Queue');
     expect(FS_AUDIT_FOLDER_TITLE).toBe(FS_EXPENSE_AUDIT_QUEUE_TITLE);
   });
 
@@ -234,8 +234,8 @@ describe('5. the manuals', () => {
     for (const f of ['ADMIN_USER_GUIDE', 'MEMBER_USER_GUIDE', 'TREASURER_MANUAL', 'FINANCIAL_SECRETARY_MANUAL', 'EXECUTIVE_GOVERNANCE_MANUAL']) {
       expect(read(`docs/${f}.md`), f).not.toMatch(old);
     }
-    expect(read('docs/TREASURER_MANUAL.md')).toContain('[ 💸 Transfer Funds ]');
-    expect(read('docs/EXECUTIVE_GOVERNANCE_MANUAL.md')).toContain('[ 👁️ View Scheduled Releases ]');
+    expect(read('docs/TREASURER_MANUAL.md')).toContain('Transfer Funds');
+    expect(read('docs/EXECUTIVE_GOVERNANCE_MANUAL.md')).toContain('View Scheduled Releases');
     expect(read('docs/ADMIN_USER_GUIDE.md')).toContain('**Locked checkboxes on the member record:**');
   });
 });

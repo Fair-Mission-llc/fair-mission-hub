@@ -23,14 +23,14 @@ const CHANGE_LABEL: Record<BudgetYearOverYearChange, string> = {
   Increased: '▲ Increased',
   Decreased: '▼ Decreased',
   Unchanged: '● Unchanged',
-  New: '✚ New',
-  Discontinued: '✖ Discontinued',
+  New: 'New',
+  Discontinued: 'Discontinued',
 };
 
 const CEILING_LABEL: Record<BudgetCeilingTrack['status'], string> = {
-  'Within Ceiling': '✓ Within ceiling',
+  'Within Ceiling': 'Within ceiling',
   'At Ceiling': '● At ceiling',
-  'Over Ceiling': '✖ Over ceiling',
+  'Over Ceiling': 'Over ceiling',
 };
 
 /** A signed dollar change, '+$1,200.00' or '−$300.00'. */

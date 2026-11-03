@@ -110,10 +110,10 @@ export function QuarantineDesk({ actorId, councilId }: { actorId: number; counci
                     disabled={busy !== null}
                     onClick={() => void decide(entry, 'clear')}
                   >
-                    [ 🟢 Approve & Add to Time Log ]
+                    Approve & Add to Time Log
                   </button>
                   <Button variant="danger" disabled={busy !== null || open} aria-expanded={open} onClick={() => openReturn(entry)}>
-                    [ 🔴 Reject & Return to Member ]
+                    Reject & Return to Member
                   </Button>
                 </div>
                 {open ? (

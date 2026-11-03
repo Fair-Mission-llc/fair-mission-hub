@@ -28,7 +28,7 @@ import { compileForm1295 } from '@/services/form-1295-transport';
 const STATUS_LABEL: Record<TrusteeAuditWorkspace['status'], string> = {
   NOT_STARTED: '○ Not started',
   DRAFT: '◐ In progress (draft)',
-  LOCKED: '🔒 Signed and locked',
+  LOCKED: 'Signed and locked',
 };
 
 /** One step heading of the wizard: its number, title and whether it is done. */
@@ -37,7 +37,7 @@ function Step({ n, title, done, children }: { n: number; title: string; done: bo
     <li className="rounded border-2 border-line p-3 sm:p-4">
       <h3 className="flex flex-wrap items-center gap-3 font-serif text-xl">
         <span aria-hidden="true" className={cx('inline-flex h-9 w-9 items-center justify-center rounded-full border-4 text-lg', done ? 'border-green text-green' : 'border-line')}>
-          {done ? '✓' : n}
+          {n}
         </span>
         <span>
           Step {n}: {title}
@@ -73,7 +73,7 @@ function LineRow({ line, editable, busy, onToggle }: { line: TrusteeAuditLine; e
       </td>
       <td className="p-2 text-right tabular-nums">{e.DebitAmount > 0 ? formatMoney(e.DebitAmount) : ''}</td>
       <td className="p-2 text-right tabular-nums">{e.CreditAmount > 0 ? formatMoney(e.CreditAmount) : ''}</td>
-      <td className="p-2 text-sm">{line.verified ? `✓ ${line.verifiedByName ?? ''}` : <span className="text-navy">Not verified</span>}</td>
+      <td className="p-2 text-sm">{line.verified ? `Verified${line.verifiedByName ? ` by ${line.verifiedByName}` : ''}` : <span className="text-navy">Not verified</span>}</td>
     </tr>
   );
 }
@@ -203,7 +203,7 @@ export function AuditDesk() {
                   <div className="h-full bg-gold" style={{ width: `${ws.lineCount ? (ws.verifiedCount / ws.lineCount) * 100 : 0}%` }} />
                 </div>
                 {!canVerify ? <p className="mt-2 text-base">Only the council&apos;s Trustees (and Super Admins) tick lines. You can read every line.</p> : null}
-                {locked ? <p className="mt-2 text-base">🔒 The audit is locked: its checkmarks can no longer change.</p> : null}
+                {locked ? <p className="mt-2 text-base">The audit is locked: its checkmarks can no longer change.</p> : null}
                 {ws.lines.length === 0 ? (
                   <p className="mt-3 text-base">No cash lines were posted in this period.</p>
                 ) : (
@@ -213,7 +213,7 @@ export function AuditDesk() {
                       <thead>
                         <tr className="text-left text-sm uppercase tracking-wide text-muted">
                           <th scope="col" className="p-2">
-                            ✓
+                            Verified
                           </th>
                           <th scope="col" className="p-2">
                             Date
@@ -268,7 +268,7 @@ export function AuditDesk() {
                   ))}
                 </dl>
                 <p className={cx('mt-2 text-lg', ws.difference !== 0 && 'text-brand-red')}>
-                  {ws.difference === 0 ? '✓ The period ties out to the penny.' : `✖ Off by ${formatMoney(ws.difference)}: check the ledger before signing.`}
+                  {ws.difference === 0 ? 'The period ties out to the penny.' : `Off by ${formatMoney(ws.difference)}: check the ledger before signing.`}
                 </p>
                 <p className="mt-1 text-sm">
                   Cash accounts: {ws.cashAccounts.map((a) => a.accountName + (a.isVirtualGoal ? ' (goal fund)' : '')).join(', ') || 'none'}.{' '}
@@ -281,7 +281,7 @@ export function AuditDesk() {
                   <ul className="mb-3 flex flex-col gap-1 text-lg">
                     {ws.signatures.map((s) => (
                       <li key={s.memberId}>
-                        ✍ {s.name} ({s.role}), {s.signedAt} UTC
+                        {s.name} ({s.role}), {s.signedAt} UTC
                       </li>
                     ))}
                   </ul>
@@ -300,7 +300,7 @@ export function AuditDesk() {
                     )
                   }
                 >
-                  {locked ? '✍ Add my signature' : '✍ Sign and lock the period'}
+                  {locked ? 'Add my signature' : 'Sign and lock the period'}
                 </Button>
                 {!locked ? <p className="mt-2 text-sm">Signing is final: no one can change postings dated in this period afterwards.</p> : null}
               </Step>
@@ -311,7 +311,7 @@ export function AuditDesk() {
                   {locked ? '' : 'Until the audit is signed it prints as a DRAFT.'} Copy its figures onto the official form.
                 </p>
                 <Button variant="secondary" disabled={busy || !council.data} onClick={() => void printReport()}>
-                  📄 Download Form 1295 report (PDF)
+                  Download Form 1295 report (PDF)
                 </Button>
               </Step>
             </>
