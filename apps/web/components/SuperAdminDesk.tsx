@@ -1,6 +1,6 @@
 'use client';
-// The Platform Management (Sprint 8O, super-admin-desk.ts): the platform owner's own Active Desk, mounted on /dashboard only
-// for the owner's personal session (isPlatformOwner - the dashboard falls back to Home for anyone else). A row of three
+// The Platform Management (Sprint 8O, super-admin-desk.ts): the Super Admin's Active Desk on /dashboard. Sprint 11 Revision
+// 17.5: every Super Admin session gets it (showsSuperAdminDeskTab - the dashboard falls back to Home for anyone else). A row of three
 // top horizontal action folders, drawn like the Active Desks folder tabs, opens one workspace at a time:
 //   [ 📥 Feedback Communication Center ]         the Administrative Feedback Loops notes (FeedbackInbox)
 //   [ 🔑 Council Access Request Approval Queue ] the councils asking to join the platform (InboundMailCenter)
@@ -11,7 +11,7 @@
 // only while it is open. The Secure Access Vault drawer is pinned to the Super Admin's own home council.
 import { useEffect, useState } from 'react';
 import {
-  isPlatformOwner,
+  showsSuperAdminDeskTab,
   SUPER_ADMIN_DESK_DRAWERS,
   SUPER_ADMIN_DESK_FOLDERS,
   superAdminDeskFolder,
@@ -110,7 +110,7 @@ export function SuperAdminDesk({ user }: { user: SessionUser }) {
   useEffect(() => setOpen(superAdminDeskFolder(readLastFolder())), []);
 
   // The tab is never offered to anyone else; this guards a hand-typed #super-admin as well.
-  if (!isPlatformOwner(user)) return <Notice tone="error">The Platform Management opens only for the platform owner&apos;s own account.</Notice>;
+  if (!showsSuperAdminDeskTab(user)) return <Notice tone="error">The Platform Management opens only for Super Admins.</Notice>;
 
   const folder = SUPER_ADMIN_DESK_FOLDERS.find((f) => f.id === open) ?? SUPER_ADMIN_DESK_FOLDERS[0]!;
   const choose = (id: SuperAdminDeskFolderId) => {

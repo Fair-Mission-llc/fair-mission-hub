@@ -62,7 +62,7 @@ import {
 import { addDays } from './planning';
 import { isShiftFull, visibleFeed } from './presentation';
 import { canOpenHistorianDesk, canOpenRecorderDesk } from './recorder-historian';
-import { isPlatformOwner, SUPER_ADMIN_DESK_TITLE } from './super-admin-desk';
+import { showsSuperAdminDeskTab, SUPER_ADMIN_DESK_TITLE } from './super-admin-desk';
 import type { TenantType } from './tenant';
 import type { NotificationLog } from './types';
 
@@ -81,8 +81,8 @@ export interface DashboardTab {
 /** Every tab, in the order the tab row shows them. */
 export const DASHBOARD_TABS: readonly DashboardTab[] = [
   { id: 'home', label: 'Home', anchor: 'home' },
-  // Sprint 8O: the platform owner's own cockpit (super-admin-desk.ts isPlatformOwner). Sprint 8O Extension: drawn
-  // second, right after Home.
+  // Sprint 8O: the Super Admin cockpit. Sprint 8O Extension: drawn second, right after Home. Sprint 11 Revision 17.5:
+  // every Super Admin session gets it, beside the council desks (super-admin-desk.ts showsSuperAdminDeskTab).
   { id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE, anchor: 'super-admin' },
   { id: 'grand-knight', label: 'Grand Knight Desk', anchor: 'grand-knight' },
   { id: 'financial-secretary', label: 'Financial Secretary Desk', anchor: 'financial-secretary' },
@@ -112,7 +112,7 @@ export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
     recorder: canOpenRecorderDesk(u, councilId),
     historian: canOpenHistorianDesk(u, councilId),
     member: true,
-    'super-admin': isPlatformOwner(u),
+    'super-admin': showsSuperAdminDeskTab(u),
   };
   return DASHBOARD_TABS.filter((t) => cleared[t.id]);
 }

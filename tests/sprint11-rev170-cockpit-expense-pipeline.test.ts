@@ -20,7 +20,7 @@ import {
   deskMountsMemberRoster,
   DONATIONS_HISTORY_TITLE,
   FINANCIAL_DASHBOARD_TITLE,
-  FINANCIAL_REPORTS_SECTION_TITLE,
+  FINANCIAL_REPORTS_ACCORDION_TITLE,
   GK_EXPENSE_AUTHORIZE_TITLE,
   matchesEveryWord,
   paginateRows,
@@ -28,7 +28,7 @@ import {
   receiptRowsFromSheet,
   receiptRowsToSubmission,
   receiptRowTotals,
-  RECORDED_REGISTRIES_SECTION_TITLE,
+  FINANCIAL_ACTIONS_ACCORDION_TITLE,
   rosterAddMemberLocked,
   showsSuperAdminHeaderLink,
   sidebarLinkLabel,
@@ -196,13 +196,14 @@ describe('3. roster gate, Financial Views and widescreen tables', () => {
   });
 
   it('splits the accordion into reports and registries, with plain link text', () => {
-    expect(FINANCIAL_REPORTS_SECTION_TITLE).toBe('📊 FINANCIAL REPORTS');
-    expect(RECORDED_REGISTRIES_SECTION_TITLE).toBe('⚡ RECORDED REGISTRIES');
+    // Sprint 11 Revision 17.5: the registries half is now the separate Financial Actions accordion.
+    expect(FINANCIAL_REPORTS_ACCORDION_TITLE).toBe('📊 FINANCIAL REPORTS');
+    expect(FINANCIAL_ACTIONS_ACCORDION_TITLE).toBe('⚡ FINANCIAL ACTIONS');
     expect(sidebarLinkLabel('[ 👥 Council Roster ]')).toBe('Council Roster');
     expect(sidebarLinkLabel('🛠️ Council Asset Management')).toBe('Council Asset Management');
     const sidebar = read('apps/web/components/Sidebar.tsx');
     expect(sidebar).toContain('FINANCIAL_REPORT_ITEMS');
-    expect(sidebar).toContain('RECORDED_REGISTRY_ITEMS');
+    expect(sidebar).toContain('FINANCIAL_ACTION_ITEMS');
     expect(sidebar).not.toContain('plainNavLabel(');
     expect(sidebar).not.toContain('endorsementLink(');
   });

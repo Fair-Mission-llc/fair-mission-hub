@@ -154,7 +154,7 @@ Coding is mandatory. A report without a budget line and a ledger account does no
 
 **Goal:** Record the checks for dual-signed reports.
 
-**Start point:** Sidebar → Finances → **Financial Views** → **[ 🧾 Disbursed Check Registry ]**. The registry is also at the foot of the Treasurer Desk.
+**Start point:** Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **Disbursed Check Registry**. The registry is also at the foot of the Treasurer Desk.
 
 **Steps:**
 1. Tick the reports to pay. The page lists only reports with both signatures.
@@ -225,7 +225,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Review a member's charity request and move the request forward.
 
-**Start point:** **Active Desks** → **Grand Knight Desk** → **Charitable Grant Requests Vetting Board** folder. Other vetting officers use Sidebar → Finances → **Charity Vetting Queue**.
+**Start point:** **Active Desks** → **Grand Knight Desk** → **Charitable Grant Requests Vetting Board** folder. Other vetting officers use Sidebar → Governance → **Charity Vetting Queue**.
 
 **Steps:**
 1. Claim the request.

@@ -63,8 +63,8 @@
 // Executive Summary moved to their own page, /executive-dashboard (the sidebar's Executive Dashboard link), and the
 // desk status badges to the top of the Oversight Desk.
 //
-// Sprint 8O: Platform Management (SuperAdminDesk) - the platform owner's own cockpit, a tab only their personal session
-// is given (super-admin-desk.ts isPlatformOwner): the Feedback Communication Center, the Council Access Request Approval
+// Sprint 8O: Platform Management (SuperAdminDesk) - the Super Admin cockpit, a tab every Super Admin session is given
+// since Sprint 11 Revision 17.5 (super-admin-desk.ts showsSuperAdminDeskTab): the Feedback Communication Center, the Council Access Request Approval
 // Queue and the System Feature Flag Control Panel.
 //
 // Sprint 8P Stage 1: the one-screen rule is retired. The Home cards are larger (wider tiles, two across, three on very

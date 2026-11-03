@@ -535,7 +535,7 @@ export interface ActivitySummary {
   totalHours: number;
   /** Latest ActivityDate logged, or null when nothing is logged. */
   lastLoggedOn: string | null;
-  /** True once any time is logged: the activity moves from "Active Initiatives" to "Activity History". */
+  /** True once any time is logged: the activity moves from "Current Activities" to "Activity History". */
   archived: boolean;
 }
 

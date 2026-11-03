@@ -78,7 +78,7 @@ function FinanceDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Sprint 11 Revision 17.0: no corner links and no quick actions; the sidebar's Financial Views reach the other pages. */}
+      {/* Sprint 11 Revision 17.0: no corner links and no quick actions; the sidebar's Financial Reports and Financial Actions accordions reach the other pages. */}
       <PageTitle actions={<CouncilSelect scope={scope} />}>{FINANCIAL_DASHBOARD_TITLE}</PageTitle>
       {chart.error ? <Notice tone="error">{chart.error}</Notice> : null}
       {sheet.error ? <Notice tone="error">{sheet.error}</Notice> : null}

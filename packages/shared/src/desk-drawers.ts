@@ -165,15 +165,13 @@ export const DISBURSED_CHECK_REGISTRY_TITLE = '[ 🧾 Disbursed Check Registry ]
 export const CHARITABLE_GRANTS_REGISTRY_TITLE = '[ 🕊️ Charitable Grants Registry ]';
 /** The Financial Secretary's audit of submitted sheets (was 'FS Expense Audit' and 'Auditing & Return Queue'). */
 export const FS_EXPENSE_AUDIT_QUEUE_TITLE = '[ 📋 FS Expense Audit Queue ]';
-/** The sidebar accordion that groups the financial views inside the Finances pillar. */
-export const FINANCIAL_VIEWS_ACCORDION_TITLE = 'Financial Views';
-
 /**
- * Sprint 11 Revision 17.0: the two halves of the Financial Views accordion. Reports read the books; registries list
- * what was recorded and paid. The links under them are drawn as plain text (sidebarLinkLabel: no icons, no brackets).
+ * Sprint 11 Revision 17.5: the Finances pillar holds two separate sidebar accordions (the single 'Financial Views'
+ * accordion is gone). Reports only read the books; actions are the desks where officers audit, sign, pay and record.
+ * The links under them are drawn as plain text (sidebarLinkLabel: no icons, no brackets).
  */
-export const FINANCIAL_REPORTS_SECTION_TITLE = '📊 FINANCIAL REPORTS';
-export const RECORDED_REGISTRIES_SECTION_TITLE = '⚡ RECORDED REGISTRIES';
+export const FINANCIAL_REPORTS_ACCORDION_TITLE = '📊 FINANCIAL REPORTS';
+export const FINANCIAL_ACTIONS_ACCORDION_TITLE = '⚡ FINANCIAL ACTIONS';
 
 /** Sprint 8S Revision 10.4: the Treasurer's general ledger folder (the chart of accounts on the Treasurer Desk). */
 export const CHART_OF_ACCOUNTS_FOLDER_TITLE = GENERAL_LEDGER_TITLE;

@@ -1,10 +1,11 @@
 // =========================================================================
 // THE SUPER ADMIN DESK (Sprint 8O)
 //
-// The platform owner's own cockpit: a folder tab titled 'Platform Management' on the Active Desks row
-// (officer-desks.ts dashboardTabsFor, /dashboard#super-admin). It mounts only when the session is the platform owner's
-// personal account - an Active Super Admin whose sign-in name is in PLATFORM_OWNER_USERNAMES - so another Super Admin,
-// and the owner while viewing the portal as someone else, never sees it. Inside, three top horizontal action folders:
+// The Super Admin cockpit: a folder tab titled 'Platform Management' on the Active Desks row (officer-desks.ts
+// dashboardTabsFor, /dashboard#super-admin). Sprint 11 Revision 17.5: every Super Admin session gets the tab, drawn
+// beside the council desks (showsSuperAdminDeskTab). Until then only the platform owner's own account had it. While a
+// Super Admin views the portal as someone else, the session is that member's, so the tab is gone. Inside, three top
+// horizontal action folders:
 //   [ 📥 Feedback Communication Center ]         the Administrative Feedback Loops notes Admins send (feedback.listInbox)
 //   [ 🔑 Council Access Request Approval Queue ] the councils asking to join the platform (accessRequests.list/setStatus)
 //   [ 🛠️ System Feature Flag Control Panel ]      every council's module switches (councils.setFeatureFlags)
@@ -25,6 +26,12 @@ export const SUPER_ADMIN_DESK_TITLE = 'Platform Management';
  * Sprint 8O Extension adds the developer's own local sign-in, 'tim'.
  */
 export const PLATFORM_OWNER_USERNAMES: readonly string[] = ['testsuperadmin@kofc.org', 'tim'];
+
+/**
+ * Sprint 11 Revision 17.5: true when the Active Desks row draws the Platform Management tab - any Super Admin session.
+ * isPlatformOwner still gates the owner-only tools (Advisory Panel invitations).
+ */
+export const showsSuperAdminDeskTab = (u: Pick<SessionUser, 'memberType'>): boolean => u.memberType === 'Super Admin';
 
 /** True only for the platform owner's own session: an Active Super Admin signed in with an owner username. */
 export function isPlatformOwner(

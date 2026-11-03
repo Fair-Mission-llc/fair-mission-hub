@@ -1,6 +1,6 @@
 'use client';
 // Activities: the council's standing activities (members log time against these from the phone app), split into
-// two tabs. "Active Initiatives" holds activities nobody has logged time against yet; they can be added, edited
+// two tabs. "Current Activities" (named "Active Initiatives" until Sprint 11 Revision 17.5) holds activities nobody has logged time against yet; they can be added, edited
 // and deleted. The moment any time is logged the activity moves to "Activity History" (activities.listSummaries),
 // where choosing it lists every entry with the member, hours and notes and a running total. Admins work on their
 // own council, Super Admins pick any. The drivers enforce the same rules (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED),
@@ -206,7 +206,7 @@ function ActivityCatalog() {
           </div>
         }
       >
-        Activities
+        Member Activities
       </PageTitle>
       <Tabs
         label="Activity lists"
@@ -214,7 +214,7 @@ function ActivityCatalog() {
         value={tab}
         onChange={setTab}
         tabs={[
-          { id: 'active', label: `Active Initiatives (${activeCount})` },
+          { id: 'active', label: `Current Activities (${activeCount})` },
           { id: 'history', label: `Activity History (${archivedCount})` },
         ]}
       />

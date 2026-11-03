@@ -27,6 +27,9 @@
 // Sprint 11 Revision 17.0: the accordion splits into '📊 FINANCIAL REPORTS' and '⚡ RECORDED REGISTRIES'; every link
 // reads as plain words (sidebarLinkLabel: no icons, no brackets) and truncates; the endorsements link moved into the
 // Charitable Grants Registry page as a tab.
+// Sprint 11 Revision 17.5: the 'Financial Views' accordion is gone. The Finances pillar holds two separate accordions:
+// '📊 FINANCIAL REPORTS' (read-only views) and '⚡ FINANCIAL ACTIONS' (the audit, signing, payment and donation desks).
+// The Charity Vetting Queue moved to the Governance pillar, and the Activities link reads Member Activities.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -52,9 +55,8 @@ import {
   type SessionUser,
   type TenantType,
   ADVISORY_PANEL_HREF,
-  FINANCIAL_REPORTS_SECTION_TITLE,
-  FINANCIAL_VIEWS_ACCORDION_TITLE,
-  RECORDED_REGISTRIES_SECTION_TITLE,
+  FINANCIAL_ACTIONS_ACCORDION_TITLE,
+  FINANCIAL_REPORTS_ACCORDION_TITLE,
   ADVISORY_PANEL_TITLE,
   LEGAL_NOTICES,
   LEGAL_DOCUMENT_ROUTE,
@@ -91,7 +93,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   messages: { href: '/messages', label: 'Council Messages & Alerts', hint: 'Message threads, trade-team messages and alerts' },
   calendar: { href: '/calendar', label: 'Visual Master Calendar', hint: 'Events, shifts and meetings by date' },
   'faith-center': { href: '/faith-center', label: 'Faith Center', hint: "Today's feast day, the daily Bible verse and the Council Prayer Intentions List" },
-  activities: { href: '/activities', label: 'Standalone Activities', hint: 'Standing council activities' },
+  activities: { href: '/activities', label: 'Member Activities', hint: 'Standing council activities' },
   events: { href: '/events', label: 'Event Planner', hint: 'Events, shifts and councils' },
   meetings: { href: '/meetings', label: 'Meeting Center', hint: 'Meetings, invitations, minutes' },
   'meetings/cadence': {
@@ -356,23 +358,24 @@ function NavLink({ item, current, tenant, nested = false }: { item: PortalNavIte
 }
 
 /**
- * Sprint 11 Revision 17.0: the Financial Views accordion in two halves, each in display order. Reports read the books;
- * registries list what was recorded, audited and paid. The FS/GK Compliance Endorsements folder is a tab inside the
- * Charitable Grants Registry page now, so it has no sidebar link of its own.
+ * Sprint 11 Revision 17.5: the Finances pillar's two accordions, each in display order. Reports only read the books;
+ * actions are the desks where officers audit, sign, pay and record. Financial Inspections, My Expense Reports, Propose
+ * Charity Grant and the Annual Budget Center stay as plain links above them.
  */
-export const FINANCIAL_REPORT_ITEMS: readonly PortalNavItem[] = ['finance/dashboard', 'finance/balance-sheet', 'finance/ledger', 'finance/audit'];
-export const RECORDED_REGISTRY_ITEMS: readonly PortalNavItem[] = [
+export const FINANCIAL_REPORT_ITEMS: readonly PortalNavItem[] = ['finance/ledger', 'finance/balance-sheet', 'finance/dashboard'];
+export const FINANCIAL_ACTION_ITEMS: readonly PortalNavItem[] = [
   'finance/treasurer-desk',
   'expenses/audit',
+  'expenses/authorize',
   'expenses/disbursements',
   'charities/queue',
   'donations',
 ];
-/** Every link the accordion holds. */
-export const FINANCIAL_VIEW_ITEMS: readonly PortalNavItem[] = [...FINANCIAL_REPORT_ITEMS, ...RECORDED_REGISTRY_ITEMS];
+/** Every link the two accordions hold. */
+export const FINANCIAL_ACCORDION_ITEMS: readonly PortalNavItem[] = [...FINANCIAL_REPORT_ITEMS, ...FINANCIAL_ACTION_ITEMS];
 
-/** One half of the accordion: its heading, then its links (plain text, ellipsis past the rail). */
-function FinancialViewsSection({
+/** One collapsible group of finance links, open while one of its links is the page. Draws nothing when empty. */
+function FinancialAccordion({
   title,
   items,
   pathname,
@@ -385,48 +388,22 @@ function FinancialViewsSection({
   hash: string;
   tenant: TenantType;
 }) {
-  if (items.length === 0) return null;
-  const headingId = `financial-views-${title.replace(/[^A-Za-z]+/g, '-').toLowerCase()}`;
-  return (
-    <li>
-      <p id={headingId} className="sidebar-truncate py-1 pl-8 pr-3 text-[0.6875rem] font-bold uppercase tracking-wide" title={title}>
-        {title}
-      </p>
-      <ul aria-labelledby={headingId} className="flex flex-col">
-        {items.map((item) => (
-          <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} nested />
-        ))}
-      </ul>
-    </li>
-  );
-}
-
-/** The 'Financial Views' accordion: Financial Reports and Recorded Registries, open while one of their links is the page. */
-function FinancialViewsAccordion({ items, pathname, hash, tenant }: { items: readonly PortalNavItem[]; pathname: string; hash: string; tenant: TenantType }) {
   const holdsCurrent = items.some((item) => isCurrent(pathname, item, hash));
   const [open, setOpen] = useState(holdsCurrent);
   useEffect(() => {
     if (holdsCurrent) setOpen(true);
   }, [holdsCurrent]);
+  if (items.length === 0) return null;
   return (
     <li>
       <details open={open} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
-        <summary className="sidebar-truncate cursor-pointer list-inside py-1.5 pl-6 pr-3 text-sm font-bold hover:underline">{FINANCIAL_VIEWS_ACCORDION_TITLE}</summary>
-        <ul aria-label={FINANCIAL_VIEWS_ACCORDION_TITLE} className="flex flex-col">
-          <FinancialViewsSection
-            title={FINANCIAL_REPORTS_SECTION_TITLE}
-            items={FINANCIAL_REPORT_ITEMS.filter((i) => items.includes(i))}
-            pathname={pathname}
-            hash={hash}
-            tenant={tenant}
-          />
-          <FinancialViewsSection
-            title={RECORDED_REGISTRIES_SECTION_TITLE}
-            items={RECORDED_REGISTRY_ITEMS.filter((i) => items.includes(i))}
-            pathname={pathname}
-            hash={hash}
-            tenant={tenant}
-          />
+        <summary className="sidebar-truncate cursor-pointer list-inside py-1.5 pl-6 pr-3 text-xs font-bold uppercase tracking-wide hover:underline" title={title}>
+          {title}
+        </summary>
+        <ul aria-label={title} className="flex flex-col">
+          {items.map((item) => (
+            <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} nested />
+          ))}
         </ul>
       </details>
     </li>
@@ -594,7 +571,7 @@ function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-/** The Finances pillar: its other links flat, then the 'Financial Views' accordion. */
+/** The Finances pillar: its other links flat, then the Financial Reports and Financial Actions accordions. */
 function FinancesEntries({
   items,
   pathname,
@@ -606,15 +583,27 @@ function FinancesEntries({
   hash: string;
   tenant: TenantType;
 }) {
-  const views = FINANCIAL_VIEW_ITEMS.filter((item) => items.includes(item));
   return (
     <>
       {items
-        .filter((item) => !FINANCIAL_VIEW_ITEMS.includes(item))
+        .filter((item) => !FINANCIAL_ACCORDION_ITEMS.includes(item))
         .map((item) => (
           <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
         ))}
-      {views.length > 0 ? <FinancialViewsAccordion items={views} pathname={pathname} hash={hash} tenant={tenant} /> : null}
+      <FinancialAccordion
+        title={FINANCIAL_REPORTS_ACCORDION_TITLE}
+        items={FINANCIAL_REPORT_ITEMS.filter((i) => items.includes(i))}
+        pathname={pathname}
+        hash={hash}
+        tenant={tenant}
+      />
+      <FinancialAccordion
+        title={FINANCIAL_ACTIONS_ACCORDION_TITLE}
+        items={FINANCIAL_ACTION_ITEMS.filter((i) => items.includes(i))}
+        pathname={pathname}
+        hash={hash}
+        tenant={tenant}
+      />
     </>
   );
 }

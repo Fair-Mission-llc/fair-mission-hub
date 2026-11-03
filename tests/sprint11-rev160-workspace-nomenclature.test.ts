@@ -201,7 +201,9 @@ describe('4. the treasurer and FS drawers', () => {
   it('folds the financial views into an accordion; the endorsements folder still opens by ?folder=', () => {
     const sidebar = read('apps/web/components/Sidebar.tsx');
     expect(sidebar).toContain('<details open={open}');
-    expect(sidebar).toContain('FINANCIAL_VIEWS_ACCORDION_TITLE');
+    // Sprint 11 Revision 17.5: two accordions replace the single Financial Views accordion.
+    expect(sidebar).toContain('FINANCIAL_REPORTS_ACCORDION_TITLE');
+    expect(sidebar).toContain('FINANCIAL_ACTIONS_ACCORDION_TITLE');
     // Sprint 11 Revision 17.0: the endorsements link moved into the Charitable Grants Registry page as a tab.
     expect(read('apps/web/components/modules/CharityCheckConsole.tsx')).toContain('CHARITY_ENDORSEMENT_FOLDER_TITLE');
     expect(read('apps/web/components/DeskDrawers.tsx')).toContain('new URLSearchParams(window.location.search).get(DESK_FOLDER_PARAM)');

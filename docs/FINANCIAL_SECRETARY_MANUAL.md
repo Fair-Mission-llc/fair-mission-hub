@@ -188,7 +188,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Review a member's charity request and move the request forward.
 
-**Start point:** **Active Desks** → **Grand Knight Desk** → **Charitable Grant Requests Vetting Board** folder. Other vetting officers use Sidebar → Finances → **Charity Vetting Queue**.
+**Start point:** **Active Desks** → **Grand Knight Desk** → **Charitable Grant Requests Vetting Board** folder. Other vetting officers use Sidebar → Governance → **Charity Vetting Queue**.
 
 **Steps:**
 1. Claim the request.
@@ -218,7 +218,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Clear a grant that the council approved for its check. This is the **[ ✍️ FS/GK Compliance Endorsement ]** step.
 
-**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**. Or: Sidebar → Finances → **Financial Views** → **FS/GK Compliance Endorsements**.
+**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**. Or: Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **Charitable Grants Registry** → the **FS/GK Compliance Endorsements** tab.
 
 **Steps:**
 1. Select the **FS/GK Compliance Endorsements** folder. A red border means that an approved request waits for your endorsement. The folder then moves to the top of the spine.

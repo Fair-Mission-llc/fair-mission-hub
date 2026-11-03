@@ -57,11 +57,11 @@ describe('dashboard tabs by seat (pure)', () => {
   });
 
   it("gives the council's Admins and any Super Admin every desk, as the full desk pages do", () => {
-    // Sprint 8O: every desk but Platform Management, which only the platform owner's own account gets.
+    // Sprint 11 Revision 17.5: a Super Admin also gets Platform Management, beside the council desks; an Admin does not.
     const councilDesks = DASHBOARD_TABS.map((t) => t.id).filter((id) => id !== 'super-admin');
     expect(ids(member({ memberType: 'Admin' }))).toEqual(councilDesks);
     expect(ids(member({ memberType: 'Admin' }), 2)).toEqual(['home', 'member']);
-    expect(ids(member({ memberType: 'Super Admin' }), 2)).toEqual(councilDesks);
+    expect(ids(member({ memberType: 'Super Admin' }), 2)).toEqual(DASHBOARD_TABS.map((t) => t.id));
   });
 
   it('opens the tab a URL anchor names, falling back to Home for an unknown or uncleared one', () => {

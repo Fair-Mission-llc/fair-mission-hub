@@ -141,7 +141,7 @@ The categories group the links by the work you do. A link can sit in a different
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
 | **Propose Charity Grant** | Finances | Every member | The charity proposal form | 4.3 |
-| **Charity Vetting Queue** | Finances | Officers, Trustees, Admins | Proposals to vet | 4.3 |
+| **Charity Vetting Queue** | Governance | Officers, Trustees, Admins | Proposals to vet | 4.3 |
 | **[ 🕊️ Charitable Grants Registry ]** | Finances | Finance officers, Super Admins | Approved grants and their checks | 2.7 (Treasurer Manual) |
 
 </details>
@@ -210,7 +210,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Standalone Activities** | Faith In Action | Admins, activity keepers | The council's standing activities | 3.4 |
+| **Member Activities** | Faith In Action | Admins, activity keepers | The council's standing activities | 3.4 |
 | **Faith Center** | Faith In Action | Every member | The feast day, the daily verse and the prayer intentions | 3 |
 | **Recruitment Factory** | Resources | Officers, Admins | Event flyers | 6.3 |
 | **Constitutional Advisor** | Governance | Officers, Admins, Super Admins | Parliamentary answers with citations | 2 |
@@ -257,9 +257,9 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Pillar | Links, in sidebar order |
 | --- | --- |
-| **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Election Center, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor |
-| **Faith In Action** | Standalone Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
-| **Finances** | [ 📊 Chart of Accounts & General Ledger ], Balance Sheet, Financial Dashboard, Financial Inspections, [ 🔍 Treasurer Ledger Audit ], My Expense Reports, [ 🧾 Disbursed Check Registry ], [ 📋 FS Expense Audit Queue ], GK Expense Authorize, Charity Vetting Queue, Propose Charity Grant, [ 🕊️ Charitable Grants Registry ], Donations History, Annual Budget Center |
+| **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Election Center, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor, Charity Vetting Queue |
+| **Faith In Action** | Member Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
+| **Finances** | Financial Inspections, My Expense Reports, Propose Charity Grant, Annual Budget Center; then the **📊 FINANCIAL REPORTS** accordion (Chart of Accounts & GL, Balance Sheet, Financial Dashboard) and the **⚡ FINANCIAL ACTIONS** accordion (Treasurer Ledger Audit, FS Expense Audit Queue, GK Expense Authorize, Disbursed Check Registry, Charitable Grants Registry, Donations History) |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Historical Chronology, Post-event Ledger, Lessons Registry |
 | **Resources** | Council Artifacts, Recruitment Factory, Shared Equipment Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
@@ -284,7 +284,7 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | Tab | Who gets the tab | Drawers or sections | Section |
 | --- | --- | --- | --- |
 | **Home** | Every member | **[ 📰 Latest Council Newsletters & Bulletins ]**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, [ 📅 Upcoming Event Agenda ], Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **[ 🙏 Praying Hands ]**. | 14.2 |
-| **Platform Management** | The platform owner only | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
+| **Platform Management** | Super Admins | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
 | **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, [ 📈 Council Goals & Targets ], Shared Equipment Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **[ 📖 Reference Workflows ]**: Charitable Donation Workflow, Planning & Budgeting Workflow, [ 🗳️ Council Election Workflow ] | 14.5 |
 | **Financial Secretary Desk** | The FS, Admins, Super Admins | [ 📋 FS Expense Audit Queue ], Expense Report (ER) Routing Track, Charitable Donation Records, FS/GK Compliance Endorsements, [ 🕊️ Charitable Grants Registry ], Excel Roster Imports; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
 | **Treasurer Desk** | The Treasurer, Admins, Super Admins | [ 🔍 Treasurer Ledger Audit ], [ 🧾 Disbursed Check Registry ], [ 🕊️ Charitable Grants Registry ], Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **[ 🔧 Accounting Configuration ]**: [ 📊 Chart of Accounts & General Ledger ]; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
@@ -341,7 +341,7 @@ The page reads your member type and your officer roles. The page then lists only
 | Member | Summary | One short sentence for each page that you can open, for example **Home**, **Member Actions Hub**, **Visual Master Calendar** and the **Member Desk**. No leadership, finance desk or settings page. |
 | Council Officer | Full | The member pages and the desks of your office, with the sidebar pillar of each link and every drawer of each desk. For example **GK Expense Authorize** and the **Grand Knight Desk** drawers for the Grand Knight. |
 | Council Admin | Full | The member pages and the leadership, finance and settings pages of your council, with every drawer of each desk. |
-| Super Admin | Full | Every page, including **Global System Parameters**, and the **Platform Management** for the platform owner. |
+| Super Admin | Full | Every page, including **Global System Parameters**, and the **Platform Management** tab on the **Active Desks** row. |
 
 A few pages read differently for leaders. For example, a member reads that **Annual Budget Center** shows the budget. A leader also reads that budget keepers draft and approve the budget there.
 A module that your council switched off is not in the guide, because the module is not in your sidebar.
@@ -710,7 +710,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Keep the list of ongoing activities that members log time against.
 
-**Start point:** Sidebar → Faith In Action → **Standalone Activities**.
+**Start point:** Sidebar → Faith In Action → **Member Activities** → the **Current Activities** tab.
 
 **Steps:**
 1. Add an activity with a name, a description and a category.
@@ -737,7 +737,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Print or export the activity hours from January 1 to today, by Form 1728 line.
 
-**Start point:** Sidebar → Faith In Action → **Standalone Activities** → the **Form 1728 year to date** panel.
+**Start point:** Sidebar → Faith In Action → **Member Activities** → the **Form 1728 year to date** panel.
 
 **Steps:**
 1. Read the table. Each section (Faith, Family, Community, Life) ends with a subtotal row. The last row is the total.
@@ -811,7 +811,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Review a member's charity request and move the request forward.
 
-**Start point:** **Active Desks** → **Grand Knight Desk** → **Charitable Grant Requests Vetting Board** folder. Other vetting officers use Sidebar → Finances → **Charity Vetting Queue**.
+**Start point:** **Active Desks** → **Grand Knight Desk** → **Charitable Grant Requests Vetting Board** folder. Other vetting officers use Sidebar → Governance → **Charity Vetting Queue**.
 
 **Steps:**
 1. Claim the request.
@@ -841,7 +841,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Clear a grant that the council approved for its check. This is the **[ ✍️ FS/GK Compliance Endorsement ]** step.
 
-**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**. Or (Financial Secretary): Sidebar → Finances → **Financial Views** → **RECORDED REGISTRIES** → **Charitable Grants Registry** → the **FS/GK Compliance Endorsements** tab.
+**Start point:** **Active Desks** → **Financial Secretary Desk** or **Grand Knight Desk** → **FS/GK Compliance Endorsements**. Or (Financial Secretary): Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **Charitable Grants Registry** → the **FS/GK Compliance Endorsements** tab.
 
 **Steps:**
 1. Select the **FS/GK Compliance Endorsements** folder. A red border means that an approved request waits for your endorsement. The folder then moves to the top of the spine.
@@ -2748,7 +2748,7 @@ The screen has two depths: **Summary** and **Full**. Your role sets the depth. Y
 | Member (a plain volunteer) | Summary | One short sentence | One short sentence. No drawers. |
 | Council Officer | Full | The leader sentence and the sidebar pillar of the link, for example *sidebar: Finances* | The sentence and a list of every drawer of the desk |
 | Council Admin | Full | The leader sentence and the sidebar pillar | The sentence and every drawer of each desk that you hold |
-| Super Admin | Full | The leader sentence and the sidebar pillar, for every page | The sentence and every drawer, including the **Platform Management** folders for the platform owner |
+| Super Admin | Full | The leader sentence and the sidebar pillar, for every page | The sentence and every drawer, including the **Platform Management** folders |
 
 The first line of the screen tells you your depth. For example, *You are signed in as: Council Officer (Grand Knight)*. Under it, the overview says *You see the full map* or *You see a short summary*.
 

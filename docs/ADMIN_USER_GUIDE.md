@@ -89,7 +89,9 @@ The navy header shows your own council, your name, your member type and your off
 
 - A Super Admin also sees **[ 🛠️ Super Admin Desk ]** in the header row. The button opens the **Master Feature Deployment Grid**. The button is not shown while a Super Admin views the portal as another member.
 - On the **[ 👥 Council Roster ]**, **Add Member** is disabled while the **Council** list reads **All councils on the platform** or **All: my council and sister councils**. Choose one council first. The new member joins that council.
-- In the sidebar, Finances → **Financial Views** has two groups. **📊 FINANCIAL REPORTS** holds **Financial Dashboard**, **Balance Sheet**, the general ledger and **Financial Inspections**. **⚡ RECORDED REGISTRIES** holds the Treasurer ledger audit, the FS expense audit queue, the disbursed check registry, the **Charitable Grants Registry** and **Donations History**.
+- In the sidebar, the Finances pillar has two separate accordions. **📊 FINANCIAL REPORTS** holds the views that only read the books: **Chart of Accounts & GL**, **Balance Sheet** and **Financial Dashboard**. **⚡ FINANCIAL ACTIONS** holds the desks where officers do the work: **Treasurer Ledger Audit**, **FS Expense Audit Queue**, **GK Expense Authorize**, **Disbursed Check Registry**, **Charitable Grants Registry** and **Donations History**. **Financial Inspections**, **My Expense Reports**, **Propose Charity Grant** and **Annual Budget Center** are plain links above the accordions. The **Charity Vetting Queue** is in the **Governance** pillar.
+- The Faith In Action link **Standalone Activities** is now **Member Activities**. The page title reads **Member Activities**, and its first tab reads **Current Activities**.
+- Every Super Admin sign-in has the **Platform Management** tab on the **Active Desks** row, beside the council desks.
 - Sidebar links show plain words only, with no icons and no brackets. A long name ends in "…".
 - **Activities** and **Meeting Center** list their rows in full-width tables. Each table has a search box and shows 15 rows per page.
 
@@ -225,7 +227,7 @@ A council can use its own Drive private key instead of the server key. A council
 
 **Goal:** Read the notes and bug reports that council Admins send.
 
-**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. The platform owner also reads the notes on the **Platform Management** (10.3).
+**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. Super Admins also read the notes on the **Platform Management** tab (10.3).
 
 **Steps:**
 1. Scroll below **Send a Note to the Platform Owner**.
@@ -819,7 +821,7 @@ A council that is not on the platform can ask for access from the sign-in page. 
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
-The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. The platform owner reads the requests on the **Platform Management**, in the **[ 🔑 Council Access Request Approval Queue ]** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests on the **Platform Management** tab, in the **[ 🔑 Council Access Request Approval Queue ]** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
 
 Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
 
@@ -832,7 +834,7 @@ Approving a request marks the request as reviewed. Approving does not create the
 > The web portal keeps requests on the portal server. A server restart clears them until the production database is connected. A request sent from the phone stays on that phone.
 
 ### 9.2 Approve a council access request
-> **Who can do this:** the platform owner (the Super Admin who owns the **Platform Management**). Other members do not see the **Inbound Council Mail Center**.
+> **Who can do this:** Super Admins (every Super Admin has the **Platform Management** tab). Other members do not see the **Inbound Council Mail Center**.
 
 **Goal:** Mark a council's access request as reviewed.
 
@@ -1026,7 +1028,7 @@ Only sessions with Admin clearance or higher see the page. A member, an officer 
 | The page is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin to send the note. |
 
 ### 10.3 Use Platform Management
-> **Who can do this:** the platform owner only. The tab shows only for the owner's own Super Admin sign-in. Other Super Admins do not see the tab.
+> **Who can do this:** Super Admins. The tab shows on the **Active Desks** row for every Super Admin sign-in, beside the council desks. Council Admins do not see the tab.
 
 **Goal:** Read Admin notes, approve council licenses and switch council modules from one desk.
 
@@ -1059,7 +1061,7 @@ Under the folders, the desk has four drawers. Select a drawer's title to open or
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The **Platform Management** tab is missing. | You signed in with another account, or you view the portal as another member. | Sign in with the platform owner's account. Stop the view-as session. |
+| The **Platform Management** tab is missing. | Your account is not a Super Admin, or you view the portal as another member. | Sign in with a Super Admin account. Stop the view-as session. |
 | A module switch has no effect on a council. | The council's members must reload the portal. | Ask the members to reload the page. |
 
 ---

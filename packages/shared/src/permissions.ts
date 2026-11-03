@@ -834,7 +834,12 @@ export interface PortalNavGroup {
  * (Sprint 8C) 'expenses/queue' appears exactly once. Sprint 7C Extension: the 'setup' pillar is labelled System Settings.
  */
 export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
-  { id: 'governance', label: 'Governance', items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor'] },
+  // Sprint 11 Revision 17.5: the Charity Vetting Queue left Finances; vetting is a governance duty.
+  {
+    id: 'governance',
+    label: 'Governance',
+    items: ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor', 'charities/vetting'],
+  },
   // Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it), and the gallery is the sidebar's own
   // top-level '📸 Media & Memory Center' node (Sidebar.tsx) instead of a Resources link. Sprint 10 Revision 2.0: the
   // Roster & Achievements directory heads the pillar, directly under its header, for every member.
@@ -852,7 +857,6 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
       'expenses/disbursements',
       'expenses/audit',
       'expenses/authorize',
-      'charities/vetting',
       'charities/propose',
       'charities/queue',
       'donations',

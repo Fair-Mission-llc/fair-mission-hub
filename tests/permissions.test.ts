@@ -246,7 +246,8 @@ describe('portal permissions', () => {
 
   describe('sidebar pillars (Sprint 5S, election desks Sprint 5U, lockable desks Sprint 5Z-10, seven pillars Sprint 6Z)', () => {
     /** The sign-off and meeting desks Sprint 5Z-10 showed locked; since the Sprint 6G Extension they are hidden instead. */
-    const SIGN_OFF_DESKS = ['meetings/live', 'meetings/cadence', 'expenses/audit', 'expenses/authorize', 'charities/vetting'];
+    // Sidebar order: the Charity Vetting Queue sits under Governance since Sprint 11 Revision 17.5.
+    const SIGN_OFF_DESKS = ['meetings/live', 'meetings/cadence', 'charities/vetting', 'expenses/audit', 'expenses/authorize'];
     const shape = (u: Parameters<typeof portalSidebar>[0]) =>
       portalSidebar(u).map((g) => [g.label, g.entries.map((e) => e.item)]);
     const FIN_READ = ['finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'finance/audit'];
@@ -318,11 +319,11 @@ describe('portal permissions', () => {
 
     it('shows a council Admin everything but the global tables, councils, appointments and the check ledgers', () => {
       expect(shape(admin)).toEqual([
-        ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor']],
+        ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'activities', 'member-actions', 'events', 'calendar', 'faith-center']],
         [
           'Finances',
-          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/audit', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'donations', 'financials/budget'],
+          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/audit', 'expenses/authorize', 'charities/propose', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
@@ -333,11 +334,11 @@ describe('portal permissions', () => {
 
     it('shows a Treasurer the full finances and the donation lookups', () => {
       expect(shape(actor({ isOfficer: true, roles: ['Treasurer'] }))).toEqual([
-        ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor']],
+        ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'member-actions', 'calendar', 'faith-center']],
         [
           'Finances',
-          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/disbursements', 'charities/vetting', 'charities/propose', 'charities/queue', 'donations', 'financials/budget'],
+          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/disbursements', 'charities/propose', 'charities/queue', 'donations', 'financials/budget'],
         ],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
@@ -348,9 +349,9 @@ describe('portal permissions', () => {
 
     it('files the Council Lookups (agenda templates, Sprint 5Y-6) under Setup and the Appointed Leadership Matrix under Governance for a Grand Knight who is a plain Member', () => {
       expect(shape(actor({ isOfficer: true, roles: ['Grand Knight'] }))).toEqual([
-        ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor']],
+        ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'member-actions', 'calendar', 'faith-center']],
-        ['Finances', [...FIN_READ, 'expenses', 'expenses/authorize', 'charities/vetting', 'charities/propose', 'financials/budget']],
+        ['Finances', [...FIN_READ, 'expenses', 'expenses/authorize', 'charities/propose', 'financials/budget']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
@@ -361,10 +362,11 @@ describe('portal permissions', () => {
     it('drops the Setup pillar for plain members and gives other officers the Council Wide Settings and the Secure Access Vault (Sprint 6L Extension, Sprint 7C)', () => {
       expect(shape(officer)).toEqual([
         // Sprint 5Z-10: officers run the live console.
-        ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor']],
+        // Sprint 5Z-2: officers (Trustees included) vet charitable requests - under Governance since Sprint 11 Revision 17.5.
+        ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'member-actions', 'calendar', 'faith-center']],
-        // Sprint 5Z-2: officers (Trustees included) vet charitable requests; Sprint 5Z-8: they read the general ledger.
-        ['Finances', [...FIN_READ, 'expenses', 'charities/vetting', 'charities/propose', 'financials/budget']],
+        // Sprint 5Z-8: officers read the general ledger.
+        ['Finances', [...FIN_READ, 'expenses', 'charities/propose', 'financials/budget']],
         // Sprint 5Z-2.5: officers read the executive dashboard.
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
@@ -393,7 +395,7 @@ describe('portal permissions', () => {
           .map((e) => e.item)
           .filter((item) => (SIGN_OFF_DESKS as readonly string[]).includes(item));
       expect(desks(member)).toEqual([]);
-      expect(desks(actor({ isOfficer: true, roles: ['Grand Knight'] }))).toEqual(['meetings/live', 'meetings/cadence', 'expenses/authorize', 'charities/vetting']);
+      expect(desks(actor({ isOfficer: true, roles: ['Grand Knight'] }))).toEqual(['meetings/live', 'meetings/cadence', 'charities/vetting', 'expenses/authorize']);
       expect(desks(admin)).toEqual(SIGN_OFF_DESKS);
       // No entry carries a lock: every link drawn is one portalAreas allows.
       for (const u of [superAdmin, admin, officer, member]) {

@@ -211,7 +211,7 @@ describe('Administrative Feedback Loops', () => {
 describe('Platform Management', () => {
   const owner = { memberId: 1, councilId: OWN, memberType: 'Super Admin' as const, isOfficer: false, roles: [], username: PLATFORM_OWNER_USERNAMES[0]! };
 
-  it("mounts only for the platform owner's own Super Admin session", () => {
+  it("knows the platform owner's own Super Admin session; every Super Admin gets the tab", () => {
     expect(isPlatformOwner(owner)).toBe(true);
     // Sprint 8O Extension: the developer's own local sign-in, while it is a Super Admin.
     expect(PLATFORM_OWNER_USERNAMES).toContain('tim');
@@ -223,7 +223,9 @@ describe('Platform Management', () => {
     expect(isPlatformOwner({ ...owner, memberType: 'Admin' })).toBe(false);
     expect(isPlatformOwner({ ...owner, username: undefined })).toBe(false);
     expect(dashboardTabsFor(owner, OWN)[1]).toMatchObject({ id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE });
-    expect(dashboardTabsFor({ ...owner, username: 'another.super@kofc.org' }, OWN).map((t) => t.id)).not.toContain('super-admin');
+    // Sprint 11 Revision 17.5: every Super Admin session gets the tab; an Admin never does.
+    expect(dashboardTabsFor({ ...owner, username: 'another.super@kofc.org' }, OWN).map((t) => t.id)).toContain('super-admin');
+    expect(dashboardTabsFor({ ...owner, memberType: 'Admin' }, OWN).map((t) => t.id)).not.toContain('super-admin');
   });
 
   it('holds the three top horizontal action folders', () => {
@@ -234,7 +236,7 @@ describe('Platform Management', () => {
       '[ 🛠️ System Feature Flag Control Panel ]',
     ]);
     const desk = read('apps/web/components/SuperAdminDesk.tsx');
-    expect(desk).toContain('isPlatformOwner(user)');
+    expect(desk).toContain('showsSuperAdminDeskTab(user)');
     for (const part of ['<FeedbackInbox', '<InboundMailCenter', '<FeatureFlagControlPanel']) expect(desk).toContain(part);
     expect(read('apps/web/app/dashboard/page.tsx')).toContain("shown === 'super-admin'");
   });
