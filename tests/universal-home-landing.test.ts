@@ -235,7 +235,7 @@ describe('the role-customized navigation map (Sprint 8R Corrected)', () => {
   it('renders as collapsible blocks with only the overview open', () => {
     const page = read('apps/web/app/navigation-guide/page.tsx');
     expect(page).toContain('navigationGuideMap(user, flags, tenant)');
-    expect(page.match(/<MapBlock [^>]*\bopen\b/g)).toEqual(['<MapBlock id="overview" title="📍 Overview" open']);
+    expect(page.match(/<MapBlock [^>]*\bopen\b/g)).toEqual(['<MapBlock id="overview" title="Overview" open']);
     expect(page.indexOf('map.categories.map(')).toBeLessThan(page.indexOf('id="desks"'));
     expect(page.indexOf('id="desks"')).toBeLessThan(page.indexOf('id="timings"'));
     expect(page.indexOf('id="timings"')).toBeLessThan(page.indexOf('id="phone"'));

@@ -203,7 +203,7 @@ export function BudgetAnalyzerCard({
   return (
     <SummaryCard
       id="budget-analyzer-title"
-      title="📊 Budget Allocation & YOY Variance Analyzer"
+      title="Budget Allocation & YOY Variance Analyzer"
       subtitle={`Approved caps for fraternal year ${analysis.fraternalYear} against ${analysis.priorFraternalYear}`}
     >
       <div className="flex flex-col gap-6">

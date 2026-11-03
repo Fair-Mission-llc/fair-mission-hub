@@ -31,7 +31,7 @@ function StatementRow({ op, label, amount, total, children }: { op: '' | '+' | '
 
 export function NetWorthCard({ worth }: { worth: CouncilNetWorth }) {
   return (
-    <SummaryCard id="net-worth-title" title="🏛️ Council Balance Sheet & Equity Ledger" subtitle="Liquid cash plus equipment, less approved expenses not yet paid: the council's true net worth">
+    <SummaryCard id="net-worth-title" title="Council Balance Sheet & Equity Ledger" subtitle="Liquid cash plus equipment, less approved expenses not yet paid: the council's true net worth">
       <dl className="flex flex-col gap-3" aria-label="Net worth statement">
         <StatementRow op="" label="Liquid cash balances" amount={worth.liquidCash}>
           {worth.cashAccounts.length === 0 ? (

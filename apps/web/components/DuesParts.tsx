@@ -8,7 +8,7 @@
 //     Sprint 6C: an event's budget is its approved CouncilBudgetForecast line, never Event.Budget.
 //     Sprint 6D: a line with a quantity is split, so each event shows its own block ("Occurrence 2 of 3").
 import type { ReactNode } from 'react';
-import type { BudgetAlert, ConcludedBudgetPerformance, ConcludedEventPerformance, DuesForecast } from '@kofc/shared';
+import { plainTitle, type BudgetAlert, type ConcludedBudgetPerformance, type ConcludedEventPerformance, type DuesForecast } from '@kofc/shared';
 import { formatPercent } from '@/components/BudgetParts';
 import { cx } from '@/components/ui';
 import { formatFullDate, formatMoney } from '@/lib/format';
@@ -26,7 +26,7 @@ export function SummaryCard({ id, title, subtitle, children }: { id: string; tit
   return (
     <section aria-labelledby={id} className="rounded border-2 border-navy bg-white p-4 text-navy sm:p-6">
       <h2 id={id} className="font-serif text-2xl">
-        {title}
+        {plainTitle(title)}
       </h2>
       {subtitle ? <p className="mt-1 text-base text-navy">{subtitle}</p> : null}
       <div className="mt-4">{children}</div>

@@ -374,7 +374,7 @@ describe('Sprint 8L pilot kit', () => {
       'Charitable Grant Requests Vetting Board',
       'Constitutional Advisor Panels',
       'Connected Councils',
-      'Financial Inspections',
+      'Trustee Semiannual Audit',
       // Sprint 11 Revision 16.0: was 'Charity Check Issuance Console'.
       '[ 🕊️ Charitable Grants Registry ]',
       'Annual Budget vs Actuals Ledger Grid',

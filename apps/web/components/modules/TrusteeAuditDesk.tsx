@@ -155,7 +155,7 @@ export function AuditDesk() {
           </div>
         }
       >
-        Financial Inspections
+        Trustee Semiannual Audit
       </PageTitle>
       {desk.error ? <Notice tone="error">{desk.error}</Notice> : null}
       {message ? (
@@ -166,7 +166,7 @@ export function AuditDesk() {
 
       <SummaryCard
         id="trustee-audit-title"
-        title="🔎 Semiannual Trustee Audit Desk (Form 1295)"
+        title="Semiannual Trustee Audit Desk (Form 1295)"
         subtitle="Check every cash line against the bank statements, then sign to lock the period."
       >
         <ol className="flex flex-col gap-4">

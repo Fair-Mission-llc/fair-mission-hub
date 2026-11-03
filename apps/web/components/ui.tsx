@@ -2,7 +2,10 @@
 // Portal primitives. Colours are only the theme tokens declared in app/globals.css (navy, brand-red,
 // gold, white, muted, line); the default Tailwind palette is switched off, so nothing else compiles.
 import {
+  Children,
+  cloneElement,
   createContext,
+  isValidElement,
   useContext,
   useId,
   useRef,
@@ -11,12 +14,32 @@ import {
   type ComponentProps,
   type InputHTMLAttributes,
   type KeyboardEvent,
+  type ReactElement,
   type ReactNode,
   type SelectHTMLAttributes,
 } from 'react';
 
-import { isNewMember, NEW_MEMBER_BADGE_LABEL, type Member } from '@kofc/shared';
+import { isNewMember, NEW_MEMBER_BADGE_LABEL, plainTextPiece, plainTitle, type Member } from '@kofc/shared';
 export const cx = (...parts: (string | false | null | undefined)[]): string => parts.filter(Boolean).join(' ');
+
+/**
+ * Sprint 11 Revision 17.6: heading and notice text as plain words - every icon glyph and '[ ... ]' bracket removed
+ * (shared plainTitle). A lone string is tidied whole; text mixed with values is tidied piece by piece, and the text
+ * inside plain HTML tags (<strong>, <span>...) is tidied too. Other components are left as they are.
+ */
+export function plainText(node: ReactNode): ReactNode {
+  if (typeof node === 'string') return plainTitle(node);
+  if (!Array.isArray(node) && !isValidElement(node)) return node;
+  const piece = (child: ReactNode): ReactNode => {
+    if (typeof child === 'string') return plainTextPiece(child);
+    if (isValidElement(child) && typeof child.type === 'string') {
+      const el = child as ReactElement<{ children?: ReactNode }>;
+      return el.props.children === undefined ? el : cloneElement(el, undefined, ...Children.toArray(el.props.children).map(piece));
+    }
+    return child;
+  };
+  return Array.isArray(node) ? Children.map(node, piece) : piece(node);
+}
 
 const control =
   'w-full rounded border border-navy bg-white px-2 py-1.5 font-sans text-sm text-navy placeholder:text-muted disabled:border-line disabled:text-muted';
@@ -206,7 +229,7 @@ export function Notice({ tone, children, onDismiss }: { tone: 'error' | 'info'; 
         tone === 'error' ? 'border-brand-red text-brand-red' : 'border-navy text-navy',
       )}
     >
-      <div className="flex-1">{children}</div>
+      <div className="flex-1">{plainText(children)}</div>
       {onDismiss ? (
         <button type="button" aria-label="Dismiss" onClick={onDismiss} className="font-bold">
           ×
@@ -220,7 +243,7 @@ export function Panel({ title, actions, children, className }: { title: string; 
   return (
     <section className={cx('rounded border border-line bg-white', className)}>
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2">
-        <h2 className="min-w-0 font-serif text-lg font-bold">{title}</h2>
+        <h2 className="min-w-0 font-serif text-lg font-bold">{plainTitle(title)}</h2>
         {actions}
       </header>
       <div className="p-4">{children}</div>
@@ -238,7 +261,7 @@ export function PageTitle({ children, actions }: { children: ReactNode; actions?
   const embedded = useContext(EmbeddedModuleContext);
   return (
     <div className="mb-4 flex items-center justify-between gap-4">
-      {embedded ? <h3 className="font-serif text-lg font-bold">{children}</h3> : <h1 className="font-serif text-2xl font-bold">{children}</h1>}
+      {embedded ? <h3 className="font-serif text-lg font-bold">{plainText(children)}</h3> : <h1 className="font-serif text-2xl font-bold">{plainText(children)}</h1>}
       {actions}
     </div>
   );

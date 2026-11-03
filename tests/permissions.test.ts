@@ -321,10 +321,7 @@ describe('portal permissions', () => {
       expect(shape(admin)).toEqual([
         ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'activities', 'member-actions', 'events', 'calendar', 'faith-center']],
-        [
-          'Finances',
-          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/audit', 'expenses/authorize', 'charities/propose', 'donations', 'financials/budget'],
-        ],
+        ['Finances', ['expenses', 'charities/propose', 'finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget', 'finance/treasurer-desk', 'expenses/audit', 'expenses/authorize', 'finance/audit', 'donations']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
@@ -336,10 +333,7 @@ describe('portal permissions', () => {
       expect(shape(actor({ isOfficer: true, roles: ['Treasurer'] }))).toEqual([
         ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'member-actions', 'calendar', 'faith-center']],
-        [
-          'Finances',
-          [...FIN_READ, 'finance/treasurer-desk', 'expenses', 'expenses/disbursements', 'charities/propose', 'charities/queue', 'donations', 'financials/budget'],
-        ],
+        ['Finances', ['expenses', 'charities/propose', 'finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget', 'finance/treasurer-desk', 'finance/audit', 'expenses/disbursements', 'charities/queue', 'donations']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
@@ -351,7 +345,7 @@ describe('portal permissions', () => {
       expect(shape(actor({ isOfficer: true, roles: ['Grand Knight'] }))).toEqual([
         ['Governance', ['meetings/live', 'meetings/cadence', 'meetings', 'elections', 'elections/appointments', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'member-actions', 'calendar', 'faith-center']],
-        ['Finances', [...FIN_READ, 'expenses', 'expenses/authorize', 'charities/propose', 'financials/budget']],
+        ['Finances', ['expenses', 'charities/propose', 'finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget', 'expenses/authorize', 'finance/audit']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
         ['Answers', ['help', 'answers/help', 'answers/sop']],
@@ -366,7 +360,7 @@ describe('portal permissions', () => {
         ['Governance', ['meetings/live', 'meetings', 'elections', 'governance/bylaws', 'governance/advisor', 'charities/vetting']],
         ['Faith In Action', ['roster', 'member-actions', 'calendar', 'faith-center']],
         // Sprint 5Z-8: officers read the general ledger.
-        ['Finances', [...FIN_READ, 'expenses', 'charities/propose', 'financials/budget']],
+        ['Finances', ['expenses', 'charities/propose', 'finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget', 'finance/audit']],
         // Sprint 5Z-2.5: officers read the executive dashboard.
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],

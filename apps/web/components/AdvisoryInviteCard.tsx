@@ -65,7 +65,7 @@ export function AdvisoryInviteCard({ className }: { className?: string }) {
       {open.map((a) => (
         <div key={a.id} className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="font-serif text-lg font-bold text-navy">🔊 {a.Title}</h2>
+            <h2 className="font-serif text-lg font-bold text-navy">{a.Title}</h2>
             <p className="mt-1 whitespace-pre-wrap text-sm">{alertDisplayBody(a.MessageBody)}</p>
           </div>
           <AcceptInvitationButton alert={a} onAccepted={() => setJoined(true)} />

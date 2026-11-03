@@ -16,7 +16,7 @@
 // permanent core systems. Their columns stay on the Council table, unread (RETIRED_FEATURE_COLUMNS). It adds five
 // premium switches - the Media & Memory Center, the Lessons & Knowledge Registries, the Recruitment Factory (split
 // from the document compilation pipelines), the Shared Equipment Library (split from capital asset tracking) and the
-// Advanced Financial Audits (now Financial Inspections) - and widens the Council History switch (now Historical Chronology, Revision 10.0). A switch that is off
+// Advanced Financial Audits (now Trustee Semiannual Audit) - and widens the Council History switch (now Historical Chronology, Revision 10.0). A switch that is off
 // also hides its officer desk drawers (desk-drawers.ts, by portal area), its Navigation Guide entries (portalSidebar) and
 // adds a 'disabled' banner to the matching sections of the council's custom manuals (scripts/compile_all_manuals.py).
 // =========================================================================
@@ -163,7 +163,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   feature_marketing_factory: { label: 'Recruitment Factory', hint: 'The marketing flyer factory and its co-pilot route' },
   feature_loaner_library: { label: 'Shared Equipment Library', hint: "The shared loaner library page and the Grand Knight Desk's loaner drawer" },
   feature_advanced_audits: {
-    label: 'Financial Inspections',
+    label: 'Trustee Semiannual Audit',
     hint: "The Trustees' semiannual audit and Form 1295 center, and the inspection drawers of the Financial Secretary and Treasurer desks",
   },
 };

@@ -102,8 +102,8 @@ describe('the Council Dashboard rename', () => {
       expect(text).not.toContain('Sidebar → Finances → **Leadership Auditing Queue**');
     }
     const admin = readOfficerManuals();
-    expect(admin).toContain('**[ 🚗 Open Shifts Needing Volunteers ]**');
-    expect(admin).toContain('**[ 📥 My Charity Requests ]**');
+    expect(admin).toContain('**Open Shifts Needing Volunteers**');
+    expect(admin).toContain('**My Charity Requests**');
     expect(admin).toContain('**Merit Tier Milestones** tab');
     expect(admin).toContain('The Deputy Grand Knight (DGK) has the same access as the Grand Knight (GK).');
   });
@@ -304,9 +304,9 @@ describe('the Member Desk cards', () => {
 
   it('shows the open shifts card with one-click sign-up and the charity requests card with its tracking steps', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    expect(desks).toContain('[ 🚗 Open Shifts Needing Volunteers ]');
+    expect(desks).toContain('Open Shifts Needing Volunteers (${rows.length})');
     expect(desks).toContain('db.events.signupForShift(user.memberId, shiftId)');
-    expect(desks).toContain('[ 📥 My Charity Requests ]');
+    expect(desks).toContain('My Charity Requests (${rows.length})');
     expect(desks).toContain('db.charities.listMyCharitableRequests(user.memberId)');
     expect(desks).toContain('<TrackingSteps request={request} />');
     expect(desks).toContain('{flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}');

@@ -186,8 +186,8 @@ The **Navigation Guide** explains each link in your sidebar. Use it when you can
 
 - **Where:** select **Navigation Guide** at the top of the sidebar, above the pillars.
 - **What you see:** one short sentence for each page and desk that you can open. Officers see more: the sidebar pillar of each link and every drawer of their desks. You see only the pages that your role can open.
-- **How it opens:** all of the category groups are closed. Only **📍 Overview** is open. Select a group title, for example **📅 Calendars**, to open it. Select the title again to close it.
-- **The order:** the overview, then the sidebar categories, then **🗂️ Your desks**, **⏱️ Your time limits** and **📱 Phone app tabs**.
+- **How it opens:** all of the category groups are closed. Only **Overview** is open. Select a group title, for example **📅 Calendars**, to open it. Select the title again to close it.
+- **The order:** the overview, then the sidebar categories, then **Your desks**, **Your time limits** and **Phone app tabs**.
 
 **To find a page:**
 1. Select **Navigation Guide** in the sidebar.
@@ -1466,7 +1466,7 @@ The phone does not pick a method. You tap the method. If you typed a standard ra
 > **Before you start**
 > - **Access:** any active member. The page shows only when your council keeps the **Charity proposals** module on.
 > - **Access:** you cannot vet your own request. Another officer or a Trustee vets the request.
-> - **Data loss:** none. A filed request stays on the Member Desk under **[ 📥 My Charity Requests ]**.
+> - **Data loss:** none. A filed request stays on the Member Desk under **My Charity Requests**.
 
 ### Concept: the Knight Shepherd
 
@@ -1498,13 +1498,13 @@ For an organization that is not on the list, select **Another organization (type
 6. Fill in **The Request**: the amount, the date and the specific use.
 7. Select **Save and submit for vetting**.
 
-**Expected result:** A tracking message names the three steps and the follow-up date. The request shows on the Member Desk under **[ 📥 My Charity Requests ]**.
+**Expected result:** A tracking message names the three steps and the follow-up date. The request shows on the Member Desk under **My Charity Requests**.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The request stops at one step. | Vetting declined the request, or the council voted no. | Read the step on the Member Desk under **[ 📥 My Charity Requests ]**. |
-| The vetting officer asks a question. | The officer needs more information. | Select **Request More Info** on the request in **[ 📥 My Charity Requests ]** and answer there. |
+| The request stops at one step. | Vetting declined the request, or the council voted no. | Read the step on the Member Desk under **My Charity Requests**. |
+| The vetting officer asks a question. | The officer needs more information. | Select **Request More Info** on the request in **My Charity Requests** and answer there. |
 | The **State** list shows **No verified charities yet**. | No Admin has verified a charity yet. | Select **Another organization (type it in)** after you choose a state, or ask an Admin to verify the charity. |
 | The organization is not in the **Organization** list. | The charity is not verified, or it is in another state. | Select **Another organization (type it in)** and type the details. |
 
@@ -1773,7 +1773,7 @@ Still stuck? Open **Answers → Online Help Center**. You can also message your 
 
 | When | What you get | Where to check |
 | --- | --- | --- |
-| You save a request | A tracking message with the three steps and the follow-up date | Member Desk → **[ 📥 My Charity Requests ]** |
+| You save a request | A tracking message with the three steps and the follow-up date | Member Desk → **My Charity Requests** |
 | 6 months after filing | The Trustees ask you for a status report. The app sends no reminder. | The date in your tracking message |
 
 ### Expense reports

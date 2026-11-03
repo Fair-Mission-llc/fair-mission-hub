@@ -32,6 +32,7 @@ import {
   isSuperAdmin,
   MANUAL_REGENERATION_ROUTE,
   NIGHTLY_MANUAL_REBUILD_HOUR,
+  plainTitle,
   type AdminDeskDrawerId,
   type AdminDeskTopPanelId,
   type ManualRegenerationStatus,
@@ -336,7 +337,7 @@ export function AdminDesk() {
         >
           {drawer ? (
             <>
-              <h2 className="mb-3 font-serif text-xl font-bold text-navy">{drawer.label}</h2>
+              <h2 className="mb-3 font-serif text-xl font-bold text-navy">{plainTitle(drawer.label)}</h2>
               <EmbeddedModuleContext.Provider value={true}>
                 <DrawerPanel id={drawer.id} />
               </EmbeddedModuleContext.Provider>

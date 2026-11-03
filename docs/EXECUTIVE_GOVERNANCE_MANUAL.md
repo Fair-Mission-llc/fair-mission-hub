@@ -151,7 +151,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Financial Inspections** | Finances | Trustees, general ledger readers | The semiannual audit and its period locks | 4 |
+| **Trustee Semiannual Audit** | Finances | Trustees, general ledger readers | The semiannual audit and its period locks | 4 |
 
 </details>
 
@@ -259,7 +259,7 @@ The categories group the links by the work you do. A link can sit in a different
 | --- | --- |
 | **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Election Center, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor, Charity Vetting Queue |
 | **Faith In Action** | Member Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
-| **Finances** | Financial Inspections, My Expense Reports, Propose Charity Grant, Annual Budget Center; then the **📊 FINANCIAL REPORTS** accordion (Chart of Accounts & GL, Balance Sheet, Financial Dashboard) and the **⚡ FINANCIAL ACTIONS** accordion (Treasurer Ledger Audit, FS Expense Audit Queue, GK Expense Authorize, Disbursed Check Registry, Charitable Grants Registry, Donations History) |
+| **Finances** | My Expense Reports, Propose Charity Grant (always at the top); then the **📊 FINANCIAL REPORTS** accordion (Chart of Accounts & GL, Balance Sheet, Financial Dashboard, Annual Budget Center) and the **⚡ FINANCIAL ACTIONS** accordion (Treasurer Ledger Audit, FS Expense Audit Queue, GK Expense Authorize, Trustee Semiannual Audit, Disbursed Check Registry, Charitable Grants Registry, Donations History) |
 | **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Historical Chronology, Post-event Ledger, Lessons Registry |
 | **Resources** | Council Artifacts, Recruitment Factory, Shared Equipment Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
@@ -290,7 +290,7 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | **Treasurer Desk** | The Treasurer, Admins, Super Admins | [ 🔍 Treasurer Ledger Audit ], [ 🧾 Disbursed Check Registry ], [ 🕊️ Charitable Grants Registry ], Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **[ 🔧 Accounting Configuration ]**: [ 📊 Chart of Accounts & General Ledger ]; **[ 📖 Reference Workflows ]**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.8 |
 | **Historian Desk** | The Council Historian, Admins, Super Admins | Fraternal Diary Entry Logs, Monthly Newsletters, Meeting Photos, Oral History Recordings, Google Drive Media Gallery Sync Board; **[ 📖 Reference Workflows ]**: [ 🗳️ Council Election Workflow ] | 14.10 |
-| **Member Desk** | Every member | **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts** side by side at the top, **[ 📥 My Charity Requests ]**, **My open expense sheets**, the **[ 👥 Council Roster ]** panel | 14.6 |
+| **Member Desk** | Every member | **Open Shifts Needing Volunteers** and **My shifts** side by side at the top, **My Charity Requests**, **My open expense sheets**, the **[ 👥 Council Roster ]** panel | 14.6 |
 
 </details>
 
@@ -332,7 +332,7 @@ The navy header of the phone holds the **envelope** (messages) and **your name**
 ### 1.7 Concept: the Navigation Guide
 The **Navigation Guide** link is at the top of the sidebar, above the seven pillars. Every member sees the link.
 
-The **Navigation Guide** page is a collapsible map in the same order as this part: the sidebar categories, your desks, your time limits and the phone tabs. Only the **📍 Overview** block is open. Select a block title to open it. Chapter 20 explains the screen in full.
+The **Navigation Guide** page is a collapsible map in the same order as this part: the sidebar categories, your desks, your time limits and the phone tabs. Only the **Overview** block is open. Select a block title to open it. Chapter 20 explains the screen in full.
 
 The page reads your member type and your officer roles. The page then lists only the links and desks that you can open. The depth of the map follows your role.
 
@@ -358,14 +358,14 @@ The **Your time limits** part of the guide lists the time windows and reminder d
 **Steps:**
 1. Select **Navigation Guide**.
 2. Read the first line. The line shows how you are signed in, for example *You are signed in as: Council Officer (Grand Knight)*.
-3. Read **In the top bar** in the open **📍 Overview** block for the Messaging menu and your name menu.
+3. Read **In the top bar** in the open **Overview** block for the Messaging menu and your name menu.
 4. Select a category title, for example **📅 Calendars**, to open it. Select the title again to close it.
 5. Select a link name to open that page.
-6. Open **🗂️ Your desks** to see your desk tabs. Officers and Admins also see every drawer of each desk.
-7. Open **⏱️ Your time limits** for your council's time windows and reminder days.
-8. Open **📱 Phone app tabs** for the phone tabs that your council has on.
+6. Open **Your desks** to see your desk tabs. Officers and Admins also see every drawer of each desk.
+7. Open **Your time limits** for your council's time windows and reminder days.
+8. Open **Phone app tabs** for the phone tabs that your council has on.
 
-**Expected result:** The page lists every link and desk that you can open, at the depth of your role. **⏱️ Your time limits** shows your council's current numbers.
+**Expected result:** The page lists every link and desk that you can open, at the depth of your role. **Your time limits** shows your council's current numbers.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -786,7 +786,7 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 
 **Goal:** Give the second signature, which releases the report for payment.
 
-**Start point:** Sidebar → Finances → **GK Expense Authorize**.
+**Start point:** Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **GK Expense Authorize**.
 
 **Steps:**
 1. Open the ordered report.
@@ -1695,18 +1695,18 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **[ 🔍 Treasurer Ledger Audit ]**, **[ 🧾 Disbursed Check Registry ]** and **[ 🕊️ Charitable Grants Registry ]** first. Under the drawers: the **[ 🧾 Disbursed Check Registry ]** panel. | None. You work inside the drawers. |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** first on the spine. | None. You work inside the drawers. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The desk blotter, with the **Fraternal Diary Entry Logs** first. | None. You work inside the drawers. |
-| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **[ 👥 Council Roster ]** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
+| **Member Desk** | Every reader of the dashboard | Top row, side by side: **Open Shifts Needing Volunteers** and **My shifts: next 30 days**. Under them: **My Charity Requests** and **My open expense sheets**, then the **[ 👥 Council Roster ]** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 ### 14.3.1 Concept: the advanced modules on the desks
 The desks no longer use module folders. Each advanced module below is a drawer on its desk (section 14.3.2). The module's own page also stays at its web address.
 
 A drawer shows only to a reader who may open the module. A reader who may not open a module does not see its drawer.
 
-**Financial Inspections switch.** When a Super Admin turns off **Financial Inspections**, five inspection drawers leave the desks. The drawers leave for every reader, including Admins and Super Admins.
+**Trustee Semiannual Audit switch.** When a Super Admin turns off **Trustee Semiannual Audit**, five inspection drawers leave the desks. The drawers leave for every reader, including Admins and Super Admins.
 
-| Desk | Drawers that leave when **Financial Inspections** is off |
+| Desk | Drawers that leave when **Trustee Semiannual Audit** is off |
 | --- | --- |
-| **Financial Secretary Desk** | **Financial Inspections**, **Expense Report (ER) Routing Track**, **Charitable Donation Records** |
+| **Financial Secretary Desk** | **Trustee Semiannual Audit**, **Expense Report (ER) Routing Track**, **Charitable Donation Records** |
 | **Treasurer Desk** | **Cash Box Audit Closure Panel**, **Bank Statement Match-Window** |
 
 The drawers that move money stay on the desks: **[ 📋 FS Expense Audit Queue ]**, **[ 🕊️ Charitable Grants Registry ]**, **[ 🔍 Treasurer Ledger Audit ]**, **[ 🧾 Disbursed Check Registry ]** and **[ 🕊️ Charitable Grants Registry ]**. An expense sheet therefore never stops in the queue. The **Donations History** page stays in the sidebar. The switch deletes no records.
@@ -1716,9 +1716,9 @@ The drawers that move money stay on the desks: **[ 📋 FS Expense Audit Queue ]
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. Officers only. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils and answer their invites (section 16). |
-| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Trustee Semiannual Audit** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **[ 🕊️ Charitable Grants Registry ]** | Pay approved charity requests and gifts by check. |
-| **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **📊 Budget Allocation & YOY Variance Analyzer**. |
+| **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **Budget Allocation & YOY Variance Analyzer**. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. Only the FS, the Treasurer and Super Admins can run the match. |
 | **Recorder Desk** | **Council Resolutions and Motions Ledger** | Every motion on the council's meetings of this fraternal year, with its meeting, presenter, source and result. |
 | **Historian Desk** | **Google Drive Media Gallery Sync Board** | Upload and tag photos and build Smart Albums. Select a photo to open the viewer. |
@@ -1782,7 +1782,7 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 4.3.1). |
 | **Financial Secretary Desk** | **[ 🕊️ Charitable Grants Registry ]** | Pay approved charity requests and gifts by check. |
-| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Trustee Semiannual Audit** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Upload the Supreme roster CSV. |
 | **Financial Secretary Desk** | **Operations Knowledge Vault** | Search the signed operating notes of every council (section 17). |
 | **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **[ 📋 FS Expense Audit Queue ]** (section 14.3.3). |
@@ -1946,10 +1946,10 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 1. Select **Member Actions Hub** in the sidebar. The page opens under the heading **[ 🙋 Member Actions Hub ]**. It shows only four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**.
 2. Select a tab to see your coming shifts, sign up for an open shift, find the phone or email of a brother, or log your hours.
 3. Open the **Member Desk** tab from the **Active Desks** row. The two shift trackers are side by side, at equal height, at the top of the desk.
-4. Read **[ 🚗 Open Shifts Needing Volunteers ]** on the left. The card lists the shifts in the next 30 days that still need volunteers, such as the parish parking lot shifts.
+4. Read **Open Shifts Needing Volunteers** on the left. The card lists the shifts in the next 30 days that still need volunteers, such as the parish parking lot shifts.
 5. Select **Sign up** on a shift to take a place. The shift leaves the card.
 6. Read **My shifts: next 30 days** on the right.
-7. Read **[ 📥 My Charity Requests ]** under the shift trackers. The tracking steps show the stage of each request that you carry.
+7. Read **My Charity Requests** under the shift trackers. The tracking steps show the stage of each request that you carry.
 8. Read **My open expense sheets**. The status pill shows the stage of each sheet.
 9. Select **Open my expenses** to edit a draft or submit a sheet.
 10. Select **Open the Council Dashboard** for the council's service record and your own impact card.
@@ -1961,7 +1961,7 @@ The **[ 🗳️ Council Election Workflow ]** drawer replaces the **Council Elec
 | --- | --- | --- |
 | A paid sheet does not show. | The desk lists only sheets that are not **Reimbursed**. | Open **My Expense Reports** to see paid sheets. |
 | A shift after 30 days does not show. | The desk lists the next 30 days only. | Open the council calendar. |
-| **[ 📥 My Charity Requests ]** does not show. | The council's charity proposals module is off. | Ask a Super Admin to turn on the module on the **Feature Flags** page. |
+| **My Charity Requests** does not show. | The council's charity proposals module is off. | Ask a Super Admin to turn on the module on the **Feature Flags** page. |
 | **Sign up** shows an error. | The shift is full, or the shift overlaps another of your shifts. | Pick another shift. |
 | You look for the reminders or the prayer list. | They are read-only cards on **Home**. | Select **Home**. |
 
@@ -2072,16 +2072,16 @@ The council's unfinished projects carry from one month to the next with no copy 
 
 **Steps:**
 1. Select the **Historian Desk** tab.
-2. Select the **Monthly Newsletters** tile. In **📰 Monthly newsletters**, select the **Month**.
+2. Select the **Monthly Newsletters** tile. In **Monthly newsletters**, select the **Month**.
 3. Optional: type a **Headline**. Without a headline, the newsletter has the name of its month, for example *"October 2026 Newsletter"*.
 4. Choose the **Layout** (see the table under the steps).
 5. Type the newsletter text. Leave a blank line between paragraphs.
 6. Optional: select **Preview as members see it on Home** to check the layout.
 7. Select **Save newsletter**.
 8. To open an earlier newsletter, select its month button under the text box.
-9. In **📷 Parish event and meeting photos**, select the **Meeting**.
+9. In **Parish event and meeting photos**, select the **Meeting**.
 10. Select **Upload photo**, then pick the image file.
-11. In **🎙️ Oral history recordings**, select **Listen** beside a recording to play it.
+11. In **Oral history recordings**, select **Listen** beside a recording to play it.
 12. To record your own testimonial, use the recorder under the list.
 
 | Layout | How the text shows |
@@ -2361,7 +2361,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Save the targets of the next fraternal year and mark them reviewed before July 1.
 
-**Start point:** Sidebar → Finances → **Annual Budget Center** → **Annual Budget Planner**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center** → **Annual Budget Planner**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**. The next year shows first.
@@ -2385,7 +2385,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record that leadership reviewed the drafted budget in June.
 
-**Start point:** Sidebar → Finances → **Annual Budget Center** → **Annual Budget Planner** → **Annual budget**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center** → **Annual Budget Planner** → **Annual budget**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**.
@@ -2406,7 +2406,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record the council's vote on the budget at the July meeting.
 
-**Start point:** Sidebar → Finances → **Annual Budget Center**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center**.
 
 **Steps:**
 1. Choose the fraternal year.
@@ -2558,7 +2558,7 @@ The gate looks for words and phrases. It does not understand meaning. A rule can
 
 **Goal:** Save a signed note for the leaders who come after you.
 
-**Start point:** Active Desks → **Grand Knight Desk** → **Operations Knowledge Vault** drawer → **🗝️ Operations Knowledge Vault · New Entry**.
+**Start point:** Active Desks → **Grand Knight Desk** → **Operations Knowledge Vault** drawer → **Operations Knowledge Vault · New Entry**.
 
 **Steps:**
 1. Select a tag in **Governance tag**.
@@ -2752,10 +2752,10 @@ The screen has two depths: **Summary** and **Full**. Your role sets the depth. Y
 
 The first line of the screen tells you your depth. For example, *You are signed in as: Council Officer (Grand Knight)*. Under it, the overview says *You see the full map* or *You see a short summary*.
 
-**Example:** A plain member opens **🗂️ Your desks** and reads one sentence about the **Member Desk**. The Grand Knight opens the same block and also reads each drawer of the **Grand Knight Desk**, such as **Approved Expenses** and **[ 🗳️ Council Election Workflow ]**.
+**Example:** A plain member opens **Your desks** and reads one sentence about the **Member Desk**. The Grand Knight opens the same block and also reads each drawer of the **Grand Knight Desk**, such as **Approved Expenses** and **[ 🗳️ Council Election Workflow ]**.
 
 ### 20.3 Concept: every category group starts closed
-The screen opens with all of its category groups closed. Only the **📍 Overview** block is open. The overview tells you who you are signed in as and explains the menus in the top bar.
+The screen opens with all of its category groups closed. Only the **Overview** block is open. The overview tells you who you are signed in as and explains the menus in the top bar.
 
 The closed groups show only their titles and the number of links in each. You can read all of the titles on one screen, so you can find the right group fast. Select a title to open a group. Select the title again to close the group.
 
@@ -2764,11 +2764,11 @@ The screen does not remember which groups you opened. Each visit starts closed a
 ### 20.4 Concept: the sidebar-first order
 The screen follows the sidebar first, then the rest of the portal. The groups are in this order:
 
-1. **📍 Overview**: who you are and the top bar menus. Open on arrival.
+1. **Overview**: who you are and the top bar menus. Open on arrival.
 2. **The sidebar categories**: **🏠 Dashboard**, **📅 Calendars**, **👥 Rosters**, **✅ Vetting**, **📒 Ledgers**, **🗄️ Archives** and **⚙️ Settings, planning and help**. A category with no link for you is left out.
-3. **🗂️ Your desks**: the tabs of your **Active Desks** row.
-4. **⏱️ Your time limits**: the time windows and reminder days in force for you now, read from your council's settings.
-5. **📱 Phone app tabs**: the phone tabs that your council has switched on.
+3. **Your desks**: the tabs of your **Active Desks** row.
+4. **Your time limits**: the time windows and reminder days in force for you now, read from your council's settings.
+5. **Phone app tabs**: the phone tabs that your council has switched on.
 
 The screen has three levels:
 
@@ -2788,12 +2788,12 @@ Select a link name to open that page. Select a desk name to open that desk tab o
 **Start point:** Sidebar → **Navigation Guide** (at the top, above the pillars).
 
 **Steps:**
-1. Select **Navigation Guide**. All of the category groups are closed. Only **📍 Overview** is open.
+1. Select **Navigation Guide**. All of the category groups are closed. Only **Overview** is open.
 2. Read the first line. The line shows your role and your depth.
 3. Scan the group titles. Select the group that matches your task, for example **📒 Ledgers** for money records.
 4. Read the sentence under each link. Officers also read the sidebar pillar of each link.
 5. Select the link name. The page opens.
-6. To find a drawer, open **🗂️ Your desks**. Officers, Admins and Super Admins read every drawer under each desk. Select the desk name to open the desk.
+6. To find a drawer, open **Your desks**. Officers, Admins and Super Admins read every drawer under each desk. Select the desk name to open the desk.
 
 **Expected result:** The page or desk opens. The sidebar marks the page as the open page.
 

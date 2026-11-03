@@ -14,7 +14,7 @@
 // the full map - the leader wording, the pillar of each link and every drawer of each desk they hold.
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { navigationGuide, navigationGuideMap, navigationTimings, whiteLabel } from '@kofc/shared';
+import { navigationGuide, navigationGuideMap, navigationTimings, plainTitle, whiteLabel } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { usePlatformSettings } from '@/components/SettingsParts';
 import { NAV } from '@/components/Sidebar';
@@ -31,7 +31,7 @@ function MapBlock({ id, title, open = false, children }: { id: string; title: st
         <span aria-hidden="true" className="w-4 shrink-0 transition-transform group-open:rotate-90">
           ›
         </span>
-        {title}
+        {plainTitle(title)}
       </summary>
       <div className="pt-2">{children}</div>
     </details>
@@ -55,7 +55,7 @@ export default function NavigationGuidePage() {
     <RequireArea area="navigation-guide">
       <PageTitle>Navigation Guide</PageTitle>
       <div className="flex flex-col gap-3 rounded border-2 border-black bg-white p-5 text-black">
-        <MapBlock id="overview" title="📍 Overview" open>
+        <MapBlock id="overview" title="Overview" open>
           <h2 id="guide-persona" className="text-lg font-bold">
             You are signed in as: {guide.persona}
             {guide.roles.length > 0 ? ` (${guide.roles.join(', ')})` : ''}
@@ -100,7 +100,7 @@ export default function NavigationGuidePage() {
           </MapBlock>
         ))}
 
-        <MapBlock id="desks" title={`🗂️ Your desks (${map.desks.length})`}>
+        <MapBlock id="desks" title={`Your desks (${map.desks.length})`}>
           <dl className="flex flex-col gap-3">
             {map.desks.map((desk) => (
               <div key={desk.id}>
@@ -124,7 +124,7 @@ export default function NavigationGuidePage() {
           </dl>
         </MapBlock>
 
-        <MapBlock id="timings" title="⏱️ Your time limits">
+        <MapBlock id="timings" title="Your time limits">
           <p className="mb-2 text-base">
             These are your council&apos;s settings right now. Council leaders change them on Council Wide Settings; Super Admins change the shared ones
             on Global System Parameters.
@@ -156,7 +156,7 @@ export default function NavigationGuidePage() {
           ) : null}
         </MapBlock>
 
-        <MapBlock id="phone" title={`📱 Phone app tabs (${map.phoneTabs.length})`}>
+        <MapBlock id="phone" title={`Phone app tabs (${map.phoneTabs.length})`}>
           <dl className="flex flex-col gap-2">
             {map.phoneTabs.map(({ tab, summary }) => (
               <div key={tab}>

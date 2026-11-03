@@ -38,7 +38,7 @@
 // markdown note and an automatic signature stamp. The read-only archive is under System Settings.
 // Sprint 8L - Omnipresent Officer Desks: each desk opens with its module folders (DeskModuleShelf, DESK_MODULES): the
 // Grand Knight Desk carries the Charitable Grant Requests Vetting Board, the Constitutional Advisor Panels and Connected
-// Councils; the Financial Secretary Desk the Financial Inspections and the Charity Check Issuance Console; the
+// Councils; the Financial Secretary Desk the Trustee Semiannual Audit and the Charity Check Issuance Console; the
 // Treasurer Desk the Annual Budget vs Actuals Ledger Grid and the Bank Statement Match-Window; the Recorder Desk the
 // Council Resolutions and Motions Ledger; the Historian Desk the Google Drive Media Gallery Sync Board. Home gains the
 // '📿 Community Prayer Request List' card (Faith Center content, like the verse and the feast tracker).
@@ -178,7 +178,7 @@ import { AdvisoryInviteCard } from '@/components/AdvisoryInviteCard';
 import { MeetingCheckInCard } from '@/components/MeetingCheckInCard';
 import { MemberRosterDirectory } from '@/components/modules/MemberRosterDirectory';
 import { SupremeRosterUploader } from '@/components/modules/SupremeRosterUploader';
-import { Button, cx, EmbeddedModuleContext, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Td, Textarea } from '@/components/ui';
+import { Button, cx, EmbeddedModuleContext, Empty, Field, Input, Notice, Panel, Pill, plainText, Select, Table, Td, Textarea } from '@/components/ui';
 import { DeskRow } from '@/components/WorkspaceTabs';
 import { formatDecimalHours, formatFullDate, formatMoney, formatPersonName, formatPhone } from '@/lib/format';
 import { photoName, photoSrc } from '@/lib/media';
@@ -274,7 +274,7 @@ function HomeCard({ title, actions, tone = 'white', children }: { title: string;
       className={cx('flex min-h-80 min-w-0 flex-col rounded', tone === 'navy' ? 'border-4 border-gold bg-navy text-white' : 'border-2 border-navy bg-white')}
     >
       <header className={cx('flex items-center justify-between gap-2 border-b-2 px-4 py-2.5', tone === 'navy' ? 'border-gold' : 'border-navy')}>
-        <h2 className="truncate font-serif text-lg font-bold">{title}</h2>
+        <h2 className="truncate font-serif text-lg font-bold">{plainText(title)}</h2>
         {actions}
       </header>
       <div className="flex-1 px-4 py-3 text-base">{children}</div>
@@ -836,7 +836,7 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
  * The Financial Secretary Desk. Sprint 8P Stage 2: a desk blotter of slide-out drawers - Payment Requests (verify and
  * sign in place, with the Alert Boundary Accent while a sheet waits on the reader's signature), the Expense Report (ER)
  * Routing Track, Charitable Donation Records, the Charity Check Issuance Console, the
- * Financial Inspections, Excel Roster Imports and the Operations Knowledge Vault. Sprint 8A moved the
+ * Trustee Semiannual Audit, Excel Roster Imports and the Operations Knowledge Vault. Sprint 8A moved the
  * inactivity sweep to System Settings > Council Wide Settings. Sprint 8S Revision 2: the Expense Report (ER) Workflow
  * (lit like Payment Requests) and the Charitable Donation Workflow drawers (FinanceWorkflowParts.tsx) follow Payment Requests.
  */
@@ -875,7 +875,7 @@ export function FinancialSecretaryDesk({ user, councilId }: { user: SessionUser;
           void charity.reload();
         }}
         render={(spec) => {
-          // Sprint 11 Revision 15.0: an inspection drawer never renders while Financial Inspections is off.
+          // Sprint 11 Revision 15.0: an inspection drawer never renders while Trustee Semiannual Audit is off.
           if (deskDrawerMasked('financial-secretary', spec.id, flags)) return null;
           switch (spec.id) {
             case 'payment-requests':
@@ -972,7 +972,7 @@ export function TreasurerDesk({ user, councilId }: { user: SessionUser; councilI
           void charityPipeline.reload();
         }}
         render={(spec) => {
-          // Sprint 11 Revision 15.0: an inspection drawer never renders while Financial Inspections is off.
+          // Sprint 11 Revision 15.0: an inspection drawer never renders while Trustee Semiannual Audit is off.
           if (deskDrawerMasked('treasurer', spec.id, flags)) return null;
           switch (spec.id) {
             case 'ledger-coder':
@@ -1050,7 +1050,7 @@ function useOpenShiftSignup(user: SessionUser) {
 function OpenShiftsCard({ user }: { user: SessionUser }) {
   const { rows, ready, error, busy, message, clearMessage, signUp } = useOpenShiftSignup(user);
   return (
-    <Panel className="h-full" title={`[ 🚗 Open Shifts Needing Volunteers ] (${rows.length})`}>
+    <Panel className="h-full" title={`Open Shifts Needing Volunteers (${rows.length})`}>
       {error ? <Notice tone="error">{error}</Notice> : null}
       {ready && rows.length === 0 ? <Empty>Every shift in the next {MEMBER_DESK_OPEN_SHIFT_DAYS} days has its volunteers.</Empty> : null}
       {rows.length > 0 ? (
@@ -1092,7 +1092,7 @@ function MyCharityRequestsCard({ user }: { user: SessionUser }) {
   const [threadId, setThreadId] = useState<number | null>(null);
   const threadRequest = rows.find((d) => d.request.id === threadId)?.request ?? null;
   return (
-    <Panel title={`[ 📥 My Charity Requests ] (${rows.length})`}>
+    <Panel title={`My Charity Requests (${rows.length})`}>
       {mine.error ? <Notice tone="error">{mine.error}</Notice> : null}
       {mine.data && rows.length === 0 ? <Empty>You have not carried a charity request to the council.</Empty> : null}
       {rows.length > 0 ? (
@@ -1693,7 +1693,7 @@ function MonthlyBulletins({ user, councilId }: { user: SessionUser; councilId: n
 
   return (
     <section aria-label="Monthly newsletters" className="flex flex-col gap-2">
-      <h3 className="font-serif text-lg font-bold">📰 Monthly newsletters</h3>
+      <h3 className="font-serif text-lg font-bold">Monthly newsletters</h3>
       {list.error ? <Notice tone="error">{list.error}</Notice> : null}
       <Field label="Month" className="w-48">
         {(id) => <Input id={id} type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />}
@@ -1796,7 +1796,7 @@ function MeetingPhotos({ user, councilId }: { user: SessionUser; councilId: numb
 
   return (
     <section aria-label="Meeting photos" className="flex flex-col gap-2">
-      <h3 className="font-serif text-lg font-bold">📷 Parish event and meeting photos</h3>
+      <h3 className="font-serif text-lg font-bold">Parish event and meeting photos</h3>
       {meetings.error ? <Notice tone="error">{meetings.error}</Notice> : null}
       {meetings.data && held.length === 0 ? <Empty>No meeting held in the last {MINUTES_DESK_PAST_DAYS} days.</Empty> : null}
       {meeting ? (
@@ -1848,7 +1848,7 @@ function OralHistories({ user, councilId }: { user: SessionUser; councilId: numb
 
   return (
     <section aria-label="Oral histories" className="flex flex-col gap-2">
-      <h3 className="font-serif text-lg font-bold">🎙️ Oral history recordings</h3>
+      <h3 className="font-serif text-lg font-bold">Oral history recordings</h3>
       {matrix.error ? <Notice tone="error">{matrix.error}</Notice> : null}
       {m && recordings.length === 0 ? <Empty>No member has recorded a testimonial yet.</Empty> : null}
       {recordings.length > 0 ? (

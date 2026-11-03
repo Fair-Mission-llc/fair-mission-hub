@@ -150,7 +150,7 @@ MODULE_SECTIONS: dict[str, tuple[str, str]] = {
     'feature_lessons_registry': ('Lessons & Knowledge Registries', r'lessons registry|knowledge archive|knowledge vault'),
     'feature_marketing_factory': ('Recruitment Factory', r'marketing|flyer|recruitment factory'),
     'feature_loaner_library': ('Shared Equipment Library', r'loaner|equipment library'),
-    'feature_advanced_audits': ('Financial Inspections', r'1295|semiannual audit|trustee audit|financial inspections'),
+    'feature_advanced_audits': ('Trustee Semiannual Audit', r'1295|semiannual audit|trustee audit|trustee semiannual audit'),
 }
 
 DISABLED_BANNER = '⚠️ This premium module is currently disabled'

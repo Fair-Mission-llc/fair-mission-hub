@@ -118,4 +118,4 @@ To remove the practice data, go to the top of the **Admin Desk**. Turn off the *
 
 **Expected result:** The wizard closes. The Admin Desk shows the top deck and the six drawers. The wizard does not open by itself again in this browser.
 
-> **Note:** while **Financial Inspections** is off, the inspection drawers do not show on the **Financial Secretary Desk** and the **Treasurer Desk**. The drawers that pay checks stay.
+> **Note:** while **Trustee Semiannual Audit** is off, the inspection drawers do not show on the **Financial Secretary Desk** and the **Treasurer Desk**. The drawers that pay checks stay.

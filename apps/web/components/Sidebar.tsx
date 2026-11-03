@@ -30,6 +30,8 @@
 // Sprint 11 Revision 17.5: the 'Financial Views' accordion is gone. The Finances pillar holds two separate accordions:
 // '📊 FINANCIAL REPORTS' (read-only views) and '⚡ FINANCIAL ACTIONS' (the audit, signing, payment and donation desks).
 // The Charity Vetting Queue moved to the Governance pillar, and the Activities link reads Member Activities.
+// Sprint 11 Revision 17.6: only My Expense Reports and Propose Charity Grant sit above the accordions; the Annual Budget
+// Center is a report and the Trustee Semiannual Audit an action.
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -121,7 +123,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   'finance/dashboard': { href: '/finance/dashboard', label: 'Financial Dashboard', hint: 'Liquidity tanks, balance scale, transfers, bank audits' },
   'finance/ledger': { href: '/finance/ledger', label: GENERAL_LEDGER_TITLE, hint: 'Chart of accounts with every posting, and fund transfers' },
   'finance/balance-sheet': { href: '/finance/balance-sheet', label: 'Balance Sheet', hint: 'Assets against liabilities and equity' },
-  'finance/audit': { href: '/finance/audit', label: 'Financial Inspections', hint: 'Semiannual Form 1295 audit: verify ledger lines, sign and lock' },
+  'finance/audit': { href: '/finance/audit', label: 'Trustee Semiannual Audit', hint: 'Semiannual Form 1295 audit: verify ledger lines, sign and lock' },
   'finance/treasurer-desk': {
     href: '/finance/treasurer-desk',
     label: TREASURER_LEDGER_AUDIT_TITLE,
@@ -359,14 +361,18 @@ function NavLink({ item, current, tenant, nested = false }: { item: PortalNavIte
 
 /**
  * Sprint 11 Revision 17.5: the Finances pillar's two accordions, each in display order. Reports only read the books;
- * actions are the desks where officers audit, sign, pay and record. Financial Inspections, My Expense Reports, Propose
- * Charity Grant and the Annual Budget Center stay as plain links above them.
+ * actions are the desks where officers audit, sign, pay and record.
+ * Sprint 11 Revision 17.6: the Annual Budget Center joins the reports and the Trustee Semiannual Audit (named Financial
+ * Inspections until then) joins the actions. Only the two links every member uses, My Expense Reports and Propose
+ * Charity Grant, stay pinned at the top of the pillar, above both accordions (FINANCE_PINNED_ITEMS).
  */
-export const FINANCIAL_REPORT_ITEMS: readonly PortalNavItem[] = ['finance/ledger', 'finance/balance-sheet', 'finance/dashboard'];
+export const FINANCE_PINNED_ITEMS: readonly PortalNavItem[] = ['expenses', 'charities/propose'];
+export const FINANCIAL_REPORT_ITEMS: readonly PortalNavItem[] = ['finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget'];
 export const FINANCIAL_ACTION_ITEMS: readonly PortalNavItem[] = [
   'finance/treasurer-desk',
   'expenses/audit',
   'expenses/authorize',
+  'finance/audit',
   'expenses/disbursements',
   'charities/queue',
   'donations',
@@ -571,7 +577,10 @@ function SidebarLegalFooter({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-/** The Finances pillar: its other links flat, then the Financial Reports and Financial Actions accordions. */
+/**
+ * The Finances pillar: My Expense Reports and Propose Charity Grant pinned first, then any other loose link, then the
+ * Financial Reports and Financial Actions accordions.
+ */
 function FinancesEntries({
   items,
   pathname,
@@ -585,8 +594,7 @@ function FinancesEntries({
 }) {
   return (
     <>
-      {items
-        .filter((item) => !FINANCIAL_ACCORDION_ITEMS.includes(item))
+      {[...FINANCE_PINNED_ITEMS.filter((i) => items.includes(i)), ...items.filter((i) => !FINANCE_PINNED_ITEMS.includes(i) && !FINANCIAL_ACCORDION_ITEMS.includes(i))]
         .map((item) => (
           <NavLink key={item} item={item} current={isCurrent(pathname, item, hash)} tenant={tenant} />
         ))}

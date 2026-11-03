@@ -204,3 +204,18 @@ export const plainNavLabel = (label: string): string => label.replace(ICON_GLYPH
 
 /** Sprint 11 Revision 17.0: a sidebar link as plain words - no icon glyphs and no '[ ... ]' brackets. */
 export const sidebarLinkLabel = (label: string): string => plainNavLabel(label.replace(/[[\]]/g, ' '));
+
+/**
+ * Sprint 11 Revision 17.6: page titles, panel headings and notice cards read as plain words, like the sidebar - no icon
+ * glyphs and no '[ ... ]' brackets: '[ 🚗 Open Shifts Needing Volunteers ] (3)' -> 'Open Shifts Needing Volunteers (3)'.
+ */
+export const plainTitle = (text: string): string => sidebarLinkLabel(text);
+
+/**
+ * The same clean-up for one piece of a longer text (a heading built from text and values). The edges keep their single
+ * spaces so 'Total: ' + value still reads 'Total: 4'; a piece that held only an icon becomes empty.
+ */
+export const plainTextPiece = (text: string): string => {
+  const out = text.replace(/[[\]]/g, ' ').replace(ICON_GLYPHS, '').replace(/\s{2,}/g, ' ');
+  return out !== text && out.trim() === '' ? '' : out;
+};

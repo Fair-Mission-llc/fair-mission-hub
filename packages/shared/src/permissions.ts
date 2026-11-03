@@ -847,20 +847,22 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   {
     id: 'finances',
     label: 'Finances',
+    // Sprint 11 Revision 17.6: in sidebar order - the two pinned member links, then the Financial Reports and the
+    // Financial Actions accordions (apps/web/components/Sidebar.tsx).
     items: [
+      'expenses',
+      'charities/propose',
       'finance/ledger',
       'finance/balance-sheet',
       'finance/dashboard',
-      'finance/audit',
+      'financials/budget',
       'finance/treasurer-desk',
-      'expenses',
-      'expenses/disbursements',
       'expenses/audit',
       'expenses/authorize',
-      'charities/propose',
+      'finance/audit',
+      'expenses/disbursements',
       'charities/queue',
       'donations',
-      'financials/budget',
     ],
   },
   // Sprint 11 Revision 5.0: the District and State Desks head the pillar for regional officers and Super Admins.

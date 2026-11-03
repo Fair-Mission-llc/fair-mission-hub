@@ -106,7 +106,7 @@ export function EngagementCards({
 export function Leaderboard({ entries, children }: { entries: readonly LeaderboardEntry[] | null; children?: ReactNode }) {
   return (
     <section aria-label="Top 5 Volunteers Leaderboard" className="rounded border-4 border-gold bg-white px-5 py-4 ring-4 ring-gold/30">
-      <h2 className="font-serif text-xl font-bold">🏆 Top 5 Volunteers Leaderboard</h2>
+      <h2 className="font-serif text-xl font-bold">Top 5 Volunteers Leaderboard</h2>
       <p className="text-xs text-muted">Active members ranked by all hours ever logged at the council&apos;s events and activities.</p>
       {entries && entries.length === 0 ? <p className="mt-3 text-sm">No member has logged hours yet. Be the first!</p> : null}
       {entries && entries.length > 0 ? (

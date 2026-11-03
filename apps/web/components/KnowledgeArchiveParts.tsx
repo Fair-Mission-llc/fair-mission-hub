@@ -125,7 +125,7 @@ export function OperationsKnowledgeArchiveEntryForm({ user, councilId }: { user:
   return (
     <section aria-label="Operations Knowledge Vault: new entry" data-surface="navy" className="flex flex-col gap-3 rounded border-4 border-gold bg-navy p-4 text-white">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-gold pb-2">
-        <h2 className="font-serif text-xl font-bold">🗝️ Operations Knowledge Vault · New Entry</h2>
+        <h2 className="font-serif text-xl font-bold">Operations Knowledge Vault · New Entry</h2>
         <Link href={KNOWLEDGE_ARCHIVE_HREF} className="text-sm font-bold text-gold underline">
           Open the archive
         </Link>

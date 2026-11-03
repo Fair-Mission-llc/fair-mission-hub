@@ -253,7 +253,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'financial-secretary', id: 'donation-records', title: 'Charitable Donation Records', summary: 'Record, check and correct council donations', area: 'donations', rowId: 'drawer-donation-records', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/queue', gate: 'charity-endorsement', rowId: 'drawer-fs-charity-endorsements', alerts: true, cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'charity-checks', title: CHARITABLE_GRANTS_REGISTRY_TITLE, summary: 'Pay approved charity requests and gifts by check', area: 'charities/queue', rowId: 'module-charity-checks', cabinet: 'outbound' },
-  { desk: 'financial-secretary', id: 'form-1295', title: 'Financial Inspections', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
+  { desk: 'financial-secretary', id: 'form-1295', title: 'Trustee Semiannual Audit', summary: "The Trustees' step-by-step audit and the Form 1295 PDF", area: 'finance/audit', rowId: 'module-form-1295', cabinet: 'outbound' },
   { desk: 'financial-secretary', id: 'roster-imports', title: 'Excel Roster Imports', summary: 'The roster template and the Supreme roster sync', gate: 'always', rowId: 'drawer-roster-imports', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'knowledge-archive', title: ARCHIVE, summary: ARCHIVE_SUMMARY, area: 'system-settings/knowledge-archive', rowId: 'drawer-fs-knowledge-archive', cabinet: 'inbound' },
   { desk: 'financial-secretary', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: ER_WORKFLOW_SUMMARY, area: 'expenses/queue', rowId: 'drawer-fs-er-workflow', cabinet: 'reference' },
@@ -314,7 +314,7 @@ function clearedBy(u: Actor, spec: DeskDrawerSpec, councilId: number, areas: Rea
 
 /**
  * Sprint 11 Revision 15.0: the inner inspection drawers of the Financial Secretary and Treasurer desks. They go with
- * feature_advanced_audits (Financial Inspections): when the switch is off they leave the desk even for a reader whose
+ * feature_advanced_audits (Trustee Semiannual Audit): when the switch is off they leave the desk even for a reader whose
  * portal areas would clear them. The drawers that move money (payment requests, ledger coding, ER settlement, charity
  * checks) stay; they follow feature_expense_reporting and the charity switches, so a sheet is never stranded.
  */
@@ -323,7 +323,7 @@ export const FINANCIAL_INSPECTION_DRAWERS: Readonly<Partial<Record<DrawerDeskId,
   treasurer: ['cash-box-audit', 'bank-match'],
 };
 
-/** True when Financial Inspections is off and `id` is one of `desk`'s inspection drawers. No flags reads as all on. */
+/** True when Trustee Semiannual Audit is off and `id` is one of `desk`'s inspection drawers. No flags reads as all on. */
 export function deskDrawerMasked(desk: DrawerDeskId, id: DeskDrawerId, flags?: FeatureFlags): boolean {
   if (!flags || flags.feature_advanced_audits) return false;
   return FINANCIAL_INSPECTION_DRAWERS[desk]?.includes(id) ?? false;

@@ -16,7 +16,7 @@
 // prefers reduced motion, so the opened module is in full view.
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type FocusEvent, type ReactNode } from 'react';
-import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, deskSpineSections, isReferenceDrawer, type DeskDrawerSpec } from '@kofc/shared';
+import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, deskSpineSections, isReferenceDrawer, plainTitle, type DeskDrawerSpec } from '@kofc/shared';
 import { cx, EmbeddedModuleContext } from '@/components/ui';
 import { DeskLink, DeskRow } from '@/components/WorkspaceTabs';
 
@@ -102,7 +102,7 @@ function BlotterStage({ spec, onClose, children }: { spec: DeskDrawerSpec; onClo
   return (
     <section aria-label={spec.title} className="flex min-w-0 flex-col border-2 border-navy border-l-8 border-l-gold bg-white motion-safe:animate-slide-in">
       <header data-surface="navy" className="flex items-center justify-between gap-3 bg-navy px-4 py-3 text-white">
-        <h2 className="font-serif text-xl font-bold">{spec.title}</h2>
+        <h2 className="font-serif text-xl font-bold">{plainTitle(spec.title)}</h2>
         <button type="button" onClick={onClose} className="font-bold underline">
           Close
         </button>

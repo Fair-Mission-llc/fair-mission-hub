@@ -1,4 +1,4 @@
-// Sprint 11 Revision 15.0 (schema stays 110): desktop bundle compaction, the Financial Inspections masking of the
+// Sprint 11 Revision 15.0 (schema stays 110): desktop bundle compaction, the Trustee Semiannual Audit masking of the
 // Financial Secretary and Treasurer desks' inner drawers, and the compiled Form 1728 report with its CSV export.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -42,7 +42,7 @@ describe('1. desktop bundle compaction', () => {
   });
 });
 
-describe('2. Financial Inspections masks the inner finance drawers', () => {
+describe('2. Trustee Semiannual Audit masks the inner finance drawers', () => {
   it('keeps every inspection drawer while the switch is on', () => {
     expect(ids('financial-secretary', ALL_FEATURES_ON)).toEqual(expect.arrayContaining(['form-1295', 'er-routing-track', 'donation-records']));
     expect(ids('treasurer', ALL_FEATURES_ON)).toEqual(expect.arrayContaining(['cash-box-audit', 'bank-match']));

@@ -66,7 +66,7 @@ A **Warning** line comes before the steps when the task deletes data, sends mess
 
 **Goal:** Approve a report's receipts as the first signature.
 
-**Start point:** Sidebar → Finances → **[ 📋 FS Expense Audit Queue ]**.
+**Start point:** Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **FS Expense Audit Queue**.
 
 **Steps:**
 1. Open the submitted report.
@@ -117,7 +117,7 @@ A **Warning** line comes before the steps when the task deletes data, sends mess
 
 **Goal:** Record the checks for dual-signed reports.
 
-**Start point:** Sidebar → Finances → **[ 🧾 Disbursed Check Registry ]**.
+**Start point:** Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **Disbursed Check Registry**.
 
 **Steps:**
 1. Tick the reports to pay. The page lists only reports with both signatures.
@@ -165,7 +165,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Record a transaction, move funds or match a bank statement.
 
-**Start point:** Sidebar → Finances → **Financial Dashboard** → **Quick actions**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Financial Dashboard** → **Quick actions**.
 
 **Steps:**
 1. To post: choose the debit account and the credit account. Enter the amount and the description. Save.
@@ -241,7 +241,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Goal:** Pay a grant that the council approved and an FS or GK endorsed. This is the **[ ⛪ Treasurer Check Settlement ]** step.
 
-**Start point:** **Active Desks** → **Treasurer Desk** → **[ 🕊️ Charitable Grants Registry ]**, or **Financial Secretary Desk** → **[ 🕊️ Charitable Grants Registry ]**. The same console is on Sidebar → Finances → **[ 🕊️ Charitable Grants Registry ]**.
+**Start point:** **Active Desks** → **Treasurer Desk** → **[ 🕊️ Charitable Grants Registry ]**, or **Financial Secretary Desk** → **[ 🕊️ Charitable Grants Registry ]**. The same console is on Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **Charitable Grants Registry**.
 
 **Steps:**
 1. Find the request in **Approved requests awaiting payment**. A request without its endorsement shows **Waiting for the FS/GK compliance endorsement** and has no pay button (section 1.7.1).
@@ -257,7 +257,7 @@ The check is always for the amount the council approved. The Knight Shepherd of 
 ![Charity funding queue (/charities/queue)](../generated/dashboard_visual_catalog/charities_queue.png)
 <!-- /KEEP_IMAGE -->
 
-**Expected result:** The request leaves **Approved requests awaiting payment**. The check is listed against the charity, the charity is added to the registry if it was not there, the request's target budget line is charged, and the Shepherd's **[ 📥 My Charity Requests ]** card on the Member Desk shows the request as paid.
+**Expected result:** The request leaves **Approved requests awaiting payment**. The check is listed against the charity, the charity is added to the registry if it was not there, the request's target budget line is charged, and the Shepherd's **My Charity Requests** card on the Member Desk shows the request as paid.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -273,7 +273,7 @@ The check is always for the amount the council approved. The Knight Shepherd of 
 
 **Goal:** Keep the council's donation records complete.
 
-**Start point:** Sidebar → Finances → **Donations History**.
+**Start point:** Sidebar → Finances → **⚡ FINANCIAL ACTIONS** → **Donations History**.
 
 **Steps:**
 1. Choose the **Method**, the **Type** and the **Amount**. For items, enter **Estimated value ($)**.
@@ -320,7 +320,7 @@ The budget covers one fraternal year, July 1 to June 30.
 
 **Goal:** Fill the next year's budget from last year's actual spend.
 
-**Start point:** Sidebar → Finances → **Annual Budget Center**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center**.
 
 **Steps:**
 1. Choose the **Fraternal year**.
@@ -352,7 +352,7 @@ A new rollup refreshes the baselines only. The rollup never changes proposed amo
 
 **Goal:** Record the council's vote on the budget.
 
-**Start point:** Sidebar → Finances → **Annual Budget Center**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center**.
 
 **Steps:**
 1. Check every proposed amount.
@@ -768,18 +768,18 @@ The portal shows a desk tab only to a reader who may do the desk's work.
 | **Treasurer Desk** | The council's Treasurer, the council's Admins and Super Admins | The desk blotter, with **[ 🔍 Treasurer Ledger Audit ]**, **[ 🧾 Disbursed Check Registry ]** and **[ 🕊️ Charitable Grants Registry ]** first. Under the drawers: the **[ 🧾 Disbursed Check Registry ]** panel. | None. You work inside the drawers. |
 | **Recorder Desk** | The council's Recorder, the council's Admins and Super Admins | The desk blotter, with the **Historical Meeting Minutes Archive** first on the spine. | None. You work inside the drawers. |
 | **Historian Desk** | The council's Council Historian, the council's Admins and Super Admins | The desk blotter, with the **Fraternal Diary Entry Logs** first. | None. You work inside the drawers. |
-| **Member Desk** | Every reader of the dashboard | Top row, side by side: **[ 🚗 Open Shifts Needing Volunteers ]** and **My shifts: next 30 days**. Under them: **[ 📥 My Charity Requests ]** and **My open expense sheets**, then the **[ 👥 Council Roster ]** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
+| **Member Desk** | Every reader of the dashboard | Top row, side by side: **Open Shifts Needing Volunteers** and **My shifts: next 30 days**. Under them: **My Charity Requests** and **My open expense sheets**, then the **[ 👥 Council Roster ]** panel. No drawers. | Sidebar → Finances → **My Expense Reports**; Sidebar → Performance → **Council Dashboard** |
 
 ### 6.2.1 Concept: the advanced modules on the desks
 The desks no longer use module folders. Each advanced module below is a drawer on its desk (section 6.2.2). The module's own page also stays at its web address.
 
 A drawer shows only to a reader who may open the module. A reader who may not open a module does not see its drawer.
 
-**Financial Inspections switch.** When a Super Admin turns off **Financial Inspections**, five inspection drawers leave the desks. The drawers leave for every reader, including Admins and Super Admins.
+**Trustee Semiannual Audit switch.** When a Super Admin turns off **Trustee Semiannual Audit**, five inspection drawers leave the desks. The drawers leave for every reader, including Admins and Super Admins.
 
-| Desk | Drawers that leave when **Financial Inspections** is off |
+| Desk | Drawers that leave when **Trustee Semiannual Audit** is off |
 | --- | --- |
-| **Financial Secretary Desk** | **Financial Inspections**, **Expense Report (ER) Routing Track**, **Charitable Donation Records** |
+| **Financial Secretary Desk** | **Trustee Semiannual Audit**, **Expense Report (ER) Routing Track**, **Charitable Donation Records** |
 | **Treasurer Desk** | **Cash Box Audit Closure Panel**, **Bank Statement Match-Window** |
 
 The drawers that move money stay on the desks: **[ 📋 FS Expense Audit Queue ]**, **[ 🕊️ Charitable Grants Registry ]**, **[ 🔍 Treasurer Ledger Audit ]**, **[ 🧾 Disbursed Check Registry ]** and **[ 🕊️ Charitable Grants Registry ]**. An expense sheet therefore never stops in the queue. The **Donations History** page stays in the sidebar. The switch deletes no records.
@@ -789,9 +789,9 @@ The drawers that move money stay on the desks: **[ 📋 FS Expense Audit Queue ]
 | **Grand Knight Desk** | **Charitable Grant Requests Vetting Board** | Claim, question, advance and place charity grant requests on the agenda (section 2 of the Executive Governance Manual). |
 | **Grand Knight Desk** | **Constitutional Advisor Panels** | Ask a parliamentary or bylaws question. Officers only. |
 | **Grand Knight Desk** | **Connected Councils** | Invite nearby councils and answer their invites (section 7). |
-| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Trustee Semiannual Audit** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **[ 🕊️ Charitable Grants Registry ]** | Pay approved charity requests and gifts by check. |
-| **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **📊 Budget Allocation & YOY Variance Analyzer**. |
+| **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | **Budgeted vs. Current Actual Spend** and the **Budget Allocation & YOY Variance Analyzer**. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. Only the FS, the Treasurer and Super Admins can run the match. |
 | **Recorder Desk** | **Council Resolutions and Motions Ledger** | Every motion on the council's meetings of this fraternal year, with its meeting, presenter, source and result. |
 | **Historian Desk** | **Google Drive Media Gallery Sync Board** | Upload and tag photos and build Smart Albums. Select a photo to open the viewer. |
@@ -855,7 +855,7 @@ The drawers on each desk:
 | **Financial Secretary Desk** | **Charitable Donation Records** | Record, check and correct council donations. |
 | **Financial Secretary Desk** | **FS/GK Compliance Endorsements** | Select **✍️ Endorse for payment** on each approved charity grant (section 1.7.1). |
 | **Financial Secretary Desk** | **[ 🕊️ Charitable Grants Registry ]** | Pay approved charity requests and gifts by check. |
-| **Financial Secretary Desk** | **Financial Inspections** | The Trustees' step-by-step audit and the Form 1295 report. |
+| **Financial Secretary Desk** | **Trustee Semiannual Audit** | The Trustees' step-by-step audit and the Form 1295 report. |
 | **Financial Secretary Desk** | **Excel Roster Imports** | Download the roster template. Upload the Supreme roster CSV. |
 | **Financial Secretary Desk** | **Operations Knowledge Vault** | Search the signed operating notes of every council (section 8). |
 | **Financial Secretary Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Sign in **[ 📋 FS Expense Audit Queue ]** (section 6.2.3). |
@@ -1010,7 +1010,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record that leadership reviewed the drafted budget in June.
 
-**Start point:** Sidebar → Finances → **Annual Budget Center** → **Annual Budget Planner** → **Annual budget**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center** → **Annual Budget Planner** → **Annual budget**.
 
 **Steps:**
 1. Choose the year in **Fraternal year**.
@@ -1031,7 +1031,7 @@ The **Annual Budget Planner** banner leads the **Council Wide Settings** page. T
 
 **Goal:** Record the council's vote on the budget at the July meeting.
 
-**Start point:** Sidebar → Finances → **Annual Budget Center**.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center**.
 
 **Steps:**
 1. Choose the fraternal year.
@@ -1203,7 +1203,7 @@ An edit that moves a donation to a different payment method takes that method's 
 ### 11.1 Concept: the council's budget categories
 The council keeps its own list of budget categories, for example **Youth Programs** or **Charities**. Each budget line can be filed under one category. A line without a category shows under **Uncategorized**.
 
-The **📊 Budget Allocation & YOY Variance Analyzer** groups the year by these categories in two charts:
+The **Budget Allocation & YOY Variance Analyzer** groups the year by these categories in two charts:
 
 | Chart | What the chart shows |
 | --- | --- |
@@ -1218,7 +1218,7 @@ A table under the charts lists each category with its figures. The first eight c
 
 **Goal:** Add, rename or delete the council's budget categories.
 
-**Start point:** Sidebar → Finances → **Budget** → **Budget categories** panel.
+**Start point:** Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center** → **Budget categories** panel.
 
 **Steps:**
 1. To add a category, enter the name in **New category**. Select **Add category**.

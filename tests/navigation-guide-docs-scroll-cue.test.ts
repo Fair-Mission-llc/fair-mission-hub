@@ -28,13 +28,13 @@ describe('the Navigation Guide chapter', () => {
       expect(chapter).toContain(heading);
     }
     expect(chapter).toContain('| Member (a plain volunteer) | Summary | One short sentence | One short sentence. No drawers. |');
-    expect(chapter).toContain('The screen opens with all of its category groups closed. Only the **📍 Overview** block is open.');
+    expect(chapter).toContain('The screen opens with all of its category groups closed. Only the **Overview** block is open.');
     expect(chapter).toContain('| 3. Drawer |');
   });
 
   it('matches the screen: only the overview opens on arrival', () => {
     const page = read('apps/web/app/navigation-guide/page.tsx');
-    expect(page.match(/<MapBlock [^>]*\bopen\b/g)).toEqual(['<MapBlock id="overview" title="📍 Overview" open']);
+    expect(page.match(/<MapBlock [^>]*\bopen\b/g)).toEqual(['<MapBlock id="overview" title="Overview" open']);
   });
 
   it('has a member guide section', () => {

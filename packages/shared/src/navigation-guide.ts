@@ -204,7 +204,7 @@ export const STANDARD_SCREEN_NAMES = {
   'system-settings/knowledge-archive': 'Operations Knowledge Vault',
   'resources/marketing': 'Recruitment Factory',
   'inventory/loaner-library': 'Shared Equipment Library',
-  'finance/audit': 'Financial Inspections',
+  'finance/audit': 'Trustee Semiannual Audit',
   history: 'Historical Chronology',
 } as const satisfies Partial<Record<PortalNavItem, string>>;
 

@@ -89,7 +89,10 @@ The navy header shows your own council, your name, your member type and your off
 
 - A Super Admin also sees **[ 🛠️ Super Admin Desk ]** in the header row. The button opens the **Master Feature Deployment Grid**. The button is not shown while a Super Admin views the portal as another member.
 - On the **[ 👥 Council Roster ]**, **Add Member** is disabled while the **Council** list reads **All councils on the platform** or **All: my council and sister councils**. Choose one council first. The new member joins that council.
-- In the sidebar, the Finances pillar has two separate accordions. **📊 FINANCIAL REPORTS** holds the views that only read the books: **Chart of Accounts & GL**, **Balance Sheet** and **Financial Dashboard**. **⚡ FINANCIAL ACTIONS** holds the desks where officers do the work: **Treasurer Ledger Audit**, **FS Expense Audit Queue**, **GK Expense Authorize**, **Disbursed Check Registry**, **Charitable Grants Registry** and **Donations History**. **Financial Inspections**, **My Expense Reports**, **Propose Charity Grant** and **Annual Budget Center** are plain links above the accordions. The **Charity Vetting Queue** is in the **Governance** pillar.
+- In the sidebar, the Finances pillar starts with the two links every member uses: **My Expense Reports** and **Propose Charity Grant**. They always stay at the top, above the accordions. Below them are two separate accordions. **📊 FINANCIAL REPORTS** holds the views that only show information: **Chart of Accounts & GL**, **Balance Sheet**, **Financial Dashboard** and **Annual Budget Center**. **⚡ FINANCIAL ACTIONS** holds the desks where officers must act: **Treasurer Ledger Audit**, **FS Expense Audit Queue**, **GK Expense Authorize**, **Trustee Semiannual Audit**, **Disbursed Check Registry**, **Charitable Grants Registry** and **Donations History**. The **Charity Vetting Queue** is in the **Governance** pillar.
+- **Financial Inspections** is now **Trustee Semiannual Audit**: the sidebar link, the page title, the Financial Secretary Desk drawer and the module switch on the **Master Feature Deployment Grid**.
+- A Super Admin has full Admin access on the **Admin Desk** and every one of its drawers. In **Council Wide Settings**, choose the council in the **Council** list. The **Secure Access Vault** drawer shows only your own home council.
+- Page titles, panel headings and notices show plain words only, with no icons and no brackets. Buttons and tabs keep their labels.
 - The Faith In Action link **Standalone Activities** is now **Member Activities**. The page title reads **Member Activities**, and its first tab reads **Current Activities**.
 - Every Super Admin sign-in has the **Platform Management** tab on the **Active Desks** row, beside the council desks.
 - Sidebar links show plain words only, with no icons and no brackets. A long name ends in "…".
@@ -125,7 +128,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `feature_lessons_registry` | **Lessons & Knowledge Registries** | Lessons Registry, Operations Knowledge Vault, the archive drawers of the officer desks | None |
 | `feature_marketing_factory` | **Recruitment Factory** | Recruitment Factory. The server also refuses the flyer co-pilot requests. | None |
 | `feature_loaner_library` | **Shared Equipment Library** | Loaner Library, the **Shared Equipment Library** drawer of the **Grand Knight Desk** | None |
-| `feature_advanced_audits` | **Financial Inspections** | Financial Audits; the **Financial Inspections**, **Expense Report (ER) Routing Track** and **Charitable Donation Records** drawers of the **Financial Secretary Desk**; the **Cash Box Audit Closure Panel** and **Bank Statement Match-Window** drawers of the **Treasurer Desk** | None |
+| `feature_advanced_audits` | **Trustee Semiannual Audit** | Financial Audits; the **Trustee Semiannual Audit**, **Expense Report (ER) Routing Track** and **Charitable Donation Records** drawers of the **Financial Secretary Desk**; the **Cash Box Audit Closure Panel** and **Bank Statement Match-Window** drawers of the **Treasurer Desk** | None |
 
 The retired columns `flag_complex_shifts`, `feature_volunteer_quarantine` and `feature_financial_management` stay in the database, but the portal does not read them. Their modules are core systems now.
 
@@ -297,7 +300,7 @@ The SOP Center holds the full procedure: **Publish a standard operating procedur
 
 **Expected result:** The changes save. Phones show the new values on the next load. If **Account Name Members See** is empty, it takes the name of the selected account.
 
-Budget categories are not on this page. Keep them on the **Annual Budget Center** (Sidebar → Finances → **Budget**). On **Meeting Agenda Templates**, the **Preview** box under the outline shows the agenda with its formatting while you type.
+Budget categories are not on this page. Keep them on the **Annual Budget Center** (Sidebar → Finances → **📊 FINANCIAL REPORTS** → **Annual Budget Center**). On **Meeting Agenda Templates**, the **Preview** box under the outline shows the agenda with its formatting while you type.
 
 The outbound email settings are not on this page. Set them on the **Secure Access Vault** page (5.2). The base dues rate is not on this page either. A Super Admin sets the rate on **Global System Parameters** (8.8).
 
@@ -525,7 +528,7 @@ A number that you typed but did not save stays in its card when you close the dr
 | **Feature Controls** | The **Shared Equipment Library Sharing** card and the **Module & Platform Switches** links. |
 | **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
 
-The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances).
+The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances → **📊 FINANCIAL REPORTS**).
 
 The text in each card wraps inside the card. On a narrow screen, the **Council Feature Deployment Matrix** scrolls sideways. Its columns keep their width, so no column stacks its words one per line.
 
