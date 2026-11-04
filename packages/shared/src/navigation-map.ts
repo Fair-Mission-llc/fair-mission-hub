@@ -18,7 +18,6 @@ import { ALL_FEATURES_ON, mobileTabEnabled, type FeatureFlags, type MobileTab } 
 import { isNavigationLeader, navigationGuide, PINNED_SIDEBAR_LABEL } from './navigation-guide';
 import { dashboardTabsFor, HOME_UNIVERSAL_CARDS, MEMBER_DESK_SECTIONS, type DashboardTabId } from './officer-desks';
 import type { PortalNavItem } from './permissions';
-import { SUPER_ADMIN_DESK_FOLDERS } from './super-admin-desk';
 import { DEFAULT_TENANT_TYPE, type TenantType } from './tenant';
 
 type Viewer = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[]; isBudgetDirector?: boolean; username?: string };
@@ -41,6 +40,7 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   'member-actions': 'dashboard',
   dashboard: 'dashboard',
   'member-center': 'dashboard',
+  'motion-requests': 'calendars',
   'finance/dashboard': 'dashboard',
   'performance/charts': 'dashboard',
   calendar: 'calendars',
@@ -155,12 +155,11 @@ export interface NavigationMap {
   phoneTabs: { tab: PhoneTab; summary: string }[];
 }
 
-const DRAWER_DESKS = new Set<DashboardTabId>(['grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian']);
+const DRAWER_DESKS = new Set<DashboardTabId>(['grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'super-admin']);
 
 function deskSections(u: Viewer, id: DashboardTabId, flags: FeatureFlags, tenant: TenantType): string[] {
   if (id === 'home') return [...HOME_UNIVERSAL_CARDS];
   if (id === 'member') return [...MEMBER_DESK_SECTIONS];
-  if (id === 'super-admin') return SUPER_ADMIN_DESK_FOLDERS.map((f) => f.label);
   if (DRAWER_DESKS.has(id)) return deskDrawersFor(u, id as DrawerDeskId, u.councilId, flags, tenant).map((d) => d.title);
   return [];
 }

@@ -10,9 +10,12 @@
 // offers one-click Print (a print-ready sheet listing every line, as the paper form does) and CSV export.
 // Sprint 11 Revision 16.0: the popup offers the Top 3 suggestions (topForm1728Suggestions), each a separate selection
 // card with its own id; a caller holding the council's compiled report passes it, and its busiest lines fill open slots.
+// Sprint 11 Revision 18.0: no forced slots. A card shows only when its confidence percent clears the platform's
+// global_ai_confidence_cutoff (60% by default, Global System Parameters), so the popup may show fewer cards, or none.
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   compileForm1728Report,
+  form1728ConfidenceCutoff,
   form1728Line,
   form1728ReportCsv,
   form1728YearToDate,
@@ -114,9 +117,25 @@ export function Form1728SuggestionDialog({
   onCancel: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const suggestions = useMemo(() => topForm1728Suggestions(title, description, context, report), [title, description, context, report]);
+  const platform = useLoad(() => db.councils.getPlatformSettings(), []);
+  const cutoff = form1728ConfidenceCutoff(platform.data?.global_ai_confidence_cutoff);
+  const suggestions = useMemo(
+    () => topForm1728Suggestions(title, description, context, report, undefined, cutoff),
+    [title, description, context, report, cutoff],
+  );
   const best = suggestions[0];
-  const [chosen, setChosen] = useState<Form1728LineCode>(isForm1728LineCode(initial) ? initial : best.code);
+  const [chosen, setChosen] = useState<Form1728LineCode>(
+    isForm1728LineCode(initial) ? initial : (best?.code ?? resolveForm1728Line(null, title, description, context).code),
+  );
+  // The cutoff arrives after the first render; pick the new best card unless the officer already chose a line.
+  const touched = useRef(false);
+  useEffect(() => {
+    if (!touched.current && !isForm1728LineCode(initial) && best) setChosen(best.code);
+  }, [best, initial]);
+  const choose = (code: Form1728LineCode) => {
+    touched.current = true;
+    setChosen(code);
+  };
   const [query, setQuery] = useState('');
   const matches = searchForm1728Lines(query);
   useEffect(() => {
@@ -144,9 +163,13 @@ export function Form1728SuggestionDialog({
         </p>
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-navy">
-            Top {suggestions.length} suggestions
-            {best.confidence === 'default' ? ' (no clear match, so the general line comes first)' : best.confidence === 'strong' ? ' (strong match first)' : ' (likely match first)'}
+            {suggestions.length === 0
+              ? `No suggestion is at least ${cutoff}% sure`
+              : `${suggestions.length === 1 ? 'Suggestion' : `Top ${suggestions.length} suggestions`} at least ${cutoff}% sure`}
           </legend>
+          {suggestions.length === 0 ? (
+            <p className="text-sm text-muted">Choose the line from the list below.</p>
+          ) : null}
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {suggestions.map((s) => (
               <button
@@ -154,14 +177,14 @@ export function Form1728SuggestionDialog({
                 id={s.targetId}
                 type="button"
                 aria-pressed={chosen === s.code}
-                onClick={() => setChosen(s.code)}
+                onClick={() => choose(s.code)}
                 className={cx(
                   'flex min-w-0 flex-col gap-1 rounded border-2 px-3 py-2 text-left text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
                   chosen === s.code ? 'border-navy bg-gold/20' : 'border-line bg-white hover:border-navy',
                 )}
               >
                 <span className="text-xs font-bold uppercase tracking-wide text-muted">
-                  #{s.rank} {s.source === 'report' ? '· council favorite' : s.rank === 1 ? '· best guess' : ''}
+                  #{s.rank} · {s.confidencePercent}% sure{s.source === 'report' ? ' · council favorite' : ''}
                 </span>
                 <span className="font-bold">
                   {s.section} line {s.line}
@@ -188,7 +211,7 @@ export function Form1728SuggestionDialog({
             size={6}
             className="w-full rounded border border-line bg-white p-1 text-sm"
             value={chosen}
-            onChange={(e) => setChosen(e.target.value as Form1728LineCode)}
+            onChange={(e) => choose(e.target.value as Form1728LineCode)}
           >
             {(matches.length > 0 ? matches : FORM_1728_LINES).map((l) => (
               <option key={l.code} value={l.code}>

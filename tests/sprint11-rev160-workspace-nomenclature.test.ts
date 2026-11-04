@@ -30,40 +30,37 @@ const read = (path: string) => readFileSync(path, 'utf8');
 
 describe('0. schema', () => {
   it('stays at version 110', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(110);
+    expect(PLATFORM_SCHEMA_VERSION).toBe(111); // Sprint 11 Revision 18.0 moved the platform to schema 111.
   });
 });
 
-describe('1. Form 1728 Top 3 suggestions', () => {
-  it('always offers exactly three distinct lines, each with its own selection target', () => {
+// Sprint 11 Revision 18.0 replaced the always-three rule: cards below the confidence cutoff are left out
+// (tests/sprint11-rev180-motion-requests-super-admin-desk.test.ts covers the cutoff).
+describe('1. Form 1728 suggestions (at most three)', () => {
+  it('offers at most three distinct lines, each with its own selection target', () => {
     for (const title of ['Rosary before Mass', 'Socials', 'Youth soccer and basketball day', '']) {
       const top = topForm1728Suggestions(title);
-      expect(top).toHaveLength(FORM_1728_TOP_SUGGESTION_COUNT);
-      expect(new Set(top.map((s) => s.code)).size).toBe(3);
-      expect(new Set(top.map((s) => s.targetId)).size).toBe(3);
-      expect(top.map((s) => s.rank)).toEqual([1, 2, 3]);
+      expect(top.length).toBeLessThanOrEqual(FORM_1728_TOP_SUGGESTION_COUNT);
+      expect(new Set(top.map((s) => s.code)).size).toBe(top.length);
+      expect(top.map((s) => s.rank)).toEqual(top.map((_, i) => i + 1));
       for (const s of top) expect(s.targetId).toBe(`form-1728-pick-${s.code}`);
     }
   });
 
-  it('puts the engine match first and Community N among the three', () => {
+  it('puts the engine match first and no longer pads with Community N', () => {
     const top = topForm1728Suggestions('Rosary before Mass');
     expect(top[0]!.section).toBe('Faith');
     expect(top[0]!.source).toBe('engine');
-    expect(top.map((s) => s.code)).toContain('COMMUNITY_N');
+    expect(top.map((s) => s.code)).not.toContain('COMMUNITY_N');
   });
 
-  it("fills open slots from the council's compiled report, busiest line first", () => {
+  it("no longer fills slots from the council's compiled report", () => {
     const rows = [
       { title: 'Blood drive', description: null, line: 'LIFE_A', date: '2026-03-01', hours: 9, memberId: 1 },
       { title: 'Coats for kids', description: null, line: 'COMMUNITY_B', date: '2026-03-02', hours: 3, memberId: 2 },
     ];
     const report = compileForm1728Report(rows, '2026-01-01', '2026-12-31');
-    const top = topForm1728Suggestions('Socials', null, undefined, report);
-    expect(top[0]!.code).toBe('COMMUNITY_N');
-    const fromReport = top.filter((s) => s.source === 'report');
-    expect(fromReport.length).toBeGreaterThan(0);
-    expect(fromReport[0]!.code).toBe('LIFE_A');
+    expect(topForm1728Suggestions('Socials', null, undefined, report)).toEqual([]);
   });
 
   it('draws the three as separate cards in the popup', () => {

@@ -108,23 +108,29 @@ export interface AdvisoryPanelist {
 export const ADVISORY_TOPIC_MAX_LENGTH = 100;
 export const ADVISORY_BODY_MAX_LENGTH = 2000;
 
-/** Whether `u` opens the panel: a Super Admin, or a holder of the panelist role. */
-export const canOpenAdvisoryPanel = (u: { memberType?: string | null; roles?: readonly string[] }): boolean =>
-  u.memberType === 'Super Admin' || (u.roles ?? []).includes(ADVISORY_PANELIST_ROLE);
+/**
+ * Whether `u` sees the panel. Sprint 11 Revision 18.0: only the platform owner's own session (isPlatformOwner, which
+ * needs the sign-in name) and the members who accepted an invitation (the panelist role). Every other Super Admin no
+ * longer sees the link, the page or the invitation tools.
+ */
+export const canOpenAdvisoryPanel = (u: { memberType?: string | null; roles?: readonly string[]; username?: string | null }): boolean =>
+  (u.memberType === 'Super Admin' && isPlatformOwner({ memberType: 'Super Admin', username: u.username })) || (u.roles ?? []).includes(ADVISORY_PANELIST_ROLE);
 
 export const isAdvisoryPanelist = (actor: Pick<MemberWriteActor, 'roles'>): boolean => (actor.roles ?? []).includes(ADVISORY_PANELIST_ROLE);
 
 /** Reading the panel and sending feedback: an Active panelist or an Active Super Admin (ADVISORY_PANEL_REQUIRED wording). */
-export function assertMayReadAdvisoryPanel(actor: MemberWriteActor): void {
-  if (hasSuperAdminRights(actor) || (actor.active && isAdvisoryPanelist(actor))) return;
+export function assertMayReadAdvisoryPanel(actor: MemberWriteActor, username?: string | null): void {
+  if (actor.active && isAdvisoryPanelist(actor)) return;
+  // Sprint 11 Revision 18.0: when the driver passes the sign-in name, only the platform owner's Super Admin account passes.
+  if (hasSuperAdminRights(actor) && (username === undefined || isPlatformOwner({ memberType: 'Super Admin', username }))) return;
   throw new SecurityPrivilegeError('ADMIN_REQUIRED', `Only Application Advisory Panelists and Super Admins open the Advisory Panel; you are ${describeActor(actor)}.`, {
     memberId: actor.memberId,
   });
 }
 
 /** Keeping the meeting dates and designating panelists: an Active Super Admin. */
-export function assertMayKeepAdvisoryPanel(actor: MemberWriteActor): void {
-  if (hasSuperAdminRights(actor)) return;
+export function assertMayKeepAdvisoryPanel(actor: MemberWriteActor, username?: string | null): void {
+  if (hasSuperAdminRights(actor) && (username === undefined || isPlatformOwner({ memberType: 'Super Admin', username }))) return;
   throw new SecurityPrivilegeError('SUPER_ADMIN_REQUIRED', `Only a Super Admin keeps the Advisory Panel's meetings and panelists; you are ${describeActor(actor)}.`, {
     memberId: actor.memberId,
   });

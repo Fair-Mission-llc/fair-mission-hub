@@ -38,7 +38,7 @@ const NEW_HOURS_ID = 90001;
 
 describe('1. the handshake rules', () => {
   it('keeps schema 110 and names its files and switch', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(110);
+    expect(PLATFORM_SCHEMA_VERSION).toBe(111); // Sprint 11 Revision 18.0 moved the platform to schema 111.
     expect(CENTRAL_VAULT_FILE).toBe('simulated-central.db');
     expect(PILOT_SYNC_RECEIPT_FILE).toBe('hub-sync-receipt.json');
     expect(DEFAULT_PILOT_SYNC_COUNCIL).toBe(15295);

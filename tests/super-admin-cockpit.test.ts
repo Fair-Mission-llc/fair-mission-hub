@@ -16,7 +16,7 @@ import {
   isPlatformOwner,
   PLATFORM_OWNER_USERNAMES,
   portalAreas,
-  SUPER_ADMIN_DESK_FOLDERS,
+  SUPER_ADMIN_DESK_CABINETS,
   SUPER_ADMIN_DESK_TITLE,
   type DataService,
   type Donation,
@@ -208,7 +208,7 @@ describe('Administrative Feedback Loops', () => {
   });
 });
 
-describe('Platform Management', () => {
+describe('the Super Admin Desk', () => {
   const owner = { memberId: 1, councilId: OWN, memberType: 'Super Admin' as const, isOfficer: false, roles: [], username: PLATFORM_OWNER_USERNAMES[0]! };
 
   it("knows the platform owner's own Super Admin session; every Super Admin gets the tab", () => {
@@ -228,13 +228,9 @@ describe('Platform Management', () => {
     expect(dashboardTabsFor({ ...owner, memberType: 'Admin' }, OWN).map((t) => t.id)).not.toContain('super-admin');
   });
 
-  it('holds the three top horizontal action folders', () => {
-    expect(SUPER_ADMIN_DESK_TITLE).toBe('Platform Management');
-    expect(SUPER_ADMIN_DESK_FOLDERS.map((f) => f.label)).toEqual([
-      'Feedback Communication Center',
-      'Council Access Request Approval Queue',
-      'System Feature Flag Control Panel',
-    ]);
+  it('files its workspaces in the Communications and Settings cabinets (Sprint 11 Revision 18.0)', () => {
+    expect(SUPER_ADMIN_DESK_TITLE).toBe('Super Admin Desk');
+    expect(SUPER_ADMIN_DESK_CABINETS.map((f) => f.label)).toEqual(['Communications Cabinet', 'Settings Cabinet']);
     const desk = read('apps/web/components/SuperAdminDesk.tsx');
     expect(desk).toContain('showsSuperAdminDeskTab(user)');
     for (const part of ['<FeedbackInbox', '<InboundMailCenter', '<FeatureFlagControlPanel']) expect(desk).toContain(part);

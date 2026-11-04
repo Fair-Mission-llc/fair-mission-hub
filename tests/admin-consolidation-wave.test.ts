@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  DESK_DRAWERS,
   ANNUAL_BUDGET_CENTER_TITLE,
   ASSIGN_BUDGET_DIRECTOR_LABEL,
   assertMaySyncSupremeRoster,
@@ -19,7 +20,6 @@ import {
   PORTAL_NAV_GROUPS,
   portalAreas,
   rosterAllCouncilsLabel,
-  SUPER_ADMIN_DESK_DRAWERS,
   type MemberWriteActor,
 } from '@kofc/shared';
 import { drivers, expectRule, MEMBER } from './helpers';
@@ -70,9 +70,10 @@ describe('2. Council Wide Settings drawers', () => {
   });
 });
 
-describe('3. Platform Management infrastructure drawers', () => {
-  it('names the four drawers in order', () => {
-    expect(SUPER_ADMIN_DESK_DRAWERS.map((d) => d.label)).toEqual(['Global System Parameters', 'Global Lookup Tables', 'Global Charities Registry', 'Secure Access Vault']);
+describe('3. Super Admin Desk infrastructure drawers', () => {
+  it('names the four infrastructure drawers (Sprint 11 Revision 18.0: three in the Settings Cabinet, the registry freestanding)', () => {
+    const titles = DESK_DRAWERS.filter((d) => d.desk === 'super-admin').map((d) => d.title);
+    for (const t of ['Global System Parameters', 'Global Lookup Tables', 'Global Charities Registry', 'Secure Access Vault']) expect(titles).toContain(t);
   });
 
   it('pins the Secure Access Vault drawer to the home council', () => {

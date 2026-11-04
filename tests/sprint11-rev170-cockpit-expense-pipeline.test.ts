@@ -45,7 +45,7 @@ const TODAY = '2026-09-20'; // NOW
 
 describe('0. schema', () => {
   it('stays at version 110', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(110);
+    expect(PLATFORM_SCHEMA_VERSION).toBe(111); // Sprint 11 Revision 18.0 moved the platform to schema 111.
   });
 });
 

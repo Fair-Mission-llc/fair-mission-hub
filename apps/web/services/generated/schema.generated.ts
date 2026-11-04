@@ -1030,6 +1030,16 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": "KofC"
         }
+      },
+      {
+        "name": "motion_request_lead_days",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 5
+        }
       }
     ],
     "foreignKeys": [
@@ -7804,6 +7814,16 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 180
         }
+      },
+      {
+        "name": "global_ai_confidence_cutoff",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 60
+        }
       }
     ],
     "foreignKeys": [],
@@ -8851,6 +8871,210 @@ export const TABLES: Record<string, TableMeta> = {
         "council_id"
       ]
     ]
+  },
+  "MotionRequest": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "proposed_by",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "summary_what",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "rationale_why",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "financial_impact_usd",
+        "kind": "real",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 0
+        }
+      },
+      {
+        "name": "request_status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "Pending"
+        },
+        "allowed": [
+          "Pending",
+          "Approved",
+          "Denied",
+          "Withdrawn"
+        ]
+      },
+      {
+        "name": "submitted_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "decided_by_member_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "decided_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "decision_note",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "target_meeting_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "proposed_motion_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "proposed_by",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "decided_by_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      },
+      {
+        "column": "target_meeting_id",
+        "refTable": "Meeting",
+        "refColumn": "id"
+      },
+      {
+        "column": "proposed_motion_id",
+        "refTable": "ProposedMotion",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
+  },
+  "MotionRequestMessage": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "motion_request_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "channel",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null,
+        "allowed": [
+          "MEMBER_GK",
+          "OFFICER_ADVISORY"
+        ]
+      },
+      {
+        "name": "author_member_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "posted_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "message_body",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "motion_request_id",
+        "refTable": "MotionRequest",
+        "refColumn": "id"
+      },
+      {
+        "column": "author_member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
   }
 };
 

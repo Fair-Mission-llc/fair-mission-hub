@@ -2,7 +2,7 @@
 // Online Help Center: the troubleshooting workflows of docs/MEMBER_USER_GUIDE.md and docs/ADMIN_USER_GUIDE.md as a
 // searchable question-and-answer accordion. Open to every signed-in member. Sprint 8O: the feedback and bug-report form and
 // the Super Admin feedback inbox left this page for System Settings > Administrative Feedback Loops (Admins and higher)
-// and Platform Management (components/FeedbackParts.tsx). The time windows and limits quoted
+// and the Super Admin Desk (components/FeedbackParts.tsx). The time windows and limits quoted
 // come from the shared rule constants, so an answer cannot drift from what the drivers enforce. Sprint 7E: the logging
 // window and the hours reminder cadence are the member's own council's settings (useCouncilTimings), read live.
 import { useEffect, useState } from 'react';

@@ -111,6 +111,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 | --- | --- | --- |
 | **Home** tab (tab row above every page) | None | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **Praying Hands** |
 | **Member Actions Hub** | Faith In Action | Its own page: your active shifts, sign-ups, the roster and your hours |
+| **My Motion Requests** | Faith In Action | Your motion requests, the form to send one and your messages with the Grand Knight |
 | **Council Dashboard** | Performance | Your impact and the council's engagement |
 
 </details>
@@ -1118,6 +1119,60 @@ The officers follow these steps on the **Annual Fraternal Roadmap** of the **Exe
 | **Unlock Ballot** stays grey. | The PIN has fewer than 4 digits. | Type all 4 digits. |
 | *"No ballot is open right now."* | The chair has not opened the ballot. | Keep the drawer open. The ballot shows when the chair opens it. |
 | You cannot vote again. | You can vote one time on each motion. | No action. Your first ballot counts. |
+
+### Concept: motion requests
+
+A motion request asks the Grand Knight (GK) to put your motion before the council.
+You write three things: what the motion does, why the council should pass it, and its cost in dollars.
+The GK approves or denies each request.
+An approved request goes on the agenda of the next Monthly meeting with a 5-minute slot.
+The request must be in at least 5 days before that meeting. Your council can change the number of days.
+A request that comes in later waits for the next Monthly meeting.
+Each request keeps its messages with the GK for good.
+
+### 5.8 Request a motion
+
+> **Who can do this:** any active member.
+
+**Goal:** Ask the Grand Knight to put your motion on the next meeting agenda.
+
+**Start point:** Sidebar → Faith In Action → **My Motion Requests**. The same panel is on the **Member Desk** tab.
+
+**Steps:**
+1. Read the line above the form. The line names the meeting that hears a request you send today.
+2. Type the motion in **What the motion does**.
+3. Type the reasons in **Why the council should pass it**.
+4. Type the cost in **Financial impact ($)**. Leave the field blank when the motion costs nothing.
+5. Select **Submit motion request**.
+
+**Expected result:** The message *"Motion request #N is with the Grand Knight."* shows. The request shows in the list as **Waiting for the Grand Knight**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Submit motion request** stays grey. | **What the motion does** or **Why the council should pass it** is empty. | Fill in both fields. |
+| The form says no Monthly meeting is scheduled. | The council has not built the meetings yet. | Send the request. The GK can approve it when the meeting exists. |
+
+### 5.9 Follow a motion request and message the Grand Knight
+
+> **Who can do this:** the member who sent the request.
+
+**Goal:** See the decision on your request and talk with the Grand Knight about it.
+
+**Start point:** Sidebar → Faith In Action → **My Motion Requests**.
+
+**Steps:**
+1. Find the request in the list. The status shows beside the motion.
+2. Select **Member and Grand Knight** to open the messages.
+3. Type a message. Select **Send message**.
+4. To cancel a request that is still waiting, select **Withdraw request**.
+
+**Expected result:** An approved request shows **Approved: on the agenda** and the meeting date. A denied request shows the note from the GK.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| **Withdraw request** is missing. | The GK already decided the request. | No action. A decided request cannot change. |
 
 ---
 

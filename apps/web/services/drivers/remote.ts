@@ -267,6 +267,16 @@ export function createRemoteDataService(): DataService {
       inviteMember: notImplemented('advisory.inviteMember'),
       acceptInvitation: notImplemented('advisory.acceptInvitation'),
     },
+    motionRequests: {
+      preview: notImplemented('motionRequests.preview'),
+      listMine: notImplemented('motionRequests.listMine'),
+      listForCouncil: notImplemented('motionRequests.listForCouncil'),
+      submit: notImplemented('motionRequests.submit'),
+      withdraw: notImplemented('motionRequests.withdraw'),
+      decide: notImplemented('motionRequests.decide'),
+      listMessages: notImplemented('motionRequests.listMessages'),
+      postMessage: notImplemented('motionRequests.postMessage'),
+    },
     elections: {
       listOfficerSeats: notImplemented('elections.listOfficerSeats'),
       listBallotConfig: notImplemented('elections.listBallotConfig'),

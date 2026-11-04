@@ -23,7 +23,7 @@ import { canOpenDistrictDesk, canOpenRegionalAssignments, canOpenStateDesk } fro
 import type { BudgetLineStatus, CharitableRequest, CharitableThreadType, Donation, Event, ExpenseReport, Meeting, Member, MemberType } from './types';
 
 /** `roles` (Role names) matters only to the finance areas; omitted, the member holds none. `isBudgetDirector` only to the budget. */
-type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[]; isBudgetDirector?: boolean };
+type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[]; isBudgetDirector?: boolean; username?: string | null };
 
 /**
  * Each area is also its route: RequireArea links to `/${area}` (so 'expenses/queue' is /expenses/queue), except the
@@ -96,6 +96,7 @@ export type PortalArea =
   | 'history'
   | 'faith-center'
   | 'member-center'
+  | 'motion-requests'
   | 'inventory/loaner-library'
   | 'profile';
 
@@ -802,6 +803,8 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   // Sprint 7A Extension: the Council Dashboard (named the Shared Member Center until Sprint 8C) - collective, non-financial council figures and the member's own impact
   // card - is every member's. The executive dashboard and the finance screens stay with their own audiences above.
   areas.push('member-center');
+  // Sprint 11 Revision 18.0: every member requests motions and follows them on Motion Requests (motion-requests.ts).
+  areas.push('motion-requests');
   // Sprint 8F: every member browses the Shared Equipment Library; only the Grand Knight and Deputy Grand Knight lend
   // (canLendCouncilAssets, inside the page and on the Grand Knight Desk).
   areas.push('inventory/loaner-library');
@@ -843,7 +846,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   // Sprint 10 Revision 1.0: no Home link (the Home tab above every page opens it), and the gallery is the sidebar's own
   // top-level '📸 Media & Memory Center' node (Sidebar.tsx) instead of a Resources link. Sprint 10 Revision 2.0: the
   // Roster & Achievements directory heads the pillar, directly under its header, for every member.
-  { id: 'faith', label: 'Faith In Action', items: ['roster', 'activities', 'member-actions', 'events', 'calendar', 'faith-center'] },
+  { id: 'faith', label: 'Faith In Action', items: ['roster', 'activities', 'member-actions', 'motion-requests', 'events', 'calendar', 'faith-center'] },
   {
     id: 'finances',
     label: 'Finances',

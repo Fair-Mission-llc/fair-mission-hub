@@ -448,10 +448,10 @@ describe('sign-in gates and the mail center', () => {
     expect(read('apps/mobile/app/sign-in.tsx')).toContain('db.accessRequests.submit(draft)');
   });
 
-  it('shows the Inbound Council Mail Center on Platform Management only (Sprint 10 Revision 1.0 took it off the Grand Knight Desk)', () => {
+  it('shows the Inbound Council Mail Center on the Super Admin Desk only (Sprint 10 Revision 1.0 took it off the Grand Knight Desk)', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     expect(desks).not.toContain('<InboundMailCenter />');
-    expect(DESK_DRAWERS.map((d) => d.id as string)).not.toContain('access-requests');
+    expect(DESK_DRAWERS.filter((d) => d.id === 'access-requests').map((d) => d.desk)).toEqual(['super-admin']);
     expect(read('apps/web/components/SuperAdminDesk.tsx')).toContain('<InboundMailCenter />');
     expect(read('apps/web/app/dashboard/page.tsx')).not.toContain('<InboundMailCenter />');
     expect(read('apps/web/components/PlatformAccessParts.tsx')).not.toMatch(/bg-black/);

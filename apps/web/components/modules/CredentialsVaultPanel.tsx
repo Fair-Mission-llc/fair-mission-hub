@@ -237,7 +237,7 @@ function SecretPanel({ card, councilId, saved, onChanged }: { card: SecretCard; 
 }
 
 /**
- * The vault for one council. Sprint 10 Revision 3.0: `homeCouncilOnly` (Platform Management drawer) pins it to the
+ * The vault for one council. Sprint 10 Revision 3.0: `homeCouncilOnly` (Super Admin Desk drawer) pins it to the
  * reader's own home council - no council picker, and no other council's sealed keys are ever requested.
  */
 export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !homeCouncilOnly }: { homeCouncilOnly?: boolean; showTitle?: boolean }) {

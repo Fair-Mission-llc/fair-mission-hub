@@ -58,6 +58,7 @@ export * from './member-roster';
 export * from './council-accounts';
 export * from './file-repository';
 export * from './advisory-panel';
+export * from './motion-requests';
 export * from './desk-seats';
 export * from './volunteer-quarantine';
 export * from './gl-splits';

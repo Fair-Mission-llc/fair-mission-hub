@@ -44,6 +44,7 @@ import { canReadCouncilGoals, canSetCouncilGoals } from './council-goals';
 import { awaitsTreasurerCoding, awaitsWrittenOrder, isPayableExpenseReport } from './expenses';
 import type { FeatureFlags } from './features';
 import { canLendCouncilAssets } from './loaner-library';
+import { MOTION_REQUESTS_TITLE } from './motion-requests';
 import { DESK_FOCUS_TARGETS, type DashboardTabId } from './officer-desks';
 import {
   canManageBudgetForecast,
@@ -53,6 +54,7 @@ import {
   expenseCounterSignBlock,
   expenseLedgerCodeBlock,
   expenseOrderBlock,
+  holdsGrandKnightSeat,
   isSuperAdmin,
   portalAreas,
   type PortalArea,
@@ -75,10 +77,13 @@ export const COUNCIL_GOALS_FOLDER_TITLE = 'Council Goals & Targets';
 export const OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE = 'Operations Knowledge Vault';
 
 /** Who sees a drawer besides its portal area (when it has one). */
-export type DeskDrawerGate = 'loaner-library' | 'planning' | 'council-goals' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'charity-endorsement' | 'always';
+export type DeskDrawerGate = 'loaner-library' | 'planning' | 'council-goals' | 'affiliations' | 'quarantine' | 'executive-audits' | 'super-admin' | 'charity-endorsement' | 'grand-knight-seat' | 'always';
 
-/** The desks built as blotters: every officer desk. Home, the Member Desk and Platform Management are not. */
-export type DrawerDeskId = Extract<DashboardTabId, 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian'>;
+/**
+ * The desks built as blotters: every officer desk and (Sprint 11 Revision 18.0) the Super Admin Desk. Home and the Member
+ * Desk are not.
+ */
+export type DrawerDeskId = Extract<DashboardTabId, 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'super-admin'>;
 
 export type DeskDrawerId =
   | 'approved-expenses'
@@ -119,7 +124,15 @@ export type DeskDrawerId =
   | 'bulletins'
   | 'meeting-photos'
   | 'oral-histories'
-  | 'media-gallery';
+  | 'media-gallery'
+  | 'motion-requests'
+  | 'feedback'
+  | 'access-requests'
+  | 'global-parameters'
+  | 'global-lookups'
+  | 'feature-flags'
+  | 'credentials-vault'
+  | 'charities-registry';
 
 export interface DeskDrawerSpec {
   desk: DrawerDeskId;
@@ -145,13 +158,20 @@ export interface DeskDrawerSpec {
  * Sprint 8S Revision 7: the two cabinet blocks of a high-density desk's spine. Sprint 8S Revision 10.4: plus the
  * Treasurer's Accounting Configuration block and the Reference Workflows block at the foot of every officer desk.
  */
-export type DeskCabinetId = 'inbound' | 'outbound' | 'accounting' | 'reference';
+export type DeskCabinetId = 'inbound' | 'outbound' | 'accounting' | 'reference' | 'communications' | 'settings';
 export const DESK_CABINET_LABELS: Readonly<Record<DeskCabinetId, string>> = {
   inbound: 'Inbound Operations',
   outbound: 'Outbound Operations',
   accounting: 'Accounting Configuration',
   reference: 'Reference Workflows',
+  communications: 'Communications Cabinet',
+  settings: 'Settings Cabinet',
 };
+/**
+ * Sprint 11 Revision 18.0: the Super Admin Desk's two filing cabinets, top to bottom. A Super Admin drawer without a
+ * cabinet (the Global Charities Registry) stands on its own under them.
+ */
+export const SUPER_ADMIN_CABINETS: readonly DeskCabinetId[] = ['communications', 'settings'];
 // Sprint 11 Revision 16.0: the accounting names, one spelling for the sidebar, the desk drawers and the page titles.
 /** The chart of accounts and the general ledger (was 'Transaction Ledger' and 'Chart of Accounts & GL Setup'). */
 export const GENERAL_LEDGER_TITLE = 'Chart of Accounts & General Ledger';
@@ -204,7 +224,11 @@ export function deskSpineSections(desk: DrawerDeskId, drawers: readonly DeskDraw
   const rest = drawers.filter((d) => !floated.includes(d));
   const working = rest.filter((d) => d.cabinet !== 'accounting' && d.cabinet !== 'reference');
   const sections: DeskSpineSection[] = [{ id: 'priority', label: PRIORITY_FLOAT_LABEL, drawers: floated }];
-  if (CABINET_DESKS.includes(desk)) {
+  if (desk === 'super-admin') {
+    // Sprint 11 Revision 18.0: the Communications and Settings cabinets, then the freestanding drawers.
+    for (const cabinet of SUPER_ADMIN_CABINETS) sections.push({ id: cabinet, label: DESK_CABINET_LABELS[cabinet], drawers: working.filter((d) => d.cabinet === cabinet) });
+    sections.push({ id: 'folders', label: '', drawers: working.filter((d) => !d.cabinet || !SUPER_ADMIN_CABINETS.includes(d.cabinet)) });
+  } else if (CABINET_DESKS.includes(desk)) {
     sections.push(
       { id: 'inbound', label: DESK_CABINET_LABELS.inbound, drawers: working.filter((d) => d.cabinet !== 'outbound') },
       { id: 'outbound', label: DESK_CABINET_LABELS.outbound, drawers: working.filter((d) => d.cabinet === 'outbound') },
@@ -232,9 +256,10 @@ const ELECTION_SUMMARY = 'The ballot, May nominations, the June vote and the Jul
 export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   // ---- Grand Knight Desk (and the Deputy's)
   { desk: 'grand-knight', id: 'approved-expenses', title: 'Approved Expenses', summary: 'Counter-sign and release sheets for payment', area: 'expenses/authorize', rowId: DESK_FOCUS_TARGETS.vouchers.rowId, alerts: true },
+  { desk: 'grand-knight', id: 'motion-requests', title: MOTION_REQUESTS_TITLE, summary: 'Approve or deny the motions members ask to bring to the council', gate: 'grand-knight-seat', rowId: 'drawer-gk-motion-requests', alerts: true },
   { desk: 'grand-knight', id: 'flagged-hours', title: 'Flagged Hours Review', summary: 'Approve or reject time entries held for review', gate: 'quarantine', rowId: DESK_FOCUS_TARGETS.quarantine.rowId, alerts: true },
   { desk: 'grand-knight', id: 'shifts-awaiting-hours', title: 'Shifts Awaiting Hours', summary: 'Volunteers who served but have not logged time', gate: 'executive-audits', rowId: DESK_FOCUS_TARGETS.hours.rowId, alerts: true },
-  // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left this desk; access requests live only on Platform Management.
+  // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left this desk; access requests live only on Super Admin Desk.
   { desk: 'grand-knight', id: 'vetting-board', title: 'Charitable Grant Requests Vetting Board', summary: 'Claim, question and advance charity grant requests', area: 'charities/vetting', rowId: 'module-vetting-board' },
   { desk: 'grand-knight', id: 'charity-endorsements', title: CHARITY_ENDORSEMENT_FOLDER_TITLE, summary: 'Endorse approved charity grants for their check', area: 'charities/vetting', gate: 'charity-endorsement', rowId: 'drawer-gk-charity-endorsements', alerts: true },
   { desk: 'grand-knight', id: 'council-goals', title: COUNCIL_GOALS_FOLDER_TITLE, summary: 'Star Council objectives: members, charitable dollars, hours', gate: 'council-goals', rowId: 'drawer-council-goals' },
@@ -286,6 +311,14 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'historian', id: 'oral-histories', title: 'Oral History Recordings', summary: 'Listen to testimonials and record your own', area: 'history', gate: 'always', rowId: 'drawer-oral-histories' },
   { desk: 'historian', id: 'media-gallery', title: 'Google Drive Media Gallery Sync Board', summary: 'Upload, tag and file photos to the Drive media vault', area: 'gallery', rowId: 'module-media-gallery' },
   { desk: 'historian', id: 'election-workflow', title: COUNCIL_ELECTION_WORKFLOW_TITLE, summary: ELECTION_SUMMARY, area: 'elections', rowId: 'drawer-historian-election-workflow', cabinet: 'reference' },
+  // Sprint 11 Revision 18.0: the Super Admin Desk's left vertical drawers, filed in two cabinets (super-admin-desk.ts).
+  { desk: 'super-admin', id: 'feedback', title: 'Feedback Communication Center', summary: 'Read the notes council Admins send from Administrative Feedback Loops', gate: 'super-admin', rowId: 'super-admin-drawer-feedback', cabinet: 'communications' },
+  { desk: 'super-admin', id: 'access-requests', title: 'Council Access Request Approval Queue', summary: 'Approve or decline the councils asking to join the platform', gate: 'super-admin', rowId: 'super-admin-drawer-access-requests', cabinet: 'communications' },
+  { desk: 'super-admin', id: 'global-parameters', title: 'Global System Parameters', summary: "Each council's dues rate and organization type, and the limits every council shares", gate: 'super-admin', rowId: 'super-admin-drawer-global-parameters', cabinet: 'settings' },
+  { desk: 'super-admin', id: 'global-lookups', title: 'Global Lookup Tables', summary: 'The platform-wide lookup tables: statuses, degrees, member types and more', gate: 'super-admin', rowId: 'super-admin-drawer-global-lookups', cabinet: 'settings' },
+  { desk: 'super-admin', id: 'feature-flags', title: 'System Feature Flag Control Panel', summary: "Switch each active council's optional modules on and off", gate: 'super-admin', rowId: 'super-admin-drawer-feature-flags', cabinet: 'settings' },
+  { desk: 'super-admin', id: 'credentials-vault', title: 'Secure Access Vault', summary: "Your own home council's sealed server connection keys only", gate: 'super-admin', rowId: 'super-admin-drawer-credentials-vault', cabinet: 'settings' },
+  { desk: 'super-admin', id: 'charities-registry', title: 'Global Charities Registry', summary: 'Search, verify and add the charities every council shares', gate: 'super-admin', rowId: 'super-admin-drawer-charities-registry' },
 ];
 
 function clearedBy(u: Actor, spec: DeskDrawerSpec, councilId: number, areas: ReadonlySet<string>): boolean {
@@ -307,6 +340,8 @@ function clearedBy(u: Actor, spec: DeskDrawerSpec, councilId: number, areas: Rea
       return isSuperAdmin(u);
     case 'charity-endorsement':
       return canEndorseCharityRequest(u, councilId);
+    case 'grand-knight-seat':
+      return isSuperAdmin(u) || (u.councilId === councilId && holdsGrandKnightSeat(u));
     default:
       return true;
   }

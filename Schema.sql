@@ -4370,3 +4370,86 @@ GO
 -- =========================================================================
 ALTER TABLE [Council] ADD [parent_organization] VARCHAR(30) NOT NULL DEFAULT 'KofC';
 GO
+-- =========================================================================
+-- Sprint 11 Revision 18.0: MOTION REQUESTS AND THE AI CONFIDENCE CUTOFF (schema version 111)
+--
+-- MotionRequest is a member's request to put a motion before the council (motion-requests.ts). The member writes what
+-- the motion does (summary_what), why (rationale_why) and its cost (financial_impact_usd, 0 when none). The request
+-- waits as 'Pending' until the Grand Knight (or Deputy Grand Knight) decides it. 'Approved' adds a ProposedMotion
+-- (SourceType 'GeneralMember', SourceRecordID = the request id, AllocatedMinutes 5) to the soonest Monthly meeting dated
+-- at least Council.motion_request_lead_days after the request was submitted, and stores that meeting and motion here.
+-- 'Denied' closes it with the decision note; the member may 'Withdrawn' a request still Pending.
+-- MotionRequestMessage is the chat log kept with the request: channel 'MEMBER_GK' is the member and the Grand Knight;
+-- channel 'OFFICER_ADVISORY' is the council's officers advising the Grand Knight, never shown to the member.
+-- Council.motion_request_lead_days (DEFAULT 5): the days before a meeting a request must be submitted to be heard there.
+-- PlatformSettings.global_ai_confidence_cutoff (DEFAULT 60): the lowest confidence percent a Form 1728 suggestion
+-- card needs before the event and activity forms show it.
+-- =========================================================================
+CREATE TABLE [MotionRequest] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[council_id] INTEGER NOT NULL,
+	[proposed_by] INTEGER NOT NULL,
+	[summary_what] VARCHAR(500) NOT NULL,
+	[rationale_why] VARCHAR(4000) NOT NULL,
+	[financial_impact_usd] DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+	[request_status] VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK ([request_status] IN ('Pending', 'Approved', 'Denied', 'Withdrawn')),
+	[submitted_at] DATETIME NOT NULL,
+	[decided_by_member_id] INTEGER NULL,
+	[decided_at] DATETIME NULL,
+	[decision_note] VARCHAR(1000) NULL,
+	[target_meeting_id] INTEGER NULL,
+	[proposed_motion_id] INTEGER NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+CREATE TABLE [MotionRequestMessage] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[motion_request_id] INTEGER NOT NULL,
+	[channel] VARCHAR(20) NOT NULL CHECK ([channel] IN ('MEMBER_GK', 'OFFICER_ADVISORY')),
+	[author_member_id] INTEGER NOT NULL,
+	[posted_at] DATETIME NOT NULL,
+	[message_body] VARCHAR(2000) NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [MotionRequest]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MotionRequest]
+ADD FOREIGN KEY([proposed_by])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MotionRequest]
+ADD FOREIGN KEY([decided_by_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MotionRequest]
+ADD FOREIGN KEY([target_meeting_id])
+REFERENCES [Meeting]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MotionRequest]
+ADD FOREIGN KEY([proposed_motion_id])
+REFERENCES [ProposedMotion]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MotionRequestMessage]
+ADD FOREIGN KEY([motion_request_id])
+REFERENCES [MotionRequest]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MotionRequestMessage]
+ADD FOREIGN KEY([author_member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Council] ADD [motion_request_lead_days] INT NOT NULL DEFAULT 5;
+GO
+ALTER TABLE [PlatformSettings] ADD [global_ai_confidence_cutoff] INT NOT NULL DEFAULT 60;
+GO

@@ -59,7 +59,8 @@ describe('Schema 64', () => {
     const schema = read('Schema.sql');
     for (const [name, type, value] of NEW_COUNCIL_COLUMNS) expect(schema).toContain(`ALTER TABLE [Council] ADD [${name}] ${type} NOT NULL DEFAULT ${value};`);
     for (const [name, value] of NEW_PLATFORM_COLUMNS) expect(schema).toContain(`ALTER TABLE [PlatformSettings] ADD [${name}] INT NOT NULL DEFAULT ${value};`);
-    expect(TABLES.PlatformSettings.columns.map((c) => c.name)).toEqual(['id', 'oral_history_max_seconds', 'diary_text_max_length', 'prayer_intention_max_length', ...NEW_PLATFORM_COLUMNS.map(([n]) => n)]);
+    // Sprint 11 Revision 18.0 (schema 111) appends global_ai_confidence_cutoff.
+    expect(TABLES.PlatformSettings.columns.map((c) => c.name)).toEqual(['id', 'oral_history_max_seconds', 'diary_text_max_length', 'prayer_intention_max_length', ...NEW_PLATFORM_COLUMNS.map(([n]) => n), 'global_ai_confidence_cutoff']);
     expect(TABLES.Council.columns.map((c) => c.name)).toEqual(expect.arrayContaining(NEW_COUNCIL_COLUMNS.map(([n]) => n)));
     expect(read('Seed.sql')).toMatch(/INSERT INTO \[PlatformSettings\][^;]*VALUES \(1, 900, 4000, 500, 5, 8, 180\);/);
     expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = (6[4-9]|[7-9]\d|\d{3});/);

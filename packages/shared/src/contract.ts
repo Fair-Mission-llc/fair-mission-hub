@@ -122,6 +122,7 @@ import type { CouncilAccount, CouncilAccountInput, SplitSisterCouncil } from './
 import type { FileRepositorySettings } from './file-repository';
 import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
+import type { MotionRequestChannel, MotionRequestDecision, MotionRequestDetail, MotionRequestInput, MotionRequestPreview, MotionRequestThread } from './motion-requests';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter } from './member-lifecycle';
 import type { MeritThresholds } from './merit-tiers';
 import type { QuarantineDeskEntry, QuarantinedHours, ReturnedTimeEntry } from './volunteer-quarantine';
@@ -3733,6 +3734,38 @@ export interface DataService {
      * an invitation, INVALID_INPUT for an expired invitation.
      */
     acceptInvitation(actorId: number, alertId: number): Promise<{ roles: string[] }>;
+  };
+
+  /**
+   * Sprint 11 Revision 18.0: Motion Requests (motion-requests.ts, schema 111). A member asks to put a motion before the
+   * council; the Grand Knight's seat approves (filing a 5-minute ProposedMotion on the soonest Monthly meeting at least
+   * Council.motion_request_lead_days after submission) or denies it. Each request keeps a chat log in two channels:
+   * MEMBER_GK and OFFICER_ADVISORY. MEMBER_NOT_FOUND for an unknown actor.
+   */
+  motionRequests: {
+    /** Where a request the actor submits today would be heard: the council's lead days, the earliest date and the meeting. */
+    preview(actorId: number): Promise<MotionRequestPreview>;
+    /** The actor's own requests, newest first. */
+    listMine(actorId: number): Promise<MotionRequestDetail[]>;
+    /**
+     * Every request of `councilId`, Pending first, then newest first. The Grand Knight's seat, the council's officers and
+     * Super Admins (COUNCIL_ACCESS_DENIED otherwise).
+     */
+    listForCouncil(actorId: number, councilId: number): Promise<MotionRequestDetail[]>;
+    /** Files a Pending request for the actor's home council (INVALID_INPUT for a blank or too-long field). */
+    submit(actorId: number, input: MotionRequestInput): Promise<MotionRequestDetail>;
+    /** The proposer withdraws a Pending request (REQUEST_STATUS_CONFLICT once decided). */
+    withdraw(actorId: number, requestId: number): Promise<MotionRequestDetail>;
+    /**
+     * The Grand Knight's seat decides a Pending request. 'Approved' files the ProposedMotion (NO_ELIGIBLE_MEETING when the
+     * council has no Monthly meeting late enough; nothing is written). 'Denied' needs a note. GRAND_KNIGHT_REQUIRED for
+     * anyone else, REQUEST_STATUS_CONFLICT once decided.
+     */
+    decide(actorId: number, requestId: number, decision: 'Approved' | 'Denied', note?: string | null): Promise<MotionRequestDecision>;
+    /** One channel of a request's chat log, oldest first (COUNCIL_ACCESS_DENIED for a channel the actor may not read). */
+    listMessages(actorId: number, requestId: number, channel: MotionRequestChannel): Promise<MotionRequestThread>;
+    /** Posts one message to a channel and resolves to the channel. */
+    postMessage(actorId: number, requestId: number, channel: MotionRequestChannel, body: string): Promise<MotionRequestThread>;
   };
 
   elections: {

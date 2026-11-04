@@ -23,7 +23,7 @@
 - [7. Troubleshooting reference](#7-troubleshooting-reference)
 - [8. Council Wide Settings and platform settings](#8-council-wide-settings-and-platform-settings)
 - [9. Access requests, impersonation and remote help](#9-access-requests-impersonation-and-remote-help)
-- [10. Feedback loops and Platform Management](#10-feedback-loops-and-platform-management)
+- [10. Feedback loops and the Super Admin Desk](#10-feedback-loops-and-the-super-admin-desk)
 - [11. Run a room pilot on the hub laptop](#11-run-a-room-pilot-on-the-hub-laptop)
 - [11.3 Build the desktop trial executable](#113-build-the-desktop-trial-executable)
 - [12. Reset the database to the seed data](#12-reset-the-database-to-the-seed-data)
@@ -94,7 +94,7 @@ The navy header shows your own council, your name, your member type and your off
 - A Super Admin has full Admin access on the **Admin Desk** and every one of its drawers. In **Council Wide Settings**, choose the council in the **Council** list. The **Secure Access Vault** drawer shows only your own home council.
 - Navigation and headings show plain words only, with no icons, emojis or brackets: sidebar links, the two Finances accordions (**FINANCIAL REPORTS** and **FINANCIAL ACTIONS**), the **Active Desks** folder tabs, desk drawer names, page titles, panel headings, notices, buttons and tabs. Data markers keep their icons: the calendar day markers (the **⚑** needs-volunteers flag, holidays, feast days, birthdays and the **🟥 HOLY DAY OF OBLIGATION** badge) and the member badges (**🆕 New Member** and **📜 Charter Member**, both shown on the roster rows).
 - The Faith In Action link **Standalone Activities** is now **Member Activities**. The page title reads **Member Activities**, and its first tab reads **Current Activities**.
-- Every Super Admin sign-in has the **Platform Management** tab on the **Active Desks** row, beside the council desks.
+- Every Super Admin sign-in has the **Super Admin Desk** tab on the **Active Desks** row, beside the council desks. The **Admin Desk** link stays in the System Settings pillar.
 - Sidebar links show plain words only, with no icons and no brackets. A long name ends in "…".
 - **Activities** and **Meeting Center** list their rows in full-width tables. Each table has a search box and shows 15 rows per page.
 
@@ -230,7 +230,7 @@ A council can use its own Drive private key instead of the server key. A council
 
 **Goal:** Read the notes and bug reports that council Admins send.
 
-**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. Super Admins also read the notes on the **Platform Management** tab (10.3).
+**Start point:** Sidebar → System Settings → **Administrative Feedback Loops** → **Feedback inbox**. Super Admins also read the notes on the **Super Admin Desk**, in the **Communications Cabinet** (10.3).
 
 **Steps:**
 1. Scroll below **Send a Note to the Platform Owner**.
@@ -577,6 +577,7 @@ The card counts the rows that are on, for example *"14 of 17 deployed"*. The mat
 | **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Collect** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
 | **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | The **Recorder Desk** counts down to the due date: the meeting's last day plus this number. Minutes not published by then show as overdue. |
 | **Days of notice before a special election** | 60 days | 1 to 365 | **Not used yet.** A mid-year nomination stays open for 14 days. |
+| **Days before a meeting a motion request must be in** | 5 days | 1 to 60 | An approved motion request goes on the first Monthly meeting at least this many days after the member submits it. |
 
 **Reminder Cadences** card:
 
@@ -656,6 +657,7 @@ The **Platform Settings** card had the name **Platform Limits** in earlier versi
 | **Reminder Cadences** | **Days before a scheduled meeting that invitations appear** | 5 days | 1 to 60 | When the invitations of a cadence meeting reach the members (section 2 of the Executive Governance Manual). Meetings that are already built keep their release dates. |
 | **Sign-in & Records** | **Hours a portal sign-in lasts** | 8 hours | 1 to 168 | When the portal server ends a web sign-in. The member then signs in again. |
 | **Sign-in & Records** | **Days to keep audit records** | 180 days | 30 to 3,650 | **Not used yet.** The portal keeps every record today. |
+| **Suggestion Engines** | **Form 1728 suggestion confidence cutoff** | 60 percent | 0 to 100 | A Form 1728 suggestion card shows only when the engine is at least this sure. The popup can show fewer than three cards, or none. |
 | **Recording & Text Limits** | **Oral history recording time limit** | 900 seconds | 60 to 3,600 | The oral history recorder |
 | **Recording & Text Limits** | **Diary entry character limit** | 4,000 characters | 100 to 4,000 | The spiritual diary and the testimonial note |
 | **Recording & Text Limits** | **Prayer intention character limit** | 500 characters | 50 to 500 | The Council Prayer Intentions List |
@@ -824,7 +826,7 @@ A council that is not on the platform can ask for access from the sign-in page. 
 
 The form asks for four items: the council name, a contact email, the city and the state. Anyone can send the form. The person does not need an account.
 
-The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests on the **Platform Management** tab, in the **Council Access Request Approval Queue** folder. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
+The platform saves each request as **Pending**. The platform also emails a notice to `council15295@stmarys.org`. Super Admins read the requests on the **Super Admin Desk**, in the **Council Access Request Approval Queue** drawer of the **Communications Cabinet**. Since Sprint 10, the **Grand Knight Desk** has no **Inbound Council Mail Center** drawer.
 
 Approving a request marks the request as reviewed. Approving does not create the council. A Super Admin adds the council on the **Councils** page.
 
@@ -837,11 +839,11 @@ Approving a request marks the request as reviewed. Approving does not create the
 > The web portal keeps requests on the portal server. A server restart clears them until the production database is connected. A request sent from the phone stays on that phone.
 
 ### 9.2 Approve a council access request
-> **Who can do this:** Super Admins (every Super Admin has the **Platform Management** tab). Other members do not see the **Inbound Council Mail Center**.
+> **Who can do this:** Super Admins (every Super Admin has the **Super Admin Desk** tab). Other members do not see the **Inbound Council Mail Center**.
 
 **Goal:** Mark a council's access request as reviewed.
 
-**Start point:** **Active Desks** row → **Platform Management** → **Council Access Request Approval Queue**.
+**Start point:** **Active Desks** row → **Super Admin Desk** → **Communications Cabinet** → **Council Access Request Approval Queue**.
 
 **Steps:**
 1. Read the council name, the city, the state and the contact email of the request.
@@ -1004,7 +1006,7 @@ An officer or Admin who needs help can share a copy of the screen with the Super
 
 ---
 
-## 10. Feedback loops and Platform Management
+## 10. Feedback loops and the Super Admin Desk
 
 ### 10.1 Concept: the Administrative Feedback Loops
 Members no longer send feedback from the Online Help Center. A member brings a problem to the council's Admin through the Communications Hub.
@@ -1030,42 +1032,38 @@ Only sessions with Admin clearance or higher see the page. A member, an officer 
 | --- | --- | --- |
 | The page is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin to send the note. |
 
-### 10.3 Use Platform Management
-> **Who can do this:** Super Admins. The tab shows on the **Active Desks** row for every Super Admin sign-in, beside the council desks. Council Admins do not see the tab.
+### 10.3 Use the Super Admin Desk
+> **Who can do this:** Super Admins. The **Super Admin Desk** tab shows on the **Active Desks** row for every Super Admin sign-in, beside the council desks. Council Admins do not see the tab. A Super Admin also keeps the **Admin Desk** link in the System Settings pillar.
 
-**Goal:** Read Admin notes, approve council licenses and switch council modules from one desk.
+**Goal:** Read Admin notes, approve council licenses, change platform settings and switch council modules from one desk.
 
-**Start point:** **Active Desks** row → **Platform Management**.
+**Start point:** **Active Desks** row → **Super Admin Desk**.
 
-The desk has three folders across the top:
+The desk has a filing spine on the left. Each drawer on the spine opens on the stage to the right. The spine holds two cabinets and one freestanding drawer:
 
-| Folder | What it does |
-| --- | --- |
-| **Feedback Communication Center** | Shows the notes that council Admins send, newest first. |
-| **Council Access Request Approval Queue** | Shows the councils that ask to join the platform. Each pending request has an **Approve** button. |
-| **System Feature Flag Control Panel** | Shows each council's modules. A checkbox switches a module on or off at once. |
-
-Under the folders, the desk has four drawers. Select a drawer's title to open or close it:
-
-| Drawer | What it holds |
-| --- | --- |
-| **Global System Parameters** | Each council's base dues rate and organization type, and the platform settings every council shares. |
-| **Global Lookup Tables** | The platform-wide lookup tables, one tab for each table. |
-| **Global Charities Registry** | The registry every council shares: search, verify and add charities. |
-| **Secure Access Vault** | The sealed connection keys of your own home council only. The drawer never opens another council's keys. |
+| Cabinet | Drawer | What it holds |
+| --- | --- | --- |
+| **Communications Cabinet** | **Feedback Communication Center** | The notes that council Admins send, newest first. |
+| **Communications Cabinet** | **Council Access Request Approval Queue** | The councils that ask to join the platform. Each pending request has an **Approve** button. |
+| **Settings Cabinet** | **Global System Parameters** | Each council's base dues rate and organization type, and the platform settings every council shares. |
+| **Settings Cabinet** | **Global Lookup Tables** | The platform-wide lookup tables, one tab for each table. |
+| **Settings Cabinet** | **System Feature Flag Control Panel** | Each council's modules. A checkbox switches a module on or off at once. |
+| **Settings Cabinet** | **Secure Access Vault** | The sealed server connection keys of your own home council only. The drawer never opens another council's keys. |
+| (freestanding) | **Global Charities Registry** | The registry every council shares: search, verify and add charities. |
 
 **Steps:**
-1. Select a folder.
-2. Read the notes, or select **Approve** on a request, or select a module checkbox.
-3. To change a platform setting, a lookup table, a registry entry or your council's keys, open its drawer.
+1. Select a drawer on the filing spine.
+2. Do the work on the stage: read the notes, select **Approve**, change a setting or select a module checkbox.
+3. Select **Back to Desk Blotter** to close the drawer.
 
-**Expected result:** The folder opens under the folder row. The browser remembers the last folder you opened. A drawer shows its page when you open it.
+**Expected result:** The drawer opens on the stage beside the spine. The desk has no row of folders across the top.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The **Platform Management** tab is missing. | Your account is not a Super Admin, or you view the portal as another member. | Sign in with a Super Admin account. Stop the view-as session. |
+| The **Super Admin Desk** tab is missing. | Your account is not a Super Admin, or you view the portal as another member. | Sign in with a Super Admin account. Stop the view-as session. |
 | A module switch has no effect on a council. | The council's members must reload the portal. | Ask the members to reload the page. |
+| The **Application Advisory Panel** link is missing. | Since Sprint 11 Revision 18.0, only the platform owner's own sign-in and members who accepted an invitation see the panel. | Sign in with the platform owner account, or accept an invitation. |
 
 ---
 
@@ -1662,7 +1660,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 7. Troubleshooting reference
 - 8. Council Wide Settings and platform settings
 - 9. Access requests, impersonation and remote help
-- 10. Feedback loops and Platform Management
+- 10. Feedback loops and the Super Admin Desk
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys

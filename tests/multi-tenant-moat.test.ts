@@ -171,10 +171,12 @@ describe('5. vacant seats and the legal footer', () => {
 });
 
 describe('6. the Application Advisory Panel', () => {
-  it('opens to Super Admins and panelists of any council', () => {
+  it('opens to the platform owner and panelists of any council', () => {
     expect(ADVISORY_PANEL_TITLE).toBe('Application Advisory Panel');
     expect(ADVISORY_PANEL_VIEWS.map((v) => v.label)).toEqual(['Development Roadmap', 'Future Feature Releases', 'Panel Meeting Dates', 'Consultation Feedback']);
-    expect(canOpenAdvisoryPanel(viewer('Super Admin'))).toBe(true);
+    // Sprint 11 Revision 18.0: a Super Admin needs the platform owner's sign-in name.
+    expect(canOpenAdvisoryPanel(viewer('Super Admin'))).toBe(false);
+    expect(canOpenAdvisoryPanel({ ...viewer('Super Admin'), username: 'testsuperadmin@kofc.org' })).toBe(true);
     expect(canOpenAdvisoryPanel(viewer('Member', [ADVISORY_PANELIST_ROLE], 2))).toBe(true);
     expect(canOpenAdvisoryPanel(viewer('Admin'))).toBe(false);
     expect(portalAreas(viewer('Member', [ADVISORY_PANELIST_ROLE]))).toContain('advisory-panel');

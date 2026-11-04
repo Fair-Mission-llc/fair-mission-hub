@@ -64,6 +64,10 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
     leader: 'Lists the Active members of your council and its sister councils with their phone, email and degree. A Super Admin sees every council at once.',
   },
   'faith-center': { member: "Shows today's feast day, the daily Bible verse and the Council Prayer Intentions List." },
+  'motion-requests': {
+    member: 'Asks the Grand Knight to put a motion before the council. Shows your requests, where each stands and your messages with the Grand Knight.',
+    leader: 'Asks the Grand Knight to put a motion before the council, and lists every request of the council. The Grand Knight approves or denies them; officers advise in the officer messages.',
+  },
   'finance/ledger': { member: 'Shows the chart of accounts and every posting to the general ledger.' },
   'finance/balance-sheet': { member: "Shows the council's assets against its liabilities and equity." },
   'finance/dashboard': { member: 'Shows account balances, transfers between accounts and the bank statement checks.' },

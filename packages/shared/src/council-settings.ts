@@ -32,6 +32,7 @@
 // behind the (i) button beside the field.
 // =========================================================================
 import { EXPENSE_SUBMISSION_GRACE_DAYS } from './expenses';
+import { FORM_1728_DEFAULT_CONFIDENCE_CUTOFF } from './form-1728';
 import { DIARY_TEXT_MAX_LENGTH, ORAL_HISTORY_MAX_SECONDS } from './history';
 import { CADENCE_INVITE_LEAD_DAYS } from './meetings';
 import { HOURS_REMINDER_FIRST_DAY, HOURS_REMINDER_REPEAT_DAYS } from './notifications';
@@ -63,6 +64,10 @@ export const DEFAULT_SHIFT_SIGNUP_LOCK_HOURS = 2.0;
 export const DEFAULT_OFFICER_SIGNATURE_REMINDER_DAYS = 3;
 export const DEFAULT_MEETING_MINUTES_DUE_DAYS = 7;
 export const DEFAULT_SPECIAL_ELECTION_NOTICE_DAYS = 60;
+/** Sprint 11 Revision 18.0: days before a meeting a motion request must be submitted to be heard there (schema 111). */
+export const DEFAULT_MOTION_REQUEST_LEAD_DAYS = 5;
+/** Sprint 11 Revision 18.0: the lowest confidence percent a Form 1728 suggestion card needs (schema 111). */
+export const DEFAULT_GLOBAL_AI_CONFIDENCE_CUTOFF = FORM_1728_DEFAULT_CONFIDENCE_CUTOFF;
 
 /** The Council Wide Settings columns: the four from Sprint 7C, then the ten timing settings from Sprint 7E. */
 export const COUNCIL_WIDE_SETTING_NAMES = [
@@ -80,6 +85,7 @@ export const COUNCIL_WIDE_SETTING_NAMES = [
   'officer_signature_reminder_days',
   'meeting_minutes_due_days',
   'special_election_notice_days',
+  'motion_request_lead_days',
 ] as const;
 export type CouncilWideSettingName = (typeof COUNCIL_WIDE_SETTING_NAMES)[number];
 export type CouncilWideSettings = Record<CouncilWideSettingName, number>;
@@ -99,9 +105,10 @@ export const COUNCIL_WIDE_SETTING_DEFAULTS: CouncilWideSettings = {
   officer_signature_reminder_days: DEFAULT_OFFICER_SIGNATURE_REMINDER_DAYS,
   meeting_minutes_due_days: DEFAULT_MEETING_MINUTES_DUE_DAYS,
   special_election_notice_days: DEFAULT_SPECIAL_ELECTION_NOTICE_DAYS,
+  motion_request_lead_days: DEFAULT_MOTION_REQUEST_LEAD_DAYS,
 };
 
-export type SettingGroupId = 'financial' | 'operations' | 'reminders' | 'security' | 'limits';
+export type SettingGroupId = 'financial' | 'operations' | 'reminders' | 'security' | 'limits' | 'suggestions';
 
 export interface SettingGroup {
   id: SettingGroupId;
@@ -119,11 +126,12 @@ export const SETTING_GROUPS: Record<SettingGroupId, SettingGroup> = {
   reminders: { id: 'reminders', title: 'Reminder Cadences', description: 'When the portal sends reminders and releases invitations.' },
   security: { id: 'security', title: 'Sign-in & Records', description: 'How long a portal sign-in lasts and how long records are kept.' },
   limits: { id: 'limits', title: 'Recording & Text Limits', description: 'The longest recording and the longest texts a member may save.' },
+  suggestions: { id: 'suggestions', title: 'Suggestion Engines', description: 'How sure the built-in suggestion engines must be before a form shows a suggestion.' },
 };
 
 /** The groups each page shows, in order. */
 export const COUNCIL_SETTING_GROUP_ORDER: readonly SettingGroupId[] = ['financial', 'operations', 'reminders'];
-export const PLATFORM_SETTING_GROUP_ORDER: readonly SettingGroupId[] = ['reminders', 'security', 'limits'];
+export const PLATFORM_SETTING_GROUP_ORDER: readonly SettingGroupId[] = ['reminders', 'security', 'limits', 'suggestions'];
 
 /** Shown for a setting that no feature reads yet (`inUse: false`). */
 export const SETTING_NOT_IN_USE_TEXT = 'Saved for a future feature. Nothing in the portal uses this number yet.';
@@ -322,6 +330,19 @@ export const COUNCIL_WIDE_SETTING_RULES: Record<CouncilWideSettingName, SettingR
       'Meant for a future notice period on special elections. Today a mid-year nomination stays open for 14 days, and this number does not ' +
       'change that. This number changes nothing yet.',
   },
+  motion_request_lead_days: {
+    label: 'Days before a meeting a motion request must be in',
+    hint: 'A motion request is heard at the first Monthly meeting at least this many days after the member submits it.',
+    min: 1,
+    max: 60,
+    unit: 'days',
+    group: 'operations',
+    inUse: true,
+    help:
+      'Used by Motion Requests. When the Grand Knight approves a request, the portal puts it on the agenda of the first Monthly meeting ' +
+      'dated at least this many days after the member submitted it, with a 5-minute slot. A request that comes in later waits for the ' +
+      'next Monthly meeting. The member sees the meeting date before they submit.',
+  },
 };
 
 /** The council's stored settings, with the column defaults for missing values. */
@@ -406,6 +427,7 @@ export const PLATFORM_SETTING_NAMES = [
   'cadence_invitation_horizon_days',
   'user_session_expiry_hours',
   'audit_log_retention_days',
+  'global_ai_confidence_cutoff',
 ] as const;
 export type PlatformSettingName = (typeof PLATFORM_SETTING_NAMES)[number];
 
@@ -416,6 +438,7 @@ export const PLATFORM_SETTING_DEFAULTS: Omit<PlatformSettings, 'id'> = {
   cadence_invitation_horizon_days: CADENCE_INVITE_LEAD_DAYS,
   user_session_expiry_hours: DEFAULT_USER_SESSION_EXPIRY_HOURS,
   audit_log_retention_days: DEFAULT_AUDIT_LOG_RETENTION_DAYS,
+  global_ai_confidence_cutoff: DEFAULT_GLOBAL_AI_CONFIDENCE_CUTOFF,
 };
 
 /** Ranges; the character limits stop at their columns' sizes, so a saved value always fits. */
@@ -493,6 +516,19 @@ export const PLATFORM_SETTING_RULES: Record<PlatformSettingName, SettingRule> = 
     help:
       'Meant for a future clean-up job that clears old audit records. No such job runs today, so this number changes nothing yet and every ' +
       'record is kept. Applies to every council.',
+  },
+  global_ai_confidence_cutoff: {
+    label: 'Form 1728 suggestion confidence cutoff',
+    hint: 'A Form 1728 suggestion card shows only when the engine is at least this sure of it.',
+    min: 0,
+    max: 100,
+    unit: 'percent',
+    group: 'suggestions',
+    inUse: true,
+    help:
+      'Used by the Form 1728 suggestion popup on the event and activity forms. The engine gives each line a confidence percent from the ' +
+      'words in the title and description. A line below this percent is left out, so the popup may show fewer than three cards, or none. ' +
+      'The officer can still search every line. Applies to every council.',
   },
 };
 

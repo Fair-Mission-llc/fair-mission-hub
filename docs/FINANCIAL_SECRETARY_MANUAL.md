@@ -887,7 +887,7 @@ A tile shows only to a reader who may open its module. An Admin who does not hol
 
 **Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **Back to Desk Blotter** bar shows under the tab row. Select the bar to go back to your desk.
 
-**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Council access requests are on the **Platform Management** only (section 14.11 of the Executive Governance Manual). A saved `/dashboard#oversight` address opens your first tab.
+**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Council access requests are on the **Super Admin Desk** only (section 14.11 of the Executive Governance Manual). A saved `/dashboard#oversight` address opens your first tab.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -1273,7 +1273,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 7. Troubleshooting reference
 - 8. Council Wide Settings and platform settings
 - 9. Access requests, impersonation and remote help
-- 10. Feedback loops and Platform Management
+- 10. Feedback loops and the Super Admin Desk
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys

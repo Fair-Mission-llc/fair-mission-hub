@@ -783,6 +783,36 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
+import {
+  assertMayDecideMotionRequests,
+  assertMayReadCouncilMotionRequests,
+  assertMaySubmitMotionRequest,
+  assertMayWithdrawMotionRequest,
+  assertMotionChannelAccess,
+  assertMotionRequestPending,
+  buildMotionRequestDetails,
+  buildMotionRequestThread,
+  cleanDecisionNote,
+  cleanMotionChannel,
+  cleanMotionDecision,
+  cleanMotionMessage,
+  cleanMotionRequestInput,
+  motionRequestEarliestDate,
+  motionRequestLeadDays,
+  motionRequestMeeting,
+  motionRequestMotionText,
+  motionRequestNotFound,
+  MOTION_REQUEST_SLOT_MINUTES,
+  nextMotionRequestMeeting,
+  noMotionRequestMeeting,
+  sortMotionRequestsForDecision,
+  type MotionRequest,
+  type MotionRequestChannel,
+  type MotionRequestDetail,
+  type MotionRequestMeeting,
+  type MotionRequestMessage,
+  type MotionRequestThread,
+} from '@kofc/shared';
 import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import {
   assertMayAssignRegional,
@@ -5662,11 +5692,181 @@ export class MemoryDataService implements DataService {
 
   // ---- officer elections (Sprint 5U) ----------------------------------------
 
+  // Sprint 11 Revision 18.0: Motion Requests (motion-requests.ts, schema 111).
+  private motionRequestRow(s: MemoryStore, requestId: number): MotionRequest {
+    const row = s.rows('MotionRequest').find((r) => r.id === requestId);
+    if (!row) throw motionRequestNotFound(requestId);
+    return { ...row } as unknown as MotionRequest;
+  }
+
+  private motionRequestDetails(s: MemoryStore, actor: MemberWriteActor, keep: (r: MotionRequest) => boolean): MotionRequestDetail[] {
+    return buildMotionRequestDetails(
+      actor,
+      (s.rows('MotionRequest') as unknown as MotionRequest[]).filter(keep),
+      s.rows('Member') as unknown as Member[],
+      s.rows('Meeting') as unknown as Meeting[],
+      s.rows('MotionRequestMessage') as unknown as MotionRequestMessage[],
+    );
+  }
+
+  private motionRequestDetail(s: MemoryStore, actor: MemberWriteActor, requestId: number): MotionRequestDetail {
+    return this.motionRequestDetails(s, actor, (r) => r.id === requestId)[0]!;
+  }
+
+  /** The council's Monthly meetings (the meeting type named MONTHLY_MEETING_TYPE_NAME). */
+  private monthlyMeetings(s: MemoryStore, councilId: number): Meeting[] {
+    const monthlyTypeIds = new Set(
+      s
+        .rows('CouncilMeetingType')
+        .filter((t) => t.CouncilID === councilId && isMonthlyCouncilMeetingType(String(t.TypeName)))
+        .map((t) => t.id),
+    );
+    return s.rows('Meeting').filter((m) => m.CouncilID === councilId && monthlyTypeIds.has(m.MeetingTypeID)) as unknown as Meeting[];
+  }
+
+  private motionRequestThread(s: MemoryStore, actor: MemberWriteActor, request: MotionRequest, channel: MotionRequestChannel): MotionRequestThread {
+    return buildMotionRequestThread(
+      actor,
+      request,
+      channel,
+      s.rows('MotionRequestMessage') as unknown as MotionRequestMessage[],
+      s.rows('Member') as unknown as Member[],
+    );
+  }
+
+  motionRequests: DataService['motionRequests'] = {
+    preview: async (actorId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const council = s.rows('Council').find((c) => c.id === actor.councilId) as { motion_request_lead_days?: number | null } | undefined;
+      const leadDays = motionRequestLeadDays(council);
+      const today = toIsoDate(this.now());
+      const earliestDate = motionRequestEarliestDate(today, leadDays, today);
+      const meeting = nextMotionRequestMeeting(this.monthlyMeetings(s, actor.councilId), earliestDate);
+      return { leadDays, earliestDate, meeting: meeting ? motionRequestMeeting(meeting) : null };
+    },
+
+    listMine: async (actorId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      return this.motionRequestDetails(s, actor, (r) => r.proposed_by === actorId);
+    },
+
+    listForCouncil: async (actorId, councilId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayReadCouncilMotionRequests(actor, councilId);
+      return sortMotionRequestsForDecision(this.motionRequestDetails(s, actor, (r) => r.council_id === councilId));
+    },
+
+    submit: async (actorId, input) => {
+      const clean = cleanMotionRequestInput(input);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMaySubmitMotionRequest(actor);
+      const row = s.insert('MotionRequest', {
+        council_id: actor.councilId,
+        proposed_by: actorId,
+        ...clean,
+        request_status: 'Pending',
+        submitted_at: toTimestamp(this.now()),
+      });
+      return this.motionRequestDetail(s, actor, row.id as number);
+    },
+
+    withdraw: async (actorId, requestId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      s.transaction(() => {
+        const request = this.motionRequestRow(s, requestId);
+        assertMayWithdrawMotionRequest(actor, request);
+        const row = s.rows('MotionRequest').find((r) => r.id === requestId)!;
+        row.request_status = 'Withdrawn';
+        row.decided_at = toTimestamp(this.now());
+      });
+      return this.motionRequestDetail(s, actor, requestId);
+    },
+
+    decide: async (actorId, requestId, decision, note) => {
+      const verdict = cleanMotionDecision(decision);
+      const cleanNote = cleanDecisionNote(note, verdict);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const result = s.transaction((): { motion: ProposedMotion | null; meeting: MotionRequestMeeting | null } => {
+        const request = this.motionRequestRow(s, requestId);
+        assertMayDecideMotionRequests(actor, request.council_id, `decide motion request ${requestId}`);
+        assertMotionRequestPending(request);
+        const row = s.rows('MotionRequest').find((r) => r.id === requestId)!;
+        const stamp = toTimestamp(this.now());
+        if (verdict === 'Denied') {
+          Object.assign(row, { request_status: 'Denied', decided_by_member_id: actorId, decided_at: stamp, decision_note: cleanNote });
+          return { motion: null, meeting: null };
+        }
+        const council = s.rows('Council').find((c) => c.id === request.council_id) as { motion_request_lead_days?: number | null } | undefined;
+        const earliest = motionRequestEarliestDate(request.submitted_at, motionRequestLeadDays(council), toIsoDate(this.now()));
+        const meeting = nextMotionRequestMeeting(this.monthlyMeetings(s, request.council_id), earliest);
+        if (!meeting) throw noMotionRequestMeeting(requestId, request.council_id, earliest);
+        const motion = s.insert('ProposedMotion', {
+          CouncilID: request.council_id,
+          TargetMeetingID: meeting.id,
+          SourceType: 'GeneralMember',
+          SourceRecordID: requestId,
+          MotionText: motionRequestMotionText(request),
+          PresenterMemberID: request.proposed_by,
+          AllocatedMinutes: MOTION_REQUEST_SLOT_MINUTES,
+          VoteResult: 'Pending',
+        });
+        Object.assign(row, {
+          request_status: 'Approved',
+          decided_by_member_id: actorId,
+          decided_at: stamp,
+          decision_note: cleanNote,
+          target_meeting_id: meeting.id,
+          proposed_motion_id: motion.id,
+        });
+        return { motion: { ...motion } as unknown as ProposedMotion, meeting: motionRequestMeeting(meeting) };
+      });
+      return { request: this.motionRequestDetail(s, actor, requestId), ...result };
+    },
+
+    listMessages: async (actorId, requestId, channel) => {
+      const which = cleanMotionChannel(channel);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const request = this.motionRequestRow(s, requestId);
+      assertMotionChannelAccess(actor, request, which, 'read');
+      return this.motionRequestThread(s, actor, request, which);
+    },
+
+    postMessage: async (actorId, requestId, channel, body) => {
+      const which = cleanMotionChannel(channel);
+      const text = cleanMotionMessage(body);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const request = this.motionRequestRow(s, requestId);
+      assertMotionChannelAccess(actor, request, which, 'post');
+      s.insert('MotionRequestMessage', {
+        motion_request_id: requestId,
+        channel: which,
+        author_member_id: actorId,
+        posted_at: toTimestamp(this.now()),
+        message_body: text,
+      });
+      return this.motionRequestThread(s, actor, request, which);
+    },
+  };
+
   // Sprint 10 Revision 3.1: the Application Advisory Panel (advisory-panel.ts).
+  /** Sprint 11 Revision 18.0: the actor's sign-in name, for the platform-owner checks of the Advisory Panel. */
+  private actorUsername(s: MemoryStore, actorId: number): string | null {
+    const row = this.requireMember(s, actorId);
+    return (s.rows('Credentials').find((c) => c.id === row.CredentialID)?.Username as string | undefined) ?? null;
+  }
+
   advisory: DataService['advisory'] = {
     listMeetings: async (actorId) => {
       const s = await this.ready();
-      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId));
+      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
       return (s.rows('AdvisoryPanelMeetings').map((r) => ({ ...r })) as unknown as AdvisoryPanelMeeting[]).sort(
         (a, b) => a.meeting_date.localeCompare(b.meeting_date) || a.id - b.id,
       );
@@ -5674,7 +5874,7 @@ export class MemoryDataService implements DataService {
     saveMeeting: async (actorId, input) => {
       const clean = cleanAdvisoryMeeting(input);
       const s = await this.ready();
-      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
       if (input.id != null) {
         const row = s.rows('AdvisoryPanelMeetings').find((r) => r.id === input.id);
         if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No advisory panel meeting ${input.id}.`, { id: input.id });
@@ -5685,12 +5885,12 @@ export class MemoryDataService implements DataService {
     },
     removeMeeting: async (actorId, id) => {
       const s = await this.ready();
-      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
       if (s.remove('AdvisoryPanelMeetings', (r) => r.id === id) === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `No advisory panel meeting ${id}.`, { id });
     },
     listFeedback: async (actorId) => {
       const s = await this.ready();
-      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId));
+      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
       return (s.rows('AdvisoryFeedback').map((r) => this.advisoryFeedbackDetail(s, r as unknown as AdvisoryFeedback)) as AdvisoryFeedbackDetail[]).sort(
         (a, b) => b.submitted_at.localeCompare(a.submitted_at) || b.id - a.id,
       );
@@ -5699,17 +5899,17 @@ export class MemoryDataService implements DataService {
       const clean = cleanAdvisoryFeedback(input);
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      assertMayReadAdvisoryPanel(actor);
+      assertMayReadAdvisoryPanel(actor, this.actorUsername(s, actorId));
       return { ...s.insert('AdvisoryFeedback', { member_id: actorId, council_id: actor.councilId, ...clean, submitted_at: toTimestamp(this.now()) }) } as unknown as AdvisoryFeedback;
     },
     listPanelists: async (actorId) => {
       const s = await this.ready();
-      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
       return this.advisoryPanelists(s);
     },
     setPanelist: async (actorId, memberId, designated) => {
       const s = await this.ready();
-      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
       this.requireMember(s, memberId);
       const role = s.rows('Role').find((r) => r.Role === ADVISORY_PANELIST_ROLE);
       if (!role) throw new BusinessRuleError('INVALID_INPUT', `The ${ADVISORY_PANELIST_ROLE} role is missing from the Role table.`, {});

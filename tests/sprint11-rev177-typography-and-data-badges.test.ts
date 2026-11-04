@@ -11,7 +11,7 @@ import {
   FINANCIAL_REPORTS_ACCORDION_TITLE,
   HOLY_DAY_BADGE,
   NEW_MEMBER_BADGE_LABEL,
-  SUPER_ADMIN_DESK_FOLDERS,
+  SUPER_ADMIN_DESK_CABINETS,
   SUPER_ADMIN_HEADER_LINK_LABEL,
   withNewMemberBadge,
 } from '@kofc/shared';
@@ -33,11 +33,11 @@ describe('1. navigation is text only', () => {
     labels.forEach(plain);
   });
 
-  it('keeps the desk drawer names, desk tabs, cabinet labels and Platform Management folders plain', () => {
+  it('keeps the desk drawer names, desk tabs, cabinet labels and Super Admin Desk cabinets plain', () => {
     DESK_DRAWERS.map((d) => d.title).forEach(plain);
     DASHBOARD_TABS.map((t) => t.label).forEach(plain);
     Object.values(DESK_CABINET_LABELS).forEach(plain);
-    SUPER_ADMIN_DESK_FOLDERS.map((f) => f.label).forEach(plain);
+    SUPER_ADMIN_DESK_CABINETS.map((f) => f.label).forEach(plain);
     plain(SUPER_ADMIN_HEADER_LINK_LABEL);
   });
 

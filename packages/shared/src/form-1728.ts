@@ -17,6 +17,9 @@
 // =========================================================================
 import { BusinessRuleError } from './rules';
 
+/** Sprint 11 Revision 18.0: PlatformSettings.global_ai_confidence_cutoff's default (council-settings.ts reads it from here). */
+export const FORM_1728_DEFAULT_CONFIDENCE_CUTOFF = 60;
+
 export type Form1728Section = 'Faith' | 'Family' | 'Community' | 'Life';
 
 export interface Form1728Line {
@@ -87,6 +90,25 @@ const DESCRIPTION_WEIGHT = 0.5;
  * call; it never files a record on its own.
  */
 export const SECTION_PRIOR_WEIGHT = 1;
+/**
+ * Sprint 11 Revision 18.0: the score that reads as 100% confidence - one whole-phrase cue ('holy hour', 'blood drive'),
+ * or two weaker cues together. form1728ConfidencePercent divides a line's score by it.
+ */
+export const FORM_1728_FULL_CONFIDENCE_SCORE = 5;
+
+/** A line's score as a confidence percent, 0-100 (FORM_1728_FULL_CONFIDENCE_SCORE reads as 100). */
+export const form1728ConfidencePercent = (score: number): number =>
+  Math.max(0, Math.min(100, Math.round((score / FORM_1728_FULL_CONFIDENCE_SCORE) * 100)));
+
+/**
+ * Sprint 11 Revision 18.0: a confidence cutoff as stored (PlatformSettings.global_ai_confidence_cutoff): a whole percent
+ * from 0 to 100. A missing or broken value reads as FORM_1728_DEFAULT_CONFIDENCE_CUTOFF (60).
+ */
+export function form1728ConfidenceCutoff(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number.NaN;
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : FORM_1728_DEFAULT_CONFIDENCE_CUTOFF;
+}
+
 /** Event.form_1728_line VARCHAR(20) (schema 108). */
 export const FORM_1728_LINE_MAX_LENGTH = 20;
 
@@ -171,6 +193,8 @@ export type Form1728Confidence = 'strong' | 'likely' | 'default';
 export interface Form1728Classification extends Form1728Line {
   code: Form1728LineCode;
   score: number;
+  /** Sprint 11 Revision 18.0: the score as a percent (form1728ConfidencePercent); 0 for the default line. */
+  confidencePercent: number;
   confidence: Form1728Confidence;
   /** The cues that matched, strongest first. */
   cues: string[];
@@ -236,10 +260,17 @@ function scoreRecord(title: string, description: string | null | undefined, cont
 function toClassification(code: Form1728LineCode, entry: Entry | undefined): Form1728Classification {
   const score = Math.round((entry?.score ?? 0) * 100) / 100;
   if (code === FORM_1728_DEFAULT_LINE || !entry || entry.score < CONFIDENCE_THRESHOLD) {
-    return { ...form1728Line(FORM_1728_DEFAULT_LINE), code: FORM_1728_DEFAULT_LINE, score, confidence: 'default', cues: [] };
+    return { ...form1728Line(FORM_1728_DEFAULT_LINE), code: FORM_1728_DEFAULT_LINE, score, confidencePercent: 0, confidence: 'default', cues: [] };
   }
   const cues = [...entry.cues].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([cue]) => cue);
-  return { ...form1728Line(code), code, score, confidence: entry.score >= 2 * CONFIDENCE_THRESHOLD ? 'strong' : 'likely', cues };
+  return {
+    ...form1728Line(code),
+    code,
+    score,
+    confidencePercent: form1728ConfidencePercent(entry.score),
+    confidence: entry.score >= 2 * CONFIDENCE_THRESHOLD ? 'strong' : 'likely',
+    cues,
+  };
 }
 
 /** Lines that scored, best first; ties go to the line listed first (the sort is stable). */
@@ -272,7 +303,7 @@ export function suggestForm1728Lines(title: string, description?: string | null,
   return out;
 }
 
-/** Sprint 11 Revision 16.0: how many suggestions the event form shows, each as its own selection target. */
+/** Sprint 11 Revision 16.0: the most suggestions the event form shows, each as its own selection target (Revision 18.0: at most). */
 export const FORM_1728_TOP_SUGGESTION_COUNT = 3;
 
 /** Where a top suggestion came from: the engine's reading of the record, or the council's own compiled report. */
@@ -287,13 +318,13 @@ export interface Form1728TopSuggestion extends Form1728Classification {
 }
 
 /**
- * Sprint 11 Revision 16.0: the event form's Top 3 suggestions, in priority order and never repeating a line:
- *   1. the lines the engine matched with confidence (suggestForm1728Lines), best first;
- *   2. Community line N, the general line;
- *   3. when a slot is still open, the lines with the most hours in the council's compiled report
- *      (compileForm1728Report), so the form offers the lines the council actually files under;
- *   4. then any line the engine matched below the bar, then the other lines of the best line's section.
- * Always exactly `limit` entries (default FORM_1728_TOP_SUGGESTION_COUNT).
+ * The event and activity forms' suggestion cards, best first, never repeating a line. Sprint 11 Revision 16.0 always
+ * filled `limit` slots (padding with Community line N and the council's busiest report lines). Sprint 11 Revision 18.0
+ * removes the padding: a line is offered only when its confidence percent (form1728ConfidencePercent) is at least
+ * `cutoffPercent` - PlatformSettings.global_ai_confidence_cutoff, 60 by default. So the popup shows up to `limit` cards,
+ * and none for a vague title; the officer can still search every line.
+ * Order: highest score first; on a tie, the line with more hours in the council's compiled report (`report`), then the
+ * line listed first.
  */
 export function topForm1728Suggestions(
   title: string,
@@ -301,32 +332,31 @@ export function topForm1728Suggestions(
   context?: Form1728Context,
   report?: Form1728Report | null,
   limit = FORM_1728_TOP_SUGGESTION_COUNT,
+  cutoffPercent: number = FORM_1728_DEFAULT_CONFIDENCE_CUTOFF,
 ): Form1728TopSuggestion[] {
-  const scores = scoreRecord(title, description, context);
-  const picks: { line: Form1728Classification; source: Form1728SuggestionSource }[] = [];
-  const add = (line: Form1728Classification, source: Form1728SuggestionSource) => {
-    if (picks.length < limit && !picks.some((p) => p.line.code === line.code)) picks.push({ line, source });
-  };
-  for (const s of suggestForm1728Lines(title, description, context, limit)) add(s, 'engine');
-  if (report) {
-    const used = report.sections
-      .flatMap((section) => section.lines)
-      .filter((l) => l.hours > 0)
-      .sort((a, b) => b.hours - a.hours || b.entries - a.entries);
-    for (const l of used) add(reportSuggestion(l.code as Form1728LineCode, scores.get(l.code)), 'report');
-  }
-  for (const r of ranked(scores)) add(reportSuggestion(r.code, r.entry), 'engine');
-  const section = picks[0]?.line.section ?? form1728Line(FORM_1728_DEFAULT_LINE).section;
-  for (const l of FORM_1728_LINES) if (l.section === section) add(reportSuggestion(l.code as Form1728LineCode, scores.get(l.code)), 'engine');
-  for (const l of FORM_1728_LINES) add(reportSuggestion(l.code as Form1728LineCode, scores.get(l.code)), 'engine');
-  return picks.map((p, i) => ({ ...p.line, rank: i + 1, source: p.source, targetId: `form-1728-pick-${p.line.code}` }));
+  const cutoff = form1728ConfidenceCutoff(cutoffPercent);
+  const hours = new Map<string, number>((report?.sections ?? []).flatMap((section) => section.lines).map((l) => [l.code, l.hours]));
+  return ranked(scoreRecord(title, description, context))
+    .filter((r) => r.code !== FORM_1728_DEFAULT_LINE)
+    .map((r) => reportSuggestion(r.code, r.entry))
+    .filter((line) => line.confidencePercent >= cutoff && line.confidencePercent > 0)
+    .sort((a, b) => b.score - a.score || (hours.get(b.code) ?? 0) - (hours.get(a.code) ?? 0))
+    .slice(0, Math.max(0, limit))
+    .map((line, i) => ({ ...line, rank: i + 1, source: (hours.get(line.code) ?? 0) > 0 ? 'report' : 'engine', targetId: `form-1728-pick-${line.code}` }));
 }
 
 /** A line offered below the confidence bar (or from the report): its own line, with whatever cues matched. */
 function reportSuggestion(code: Form1728LineCode, entry: Entry | undefined): Form1728Classification {
   const score = Math.round((entry?.score ?? 0) * 100) / 100;
   const cues = entry ? [...entry.cues].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([cue]) => cue) : [];
-  return { ...form1728Line(code), code, score, confidence: code === FORM_1728_DEFAULT_LINE ? 'default' : 'likely', cues };
+  return {
+    ...form1728Line(code),
+    code,
+    score,
+    confidencePercent: code === FORM_1728_DEFAULT_LINE ? 0 : form1728ConfidencePercent(entry?.score ?? 0),
+    confidence: code === FORM_1728_DEFAULT_LINE ? 'default' : (entry?.score ?? 0) >= 2 * CONFIDENCE_THRESHOLD ? 'strong' : 'likely',
+    cues,
+  };
 }
 
 /**

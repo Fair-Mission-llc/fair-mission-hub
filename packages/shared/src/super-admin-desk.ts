@@ -1,16 +1,18 @@
 // =========================================================================
 // THE SUPER ADMIN DESK (Sprint 8O)
 //
-// The Super Admin cockpit: a folder tab titled 'Platform Management' on the Active Desks row (officer-desks.ts
-// dashboardTabsFor, /dashboard#super-admin). Sprint 11 Revision 17.5: every Super Admin session gets the tab, drawn
-// beside the council desks (showsSuperAdminDeskTab). Until then only the platform owner's own account had it. While a
-// Super Admin views the portal as someone else, the session is that member's, so the tab is gone. Inside, three top
-// horizontal action folders:
-//   [ 📥 Feedback Communication Center ]         the Administrative Feedback Loops notes Admins send (feedback.listInbox)
-//   [ 🔑 Council Access Request Approval Queue ] the councils asking to join the platform (accessRequests.list/setStatus)
-//   [ 🛠️ System Feature Flag Control Panel ]      every council's module switches (councils.setFeatureFlags)
-// The folders reuse the same driver methods as the rest of the portal, so the drivers' own Super Admin checks still
-// apply; this gate decides only where the desk is drawn.
+// The Super Admin cockpit: a folder tab on the Active Desks row (officer-desks.ts dashboardTabsFor,
+// /dashboard#super-admin). Sprint 11 Revision 17.5: every Super Admin session gets the tab, drawn beside the council
+// desks (showsSuperAdminDeskTab). While a Super Admin views the portal as someone else, the session is that member's, so
+// the tab is gone.
+// Sprint 11 Revision 18.0: the tab reads 'Super Admin Desk' (it read 'Platform Management'). The row of horizontal
+// folders and the stacked drawers under it are gone. The desk is a left vertical filing spine (the officer desks'
+// DeskBlotter, desk-drawers.ts DESK_DRAWERS with desk 'super-admin') whose drawers open in place, in two cabinets:
+//   Communications Cabinet: Feedback Communication Center, Council Access Request Approval Queue
+//   Settings Cabinet:       Global System Parameters, Global Lookup Tables, System Feature Flag Control Panel,
+//                           Secure Access Vault (the Super Admin's own home council only)
+// and the Global Charities Registry as a freestanding drawer under them. The drawers reuse the driver methods of the
+// rest of the portal, so the drivers' own Super Admin checks still apply; this gate decides only where the desk is drawn.
 //
 // Also here: the Administrative Feedback Loops page (System Settings, /system-settings/feedback), where Admins send
 // those notes. Its role guard admits a session whose clearance is ADMIN or higher - council Admins and Super Admins.
@@ -18,7 +20,7 @@
 import type { SessionUser } from './contract';
 
 /** The Active Desks folder tab's title. */
-export const SUPER_ADMIN_DESK_TITLE = 'Platform Management';
+export const SUPER_ADMIN_DESK_TITLE = 'Super Admin Desk';
 
 /**
  * The platform owner's personal sign-in names (Credential usernames, compared without case). The desk mounts only for
@@ -28,7 +30,7 @@ export const SUPER_ADMIN_DESK_TITLE = 'Platform Management';
 export const PLATFORM_OWNER_USERNAMES: readonly string[] = ['testsuperadmin@kofc.org', 'tim'];
 
 /**
- * Sprint 11 Revision 17.5: true when the Active Desks row draws the Platform Management tab - any Super Admin session.
+ * Sprint 11 Revision 17.5: true when the Active Desks row draws the Super Admin Desk tab - any Super Admin session.
  * isPlatformOwner still gates the owner-only tools (Advisory Panel invitations).
  */
 export const showsSuperAdminDeskTab = (u: Pick<SessionUser, 'memberType'>): boolean => u.memberType === 'Super Admin';
@@ -43,38 +45,16 @@ export function isPlatformOwner(
   return name !== '' && owners.some((o) => o.trim().toLowerCase() === name);
 }
 
-export type SuperAdminDeskFolderId = 'feedback' | 'access-requests' | 'feature-flags';
-
-export interface SuperAdminDeskFolder {
-  id: SuperAdminDeskFolderId;
-  label: string;
-  /** One line under the folder row saying what the folder is for. */
-  hint: string;
-}
-
-/** The desk's three top horizontal action folders, in the order they are drawn. */
-export const SUPER_ADMIN_DESK_FOLDERS: readonly SuperAdminDeskFolder[] = [
-  { id: 'feedback', label: 'Feedback Communication Center', hint: 'Read the notes council Admins send from System Settings > Administrative Feedback Loops.' },
-  { id: 'access-requests', label: 'Council Access Request Approval Queue', hint: 'Approve or decline the councils asking for a license to join the platform.' },
-  { id: 'feature-flags', label: 'System Feature Flag Control Panel', hint: "Switch each active council's optional modules on and off." },
-];
-
 /**
- * Sprint 10 Revision 3.0: the desk's four collapsible infrastructure drawers, stacked under the folder row in this order.
- * The Secure Access Vault drawer is pinned to the Super Admin's own home council: it never requests another council's
- * sealed keys (CredentialsVaultPanel homeCouncilOnly).
+ * Sprint 11 Revision 18.0: the desk's two filing cabinets and what each holds, in spine order (the drawers themselves
+ * are desk-drawers.ts DESK_DRAWERS entries with desk 'super-admin'). The Global Charities Registry stands outside them.
  */
-export const SUPER_ADMIN_DESK_DRAWERS = [
-  { id: 'global-parameters', label: 'Global System Parameters', hint: "Each council's dues rate and organization type, and the limits every council shares." },
-  { id: 'global-lookups', label: 'Global Lookup Tables', hint: 'The platform-wide lookup tables: statuses, degrees, member types and more.' },
-  { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Search, verify and add the charities every council shares.' },
-  { id: 'credentials-vault', label: 'Secure Access Vault', hint: "Your own home council's sealed connection keys only." },
+export const SUPER_ADMIN_DESK_CABINETS = [
+  { id: 'communications', label: 'Communications Cabinet', drawers: ['feedback', 'access-requests'] },
+  { id: 'settings', label: 'Settings Cabinet', drawers: ['global-parameters', 'global-lookups', 'feature-flags', 'credentials-vault'] },
 ] as const;
-export type SuperAdminDeskDrawerId = (typeof SUPER_ADMIN_DESK_DRAWERS)[number]['id'];
-
-/** The folder a stored or typed id names, else the first folder. */
-export const superAdminDeskFolder = (id: string | null | undefined): SuperAdminDeskFolderId =>
-  SUPER_ADMIN_DESK_FOLDERS.find((f) => f.id === id)?.id ?? 'feedback';
+/** The drawer pinned outside the cabinets. */
+export const SUPER_ADMIN_FREESTANDING_DRAWERS = ['charities-registry'] as const;
 
 /** The Administrative Feedback Loops page title (System Settings > Administrative Feedback Loops). */
 export const ADMINISTRATIVE_FEEDBACK_TITLE = 'Administrative Feedback Loops';

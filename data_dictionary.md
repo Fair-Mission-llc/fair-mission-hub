@@ -1163,7 +1163,7 @@ Schema version 85; the phone database version moves to 85.
 Rules. An electronic donation (card or QR-code method) given through a PARISH-owned method is Revenue Held by Parish (isParishHeldDonation). The Parish Fundraiser Revenue Split Console settles the parish share from that revenue first (parishHeldCreditAvailable), then a check covers the rest (checkDue). Parish-held revenue above the share is reported as parishHeldExcess, for collection outside the portal. The High-Volume Batch Transaction Coder never lists or codes a parish-held donation (INVALID_INPUT). Since Sprint 8O Extension the console and the coder read each donation's own snapshot (Donation.historical_account_owner_entity, section 45), not the live CouncilDonationMethod owner.
 [SystemFeedback] (no column change)
 Rules. feedback.submit now needs an Active Admin or Super Admin (assertMaySubmitFeedback, ADMIN_REQUIRED). The form moved from the Online Help Center to System Settings > Administrative Feedback Loops (/system-settings/feedback, canOpenAdministrativeFeedback). feedback.listInbox stays Super Admins only.
-Platform Management. No table. The Active Desks tab 'super-admin' mounts for every Super Admin session (super-admin-desk.ts showsSuperAdminDeskTab, Sprint 11 Revision 17.5). isPlatformOwner (an Active Super Admin whose sign-in name is in PLATFORM_OWNER_USERNAMES, seeded as testsuperadmin@kofc.org) still gates Advisory Panel invitations.
+Super Admin Desk (named Platform Management until Sprint 11 Revision 18.0). No table. The Active Desks tab 'super-admin' mounts for every Super Admin session (super-admin-desk.ts showsSuperAdminDeskTab, Sprint 11 Revision 17.5). isPlatformOwner (an Active Super Admin whose sign-in name is in PLATFORM_OWNER_USERNAMES, seeded as testsuperadmin@kofc.org) still gates Advisory Panel invitations.
 New methods. None; finance.issueChurchDisbursementRequest also logs the PARISH_HELD credit.
 ________________________________________
 # 45. Immutable Account Ownership Snapshots (Sprint 8O Extension)
@@ -1364,3 +1364,27 @@ Schema version 107. Rules: features.ts (FEATURE_FLAG_NAMES now 18, REV80_FEATURE
 •	Council.flag_complex_shifts, Council.feature_volunteer_quarantine, Council.feature_financial_management - retired. The columns stay (the generator has no DROP COLUMN) but nothing reads them; councils.setFeatureFlags refuses them (INVALID_INPUT). Event shifts, the volunteer time guards and the finance dashboards are core systems with no switch.
 councils.create now stores a new council with every switch 0. A council's custom manual (/api/council/compile-manual) passes its switched-off flags to scripts/compile_all_manuals.py --disabled-modules, which puts the '⚠️ This premium module is currently disabled' banner under each matching section heading. The general guides are compiled without it.
 Two-Factor Authentication: no new column. My Profile shows a row each for SMS text tokens, email secure passcodes and WebAuthn passkeys (the UserPasskeys table of schema 104); the Secure Access Vault shows the council's delivery channels. Only passkeys work; sign-in does not ask for a second step yet.
+________________________________________
+# 63. Motion Requests and the AI confidence cutoff (Sprint 11 Revision 18.0)
+Schema version 111; the phone database version moves to 111. Rules: motion-requests.ts, form-1728.ts, council-settings.ts.
+[MotionRequest] (new table)
+•	id (INT, IDENTITY, PK).
+•	council_id (INT, NOT NULL, FK Council) — the proposer's home council when submitted.
+•	proposed_by (INT, NOT NULL, FK Member) — the member who asked for the motion.
+•	summary_what (VARCHAR(500), NOT NULL) — what the motion does.
+•	rationale_why (VARCHAR(4000), NOT NULL) — why the council should pass it.
+•	financial_impact_usd (DECIMAL(18,2), NOT NULL, DEFAULT 0.00) — the motion's cost in dollars, 0 to 10,000,000 (cleanFinancialImpact).
+•	request_status (VARCHAR(20), NOT NULL, DEFAULT 'Pending', CHECK IN ('Pending', 'Approved', 'Denied', 'Withdrawn')).
+•	submitted_at (DATETIME, NOT NULL).
+•	decided_by_member_id (INT, NULL, FK Member), decided_at (DATETIME, NULL), decision_note (VARCHAR(1000), NULL) — the Grand Knight's decision; a denial needs a note. A withdrawal stamps decided_at only.
+•	target_meeting_id (INT, NULL, FK Meeting), proposed_motion_id (INT, NULL, FK ProposedMotion) — set by an approval.
+Rules. motionRequests.decide ('Approved') adds a ProposedMotion with SourceType 'GeneralMember', SourceRecordID = the request id and AllocatedMinutes = MOTION_REQUEST_SLOT_MINUTES (5) to the soonest Monthly meeting dated on or after the later of submitted_at + Council.motion_request_lead_days and today (motionRequestEarliestDate, nextMotionRequestMeeting). NO_ELIGIBLE_MEETING when none exists; nothing is written. Only the council's Grand Knight or Deputy Grand Knight, or an Active Super Admin, decides (canDecideMotionRequests, GRAND_KNIGHT_REQUIRED). Only a Pending request changes (REQUEST_STATUS_CONFLICT). The proposer may withdraw a Pending request. The council's officers read the council's list (canReadCouncilMotionRequests). A council with motion requests cannot be deleted (RECORD_REFERENCES).
+[MotionRequestMessage] (new table)
+•	id (INT, IDENTITY, PK); motion_request_id (INT, NOT NULL, FK MotionRequest); author_member_id (INT, NOT NULL, FK Member); posted_at (DATETIME, NOT NULL); message_body (VARCHAR(2000), NOT NULL).
+•	channel (VARCHAR(20), NOT NULL, CHECK IN ('MEMBER_GK', 'OFFICER_ADVISORY')) — MEMBER_GK: the proposer and the Grand Knight's seat. OFFICER_ADVISORY: the council's officers and the Grand Knight's seat, never the proposer unless the proposer holds that seat (motionRequestChannelAccess).
+[Council] (new column)
+•	motion_request_lead_days (INT, NOT NULL, DEFAULT 5) — Council Wide Settings 'Days before a meeting a motion request must be in', 1 to 60.
+[PlatformSettings] (new column)
+•	global_ai_confidence_cutoff (INT, NOT NULL, DEFAULT 60) — Global System Parameters 'Form 1728 suggestion confidence cutoff', 0 to 100 percent. topForm1728Suggestions leaves out every suggestion card whose confidence percent (form1728ConfidencePercent: the line's score / FORM_1728_FULL_CONFIDENCE_SCORE 5, capped at 100) is below it; the popup no longer pads to three cards with Community line N or the council's busiest report lines.
+New methods. motionRequests.preview, listMine, listForCouncil, submit, withdraw, decide, listMessages, postMessage.
+Super Admin Desk. No table. The tab reads 'Super Admin Desk'. Its drawers are DESK_DRAWERS entries with desk 'super-admin', drawn on the left filing spine in the Communications Cabinet and the Settings Cabinet, with the Global Charities Registry freestanding. The Application Advisory Panel opens only for the platform owner's own sign-in (isPlatformOwner) and holders of the panelist role; the drivers pass the sign-in name to assertMayReadAdvisoryPanel and assertMayKeepAdvisoryPanel.

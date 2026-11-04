@@ -33,6 +33,8 @@ describe('the left filing spine', () => {
     expect(CABINET_DESKS).toEqual(['financial-secretary', 'treasurer']);
     for (const d of DESK_DRAWERS) {
       if (CABINET_DESKS.includes(d.desk)) expect(['inbound', 'outbound', 'accounting', 'reference']).toContain(d.cabinet);
+      // Sprint 11 Revision 18.0: the Super Admin Desk files its drawers in the Communications and Settings cabinets.
+      else if (d.desk === 'super-admin') expect([undefined, 'communications', 'settings']).toContain(d.cabinet);
       else expect([undefined, 'reference']).toContain(d.cabinet);
     }
     expect(DESK_CABINET_LABELS).toEqual({
@@ -40,6 +42,8 @@ describe('the left filing spine', () => {
       outbound: 'Outbound Operations',
       accounting: 'Accounting Configuration',
       reference: 'Reference Workflows',
+      communications: 'Communications Cabinet',
+      settings: 'Settings Cabinet',
     });
   });
 

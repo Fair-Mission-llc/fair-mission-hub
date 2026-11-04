@@ -172,6 +172,7 @@ export const MEMBER_DESK_SECTIONS = [
   'Open Shifts Needing Volunteers',
   'My shifts',
   'My Charity Requests',
+  'My Motion Requests',
   'My open expense sheets',
 ] as const;
 
@@ -211,7 +212,7 @@ export const deskModulesFor = (desk: DashboardTabId): DeskModuleSpec[] => DESK_M
  * sat at the top of the Oversight Desk. Sprint 8P Stage 3: the badge strip is gone - each queue is now the count and the
  * Alert Boundary Accent on its own desk drawer (desk-drawers.ts), and DESK_FOCUS_TARGETS names those drawers' rows.
  */
-// Sprint 10 Revision 1.0: no 'access' key - access requests left the Grand Knight Desk for Platform Management.
+// Sprint 10 Revision 1.0: no 'access' key - access requests left the Grand Knight Desk for the Super Admin Desk.
 export type DeskBadgeKey = 'vouchers' | 'orders' | 'coding' | 'minutes' | 'quarantine' | 'hours' | 'mine';
 
 /**

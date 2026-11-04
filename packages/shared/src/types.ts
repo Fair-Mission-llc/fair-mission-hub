@@ -156,6 +156,8 @@ export interface Council {
   officer_signature_reminder_days?: number | null;
   meeting_minutes_due_days?: number | null;
   special_election_notice_days?: number | null;
+  /** INT NOT NULL DEFAULT 5 (Sprint 11 Revision 18.0, schema 111): days before a meeting a motion request must be submitted. */
+  motion_request_lead_days?: number | null;
   /**
    * Sprint 7G (Schema 68): the geofenced meeting check-in (geofence.ts). The meeting point (DECIMAL(9,6), null until the
    * Grand Knight sets it, which leaves only the PIN path), the check-in radius in meters (DEFAULT 100) and the 4-digit
@@ -207,6 +209,8 @@ export interface PlatformSettings {
   user_session_expiry_hours: number;
   /** Sprint 7E: days to keep audit records (DEFAULT 180). Saved for a future purge job; nothing reads it yet. */
   audit_log_retention_days: number;
+  /** Sprint 11 Revision 18.0 (schema 111): the lowest confidence percent a Form 1728 suggestion card needs (DEFAULT 60). */
+  global_ai_confidence_cutoff: number;
 }
 
 export interface AffiliatedCouncils {
@@ -585,7 +589,7 @@ export interface ProposedMotion {
   CouncilID: number;
   TargetMeetingID: number; // a Meeting of the same council
   SourceType: ProposedMotionSourceType;
-  SourceRecordID?: number | null; // the CharitableRequest id for 'CharitableRequest'; null for a member's own motion
+  SourceRecordID?: number | null; // the CharitableRequest id for 'CharitableRequest'; for 'GeneralMember', the MotionRequest id (Sprint 11 Revision 18.0) or null
   MotionText: string;
   PresenterMemberID: number;
   AllocatedMinutes: number; // default 5

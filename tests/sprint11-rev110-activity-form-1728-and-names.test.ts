@@ -161,8 +161,8 @@ describe('5. five more unified screen names', () => {
     expect(ADMIN_DESK_DRAWERS.find((d) => d.id === 'credentials-vault')!.label).toBe('Secure Access Vault');
   });
 
-  it('Platform Management names the Super Admin desk', () => {
-    expect(SUPER_ADMIN_DESK_TITLE).toBe('Platform Management');
+  it('names the Super Admin desk (Platform Management until Sprint 11 Revision 18.0)', () => {
+    expect(SUPER_ADMIN_DESK_TITLE).toBe('Super Admin Desk');
   });
 
   it('drops the old names from the screens, the phone and the manuals', () => {

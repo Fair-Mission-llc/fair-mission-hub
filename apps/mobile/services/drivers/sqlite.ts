@@ -5,6 +5,35 @@ import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import * as SQLite from 'expo-sqlite';
 import {
+  assertMayDecideMotionRequests,
+  assertMayReadCouncilMotionRequests,
+  assertMaySubmitMotionRequest,
+  assertMayWithdrawMotionRequest,
+  assertMotionChannelAccess,
+  assertMotionRequestPending,
+  buildMotionRequestDetails,
+  buildMotionRequestThread,
+  cleanDecisionNote,
+  cleanMotionChannel,
+  cleanMotionDecision,
+  cleanMotionMessage,
+  cleanMotionRequestInput,
+  motionRequestEarliestDate,
+  motionRequestLeadDays,
+  motionRequestMeeting,
+  motionRequestMotionText,
+  motionRequestNotFound,
+  MOTION_REQUEST_SLOT_MINUTES,
+  nextMotionRequestMeeting,
+  noMotionRequestMeeting,
+  sortMotionRequestsForDecision,
+  type MotionRequest,
+  type MotionRequestChannel,
+  type MotionRequestDetail,
+  type MotionRequestMessage,
+  type MotionRequestThread,
+} from '@kofc/shared';
+import {
   assertMayDispatchRoadmapAlerts,
   assertMayManageMeetingGeofence,
   assertMayReadRoadmap,
@@ -1035,8 +1064,10 @@ const DB_NAME = 'kofc.db';
  *     (Sprint 11 Revision 10.0).
  * 109: Activities.form_1728_line, the same confirmed line on ongoing activities (Sprint 11 Revision 11.0).
  * 110: Council.parent_organization, 'KofC' or 'SECULAR_CHARITY', kept in step with tenant_type (Sprint 11 Revision 12.0).
+ * 111: MotionRequest and MotionRequestMessage (member motion requests and their chat logs), Council.motion_request_lead_days
+ *     and PlatformSettings.global_ai_confidence_cutoff (Sprint 11 Revision 18.0).
  */
-const SCHEMA_VERSION = 110;
+const SCHEMA_VERSION = 111;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -6706,17 +6737,188 @@ export class SqliteDataService implements DataService {
 
   // ---- officer elections (Sprint 5U) ----------------------------------------
 
+  // Sprint 11 Revision 18.0: Motion Requests (motion-requests.ts, schema 111).
+  private async motionRequestRow(db: SQLite.SQLiteDatabase, requestId: number): Promise<MotionRequest> {
+    const row = await db.getFirstAsync<MotionRequest>('SELECT * FROM [MotionRequest] WHERE [id] = ?', [requestId]);
+    if (!row) throw motionRequestNotFound(requestId);
+    return row;
+  }
+
+  private async motionRequestDetails(db: SQLite.SQLiteDatabase, actor: MemberWriteActor, where: string, params: (string | number)[]): Promise<MotionRequestDetail[]> {
+    const requests = await db.getAllAsync<MotionRequest>(`SELECT * FROM [MotionRequest] WHERE ${where}`, params);
+    if (requests.length === 0) return [];
+    const ids = requests.map((r) => r.id);
+    const memberIds = [...new Set(requests.flatMap((r) => [r.proposed_by, r.decided_by_member_id ?? 0]).filter((id) => id > 0))];
+    const meetingIds = [...new Set(requests.map((r) => r.target_meeting_id ?? 0).filter((id) => id > 0))];
+    const members = await selectIn<Member>(db, (m) => `SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member] WHERE [id] IN (${m})`, memberIds);
+    const meetings = await selectIn<Meeting>(db, (m) => `SELECT * FROM [Meeting] WHERE [id] IN (${m})`, meetingIds);
+    const messages = await selectIn<MotionRequestMessage>(
+      db,
+      (m) => `SELECT [motion_request_id], [channel] FROM [MotionRequestMessage] WHERE [motion_request_id] IN (${m})`,
+      ids,
+    );
+    return buildMotionRequestDetails(actor, requests, members, meetings, messages);
+  }
+
+  private async motionRequestDetail(db: SQLite.SQLiteDatabase, actor: MemberWriteActor, requestId: number): Promise<MotionRequestDetail> {
+    return (await this.motionRequestDetails(db, actor, '[id] = ?', [requestId]))[0]!;
+  }
+
+  /** The council's Monthly meetings (the meeting type named MONTHLY_MEETING_TYPE_NAME). */
+  private async monthlyMeetings(db: SQLite.SQLiteDatabase, councilId: number): Promise<Meeting[]> {
+    const types = await db.getAllAsync<{ id: number; TypeName: string }>('SELECT [id], [TypeName] FROM [CouncilMeetingType] WHERE [CouncilID] = ?', [councilId]);
+    const monthlyTypeIds = types.filter((t) => isMonthlyCouncilMeetingType(t.TypeName)).map((t) => t.id);
+    return selectIn<Meeting>(db, (m) => `SELECT * FROM [Meeting] WHERE [CouncilID] = ${Number(councilId)} AND [MeetingTypeID] IN (${m})`, monthlyTypeIds);
+  }
+
+  private async motionLeadDays(db: SQLite.SQLiteDatabase, councilId: number): Promise<number> {
+    return motionRequestLeadDays(await db.getFirstAsync<{ motion_request_lead_days: number | null }>('SELECT [motion_request_lead_days] FROM [Council] WHERE [id] = ?', [councilId]));
+  }
+
+  private async motionRequestThread(db: SQLite.SQLiteDatabase, actor: MemberWriteActor, request: MotionRequest, channel: MotionRequestChannel): Promise<MotionRequestThread> {
+    const messages = await db.getAllAsync<MotionRequestMessage>('SELECT * FROM [MotionRequestMessage] WHERE [motion_request_id] = ? AND [channel] = ?', [request.id, channel]);
+    const members = await selectIn<Member>(
+      db,
+      (m) => `SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member] WHERE [id] IN (${m})`,
+      [...new Set(messages.map((m) => m.author_member_id))],
+    );
+    return buildMotionRequestThread(actor, request, channel, messages, members);
+  }
+
+  motionRequests: DataService['motionRequests'] = {
+    preview: async (actorId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const leadDays = await this.motionLeadDays(db, actor.councilId);
+      const today = toIsoDate(this.now());
+      const earliestDate = motionRequestEarliestDate(today, leadDays, today);
+      const meeting = nextMotionRequestMeeting(await this.monthlyMeetings(db, actor.councilId), earliestDate);
+      return { leadDays, earliestDate, meeting: meeting ? motionRequestMeeting(meeting) : null };
+    },
+
+    listMine: async (actorId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      return this.motionRequestDetails(db, actor, '[proposed_by] = ?', [actorId]);
+    },
+
+    listForCouncil: async (actorId, councilId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayReadCouncilMotionRequests(actor, councilId);
+      return sortMotionRequestsForDecision(await this.motionRequestDetails(db, actor, '[council_id] = ?', [councilId]));
+    },
+
+    submit: async (actorId, input) => {
+      const clean = cleanMotionRequestInput(input);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMaySubmitMotionRequest(actor);
+      const res = await db.runAsync(
+        `INSERT INTO [MotionRequest] ([council_id], [proposed_by], [summary_what], [rationale_why], [financial_impact_usd], [request_status], [submitted_at])
+         VALUES (?, ?, ?, ?, ?, 'Pending', ?)`,
+        [actor.councilId, actorId, clean.summary_what, clean.rationale_why, clean.financial_impact_usd, toTimestamp(this.now())],
+      );
+      return this.motionRequestDetail(db, actor, res.lastInsertRowId);
+    },
+
+    withdraw: async (actorId, requestId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      await db.withTransactionAsync(async () => {
+        assertMayWithdrawMotionRequest(actor, await this.motionRequestRow(db, requestId));
+        await db.runAsync(`UPDATE [MotionRequest] SET [request_status] = 'Withdrawn', [decided_at] = ? WHERE [id] = ?`, [toTimestamp(this.now()), requestId]);
+      });
+      return this.motionRequestDetail(db, actor, requestId);
+    },
+
+    decide: async (actorId, requestId, decision, note) => {
+      const verdict = cleanMotionDecision(decision);
+      const cleanNote = cleanDecisionNote(note, verdict);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      let motionId = 0;
+      let meeting: Meeting | null = null;
+      await db.withTransactionAsync(async () => {
+        const request = await this.motionRequestRow(db, requestId);
+        assertMayDecideMotionRequests(actor, request.council_id, `decide motion request ${requestId}`);
+        assertMotionRequestPending(request);
+        const stamp = toTimestamp(this.now());
+        if (verdict === 'Denied') {
+          await db.runAsync(
+            `UPDATE [MotionRequest] SET [request_status] = 'Denied', [decided_by_member_id] = ?, [decided_at] = ?, [decision_note] = ? WHERE [id] = ?`,
+            [actorId, stamp, cleanNote, requestId],
+          );
+          return;
+        }
+        const earliest = motionRequestEarliestDate(request.submitted_at, await this.motionLeadDays(db, request.council_id), toIsoDate(this.now()));
+        meeting = nextMotionRequestMeeting(await this.monthlyMeetings(db, request.council_id), earliest);
+        if (!meeting) throw noMotionRequestMeeting(requestId, request.council_id, earliest);
+        const res = await db.runAsync(
+          `INSERT INTO [ProposedMotion] ([CouncilID], [TargetMeetingID], [SourceType], [SourceRecordID], [MotionText], [PresenterMemberID],
+                                         [AllocatedMinutes], [VoteResult])
+           VALUES (?, ?, 'GeneralMember', ?, ?, ?, ?, 'Pending')`,
+          [request.council_id, (meeting as Meeting).id, requestId, motionRequestMotionText(request), request.proposed_by, MOTION_REQUEST_SLOT_MINUTES],
+        );
+        motionId = res.lastInsertRowId;
+        await db.runAsync(
+          `UPDATE [MotionRequest] SET [request_status] = 'Approved', [decided_by_member_id] = ?, [decided_at] = ?, [decision_note] = ?,
+                                      [target_meeting_id] = ?, [proposed_motion_id] = ? WHERE [id] = ?`,
+          [actorId, stamp, cleanNote, (meeting as Meeting).id, motionId, requestId],
+        );
+      });
+      const heard = meeting as Meeting | null;
+      return {
+        request: await this.motionRequestDetail(db, actor, requestId),
+        motion: motionId ? await db.getFirstAsync<ProposedMotion>('SELECT * FROM [ProposedMotion] WHERE [id] = ?', [motionId]) : null,
+        meeting: heard ? motionRequestMeeting(heard) : null,
+      };
+    },
+
+    listMessages: async (actorId, requestId, channel) => {
+      const which = cleanMotionChannel(channel);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const request = await this.motionRequestRow(db, requestId);
+      assertMotionChannelAccess(actor, request, which, 'read');
+      return this.motionRequestThread(db, actor, request, which);
+    },
+
+    postMessage: async (actorId, requestId, channel, body) => {
+      const which = cleanMotionChannel(channel);
+      const text = cleanMotionMessage(body);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const request = await this.motionRequestRow(db, requestId);
+      assertMotionChannelAccess(actor, request, which, 'post');
+      await db.runAsync(
+        'INSERT INTO [MotionRequestMessage] ([motion_request_id], [channel], [author_member_id], [posted_at], [message_body]) VALUES (?, ?, ?, ?, ?)',
+        [requestId, which, actorId, toTimestamp(this.now()), text],
+      );
+      return this.motionRequestThread(db, actor, request, which);
+    },
+  };
+
   // Sprint 10 Revision 3.1: the Application Advisory Panel (advisory-panel.ts).
+  /** Sprint 11 Revision 18.0: the actor's sign-in name, for the platform-owner checks of the Advisory Panel. */
+  private async actorUsername(db: SQLite.SQLiteDatabase, actorId: number): Promise<string | null> {
+    const row = await db.getFirstAsync<{ Username: string | null }>(
+      'SELECT c.[Username] FROM [Member] m LEFT JOIN [Credentials] c ON c.[id] = m.[CredentialID] WHERE m.[id] = ?',
+      [actorId],
+    );
+    return row?.Username ?? null;
+  }
+
   advisory: DataService['advisory'] = {
     listMeetings: async (actorId) => {
       const db = await this.ready();
-      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       return db.getAllAsync<AdvisoryPanelMeeting>('SELECT * FROM [AdvisoryPanelMeetings] ORDER BY [meeting_date], [id]');
     },
     saveMeeting: async (actorId, input) => {
       const clean = cleanAdvisoryMeeting(input);
       const db = await this.ready();
-      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       let id = input.id ?? null;
       if (id !== null) {
         const done = await db.runAsync('UPDATE [AdvisoryPanelMeetings] SET [meeting_date] = ?, [title] = ?, [location] = ?, [agenda] = ? WHERE [id] = ?', [
@@ -6742,13 +6944,13 @@ export class SqliteDataService implements DataService {
     },
     removeMeeting: async (actorId, id) => {
       const db = await this.ready();
-      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       const done = await db.runAsync('DELETE FROM [AdvisoryPanelMeetings] WHERE [id] = ?', [id]);
       if (done.changes === 0) throw new BusinessRuleError('RECORD_NOT_FOUND', `No advisory panel meeting ${id}.`, { id });
     },
     listFeedback: async (actorId) => {
       const db = await this.ready();
-      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       const rows = await db.getAllAsync<AdvisoryFeedback & { MemberFirstName: string | null; MemberLastName: string | null }>(
         `SELECT f.*, m.[MemberFirstName], m.[MemberLastName] FROM [AdvisoryFeedback] f LEFT JOIN [Member] m ON m.[id] = f.[member_id]
           ORDER BY f.[submitted_at] DESC, f.[id] DESC`,
@@ -6767,7 +6969,7 @@ export class SqliteDataService implements DataService {
       const clean = cleanAdvisoryFeedback(input);
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
-      assertMayReadAdvisoryPanel(actor);
+      assertMayReadAdvisoryPanel(actor, await this.actorUsername(db, actorId));
       const id = (
         await db.runAsync('INSERT INTO [AdvisoryFeedback] ([member_id], [council_id], [topic], [body], [submitted_at]) VALUES (?, ?, ?, ?, ?)', [
           actorId,
@@ -6781,12 +6983,12 @@ export class SqliteDataService implements DataService {
     },
     listPanelists: async (actorId) => {
       const db = await this.ready();
-      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       return this.advisoryPanelists(db);
     },
     setPanelist: async (actorId, memberId, designated) => {
       const db = await this.ready();
-      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       const member = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Member] WHERE [id] = ?', [memberId]);
       if (!member) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
       const role = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [Role] WHERE [Role] = ?', [ADVISORY_PANELIST_ROLE]);

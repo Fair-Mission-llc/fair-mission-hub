@@ -75,6 +75,8 @@ import {
   councilWideSettings,
   deskDrawerMasked,
   deskDrawersFor,
+  MY_MOTION_REQUESTS_TITLE,
+  pendingMotionRequestCount,
   DESK_ALERT_POLL_MS,
   diaryLogRows,
   buildCharityPipeline,
@@ -145,6 +147,7 @@ import {
 } from '@kofc/shared';
 import { BankStatementMatchWindow, BudgetVsActualsModule, MotionsLedgerModule } from '@/components/DeskModules';
 import { DeskBlotter } from '@/components/DeskDrawers';
+import { CouncilMotionRequests, MyMotionRequestsPanel } from '@/components/MotionRequestParts';
 import { DeskManualHeader } from '@/components/DeskManualHeader';
 import { AuthorizationDesk as ApprovedExpenseSigning } from '@/components/modules/ApprovedExpenseSigning';
 import { DisbursementLedger as ExpenseSettlement } from '@/components/modules/ExpenseSettlement';
@@ -732,7 +735,8 @@ function FlaggedHoursDrawer({ user, councilId }: { user: SessionUser; councilId:
  * Constitutional Advisor Panels and the Operations Knowledge Vault. Sprint 8P Stage 3: the dissolved Oversight Desk's
  * audits join it - the Flagged Hours Review (lit while an entry is held), Shifts Awaiting Hours (lit while one is
  * overdue) and, for Super Admins, the Inbound Council Mail Center (lit while a request is pending). Sprint 10 Revision
- * 1.0 removed the Inbound Council Mail Center drawer: access requests are read on Platform Management only.
+ * 1.0 removed the Inbound Council Mail Center drawer: access requests are read on the Super Admin Desk only. Sprint 11
+ * Revision 18.0: the Motion Requests drawer (after Approved Expenses), lit while a member's motion request waits for a decision.
  */
 export function GrandKnightDesk({ user, councilId }: { user: SessionUser; councilId: number }) {
   const flags = useFeatureFlags();
@@ -743,6 +747,13 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
   const readsHours = has('shifts-awaiting-hours');
   const charity = useCharityPipeline(user, councilId, 'grand-knight', has('donation-workflow') || has('charity-endorsements'));
   const queue = useLoad(() => db.expenses.listAuthorizationQueue(user.memberId, councilId), [user.memberId, councilId]);
+  // Sprint 11 Revision 18.0: the Motion Requests drawer lights while a member's request waits for a decision.
+  const decidesMotions = has('motion-requests');
+  const motions = useLoad(
+    async () => (decidesMotions ? pendingMotionRequestCount(await db.motionRequests.listForCouncil(user.memberId, councilId)) : null),
+    [user.memberId, councilId, decidesMotions],
+  );
+  usePolling(motions.reload);
   const audits = useLoad(async () => {
     const [held, awaiting, council] = await Promise.all([
       reviewHeld ? settled(() => db.volunteerQuarantine.listPending(user.memberId, councilId)) : null,
@@ -773,6 +784,8 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
           switch (spec.id) {
             case 'approved-expenses':
               return { count: queue.data ? rows.length : null, alert: gkSignatureAlert(user, rows) };
+            case 'motion-requests':
+              return { count: motions.data ?? null, alert: (motions.data ?? 0) > 0, alertText: 'Motion requests waiting for your decision' };
             case 'flagged-hours':
               return { count: a?.held ?? null, alert: (a?.held ?? 0) > 0, alertText: 'Time entries held for your review' };
             case 'shifts-awaiting-hours':
@@ -789,11 +802,14 @@ export function GrandKnightDesk({ user, councilId }: { user: SessionUser; counci
           void queue.reload();
           void audits.reload();
           void charity.reload();
+          void motions.reload();
         }}
         render={(spec) => {
           switch (spec.id) {
             case 'approved-expenses':
               return <ApprovedExpenseSigning />;
+            case 'motion-requests':
+              return <CouncilMotionRequests user={user} councilId={councilId} onChanged={() => void motions.reload()} />;
             case 'flagged-hours':
               return <FlaggedHoursDrawer user={user} councilId={councilId} />;
             case 'shifts-awaiting-hours':
@@ -1168,6 +1184,10 @@ export function MemberDesk({ user }: { user: SessionUser }) {
       </div>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         {flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}
+        {/* Sprint 11 Revision 18.0: the member's own motion requests and the form to send one. */}
+        <DeskRow id="member-motion-requests" label={MY_MOTION_REQUESTS_TITLE}>
+          <MyMotionRequestsPanel user={user} />
+        </DeskRow>
         <DeskRow id={DESK_FOCUS_TARGETS.mine.rowId} label="My open expense sheets">
           <Panel title={`My open expense sheets (${open.length})`}>
             {sheets.error ? <Notice tone="error">{sheets.error}</Notice> : null}

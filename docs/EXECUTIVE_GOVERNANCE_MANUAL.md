@@ -284,7 +284,7 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | Tab | Who gets the tab | Drawers or sections | Section |
 | --- | --- | --- | --- |
 | **Home** | Every member | **Latest Council Newsletters & Bulletins**, Bible Verse of the Day, Live Actionable Reminders, Liturgical Feast Day Tracker, Upcoming Event Agenda, Top 5 Fraternal Volunteers, Community Prayer Request List. No links into the desks; the only button is **Praying Hands**. | 14.2 |
-| **Platform Management** | Super Admins | Feedback Communication Center, Council Access Request Approval Queue, System Feature Flag Control Panel | 11 (Treasurer Manual) |
+| **Super Admin Desk** | Super Admins | Communications Cabinet (Feedback Communication Center, Council Access Request Approval Queue), Settings Cabinet (Global System Parameters, Global Lookup Tables, System Feature Flag Control Panel, Secure Access Vault), Global Charities Registry | 10.3 (Admin User Guide) |
 | **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, Council Goals & Targets, Shared Equipment Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **Reference Workflows**: Charitable Donation Workflow, Planning & Budgeting Workflow, Council Election Workflow | 14.5 |
 | **Financial Secretary Desk** | The FS, Admins, Super Admins | FS Expense Audit Queue, Expense Report (ER) Routing Track, Charitable Donation Records, FS/GK Compliance Endorsements, Charitable Grants Registry, Excel Roster Imports; **Reference Workflows**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
 | **Treasurer Desk** | The Treasurer, Admins, Super Admins | Treasurer Ledger Audit, Disbursed Check Registry, Charitable Grants Registry, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **Accounting Configuration**: Chart of Accounts & General Ledger; **Reference Workflows**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
@@ -341,7 +341,7 @@ The page reads your member type and your officer roles. The page then lists only
 | Member | Summary | One short sentence for each page that you can open, for example **Home**, **Member Actions Hub**, **Visual Master Calendar** and the **Member Desk**. No leadership, finance desk or settings page. |
 | Council Officer | Full | The member pages and the desks of your office, with the sidebar pillar of each link and every drawer of each desk. For example **GK Expense Authorize** and the **Grand Knight Desk** drawers for the Grand Knight. |
 | Council Admin | Full | The member pages and the leadership, finance and settings pages of your council, with every drawer of each desk. |
-| Super Admin | Full | Every page, including **Global System Parameters**, and the **Platform Management** tab on the **Active Desks** row. |
+| Super Admin | Full | Every page, including **Global System Parameters**, the **Admin Desk** link, and the **Super Admin Desk** tab on the **Active Desks** row. |
 
 A few pages read differently for leaders. For example, a member reads that **Annual Budget Center** shows the budget. A leader also reads that budget keepers draft and approve the budget there.
 A module that your council switched off is not in the guide, because the module is not in your sidebar.
@@ -638,7 +638,8 @@ The SOP Center holds the same procedure: **Answers → SOP Center → Edit the c
 | --- | --- | --- |
 | The date is refused. | **Ends** is before **Starts**. | Correct the dates. |
 | The save is refused. | No council is ticked. | Tick at least one council. |
-| The best guess is *Community line N - Miscellaneous Community Activities*. | The event name does not name a Form 1728 program. | Choose the correct line in the list. The Form 1728 report uses the line that you confirm. |
+| The window shows *"No suggestion is at least 60% sure"*. | The event name does not name a Form 1728 program clearly enough. The cutoff is the **Form 1728 suggestion confidence cutoff** on **Global System Parameters**. | Choose the correct line in the list. The Form 1728 report uses the line that you confirm. |
+| The window shows fewer than three suggestion cards. | Only the lines at least 60% sure show as cards. | Choose a card, or choose any line in the list. |
 | You select **Cancel** in the Form 1728 window. | The event is not saved. | Select **Create event** again and confirm a line. |
 
 ### 3.2 Add shifts to an event
@@ -1360,6 +1361,7 @@ The page address is `/system-settings/council-settings`. Every administration an
 | **Hours before an event that gate donations open** | 2 hours | 0 to 72, in quarter hours | How long before an event begins the phone's **Collect** screen offers it for gate donations. With 0, an event is offered only once it is under way. Members may still sign up until a shift ends. |
 | **Days after a meeting that the minutes are due** | 7 days | 1 to 60 | The **Recorder Desk** counts down to the due date: the meeting's last day plus this number. Minutes not published by then show as overdue. |
 | **Days of notice before a special election** | 60 days | 1 to 365 | **Not used yet.** A mid-year nomination stays open for 14 days. |
+| **Days before a meeting a motion request must be in** | 5 days | 1 to 60 | An approved motion request goes on the first Monthly meeting at least this many days after the member submits it. |
 
 **Reminder Cadences** card:
 
@@ -1814,7 +1816,7 @@ A tile shows only to a reader who may open its module. An Admin who does not hol
 
 **Back to Desk Blotter:** some work must open another page. For example, the release of a long-term asset opens the asset form. Then a **Back to Desk Blotter** bar shows under the tab row. Select the bar to go back to your desk.
 
-**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Super Admins read council access requests on the **Platform Management** only. A saved `/dashboard#oversight` address opens your first tab.
+**The Oversight Desk is gone.** Its audits are drawers on the **Grand Knight Desk**: **Flagged Hours Review** and **Shifts Awaiting Hours**. Super Admins read council access requests on the **Super Admin Desk** only. A saved `/dashboard#oversight` address opens your first tab.
 
 A seat clears a desk only on the officer's own council. A Super Admin who picks another council in the council drop-down sees every desk of that council.
 
@@ -1934,6 +1936,32 @@ The **Council Election Workflow** drawer replaces the **Council Election Tracker
 | A sheet shows no release button in the drawer. | You submitted, ordered or coded that sheet (the collusion guard). | Ask a Super Admin to release the sheet. |
 | The asset form opened after a release. | The sheet is a long-term asset. | Complete the asset form. Then select **Back to Desk Blotter** under the tab row. |
 | The tile has a red border, but the drawer shows no button you can use. | The queue changed after the last check. | Close the drawer. The desk checks the queue again. |
+
+### 14.5.1 Decide motion requests from the Grand Knight Desk
+> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Super Admins decide. The council's other officers read the requests and post officer advisory messages on **My Motion Requests**.
+> **Warning:** an approval puts the motion on a meeting agenda at once. You cannot undo an approval or a denial.
+
+**Goal:** Approve or deny the motions that members ask to bring to the council.
+
+**Start point:** **Active Desks** row → **Grand Knight Desk** → **Motion Requests**.
+
+**Steps:**
+1. Find the **Motion Requests** drawer. A red glowing border means that a request waits for your decision.
+2. Select **Motion Requests**. The drawer lists waiting requests first, each with a red border.
+3. Read what the motion does, why, and its financial impact.
+4. Select **Officer advisory** to read and post messages with the other officers. The member does not see these messages.
+5. Select **Member and Grand Knight** to message the member.
+6. To approve, select **Approve and add to the agenda**. You cannot undo the approval.
+7. To deny, type a note in **Note to the member**. Select **Deny request**. You cannot undo the denial.
+
+**Expected result:** An approval shows the meeting and the date. The motion is on the agenda of the first Monthly meeting at least 5 days after the member submitted it, with a 5-minute slot. A denial shows *"Denied. The member sees your note."*
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The approval says the council has no Monthly meeting late enough. | The meetings are not built yet. | Build the meetings on **Recurring Meetings**. Approve again. |
+| **Deny request** stays grey. | **Note to the member** is empty. | Type a short note. |
+| The **Motion Requests** drawer is missing. | You do not hold the Grand Knight or Deputy Grand Knight seat. | Use **My Motion Requests** in the Faith In Action pillar to read the requests. |
 
 ### 14.6 Check your own work on the Member Actions Hub and the Member Desk
 > **Who can do this:** every signed-in member.
@@ -2748,7 +2776,7 @@ The screen has two depths: **Summary** and **Full**. Your role sets the depth. Y
 | Member (a plain volunteer) | Summary | One short sentence | One short sentence. No drawers. |
 | Council Officer | Full | The leader sentence and the sidebar pillar of the link, for example *sidebar: Finances* | The sentence and a list of every drawer of the desk |
 | Council Admin | Full | The leader sentence and the sidebar pillar | The sentence and every drawer of each desk that you hold |
-| Super Admin | Full | The leader sentence and the sidebar pillar, for every page | The sentence and every drawer, including the **Platform Management** folders |
+| Super Admin | Full | The leader sentence and the sidebar pillar, for every page | The sentence and every drawer, including the **Super Admin Desk** cabinets |
 
 The first line of the screen tells you your depth. For example, *You are signed in as: Council Officer (Grand Knight)*. Under it, the overview says *You see the full map* or *You see a short summary*.
 
@@ -2822,7 +2850,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 7. Troubleshooting reference
 - 8. Council Wide Settings and platform settings
 - 9. Access requests, impersonation and remote help
-- 10. Feedback loops and Platform Management
+- 10. Feedback loops and the Super Admin Desk
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys
