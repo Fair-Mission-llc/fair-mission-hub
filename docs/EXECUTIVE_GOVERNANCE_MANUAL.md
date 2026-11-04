@@ -165,7 +165,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Chart of Accounts & General Ledger** | Finances | General ledger readers | The chart of accounts and every posting | 2.4 (Treasurer Manual) |
+| **General Ledger** | Finances | General ledger readers | The chart of accounts and every posting | 2.4 (Treasurer Manual) |
 | **Balance Sheet** | Finances | General ledger readers | Assets, liabilities and net worth | 2.4 (Treasurer Manual) |
 | **My Expense Reports** | Finances | Every member | Your own expense reports and their status | 4.1 |
 | **Disbursed Check Registry** | Finances | Finance officers, Super Admins | Approved reports paid by check | 2.3 (Treasurer Manual) |
@@ -287,7 +287,7 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | **Super Admin Desk** | Super Admins | Communications Cabinet (Feedback Communication Center, Council Access Request Approval Queue), Settings Cabinet (Global System Parameters, Global Lookup Tables, System Feature Flag Control Panel, Secure Access Vault), Global Charities Registry | 10.3 (Admin User Guide) |
 | **Grand Knight Desk** | The GK, the DGK, Admins, Super Admins | Approved Expenses, Flagged Hours Review, Shifts Awaiting Hours, Charitable Grant Requests Vetting Board, FS/GK Compliance Endorsements, Council Goals & Targets, Shared Equipment Library, Affiliation Invites, Connected Councils, Constitutional Advisor Panels; **Reference Workflows**: Charitable Donation Workflow, Planning & Budgeting Workflow, Council Election Workflow | 14.5 |
 | **Financial Secretary Desk** | The FS, Admins, Super Admins | FS Expense Audit Queue, Expense Report (ER) Routing Track, Charitable Donation Records, FS/GK Compliance Endorsements, Charitable Grants Registry, Excel Roster Imports; **Reference Workflows**: Expense Report (ER) Workflow, Charitable Donation Workflow (outgoing charity grants) | 6.4 (Financial Secretary Manual) |
-| **Treasurer Desk** | The Treasurer, Admins, Super Admins | Treasurer Ledger Audit, Disbursed Check Registry, Charitable Grants Registry, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **Accounting Configuration**: Chart of Accounts & General Ledger; **Reference Workflows**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
+| **Treasurer Desk** | The Treasurer, Admins, Super Admins | Treasurer Ledger Audit, Disbursed Check Registry, Charitable Grants Registry, Cash Box Audit Closure Panel, High-Volume Batch Transaction Coder, Annual Budget vs Actuals Ledger Grid, Bank Statement Match-Window; **Accounting Configuration**: General Ledger; **Reference Workflows**: Expense Report (ER) Workflow, Charitable Donation Workflow, Planning & Budgeting Workflow | 6.4 (Treasurer Manual) |
 | **Recorder Desk** | The Recorder, Admins, Super Admins | Historical Meeting Minutes Archive, Meeting Minutes Entry Desk, Start Live Meeting Sequence, Council Resolutions and Motions Ledger; **Reference Workflows**: Council Election Workflow | 14.8 |
 | **Historian Desk** | The Council Historian, Admins, Super Admins | Fraternal Diary Entry Logs, Monthly Newsletters, Meeting Photos, Oral History Recordings, Google Drive Media Gallery Sync Board; **Reference Workflows**: Council Election Workflow | 14.10 |
 | **Member Desk** | Every member | **Open Shifts Needing Volunteers** and **My shifts** side by side at the top, **My Charity Requests**, **My open expense sheets**, the **Council Roster** panel | 14.6 |
@@ -1740,7 +1740,7 @@ The spine has this order from the top:
    - **Inbound Operations**: work that comes in to you. For example, payment requests, coding, cash box counts, donation records and bank matches.
    - **Outbound Operations**: money and reports that go out. For example, checks, charity matches and the Form 1295.
 3. **The other folders.** On the **Grand Knight Desk**, the **Recorder Desk** and the **Historian Desk**, the other folders show in one flat list.
-4. **Accounting Configuration** (the **Treasurer Desk** only). This block holds the **Chart of Accounts & General Ledger** folder (section 6.4.1 of the Treasurer Manual).
+4. **Accounting Configuration** (the **Treasurer Desk** only). This block holds the **General Ledger** folder (section 6.4.1 of the Treasurer Manual).
 5. **Reference Workflows** (every officer desk). This block is always at the bottom of the spine. It holds the workflow drawers that you read for reference (section 14.3.3). A reference folder shows its count in grey. A reference folder never gets a red border and never moves to the top. The same sheet therefore lights only one folder: the folder where you sign.
 
 To close a folder, select **Back to Desk Blotter** at the bottom of the blotter. You can also select **Close** or push **Esc**.
@@ -1796,7 +1796,7 @@ The drawers on each desk:
 | **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 10 of the Treasurer Manual). |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | Read budgeted against actual spend and the variance analyzer. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. |
-| **Treasurer Desk** (accounting) | **Chart of Accounts & General Ledger** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
+| **Treasurer Desk** (accounting) | **General Ledger** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
 | **Treasurer Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Code in **Treasurer Ledger Audit** and pay in **Disbursed Check Registry** (section 14.3.3). |
 | **Treasurer Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. Pay in **Charitable Grants Registry** (section 2.7 of the Treasurer Manual). |
 | **Treasurer Desk** (reference) | **Planning & Budgeting Workflow** | Read the planning steps and the budget status. Read only. Mark the budget reviewed on **Council Wide Settings** (section 16). |
@@ -1938,7 +1938,7 @@ The **Council Election Workflow** drawer replaces the **Council Election Tracker
 | The tile has a red border, but the drawer shows no button you can use. | The queue changed after the last check. | Close the drawer. The desk checks the queue again. |
 
 ### 14.5.1 Decide motion requests from the Grand Knight Desk
-> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Super Admins decide. The council's other officers read the requests and post officer advisory messages on **My Motion Requests**.
+> **Who can do this:** the council's Grand Knight, Deputy Grand Knight and Super Admins decide. The council's other officers read the requests and post officer advisory messages on the **Motion Request** page (Faith In Action).
 > **Warning:** an approval puts the motion on a meeting agenda at once. You cannot undo an approval or a denial.
 
 **Goal:** Approve or deny the motions that members ask to bring to the council.
@@ -1961,7 +1961,7 @@ The **Council Election Workflow** drawer replaces the **Council Election Tracker
 | --- | --- | --- |
 | The approval says the council has no Monthly meeting late enough. | The meetings are not built yet. | Build the meetings on **Recurring Meetings**. Approve again. |
 | **Deny request** stays grey. | **Note to the member** is empty. | Type a short note. |
-| The **Motion Requests** drawer is missing. | You do not hold the Grand Knight or Deputy Grand Knight seat. | Use **My Motion Requests** in the Faith In Action pillar to read the requests. |
+| The **Motion Requests** drawer is missing. | You do not hold the Grand Knight or Deputy Grand Knight seat. | Use **Motion Request** in the Faith In Action pillar to read the requests. |
 
 ### 14.6 Check your own work on the Member Actions Hub and the Member Desk
 > **Who can do this:** every signed-in member.
@@ -2640,7 +2640,7 @@ Some fundraisers use parish property, for example the cathedral parking lot. The
 
 | Way to split | Where | What it does |
 | --- | --- | --- |
-| Split profile | **Treasurer Desk** → **Chart of Accounts & General Ledger** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
+| Split profile | **Treasurer Desk** → **General Ledger** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
 | Event Split Override | **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **Override Event Split** | One posting of one event's gifts is shared out by the shares you choose. Nothing is saved to the account. |
 
 The destinations of a split are other Revenue accounts of the council. Since schema 103, a destination can also be an affiliated council. That council's share goes to a **Due to Sister Council** account in this council's own books. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.
@@ -2650,7 +2650,7 @@ The destinations of a split are other Revenue accounts of the council. Since sch
 
 **Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages.
 
-**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & General Ledger** → **Edit split** on the Revenue account.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **General Ledger** → **Edit split** on the Revenue account.
 
 **Steps:**
 1. Select **Edit split** on the Revenue account that receives the fundraiser's money.
@@ -2693,7 +2693,7 @@ The destinations of a split are other Revenue accounts of the council. Since sch
 
 **Goal:** Send a part of each posting to an affiliated council, for example for a joint fundraiser.
 
-**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & General Ledger** → **Edit split** on the Revenue account.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **General Ledger** → **Edit split** on the Revenue account.
 
 **Steps:**
 1. Select **Edit split** on the Revenue account that receives the money.
@@ -2803,7 +2803,7 @@ The screen has three levels:
 | Level | What it is | Example |
 | --- | --- | --- |
 | 1. Group | A closed block with a title and the number of its links | **Ledgers** |
-| 2. Link or desk | A page name that you can select, with its sentence | **Chart of Accounts & General Ledger** · *sidebar: Finances* |
+| 2. Link or desk | A page name that you can select, with its sentence | **General Ledger** · *sidebar: Finances* |
 | 3. Drawer | A drawer of a desk, listed under the desk (full depth only) | **Approved Expenses** under **Grand Knight Desk** |
 
 Select a link name to open that page. Select a desk name to open that desk tab on the **Active Desks** row.

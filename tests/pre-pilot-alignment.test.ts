@@ -118,7 +118,8 @@ describe.each(drivers)('$name driver: Sprint 6R flags', (d) => {
     const off = await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { feature_council_history: false, feature_expense_reporting: false });
     expect(councilFeatureFlags(off)).toEqual({ ...COUNCIL_15295_SEED_FLAGS, feature_council_history: false, feature_expense_reporting: false });
     await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { feature_council_history: true, feature_expense_reporting: true });
-    expect(councilFeatureFlags(await db.councils.get(1))).toEqual(COUNCIL_15295_SEED_FLAGS);
+    // Sprint 11 Revision 18.5: Expense Reporting starts off for Council 15295, so switching it on differs from the seed.
+    expect(councilFeatureFlags(await db.councils.get(1))).toEqual({ ...COUNCIL_15295_SEED_FLAGS, feature_expense_reporting: true });
     await expectRule(db.councils.setFeatureFlags(MEMBER.admin, 1, { feature_faith_center: false }), 'SUPER_ADMIN_REQUIRED');
   });
 });

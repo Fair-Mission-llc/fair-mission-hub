@@ -38,7 +38,7 @@ const seat = (roles: string[]) => ({ memberId: 7, councilId: OWN, memberType: 'M
 describe('1. the Chart of Accounts & GL Setup folder on the Treasurer Desk', () => {
   it('files the folder under Accounting Configuration and mounts the ledger grid on the blotter', () => {
     expect(DESK_DRAWERS.find((d) => d.id === 'chart-of-accounts')).toMatchObject({ desk: 'treasurer', title: CHART_OF_ACCOUNTS_FOLDER_TITLE, cabinet: 'accounting' });
-    expect(CHART_OF_ACCOUNTS_FOLDER_TITLE).toBe('Chart of Accounts & General Ledger');
+    expect(CHART_OF_ACCOUNTS_FOLDER_TITLE).toBe('General Ledger'); // Sprint 11 Revision 18.5
     expect(DESK_CABINET_LABELS.accounting).toBe('Accounting Configuration');
     const sections = deskSpineSections('treasurer', deskDrawersFor(seat(['Treasurer']), 'treasurer', OWN));
     expect(sections.find((s) => s.id === 'accounting')?.drawers.map((d) => d.id)).toEqual(['chart-of-accounts']);
@@ -180,7 +180,7 @@ describe('6. the pilot kit', () => {
 
   it("adds the chart review before the Treasurer's ledger coding and the reports the user named", () => {
     const treasurer = kit.slice(kit.indexOf("key='treasurer'"), kit.indexOf("key='dgk'"));
-    const review = treasurer.indexOf('Accounting Configuration › Chart of Accounts & General Ledger');
+    const review = treasurer.indexOf('Accounting Configuration › General Ledger');
     expect(review).toBeGreaterThan(0);
     expect(review).toBeLessThan(treasurer.indexOf('Treasurer Desk > Treasurer Ledger Audit'));
     expect(treasurer).toContain('Reports 12 (');

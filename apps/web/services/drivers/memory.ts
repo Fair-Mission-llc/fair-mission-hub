@@ -813,7 +813,7 @@ import {
   type MotionRequestMessage,
   type MotionRequestThread,
 } from '@kofc/shared';
-import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { accountTypeLockedError, cleanGLAccountInput, glAccountTypeLocked, acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import {
   assertMayAssignRegional,
   assertMayOpenRegionalAssignments,
@@ -7180,6 +7180,44 @@ export class MemoryDataService implements DataService {
       assertMayReadGeneralLedger(this.memberWriteActor(s, actorId), councilId, `read the chart of accounts of council ${councilId}`);
       this.assertCouncilsExist(s, [councilId]);
       return buildChartOfAccounts(councilId, this.glAccounts(s, councilId), this.journalEntries(s, councilId));
+    },
+
+    // Sprint 11 Revision 18.5: the General Ledger page's Add Account, Edit and Delete links.
+    saveGLAccount: async (actorId, councilId, input) => {
+      const clean = cleanGLAccountInput(input);
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayPostGeneralLedger(this.memberWriteActor(s, actorId), councilId, `change the chart of accounts of council ${councilId}`);
+        this.requireRecord(s, 'Council', councilId);
+        assertAccountNameFree(this.glAccounts(s, councilId), clean.AccountName, input.id ?? null);
+        if (input.id != null) {
+          const row = s.rows('GLAccount').find((r) => r.id === input.id && r.CouncilID === councilId);
+          if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${input.id}.`, { id: input.id });
+          const account = row as unknown as GLAccount;
+          if (clean.AccountType !== account.AccountType) {
+            const used = GL_ACCOUNT_REFERENCES.some((ref) => s.rows(ref.table).some((r) => r[ref.column] === account.id));
+            if (used || glAccountTypeLocked(account)) throw accountTypeLockedError(account);
+          }
+          Object.assign(row, clean);
+          return { ...row } as unknown as GLAccount;
+        }
+        return {
+          ...s.insert('GLAccount', { CouncilID: councilId, ParentAccountID: null, IsVirtualGoal: 0, TargetGoalAmount: 0, is_split_account: 0, due_to_council_id: null, ...clean }),
+        } as unknown as GLAccount;
+      });
+    },
+    removeGLAccount: async (actorId, councilId, id) => {
+      const s = await this.ready();
+      return s.transaction(() => {
+        assertMayPostGeneralLedger(this.memberWriteActor(s, actorId), councilId, `change the chart of accounts of council ${councilId}`);
+        const row = s.rows('GLAccount').find((r) => r.id === id && r.CouncilID === councilId);
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${id}.`, { id });
+        // Deletes never cascade: an account anything still points at stays.
+        for (const ref of GL_ACCOUNT_REFERENCES) {
+          if (s.rows(ref.table).some((r) => r[ref.column] === id)) throw accountInUseError(row as unknown as GLAccount, ref.noun);
+        }
+        s.remove('GLAccount', (r) => r.id === id);
+      });
     },
 
     logDoubleEntryTransaction: async (actorId, linesData) => {

@@ -335,6 +335,8 @@ export function createRemoteDataService(): DataService {
     },
     finance: {
       listChartOfAccounts: notImplemented('finance.listChartOfAccounts'),
+      saveGLAccount: notImplemented('finance.saveGLAccount'),
+      removeGLAccount: notImplemented('finance.removeGLAccount'),
       logDoubleEntryTransaction: notImplemented('finance.logDoubleEntryTransaction'),
       logConcludedRevenue: notImplemented('finance.logConcludedRevenue'),
       getBatchCodingQueue: notImplemented('finance.getBatchCodingQueue'),

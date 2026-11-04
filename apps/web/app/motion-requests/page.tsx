@@ -1,9 +1,10 @@
 'use client';
-// Sprint 11 Revision 18.0: Motion Requests (the 'motion-requests' portal area, every signed-in member; the Faith In Action
-// link 'My Motion Requests'). A member submits and follows their own requests (MyMotionRequestsPanel). The Grand
-// Knight's seat and the council's officers also see the council's requests (CouncilMotionRequests): the Grand Knight
-// decides them, officers advise in the officer channel.
-import { canReadCouncilMotionRequests, MY_MOTION_REQUESTS_TITLE } from '@kofc/shared';
+// Sprint 11 Revision 18.0: Motion Requests (the 'motion-requests' portal area, every signed-in member). A member submits
+// and follows their own requests (MyMotionRequestsPanel). The Grand Knight's seat and the council's officers also see the
+// council's requests (CouncilMotionRequests): the Grand Knight decides them, officers advise in the officer channel.
+// Sprint 11 Revision 18.5: the sidebar link and the heading read 'Motion Request' (MOTION_REQUEST_LABEL); the request form
+// leads, and the member's own history sits apart at the foot of the page as 'My Motion Requests'.
+import { canReadCouncilMotionRequests, MOTION_REQUEST_LABEL } from '@kofc/shared';
 import { RequireArea } from '@/components/CouncilScope';
 import { CouncilMotionRequests, MyMotionRequestsPanel } from '@/components/MotionRequestParts';
 import { PageTitle } from '@/components/ui';
@@ -17,8 +18,7 @@ function MotionRequestsBody() {
   );
   return (
     <div className="flex flex-col gap-4">
-      <MyMotionRequestsPanel user={user} />
-      {officer ? <CouncilMotionRequests user={user} councilId={user.councilId} /> : null}
+      <MyMotionRequestsPanel user={user} split middle={officer ? <CouncilMotionRequests user={user} councilId={user.councilId} /> : null} />
     </div>
   );
 }
@@ -26,7 +26,7 @@ function MotionRequestsBody() {
 export default function MotionRequestsPage() {
   return (
     <RequireArea area="motion-requests">
-      <PageTitle>{MY_MOTION_REQUESTS_TITLE}</PageTitle>
+      <PageTitle>{MOTION_REQUEST_LABEL}</PageTitle>
       <MotionRequestsBody />
     </RequireArea>
   );

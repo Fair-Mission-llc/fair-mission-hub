@@ -2,14 +2,27 @@
 // Secure Access Vault (Sprint 6L Extension): the one Setup page for every connection a council keeps a secret for - its
 // outbound email account (moved here from the Council Lookups tab), its Google Drive key and (Sprint 6L Extension 2) its
 // Microsoft Co-Pilot key, the Microsoft Copilot Studio Direct Line secret (both through /api/councils/credentials). A short status banner leads the page in plain words; no ports or technical flags.
+// Sprint 11 Revision 18.5: a 'Document storage provider' dropdown lists only the provider the Admin picked under File
+// Repository Mode (vaultStorageProviderOptions); only that provider's key card shows, the other three are hidden.
 // Audience: seated officers, the council's Admins and Super Admins (canOpenCredentialsVault). Only the council's Admins
 // and Super Admins change anything (canAdministerCouncil, the same rule the routes apply); everyone else sees the banner.
 import { useState, type FormEvent } from 'react';
-import { canAdministerCouncil, councilEmailGateway, councilLabel, describeError, REDACTED_SECRET, type CredentialKey, type CredentialStatus } from '@kofc/shared';
+import {
+  canAdministerCouncil,
+  councilEmailGateway,
+  councilLabel,
+  describeError,
+  REDACTED_SECRET,
+  VAULT_STORAGE_PROVIDER_LABEL,
+  vaultStorageProviderOptions,
+  type CredentialKey,
+  type CredentialStatus,
+  type FileRepositorySecretKey,
+} from '@kofc/shared';
 import { CouncilSelect, useCouncilScope } from '@/components/CouncilScope';
 import { EmailGatewayPanel, gatewayOnServer } from '@/components/EmailGatewayPanel';
 import { TwoFactorDeliveryPanel } from '@/components/TwoFactorSection';
-import { Button, Field, Input, Notice, PageTitle, Panel, Textarea } from '@/components/ui';
+import { Button, Field, Input, Notice, PageTitle, Panel, Select, Textarea } from '@/components/ui';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -118,6 +131,14 @@ const DROPBOX_CARD: SecretCard = {
   maxLength: 2000,
   savedText: 'Saved. The portal server files uploads in Dropbox with it.',
   removedText: 'Removed. Dropbox uploads stop until a new token is saved.',
+};
+
+/** The key card of each document storage provider. */
+const STORAGE_CARDS: Record<FileRepositorySecretKey, SecretCard> = {
+  GOOGLE_DRIVE_PRIVATE_KEY: DRIVE_CARD,
+  ONEDRIVE_CLIENT_SECRET: ONEDRIVE_CARD,
+  DROPBOX_ACCESS_TOKEN: DROPBOX_CARD,
+  FILE_SERVER_PASSWORD: FILE_SERVER_CARD,
 };
 
 const COPILOT_CARD: SecretCard = {
@@ -252,19 +273,19 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !ho
     await Promise.all([council.reload(), vault.reload()]);
   };
 
-  const drive = vault.data?.credentials.find((c) => c.credential_key === 'GOOGLE_DRIVE_PRIVATE_KEY');
+  // Sprint 11 Revision 18.5: only the storage provider the Admin picked (File Repository Mode).
+  const storageOptions = vaultStorageProviderOptions(council.data);
+  const storage = storageOptions[0]!;
+  const storageSaved = vault.data?.credentials.find((c) => c.credential_key === storage.credentialKey);
   const copilot = vault.data?.credentials.find((c) => c.credential_key === 'COPILOT_STUDIO_DIRECT_LINE_SECRET');
   const ocrEndpoint = vault.data?.credentials.find((c) => c.credential_key === 'AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT');
   const ocrKey = vault.data?.credentials.find((c) => c.credential_key === 'AZURE_DOCUMENT_INTELLIGENCE_KEY');
-  const fileServer = vault.data?.credentials.find((c) => c.credential_key === 'FILE_SERVER_PASSWORD');
-  const oneDrive = vault.data?.credentials.find((c) => c.credential_key === 'ONEDRIVE_CLIENT_SECRET');
-  const dropbox = vault.data?.credentials.find((c) => c.credential_key === 'DROPBOX_ACCESS_TOKEN');
   const emailOn = councilEmailGateway(council.data) !== null && (vault.data ? Boolean(vault.data.gateway.password) : true);
   const connections: Connection[] = [
     { name: 'Outbound email', connected: emailOn, on: 'Connected to the council mail account', off: 'Using the portal default' },
     ...(mayEdit
       ? [
-          { name: 'Google Drive', connected: Boolean(drive), on: 'Connected to the council Drive', off: 'Using the portal Drive' },
+          { name: storage.label, connected: Boolean(storageSaved), on: `Connected to the council's ${storage.label}`, off: storage.id === 'GOOGLE_DRIVE' ? 'Using the portal Drive' : 'Key not saved' },
           { name: 'Microsoft Co-Pilot', connected: Boolean(copilot), on: 'Connected to Copilot Studio', off: 'Not connected' },
           { name: 'Receipt reading', connected: Boolean(ocrEndpoint && ocrKey), on: 'Connected to Azure Document Intelligence', off: 'Not connected' },
         ]
@@ -281,13 +302,23 @@ export function CredentialsVaultPanel({ homeCouncilOnly = false, showTitle = !ho
           <EmailGatewayPanel key={`email-${councilId}`} councilId={councilId} onChanged={reload} />
           {/* Sprint 11 Revision 8.0: which second-step channels the portal can deliver for this council. */}
           <TwoFactorDeliveryPanel emailGatewayConnected={emailOn} />
-          <SecretPanel key={`drive-${councilId}`} card={DRIVE_CARD} councilId={councilId} saved={drive} onChanged={reload} />
+          <Panel title={VAULT_STORAGE_PROVIDER_LABEL}>
+            <Field label={VAULT_STORAGE_PROVIDER_LABEL} hint="The provider your council picked under File Repository Mode in Council Wide Settings. Change it there.">
+              {(id) => (
+                <Select id={id} value={storage.id} onChange={() => undefined}>
+                  {storageOptions.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+          </Panel>
+          <SecretPanel key={`storage-${storage.id}-${councilId}`} card={STORAGE_CARDS[storage.credentialKey]} councilId={councilId} saved={storageSaved} onChanged={reload} />
           <SecretPanel key={`copilot-${councilId}`} card={COPILOT_CARD} councilId={councilId} saved={copilot} onChanged={reload} />
           <SecretPanel key={`ocr-endpoint-${councilId}`} card={OCR_ENDPOINT_CARD} councilId={councilId} saved={ocrEndpoint} onChanged={reload} />
           <SecretPanel key={`ocr-key-${councilId}`} card={OCR_KEY_CARD} councilId={councilId} saved={ocrKey} onChanged={reload} />
-          <SecretPanel key={`file-server-${councilId}`} card={FILE_SERVER_CARD} councilId={councilId} saved={fileServer} onChanged={reload} />
-          <SecretPanel key={`onedrive-${councilId}`} card={ONEDRIVE_CARD} councilId={councilId} saved={oneDrive} onChanged={reload} />
-          <SecretPanel key={`dropbox-${councilId}`} card={DROPBOX_CARD} councilId={councilId} saved={dropbox} onChanged={reload} />
         </div>
       ) : (
         <p className="text-sm">

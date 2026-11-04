@@ -39,7 +39,9 @@ describe('feature flag rules', () => {
     for (const gone of ['elections', 'elections/appointments', 'donations', 'charities/propose', 'charities/vetting', 'meetings', 'meetings/cadence', 'meetings/live']) {
       expect(areas).not.toContain(gone);
     }
-    for (const kept of ['home', 'events', 'ledger', 'expenses', 'finance/ledger', 'finance/balance-sheet', 'financials/budget', 'activities', 'charities/queue']) {
+    // Sprint 11 Revision 18.5: charities/queue (the charity check drawers) now goes with the Charitable Contribution switch.
+    expect(areas).not.toContain('charities/queue');
+    for (const kept of ['home', 'events', 'ledger', 'expenses', 'finance/ledger', 'finance/balance-sheet', 'financials/budget', 'activities']) {
       expect(areas).toContain(kept);
     }
   });
@@ -93,7 +95,8 @@ describe.each(drivers)('$name driver: councils.setFeatureFlags', (d) => {
     const off = await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_meeting_management: false, flag_charity_proposals: false });
     expect(councilFeatureFlags(off)).toEqual({ ...COUNCIL_15295_SEED_FLAGS, flag_meeting_management: false, flag_charity_proposals: false });
     await db.councils.setFeatureFlags(MEMBER.superAdmin, 1, { flag_charity_proposals: true });
-    expect(councilFeatureFlags(await db.councils.get(1))).toEqual({ ...COUNCIL_15295_SEED_FLAGS, flag_meeting_management: false });
+    // Sprint 11 Revision 18.5: charity proposals start off for Council 15295, so switching it on differs from the seed.
+    expect(councilFeatureFlags(await db.councils.get(1))).toEqual({ ...COUNCIL_15295_SEED_FLAGS, flag_meeting_management: false, flag_charity_proposals: true });
   });
 
   it('refuses Admins and unknown councils, writing nothing', async () => {

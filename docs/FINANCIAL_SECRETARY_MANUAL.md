@@ -141,7 +141,7 @@ A shared transaction id groups the lines.
 
 | Page | Shows |
 | --- | --- |
-| **Chart of Accounts & General Ledger** | The chart of accounts with every posting |
+| **General Ledger** | The chart of accounts with every posting. Equity accounts are read on the **Balance Sheet**. The FS, the Treasurer and Super Admins see **Add Account**, **Edit** and **Delete**. |
 | **Balance Sheet** | Assets against liabilities and equity |
 | **Financial Dashboard** | Cash flow liquidity, the balance sheet summary and **Quick actions** (the transfer between accounts) |
 
@@ -152,7 +152,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: general ledger spreadsheet capture -->
-![Chart of Accounts & General Ledger (/finance/ledger)](../generated/dashboard_visual_catalog/finance_ledger.png)
+![General Ledger (/finance/ledger)](../generated/dashboard_visual_catalog/finance_ledger.png)
 <!-- /KEEP_IMAGE -->
 
 <!-- KEEP_IMAGE: balance sheet capture -->
@@ -169,9 +169,12 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 
 **Steps:**
 1. To post: choose the debit account and the credit account. Enter the amount and the description. Save.
-2. To transfer: select **Transfer Funds**. Choose two asset accounts. Enter the amount. Select **Post transfer**. The button is also on the **Chart of Accounts & General Ledger** page and in its Treasurer Desk folder.
-3. To reconcile: open **Active Desks** → **Treasurer Desk** → **Bank Statement Match-Window**. Upload the bank CSV file. The Financial Dashboard has no bank statement table.
-4. Read the matched rows and the unmatched rows.
+2. To transfer: select **Transfer Funds**. Choose two asset accounts. Enter the amount. Select **Post transfer**. The button is also on the **General Ledger** page and in its Treasurer Desk folder.
+3. To add an account: open Sidebar → Finances → **FINANCIAL REPORTS** → **General Ledger**. Select **Add Account**. Enter the **Account name** and choose the **Account type** (Assets, Liabilities, Revenue or Expenses). Select **Add Account**.
+4. To change an account: select **Edit** on its row. Change the name, or the type of an unused account. Select **Save account**.
+5. To delete an account: select **Delete** on its row. Confirm. Only an account with no postings, sub-accounts or links can be deleted.
+6. To reconcile: open **Active Desks** → **Treasurer Desk** → **Bank Statement Match-Window**. Upload the bank CSV file. The Financial Dashboard has no bank statement table.
+7. Read the matched rows and the unmatched rows.
 
 **Expected result:** The dashboard shows **Ledger Balanced (Zero Leaks)** when debits equal credits.
 
@@ -811,7 +814,7 @@ The spine has this order from the top:
    - **Inbound Operations**: work that comes in to you. For example, payment requests, coding, cash box counts, donation records and bank matches.
    - **Outbound Operations**: money and reports that go out. For example, checks, charity matches and the Form 1295.
 3. **The other folders.** On the **Grand Knight Desk**, the **Recorder Desk** and the **Historian Desk**, the other folders show in one flat list.
-4. **Accounting Configuration** (the **Treasurer Desk** only). This block holds the **Chart of Accounts & General Ledger** folder (section 6.4.1 of the Treasurer Manual).
+4. **Accounting Configuration** (the **Treasurer Desk** only). This block holds the **General Ledger** folder (section 6.4.1 of the Treasurer Manual).
 5. **Reference Workflows** (every officer desk). This block is always at the bottom of the spine. It holds the workflow drawers that you read for reference (section 6.2.3). A reference folder shows its count in grey. A reference folder never gets a red border and never moves to the top. The same sheet therefore lights only one folder: the folder where you sign.
 
 To close a folder, select **Back to Desk Blotter** at the bottom of the blotter. You can also select **Close** or push **Esc**.
@@ -867,7 +870,7 @@ The drawers on each desk:
 | **Treasurer Desk** | **High-Volume Batch Transaction Coder** | Code many electronic donations to one Revenue line (section 10 of the Treasurer Manual). |
 | **Treasurer Desk** | **Annual Budget vs Actuals Ledger Grid** | Read budgeted against actual spend and the variance analyzer. |
 | **Treasurer Desk** | **Bank Statement Match-Window** | Match a bank statement CSV file against the general ledger. |
-| **Treasurer Desk** (accounting) | **Chart of Accounts & General Ledger** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
+| **Treasurer Desk** (accounting) | **General Ledger** | Review every general ledger account, its type and its posted balance (section 6.4.1 of the Treasurer Manual). |
 | **Treasurer Desk** (reference) | **Expense Report (ER) Workflow** | Read where each sheet waits. Read only. Code in **Treasurer Ledger Audit** and pay in **Disbursed Check Registry** (section 6.2.3). |
 | **Treasurer Desk** (reference) | **Charitable Donation Workflow** | Read where each outgoing charity grant waits. Read only. Pay in **Charitable Grants Registry** (section 1.8). |
 | **Treasurer Desk** (reference) | **Planning & Budgeting Workflow** | Read the planning steps and the budget status. Read only. Mark the budget reviewed on **Council Wide Settings** (section 7). |
@@ -1082,7 +1085,7 @@ Some fundraisers use parish property, for example the cathedral parking lot. The
 
 | Way to split | Where | What it does |
 | --- | --- | --- |
-| Split profile | **Treasurer Desk** → **Chart of Accounts & General Ledger** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
+| Split profile | **Treasurer Desk** → **General Ledger** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
 | Event Split Override | **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **Override Event Split** | One posting of one event's gifts is shared out by the shares you choose. Nothing is saved to the account. |
 
 The destinations of a split are other Revenue accounts of the council. Since schema 103, a destination can also be an affiliated council. That council's share goes to a **Due to Sister Council** account in this council's own books. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.
@@ -1092,7 +1095,7 @@ The destinations of a split are other Revenue accounts of the council. Since sch
 
 **Goal:** Share each posting to a Revenue account, for example the parish's share of a fundraiser, by percentages.
 
-**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & General Ledger** → **Edit split** on the Revenue account.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **General Ledger** → **Edit split** on the Revenue account.
 
 **Steps:**
 1. Select **Edit split** on the Revenue account that receives the fundraiser's money.
@@ -1135,7 +1138,7 @@ The destinations of a split are other Revenue accounts of the council. Since sch
 
 **Goal:** Send a part of each posting to an affiliated council, for example for a joint fundraiser.
 
-**Start point:** **Active Desks** row → **Treasurer Desk** → **Chart of Accounts & General Ledger** → **Edit split** on the Revenue account.
+**Start point:** **Active Desks** row → **Treasurer Desk** → **General Ledger** → **Edit split** on the Revenue account.
 
 **Steps:**
 1. Select **Edit split** on the Revenue account that receives the money.

@@ -121,7 +121,8 @@ describe('Council Wide Settings and Council Lookups', () => {
     expect(page).toContain('emptyOption: COUNCIL_ACCOUNT_TOKEN_LABEL');
     expect(page).toContain('LOOKUP_STATUSES.map');
     expect(page).toContain('<Markdown source=');
-    expect(read('apps/web/components/PaymentQrUploader.tsx')).toContain('methodAcceptsQrCode(name)');
+    // Sprint 11 Revision 18.5: the card filters through paymentQrUploadRows (Active, QR-capable methods only).
+    expect(read('apps/web/components/PaymentQrUploader.tsx')).toContain('paymentQrUploadRows(rows');
   });
 });
 

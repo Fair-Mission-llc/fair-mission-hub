@@ -118,7 +118,7 @@ import type { DistributionGroup } from './messaging';
 import type { FeatureFlagChanges, FeatureFlagName } from './features';
 import type { EmailGatewayColumn, EmailGatewaySettings } from './email-gateway';
 import type { MemberRosterOptions, MemberRosterResult } from './member-roster';
-import type { CouncilAccount, CouncilAccountInput, SplitSisterCouncil } from './council-accounts';
+import type { CouncilAccount, CouncilAccountInput, GLAccountInput, SplitSisterCouncil } from './council-accounts';
 import type { FileRepositorySettings } from './file-repository';
 import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
@@ -4208,6 +4208,21 @@ export interface DataService {
      * physical property account, liabilities, equity, revenue and expense accounts, each with its posted balance.
      */
     listChartOfAccounts(actorId: number, councilId: number): Promise<ChartOfAccounts>;
+    /**
+     * Sprint 11 Revision 18.5: the General Ledger page's Add Account and Edit links. No id adds a top-level Asset,
+     * Liability, Revenue or Expense account; an id renames that account of the council, and changes its type only while
+     * nothing points at it (GL_ACCOUNT_REFERENCES) and it is not a virtual goal or clearing account (RECORD_IN_USE).
+     * The ledger's posters (assertMayPostGeneralLedger: FINANCE_OFFICER_REQUIRED, COUNCIL_ACCESS_DENIED); INVALID_INPUT
+     * for a blank or over-long name, a name already in the chart or another type; RECORD_NOT_FOUND for another
+     * council's account.
+     */
+    saveGLAccount(actorId: number, councilId: number, input: GLAccountInput): Promise<GLAccount>;
+    /**
+     * Sprint 11 Revision 18.5: the General Ledger page's Delete link. Same posters as saveGLAccount. RECORD_IN_USE while
+     * anything still points at the account (a journal entry, a sub-account, a payment method...); RECORD_NOT_FOUND for
+     * another council's account or an unknown id.
+     */
+    removeGLAccount(actorId: number, councilId: number, id: number): Promise<void>;
     /**
      * Posts one balanced transaction atomically and resolves to its stored lines, in the order given (cleanJournalLines).
      * Since Sprint 5Z-8 every line carries the same freshly generated TransactionID (a UUID), as do a transfer's two.

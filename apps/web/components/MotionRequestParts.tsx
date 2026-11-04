@@ -6,7 +6,7 @@
 //     on the soonest Monthly meeting the council's lead days allow. The council's officers read the list and advise in
 //     the officer channel. On the Grand Knight Desk's Motion Requests drawer and on /motion-requests for officers.
 //   - MotionThread: one chat channel of a request, kept with the request for good.
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   describeError,
   MOTION_RATIONALE_MAX_LENGTH,
@@ -218,8 +218,11 @@ function MotionRequestForm({ user, onSaved }: { user: SessionUser; onSaved: () =
   );
 }
 
-/** The member's own requests and the form to send one. */
-export function MyMotionRequestsPanel({ user, showForm = true }: { user: SessionUser; showForm?: boolean }) {
+/**
+ * The member's own requests and the form to send one. Sprint 11 Revision 18.5: `split` (the /motion-requests page) draws
+ * the form first, then `middle`, then the 'My Motion Requests' history panel on its own at the foot of the page.
+ */
+export function MyMotionRequestsPanel({ user, showForm = true, split = false, middle }: { user: SessionUser; showForm?: boolean; split?: boolean; middle?: ReactNode }) {
   const mine = useLoad(() => db.motionRequests.listMine(user.memberId), [user.memberId]);
   const [error, setError] = useState<string | null>(null);
   const rows = mine.data ?? [];
@@ -232,10 +235,11 @@ export function MyMotionRequestsPanel({ user, showForm = true }: { user: Session
       setError(describeError(err));
     }
   };
-  return (
+  const form = showForm ? <MotionRequestForm user={user} onSaved={() => mine.reload()} /> : null;
+  const history = (
     <Panel title={`${MY_MOTION_REQUESTS_TITLE} (${rows.length})`}>
       <div className="flex flex-col gap-3">
-        {showForm ? <MotionRequestForm user={user} onSaved={() => mine.reload()} /> : null}
+        {split ? null : form}
         {mine.error ? <Notice tone="error">{mine.error}</Notice> : null}
         {error ? <Notice tone="error">{error}</Notice> : null}
         {mine.data && rows.length === 0 ? <Empty>You have not requested a motion yet.</Empty> : null}
@@ -258,6 +262,14 @@ export function MyMotionRequestsPanel({ user, showForm = true }: { user: Session
         ) : null}
       </div>
     </Panel>
+  );
+  if (!split) return history;
+  return (
+    <>
+      {form}
+      {middle}
+      {history}
+    </>
   );
 }
 

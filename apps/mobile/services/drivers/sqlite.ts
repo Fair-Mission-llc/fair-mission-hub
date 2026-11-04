@@ -820,7 +820,7 @@ import {
   planAffiliationResponse,
   type CouncilAffiliations,
 } from '@kofc/shared';
-import { acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
+import { accountTypeLockedError, cleanGLAccountInput, glAccountTypeLocked, acceptedInviteBody, ADVISORY_INVITE_TITLE, advisoryInviteBody, advisoryInviteOf, alertDisplayBody, assertInviteAcceptable, assertMayInviteAdvisoryPanelist, ADVISORY_PANELIST_ROLE, assertAccountNameFree, assertMayKeepAdvisoryPanel, assertMayManageCouncilAccounts, assertMayReadAdvisoryPanel, assertMayResendSetupCode, assertMaySetFileRepository, cleanCouncilAccount, cleanAdvisoryFeedback, cleanAdvisoryMeeting, cleanFileRepositorySettings, councilLabel as rosterCouncilLabel, type CouncilAccount, accountInUseError, assertActiveSisterCouncil, councilAccountLabel, COUNCIL_ACCOUNT_TYPE, dueToSisterCouncilName, GL_ACCOUNT_REFERENCES, isCouncilAccount, isSisterCouncilClearingAccount, paymentMethodOwner, type GLSplitDestination, type SplitSisterCouncil, type AdvisoryFeedback, type AdvisoryFeedbackDetail, type AdvisoryPanelist, type AdvisoryPanelMeeting, assertMayViewAsMember, memberRosterCouncilIds, memberRosterManagedCouncilIds, memberRosterScope, PILOT_PARKING_EVENT_NAME, pilotTimelineOffsetDays, shiftSeedDate, sortRosterMembers } from '@kofc/shared';
 import {
   assertMayAssignRegional,
   assertMayOpenRegionalAssignments,
@@ -8513,6 +8513,51 @@ export class SqliteDataService implements DataService {
       assertMayReadGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `read the chart of accounts of council ${councilId}`);
       await this.assertCouncilsExist(db, [councilId]);
       return buildChartOfAccounts(councilId, await this.glAccounts(db, councilId), await this.journalEntries(db, councilId));
+    },
+
+    // Sprint 11 Revision 18.5: the General Ledger page's Add Account, Edit and Delete links.
+    saveGLAccount: async (actorId, councilId, input) => {
+      const clean = cleanGLAccountInput(input);
+      const db = await this.ready();
+      let id = input.id ?? null;
+      await db.withTransactionAsync(async () => {
+        assertMayPostGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `change the chart of accounts of council ${councilId}`);
+        await this.requireRecord(db, 'Council', councilId);
+        assertAccountNameFree(await this.glAccounts(db, councilId), clean.AccountName, id);
+        if (id !== null) {
+          const row = await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ? AND [CouncilID] = ?', [id, councilId]);
+          if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${id}.`, { id });
+          if (clean.AccountType !== row.AccountType) {
+            let used = false;
+            for (const ref of GL_ACCOUNT_REFERENCES) {
+              if (await db.getFirstAsync(`SELECT 1 AS [hit] FROM [${ref.table}] WHERE [${ref.column}] = ?`, [id])) used = true;
+            }
+            if (used || glAccountTypeLocked(row)) throw accountTypeLockedError(row);
+          }
+          await db.runAsync('UPDATE [GLAccount] SET [AccountName] = ?, [AccountType] = ? WHERE [id] = ?', [clean.AccountName, clean.AccountType, id]);
+        } else {
+          const added = await db.runAsync('INSERT INTO [GLAccount] ([CouncilID], [AccountName], [AccountType], [IsVirtualGoal], [TargetGoalAmount]) VALUES (?, ?, ?, 0, 0)', [
+            councilId,
+            clean.AccountName,
+            clean.AccountType,
+          ]);
+          id = added.lastInsertRowId;
+        }
+      });
+      return (await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ?', [id]))!;
+    },
+    removeGLAccount: async (actorId, councilId, id) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        assertMayPostGeneralLedger(await this.memberWriteActor(db, actorId), councilId, `change the chart of accounts of council ${councilId}`);
+        const row = await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ? AND [CouncilID] = ?', [id, councilId]);
+        if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `Council ${councilId} has no account ${id}.`, { id });
+        // Deletes never cascade: an account anything still points at stays.
+        for (const ref of GL_ACCOUNT_REFERENCES) {
+          if (await db.getFirstAsync(`SELECT 1 AS [hit] FROM [${ref.table}] WHERE [${ref.column}] = ?`, [id])) throw accountInUseError(row, ref.noun);
+        }
+        await db.runAsync('DELETE FROM [GLAccount] WHERE [id] = ?', [id]);
+      });
     },
 
     logDoubleEntryTransaction: async (actorId, linesData) => {

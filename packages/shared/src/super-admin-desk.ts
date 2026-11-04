@@ -31,9 +31,15 @@ export const PLATFORM_OWNER_USERNAMES: readonly string[] = ['testsuperadmin@kofc
 
 /**
  * Sprint 11 Revision 17.5: true when the Active Desks row draws the Super Admin Desk tab - any Super Admin session.
- * isPlatformOwner still gates the owner-only tools (Advisory Panel invitations).
+ * Sprint 11 Revision 18.5: the Advisory Panel no longer reads isPlatformOwner; every Super Admin opens and keeps it.
  */
 export const showsSuperAdminDeskTab = (u: Pick<SessionUser, 'memberType'>): boolean => u.memberType === 'Super Admin';
+
+/**
+ * Sprint 11 Revision 18.5: true when the Active Desks row also draws the council Admin Desk tab (/dashboard#admin) -
+ * every Super Admin session, so both desks sit side by side. Council Admins keep their sidebar Admin Desk link.
+ */
+export const showsAdminDeskTab = (u: Pick<SessionUser, 'memberType'>): boolean => u.memberType === 'Super Admin';
 
 /** True only for the platform owner's own session: an Active Super Admin signed in with an owner username. */
 export function isPlatformOwner(

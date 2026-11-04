@@ -84,6 +84,29 @@ export const FILE_REPOSITORY_PROVIDERS: readonly FileRepositoryProvider[] = [
 /** The dropdown's choices, in order (the four provider keys). */
 export const FILE_REPOSITORY_MODES = FILE_REPOSITORY_PROVIDERS.map((p) => ({ id: p.id, label: p.label }));
 
+/** The Secure Access Vault key each storage provider's secret is saved under. */
+export const FILE_REPOSITORY_SECRET_KEYS: Readonly<Record<FileRepositoryMode, FileRepositorySecretKey>> = {
+  GOOGLE_DRIVE: 'GOOGLE_DRIVE_PRIVATE_KEY',
+  ONEDRIVE_SHAREPOINT: 'ONEDRIVE_CLIENT_SECRET',
+  DROPBOX_BUSINESS: 'DROPBOX_ACCESS_TOKEN',
+  LOCAL_NETWORK_SERVER: 'FILE_SERVER_PASSWORD',
+};
+
+/** Sprint 11 Revision 18.5: the Secure Access Vault's Document storage provider dropdown. */
+export const VAULT_STORAGE_PROVIDER_LABEL = 'Document storage provider';
+
+/**
+ * Sprint 11 Revision 18.5: the choices of the Secure Access Vault's Document storage provider dropdown - only the one
+ * provider the council's Admin picked under File Repository Mode (Council Wide Settings). The other providers, and their
+ * key cards, are hidden.
+ */
+export function vaultStorageProviderOptions(
+  council: Partial<Pick<Council, 'file_repository_mode'>> | null | undefined,
+): { id: FileRepositoryMode; label: string; credentialKey: FileRepositorySecretKey }[] {
+  const mode = normalizeFileRepositoryMode(council?.file_repository_mode);
+  return [{ id: mode, label: fileRepositoryProvider(mode).label, credentialKey: FILE_REPOSITORY_SECRET_KEYS[mode] }];
+}
+
 /** Revision 3.1's stored values, still read correctly. */
 const LEGACY_MODES: Readonly<Record<string, FileRepositoryMode>> = { CLOUD: 'GOOGLE_DRIVE', LOCAL_NETWORK: 'LOCAL_NETWORK_SERVER' };
 

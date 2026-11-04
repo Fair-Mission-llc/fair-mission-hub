@@ -79,6 +79,7 @@
 // Sprint 8P Stage 3: every officer desk is a desk blotter of slide-out drawers, and the Oversight Desk tab is dissolved -
 // its Flagged Hours Review, Shifts Awaiting Hours and Inbound Council Mail Center are Grand Knight Desk drawers, and the
 // Shifts Awaiting Hours audit is also back on the Executive Dashboard page for every executive-audit reader.
+import { AdminDesk } from '@/components/modules/AdminDesk';
 import { dashboardTabsFor, isFraternalTenant } from '@kofc/shared';
 import { CouncilSelect, RequireArea, useCouncilScope } from '@/components/CouncilScope';
 import {
@@ -151,6 +152,9 @@ function Dashboard() {
           </DeskSeatFrame>
         ) : shown === 'super-admin' ? (
           <SuperAdminDesk user={user} />
+        ) : shown === 'admin' ? (
+          // Sprint 11 Revision 18.5: the council Admin Desk as a Super Admin's Active Desks tab (same module as /admin-desk).
+          <AdminDesk embedded />
         ) : (
           <MemberDesk user={user} />
         )}

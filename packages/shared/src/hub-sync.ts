@@ -94,7 +94,7 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'feedback.listInbox', 'finance.batchCodeDonations', 'finance.closeCashAudit', 'finance.getAccountLedger',
   'finance.getBatchCodingQueue', 'finance.getCashAuditBoard', 'finance.getCouncilNetWorth',
   'finance.getLatestBalanceSheet', 'finance.getTrusteeAudit',
-  'finance.listChartOfAccounts', 'finance.listGLSplitProfiles', 'finance.listLedgerTransactions',
+  'finance.listChartOfAccounts', 'finance.saveGLAccount', 'finance.removeGLAccount', 'finance.listGLSplitProfiles', 'finance.listLedgerTransactions',
   'finance.listTrusteeAudits', 'finance.logConcludedRevenue', 'finance.logDoubleEntryTransaction',
   'finance.setGLSplitProfile', 'finance.listSplitSisterCouncils', 'finance.signTrusteeAudit', 'history.addDiaryEntry',
   'history.addOperationsKnowledge', 'history.compileInMemoriam', 'history.getInMemoriamRoll',

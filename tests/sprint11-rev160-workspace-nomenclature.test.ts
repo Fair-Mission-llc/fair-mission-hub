@@ -155,7 +155,7 @@ describe('3. /council-lookups and the roster', () => {
 
 describe('4. the treasurer and FS drawers', () => {
   it('spells each accounting name exactly', () => {
-    expect(GENERAL_LEDGER_TITLE).toBe('Chart of Accounts & General Ledger');
+    expect(GENERAL_LEDGER_TITLE).toBe('General Ledger'); // Sprint 11 Revision 18.5
     expect(CHART_OF_ACCOUNTS_FOLDER_TITLE).toBe(GENERAL_LEDGER_TITLE);
     expect(TRANSFER_FUNDS_TITLE).toBe('Transfer Funds');
     expect(TREASURER_LEDGER_AUDIT_TITLE).toBe('Treasurer Ledger Audit');

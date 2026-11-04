@@ -7,14 +7,15 @@
 // uploaded code to donors. In the Standard Bank Accounts drawer of Council Wide Settings, for the members who keep the
 // council's donation methods (canManageCouncilLookups); the route and the driver check again.
 //
-// Sprint 11 Revision 1.0: Cash, Check, card readers and Physical Items never show a QR code (methodAcceptsQrCode), so the
-// card lists them with the control disabled. The upload itself (uploadPaymentQrImage) and the compact preview
+// Sprint 11 Revision 1.0: Cash, Check, card readers and Physical Items never show a QR code (methodAcceptsQrCode).
+// Sprint 11 Revision 18.5: the card reads the live Enabled donation methods rows and draws an upload panel only for the
+// Active methods that take a QR code (paymentQrUploadRows); the old disabled 'No QR code' rows are gone. The upload itself (uploadPaymentQrImage) and the compact preview
 // (QrThumbnail) are shared with the Council Lookups grid, where a QR code is a checkbox that reveals a small upload button.
 import { useState } from 'react';
 import {
   canManageCouncilLookups,
   describeError,
-  methodAcceptsQrCode,
+  paymentQrUploadRows,
   PAYMENT_QR_MAX_BYTES,
   PAYMENT_QR_ROUTE,
   PAYMENT_QR_TYPES,
@@ -89,16 +90,6 @@ function QrRow({ council, row, name, onSaved }: { council: Council; row: Council
   };
 
   const inputId = `qr-upload-${row.id}`;
-  // Sprint 11 Revision 1.0: Cash, Check, card readers and Physical Items take no QR code; the control is disabled.
-  if (!methodAcceptsQrCode(name)) {
-    return (
-      <li className="flex items-center gap-3 rounded border-2 border-line bg-white p-2 opacity-70" aria-disabled="true">
-        <QrThumbnail url={null} name={name} />
-        <span className="font-bold text-navy">{name}</span>
-        <span className="text-xs text-muted">No QR code for this payment method.</span>
-      </li>
-    );
-  }
   return (
     <li className="flex flex-wrap items-center gap-4 rounded border-2 border-navy bg-white p-3">
       <div className="flex size-24 shrink-0 items-center justify-center rounded border border-line bg-white">
@@ -148,14 +139,15 @@ export function PaymentQrUploader({ council }: { council: Council }) {
   const data = useLoad(async () => {
     if (!allowed) return null;
     const [rows, methods] = await Promise.all([db.lookups.listCouncilSpecific(user.memberId, council.id, 'CouncilDonationMethod'), db.donations.listMethods(council.id)]);
-    return { rows, names: new Map(methods.map((o) => [o.method.id, o.method.DonationMethod])) };
+    const names = new Map(methods.map((o) => [o.method.id, o.method.DonationMethod]));
+    return { rows: paymentQrUploadRows(rows, (id) => names.get(id)), names };
   }, [allowed, user.memberId, council.id]);
   if (!allowed) return null;
   return (
     <Panel title="Payment QR Codes" className="mt-6">
       <p className="mb-3 text-sm">The QR code donors scan for each enabled payment method. Upload the image your Venmo, Zelle or Square account gives you.</p>
       {data.error ? <Notice tone="error">{data.error}</Notice> : null}
-      {data.data && data.data.rows.length === 0 ? <Empty>No payment methods are enabled yet. Enable them on Council Lookups.</Empty> : null}
+      {data.data && data.data.rows.length === 0 ? <Empty>No active payment method takes a QR code. Turn on Venmo, Zelle, Zeffy or ParishSoft under Council Lookups.</Empty> : null}
       <ul className="flex flex-col gap-3">
         {(data.data?.rows ?? []).map((row) => (
           <QrRow key={row.id} council={council} row={row} name={data.data!.names.get(row.DonationMethodID) ?? `Method ${row.DonationMethodID}`} onSaved={data.reload} />

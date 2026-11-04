@@ -13,7 +13,6 @@ import {
   councilLabel,
   describeError,
   INVITE_PANELIST_LABEL,
-  isPlatformOwner,
   isSuperAdmin,
   sortCouncils,
   type AdvisoryPanelMeeting,
@@ -321,7 +320,7 @@ function Panelists() {
 }
 
 /**
- * The platform owner's 'Invite Panelist' drawer (Sprint 10 Revision 3.2; in-app only since Revision 4.0). Pick a council
+ * A Super Admin's 'Invite Panelist' drawer (Sprint 10 Revision 3.2; any Super Admin since Revision 18.5; in-app only since Revision 4.0). Pick a council
  * (any council) and one of its Active members; advisory.inviteMember posts an invitation card to that member's alert bell
  * and Home and pushes it to their phone. Nothing is emailed. The member becomes a panelist the moment they select Accept.
  */
@@ -390,7 +389,8 @@ export function AdvisoryPanelWorkspace() {
   const user = useUser();
   const [view, setView] = useState<AdvisoryPanelViewId>('roadmap');
   const [inviting, setInviting] = useState(false);
-  const owner = isPlatformOwner(user);
+  // Sprint 11 Revision 18.5: every Super Admin invites (was the platform owner only).
+  const owner = isSuperAdmin(user);
   return (
     <div className="flex flex-col gap-4">
       {owner ? (

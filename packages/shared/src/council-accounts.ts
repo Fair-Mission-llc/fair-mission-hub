@@ -29,7 +29,7 @@ import { DEFAULT_TENANT_TYPE, isFraternalTenant, type TenantType } from './tenan
 import { GL_ACCOUNT_NAME_MAX_LENGTH } from './finance';
 import { cleanEinNumber } from './maintenance';
 import { assertMayMaintainCouncilRecords, assertText, BusinessRuleError, optionalText, type MemberWriteActor } from './rules';
-import type { GLAccount } from './types';
+import type { GLAccount, GLAccountType } from './types';
 
 export const ACCOUNT_OWNERS_MATRIX_TITLE = 'Account Owners Matrix';
 export const ACCOUNT_DISPLAY_NAME_MAX_LENGTH = 150;
@@ -209,4 +209,43 @@ export function assertActiveSisterCouncil(activePartners: ReadonlySet<number>, c
     });
   }
   return sisterId;
+}
+
+// --- Sprint 11 Revision 18.5: the General Ledger page's Add Account, Edit and Delete links ---------------------------
+
+/**
+ * The account types the General Ledger page lists and its Add Account form offers. Equity accounts (Opening Balance
+ * Equity) are read on the Balance Sheet, so the ledger page no longer draws a second Equity box.
+ */
+export const GENERAL_LEDGER_PAGE_TYPES: readonly GLAccountType[] = ['Asset', 'Liability', 'Revenue', 'Expense'];
+export const ADD_GL_ACCOUNT_LABEL = 'Add Account';
+
+/** finance.saveGLAccount's input: `id` renames (and, while unused, retypes) that account; no id adds a top-level account. */
+export interface GLAccountInput {
+  id?: number | null;
+  AccountName: string;
+  AccountType: GLAccountType;
+}
+
+/** The input, trimmed and checked; INVALID_INPUT names the field. */
+export function cleanGLAccountInput(input: GLAccountInput): { AccountName: string; AccountType: GLAccountType } {
+  if (input === null || typeof input !== 'object') throw new BusinessRuleError('INVALID_INPUT', 'Send the account as an object.', {});
+  if (!(GENERAL_LEDGER_PAGE_TYPES as readonly string[]).includes(input.AccountType)) {
+    throw new BusinessRuleError('INVALID_INPUT', `An account added on the General Ledger is one of ${GENERAL_LEDGER_PAGE_TYPES.join(', ')}.`, {
+      field: 'AccountType',
+      allowed: [...GENERAL_LEDGER_PAGE_TYPES],
+    });
+  }
+  return { AccountName: assertText(input.AccountName, 'Account name', GL_ACCOUNT_NAME_MAX_LENGTH), AccountType: input.AccountType };
+}
+
+/**
+ * Whether an account's type may change: only while nothing points at it (GL_ACCOUNT_REFERENCES, checked by the driver)
+ * and it is neither a virtual goal nor a sister-council clearing account. Renaming is always allowed.
+ */
+export const glAccountTypeLocked = (a: Pick<GLAccount, 'IsVirtualGoal' | 'due_to_council_id'>): boolean => Number(a.IsVirtualGoal) === 1 || a.due_to_council_id != null;
+
+/** RECORD_IN_USE for a type change on an account that is used or special. */
+export function accountTypeLockedError(account: Pick<GLAccount, 'id' | 'AccountName'>): BusinessRuleError {
+  return new BusinessRuleError('RECORD_IN_USE', `${account.AccountName} already carries postings or links, so its type stays. You can still rename it.`, { id: account.id, field: 'AccountType' });
 }

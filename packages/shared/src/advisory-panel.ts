@@ -11,7 +11,6 @@
 // The roadmap and release lists are kept here, in code, by the development team; meetings and feedback are data.
 // The drivers check every read and write (assertMayReadAdvisoryPanel, assertMayKeepAdvisoryPanel).
 // =========================================================================
-import { isPlatformOwner } from './super-admin-desk';
 import { assertIsoDate, assertText, BusinessRuleError, describeActor, hasSuperAdminRights, optionalText, SecurityPrivilegeError, type MemberWriteActor } from './rules';
 
 export const ADVISORY_PANEL_TITLE = 'Application Advisory Panel';
@@ -109,28 +108,27 @@ export const ADVISORY_TOPIC_MAX_LENGTH = 100;
 export const ADVISORY_BODY_MAX_LENGTH = 2000;
 
 /**
- * Whether `u` sees the panel. Sprint 11 Revision 18.0: only the platform owner's own session (isPlatformOwner, which
- * needs the sign-in name) and the members who accepted an invitation (the panelist role). Every other Super Admin no
- * longer sees the link, the page or the invitation tools.
+ * Whether `u` sees the panel. Sprint 11 Revision 18.5: every Super Admin session and every member who accepted an
+ * invitation (the panelist role). Revision 18.0's owner-only restriction is gone.
  */
 export const canOpenAdvisoryPanel = (u: { memberType?: string | null; roles?: readonly string[]; username?: string | null }): boolean =>
-  (u.memberType === 'Super Admin' && isPlatformOwner({ memberType: 'Super Admin', username: u.username })) || (u.roles ?? []).includes(ADVISORY_PANELIST_ROLE);
+  u.memberType === 'Super Admin' || (u.roles ?? []).includes(ADVISORY_PANELIST_ROLE);
 
 export const isAdvisoryPanelist = (actor: Pick<MemberWriteActor, 'roles'>): boolean => (actor.roles ?? []).includes(ADVISORY_PANELIST_ROLE);
 
 /** Reading the panel and sending feedback: an Active panelist or an Active Super Admin (ADVISORY_PANEL_REQUIRED wording). */
-export function assertMayReadAdvisoryPanel(actor: MemberWriteActor, username?: string | null): void {
+export function assertMayReadAdvisoryPanel(actor: MemberWriteActor, _username?: string | null): void {
   if (actor.active && isAdvisoryPanelist(actor)) return;
-  // Sprint 11 Revision 18.0: when the driver passes the sign-in name, only the platform owner's Super Admin account passes.
-  if (hasSuperAdminRights(actor) && (username === undefined || isPlatformOwner({ memberType: 'Super Admin', username }))) return;
+  // Sprint 11 Revision 18.5: any Active Super Admin passes; the sign-in name is no longer checked.
+  if (hasSuperAdminRights(actor)) return;
   throw new SecurityPrivilegeError('ADMIN_REQUIRED', `Only Application Advisory Panelists and Super Admins open the Advisory Panel; you are ${describeActor(actor)}.`, {
     memberId: actor.memberId,
   });
 }
 
-/** Keeping the meeting dates and designating panelists: an Active Super Admin. */
-export function assertMayKeepAdvisoryPanel(actor: MemberWriteActor, username?: string | null): void {
-  if (hasSuperAdminRights(actor) && (username === undefined || isPlatformOwner({ memberType: 'Super Admin', username }))) return;
+/** Keeping the meeting dates and designating panelists: any Active Super Admin (Sprint 11 Revision 18.5). */
+export function assertMayKeepAdvisoryPanel(actor: MemberWriteActor, _username?: string | null): void {
+  if (hasSuperAdminRights(actor)) return;
   throw new SecurityPrivilegeError('SUPER_ADMIN_REQUIRED', `Only a Super Admin keeps the Advisory Panel's meetings and panelists; you are ${describeActor(actor)}.`, {
     memberId: actor.memberId,
   });
@@ -153,7 +151,7 @@ export function cleanAdvisoryFeedback(input: AdvisoryFeedbackInput): AdvisoryFee
 
 // ---- in-app invitations (Sprint 10 Revision 4.0; emailed links in Revision 3.2, now removed) ----------------------------
 //
-// The platform owner invites a member of any council from the panel's 'Invite Panelist' drawer
+// A Super Admin (the platform owner only until Revision 18.5) invites a member of any council from the panel's 'Invite Panelist' drawer
 // (advisory.inviteMember). Nothing is emailed: the invitation is one row of NotificationLog addressed to that member -
 // the schema stays at 101, so the row is recognized by its reserved title (ADVISORY_INVITE_TITLE, which no other alert
 // may use: cleanAlertPayload refuses it) and a marker line in its body naming the inviter. It shows as an invitation
@@ -211,10 +209,10 @@ export const acceptedInviteBody = (body: string): string => body.replace(MARKER,
 /** An alert body as a member reads it: an invitation's marker line is never shown. */
 export const alertDisplayBody = (body: string): string => body.replace(MARKER, '').trimEnd();
 
-/** Sending an invitation: the platform owner's own Active Super Admin account (isPlatformOwner). */
-export function assertMayInviteAdvisoryPanelist(actor: MemberWriteActor, username: string | null | undefined): void {
-  if (hasSuperAdminRights(actor) && isPlatformOwner({ memberType: 'Super Admin', username })) return;
-  throw new SecurityPrivilegeError('SUPER_ADMIN_REQUIRED', `Only the platform owner sends Advisory Panel invitations; you are ${describeActor(actor)}.`, { memberId: actor.memberId });
+/** Sending an invitation: any Active Super Admin (Sprint 11 Revision 18.5; was the platform owner only). */
+export function assertMayInviteAdvisoryPanelist(actor: MemberWriteActor, _username?: string | null): void {
+  if (hasSuperAdminRights(actor)) return;
+  throw new SecurityPrivilegeError('SUPER_ADMIN_REQUIRED', `Only a Super Admin sends Advisory Panel invitations; you are ${describeActor(actor)}.`, { memberId: actor.memberId });
 }
 
 /** Accepting: the member the invitation names, before it expires and before it is accepted; INVALID_INPUT otherwise. */

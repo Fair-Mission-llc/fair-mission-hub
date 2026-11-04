@@ -173,8 +173,11 @@ export const DESK_CABINET_LABELS: Readonly<Record<DeskCabinetId, string>> = {
  */
 export const SUPER_ADMIN_CABINETS: readonly DeskCabinetId[] = ['communications', 'settings'];
 // Sprint 11 Revision 16.0: the accounting names, one spelling for the sidebar, the desk drawers and the page titles.
-/** The chart of accounts and the general ledger (was 'Transaction Ledger' and 'Chart of Accounts & GL Setup'). */
-export const GENERAL_LEDGER_TITLE = 'Chart of Accounts & General Ledger';
+/**
+ * The chart of accounts and the general ledger (was 'Transaction Ledger', 'Chart of Accounts & GL Setup' and, until
+ * Sprint 11 Revision 18.5, 'Chart of Accounts & General Ledger').
+ */
+export const GENERAL_LEDGER_TITLE = 'General Ledger';
 /** The transfer between two asset accounts (finance.transferAssetFunds). */
 export const TRANSFER_FUNDS_TITLE = 'Transfer Funds';
 /** The Treasurer's ledger coding desk (was 'Treasurer Ledger Audit Desk' and 'Ledger Line Coder'). */
@@ -291,7 +294,7 @@ export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   { desk: 'treasurer', id: 'batch-coder', title: 'High-Volume Batch Transaction Coder', summary: 'Code many electronic donations to one Revenue line', gate: 'always', rowId: 'treasurer-batch-coder', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'budget-vs-actuals', title: 'Annual Budget vs Actuals Ledger Grid', summary: 'Budgeted vs actual spend and the YOY variance analyzer', area: 'finance/dashboard', rowId: 'module-budget-vs-actuals', cabinet: 'inbound' },
   { desk: 'treasurer', id: 'bank-match', title: 'Bank Statement Match-Window', summary: 'Match a bank statement CSV against the ledger', area: 'finance/dashboard', rowId: 'module-bank-match', cabinet: 'inbound' },
-  { desk: 'treasurer', id: 'chart-of-accounts', title: CHART_OF_ACCOUNTS_FOLDER_TITLE, summary: 'Every general ledger account, its type and its posted balance', area: 'finance/treasurer-desk', rowId: 'treasurer-chart-of-accounts', cabinet: 'accounting' },
+  { desk: 'treasurer', id: 'chart-of-accounts', title: CHART_OF_ACCOUNTS_FOLDER_TITLE, summary: 'Every general ledger account, its type and its posted balance', area: 'finance/ledger', rowId: 'treasurer-chart-of-accounts', cabinet: 'accounting' },
   { desk: 'treasurer', id: 'er-workflow', title: EXPENSE_REPORT_WORKFLOW_TITLE, summary: ER_WORKFLOW_SUMMARY, area: 'expenses/queue', rowId: 'drawer-treasurer-er-workflow', cabinet: 'reference' },
   { desk: 'treasurer', id: 'donation-workflow', title: CHARITABLE_DONATION_WORKFLOW_TITLE, summary: CHARITY_PIPELINE_SUMMARY, area: 'charities/queue', rowId: 'drawer-treasurer-donation-workflow', cabinet: 'reference' },
   { desk: 'treasurer', id: 'planning-budgeting', title: PLANNING_WORKFLOW_TITLE, summary: PLANNING_SUMMARY, gate: 'planning', rowId: 'drawer-treasurer-planning-budgeting', cabinet: 'reference' },

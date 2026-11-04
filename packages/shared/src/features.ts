@@ -76,9 +76,12 @@ export const LIGHTWEIGHT_FEATURE_FLAGS: FeatureFlags = Object.fromEntries(FEATUR
 /**
  * Sprint 11 Revision 9.0: the premium switches Council 15295 (CouncilID 1) starts with off (Seed.sql): capital assets,
  * the charity registry, advanced financial audits, document compilation, the photo gallery, the loaner library, the
- * marketing factory and the election center. Its other switches keep the column default (on).
+ * marketing factory and the election center. Sprint 11 Revision 18.5 adds Expense Reporting and the Charitable
+ * Contribution module (flag_charity_proposals). Its other switches keep the column default (on).
  */
 export const COUNCIL_15295_SEED_OFF_FLAGS = [
+  'feature_expense_reporting',
+  'flag_charity_proposals',
   'feature_capital_assets',
   'feature_charity_registry',
   'feature_advanced_audits',
@@ -126,7 +129,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
     label: 'Fundraising inflow',
     hint: 'Recorded donations, the phone app Collect tab: event point-of-sale, card and QR collections, gate intake drawers',
   },
-  flag_charity_proposals: { label: 'Charity proposals', hint: 'Member charity grant proposals and the vetting desk that tracks them' },
+  flag_charity_proposals: { label: 'Charity proposals', hint: 'Member charity grant proposals, the vetting desk that tracks them and the charity check drawers' },
   flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager and the phone app Meetings tab' },
   feature_expense_reporting: {
     label: 'Expense reporting',
@@ -175,7 +178,9 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
 export const FEATURE_FLAG_AREAS: Record<FeatureFlagName, readonly PortalArea[]> = {
   flag_mobile_elections: ['elections', 'elections/appointments'],
   flag_fundraising_inflow: ['donations'],
-  flag_charity_proposals: ['charities/propose', 'charities/vetting'],
+  // Sprint 11 Revision 18.5: the Charitable Contribution module - proposals, vetting and the FS / Treasurer charity check
+  // drawers (charities/queue), so no charity workflow row is left on any desk while it is off.
+  flag_charity_proposals: ['charities/propose', 'charities/vetting', 'charities/queue'],
   flag_meeting_management: ['meetings', 'meetings/cadence', 'meetings/live'],
   // The Treasurer's desk codes expense sheets, so it goes with them; the general ledger and the budget stay.
   feature_expense_reporting: ['expenses', 'expenses/queue', 'expenses/audit', 'expenses/authorize', 'expenses/disbursements', 'finance/treasurer-desk'],

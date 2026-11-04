@@ -40,7 +40,7 @@ describe('dashboard tabs by seat (pure)', () => {
   it('lists Home first and the Member Desk last', () => {
     // Sprint 8C: the Reports Desk merged into Home.
     // Sprint 8O Extension: the platform owner's Platform Management is drawn second, right after Home.
-    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'super-admin', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'member']);
+    expect(DASHBOARD_TABS.map((t) => t.id)).toEqual(['home', 'super-admin', 'admin', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'member']);
   });
 
   it('gives each officer only their own desk', () => {
@@ -58,7 +58,8 @@ describe('dashboard tabs by seat (pure)', () => {
 
   it("gives the council's Admins and any Super Admin every desk, as the full desk pages do", () => {
     // Sprint 11 Revision 17.5: a Super Admin also gets Platform Management, beside the council desks; an Admin does not.
-    const councilDesks = DASHBOARD_TABS.map((t) => t.id).filter((id) => id !== 'super-admin');
+    // Sprint 11 Revision 18.5: the Admin Desk tab is drawn for Super Admins only (council Admins keep the sidebar link).
+    const councilDesks = DASHBOARD_TABS.map((t) => t.id).filter((id) => id !== 'super-admin' && id !== 'admin');
     expect(ids(member({ memberType: 'Admin' }))).toEqual(councilDesks);
     expect(ids(member({ memberType: 'Admin' }), 2)).toEqual(['home', 'member']);
     expect(ids(member({ memberType: 'Super Admin' }), 2)).toEqual(DASHBOARD_TABS.map((t) => t.id));

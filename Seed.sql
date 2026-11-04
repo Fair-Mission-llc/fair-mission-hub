@@ -106,11 +106,13 @@ GO
 -- initialization: capital assets, the charity registry, advanced financial audits, document compilation, the photo
 -- gallery, the loaner library, the marketing factory and the election center (flag_mobile_elections). The core systems
 -- (financial management dashboards, service hours, event communications, calendars) have no switch and stay open.
+-- Sprint 11 Revision 18.5: Expense Reporting (feature_expense_reporting) and the Charitable Contribution module
+-- (flag_charity_proposals) start off too; their desk drawers and workflow rows stay hidden until a Super Admin turns them on.
 -- The other premium switches keep their column default (on). A Super Admin can still turn any switch on.
 INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email], [feature_capital_assets], [feature_charity_registry],
   [feature_advanced_audits], [feature_document_compilation], [feature_photo_gallery], [feature_loaner_library], [feature_marketing_factory],
-  [flag_mobile_elections])
-VALUES (15295, 'St. Mary''s Cathedral Council', 'OR', '503-555-0199', 'kofc15295@gmail.com', 0, 0, 0, 0, 0, 0, 0, 0);
+  [flag_mobile_elections], [feature_expense_reporting], [flag_charity_proposals])
+VALUES (15295, 'St. Mary''s Cathedral Council', 'OR', '503-555-0199', 'kofc15295@gmail.com', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 GO
 
 -- 2. Create the Login Credentials (Passwords should be encrypted in production, plain for dev stub)

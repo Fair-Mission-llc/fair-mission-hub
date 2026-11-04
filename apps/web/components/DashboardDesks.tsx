@@ -1154,7 +1154,7 @@ export function MemberDesk({ user }: { user: SessionUser }) {
   const flags = useFeatureFlags();
   const today = toIsoDate(new Date());
   const through = toIsoDate(new Date(Date.now() + MEMBER_DESK_SHIFT_DAYS * 86_400_000));
-  const sheets = useLoad(() => db.expenses.listUserReports(user.memberId), [user.memberId]);
+  const sheets = useLoad(async () => (flags.feature_expense_reporting ? db.expenses.listUserReports(user.memberId) : []), [user.memberId, flags.feature_expense_reporting]);
   const shifts = useLoad(() => db.events.listMemberShifts(user.memberId, { fromDate: today, toDate: through }), [user.memberId, today, through]);
   const open = (sheets.data ?? []).filter((d) => d.report.Status !== 'Reimbursed');
   return (
@@ -1188,6 +1188,8 @@ export function MemberDesk({ user }: { user: SessionUser }) {
         <DeskRow id="member-motion-requests" label={MY_MOTION_REQUESTS_TITLE}>
           <MyMotionRequestsPanel user={user} />
         </DeskRow>
+        {/* Sprint 11 Revision 18.5: the expense card leaves the desk while Expense Reporting is off. */}
+        {flags.feature_expense_reporting ? (
         <DeskRow id={DESK_FOCUS_TARGETS.mine.rowId} label="My open expense sheets">
           <Panel title={`My open expense sheets (${open.length})`}>
             {sheets.error ? <Notice tone="error">{sheets.error}</Notice> : null}
@@ -1212,6 +1214,7 @@ export function MemberDesk({ user }: { user: SessionUser }) {
             </p>
           </Panel>
         </DeskRow>
+        ) : null}
       </div>
       {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
       {deskMountsMemberRoster('member') ? <MemberRosterDirectory compact /> : null}

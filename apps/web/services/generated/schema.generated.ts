@@ -9339,7 +9339,9 @@ export const SEED_DATA: readonly SeedTable[] = [
         "feature_photo_gallery": 0,
         "feature_loaner_library": 0,
         "feature_marketing_factory": 0,
-        "flag_mobile_elections": 0
+        "flag_mobile_elections": 0,
+        "feature_expense_reporting": 0,
+        "flag_charity_proposals": 0
       }
     ]
   },

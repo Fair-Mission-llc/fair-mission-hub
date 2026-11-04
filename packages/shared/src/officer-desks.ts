@@ -62,14 +62,15 @@ import {
 import { addDays } from './planning';
 import { isShiftFull, visibleFeed } from './presentation';
 import { canOpenHistorianDesk, canOpenRecorderDesk } from './recorder-historian';
-import { showsSuperAdminDeskTab, SUPER_ADMIN_DESK_TITLE } from './super-admin-desk';
+import { ADMIN_DESK_TITLE } from './admin-desk';
+import { showsAdminDeskTab, showsSuperAdminDeskTab, SUPER_ADMIN_DESK_TITLE } from './super-admin-desk';
 import type { TenantType } from './tenant';
 import type { NotificationLog } from './types';
 
 type Actor = Pick<SessionUser, 'memberId' | 'councilId' | 'memberType' | 'isOfficer'> & { roles?: readonly string[]; username?: string };
 
 // Sprint 8P Stage 3: the standalone Oversight Desk tab is dissolved; its audits are drawers on the Grand Knight Desk.
-export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'member' | 'super-admin';
+export type DashboardTabId = 'home' | 'grand-knight' | 'financial-secretary' | 'treasurer' | 'recorder' | 'historian' | 'member' | 'super-admin' | 'admin';
 
 export interface DashboardTab {
   id: DashboardTabId;
@@ -84,6 +85,8 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   // Sprint 8O: the Super Admin cockpit. Sprint 8O Extension: drawn second, right after Home. Sprint 11 Revision 17.5:
   // every Super Admin session gets it, beside the council desks (super-admin-desk.ts showsSuperAdminDeskTab).
   { id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE, anchor: 'super-admin' },
+  // Sprint 11 Revision 18.5: a Super Admin's row also carries the council Admin Desk, right beside the Super Admin Desk.
+  { id: 'admin', label: ADMIN_DESK_TITLE, anchor: 'admin' },
   { id: 'grand-knight', label: 'Grand Knight Desk', anchor: 'grand-knight' },
   { id: 'financial-secretary', label: 'Financial Secretary Desk', anchor: 'financial-secretary' },
   { id: 'treasurer', label: 'Treasurer Desk', anchor: 'treasurer' },
@@ -113,6 +116,7 @@ export function dashboardTabsFor(u: Actor, councilId: number): DashboardTab[] {
     historian: canOpenHistorianDesk(u, councilId),
     member: true,
     'super-admin': showsSuperAdminDeskTab(u),
+    admin: showsAdminDeskTab(u),
   };
   return DASHBOARD_TABS.filter((t) => cleared[t.id]);
 }

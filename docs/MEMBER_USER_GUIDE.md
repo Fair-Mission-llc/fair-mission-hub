@@ -98,7 +98,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - The sidebar shows its links as plain text, with no icons.
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
 - Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
-- If the platform owner invites you to the **Application Advisory Panel**, an invitation card shows at the top of **Home**, on your alert bell and on your phone's **Home**. Select **Accept** to join.
+- If a Super Admin invites you to the **Application Advisory Panel**, an invitation card shows at the top of **Home**, on your alert bell and on your phone's **Home**. Select **Accept** to join.
 - **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **** to read them. Both are dated October 26, 2026.
 - If a Super Admin made you an **Application Advisory Panelist**, **Application Advisory Panel** shows under **Navigation Guide**.
 
@@ -111,7 +111,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 | --- | --- | --- |
 | **Home** tab (tab row above every page) | None | The newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list with **Praying Hands** |
 | **Member Actions Hub** | Faith In Action | Its own page: your active shifts, sign-ups, the roster and your hours |
-| **My Motion Requests** | Faith In Action | Your motion requests, the form to send one and your messages with the Grand Knight |
+| **Motion Request** | Faith In Action | The form to send a motion request. Your own requests and messages are in **My Motion Requests** at the bottom of the page. |
 | **Council Dashboard** | Performance | Your impact and the council's engagement |
 
 </details>
@@ -1136,7 +1136,7 @@ Each request keeps its messages with the GK for good.
 
 **Goal:** Ask the Grand Knight to put your motion on the next meeting agenda.
 
-**Start point:** Sidebar → Faith In Action → **My Motion Requests**. The same panel is on the **Member Desk** tab.
+**Start point:** Sidebar → Faith In Action → **Motion Request**. The **My Motion Requests** panel at the bottom of the page lists your own requests. The same panel is on the **Member Desk** tab.
 
 **Steps:**
 1. Read the line above the form. The line names the meeting that hears a request you send today.
@@ -1159,7 +1159,7 @@ Each request keeps its messages with the GK for good.
 
 **Goal:** See the decision on your request and talk with the Grand Knight about it.
 
-**Start point:** Sidebar → Faith In Action → **My Motion Requests**.
+**Start point:** Sidebar → Faith In Action → **Motion Request** → **My Motion Requests** (bottom of the page).
 
 **Steps:**
 1. Find the request in the list. The status shows beside the motion.

@@ -94,7 +94,13 @@ The navy header shows your own council, your name, your member type and your off
 - A Super Admin has full Admin access on the **Admin Desk** and every one of its drawers. In **Council Wide Settings**, choose the council in the **Council** list. The **Secure Access Vault** drawer shows only your own home council.
 - Navigation and headings show plain words only, with no icons, emojis or brackets: sidebar links, the two Finances accordions (**FINANCIAL REPORTS** and **FINANCIAL ACTIONS**), the **Active Desks** folder tabs, desk drawer names, page titles, panel headings, notices, buttons and tabs. Data markers keep their icons: the calendar day markers (the **⚑** needs-volunteers flag, holidays, feast days, birthdays and the **🟥 HOLY DAY OF OBLIGATION** badge) and the member badges (**🆕 New Member** and **📜 Charter Member**, both shown on the roster rows).
 - The Faith In Action link **Standalone Activities** is now **Member Activities**. The page title reads **Member Activities**, and its first tab reads **Current Activities**.
-- Every Super Admin sign-in has the **Super Admin Desk** tab on the **Active Desks** row, beside the council desks. The **Admin Desk** link stays in the System Settings pillar.
+- Every Super Admin sign-in has the **Super Admin Desk** tab and the **Admin Desk** tab side by side on the **Active Desks** row, beside the council desks. The **Admin Desk** link stays in the System Settings pillar.
+- Every Super Admin opens the **Application Advisory Panel** again, and every Super Admin can invite panelists. The platform owner restriction is gone.
+- The ledger page is now **General Ledger**. It has no **Financial Dashboard** link and no Equity box (Equity is on the **Balance Sheet**). The FS, the Treasurer and Super Admins add, edit and delete accounts on the page.
+- The **Payment QR Codes** card lists only the active payment methods that take a QR code. Cash, Check, card readers, Physical Items and inactive methods have no row.
+- The **Secure Access Vault** shows a **Document storage provider** list with only the provider chosen under **File Repository Mode** (8.9), and only that provider's key panel.
+- Council 15295 starts with **Expense reporting** and **Charity proposals** off. While a switch is off, its drawers and workflow rows leave every desk.
+- The Faith In Action link and the page title read **Motion Request**. The member's own requests are in **My Motion Requests** at the bottom of the page and on the **Member Desk**.
 - Sidebar links show plain words only, with no icons and no brackets. A long name ends in "…".
 - **Activities** and **Meeting Center** list their rows in full-width tables. Each table has a search box and shows 15 rows per page.
 
@@ -113,7 +119,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | --- | --- | --- | --- |
 | `flag_mobile_elections` | **Officer elections** | Council Election Center, Appointed Leadership Matrix | None |
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
-| `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue | None |
+| `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue, Charity Check Issuance (the Charitable Grants Registry drawers) | None |
 | `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console | **Mtgs** |
 | `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit Queue, Treasurer Ledger Audit, GK Expense Authorize, Disbursed Check Registry | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
@@ -325,12 +331,12 @@ The outbound email settings are not on this page. Set them on the **Secure Acces
 3. Choose the **Email service**. Google Workspace and Microsoft 365 fill in the **Mail server**.
 4. Enter the **Sign-in email** and the **Password**. Use an app password if the service asks for one.
 5. Select **Save**.
-6. For Google Drive, paste the key in **Drive key** in the **Google Drive** panel. Select **Save**.
+6. For Google Drive, see step 11.
 7. For the Microsoft Co-Pilot, paste the Direct Line secret in **Co-Pilot key**. Select **Save**. Copilot Studio shows the secret under Settings → Security → Web channel security.
 8. For receipt reading, open the council's Azure Document Intelligence resource in the Azure portal. Go to **Keys and Endpoint**.
 9. Paste the endpoint in **Azure endpoint**. Select **Save**. The endpoint looks like `https://name.cognitiveservices.azure.com/`.
 10. Paste **KEY 1** in **Azure key**. Select **Save**.
-11. For the council's file repository (8.9), save its key in its panel: **Network file server** (service account password), **OneDrive / SharePoint** (client secret) or **Dropbox Business** (access token). Select **Save**.
+11. For the council's file repository (8.9), read the **Document storage provider** list. It shows only the provider chosen under **File Repository Mode**. Save that provider's key in the panel below it: **Google Drive** (Drive key), **Network file server** (service account password), **OneDrive / SharePoint** (client secret) or **Dropbox Business** (access token). Select **Save**.
 
 **Expected result:** The status line of each saved connection shows . **Receipt reading** shows only when both Azure values are saved. The page never shows a saved password or key again.
 
@@ -807,7 +813,7 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 **Start point:** Sidebar → System Settings → **Council Wide Settings** → **Standard Bank Accounts** drawer → **Payment QR Codes**.
 
 **Steps:**
-1. Find the payment method's row, for example **Venmo**.
+1. Find the payment method's row, for example **Venmo**. Only active methods that take a QR code have a row.
 2. Drag the QR code image onto **Upload QR Code Image**, or click the box and choose the image (PNG, JPEG or WebP, up to 5 MB).
 3. Wait for the message.
 
@@ -817,7 +823,7 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | *"Upload the QR code as a PNG, JPEG or WebP image."* | The file is another type. | Save the code as a PNG or JPEG image. |
-| The method is not in the list. | The council has not enabled the method. | Enable it on **Council Lookup Tables** → **Enabled donation methods** (5.1). |
+| The method is not in the list. | The method is not enabled, is set to Inactive, or takes no QR code (Cash, Check, card readers, Physical Items). | Enable it and set it to Active on **Council Lookup Tables** → **Enabled donation methods** (5.1). |
 
 ## 9. Access requests, impersonation and remote help
 
@@ -1033,7 +1039,7 @@ Only sessions with Admin clearance or higher see the page. A member, an officer 
 | The page is not in the sidebar. | Your member type is not Admin or Super Admin. | Ask your council's Admin to send the note. |
 
 ### 10.3 Use the Super Admin Desk
-> **Who can do this:** Super Admins. The **Super Admin Desk** tab shows on the **Active Desks** row for every Super Admin sign-in, beside the council desks. Council Admins do not see the tab. A Super Admin also keeps the **Admin Desk** link in the System Settings pillar.
+> **Who can do this:** Super Admins. The **Super Admin Desk** tab shows on the **Active Desks** row for every Super Admin sign-in, beside the council desks. Council Admins do not see the tab. A Super Admin also has the **Admin Desk** tab beside it, and keeps the **Admin Desk** link in the System Settings pillar.
 
 **Goal:** Read Admin notes, approve council licenses, change platform settings and switch council modules from one desk.
 
@@ -1063,7 +1069,7 @@ The desk has a filing spine on the left. Each drawer on the spine opens on the s
 | --- | --- | --- |
 | The **Super Admin Desk** tab is missing. | Your account is not a Super Admin, or you view the portal as another member. | Sign in with a Super Admin account. Stop the view-as session. |
 | A module switch has no effect on a council. | The council's members must reload the portal. | Ask the members to reload the page. |
-| The **Application Advisory Panel** link is missing. | Since Sprint 11 Revision 18.0, only the platform owner's own sign-in and members who accepted an invitation see the panel. | Sign in with the platform owner account, or accept an invitation. |
+| The **Application Advisory Panel** link is missing. | Your account is not a Super Admin and you have not accepted an invitation. | Sign in with a Super Admin account, or accept an invitation. |
 
 ---
 
@@ -1088,7 +1094,7 @@ The panel has four views:
 2. To add a meeting, select **Add meeting** on **Panel Meeting Dates**. Enter the date and the title. Select **Save meeting**.
 3. To send feedback, open **Consultation Feedback**. Type the **Topic** and **Your feedback**. Select **Send feedback**.
 4. To add a panelist (Super Admins), choose the **Council** and the **Member** under **Panelists**. Select **Add panelist**.
-5. To invite a member of any council (the platform owner), select **Invite Panelist**. Choose the **Council** and the **Member**. Select **Post invitation**. No email is sent: the invitation card appears on the member's alert bell and **Home**, and on their phone's **Home**. It stays open for 14 days.
+5. To invite a member of any council (Super Admins), select **Invite Panelist**. Choose the **Council** and the **Member**. Select **Post invitation**. No email is sent: the invitation card appears on the member's alert bell and **Home**, and on their phone's **Home**. It stays open for 14 days.
 6. The invited member selects **Accept** on the card. The member becomes a panelist at once, and **Application Advisory Panel** appears in the sidebar.
 
 **Expected result:** The meeting shows in the list. The feedback shows at the top of **Feedback received**. A panelist added under **Panelists** sees the panel after the next sign-in; a member who selects **Accept** on an invitation sees it at once.

@@ -16,7 +16,8 @@
 //   - OFFICER_ADVISORY: the council's officers advising the Grand Knight. The member never reads it (unless the member
 //     holds the Grand Knight's seat).
 //
-// Screens: 'My Motion Requests' on the Member Desk and on /motion-requests (the Faith In Action link), and the
+// Screens: 'My Motion Requests' on the Member Desk and at the foot of /motion-requests (the Faith In Action link and page
+// heading 'Motion Request' since Revision 18.5), and the
 // 'Motion Requests' drawer on the Grand Knight Desk, lit while a request waits for a decision.
 // =========================================================================
 import { MONTHLY_MEETING_TYPE_NAME } from './charities';
@@ -33,8 +34,13 @@ import type { Meeting, Member, ProposedMotion } from './types';
 
 /** The Grand Knight Desk drawer and the page heading for officers. */
 export const MOTION_REQUESTS_TITLE = 'Motion Requests';
-/** The member's own panel (Member Desk) and the Faith In Action sidebar link. */
+/**
+ * The member's own history panel: at the foot of /motion-requests and on the Member Desk. Sprint 11 Revision 18.5: the
+ * sidebar link and the page heading read MOTION_REQUEST_LABEL instead.
+ */
 export const MY_MOTION_REQUESTS_TITLE = 'My Motion Requests';
+/** Sprint 11 Revision 18.5: the Faith In Action sidebar link and the /motion-requests page heading. */
+export const MOTION_REQUEST_LABEL = 'Motion Request';
 /** The page the Faith In Action link opens. */
 export const MOTION_REQUESTS_HREF = '/motion-requests';
 /** Every approved motion gets this many minutes on the agenda. */

@@ -27,7 +27,7 @@
 //   - plainNavLabel: the sidebar draws its labels as plain text, without icon glyphs.
 // =========================================================================
 import type { MonthlySummary, VolunteerTurnout } from './contract';
-import { donationMethodKind, SecurityPrivilegeError } from './rules';
+import { donationMethodKind, methodAcceptsQrCode, SecurityPrivilegeError } from './rules';
 import type { FeatureFlagName, FeatureFlags } from './features';
 
 export const ADMIN_DESK_HREF = '/admin-desk';
@@ -219,3 +219,17 @@ export const plainTextPiece = (text: string): string => {
   const out = text.replace(/[[\]]/g, ' ').replace(ICON_GLYPHS, '').replace(/\s{2,}/g, ' ');
   return out !== text && out.trim() === '' ? '' : out;
 };
+
+// ---- Sprint 11 Revision 18.5: the Payment QR Codes card ------------------------------------------------------------
+
+/**
+ * The rows the Payment QR Codes card draws: the council's Enabled donation methods (CouncilDonationMethod rows) that are
+ * switched Active and take a QR code (methodAcceptsQrCode). Cash, Check, card readers, Physical Items and Inactive
+ * methods get no row at all. `nameOf` gives a row's method name (DonationMethod); a row it cannot name gets no row.
+ */
+export function paymentQrUploadRows<T extends { DonationMethodID: number; lookup_status?: string | null }>(rows: readonly T[], nameOf: (methodId: number) => string | undefined): T[] {
+  return rows.filter((r) => {
+    const name = nameOf(r.DonationMethodID);
+    return name !== undefined && (r.lookup_status ?? 'Active') === 'Active' && methodAcceptsQrCode(name);
+  });
+}

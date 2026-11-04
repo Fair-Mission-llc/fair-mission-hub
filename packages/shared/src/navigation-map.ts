@@ -105,6 +105,7 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
 export const DESK_TAB_SUMMARIES: Record<DashboardTabId, string> = {
   home: "The council's newsletters, the day's verse and feast, your reminders, today's agenda, the prayer list with its Praying Hands, and the month's Top 5 volunteers.",
   'super-admin': "The platform owner's cockpit: feedback, council access requests and the module switches.",
+  admin: "The council Admin Desk beside the Super Admin Desk: council settings, lookups, the vault, assets and feedback.",
   'grand-knight': 'Approve and release expenses, review flagged hours, vet charity grants and lead planning and elections.',
   'financial-secretary': 'Issue payment requests, track expense reports, record charity donations and import the roster.',
   treasurer: 'Code sheets to the ledger, settle expense reports, close cash boxes and reconcile the bank.',

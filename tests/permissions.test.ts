@@ -167,7 +167,8 @@ describe('portal permissions', () => {
       'motion-requests',
       'inventory/loaner-library',
       'navigation-guide',
-      // Sprint 11 Revision 18.0: the Advisory Panel opens only for the platform owner's own sign-in (and panelists).
+      // Sprint 11 Revision 18.5: the Advisory Panel opens for every Super Admin again.
+      'advisory-panel',
     ]);
     expect(portalAreas(admin)).toEqual([
       'home',

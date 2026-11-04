@@ -269,7 +269,8 @@ function useAutoOpenWizard(open: () => void) {
   }, [user.memberId, user.councilId]);
 }
 
-export function AdminDesk() {
+/** `embedded` (Sprint 11 Revision 18.5): drawn as a Super Admin's Active Desks tab, under the dashboard's own title. */
+export function AdminDesk({ embedded = false }: { embedded?: boolean } = {}) {
   const [wizardOpen, setWizardOpen] = useState(false);
   // Bumped when the wizard closes, so the sandbox switch reads its state again.
   const [wizardRuns, setWizardRuns] = useState(0);
@@ -289,7 +290,7 @@ export function AdminDesk() {
           }}
         />
       ) : null}
-      <PageTitle>{ADMIN_DESK_TITLE}</PageTitle>
+      {embedded ? null : <PageTitle>{ADMIN_DESK_TITLE}</PageTitle>}
       <section aria-label="Admin Desk controls" className="mb-4 flex flex-wrap items-center gap-4">
         <Button variant="gold" onClick={() => setWizardOpen(true)}>
           Run Setup Wizard

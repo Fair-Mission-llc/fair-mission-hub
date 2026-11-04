@@ -228,20 +228,20 @@ describe('4. the Motion Requests screens', () => {
   });
 });
 
-describe('5. the Advisory Panel stays hidden', () => {
-  it('opens only for the platform owner and invitation holders', () => {
+describe('5. the Advisory Panel (every Super Admin since Revision 18.5)', () => {
+  it('opens for every Super Admin and invitation holder', () => {
     const superAdmin = { memberId: 1, councilId: OWN, memberType: 'Super Admin' as const, isOfficer: false, roles: [] };
-    expect(canOpenAdvisoryPanel(superAdmin)).toBe(false);
-    expect(canOpenAdvisoryPanel({ ...superAdmin, username: 'other.admin@kofc.org' })).toBe(false);
+    expect(canOpenAdvisoryPanel(superAdmin)).toBe(true);
+    expect(canOpenAdvisoryPanel({ ...superAdmin, username: 'other.admin@kofc.org' })).toBe(true);
     expect(canOpenAdvisoryPanel({ ...superAdmin, username: 'testsuperadmin@kofc.org' })).toBe(true);
-    expect(portalAreas({ ...superAdmin, username: 'other.admin@kofc.org' })).not.toContain('advisory-panel');
+    expect(portalAreas({ ...superAdmin, username: 'other.admin@kofc.org' })).toContain('advisory-panel');
     expect(portalAreas({ ...superAdmin, username: 'testsuperadmin@kofc.org' })).toContain('advisory-panel');
   });
 
-  it('refuses a non-owner Super Admin on the server too', async () => {
+  it('still refuses a council Admin on the server', async () => {
     const d = drivers[0]!;
     const db = await d.make();
-    // Member 1 is the seeded owner account (testsuperadmin@kofc.org); the drivers check the sign-in name.
+    // Member 1 is a Super Admin; Revision 18.5 no longer checks the sign-in name.
     await expect(db.advisory.listMeetings(MEMBER.superAdmin)).resolves.toBeDefined();
     await expectRule(db.advisory.listMeetings(MEMBER.admin), 'ADMIN_REQUIRED');
   });
