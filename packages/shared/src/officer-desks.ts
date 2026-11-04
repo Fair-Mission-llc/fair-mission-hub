@@ -85,7 +85,8 @@ export const DASHBOARD_TABS: readonly DashboardTab[] = [
   // Sprint 8O: the Super Admin cockpit. Sprint 8O Extension: drawn second, right after Home. Sprint 11 Revision 17.5:
   // every Super Admin session gets it, beside the council desks (super-admin-desk.ts showsSuperAdminDeskTab).
   { id: 'super-admin', label: SUPER_ADMIN_DESK_TITLE, anchor: 'super-admin' },
-  // Sprint 11 Revision 18.5: a Super Admin's row also carries the council Admin Desk, right beside the Super Admin Desk.
+  // Sprint 11 Revision 18.5: the row also carries the council Admin Desk, beside the Super Admin Desk. Revision 18.6:
+  // a Council Admin gets this tab too (showsAdminDeskTab), so it lands on the Active Desks row at boot.
   { id: 'admin', label: ADMIN_DESK_TITLE, anchor: 'admin' },
   { id: 'grand-knight', label: 'Grand Knight Desk', anchor: 'grand-knight' },
   { id: 'financial-secretary', label: 'Financial Secretary Desk', anchor: 'financial-secretary' },

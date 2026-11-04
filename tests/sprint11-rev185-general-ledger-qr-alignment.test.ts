@@ -46,10 +46,13 @@ describe('1. the Advisory Panel and the Active Desks for Super Admins', () => {
     expect(read('apps/web/components/AdvisoryPanel.tsx')).not.toContain('isPlatformOwner');
   });
 
-  it('draws the Super Admin Desk and the Admin Desk side by side for Super Admins only', () => {
+  it('draws the Super Admin Desk and the Admin Desk side by side for a Super Admin', () => {
     const ids = dashboardTabsFor(superAdmin, OWN).map((t) => t.id);
     expect(ids.slice(0, 3)).toEqual(['home', 'super-admin', 'admin']);
-    expect(dashboardTabsFor({ ...superAdmin, memberType: 'Admin' }, OWN).map((t) => t.id)).not.toContain('admin');
+    // Sprint 11 Revision 18.6: a Council Admin gets the Admin Desk tab (but not the Super Admin Desk tab).
+    const adminTabs = dashboardTabsFor({ ...superAdmin, memberType: 'Admin' }, OWN).map((t) => t.id);
+    expect(adminTabs).toContain('admin');
+    expect(adminTabs).not.toContain('super-admin');
     expect(read('apps/web/app/dashboard/page.tsx')).toContain("shown === 'admin'");
     expect(read('apps/web/app/dashboard/page.tsx')).toContain('<AdminDesk embedded />');
   });

@@ -36,10 +36,11 @@ export const PLATFORM_OWNER_USERNAMES: readonly string[] = ['testsuperadmin@kofc
 export const showsSuperAdminDeskTab = (u: Pick<SessionUser, 'memberType'>): boolean => u.memberType === 'Super Admin';
 
 /**
- * Sprint 11 Revision 18.5: true when the Active Desks row also draws the council Admin Desk tab (/dashboard#admin) -
- * every Super Admin session, so both desks sit side by side. Council Admins keep their sidebar Admin Desk link.
+ * Sprint 11 Revision 18.5: true when the Active Desks row also draws the council Admin Desk tab (/dashboard#admin).
+ * Sprint 11 Revision 18.6: every account that may open the Admin Desk gets the tab - a council Admin on its own council
+ * and any Super Admin (canOpenAdminDesk / isAdmin) - so a Council Admin lands on the tab at boot, not only the sidebar link.
  */
-export const showsAdminDeskTab = (u: Pick<SessionUser, 'memberType'>): boolean => u.memberType === 'Super Admin';
+export const showsAdminDeskTab = (u: Pick<SessionUser, 'memberType'>): boolean => u.memberType === 'Admin' || u.memberType === 'Super Admin';
 
 /** True only for the platform owner's own session: an Active Super Admin signed in with an owner username. */
 export function isPlatformOwner(

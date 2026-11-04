@@ -58,10 +58,11 @@ describe('dashboard tabs by seat (pure)', () => {
 
   it("gives the council's Admins and any Super Admin every desk, as the full desk pages do", () => {
     // Sprint 11 Revision 17.5: a Super Admin also gets Platform Management, beside the council desks; an Admin does not.
-    // Sprint 11 Revision 18.5: the Admin Desk tab is drawn for Super Admins only (council Admins keep the sidebar link).
-    const councilDesks = DASHBOARD_TABS.map((t) => t.id).filter((id) => id !== 'super-admin' && id !== 'admin');
+    // Sprint 11 Revision 18.6: the Admin Desk tab is drawn for Council Admins too (showsAdminDeskTab), so only the
+    // Super Admin Desk tab stays Super-Admin-only.
+    const councilDesks = DASHBOARD_TABS.map((t) => t.id).filter((id) => id !== 'super-admin');
     expect(ids(member({ memberType: 'Admin' }))).toEqual(councilDesks);
-    expect(ids(member({ memberType: 'Admin' }), 2)).toEqual(['home', 'member']);
+    expect(ids(member({ memberType: 'Admin' }), 2)).toEqual(['home', 'admin', 'member']);
     expect(ids(member({ memberType: 'Super Admin' }), 2)).toEqual(DASHBOARD_TABS.map((t) => t.id));
   });
 

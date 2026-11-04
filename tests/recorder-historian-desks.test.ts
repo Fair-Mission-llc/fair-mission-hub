@@ -83,7 +83,8 @@ describe('the seat desks (pure)', () => {
     const ids = (u: ReturnType<typeof seat>) => dashboardTabsFor(u, OWN).map((t) => t.id);
     // Sprint 8C: no Reports Desk; every officer reads the Oversight Desk.
     expect(ids(seat({ roles: ['Recorder'], isOfficer: true }))).toEqual(['home', 'recorder', 'member']);
-    expect(ids(seat({ memberType: 'Admin' }))).toEqual(['home', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'member']);
+    // Sprint 11 Revision 18.6: a Council Admin also gets the Admin Desk tab (showsAdminDeskTab).
+    expect(ids(seat({ memberType: 'Admin' }))).toEqual(['home', 'admin', 'grand-knight', 'financial-secretary', 'treasurer', 'recorder', 'historian', 'member']);
     const historian = seat({ roles: [COUNCIL_HISTORIAN_ROLE] });
     expect(isHistorianDeskOnly(historian)).toBe(true);
     // Sprint 8R: Home is every member's landing tab, the Historian-only reader's too.
