@@ -209,6 +209,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 2. To transfer: select **Transfer Funds**. Choose two asset accounts. Enter the amount. Select **Post transfer**. The button is also on the **General Ledger** page and in its Treasurer Desk folder.
 3. To add an account: open Sidebar → Finances → **FINANCIAL REPORTS** → **General Ledger**. Select **Add Account**. Enter the **Account name** and choose the **Account type** (Assets, Liabilities, Revenue or Expenses). Select **Add Account**.
 4. To change an account: select **Edit** on its row. Change the name, or the type of an unused account. Select **Save account**.
+   To split a Revenue account (Treasurer and Super Admins only): turn on **Split Revenue** in the drawer. For each share, choose **Internal Ledger Account** or **Affiliated Sister Council**, choose the destination, and enter the percentage. The shares must total 100. Turn the toggle off and save to end a split.
 5. To delete an account: select **Delete** on its row. Confirm. Only an account with no postings, sub-accounts or links can be deleted.
 6. To reconcile: open **Active Desks** → **Treasurer Desk** → **Bank Statement Match-Window**. Upload the bank CSV file. The Financial Dashboard has no bank statement table.
 7. Read the matched rows and the unmatched rows.
@@ -973,6 +974,7 @@ Some fundraisers use parish property, for example the cathedral parking lot. The
 | Way to split | Where | What it does |
 | --- | --- | --- |
 | Split profile | **Treasurer Desk** → **General Ledger** → **Edit split** on a Revenue account | Every posting to the account is shared out to its destination accounts by percentage, on every screen that posts. |
+| Split Revenue toggle | **General Ledger** page → **Add Account** or **Edit** on a Revenue account → **Split Revenue** | The same split profile, set while you add or change the account. Each share goes to an **Internal Ledger Account** or an **Affiliated Sister Council**. |
 | Event Split Override | **Treasurer Desk** → **High-Volume Batch Transaction Coder** → **Override Event Split** | One posting of one event's gifts is shared out by the shares you choose. Nothing is saved to the account. |
 
 The destinations of a split are other Revenue accounts of the council. Since schema 103, a destination can also be an affiliated council. That council's share goes to a **Due to Sister Council** account in this council's own books. The shares total exactly 100. The last destination takes any rounding cent. The St. Mary's pilot data has the revenue line **Parish Fundraiser Share** for the parish's part.

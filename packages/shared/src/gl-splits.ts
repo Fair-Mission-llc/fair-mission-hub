@@ -44,6 +44,21 @@ export const GL_SPLIT_ACCOUNT_LABEL = 'Split Account';
 /** Sprint 9 Revision 6.2: the batch coder's one-time override control. */
 export const OVERRIDE_EVENT_SPLIT_LABEL = 'Override Event Split';
 
+/**
+ * Sprint 11 Revision 19.0 (schema 111, no table change): the General Ledger page's Add Account / Edit Account drawer
+ * carries a 'Split Revenue' toggle for a Revenue account. Switching it on shows the split's destination rows, each
+ * with a target switch between an internal ledger account and an affiliated sister council; switching it off and
+ * saving ends the split. The toggle is a view of the existing profile (GLAccountSplitAllocation rows), not a stored flag.
+ */
+export const SPLIT_REVENUE_LABEL = 'Split Revenue';
+/** The kinds of destination a split row may name. */
+export type SplitTargetType = 'account' | 'sister';
+/** The target switch's choices, in order. */
+export const SPLIT_TARGET_LABELS: Readonly<Record<SplitTargetType, string>> = {
+  account: 'Internal Ledger Account',
+  sister: 'Affiliated Sister Council',
+};
+
 const cents = (n: number) => Math.round(n * 100);
 const dollars = (c: number) => c / 100;
 const invalid = (message: string, details: Record<string, unknown> = {}) => new BusinessRuleError('INVALID_INPUT', message, details);

@@ -6,7 +6,10 @@
 // Sprint 11 Revision 2.1: the profile editor also offers the council's ACTIVE affiliates ('sisters'). A row naming one
 // is sent as { affiliatedCouncilId }; the driver posts that share to the council's own 'Due to Sister Council' clearing
 // account, so nothing is written to the other council.
-import { GL_SPLIT_MAX_DESTINATIONS, type GLAccount, type GLSplitDestination, type GLSplitProfile, type SplitSisterCouncil } from '@kofc/shared';
+// Sprint 11 Revision 19.0: with `targetSwitch` (the General Ledger page's Split Revenue toggle) each row first picks its
+// target - 'Internal Ledger Account' or 'Affiliated Sister Council' (SPLIT_TARGET_LABELS) - and the picker beside it
+// lists only that kind. Without it the single grouped picker is unchanged.
+import { GL_SPLIT_MAX_DESTINATIONS, SPLIT_TARGET_LABELS, type GLAccount, type SplitTargetType, type GLSplitDestination, type GLSplitProfile, type SplitSisterCouncil } from '@kofc/shared';
 import { Button, Field, Input, Select } from '@/components/ui';
 
 export interface SplitRow {
@@ -15,7 +18,12 @@ export interface SplitRow {
   /** Sprint 11 Revision 2.1: an affiliated council in place of an account. */
   sisterCouncilId?: number | null;
   percentage: string;
+  /** Sprint 11 Revision 19.0: the row's target while nothing is picked yet (targetSwitch only). */
+  target?: SplitTargetType;
 }
+
+/** The kind of destination a row names: a picked sister council, else its chosen target, else an account. */
+export const splitRowTarget = (r: SplitRow): SplitTargetType => (r.sisterCouncilId != null ? 'sister' : r.accountId !== null ? 'account' : (r.target ?? 'account'));
 
 /** The sum of the typed shares, to the cent of a percent; NaN while a share is not a number. */
 export const splitRowsTotal = (rows: readonly SplitRow[]) => rows.reduce((sum, r) => sum + Math.round(Number(r.percentage || 0) * 100), 0) / 100;
@@ -56,6 +64,7 @@ export function SplitShareRows({
   sisters = [],
   disabled,
   label = 'Destination',
+  targetSwitch = false,
 }: {
   rows: SplitRow[];
   onChange: (rows: SplitRow[]) => void;
@@ -65,6 +74,8 @@ export function SplitShareRows({
   sisters?: readonly SplitSisterCouncil[];
   disabled?: boolean;
   label?: string;
+  /** Sprint 11 Revision 19.0: a per-row Internal Ledger Account / Affiliated Sister Council switch. */
+  targetSwitch?: boolean;
 }) {
   const total = splitRowsTotal(rows);
   const change = (key: number, patch: Partial<SplitRow>) => onChange(rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
@@ -72,8 +83,57 @@ export function SplitShareRows({
     <div className="flex flex-col gap-3">
       {rows.map((r, i) => (
         <div key={r.key} className="flex flex-wrap items-end gap-3">
+          {targetSwitch ? (
+            <Field label={`Send share ${i + 1} to`} className="w-56">
+              {(id) => (
+                <Select
+                  id={id}
+                  value={splitRowTarget(r)}
+                  onChange={(e) => change(r.key, { target: e.target.value as SplitTargetType, accountId: null, sisterCouncilId: null })}
+                  disabled={disabled}
+                >
+                  {(Object.keys(SPLIT_TARGET_LABELS) as SplitTargetType[]).map((t) => (
+                    <option key={t} value={t} disabled={t === 'sister' && sisters.length === 0}>
+                      {SPLIT_TARGET_LABELS[t]}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+          ) : null}
           <Field label={`${label} ${i + 1}`} className="min-w-56 flex-1">
-            {(id) => (
+            {(id) =>
+              targetSwitch ? (
+                <Select
+                  id={id}
+                  value={rowValue(r)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    change(r.key, splitRowTarget(r) === 'sister' ? { accountId: null, sisterCouncilId: v === '' ? null : Number(v.slice(1)), target: 'sister' } : { accountId: v === '' ? null : Number(v.slice(1)), sisterCouncilId: null, target: 'account' });
+                  }}
+                  disabled={disabled}
+                >
+                  {splitRowTarget(r) === 'sister' ? (
+                    <>
+                      <option value="">Choose a sister council</option>
+                      {sisters.map((c) => (
+                        <option key={c.councilId} value={`s${c.councilId}`}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <option value="">Choose a revenue account</option>
+                      {choices.map((a) => (
+                        <option key={a.id} value={`a${a.id}`}>
+                          {a.AccountName}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </Select>
+              ) : (
               <Select
                 id={id}
                 value={rowValue(r)}
@@ -101,7 +161,8 @@ export function SplitShareRows({
                   </optgroup>
                 ) : null}
               </Select>
-            )}
+              )
+            }
           </Field>
           <Field label="Share (%)" className="w-28">
             {(id) => <Input id={id} inputMode="decimal" value={r.percentage} onChange={(e) => change(r.key, { percentage: e.target.value })} disabled={disabled} />}
