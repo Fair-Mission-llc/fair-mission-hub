@@ -32,8 +32,8 @@ const CADENCE = 1;
 
 describe('0. schema 111', () => {
   it('adds the two motion tables, the council lead days and the platform cutoff', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(111);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 111;');
+    expect(PLATFORM_SCHEMA_VERSION).toBe(112); // Sprint 11 Revision 19.6 moved the platform to schema 112.
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 112;');
     expect(TABLES.MotionRequest.columns.map((c) => c.name)).toEqual([
       'id', 'council_id', 'proposed_by', 'summary_what', 'rationale_why', 'financial_impact_usd', 'request_status',
       'submitted_at', 'decided_by_member_id', 'decided_at', 'decision_note', 'target_meeting_id', 'proposed_motion_id',
@@ -180,7 +180,8 @@ describe('2. the Form 1728 confidence cutoff', () => {
 
   it('reads the cutoff in the popup and offers it on Global System Parameters', () => {
     const parts = read('apps/web/components/Form1728Parts.tsx');
-    expect(parts).toContain('db.councils.getPlatformSettings()');
+    // Sprint 11 Revision 19.6: the popup reads the reader's parent organization's settings.
+    expect(parts).toContain('db.councils.getPlatformSettings({ councilId })');
     expect(parts).toContain('form1728ConfidenceCutoff(platform.data?.global_ai_confidence_cutoff)');
   });
 });

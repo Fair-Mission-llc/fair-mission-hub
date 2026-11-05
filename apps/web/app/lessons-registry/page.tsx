@@ -60,8 +60,8 @@ function Registry() {
   const options = useLoad(async () => {
     const [councils, eventCategories, lessonCategories] = await Promise.all([
       db.councils.list(),
-      db.lookups.list('Category'),
-      db.lookups.list('LessonsLearnedCategory'),
+      db.lookups.list('Category', { councilId: user.councilId }),
+      db.lookups.list('LessonsLearnedCategory', { councilId: user.councilId }),
     ]);
     return {
       councils: sortCouncils(councils).map((c) => ({ value: c.id, label: councilLabel(c) })),

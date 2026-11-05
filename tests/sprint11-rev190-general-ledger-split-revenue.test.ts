@@ -11,8 +11,8 @@ const read = (p: string) => readFileSync(join(__dirname, '..', p), 'utf8').repla
 
 describe('0. schema', () => {
   it('stays at 111 with no split columns on GLAccount', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(111);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = 111;/);
+    expect(PLATFORM_SCHEMA_VERSION).toBe(112); // Sprint 11 Revision 19.6 moved the platform to schema 112.
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = 112;/);
     expect(read('Schema.sql')).not.toMatch(/is_split_enabled|split_target_type|split_target_id/);
   });
 });

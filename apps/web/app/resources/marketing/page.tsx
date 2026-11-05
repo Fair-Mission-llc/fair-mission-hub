@@ -280,7 +280,7 @@ function MarketingFactory() {
     const [council, events, categories] = await Promise.all([
       db.councils.get(user.councilId),
       db.events.listByCouncil(user.councilId),
-      db.lookups.list('Category') as Promise<Category[]>,
+      db.lookups.list('Category', { councilId: user.councilId }) as Promise<Category[]>,
     ]);
     return { council, events, categories };
   }, [user.councilId]);

@@ -572,7 +572,7 @@ function MasterCalendar() {
     return { entries, feed, birthdays: birthdaysBetween(members, from, to) };
   }, [scope.councilId, from, to, user.memberId]);
   // Sprint 8F: the Category lookup names each event's mission area for its colour.
-  const categories = useLoad(() => db.lookups.list('Category'), []);
+  const categories = useLoad(() => db.lookups.list('Category', { councilId: scope.councilId }), [scope.councilId]);
   const areaOf = (entry: CalendarEntry): SupremeMissionArea | null =>
     entry.kind === 'event' ? missionAreaOfCategoryId(entry.event.CategoryID, categories.data ?? []) : null;
 

@@ -1397,3 +1397,30 @@ Schema version stays 111. No table or column change. Rules: council-accounts.ts,
 [Council] (seed only)
 •	Council 15295 is seeded with feature_expense_reporting = 0 and flag_charity_proposals = 0. flag_charity_proposals now also hides the charities/queue area (the FS and Treasurer charity check drawers).
 Screens. Advisory Panel: every Super Admin (canOpenAdvisoryPanel, assertMayRead/Keep/InviteAdvisoryPanel no longer read the sign-in name). Active Desks: Super Admins get the 'admin' tab (Admin Desk) beside 'super-admin'. Payment QR Codes: paymentQrUploadRows keeps Active CouncilDonationMethod rows whose method takes a QR code. Secure Access Vault: vaultStorageProviderOptions lists only the council's file_repository_mode provider. GENERAL_LEDGER_TITLE reads 'General Ledger'. MOTION_REQUEST_LABEL ('Motion Request') is the sidebar link and page heading; MY_MOTION_REQUESTS_TITLE is the history panel.
+
+# 65. Relational Parent Organizations and Independent Motion Flags (Sprint 11 Revision 19.6)
+Schema version 112; the phone database version moves to 112. Rules: parent-organizations.ts, features.ts, tenant.ts, maintenance.ts.
+[ParentOrganizations] (new table)
+•	id (INT, IDENTITY, PK).
+•	org_name (VARCHAR(100), NOT NULL, unique index ParentOrganizations_Name_Idx) — the display name, e.g. 'Knights of Columbus'.
+•	org_code (VARCHAR(30), NOT NULL, unique index ParentOrganizations_Code_Idx) — the short code stored in Council.parent_organization: 'KofC', 'SECULAR_CHARITY' or a new code (a letter, then letters, digits and underscores).
+•	vertical_type (VARCHAR(30), NOT NULL, DEFAULT 'FRATERNAL', CHECK IN ('FRATERNAL', 'SECULAR_NONPROFIT')) — the data vertical.
+•	created_at (DATETIME, NULL).
+Seed. Row 1 'Knights of Columbus' (KofC, FRATERNAL); row 2 'Secular Charity' (SECULAR_CHARITY, SECULAR_NONPROFIT). Only the KofC code unlocks the fraternal extensions (tenant.ts councilParentOrganization); a new fraternal organization is a white-label tenant (tenant_type 'GENERIC').
+[CouncilParentMappings] (new table)
+•	id (INT, IDENTITY, PK).
+•	council_id (INT, NOT NULL, FK Council, unique index CouncilParentMappings_Council_Idx) — one mapping per council.
+•	parent_org_id (INT, NOT NULL, FK ParentOrganizations) — the council's parent organization.
+•	parent_council_id (INT, NULL, FK Council) — the council a chapter sits under in the hierarchy; NULL for a top-level council.
+•	mapped_at (DATETIME, NULL).
+Seed. Council 15295 and the five presentation councils map to row 1.
+Rules. parentOrganizations.mapCouncil replaces the council's mapping row and writes the org's code to Council.parent_organization and the matching tenant_type (councilColumnsForParentOrg). councils.create maps a new council to the org its stored code names; councils.setGlobalParameters moves the mapping when the code changes. A council with no mapping row reads the org whose org_code matches its parent_organization (resolveCouncilParentOrgId). Deleting a council removes its own mapping row; a chapter mapped under it (parent_council_id) blocks the delete (RECORD_IN_USE, RECORD_REFERENCES).
+[Council] (new column)
+•	flag_motion_requests (BIT, NOT NULL, DEFAULT 1) — the 'Motion requests' module switch (FEATURE_FLAG_NAMES), apart from flag_meeting_management. Off hides the motion-requests area (the Motion Request page and its Faith In Action link), the Member Desk's My Motion Requests panel and the Grand Knight Desk's Motion Requests drawer. A new council starts with it off (LIGHTWEIGHT_FEATURE_FLAGS).
+[MemberStatus], [Role], [Degree], [MemberType], [Category], [NoShowReason], [MeetingType], [LessonsLearnedCategory] (new column on each)
+•	parent_org_id (INT, NULL, FK ParentOrganizations) — NULL: a row every parent organization shares; a value: a row only that organization's councils read. lookups.list(table, scope) with a council or parent organization scope returns the shared rows and the scope's own (lookupRowsInScope); without a scope it returns every row. lookups.create takes the parent organization; a key must be unique among the rows that organization reads (lookupKeyScopeRows), so two organizations may each keep a row of the same name, but never beside a shared row of that name.
+Seed. The four Degree rows belong to the Knights of Columbus (parent_org_id 1). Every other seeded lookup row is shared, because the access rules resolve them by name ('Active', the three member types, the officer roles).
+[PlatformSettings] (new column)
+•	parent_org_id (INT, NULL, FK ParentOrganizations, filtered unique index PlatformSettings_ParentOrg_Idx) — NULL on row 1, the platform default; a value on a parent organization's own override row. getPlatformSettings(scope) reads the scope's row when it has one, otherwise row 1 (platformSettingsRowFor). setPlatformSettings(actorId, settings, parentOrgId) writes that row, made from the default on its first save. The drivers read the council's row for the diary, prayer intention and cadence invitation limits. The portal server's sign-in length stays platform-wide (row 1).
+New methods. parentOrganizations.list, listMappings, resolveForCouncil, create, mapCouncil.
+Screens. Global System Parameters and the Super Admin Desk's Settings Cabinet: the Parent organizations card (list, add, map a council and its parent council). Global Lookup Tables and Platform Settings: a Parent organization picker (shared, or one organization). The lookup drop-downs of the portal pass the reader's council.

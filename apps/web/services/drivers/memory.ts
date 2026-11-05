@@ -573,6 +573,19 @@ import {
   quarantineResubmitText,
   councilFeatureFlags,
   lightweightFeatureColumns,
+  assertMayMaintainParentOrganizations,
+  assertParentOrganizationUnique,
+  cleanParentOrganizationInput,
+  cleanParentOrgId,
+  councilColumnsForParentOrg,
+  lookupKeyScopeRows,
+  lookupRowsInScope,
+  parentOrgForCode,
+  platformSettingsRowFor,
+  resolveCouncilParentOrgId,
+  type CouncilParentMapping,
+  type ParentOrganizationRecord,
+  type ParentOrgScope,
   HOURS_STEP,
   isQuarantineExempt,
   quarantineActivityKey,
@@ -1465,20 +1478,22 @@ export class MemoryDataService implements DataService {
   // ---- lookups / councils / members -------------------------------------
 
   lookups: DataService['lookups'] = {
-    list: async <T extends LookupTableName>(table: T): Promise<LookupRowMap[T][]> => {
+    list: async <T extends LookupTableName>(table: T, scope?: ParentOrgScope): Promise<LookupRowMap[T][]> => {
       if (!LOOKUP_TABLES[table]) throw new Error(`Unknown lookup table: ${String(table)}`);
       const s = await this.ready();
-      return s.rows(table).map((r) => ({ ...r })) as unknown as LookupRowMap[T][];
+      // Sprint 11 Revision 19.6: a scoped read sees the shared rows and its parent organization's own.
+      return lookupRowsInScope(s.rows(table) as Row[], this.scopeParentOrgId(s, scope)).map((r) => ({ ...r })) as unknown as LookupRowMap[T][];
     },
 
-    create: async <T extends LookupTableName>(actorId: number, table: T, values: LookupValues): Promise<LookupRowMap[T]> => {
+    create: async <T extends LookupTableName>(actorId: number, table: T, values: LookupValues, parentOrgId?: number | null): Promise<LookupRowMap[T]> => {
       if (!LOOKUP_TABLES[table]) throw new Error(`Unknown lookup table: ${String(table)}`);
       const s = await this.ready();
       assertMayMaintainLookups(this.memberWriteActor(s, actorId), table);
       const cleaned = cleanLookupValues(table, values);
+      const orgId = cleanParentOrgId(parentOrgId, this.parentOrgRows(s));
       return s.transaction(() => {
-        assertLookupKeyUnique(table, s.rows(table), cleaned);
-        return { ...s.insert(table, cleaned) } as unknown as LookupRowMap[T];
+        assertLookupKeyUnique(table, lookupKeyScopeRows(s.rows(table) as Row[], orgId), cleaned);
+        return { ...s.insert(table, { ...cleaned, parent_org_id: orgId }) } as unknown as LookupRowMap[T];
       });
     },
 
@@ -1489,7 +1504,7 @@ export class MemoryDataService implements DataService {
       const cleaned = cleanLookupValues(table, values);
       const row = this.requireLookupRow(s, table, id);
       assertLookupNotProtected(table, row, cleaned);
-      assertLookupKeyUnique(table, s.rows(table), cleaned, id);
+      assertLookupKeyUnique(table, lookupKeyScopeRows(s.rows(table) as Row[], (row.parent_org_id as number | null | undefined) ?? null), cleaned, id);
       Object.assign(row, cleaned);
       return { ...row } as unknown as LookupRowMap[T];
     },
@@ -1634,6 +1649,9 @@ export class MemoryDataService implements DataService {
         assertRecordValueUnique('Council', s.rows('Council'), 'CouncilNumber', clean.CouncilNumber, 'by another council');
         // Sprint 11 Revision 7.0: a new council starts with the lightweight footprint; a Super Admin switches modules on.
         const row = s.insert('Council', { ...rowValues(COUNCIL_COLUMNS, clean), ...lightweightFeatureColumns() });
+        // Sprint 11 Revision 19.6: the new council maps to the parent organization its stored code names.
+        const org = parentOrgForCode(this.parentOrgRows(s), row.parent_organization);
+        if (org) this.writeCouncilMapping(s, row.id as number, org, null);
         // Sprint 11 Revision 5.0: a State Council instance starts with its own checking account and books.
         if (clean.council_level === 'STATE') {
           for (const a of STATE_COUNCIL_TEMPLATE_ACCOUNTS) s.insert('GLAccount', { CouncilID: row.id, AccountName: a.AccountName, AccountType: a.AccountType, IsVirtualGoal: 0, TargetGoalAmount: 0 });
@@ -1655,9 +1673,14 @@ export class MemoryDataService implements DataService {
     remove: async (actorId, id) => {
       const s = await this.ready();
       assertMayMaintainCouncils(this.memberWriteActor(s, actorId), `delete council ${id}`);
-      const row = this.requireRecord(s, 'Council', id);
-      this.assertRecordUnused(s, 'Council', row, `${String(row.CouncilNumber)} ${String(row.CouncilName)}`);
-      s.remove('Council', (r) => r.id === id);
+      this.requireRecord(s, 'Council', id);
+      s.transaction(() => {
+        // Sprint 11 Revision 19.6: the council's own mapping row goes with it; a chapter mapped under it still blocks.
+        s.remove('CouncilParentMappings', (m) => m.council_id === id);
+        const row = this.requireRecord(s, 'Council', id);
+        this.assertRecordUnused(s, 'Council', row, `${String(row.CouncilNumber)} ${String(row.CouncilName)}`);
+        s.remove('Council', (r) => r.id === id);
+      });
     },
 
     setFeatureFlags: async (actorId, councilId, changes) => {
@@ -1875,7 +1898,13 @@ export class MemoryDataService implements DataService {
       assertMayMaintainCouncils(this.memberWriteActor(s, actorId), `change the global parameters of council ${councilId}`);
       const row = this.requireRecord(s, 'Council', councilId);
       Object.assign(row, clean);
-      return { ...row } as unknown as Council;
+      // Sprint 11 Revision 19.6: a new parent organization code moves the council's mapping row too.
+      if (clean.parent_organization !== undefined) {
+        const org = parentOrgForCode(this.parentOrgRows(s), clean.parent_organization);
+        const current = s.rows('CouncilParentMappings').find((m) => m.council_id === councilId);
+        if (org && current?.parent_org_id !== org.id) this.writeCouncilMapping(s, councilId, org, (current?.parent_council_id as number | null | undefined) ?? null);
+      }
+      return { ...this.requireRecord(s, 'Council', councilId) } as unknown as Council;
     },
 
     setMeritThresholds: async (actorId, councilId, thresholds, institutionDate) => {
@@ -1979,17 +2008,27 @@ export class MemoryDataService implements DataService {
       });
     },
 
-    getPlatformSettings: async () => this.platformSettingsOf(await this.ready()),
+    getPlatformSettings: async (scope) => {
+      const s = await this.ready();
+      return this.platformSettingsOf(s, this.scopeParentOrgId(s, scope));
+    },
 
-    setPlatformSettings: async (actorId, settings) => {
+    setPlatformSettings: async (actorId, settings, parentOrgId) => {
       const clean = cleanPlatformSettings(settings);
       const s = await this.ready();
       assertMaySetPlatformSettings(this.memberWriteActor(s, actorId));
+      const orgId = cleanParentOrgId(parentOrgId, this.parentOrgRows(s));
       return s.transaction(() => {
-        const row = s.rows('PlatformSettings').find((r) => r.id === PLATFORM_SETTINGS_ID);
+        // Sprint 11 Revision 19.6: a parent organization writes its own override row, made from the default on first save.
+        const rows = s.rows('PlatformSettings');
+        const row = orgId === null ? rows.find((r) => r.id === PLATFORM_SETTINGS_ID) : rows.find((r) => r.parent_org_id === orgId);
         if (row) Object.assign(row, clean);
-        else s.insert('PlatformSettings', { ...platformSettings(null), ...clean });
-        return this.platformSettingsOf(s);
+        else if (orgId === null) s.insert('PlatformSettings', { ...platformSettings(null), ...clean, parent_org_id: null });
+        else {
+          const nextId = Math.max(PLATFORM_SETTINGS_ID, ...rows.map((r) => r.id as number)) + 1;
+          s.insert('PlatformSettings', { ...this.platformSettingsOf(s, null), ...clean, id: nextId, parent_org_id: orgId });
+        }
+        return this.platformSettingsOf(s, orgId);
       });
     },
   };
@@ -4322,9 +4361,39 @@ export class MemoryDataService implements DataService {
     return this.councilSettingsOf(s, (member?.CouncilID as number | undefined) ?? -1).volunteer_logging_window_days;
   }
 
-  /** The universal limits (Sprint 7C), with the defaults when the row is missing. */
-  private platformSettingsOf(s: MemoryStore): PlatformSettings {
-    return platformSettings(s.rows('PlatformSettings').find((r) => r.id === PLATFORM_SETTINGS_ID) as Partial<PlatformSettings> | undefined);
+  /**
+   * The universal limits (Sprint 7C), with the defaults when the row is missing. Sprint 11 Revision 19.6: a parent
+   * organization's own override row when it has one (platformSettingsRowFor).
+   */
+  private platformSettingsOf(s: MemoryStore, parentOrgId?: number | null): PlatformSettings {
+    return platformSettings(platformSettingsRowFor(s.rows('PlatformSettings') as Partial<PlatformSettings>[], parentOrgId, PLATFORM_SETTINGS_ID));
+  }
+
+  private parentOrgRows(s: MemoryStore): ParentOrganizationRecord[] {
+    return s.rows('ParentOrganizations') as unknown as ParentOrganizationRecord[];
+  }
+
+  /** Sprint 11 Revision 19.6: the parent organization id a council reads (its mapping, else its stored code). */
+  private councilParentOrgId(s: MemoryStore, councilId: number): number | null {
+    const council = s.rows('Council').find((c) => c.id === councilId);
+    if (!council) return null;
+    return resolveCouncilParentOrgId(council as unknown as Council, s.rows('CouncilParentMappings') as unknown as CouncilParentMapping[], this.parentOrgRows(s));
+  }
+
+  /** The parent organization a scoped read is for: undefined (every row) without a scope. */
+  private scopeParentOrgId(s: MemoryStore, scope: ParentOrgScope | undefined): number | null | undefined {
+    if (!scope) return undefined;
+    if (scope.parentOrgId !== undefined) return scope.parentOrgId;
+    if (scope.councilId !== undefined) return this.councilParentOrgId(s, scope.councilId);
+    return undefined;
+  }
+
+  /** Replaces a council's mapping row (one per council) and keeps its parent_organization and tenant_type in step. */
+  private writeCouncilMapping(s: MemoryStore, councilId: number, org: ParentOrganizationRecord, parentCouncilId: number | null): Row {
+    s.remove('CouncilParentMappings', (m) => m.council_id === councilId);
+    const council = s.rows('Council').find((c) => c.id === councilId);
+    if (council) Object.assign(council, councilColumnsForParentOrg(org));
+    return s.insert('CouncilParentMappings', { council_id: councilId, parent_org_id: org.id, parent_council_id: parentCouncilId, mapped_at: toTimestamp(this.now()) });
   }
 
   /** Stores a held entry (PENDING) in place of the time row. */
@@ -4851,7 +4920,7 @@ export class MemoryDataService implements DataService {
             OwnerID: null,
             IsMultiDay: 0,
             EndDate: null,
-            InviteReleaseDate: cadenceInviteReleaseDate(date, this.platformSettingsOf(s).cadence_invitation_horizon_days),
+            InviteReleaseDate: cadenceInviteReleaseDate(date, this.platformSettingsOf(s, this.councilParentOrgId(s, councilId)).cadence_invitation_horizon_days),
           };
           createdIds.push(this.insertMeeting(meeting, cadenceInviteMode(config.DefaultRecipientGroup)));
         }
@@ -5733,6 +5802,50 @@ export class MemoryDataService implements DataService {
       s.rows('Member') as unknown as Member[],
     );
   }
+
+  // ---- Sprint 11 Revision 19.6: relational parent organizations (schema 112) --------------------------------------
+
+  parentOrganizations: DataService['parentOrganizations'] = {
+    list: async () => {
+      const s = await this.ready();
+      return [...s.rows('ParentOrganizations')].sort((a, b) => (a.id as number) - (b.id as number)).map((r) => ({ ...r })) as unknown as ParentOrganizationRecord[];
+    },
+
+    listMappings: async () => {
+      const s = await this.ready();
+      return [...s.rows('CouncilParentMappings')].sort((a, b) => (a.council_id as number) - (b.council_id as number)).map((r) => ({ ...r })) as unknown as CouncilParentMapping[];
+    },
+
+    resolveForCouncil: async (councilId) => this.councilParentOrgId(await this.ready(), councilId),
+
+    create: async (actorId, input) => {
+      const s = await this.ready();
+      assertMayMaintainParentOrganizations(this.memberWriteActor(s, actorId), 'add parent organizations');
+      const clean = cleanParentOrganizationInput(input);
+      return s.transaction(() => {
+        assertParentOrganizationUnique(this.parentOrgRows(s), clean);
+        return { ...s.insert('ParentOrganizations', { ...clean, created_at: toTimestamp(this.now()) }) } as unknown as ParentOrganizationRecord;
+      });
+    },
+
+    mapCouncil: async (actorId, councilId, parentOrgId, parentCouncilId) => {
+      const s = await this.ready();
+      assertMayMaintainParentOrganizations(this.memberWriteActor(s, actorId), 'map councils to parent organizations');
+      return s.transaction(() => {
+        this.requireRecord(s, 'Council', councilId);
+        const orgs = this.parentOrgRows(s);
+        const orgId = cleanParentOrgId(parentOrgId, orgs);
+        const org = orgs.find((o) => o.id === orgId);
+        if (!org) throw new BusinessRuleError('INVALID_INPUT', 'Choose the parent organization to map the council to.', { field: 'parent_org_id' });
+        const parent = parentCouncilId === undefined || parentCouncilId === null ? null : Number(parentCouncilId);
+        if (parent !== null) {
+          if (parent === councilId) throw new BusinessRuleError('INVALID_INPUT', 'A council cannot be its own parent council.', { field: 'parent_council_id' });
+          this.requireRecord(s, 'Council', parent);
+        }
+        return { ...this.writeCouncilMapping(s, councilId, org, parent) } as unknown as CouncilParentMapping;
+      });
+    },
+  };
 
   motionRequests: DataService['motionRequests'] = {
     preview: async (actorId) => {
@@ -7811,7 +7924,7 @@ export class MemoryDataService implements DataService {
 
     addDiaryEntry: async (actorId, councilId, input) => {
       const s = await this.ready();
-      const clean = cleanDiaryEntry(input, this.now(), this.platformSettingsOf(s).diary_text_max_length);
+      const clean = cleanDiaryEntry(input, this.now(), this.platformSettingsOf(s, this.councilParentOrgId(s, councilId)).diary_text_max_length);
       return s.transaction(() => {
         assertMayReadCouncilHistory(this.memberWriteActor(s, actorId), councilId, `write in the diary of council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);
@@ -8012,7 +8125,7 @@ export class MemoryDataService implements DataService {
 
     addIntention: async (actorId, councilId, text) => {
       const s = await this.ready();
-      const clean = cleanPrayerIntentionText(text, this.platformSettingsOf(s).prayer_intention_max_length);
+      const clean = cleanPrayerIntentionText(text, this.platformSettingsOf(s, this.councilParentOrgId(s, councilId)).prayer_intention_max_length);
       return s.transaction(() => {
         assertMayJoinCouncilPrayers(this.memberWriteActor(s, actorId), councilId, `post a prayer intention for council ${councilId}`);
         this.assertCouncilsExist(s, [councilId]);

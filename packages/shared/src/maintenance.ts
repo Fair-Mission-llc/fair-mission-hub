@@ -112,6 +112,9 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
     { table: 'CouncilCredentialsVault', column: 'council_id', noun: ['saved credential', 'saved credentials'] },
     { table: 'AdvisoryFeedback', column: 'council_id', noun: ['advisory feedback note', 'advisory feedback notes'] },
     { table: 'MotionRequest', column: 'council_id', noun: ['motion request', 'motion requests'] },
+    // Sprint 11 Revision 19.6 (schema 112): a council's own mapping row is removed with it; a chapter mapped under it blocks.
+    { table: 'CouncilParentMappings', column: 'council_id', noun: ['parent organization mapping', 'parent organization mappings'] },
+    { table: 'CouncilParentMappings', column: 'parent_council_id', noun: ['chapter mapped under it', 'chapters mapped under it'] },
     // Sprint 11 Revision 5.0: a council bound to a District Deputy's or State Officer's jurisdiction.
     { table: 'MemberRegionalCouncil', column: 'council_id', noun: ['regional jurisdiction', 'regional jurisdictions'] },
     { table: 'CouncilAssetsInventory', column: 'council_id', noun: ['inventory asset', 'inventory assets'] },

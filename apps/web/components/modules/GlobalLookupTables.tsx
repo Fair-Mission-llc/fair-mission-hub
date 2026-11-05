@@ -7,7 +7,8 @@
 // Sprint 7C Extension: the Global Council Parameters Dashboard (Sprint 6I) and the Platform Limits card (Sprint 7C) moved
 // to their own page, Global System Parameters (/system-settings/global-settings).
 import { useState } from 'react';
-import { describeError, LOOKUP_META, LOOKUP_TABLE_ORDER, type LookupTableName, type LookupValues } from '@kofc/shared';
+import { describeError, LOOKUP_META, LOOKUP_TABLE_ORDER, parentOrgScopeLabel, type LookupTableName, type LookupValues, type ParentOrganizationRecord } from '@kofc/shared';
+import { ParentOrgTierSelect, useParentOrganizations } from '@/components/ParentOrganizationParts';
 
 import { Button, cx, Empty, Input, Notice, PageTitle, Pill, Table, Tabs, Td } from '@/components/ui';
 import { useUser } from '@/lib/session';
@@ -19,10 +20,14 @@ type Row = { id: number } & Record<string, unknown>;
 const blankFor = (table: LookupTableName): LookupValues =>
   Object.fromEntries(LOOKUP_META[table].fields.map((f) => [f.key, f.kind === 'flag' ? 0 : '']));
 
-function LookupGrid({ table }: { table: LookupTableName }) {
+function LookupGrid({ table, tier, orgs }: { table: LookupTableName; tier: number | null; orgs: readonly ParentOrganizationRecord[] }) {
   const user = useUser();
   const meta = LOOKUP_META[table];
-  const rows = useLoad(async () => (await db.lookups.listForMaintenance(user.memberId, table)) as unknown as Row[], [user.memberId, table]);
+  // Sprint 11 Revision 19.6: the shared rows (parent_org_id NULL), or one parent organization's own rows only.
+  const rows = useLoad(
+    async () => ((await db.lookups.listForMaintenance(user.memberId, table)) as unknown as Row[]).filter((r) => ((r.parent_org_id as number | null | undefined) ?? null) === tier),
+    [user.memberId, table, tier],
+  );
   const [adding, setAdding] = useState<LookupValues>(() => blankFor(table));
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<LookupValues>({});
@@ -70,9 +75,9 @@ function LookupGrid({ table }: { table: LookupTableName }) {
 
   const add = () =>
     run(async () => {
-      await db.lookups.create(user.memberId, table, adding);
+      await db.lookups.create(user.memberId, table, adding, tier);
       setAdding(blankFor(table));
-    }, `Added to ${meta.label}.`);
+    }, `Added to ${meta.label} (${parentOrgScopeLabel(orgs, tier)}).`);
 
   return (
     <div className="flex flex-col gap-3">
@@ -83,7 +88,7 @@ function LookupGrid({ table }: { table: LookupTableName }) {
       ) : null}
       {rows.error ? <Notice tone="error">{rows.error}</Notice> : null}
 
-      <Table caption={`${meta.label} lookup rows`} head={['ID', ...meta.fields.map((f) => f.label), 'Status', 'Actions']}>
+      <Table caption={`${meta.label} lookup rows: ${parentOrgScopeLabel(orgs, tier)}`} head={['ID', ...meta.fields.map((f) => f.label), 'Status', 'Actions']}>
         <tr className="bg-white">
           <Td className="text-muted">new</Td>
           {editor(adding, setAdding, () => void add())}
@@ -164,9 +169,18 @@ function LookupGrid({ table }: { table: LookupTableName }) {
 
 export function GlobalLookupTables({ embedded = false }: { embedded?: boolean }) {
   const [table, setTable] = useState<LookupTableName>(LOOKUP_TABLE_ORDER[0]);
+  const orgs = useParentOrganizations();
+  const [tier, setTier] = useState<number | null>(null);
   return (
     <>
       {embedded ? null : <PageTitle>System lookups</PageTitle>}
+      <div className="mb-3 flex flex-wrap items-end gap-3">
+        <ParentOrgTierSelect orgs={orgs.data ?? []} value={tier} onChange={setTier} />
+        <p className="max-w-xl text-sm text-muted">
+          Shared rows show in every council. Rows filed under a parent organization show only in its councils. A new row is filed under the parent
+          organization chosen here.
+        </p>
+      </div>
       <Tabs
         tabs={LOOKUP_TABLE_ORDER.map((t) => ({ id: t, label: LOOKUP_META[t].label }))}
         value={table}
@@ -175,7 +189,7 @@ export function GlobalLookupTables({ embedded = false }: { embedded?: boolean })
         idPrefix="lookup"
       />
       <div id="lookup-panel" role="tabpanel" aria-labelledby={`lookup-tab-${table}`} className="pt-4">
-        <LookupGrid key={table} table={table} />
+        <LookupGrid key={`${table}-${tier ?? 'shared'}`} table={table} tier={tier} orgs={orgs.data ?? []} />
       </div>
     </>
   );

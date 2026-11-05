@@ -106,7 +106,9 @@ The navy header shows your own council, your name, your member type and your off
 - The sidebar stays in place when you scroll a page. A long sidebar scrolls on its own. The left rail of each desk (the **Admin Desk** drawers and the folder list of each officer desk) also stays in place while the panel on the right scrolls. The open drawer keeps a gold and navy border, so you always see which drawer you work in.
 - The **Master Feature Deployment Grid** groups the councils by parent organization. Select a parent organization tab above the grid to show only its councils. Each module row has an **Every council in** column that turns the module on or off for all councils of that parent organization at once (2.2). A new parent organization shows as a tab when the first council with that parent organization is on file.
 - When a Super Admin has councils of more than one parent organization, the **Council** list on the lookup and settings pages groups the councils under their parent organization.
-- **Motion Request** follows the council's **Meeting management** switch. When the switch is off, the Faith In Action link, the **My Motion Requests** panel on the **Member Desk** and the **Motion Requests** drawer of the **Grand Knight Desk** are hidden.
+- **Motion Request** has its own module switch, **Motion requests** (2.1). It no longer follows **Meeting management**. When the switch is off, the Faith In Action link, the **My Motion Requests** panel on the **Member Desk** and the **Motion Requests** drawer of the **Grand Knight Desk** are hidden. A new council starts with the switch off.
+- The platform keeps a list of **parent organizations**: the Knights of Columbus, the secular charity and any organization a Super Admin adds. Each council is mapped to one parent organization, and a chapter can sit under a parent council (8.8.1).
+- **Global Lookup Tables** and **Platform Settings** have a **Parent organization** list. A row or setting filed under a parent organization is read only by the councils of that organization. A row or setting filed as **Shared by every organization** is read by every council. The four degrees (First to Fourth) belong to the Knights of Columbus.
 - A council Admin's sidebar no longer repeats the **Admin Desk** drawers. **Council Wide Settings**, **Council Lookups**, **Secure Access Vault**, **Global Charities Registry** and **Council Asset Management** open from the **Admin Desk**. The **Navigation Guide** still lists them. Super Admins keep every link.
 - **Historical Chronology** is again **Fraternal Annals & Oral History**: the sidebar link, the page title and the module switch (**[ 📜 Fraternal Annals & Oral History ]**).
 - The **'How Do I...' Local Help Search** ranks answers by keyword weight. It ignores filler words such as *how*, *please* and *I want to*, matches word forms (*submitted* finds *submit*) and puts tasks with the keyword in the title first.
@@ -117,7 +119,7 @@ The navy header shows your own council, your name, your member type and your off
 ## 2. Module feature flags
 
 ### 2.1 Concept: backend logic of the flags
-Each council row has eighteen on/off columns. Each column is a module feature flag. A Super Admin sets them on the **Master Feature Deployment Grid**.
+Each council row has nineteen on/off columns. Each column is a module feature flag. A Super Admin sets them on the **Master Feature Deployment Grid**.
 
 Six modules are **core systems**. They have no flag and always show: service hours, event communications (messages and distribution lists), calendars, event shifts, flagged hours review and the financial management dashboards. The grid lists them at the top under **Core systems (always on)**.
 
@@ -128,7 +130,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `flag_mobile_elections` | **Officer elections** | Council Election Center, Appointed Leadership Matrix | None |
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue, Charity Check Issuance (the Charitable Grants Registry drawers) | None |
-| `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console, Motion Request, the **My Motion Requests** panel and the **Motion Requests** drawer of the **Grand Knight Desk** | **Mtgs** |
+| `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console | **Mtgs** |
 | `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit Queue, Treasurer Ledger Audit, GK Expense Authorize, Disbursed Check Registry | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
@@ -142,6 +144,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `feature_lessons_registry` | **Lessons & Knowledge Registries** | Lessons Registry, Operations Knowledge Vault, the archive drawers of the officer desks | None |
 | `feature_marketing_factory` | **Recruitment Factory** | Recruitment Factory. The server also refuses the flyer co-pilot requests. | None |
 | `feature_loaner_library` | **Shared Equipment Library** | Loaner Library, the **Shared Equipment Library** drawer of the **Grand Knight Desk** | None |
+| `flag_motion_requests` | **Motion requests** | Motion Request, the **My Motion Requests** panel of the **Member Desk** and the **Motion Requests** drawer of the **Grand Knight Desk** | None |
 | `feature_advanced_audits` | **Trustee Semiannual Audit** | Financial Audits; the **Trustee Semiannual Audit**, **Expense Report (ER) Routing Track** and **Charitable Donation Records** drawers of the **Financial Secretary Desk**; the **Cash Box Audit Closure Panel** and **Bank Statement Match-Window** drawers of the **Treasurer Desk** | None |
 
 The retired columns `flag_complex_shifts`, `feature_volunteer_quarantine` and `feature_financial_management` stay in the database, but the portal does not read them. Their modules are core systems now.
@@ -176,7 +179,7 @@ The council's custom manuals follow the flags too. When an Admin prints a counci
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A member still sees a phone tab. | The phone read the flags before the change. | Ask the member to sign out and sign in again. |
-| *"… is not a feature flag"* | The request named an unknown flag. | Use one of the sixteen flags in 2.1. |
+| *"… is not a feature flag"* | The request named an unknown flag. | Use one of the nineteen flags in 2.1. |
 | *"… is switched off for this council."* | A premium module is off. | Ask a Super Admin to turn it on in the **Master Feature Deployment Grid**. |
 | A council is not in the grid. | The grid shows one parent organization at a time. | Select the tab of the council's parent organization. |
 
@@ -362,14 +365,15 @@ The outbound email settings are not on this page. Set them on the **Secure Acces
 > **Prerequisite (who can do this):** You must be a Super Admin for **Global Lookup Tables** and **Councils**. You must be a council Admin or a Super Admin for **Parish & Pastors Linkage**. You must be a charity registry keeper for **Global Charities Registry**.
 > **Warning:** a value marked **Built in** cannot be renamed or deleted.
 
-**Goal:** Keep the lists that every council shares.
+**Goal:** Keep the lists that every council shares, or the lists of one parent organization.
 
 **Start point:** Sidebar → System Settings.
 
 **Steps:**
 1. Open the page.
-2. Edit the row.
-3. Save.
+2. On **Global Lookup Tables**, choose the **Parent organization**. Choose **Shared by every organization** for a row that every council reads. Choose an organization for a row that only its councils read.
+3. Edit the row, or add a new row. A new row is filed under the parent organization that you chose.
+4. Save.
 
 <!-- KEEP_IMAGE: global governance matrices capture -->
 ![Global Lookup Tables (/lookups)](../generated/dashboard_visual_catalog/lookups.png)
@@ -389,12 +393,14 @@ The outbound email settings are not on this page. Set them on the **Secure Acces
 
 The base dues rate, the tenant type and the **Platform Settings** are not on **Global Lookup Tables**. A Super Admin sets them on **Global System Parameters** (sections 8.5 to 8.8).
 
-**Expected result:** Every council sees the new value.
+**Expected result:** Every council sees a shared value. Only the councils of a parent organization see a value filed under it.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | Finance officers lost access. | A role named Treasurer or Financial Secretary was renamed. | Restore the exact role name. |
+| *"… already exists"* when you add a row for one organization. | A shared row has the same name. Every council already reads it. | Use the shared row, or give the new row a different name. |
+| A council does not see a new row. | The row is filed under another parent organization. | Choose the council's parent organization in the list and add the row there, or add it as shared. |
 
 ### 5.4 Concept: verified charities
 A verified charity is a **Global Charities Registry** entry that an Admin trusts. Only verified charities show on the **Propose Charity Grant** form.
@@ -568,7 +574,7 @@ The **Council Feature Deployment Matrix** has its own drawer. The matrix shows w
 | **Biometric Authentication** | Members may sign in on the phone with Face ID or a fingerprint. This is the default. | The **Turn off** or **Turn on** button in the row (section 8.4.1) |
 | **Council Email Gateway** | The council has an outgoing mail server. | **Secure Access Vault** → **Email Gateway** (the link opens the vault) |
 
-**Council modules** rows: one row for each of the sixteen module switches (section 2). A Super Admin changes them on the **Master Feature Deployment Grid**. Council Admins see the status only.
+**Council modules** rows: one row for each of the nineteen module switches (section 2). A Super Admin changes them on the **Master Feature Deployment Grid**. Council Admins see the status only.
 
 The card counts the rows that are on, for example *"14 of 17 deployed"*. The matrix changes nothing by itself, except the **Biometric Authentication** button.
 
@@ -663,7 +669,8 @@ The **Global System Parameters** page holds the numbers that sit above the setti
 | Card | What the card holds | Applies to |
 | --- | --- | --- |
 | **Global Council Parameters Dashboard** | The base dues rate and the tenant type (Knights of Columbus council or a white-labelled organization) | One council at a time |
-| **Platform Settings** | Three cards of numbers (section 8.6) | Every council at once |
+| **Parent organizations** | The parent organizations, the form that adds one and the council mappings (section 8.8.1) | The whole platform |
+| **Platform Settings** | Three cards of numbers (section 8.6) | Every council, or the councils of one parent organization |
 
 The **Platform Settings** card had the name **Platform Limits** in earlier versions. The cards were on **Global Lookup Tables** before that. The **Master Feature Deployment Grid** holds only the on/off module switches.
 
@@ -682,19 +689,20 @@ A sign-in that already started keeps its old end time. The new sign-in length ap
 
 ### 8.7 Change the platform settings
 > **Prerequisite (who can do this):** You must be a Super Admin.
-> **Warning:** the settings apply to every council at once.
+> **Warning:** the shared settings apply to every council that has no settings of its own.
 
-**Goal:** Set the numbers that every council shares.
+**Goal:** Set the numbers that every council shares, or the numbers of one parent organization.
 
 **Start point:** Sidebar → System Settings → **Global System Parameters** → **Platform Settings**.
 
 **Steps:**
-1. Find the card that holds the setting (section 8.6).
-2. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
-3. Enter the new number.
-4. Select the save button of the card, for example **Save Sign-in & Records**. The new numbers apply to every council at once.
+1. Choose the **Parent organization**. **Shared by every organization (platform default)** changes the numbers of every council. An organization changes only the numbers of its councils. Its first save copies the shared numbers, then changes the numbers that you entered.
+2. Find the card that holds the setting (section 8.6).
+3. Optional: select **(i)** beside the field to read what the setting does. Select **Close**.
+4. Enter the new number.
+5. Select the save button of the card, for example **Save Sign-in & Records**.
 
-**Expected result:** A message says "Platform settings saved." When you change **Hours a portal sign-in lasts**, the message also says that the portal server uses the new sign-in length from the next sign-in.
+**Expected result:** A message says "Platform settings saved." and names the councils that use them. When you change **Hours a portal sign-in lasts** in the shared settings, the message also says that the portal server uses the new sign-in length from the next sign-in. The sign-in length of the portal server is always the shared value.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -732,6 +740,34 @@ The older tenant type changes with the parent organization: `KofC` is `KOFC`, an
 | --- | --- | --- |
 | The message says "Enter a base dues rate." | The rate box is empty. | Enter the rate, then save. |
 | The Faith Center and the Supreme Council Sync left the sidebar. | The parent organization is `SECULAR_CHARITY`. | Choose `KofC` again. |
+
+The council's parent organization mapping (8.8.1) moves with the new code.
+
+### 8.8.1 Add a parent organization and map a council
+> **Prerequisite (who can do this):** You must be a Super Admin.
+> **Warning:** only the Knights of Columbus (code `KofC`) turns on the fraternal features. A council mapped to any other organization sees the white-labelled portal.
+
+**Goal:** Add an umbrella organization, and put a council (chapter) under it.
+
+**Start point:** Sidebar → System Settings → **Global System Parameters** → **Parent organizations**. The same card is in the **Settings Cabinet** of the **Super Admin Desk**.
+
+**Steps:**
+1. To add an organization, enter the **Name**, for example `Elks Lodge`.
+2. Enter the **Code**, for example `ELKS_LODGE`. The code starts with a letter and has only letters, digits and underscores.
+3. Choose the **Vertical**: **Fraternal order** or **Secular nonprofit**.
+4. Select **Add parent organization**.
+5. To map a council, choose the **Council** and the **Parent organization**.
+6. Optional: choose the **Parent council** when the council is a chapter under another council.
+7. Select **Save mapping**.
+
+**Expected result:** The **Parent organizations** table shows the organization and its number of councils. The **Council parent mappings** table shows the council under its parent organization and parent council.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"A parent organization named … already exists"* | The name or the code is taken. | Use another name or code. |
+| *"A council cannot be its own parent council."* | The same council is chosen twice. | Choose another parent council, or **None (top level)**. |
+| A council cannot be deleted. | A chapter is mapped under it. | Map the chapter to another parent council first. |
 
 ---
 

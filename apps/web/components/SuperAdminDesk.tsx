@@ -18,6 +18,7 @@ import { CredentialsVaultPanel } from '@/components/modules/CredentialsVaultPane
 import { GlobalCharitiesRegistry } from '@/components/modules/GlobalCharitiesRegistry';
 import { GlobalLookupTables } from '@/components/modules/GlobalLookupTables';
 import { InboundMailCenter } from '@/components/PlatformAccessParts';
+import { ParentOrganizationsCard } from '@/components/ParentOrganizationParts';
 import { PlatformSettingsCard } from '@/components/SettingsParts';
 import { Notice } from '@/components/ui';
 
@@ -30,6 +31,7 @@ function SuperAdminDrawerBody({ spec }: { spec: DeskDrawerSpec }) {
     case 'global-parameters':
       return (
         <>
+          <ParentOrganizationsCard />
           <GlobalParametersCard />
           <PlatformSettingsCard />
         </>

@@ -54,9 +54,9 @@ describe('1. framework upgrades', () => {
 
 describe('2. Council.parent_organization (schema 110)', () => {
   it('adds the column and moves the platform to 110', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(111); // Sprint 11 Revision 18.0 moved the platform to schema 111.
+    expect(PLATFORM_SCHEMA_VERSION).toBe(112); // Sprint 11 Revision 19.6 moved the platform to schema 112.
     expect(read('Schema.sql')).toContain("ALTER TABLE [Council] ADD [parent_organization] VARCHAR(30) NOT NULL DEFAULT 'KofC';");
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 111;');
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 112;');
   });
 
   it('reads parent_organization first and falls back to tenant_type', () => {

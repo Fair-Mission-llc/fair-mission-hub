@@ -13,28 +13,38 @@ export interface Credentials {
 export interface MemberStatus {
   id: number;
   Status: 'Active' | 'Inactive' | 'Former' | 'Deceased';
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 export interface Degree {
   id: number;
   Degree: 'First' | 'Second' | 'Third' | 'Fourth';
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 export interface MemberType {
   id: number;
   Type: 'Super Admin' | 'Admin' | 'Member';
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 export interface Role {
   id: number;
   Role: string; // e.g., 'Grand Knight', 'Warden'
   Officer: 1 | 0; // Maps perfectly to the SQL BIT data type
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 export interface NoShowReason {
   id: number;
   NoShowReasonCode: 'A' | 'B' | 'C' | 'D' | 'E';
   NoShowReasonDescription: string;
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 export interface Category {
@@ -43,11 +53,15 @@ export interface Category {
   CategoryDescription: string;
   /** VARCHAR(20) (Sprint 6L Extension 4): the fixed Supreme mission area the category counts toward; seed data only. */
   SupremeMissionArea?: string | null;
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 export interface LessonsLearnedCategory {
   id: number;
   LessonsLearnedCategory: 'Planning' | 'Budgeting' | 'Scheduling' | 'Marketing' | 'Execution';
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 
@@ -158,6 +172,8 @@ export interface Council {
   special_election_notice_days?: number | null;
   /** INT NOT NULL DEFAULT 5 (Sprint 11 Revision 18.0, schema 111): days before a meeting a motion request must be submitted. */
   motion_request_lead_days?: number | null;
+  /** BIT (Sprint 11 Revision 19.6, schema 112): the Motion Requests switch, apart from flag_meeting_management. Default 1. */
+  flag_motion_requests?: number;
   /**
    * Sprint 7G (Schema 68): the geofenced meeting check-in (geofence.ts). The meeting point (DECIMAL(9,6), null until the
    * Grand Knight sets it, which leaves only the PIN path), the check-in radius in meters (DEFAULT 100) and the 4-digit
@@ -197,6 +213,11 @@ export interface Council {
  */
 export interface PlatformSettings {
   id: number;
+  /**
+   * Sprint 11 Revision 19.6 (schema 112): NULL on the platform default row (id 1); a ParentOrganizations id on a parent
+   * organization's own override row.
+   */
+  parent_org_id?: number | null;
   /** The oral history recorder's time cap in seconds (DEFAULT 900). */
   oral_history_max_seconds: number;
   /** The longest diary entry in characters (DEFAULT 4000, at most 4000). */
@@ -478,6 +499,8 @@ export interface MeetingType {
   id: number;
   Type: 'Monthly' | 'Officer' | 'Community';
   Description?: string;
+  /** Sprint 11 Revision 19.6 (schema 112): the ParentOrganizations row this lookup row belongs to; NULL is shared by all. */
+  parent_org_id?: number | null;
 }
 
 export interface Meeting {

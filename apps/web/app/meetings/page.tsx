@@ -471,7 +471,7 @@ function MeetingCenter() {
   const user = useUser();
   const scope = useCouncilScope();
   const [selected, setSelected] = useState<number | 'new' | null>(null);
-  const types = useLoad(() => db.lookups.list('MeetingType'), []);
+  const types = useLoad(() => db.lookups.list('MeetingType', { councilId: scope.councilId }), [scope.councilId]);
   const councilTypes = useLoad(() => db.meetings.listCouncilMeetingTypes(scope.councilId), [scope.councilId]);
   const today = toIsoDate(new Date());
   // fromDate reaches back far enough to list past meetings too, so their attendance and minutes stay reachable.

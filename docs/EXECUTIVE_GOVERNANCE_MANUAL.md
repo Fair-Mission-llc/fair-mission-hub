@@ -1962,6 +1962,7 @@ The **Council Election Workflow** drawer replaces the **Council Election Tracker
 | The approval says the council has no Monthly meeting late enough. | The meetings are not built yet. | Build the meetings on **Recurring Meetings**. Approve again. |
 | **Deny request** stays grey. | **Note to the member** is empty. | Type a short note. |
 | The **Motion Requests** drawer is missing. | You do not hold the Grand Knight or Deputy Grand Knight seat. | Use **Motion Request** in the Faith In Action pillar to read the requests. |
+| The **Motion Requests** drawer is missing for every officer. | The council's **Motion requests** module switch is off. | Ask a Super Admin to turn on **Motion requests** in the **Master Feature Deployment Grid**. |
 
 ### 14.6 Check your own work on the Member Actions Hub and the Member Desk
 > **Who can do this:** every signed-in member.

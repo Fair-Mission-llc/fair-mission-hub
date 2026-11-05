@@ -136,7 +136,7 @@ MODULE_SECTIONS: dict[str, tuple[str, str]] = {
     'flag_mobile_elections': ('Officer elections', r'election|nomination|appointment|ballot'),
     'flag_fundraising_inflow': ('Fundraising inflow', r'\bdonations?\b(?! workflow)'),
     'flag_charity_proposals': ('Charity proposals', r'charity grant|charity request|propose a charity'),
-    'flag_meeting_management': ('Meeting management', r'meeting|cadence|agenda|motion request'),
+    'flag_meeting_management': ('Meeting management', r'meeting|cadence|agenda'),
     'feature_expense_reporting': ('Expense reporting', r'expense'),
     'feature_faith_center': ('Faith Center', r'faith center|prayer|devotion'),
     'feature_constitutional_advisor': ('Constitutional Advisor', r'constitutional advisor'),
@@ -151,6 +151,7 @@ MODULE_SECTIONS: dict[str, tuple[str, str]] = {
     'feature_marketing_factory': ('Recruitment Factory', r'marketing|flyer|recruitment factory'),
     'feature_loaner_library': ('Shared Equipment Library', r'loaner|equipment library'),
     'feature_advanced_audits': ('Trustee Semiannual Audit', r'1295|semiannual audit|trustee audit|trustee semiannual audit'),
+    'flag_motion_requests': ('Motion requests', r'motion request'),
 }
 
 DISABLED_BANNER = 'This premium module is currently disabled'

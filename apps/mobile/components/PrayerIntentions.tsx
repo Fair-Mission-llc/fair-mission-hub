@@ -86,7 +86,7 @@ export function PrayerIntentions({ version }: { version: number }) {
     [user.memberId, user.councilId, fraternal, version],
   );
   // Sprint 7C: the Super Admins' platform character limit (PlatformSettings.prayer_intention_max_length).
-  const limits = useLoad(() => db.councils.getPlatformSettings(), []);
+  const limits = useLoad(() => db.councils.getPlatformSettings({ councilId: user.councilId }), [user.councilId]);
   const maxChars = platformSettings(limits.data).prayer_intention_max_length;
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);

@@ -1153,6 +1153,7 @@ Each request keeps its messages with the GK for good.
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
+| The **Motion Request** link is missing. | Your council has switched Motion Requests off. | Ask your Grand Knight or an Admin. |
 | **Submit motion request** stays grey. | **What the motion does** or **Why the council should pass it** is empty. | Fill in both fields. |
 | The form says no Monthly meeting is scheduled. | The council has not built the meetings yet. | Send the request. The GK can approve it when the meeting exists. |
 

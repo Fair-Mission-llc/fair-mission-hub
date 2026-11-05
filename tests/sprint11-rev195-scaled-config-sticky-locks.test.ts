@@ -1,5 +1,5 @@
 // Sprint 11 Revision 19.5 (schema 111 unchanged): parent organization tiers, the TF-IDF help ranker, the sticky
-// navigation context locks, the Form 1728 popup calibrations, Motion Requests on the Meeting management switch, the
+// navigation context locks, the Form 1728 popup calibrations, Motion Requests behind a council switch (their own since Revision 19.6), the
 // leaner council Admin sidebar and the Fraternal Annals & Oral History name.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -112,13 +112,13 @@ describe('4. Form 1728, Motion Requests, the Admin sidebar and the annals name',
     expect(read('apps/web/components/modules/CouncilLookupTables.tsx')).toContain("kind: 'form1728'");
   });
 
-  it('hides Motion Requests with the council Meeting management switch', () => {
+  it('hides Motion Requests with their own switch (Revision 19.6 freed them from Meeting management)', () => {
     const gk = { memberId: 1, councilId: 1, memberType: 'Member', isOfficer: true, roles: ['Grand Knight'] } as never;
-    expect(withFeatureFlags(['motion-requests'], { ...ALL_FEATURES_ON, flag_meeting_management: false })).toEqual([]);
-    expect(withFeatureFlags(['motion-requests'], ALL_FEATURES_ON)).toEqual(['motion-requests']);
-    const off = deskDrawersFor(gk, 'grand-knight', 1, { ...ALL_FEATURES_ON, flag_meeting_management: false });
+    expect(withFeatureFlags(['motion-requests'], { ...ALL_FEATURES_ON, flag_motion_requests: false })).toEqual([]);
+    expect(withFeatureFlags(['motion-requests'], { ...ALL_FEATURES_ON, flag_meeting_management: false })).toEqual(['motion-requests']);
+    const off = deskDrawersFor(gk, 'grand-knight', 1, { ...ALL_FEATURES_ON, flag_motion_requests: false });
     expect(off.map((d) => d.id)).not.toContain('motion-requests');
-    expect(portalAreas(gk, { ...ALL_FEATURES_ON, flag_meeting_management: false })).not.toContain('motion-requests');
+    expect(portalAreas(gk, { ...ALL_FEATURES_ON, flag_motion_requests: false })).not.toContain('motion-requests');
   });
 
   it('drops the links the Admin Desk holds from a council Admin sidebar only', () => {

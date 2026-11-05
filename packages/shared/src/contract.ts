@@ -122,6 +122,7 @@ import type { CouncilAccount, CouncilAccountInput, GLAccountInput, SplitSisterCo
 import type { FileRepositorySettings } from './file-repository';
 import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
+import type { CouncilParentMapping, ParentOrganizationInput, ParentOrganizationRecord, ParentOrgScope } from './parent-organizations';
 import type { MotionRequestChannel, MotionRequestDecision, MotionRequestDetail, MotionRequestInput, MotionRequestPreview, MotionRequestThread } from './motion-requests';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter } from './member-lifecycle';
 import type { MeritThresholds } from './merit-tiers';
@@ -2436,13 +2437,19 @@ export interface DataService {
    * SUPER_ADMIN_REQUIRED, nothing written), and an unknown actor rejects MEMBER_NOT_FOUND.
    */
   lookups: {
-    /** All rows of one lookup table, ordered by id. */
-    list<T extends LookupTableName>(table: T): Promise<LookupRowMap[T][]>;
+    /**
+     * All rows of one lookup table, ordered by id. Sprint 11 Revision 19.6 (schema 112): with a `scope` (a council, or a
+     * parent organization id) only the rows that parent organization reads - the shared rows (parent_org_id NULL) and
+     * its own (parent-organizations.ts lookupRowsInScope). Without one, every row.
+     */
+    list<T extends LookupTableName>(table: T, scope?: ParentOrgScope): Promise<LookupRowMap[T][]>;
     /**
      * Adds a row. Rejects (INVALID_INPUT) when a field is missing, too long or malformed, or when the
-     * table's key value (e.g. Role.Role) already exists, compared case-insensitively.
+     * table's key value (e.g. Role.Role) already exists, compared case-insensitively. Sprint 11 Revision 19.6:
+     * `parentOrgId` files the row under one parent organization (null or omitted: shared by all); the key must be unique
+     * among the rows that organization reads (lookupKeyScopeRows). INVALID_INPUT for an unknown parent organization.
      */
-    create<T extends LookupTableName>(actorId: number, table: T, values: LookupValues): Promise<LookupRowMap[T]>;
+    create<T extends LookupTableName>(actorId: number, table: T, values: LookupValues, parentOrgId?: number | null): Promise<LookupRowMap[T]>;
     /** Changes a row's fields. Protected values the app depends on ('Active', the three member types) cannot be renamed. */
     update<T extends LookupTableName>(actorId: number, table: T, id: number, values: LookupValues): Promise<LookupRowMap[T]>;
     /** Deletes a row nothing references (LOOKUP_IN_USE otherwise) and that is not protected (LOOKUP_PROTECTED). */
@@ -2634,13 +2641,17 @@ export interface DataService {
      * platformSettings fills defaults when the row is missing). Open to every caller: the recorder and the text boxes
      * read them.
      */
-    getPlatformSettings(): Promise<PlatformSettings>;
+    getPlatformSettings(scope?: ParentOrgScope): Promise<PlatformSettings>;
     /**
      * Sprint 7C: saves one or more platform settings (cleanPlatformSettings) and resolves to the stored row. Only an
      * Active Super Admin may (SUPER_ADMIN_REQUIRED, nothing written). INVALID_INPUT for a value out of range, an unknown
      * field or no field.
+     * Sprint 11 Revision 19.6 (schema 112): with a `scope` getPlatformSettings reads that parent organization's override
+     * row when it has one, otherwise the platform default (row 1). setPlatformSettings with a `parentOrgId` writes that
+     * organization's override row (created from the default on its first save); null or omitted writes the default.
+     * INVALID_INPUT for an unknown parent organization.
      */
-    setPlatformSettings(actorId: number, settings: Partial<Omit<PlatformSettings, 'id'>>): Promise<PlatformSettings>;
+    setPlatformSettings(actorId: number, settings: Partial<Omit<PlatformSettings, 'id' | 'parent_org_id'>>, parentOrgId?: number | null): Promise<PlatformSettings>;
 
     /*
      * Sprint 11 Revision 4.1: the Admin Desk Setup Wizard (setup-wizard.ts). All four need an Active Admin of the council
@@ -3742,6 +3753,28 @@ export interface DataService {
    * Council.motion_request_lead_days after submission) or denies it. Each request keeps a chat log in two channels:
    * MEMBER_GK and OFFICER_ADVISORY. MEMBER_NOT_FOUND for an unknown actor.
    */
+  /**
+   * Sprint 11 Revision 19.6 (schema 112): the relational parent organizations (parent-organizations.ts). Reads are open
+   * (the pickers need them); writes need an Active Super Admin (SUPER_ADMIN_REQUIRED, nothing written) and reject
+   * MEMBER_NOT_FOUND for an unknown actor.
+   */
+  parentOrganizations: {
+    /** Every ParentOrganizations row, in id order. */
+    list(): Promise<ParentOrganizationRecord[]>;
+    /** Every CouncilParentMappings row, in council id order. */
+    listMappings(): Promise<CouncilParentMapping[]>;
+    /** The parent organization id a council reads (its mapping, else its stored code), or null when none matches. */
+    resolveForCouncil(councilId: number): Promise<number | null>;
+    /** Adds a parent organization. INVALID_INPUT for a bad field or a name or code already taken. */
+    create(actorId: number, input: ParentOrganizationInput): Promise<ParentOrganizationRecord>;
+    /**
+     * Maps a council to a parent organization (one mapping per council: an existing row is replaced), with an optional
+     * parent council, and keeps Council.parent_organization and tenant_type in step (councilColumnsForParentOrg).
+     * INVALID_INPUT for an unknown council, parent organization or parent council, or a council named as its own parent.
+     */
+    mapCouncil(actorId: number, councilId: number, parentOrgId: number, parentCouncilId?: number | null): Promise<CouncilParentMapping>;
+  };
+
   motionRequests: {
     /** Where a request the actor submits today would be heard: the council's lead days, the earliest date and the meeting. */
     preview(actorId: number): Promise<MotionRequestPreview>;

@@ -27,6 +27,7 @@ import {
 } from '@kofc/shared';
 import { Button, Input, Notice } from '@/components/ui';
 import { parseNumberField } from '@/lib/format';
+import { ParentOrgTierSelect, tierLabel, useParentOrganizations } from '@/components/ParentOrganizationParts';
 import { useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -239,9 +240,13 @@ export function GroupedSettingsCards<K extends string>({
   );
 }
 
-/** The universal limits every council shares, as the recorder and text boxes read them (defaults until loaded). */
+/**
+ * The universal limits, as the recorder and text boxes read them (defaults until loaded). Sprint 11 Revision 19.6: the
+ * signed-in member's parent organization's own settings when it has an override row, otherwise the platform default.
+ */
 export function usePlatformSettings(): PlatformSettings | undefined {
-  return useLoad(() => db.councils.getPlatformSettings(), []).data;
+  const councilId = useUser().councilId;
+  return useLoad(() => db.councils.getPlatformSettings({ councilId }), [councilId]).data;
 }
 
 /**
@@ -282,28 +287,39 @@ async function saveSessionLengthOnServer(hours: number): Promise<string> {
  */
 export function PlatformSettingsCard() {
   const user = useUser();
-  const settings = useLoad(() => db.councils.getPlatformSettings(), []);
+  // Sprint 11 Revision 19.6: the platform default (shared) or one parent organization's own override row.
+  const orgs = useParentOrganizations();
+  const [tier, setTier] = useState<number | null>(null);
+  const settings = useLoad(() => db.councils.getPlatformSettings({ parentOrgId: tier }), [tier]);
   const data = settings.data;
+  const scopeText = tier === null ? 'every council that has no settings of its own' : `the councils of ${tierLabel(orgs.data ?? [], tier)}`;
   return (
     <section aria-labelledby="platform-limits" className="mb-6 rounded border-2 border-navy bg-white p-4 text-navy sm:p-6">
       <h2 id="platform-limits" className="font-serif text-2xl">
         Platform Settings
       </h2>
-      <p className="mt-1 text-base">Super Admins only. These settings apply to every council at once. Click (i) beside a field to see what it does.</p>
+      <p className="mt-1 text-base">
+        Super Admins only. The shared settings apply to every council. A parent organization can keep its own settings; its councils then read those
+        instead. Click (i) beside a field to see what it does.
+      </p>
+      <div className="mt-3">
+        <ParentOrgTierSelect orgs={orgs.data ?? []} value={tier} onChange={setTier} />
+      </div>
       <div className="mt-4">
         {settings.error ? <Notice tone="error">{settings.error}</Notice> : null}
         {data ? (
           <GroupedSettingsCards
-            formKey={JSON.stringify(data)}
+            formKey={`${tier ?? 'shared'}:${JSON.stringify(data)}`}
             names={PLATFORM_SETTING_NAMES}
             rules={PLATFORM_SETTING_RULES}
             values={data}
             groups={PLATFORM_SETTING_GROUP_ORDER}
             onSave={async (changed) => {
-              await db.councils.setPlatformSettings(user.memberId, changed);
-              const server = changed.user_session_expiry_hours === undefined ? '' : await saveSessionLengthOnServer(changed.user_session_expiry_hours);
+              await db.councils.setPlatformSettings(user.memberId, changed, tier);
+              // The portal server's sign-in length is platform-wide: only the shared settings carry it there.
+              const server = tier !== null || changed.user_session_expiry_hours === undefined ? '' : await saveSessionLengthOnServer(changed.user_session_expiry_hours);
               await settings.reload();
-              return `Platform settings saved. They apply to every council now.${server}`;
+              return `Platform settings saved. They apply to ${scopeText} now.${server}`;
             }}
           />
         ) : (

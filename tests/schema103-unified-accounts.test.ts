@@ -29,8 +29,8 @@ const PILOT_DAY = new Date(2026, 9, 12, 19, 0, 0);
 
 describe('schema 103: one accounts ledger', () => {
   it('drops AccountOwners and puts its columns and the binary owner on GLAccount', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(111); // Sprint 11 Revision 18.0 moved the platform to schema 111.
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 111;');
+    expect(PLATFORM_SCHEMA_VERSION).toBe(112); // Sprint 11 Revision 19.6 moved the platform to schema 112.
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 112;');
     expect(TABLES.AccountOwners).toBeUndefined();
     const gl = TABLES.GLAccount.columns;
     expect(gl.map((c) => c.name)).toEqual(

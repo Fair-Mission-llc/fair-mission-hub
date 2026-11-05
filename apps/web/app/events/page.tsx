@@ -575,7 +575,7 @@ function EventEditor({
 }) {
   const event = useLoad(() => (eventId === null ? Promise.resolve(null) : db.events.get(eventId)), [eventId]);
   const linked = useLoad(() => (eventId === null ? Promise.resolve([councilId]) : db.events.listCouncilIds(eventId)), [eventId, councilId]);
-  const categories = useLoad(() => db.lookups.list('Category'), []);
+  const categories = useLoad(() => db.lookups.list('Category', { councilId }), [councilId]);
   const owners = useLoad(() => db.members.listByCouncil(councilId), [councilId]);
   const affiliated = useLoad(() => db.councils.listAffiliated(councilId), [councilId]);
 

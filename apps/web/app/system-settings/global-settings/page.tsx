@@ -9,6 +9,7 @@
 // the data service enforces on both methods (SUPER_ADMIN_REQUIRED).
 import { RequireArea } from '@/components/CouncilScope';
 import { GlobalParametersCard } from '@/components/GlobalParametersCard';
+import { ParentOrganizationsCard } from '@/components/ParentOrganizationParts';
 import { PlatformSettingsCard } from '@/components/SettingsParts';
 import { PageTitle } from '@/components/ui';
 
@@ -20,6 +21,7 @@ export default function GlobalSystemParametersPage() {
         These numbers apply above any one council&apos;s own settings. The base dues rate and organization type are set per council; the Platform
         Settings apply to every council at once. Each council&apos;s own limits, windows and reminders are on Council Wide Settings.
       </p>
+      <ParentOrganizationsCard />
       <GlobalParametersCard />
       <PlatformSettingsCard />
     </RequireArea>

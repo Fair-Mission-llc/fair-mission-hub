@@ -141,7 +141,7 @@ function useColumns(table: CouncilLookupTableName, councilId: number): ColumnDat
   const user = useUser();
   const tenant = useTenantType();
   const options = useLoad(async () => {
-    if (table === 'Activities') return { options: (await db.lookups.list('Category')).map((c) => ({ value: c.id, label: c.Category })), owners: [], names: [] };
+    if (table === 'Activities') return { options: (await db.lookups.list('Category', { councilId })).map((c) => ({ value: c.id, label: c.Category })), owners: [], names: [] };
     if (table === 'CouncilDonationMethod') {
       const methods = (await db.donations.listAllMethods()).map((m) => ({ value: m.id, label: m.DonationMethod }));
       // The account list is read by the council's Admins and Super Admins; a finance officer sees only the token.

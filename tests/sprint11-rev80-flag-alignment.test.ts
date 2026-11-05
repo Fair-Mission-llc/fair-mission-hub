@@ -34,8 +34,8 @@ const off = (...names: (keyof FeatureFlags)[]): FeatureFlags => ({ ...ALL_FEATUR
 
 describe('1. schema 107', () => {
   it('adds the five premium switches as BIT DEFAULT 1 Council columns and keeps the retired ones unread', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(111); // Sprint 11 Revision 18.0 moved the platform to schema 111.
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 111;');
+    expect(PLATFORM_SCHEMA_VERSION).toBe(112); // Sprint 11 Revision 19.6 moved the platform to schema 112.
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 112;');
     expect(read('Schema.sql')).toContain('(schema version 107)');
     expect(REV80_FEATURE_FLAGS).toEqual(['feature_photo_gallery', 'feature_lessons_registry', 'feature_marketing_factory', 'feature_loaner_library', 'feature_advanced_audits']);
     for (const name of REV80_FEATURE_FLAGS) {
@@ -46,7 +46,7 @@ describe('1. schema 107', () => {
       expect(TABLES.Council!.columns.find((c) => c.name === name)).toBeDefined();
       expect(FEATURE_FLAG_NAMES as readonly string[]).not.toContain(name);
     }
-    expect(FEATURE_FLAG_NAMES).toHaveLength(18);
+    expect(FEATURE_FLAG_NAMES).toHaveLength(19); // Sprint 11 Revision 19.6 adds flag_motion_requests.
   });
 });
 

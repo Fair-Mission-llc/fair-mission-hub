@@ -1184,9 +1184,9 @@ export function MemberDesk({ user }: { user: SessionUser }) {
       </div>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         {flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}
-        {/* Sprint 11 Revision 18.0: the member's own motion requests and the form to send one. Sprint 11 Revision 19.5: it
-            leaves the desk while the council's Meeting management switch (which carries Motion Requests) is off. */}
-        {flags.flag_meeting_management ? (
+        {/* Sprint 11 Revision 18.0: the member's own motion requests and the form to send one. Sprint 11 Revision 19.6: it
+            leaves the desk while the council's own Motion requests switch (flag_motion_requests) is off. */}
+        {flags.flag_motion_requests ? (
           <DeskRow id="member-motion-requests" label={MY_MOTION_REQUESTS_TITLE}>
             <MyMotionRequestsPanel user={user} />
           </DeskRow>

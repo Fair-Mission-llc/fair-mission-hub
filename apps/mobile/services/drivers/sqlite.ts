@@ -604,6 +604,19 @@ import {
   quarantineResubmitText,
   councilFeatureFlags,
   lightweightFeatureColumns,
+  assertMayMaintainParentOrganizations,
+  assertParentOrganizationUnique,
+  cleanParentOrganizationInput,
+  cleanParentOrgId,
+  councilColumnsForParentOrg,
+  lookupKeyScopeRows,
+  lookupRowsInScope,
+  parentOrgForCode,
+  platformSettingsRowFor,
+  resolveCouncilParentOrgId,
+  type CouncilParentMapping,
+  type ParentOrganizationRecord,
+  type ParentOrgScope,
   HOURS_STEP,
   isQuarantineExempt,
   quarantineActivityKey,
@@ -1066,8 +1079,10 @@ const DB_NAME = 'kofc.db';
  * 110: Council.parent_organization, 'KofC' or 'SECULAR_CHARITY', kept in step with tenant_type (Sprint 11 Revision 12.0).
  * 111: MotionRequest and MotionRequestMessage (member motion requests and their chat logs), Council.motion_request_lead_days
  *     and PlatformSettings.global_ai_confidence_cutoff (Sprint 11 Revision 18.0).
+ * 112: ParentOrganizations and CouncilParentMappings (the relational parent-child hierarchy), Council.flag_motion_requests
+ *     and parent_org_id on the eight global lookup tables and PlatformSettings (Sprint 11 Revision 19.6).
  */
-const SCHEMA_VERSION = 111;
+const SCHEMA_VERSION = 112;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -1712,23 +1727,27 @@ export class SqliteDataService implements DataService {
   // ---- lookups / councils / members -------------------------------------
 
   lookups: DataService['lookups'] = {
-    list: async <T extends LookupTableName>(table: T): Promise<LookupRowMap[T][]> => {
+    list: async <T extends LookupTableName>(table: T, scope?: ParentOrgScope): Promise<LookupRowMap[T][]> => {
       if (!LOOKUP_TABLES[table]) throw new Error(`Unknown lookup table: ${String(table)}`);
       const db = await this.ready();
-      return db.getAllAsync<LookupRowMap[T]>(`SELECT * FROM [${table}] ORDER BY [id]`);
+      // Sprint 11 Revision 19.6: a scoped read sees the shared rows and its parent organization's own.
+      const rows = await db.getAllAsync<LookupRowMap[T] & { parent_org_id?: number | null }>(`SELECT * FROM [${table}] ORDER BY [id]`);
+      return lookupRowsInScope(rows, await this.scopeParentOrgId(db, scope));
     },
-    create: async <T extends LookupTableName>(actorId: number, table: T, values: LookupValues): Promise<LookupRowMap[T]> => {
+    create: async <T extends LookupTableName>(actorId: number, table: T, values: LookupValues, parentOrgId?: number | null): Promise<LookupRowMap[T]> => {
       if (!LOOKUP_TABLES[table]) throw new Error(`Unknown lookup table: ${String(table)}`);
       const cols = LOOKUP_META[table].fields.map((f) => f.key);
       const db = await this.ready();
       assertMayMaintainLookups(await this.memberWriteActor(db, actorId), table);
       const cleaned = cleanLookupValues(table, values);
+      const orgId = cleanParentOrgId(parentOrgId, await this.parentOrgRows(db));
       let id = 0;
       await db.withTransactionAsync(async () => {
-        assertLookupKeyUnique(table, await db.getAllAsync(`SELECT * FROM [${table}]`), cleaned);
+        const rows = await db.getAllAsync<Record<string, unknown> & { parent_org_id?: number | null }>(`SELECT * FROM [${table}]`);
+        assertLookupKeyUnique(table, lookupKeyScopeRows(rows, orgId), cleaned);
         const res = await db.runAsync(
-          `INSERT INTO [${table}] (${cols.map((c) => `[${c}]`).join(', ')}) VALUES (${marks(cols.length)})`,
-          cols.map((c) => cleaned[c]),
+          `INSERT INTO [${table}] (${cols.map((c) => `[${c}]`).join(', ')}, [parent_org_id]) VALUES (${marks(cols.length + 1)})`,
+          [...cols.map((c) => cleaned[c]), orgId],
         );
         id = res.lastInsertRowId;
       });
@@ -1744,7 +1763,8 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         const row = await this.requireLookupRow(db, table, id);
         assertLookupNotProtected(table, row, cleaned);
-        assertLookupKeyUnique(table, await db.getAllAsync(`SELECT * FROM [${table}]`), cleaned, id);
+        const rows = await db.getAllAsync<Record<string, unknown> & { parent_org_id?: number | null }>(`SELECT * FROM [${table}]`);
+        assertLookupKeyUnique(table, lookupKeyScopeRows(rows, ((row as { parent_org_id?: number | null }).parent_org_id) ?? null), cleaned, id);
         await db.runAsync(`UPDATE [${table}] SET ${cols.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [
           ...cols.map((c) => cleaned[c]),
           id,
@@ -1929,6 +1949,10 @@ export class SqliteDataService implements DataService {
         const light = lightweightFeatureColumns();
         const flagCols = Object.keys(light) as (keyof typeof light)[];
         await db.runAsync(`UPDATE [Council] SET ${flagCols.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...flagCols.map((c) => light[c]), id]);
+        // Sprint 11 Revision 19.6: the new council maps to the parent organization its stored code names.
+        const stored = await db.getFirstAsync<{ parent_organization: string | null }>('SELECT [parent_organization] FROM [Council] WHERE [id] = ?', [id]);
+        const org = parentOrgForCode(await this.parentOrgRows(db), stored?.parent_organization);
+        if (org) await this.writeCouncilMapping(db, id, org, null);
         // Sprint 11 Revision 5.0: a State Council instance starts with its own checking account and books.
         if (clean.council_level === 'STATE') {
           for (const a of STATE_COUNCIL_TEMPLATE_ACCOUNTS) {
@@ -1957,6 +1981,8 @@ export class SqliteDataService implements DataService {
       await db.withTransactionAsync(async () => {
         assertMayMaintainCouncils(await this.memberWriteActor(db, actorId), `delete council ${id}`);
         const row = await this.requireRecord(db, 'Council', id);
+        // Sprint 11 Revision 19.6: the council's own mapping row goes with it; a chapter mapped under it still blocks.
+        await db.runAsync('DELETE FROM [CouncilParentMappings] WHERE [council_id] = ?', [id]);
         await this.assertRecordUnused(db, 'Council', id, `${String(row.CouncilNumber)} ${String(row.CouncilName)}`);
         await db.runAsync('DELETE FROM [Council] WHERE [id] = ?', [id]);
       });
@@ -2014,6 +2040,12 @@ export class SqliteDataService implements DataService {
         // Only the three known columns, so the names are safe to interpolate.
         const columns = (['tenant_type', 'parent_organization', 'base_dues_rate'] as const).filter((c) => clean[c] !== undefined);
         await db.runAsync(`UPDATE [Council] SET ${columns.map((c) => `[${c}] = ?`).join(', ')} WHERE [id] = ?`, [...columns.map((c) => clean[c]!), councilId]);
+        // Sprint 11 Revision 19.6: a new parent organization code moves the council's mapping row too.
+        if (clean.parent_organization !== undefined) {
+          const org = parentOrgForCode(await this.parentOrgRows(db), clean.parent_organization);
+          const current = await db.getFirstAsync<CouncilParentMapping>('SELECT * FROM [CouncilParentMappings] WHERE [council_id] = ?', [councilId]);
+          if (org && current?.parent_org_id !== org.id) await this.writeCouncilMapping(db, councilId, org, current?.parent_council_id ?? null);
+        }
       });
       return (await db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [councilId]))!;
     },
@@ -2137,21 +2169,33 @@ export class SqliteDataService implements DataService {
       return (await db.getFirstAsync<CouncilAffiliations>('SELECT * FROM [CouncilAffiliations] WHERE [id] = ?', [affiliationId]))!;
     },
 
-    getPlatformSettings: async () => this.platformSettingsOf(await this.ready()),
+    getPlatformSettings: async (scope) => {
+      const db = await this.ready();
+      return this.platformSettingsOf(db, await this.scopeParentOrgId(db, scope));
+    },
 
-    setPlatformSettings: async (actorId, settings) => {
+    setPlatformSettings: async (actorId, settings, parentOrgId) => {
       const clean = cleanPlatformSettings(settings);
       const db = await this.ready();
+      const orgId = cleanParentOrgId(parentOrgId, await this.parentOrgRows(db));
       await db.withTransactionAsync(async () => {
         assertMaySetPlatformSettings(await this.memberWriteActor(db, actorId));
-        const next = { ...(await this.platformSettingsOf(db)), ...clean };
+        // Sprint 11 Revision 19.6: a parent organization writes its own override row, made from the default on first save.
+        const own = orgId === null ? null : await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [PlatformSettings] WHERE [parent_org_id] = ?', [orgId]);
+        const base = orgId !== null && !own ? await this.platformSettingsOf(db, null) : await this.platformSettingsOf(db, orgId);
+        const next = { ...base, ...clean };
+        let rowId = PLATFORM_SETTINGS_ID;
+        if (orgId !== null) {
+          const top = await db.getFirstAsync<{ n: number | null }>('SELECT MAX([id]) AS n FROM [PlatformSettings]');
+          rowId = own?.id ?? Math.max(PLATFORM_SETTINGS_ID, top?.n ?? PLATFORM_SETTINGS_ID) + 1;
+        }
         // Only the known columns, so the names are safe to interpolate.
         await db.runAsync(
-          `INSERT OR REPLACE INTO [PlatformSettings] ([id], ${PLATFORM_SETTING_NAMES.map((c) => `[${c}]`).join(', ')}) VALUES (?, ${PLATFORM_SETTING_NAMES.map(() => '?').join(', ')})`,
-          [PLATFORM_SETTINGS_ID, ...PLATFORM_SETTING_NAMES.map((c) => next[c])],
+          `INSERT OR REPLACE INTO [PlatformSettings] ([id], [parent_org_id], ${PLATFORM_SETTING_NAMES.map((c) => `[${c}]`).join(', ')}) VALUES (?, ?, ${PLATFORM_SETTING_NAMES.map(() => '?').join(', ')})`,
+          [rowId, orgId, ...PLATFORM_SETTING_NAMES.map((c) => next[c])],
         );
       });
-      return this.platformSettingsOf(db);
+      return this.platformSettingsOf(db, orgId);
     },
 
     setEmailGateway: async (actorId, councilId, settings) => {
@@ -5175,9 +5219,45 @@ export class SqliteDataService implements DataService {
     return councilWideSettings(council).volunteer_logging_window_days;
   }
 
-  /** The universal limits (Sprint 7C), with the defaults when the row is missing. */
-  private async platformSettingsOf(db: SQLite.SQLiteDatabase): Promise<PlatformSettings> {
-    return platformSettings(await db.getFirstAsync<PlatformSettings>('SELECT * FROM [PlatformSettings] WHERE [id] = ?', [PLATFORM_SETTINGS_ID]));
+  /**
+   * The universal limits (Sprint 7C), with the defaults when the row is missing. Sprint 11 Revision 19.6: a parent
+   * organization's own override row when it has one (platformSettingsRowFor).
+   */
+  private async platformSettingsOf(db: SQLite.SQLiteDatabase, parentOrgId?: number | null): Promise<PlatformSettings> {
+    const rows = await db.getAllAsync<PlatformSettings>('SELECT * FROM [PlatformSettings]');
+    return platformSettings(platformSettingsRowFor(rows, parentOrgId, PLATFORM_SETTINGS_ID));
+  }
+
+  private async parentOrgRows(db: SQLite.SQLiteDatabase): Promise<ParentOrganizationRecord[]> {
+    return db.getAllAsync<ParentOrganizationRecord>('SELECT * FROM [ParentOrganizations] ORDER BY [id]');
+  }
+
+  /** Sprint 11 Revision 19.6: the parent organization id a council reads (its mapping, else its stored code). */
+  private async councilParentOrgId(db: SQLite.SQLiteDatabase, councilId: number): Promise<number | null> {
+    const council = await db.getFirstAsync<Council>('SELECT [id], [parent_organization], [tenant_type] FROM [Council] WHERE [id] = ?', [councilId]);
+    if (!council) return null;
+    const mappings = await db.getAllAsync<CouncilParentMapping>('SELECT * FROM [CouncilParentMappings] WHERE [council_id] = ?', [councilId]);
+    return resolveCouncilParentOrgId(council, mappings, await this.parentOrgRows(db));
+  }
+
+  /** The parent organization a scoped read is for: undefined (every row) without a scope. */
+  private async scopeParentOrgId(db: SQLite.SQLiteDatabase, scope: ParentOrgScope | undefined): Promise<number | null | undefined> {
+    if (!scope) return undefined;
+    if (scope.parentOrgId !== undefined) return scope.parentOrgId;
+    if (scope.councilId !== undefined) return this.councilParentOrgId(db, scope.councilId);
+    return undefined;
+  }
+
+  /** Replaces a council's mapping row (one per council) and keeps its parent_organization and tenant_type in step. */
+  private async writeCouncilMapping(db: SQLite.SQLiteDatabase, councilId: number, org: ParentOrganizationRecord, parentCouncilId: number | null): Promise<number> {
+    await db.runAsync('DELETE FROM [CouncilParentMappings] WHERE [council_id] = ?', [councilId]);
+    const cols = councilColumnsForParentOrg(org);
+    await db.runAsync('UPDATE [Council] SET [parent_organization] = ?, [tenant_type] = ? WHERE [id] = ?', [cols.parent_organization, cols.tenant_type, councilId]);
+    const res = await db.runAsync(
+      'INSERT INTO [CouncilParentMappings] ([council_id], [parent_org_id], [parent_council_id], [mapped_at]) VALUES (?, ?, ?, ?)',
+      [councilId, org.id, parentCouncilId, toTimestamp(this.now())],
+    );
+    return res.lastInsertRowId;
   }
 
   /** Stores a held entry (PENDING) in place of the time row. */
@@ -5795,7 +5875,7 @@ export class SqliteDataService implements DataService {
             OwnerID: null,
             IsMultiDay: 0,
             EndDate: null,
-            InviteReleaseDate: cadenceInviteReleaseDate(date, (await this.platformSettingsOf(db)).cadence_invitation_horizon_days),
+            InviteReleaseDate: cadenceInviteReleaseDate(date, (await this.platformSettingsOf(db, await this.councilParentOrgId(db, councilId))).cadence_invitation_horizon_days),
           };
           createdIds.push(await this.insertMeeting(db, meeting, cadenceInviteMode(cadence.DefaultRecipientGroup)));
         }
@@ -6784,6 +6864,54 @@ export class SqliteDataService implements DataService {
     );
     return buildMotionRequestThread(actor, request, channel, messages, members);
   }
+
+  // ---- Sprint 11 Revision 19.6: relational parent organizations (schema 112) --------------------------------------
+
+  parentOrganizations: DataService['parentOrganizations'] = {
+    list: async () => this.parentOrgRows(await this.ready()),
+
+    listMappings: async () => (await this.ready()).getAllAsync<CouncilParentMapping>('SELECT * FROM [CouncilParentMappings] ORDER BY [council_id]'),
+
+    resolveForCouncil: async (councilId) => this.councilParentOrgId(await this.ready(), councilId),
+
+    create: async (actorId, input) => {
+      const db = await this.ready();
+      assertMayMaintainParentOrganizations(await this.memberWriteActor(db, actorId), 'add parent organizations');
+      const clean = cleanParentOrganizationInput(input);
+      let id = 0;
+      await db.withTransactionAsync(async () => {
+        assertParentOrganizationUnique(await this.parentOrgRows(db), clean);
+        const res = await db.runAsync('INSERT INTO [ParentOrganizations] ([org_name], [org_code], [vertical_type], [created_at]) VALUES (?, ?, ?, ?)', [
+          clean.org_name,
+          clean.org_code,
+          clean.vertical_type,
+          toTimestamp(this.now()),
+        ]);
+        id = res.lastInsertRowId;
+      });
+      return (await db.getFirstAsync<ParentOrganizationRecord>('SELECT * FROM [ParentOrganizations] WHERE [id] = ?', [id]))!;
+    },
+
+    mapCouncil: async (actorId, councilId, parentOrgId, parentCouncilId) => {
+      const db = await this.ready();
+      assertMayMaintainParentOrganizations(await this.memberWriteActor(db, actorId), 'map councils to parent organizations');
+      let id = 0;
+      await db.withTransactionAsync(async () => {
+        await this.requireRecord(db, 'Council', councilId);
+        const orgs = await this.parentOrgRows(db);
+        const orgId = cleanParentOrgId(parentOrgId, orgs);
+        const org = orgs.find((o) => o.id === orgId);
+        if (!org) throw new BusinessRuleError('INVALID_INPUT', 'Choose the parent organization to map the council to.', { field: 'parent_org_id' });
+        const parent = parentCouncilId === undefined || parentCouncilId === null ? null : Number(parentCouncilId);
+        if (parent !== null) {
+          if (parent === councilId) throw new BusinessRuleError('INVALID_INPUT', 'A council cannot be its own parent council.', { field: 'parent_council_id' });
+          await this.requireRecord(db, 'Council', parent);
+        }
+        id = await this.writeCouncilMapping(db, councilId, org, parent);
+      });
+      return (await db.getFirstAsync<CouncilParentMapping>('SELECT * FROM [CouncilParentMappings] WHERE [id] = ?', [id]))!;
+    },
+  };
 
   motionRequests: DataService['motionRequests'] = {
     preview: async (actorId) => {
@@ -9178,7 +9306,7 @@ export class SqliteDataService implements DataService {
 
     addDiaryEntry: async (actorId, councilId, input) => {
       const db = await this.ready();
-      const clean = cleanDiaryEntry(input, this.now(), (await this.platformSettingsOf(db)).diary_text_max_length);
+      const clean = cleanDiaryEntry(input, this.now(), (await this.platformSettingsOf(db, await this.councilParentOrgId(db, councilId))).diary_text_max_length);
       let entryId = 0;
       await db.withTransactionAsync(async () => {
         assertMayReadCouncilHistory(await this.memberWriteActor(db, actorId), councilId, `write in the diary of council ${councilId}`);
@@ -9507,7 +9635,7 @@ export class SqliteDataService implements DataService {
 
     addIntention: async (actorId, councilId, text) => {
       const db = await this.ready();
-      const clean = cleanPrayerIntentionText(text, (await this.platformSettingsOf(db)).prayer_intention_max_length);
+      const clean = cleanPrayerIntentionText(text, (await this.platformSettingsOf(db, await this.councilParentOrgId(db, councilId))).prayer_intention_max_length);
       let intentionId = 0;
       await db.withTransactionAsync(async () => {
         assertMayJoinCouncilPrayers(await this.memberWriteActor(db, actorId), councilId, `post a prayer intention for council ${councilId}`);

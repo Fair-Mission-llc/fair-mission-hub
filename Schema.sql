@@ -4453,3 +4453,107 @@ ALTER TABLE [Council] ADD [motion_request_lead_days] INT NOT NULL DEFAULT 5;
 GO
 ALTER TABLE [PlatformSettings] ADD [global_ai_confidence_cutoff] INT NOT NULL DEFAULT 60;
 GO
+-- =========================================================================
+-- Sprint 11 Revision 19.6: RELATIONAL PARENT ORGANIZATIONS AND INDEPENDENT MOTION FLAGS (schema version 112)
+--
+-- ParentOrganizations is the master list of umbrella organizations a council (chapter) can belong to. org_name is the
+-- display name (unique); org_code is the short code stored in Council.parent_organization ('KofC', 'SECULAR_CHARITY' or
+-- a new code, unique); vertical_type is the data vertical, 'FRATERNAL' or 'SECULAR_NONPROFIT'. Only the 'KofC' code
+-- unlocks the Knights of Columbus fraternal extensions (tenant.ts councilParentOrganization).
+-- CouncilParentMappings maps each council to its parent organization: one row per council (council_id is unique), with
+-- an optional parent_council_id for a chapter that sits under another council in the hierarchy. A council with no
+-- mapping row reads its parent organization from Council.parent_organization; every mapping write keeps that column
+-- (and tenant_type) in step.
+-- Council.flag_motion_requests (BIT, DEFAULT 1) is the Motion Requests switch, separate from flag_meeting_management.
+-- parent_org_id on the eight global lookup tables and on PlatformSettings groups their rows by parent organization:
+-- NULL is a row every parent organization shares (the platform default); a value is a row only that parent
+-- organization's councils read. PlatformSettings row 1 (parent_org_id NULL) stays the platform default; a parent
+-- organization may hold one override row of its own (unique parent_org_id).
+-- =========================================================================
+CREATE TABLE [ParentOrganizations] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[org_name] VARCHAR(100) NOT NULL,
+	[org_code] VARCHAR(30) NOT NULL,
+	[vertical_type] VARCHAR(30) NOT NULL DEFAULT 'FRATERNAL' CHECK ([vertical_type] IN ('FRATERNAL', 'SECULAR_NONPROFIT')),
+	[created_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+CREATE UNIQUE INDEX [ParentOrganizations_Name_Idx] ON [ParentOrganizations] ([org_name]);
+GO
+CREATE UNIQUE INDEX [ParentOrganizations_Code_Idx] ON [ParentOrganizations] ([org_code]);
+GO
+
+CREATE TABLE [CouncilParentMappings] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[council_id] INTEGER NOT NULL,
+	[parent_org_id] INTEGER NOT NULL,
+	[parent_council_id] INTEGER NULL,
+	[mapped_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+CREATE UNIQUE INDEX [CouncilParentMappings_Council_Idx] ON [CouncilParentMappings] ([council_id]);
+GO
+
+ALTER TABLE [CouncilParentMappings]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [CouncilParentMappings]
+ADD FOREIGN KEY([parent_org_id])
+REFERENCES [ParentOrganizations]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [CouncilParentMappings]
+ADD FOREIGN KEY([parent_council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+ALTER TABLE [Council] ADD [flag_motion_requests] BIT NOT NULL DEFAULT 1;
+GO
+
+ALTER TABLE [MemberStatus] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [Role] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [Degree] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [MemberType] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [Category] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [NoShowReason] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [MeetingType] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [LessonsLearnedCategory] ADD [parent_org_id] INTEGER NULL;
+GO
+ALTER TABLE [PlatformSettings] ADD [parent_org_id] INTEGER NULL;
+GO
+
+CREATE UNIQUE INDEX [PlatformSettings_ParentOrg_Idx] ON [PlatformSettings] ([parent_org_id]) WHERE [parent_org_id] IS NOT NULL;
+GO
+
+ALTER TABLE [MemberStatus] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Role] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Degree] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MemberType] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Category] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [NoShowReason] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [MeetingType] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [LessonsLearnedCategory] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [PlatformSettings] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO

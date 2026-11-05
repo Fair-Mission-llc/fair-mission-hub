@@ -133,7 +133,7 @@ function ActivityHistory({ summaries, categoryName }: { summaries: ActivitySumma
 function ActivityCatalog() {
   const user = useUser();
   const scope = useCouncilScope();
-  const categories = useLoad(() => db.lookups.list('Category'), []);
+  const categories = useLoad(() => db.lookups.list('Category', { councilId: scope.councilId }), [scope.councilId]);
   const summaries = useLoad(() => db.activities.listSummaries(scope.councilId), [scope.councilId]);
   const [tab, setTab] = useState<Tab>('active');
   const [selected, setSelected] = useState<Selection>(null);

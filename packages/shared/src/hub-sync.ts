@@ -78,7 +78,7 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'councils.requestAffiliation', 'councils.respondToAffiliation', 'councils.setBiometricLoginEnabled',
   'councils.setBylaws', 'councils.setCouncilWideSettings', 'councils.setDuesRate', 'councils.setEmailGateway',
   'councils.setFeatureFlags', 'councils.setGlobalParameters', 'councils.setLoanerLibraryEnabled',
-  'councils.setMeetingGeofence', 'councils.setPlatformSettings',
+  'councils.setMeetingGeofence', 'councils.setPlatformSettings', 'parentOrganizations.create', 'parentOrganizations.mapCouncil',
   'councils.setMeritThresholds', 'councils.update', 'devotionals.getProgress', 'devotionals.record',
   'distributionLists.create', 'distributionLists.listForMember', 'distributionLists.remove',
   'distributionLists.update', 'donations.attachDepositPhoto', 'donations.listAttachments', 'donations.record',

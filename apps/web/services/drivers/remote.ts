@@ -267,6 +267,13 @@ export function createRemoteDataService(): DataService {
       inviteMember: notImplemented('advisory.inviteMember'),
       acceptInvitation: notImplemented('advisory.acceptInvitation'),
     },
+    parentOrganizations: {
+      list: notImplemented('parentOrganizations.list'),
+      listMappings: notImplemented('parentOrganizations.listMappings'),
+      resolveForCouncil: notImplemented('parentOrganizations.resolveForCouncil'),
+      create: notImplemented('parentOrganizations.create'),
+      mapCouncil: notImplemented('parentOrganizations.mapCouncil'),
+    },
     motionRequests: {
       preview: notImplemented('motionRequests.preview'),
       listMine: notImplemented('motionRequests.listMine'),

@@ -43,6 +43,8 @@ export const FEATURE_FLAG_NAMES = [
   'feature_marketing_factory',
   'feature_loaner_library',
   'feature_advanced_audits',
+  // Sprint 11 Revision 19.6 (schema 112): Motion Requests get their own switch, apart from meeting management.
+  'flag_motion_requests',
 ] as const;
 export type FeatureFlagName = (typeof FEATURE_FLAG_NAMES)[number];
 
@@ -136,7 +138,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
     hint: 'Recorded donations, the phone app Collect tab: event point-of-sale, card and QR collections, gate intake drawers',
   },
   flag_charity_proposals: { label: 'Charity proposals', hint: 'Member charity grant proposals, the vetting desk that tracks them and the charity check drawers' },
-  flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager, Motion Requests and the phone app Meetings tab' },
+  flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager and the phone app Meetings tab' },
   feature_expense_reporting: {
     label: 'Expense reporting',
     hint: 'Member expense reports, the FS, Treasurer and GK signature desks, check payments made and the phone app expense screen',
@@ -175,6 +177,10 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
     label: 'Trustee Semiannual Audit',
     hint: "The Trustees' semiannual audit and Form 1295 center, and the inspection drawers of the Financial Secretary and Treasurer desks",
   },
+  flag_motion_requests: {
+    label: 'Motion requests',
+    hint: "The Motion Request page, the Member Desk's My Motion Requests panel and the Grand Knight Desk's Motion Requests drawer",
+  },
 };
 
 /**
@@ -187,9 +193,7 @@ export const FEATURE_FLAG_AREAS: Record<FeatureFlagName, readonly PortalArea[]> 
   // Sprint 11 Revision 18.5: the Charitable Contribution module - proposals, vetting and the FS / Treasurer charity check
   // drawers (charities/queue), so no charity workflow row is left on any desk while it is off.
   flag_charity_proposals: ['charities/propose', 'charities/vetting', 'charities/queue'],
-  // Sprint 11 Revision 19.5: Motion Requests (motion-requests.ts) ride this per-council switch - a motion is asked for a
-  // meeting agenda - so the page, the Faith In Action link and the Grand Knight's drawer hide with it (schema 111 kept).
-  flag_meeting_management: ['meetings', 'meetings/cadence', 'meetings/live', 'motion-requests'],
+  flag_meeting_management: ['meetings', 'meetings/cadence', 'meetings/live'],
   // The Treasurer's desk codes expense sheets, so it goes with them; the general ledger and the budget stay.
   feature_expense_reporting: ['expenses', 'expenses/queue', 'expenses/audit', 'expenses/authorize', 'expenses/disbursements', 'finance/treasurer-desk'],
   feature_faith_center: ['faith-center'],
@@ -206,6 +210,8 @@ export const FEATURE_FLAG_AREAS: Record<FeatureFlagName, readonly PortalArea[]> 
   feature_marketing_factory: ['resources/marketing'],
   feature_loaner_library: ['inventory/loaner-library'],
   feature_advanced_audits: ['finance/audit'],
+  // Sprint 11 Revision 19.6: the Motion Request page, its Faith In Action link and the Grand Knight's drawer.
+  flag_motion_requests: ['motion-requests'],
 };
 
 /** The phone app's tabs (route names under app/(app)) that a flag hides when it is off. */

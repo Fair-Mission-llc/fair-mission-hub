@@ -31,7 +31,7 @@ import {
 } from '@kofc/shared';
 import { Button, cx, Empty, Input, Notice, Panel, Table, Td } from '@/components/ui';
 import { formatDecimalHours } from '@/lib/format';
-import { useTenantType } from '@/lib/session';
+import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
@@ -120,7 +120,9 @@ export function Form1728SuggestionDialog({
   onCancel: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const platform = useLoad(() => db.councils.getPlatformSettings(), []);
+  // Sprint 11 Revision 19.6: the cutoff of the reader's parent organization (its override row, else the default).
+  const councilId = useUser().councilId;
+  const platform = useLoad(() => db.councils.getPlatformSettings({ councilId }), [councilId]);
   const cutoff = form1728ConfidenceCutoff(platform.data?.global_ai_confidence_cutoff);
   const suggestions = useMemo(
     () => topForm1728Suggestions(title, description, context, report, undefined, cutoff),

@@ -312,8 +312,8 @@ function TurnoutPanel({ eventId }: { eventId: number }) {
   const user = useUser();
   const turnout = useLoad(() => db.events.listTurnout(eventId), [eventId]);
   const context = useLoad(
-    async () => ({ councilIds: await db.events.listCouncilIds(eventId), reasons: await db.lookups.list('NoShowReason') }),
-    [eventId],
+    async () => ({ councilIds: await db.events.listCouncilIds(eventId), reasons: await db.lookups.list('NoShowReason', { councilId: user.councilId }) }),
+    [eventId, user.councilId],
   );
   const { message, setMessage, run } = useAction();
   const rows = turnout.data ?? [];

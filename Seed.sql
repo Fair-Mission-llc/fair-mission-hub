@@ -3,6 +3,14 @@
 -- Optimized for clean, multi-row execution in both Azure SQL and SQLite
 -- =========================================================================
 
+-- 0. Parent Organizations (Sprint 11 Revision 19.6, schema 112): the umbrella organizations councils belong to.
+-- Rows 1 and 2 carry the two codes Council.parent_organization has held since schema 110.
+INSERT INTO [ParentOrganizations] ([org_name], [org_code], [vertical_type], [created_at])
+VALUES
+('Knights of Columbus', 'KofC', 'FRATERNAL', '2026-11-05 00:00:00'),
+('Secular Charity', 'SECULAR_CHARITY', 'SECULAR_NONPROFIT', '2026-11-05 00:00:00');
+GO
+
 -- 1. Category Data Load 
 -- Sprint 6L Extension 4: SupremeMissionArea is each category's fixed Supreme mission area (FIXED_CATEGORY_MISSION_AREAS); Life is the seventh (Sprint 6L Extension 5).
 INSERT INTO [Category] ([Category], [CategoryDescription], [SupremeMissionArea])
@@ -17,12 +25,14 @@ VALUES
 GO
 
 -- 2. Degree Data Load 
-INSERT INTO [Degree] ([Degree])
+-- Sprint 11 Revision 19.6: the fraternal degrees belong to the Knights of Columbus (parent_org_id 1); a secular
+-- charity's councils do not read them. Every other seeded lookup row is shared (parent_org_id NULL).
+INSERT INTO [Degree] ([Degree], [parent_org_id])
 VALUES
-('First'),
-('Second'),
-('Third'),
-('Fourth');
+('First', 1),
+('Second', 1),
+('Third', 1),
+('Fourth', 1);
 GO
 
 -- 3. Role Data Load 
@@ -113,6 +123,10 @@ INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email]
   [feature_advanced_audits], [feature_document_compilation], [feature_photo_gallery], [feature_loaner_library], [feature_marketing_factory],
   [flag_mobile_elections], [feature_expense_reporting], [flag_charity_proposals])
 VALUES (15295, 'St. Mary''s Cathedral Council', 'OR', '503-555-0199', 'kofc15295@gmail.com', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+GO
+-- Sprint 11 Revision 19.6: Council 15295 maps to the Knights of Columbus (ParentOrganizations row 1).
+INSERT INTO [CouncilParentMappings] ([council_id], [parent_org_id], [parent_council_id], [mapped_at])
+VALUES (1, 1, NULL, '2026-11-05 00:00:00');
 GO
 
 -- 2. Create the Login Credentials (Passwords should be encrypted in production, plain for dev stub)
@@ -1022,6 +1036,15 @@ VALUES
 (7280, 'Our Lady of the Lake Council', 'OR', '503-555-0180', NULL, 45.420700, -122.670600, 5, 1),
 (1849, 'St. Joseph Council', 'OR', '503-555-0149', NULL, 44.942900, -123.035100, 7, 0),
 (4419, 'St. Patrick Council', 'WA', '360-555-0119', NULL, 45.638700, -122.661500, 3, 1);
+GO
+-- Sprint 11 Revision 19.6: the five sister councils map to the Knights of Columbus too.
+INSERT INTO [CouncilParentMappings] ([council_id], [parent_org_id], [parent_council_id], [mapped_at])
+VALUES
+(2, 1, NULL, '2026-11-05 00:00:00'),
+(3, 1, NULL, '2026-11-05 00:00:00'),
+(4, 1, NULL, '2026-11-05 00:00:00'),
+(5, 1, NULL, '2026-11-05 00:00:00'),
+(6, 1, NULL, '2026-11-05 00:00:00');
 GO
 INSERT INTO [CouncilAffiliations] ([requesting_council_id], [target_council_id], [status], [date_established], [requested_by_member_id], [requested_at], [responded_by_member_id], [responded_at])
 VALUES

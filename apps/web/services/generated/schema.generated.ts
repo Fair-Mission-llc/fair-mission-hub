@@ -98,9 +98,22 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "Degree": {
@@ -121,9 +134,22 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "MemberType": {
@@ -144,9 +170,22 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "Role": {
@@ -177,9 +216,22 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 0
         }
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "NoShowReason": {
@@ -207,9 +259,22 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "Category": {
@@ -244,9 +309,22 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "LessonsLearnedCategory": {
@@ -267,9 +345,22 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": true,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "MeetingType": {
@@ -297,9 +388,22 @@ export const TABLES: Record<string, TableMeta> = {
         "notNull": false,
         "identity": false,
         "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
     "uniqueKeys": []
   },
   "Council": {
@@ -1039,6 +1143,16 @@ export const TABLES: Record<string, TableMeta> = {
         "default": {
           "kind": "literal",
           "value": 5
+        }
+      },
+      {
+        "name": "flag_motion_requests",
+        "kind": "bit",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": 1
         }
       }
     ],
@@ -7824,10 +7938,27 @@ export const TABLES: Record<string, TableMeta> = {
           "kind": "literal",
           "value": 60
         }
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
       }
     ],
-    "foreignKeys": [],
-    "uniqueKeys": []
+    "foreignKeys": [
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "parent_org_id"
+      ]
+    ]
   },
   "CouncilAccessRequests": {
     "primaryKey": [
@@ -9075,11 +9206,150 @@ export const TABLES: Record<string, TableMeta> = {
       }
     ],
     "uniqueKeys": []
+  },
+  "ParentOrganizations": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "org_name",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "org_code",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "vertical_type",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "FRATERNAL"
+        },
+        "allowed": [
+          "FRATERNAL",
+          "SECULAR_NONPROFIT"
+        ]
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [],
+    "uniqueKeys": [
+      [
+        "org_name"
+      ],
+      [
+        "org_code"
+      ]
+    ]
+  },
+  "CouncilParentMappings": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "parent_org_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "parent_council_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "mapped_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "parent_org_id",
+        "refTable": "ParentOrganizations",
+        "refColumn": "id"
+      },
+      {
+        "column": "parent_council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "council_id"
+      ]
+    ]
   }
 };
 
 /** Seed rows from Seed.sql, in insertion order. */
 export const SEED_DATA: readonly SeedTable[] = [
+  {
+    "table": "ParentOrganizations",
+    "rows": [
+      {
+        "org_name": "Knights of Columbus",
+        "org_code": "KofC",
+        "vertical_type": "FRATERNAL",
+        "created_at": "2026-11-05 00:00:00"
+      },
+      {
+        "org_name": "Secular Charity",
+        "org_code": "SECULAR_CHARITY",
+        "vertical_type": "SECULAR_NONPROFIT",
+        "created_at": "2026-11-05 00:00:00"
+      }
+    ]
+  },
   {
     "table": "Category",
     "rows": [
@@ -9124,16 +9394,20 @@ export const SEED_DATA: readonly SeedTable[] = [
     "table": "Degree",
     "rows": [
       {
-        "Degree": "First"
+        "Degree": "First",
+        "parent_org_id": 1
       },
       {
-        "Degree": "Second"
+        "Degree": "Second",
+        "parent_org_id": 1
       },
       {
-        "Degree": "Third"
+        "Degree": "Third",
+        "parent_org_id": 1
       },
       {
-        "Degree": "Fourth"
+        "Degree": "Fourth",
+        "parent_org_id": 1
       }
     ]
   },
@@ -9342,6 +9616,17 @@ export const SEED_DATA: readonly SeedTable[] = [
         "flag_mobile_elections": 0,
         "feature_expense_reporting": 0,
         "flag_charity_proposals": 0
+      }
+    ]
+  },
+  {
+    "table": "CouncilParentMappings",
+    "rows": [
+      {
+        "council_id": 1,
+        "parent_org_id": 1,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-05 00:00:00"
       }
     ]
   },
@@ -14208,6 +14493,41 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "meeting_longitude": -122.6615,
         "district_number": 3,
         "is_loaner_library_enabled": 1
+      }
+    ]
+  },
+  {
+    "table": "CouncilParentMappings",
+    "rows": [
+      {
+        "council_id": 2,
+        "parent_org_id": 1,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-05 00:00:00"
+      },
+      {
+        "council_id": 3,
+        "parent_org_id": 1,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-05 00:00:00"
+      },
+      {
+        "council_id": 4,
+        "parent_org_id": 1,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-05 00:00:00"
+      },
+      {
+        "council_id": 5,
+        "parent_org_id": 1,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-05 00:00:00"
+      },
+      {
+        "council_id": 6,
+        "parent_org_id": 1,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-05 00:00:00"
       }
     ]
   },
