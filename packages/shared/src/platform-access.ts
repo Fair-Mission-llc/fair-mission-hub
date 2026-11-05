@@ -175,7 +175,7 @@ export const IMPERSONATION_TARGET_TYPE = 'Admin';
  * Super Admin (ADMIN_REQUIRED), and only for a member of the actor's own home council (COUNCIL_ACCESS_DENIED) - a
  * Super Admin included, so the mirror never crosses a council border.
  */
-export function assertMayViewAsMember(actor: MemberWriteActor, target: { memberId: number; councilId: number }): void {
+export function assertMayViewAsMember(actor: MemberWriteActor, target: { memberId: number; councilId: number; memberType?: string | null }): void {
   if (!hasAdminRights(actor)) {
     throw new SecurityPrivilegeError('ADMIN_REQUIRED', `Only an active council Admin or a Super Admin may use View As Member; you are ${describeActor(actor)}.`, {
       memberId: actor.memberId,
@@ -187,11 +187,25 @@ export function assertMayViewAsMember(actor: MemberWriteActor, target: { memberI
       councilId: target.councilId,
     });
   }
+  // Sprint 11 Revision 20.0: a council Admin never mirrors a Super Admin's account, even one filed in the same council.
+  if (actor.memberType === 'Admin' && target.memberType === 'Super Admin') {
+    throw new SecurityPrivilegeError('COUNCIL_ACCESS_DENIED', 'View As Member does not show a Super Admin account to a council Admin.', {
+      memberId: target.memberId,
+    });
+  }
 }
 
-/** Whether View As Member offers `target` to `viewer`: an Admin or Super Admin, a member of the viewer's own council. */
-export const mayViewAsMember = (viewer: { councilId: number; memberType: string | undefined }, target: { councilId: number }): boolean =>
-  (viewer.memberType === 'Admin' || viewer.memberType === 'Super Admin') && viewer.councilId === target.councilId;
+/**
+ * Whether View As Member offers `target` to `viewer`: an Admin or Super Admin, a member of the viewer's own council
+ * (matching council_id). Sprint 11 Revision 20.0: a council Admin is never offered a Super Admin's row.
+ */
+export const mayViewAsMember = (
+  viewer: { councilId: number; memberType: string | undefined },
+  target: { councilId: number; memberType?: string | null },
+): boolean =>
+  (viewer.memberType === 'Admin' || viewer.memberType === 'Super Admin') &&
+  viewer.councilId === target.councilId &&
+  !(viewer.memberType === 'Admin' && target.memberType === 'Super Admin');
 
 /** The roster's "Impersonate Admin" button: shown to Super Admins beside each council Admin (Sprint 10 Revision 3.0). */
 export const mayImpersonateMember = (viewer: { memberId: number; memberType: string | undefined }, target: { memberId: number; memberType: string | undefined }): boolean =>

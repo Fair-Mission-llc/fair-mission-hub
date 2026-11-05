@@ -72,6 +72,7 @@ export type PortalArea =
   | 'messages'
   | 'help'
   | 'answers/help'
+  | 'answers/feedback'
   | 'governance/bylaws'
   | 'governance/advisor'
   | 'answers/sop'
@@ -780,6 +781,8 @@ export function portalAreas(u: Actor, flags: FeatureFlags = ALL_FEATURES_ON, ten
   // Sprint 6Z: the Online Help Center is the Answers pillar's sidebar link, open to every signed-in member; so is the
   // Interactive Help Desk (Sprint 6A, Phase 4) that searches the member user guide's task workflows.
   areas.push('help', 'answers/help');
+  // Sprint 11 Revision 20.0: every member's Feedback Support link - the Local Feedback Portal (local-feedback.ts).
+  areas.push('answers/feedback');
   // Sprint 6Z: every member reads the council bylaws (canEditBylaws decides editing), the SOP center and the council
   // artifacts board; the growth and hours charts have the executive dashboard's audience. Sprint 6L Extension: the
   // Constitutional Advisor and the Secure Access Vault are officer tools (canOpenOfficerTools), never on a member's sidebar.
@@ -871,7 +874,7 @@ export const PORTAL_NAV_GROUPS: readonly PortalNavGroup[] = [
   // Sprint 11 Revision 5.0: the District and State Desks head the pillar for regional officers and Super Admins.
   { id: 'performance', label: 'Performance', items: ['district-desk', 'state-desk', 'member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry'] },
   { id: 'resources', label: 'Resources', items: ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library'] },
-  { id: 'answers', label: 'Answers', items: ['help', 'answers/help', 'answers/sop'] },
+  { id: 'answers', label: 'Answers', items: ['help', 'answers/help', 'answers/sop', 'answers/feedback'] },
   {
     id: 'setup',
     label: 'System Settings',

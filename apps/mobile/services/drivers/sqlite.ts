@@ -5,6 +5,23 @@ import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import * as SQLite from 'expo-sqlite';
 import {
+  assertMayOpenFeedbackTicket,
+  assertMayReadFeedbackTicket,
+  assertMaySetFeedbackTicketStatus,
+  assertMayTriageCouncilFeedback,
+  buildFeedbackTicketChat,
+  buildFeedbackTickets,
+  cleanFeedbackChatText,
+  cleanFeedbackTicketInput,
+  cleanFeedbackTicketStatus,
+  encodeFeedbackStatusChange,
+  encodeFeedbackTicketOpening,
+  FEEDBACK_CHAT_MAX_LENGTH,
+  feedbackTicketNotFound,
+  sortFeedbackTicketsForTriage,
+  type FeedbackTicketChat,
+} from '@kofc/shared';
+import {
   assertMayDecideMotionRequests,
   assertMayReadCouncilMotionRequests,
   assertMaySubmitMotionRequest,
@@ -2880,11 +2897,11 @@ export class SqliteDataService implements DataService {
       const actor = await this.memberWriteActor(db, actorId);
       const member = await db.getFirstAsync<Member>('SELECT * FROM [Member] WHERE [id] = ?', [memberId]);
       if (!member) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
-      assertMayViewAsMember(actor, { memberId, councilId: member.CouncilID });
       const [type, council] = await Promise.all([
         db.getFirstAsync<{ Type: string }>('SELECT [Type] FROM [MemberType] WHERE [id] = ?', [member.MemberTypeID]),
         db.getFirstAsync<Council>('SELECT * FROM [Council] WHERE [id] = ?', [member.CouncilID]),
       ]);
+      assertMayViewAsMember(actor, { memberId, councilId: member.CouncilID, memberType: type?.Type ?? null });
       return {
         member: withoutPushToken(member),
         roles: await this.rolesFor(db, memberId),
@@ -9753,6 +9770,85 @@ export class SqliteDataService implements DataService {
         db.getAllAsync<Council>('SELECT [id], [CouncilNumber] FROM [Council]'),
       ]);
       return buildFeedbackInbox(feedback, members, councils);
+    },
+  };
+
+  // ---- Sprint 11 Revision 20.0: the Local Feedback Portal (local-feedback.ts) ---------------------------------------
+
+  private async feedbackTicketChat(db: SQLite.SQLiteDatabase, ticketId: number): Promise<FeedbackTicketChat> {
+    const rows = await this.loadMessaging(db, [ticketId]);
+    const thread = rows.threads.find((t) => t.id === ticketId);
+    const chat = thread ? buildFeedbackTicketChat(thread, rows) : null;
+    if (!chat) throw feedbackTicketNotFound(ticketId);
+    return chat;
+  }
+
+  private async addFeedbackMessage(db: SQLite.SQLiteDatabase, ticketId: number, senderId: number, parentId: number | null, text: string): Promise<void> {
+    await db.runAsync('INSERT INTO [Messages] ([ThreadID], [SenderID], [ParentMessageID], [MessageText], [IsDraft], [CreatedAt]) VALUES (?, ?, ?, ?, 0, ?)', [
+      ticketId,
+      senderId,
+      parentId,
+      text,
+      toTimestamp(this.now()),
+    ]);
+  }
+
+  localFeedback: DataService['localFeedback'] = {
+    submitTicket: async (actorId, input) => {
+      const clean = cleanFeedbackTicketInput(input);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayOpenFeedbackTicket(actor);
+      let ticketId = 0;
+      await db.withTransactionAsync(async () => {
+        const res = await db.runAsync('INSERT INTO [ChatThreads] ([CouncilID], [IsGroupChat], [CreatedAt]) VALUES (?, 0, ?)', [actor.councilId, toTimestamp(this.now())]);
+        ticketId = res.lastInsertRowId;
+        await this.addFeedbackMessage(db, ticketId, actorId, null, encodeFeedbackTicketOpening(clean));
+      });
+      return (await this.feedbackTicketChat(db, ticketId)).ticket;
+    },
+
+    listMyTickets: async (actorId) => {
+      const db = await this.ready();
+      await this.memberWriteActor(db, actorId);
+      const ids = await db.getAllAsync<{ ThreadID: number }>('SELECT DISTINCT [ThreadID] FROM [Messages] WHERE [SenderID] = ? AND [ThreadID] IS NOT NULL', [actorId]);
+      return buildFeedbackTickets(await this.loadMessaging(db, ids.map((r) => r.ThreadID))).filter((t) => t.memberId === actorId);
+    },
+
+    listCouncilTickets: async (actorId, councilId) => {
+      const db = await this.ready();
+      assertMayTriageCouncilFeedback(await this.memberWriteActor(db, actorId), councilId);
+      const ids = await db.getAllAsync<{ id: number }>('SELECT [id] FROM [ChatThreads] WHERE [CouncilID] = ?', [councilId]);
+      return sortFeedbackTicketsForTriage(buildFeedbackTickets(await this.loadMessaging(db, ids.map((r) => r.id))));
+    },
+
+    getTicketChat: async (actorId, ticketId) => {
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const chat = await this.feedbackTicketChat(db, ticketId);
+      assertMayReadFeedbackTicket(actor, chat.ticket);
+      return chat;
+    },
+
+    postTicketMessage: async (actorId, ticketId, text) => {
+      const clean = cleanFeedbackChatText(text);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const chat = await this.feedbackTicketChat(db, ticketId);
+      assertMayReadFeedbackTicket(actor, chat.ticket);
+      await this.addFeedbackMessage(db, ticketId, actorId, chat.entries[0]!.id, clean);
+      return this.feedbackTicketChat(db, ticketId);
+    },
+
+    setTicketStatus: async (actorId, ticketId, status, note) => {
+      const next = cleanFeedbackTicketStatus(status);
+      const cleanNote = note == null ? '' : assertText(note, 'Note', FEEDBACK_CHAT_MAX_LENGTH, false);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      const chat = await this.feedbackTicketChat(db, ticketId);
+      assertMaySetFeedbackTicketStatus(actor, chat.ticket);
+      await this.addFeedbackMessage(db, ticketId, actorId, chat.entries[0]!.id, encodeFeedbackStatusChange(next, cleanNote));
+      return this.feedbackTicketChat(db, ticketId);
     },
   };
 

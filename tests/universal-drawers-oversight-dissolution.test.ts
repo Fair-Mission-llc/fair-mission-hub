@@ -142,13 +142,14 @@ describe('the Operations Knowledge Vault lexicon', () => {
 });
 
 describe('the Member Desk shift trackers', () => {
-  it('sets the two trackers side by side at the top, with no drawers', () => {
+  // Sprint 11 Revision 20.0: the trackers sit side by side inside the Member Desk's 'My Hours & Shifts' left action drawer.
+  it('sets the two trackers side by side in the Hours drawer, on Left Vertical Action Drawers rather than a blotter', () => {
     const desks = read('apps/web/components/DashboardDesks.tsx');
     const member = desks.slice(desks.indexOf('export function MemberDesk('), desks.indexOf('export function AwaitingHours('));
     const top = member.slice(member.indexOf('aria-label="Shift trackers"'));
     expect(member).toContain('className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2"');
     expect(top.indexOf('<OpenShiftsCard user={user} />')).toBeLessThan(top.indexOf('My shifts: next'));
-    expect(top.indexOf('My shifts: next')).toBeLessThan(top.indexOf('<MyCharityRequestsCard'));
+    expect(member).toContain('<LeftActionDrawers');
     expect(member).not.toContain('<DeskBlotter');
   });
 });

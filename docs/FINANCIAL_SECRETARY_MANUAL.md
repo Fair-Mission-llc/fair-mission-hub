@@ -24,6 +24,7 @@
 - [9. Revenue split profiles](#9-revenue-split-profiles)
 - [10. Payment account ownership](#10-payment-account-ownership)
 - [11. Budget categories and payment account names](#11-budget-categories-and-payment-account-names)
+- [12. Testing and training sandboxes](#12-testing-and-training-sandboxes)
 - Appendix A: Cross-Entity Joint-Event Settlement Guide
 - [Manual map](#manual-map)
 
@@ -1263,6 +1264,78 @@ A table under the charts lists each category with its figures. The first eight c
 
 ---
 
+## 12. Testing and training sandboxes
+
+### 12.1 Concept: the three record sets
+The desktop program keeps three separate sets of records on every laptop. At start-up it asks which set to open.
+
+| Choice at start-up | File | Banner at the top of every page | Who sees your saves |
+| --- | --- | --- | --- |
+| **Production** | `central-hub-vault.db` | None | The council: these are the real records. |
+| **Testing (hall Wi-Fi)** | `testing-sandbox.db` | Amber **Testing Mode** banner | The other testing laptops in the same hall, while you share its Wi-Fi |
+| **Training (practice)** | `training-playground.db` | Cobalt blue **Training Mode** banner | Nobody. The file is erased and built again at every start. |
+
+A save in one set never shows in another set. Practice in Testing or Training. Do real work only in Production.
+
+### 12.2 Practice with other officers in the same hall (Testing Mode)
+> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the hall mesh passphrase (a council Admin sets it).
+> **Warning:** testing laptops share saves only while they are on the same Wi-Fi at the same time.
+
+**Goal:** Practice a workflow together, for example a cash count or an expense sign-off, without touching the real records.
+
+**Start point:** Start the desktop program.
+
+**Steps:**
+1. Connect the laptop to the hall Wi-Fi.
+2. At the question *"Which records do you want to open?"*, select **Testing (hall Wi-Fi)**.
+3. Make sure the amber **Testing Mode** banner shows at the top of the page.
+4. Sign in with your own account and do the practice work.
+
+**Expected result:** Your saves show on the other testing laptops in the hall within a few seconds.
+
+**Working alone (standalone):** away from the hall, or with no Wi-Fi, Testing Mode still works. Your saves are kept in `testing-sandbox.db` on your laptop only. They are not sent later: a laptop that was away does not receive the saves it missed, and the other laptops do not receive its saves. Do shared practice while every laptop is in the hall.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| Another officer's save does not show. | The laptops are on different Wi-Fi networks, or the passphrase is not set. | Join the same Wi-Fi. Ask a council Admin to set the passphrase. |
+| Two laptops show different records. | One laptop worked alone for a while. | Practice from a fresh start, or keep using one laptop for that work. |
+
+### 12.3 Practice alone with a training account (Training Mode)
+> **Prerequisite (who can do this):** Everyone. No account of your own is needed.
+> **Warning:** everything in Training Mode is erased when the program starts again.
+
+**Goal:** Learn a role on practice records: ten practice members, three upcoming practice fundraisers and three training cash boxes.
+
+**Start point:** Start the desktop program.
+
+**Steps:**
+1. At the question *"Which records do you want to open?"*, select **Training (practice)**.
+2. Make sure the cobalt blue **Training Mode** banner shows at the top of the page.
+3. Under the sign-in card, find the **Training Profile Selection Board**.
+4. Select the role to practice. The program signs in at once.
+
+| Board button | Email | Password |
+| --- | --- | --- |
+| **Council Admin** | `admin@training` | `training` |
+| **Grand Knight** | `gk@training` | `training` |
+| **Financial Secretary** | `fs@training` | `training` |
+| **Treasurer** | `tr@training` | `training` |
+| **Recorder** | `rec@training` | `training` |
+| **Council Historian** | `hist@training` | `training` |
+| **Member** | `mem@training` | `training` |
+
+**Expected result:** The desks and sidebar of that role open on the practice records. The Council Admin account signs in without a sign-in code in Training Mode only.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The board is not shown. | The program opened Production or Testing. | Restart the program. Select **Training (practice)**. |
+| Yesterday's practice work is gone. | Training Mode starts fresh at every start. | No fix is needed. Use Testing Mode to keep practice work. |
+| A training email does not sign in on Production. | The training accounts exist only in Training Mode. | Restart in Training Mode. |
+
+---
+
 ## Appendix A: Cross-Entity Joint-Event Settlement Guide
 
 When the local council executes a joint fundraising event with an affiliated sister council (e.g., Council 1024), but processes electronic payments using parish-owned digital infrastructure (Venmo, Zelle, Zeffy, Parishsoft), the Financial Secretary must enforce the following data-tier validation checks before endorsing an order voucher:
@@ -1282,19 +1355,20 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 1. Roles and access
 - 2. Module feature flags
 - 3. The Google Drive archive vault
-- 4. The feedback inbox and SOP publishing
+- 4. SOP publishing
 - 5. Lookup tables, service connections and global lists
 - 6. Data protection rules
 - 7. Troubleshooting reference
-- 8. Council Wide Settings and platform settings
-- 9. Access requests, impersonation and remote help
-- 10. Feedback loops and the Super Admin Desk
+- 8. Council Wide Settings
+- 9. View As Member and remote help
+- 10. Feedback loops
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys
 - 14. Firewall clearance
 - 15. The software bill of materials (SBOM)
 - 16. The Admin Desk
+- 18. Testing and training sandboxes
 - Appendix: QR code files
 
 **Executive Governance Manual**
@@ -1319,6 +1393,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 18. Parish fundraiser split setup
 - 19. The global search bar
 - 20. The Navigation Guide screen
+- 21. Testing and training sandboxes
 
 **Financial Secretary Manual**
 
@@ -1333,6 +1408,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 9. Revenue split profiles
 - 10. Payment account ownership
 - 11. Budget categories and payment account names
+- 12. Testing and training sandboxes
 
 **Treasurer Manual**
 
@@ -1348,4 +1424,5 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 10. Batch coding and cash box audits
 - 11. Account ownership and parish-held revenue
 - 12. Split accounts, budget categories and payment account names
+- 13. Testing and training sandboxes
 

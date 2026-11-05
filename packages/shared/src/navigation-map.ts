@@ -81,6 +81,7 @@ export const NAVIGATION_ITEM_CATEGORY: Record<PortalNavItem, NavigationMapCatego
   'governance/advisor': 'settings',
   help: 'settings',
   'answers/help': 'settings',
+  'answers/feedback': 'settings',
   'system-settings/council-settings': 'settings',
   'council-lookups': 'settings',
   'credentials-vault': 'settings',

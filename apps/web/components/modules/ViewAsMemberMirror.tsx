@@ -116,11 +116,14 @@ export function ViewAsMemberMirror() {
   const user = useUser();
   const [query, setQuery] = useState('');
   const [chosen, setChosen] = useState<number | null>(null);
-  // Only the reader's own council is ever listed (mayViewAsMember; the server checks again).
+  // Only rows of the reader's own council (matching council_id) are ever listed, and a council Admin never sees a Super
+  // Admin's row (mayViewAsMember, Sprint 11 Revision 20.0; the server checks both again).
   const members = useLoad(() => db.members.listByCouncil(user.councilId), [user.councilId]);
+  const types = useLoad(() => db.lookups.list('MemberType'), []);
+  const typeName = new Map((types.data ?? []).map((t) => [t.id, (t as { Type?: string }).Type ?? null]));
   const q = query.trim().toLowerCase();
-  const list = (members.data ?? [])
-    .filter((m: Member) => m.id !== user.memberId && mayViewAsMember(user, { councilId: m.CouncilID }))
+  const list = (types.data ? (members.data ?? []) : [])
+    .filter((m: Member) => m.id !== user.memberId && mayViewAsMember(user, { councilId: m.CouncilID, memberType: typeName.get(m.MemberTypeID) ?? null }))
     .filter((m) => !q || `${m.MemberFirstName} ${m.MemberLastName} ${m.MemberNumber}`.toLowerCase().includes(q));
 
   return (

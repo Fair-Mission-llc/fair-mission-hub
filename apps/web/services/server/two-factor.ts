@@ -25,6 +25,9 @@ import {
   twoFactorEmail,
   TWO_FACTOR_NO_CONTACT_MESSAGE,
   twoFactorRequiredFor,
+  DATA_MODE_ENV,
+  isTrainingProfileUsername,
+  parseDataMode,
   twoFactorSmsText,
   universalTwoFactorOn,
   type SessionUser,
@@ -128,6 +131,8 @@ export async function issueTwoFactorChallenge(
   const env = options.env ?? process.env;
   const universal = universalTwoFactorOn(env);
   if (!twoFactorRequiredFor(found.user.memberType, universal)) return null;
+  // Sprint 11 Revision 20.0: the Training Profile Selection Board's accounts sign in in one step, in training mode only.
+  if (parseDataMode(env[DATA_MODE_ENV]) === 'training' && isTrainingProfileUsername(found.user.username)) return null;
   const delivery = twoFactorDelivery(env);
   if (!delivery.sms && !delivery.email) {
     // Lockout guard: a switch with no provider behind it must never lock the whole platform out.

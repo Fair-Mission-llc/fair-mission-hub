@@ -123,6 +123,7 @@ import type { FileRepositorySettings } from './file-repository';
 import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
 import type { CouncilParentMapping, ParentOrganizationInput, ParentOrganizationRecord, ParentOrgScope } from './parent-organizations';
+import type { FeedbackTicket, FeedbackTicketChat, FeedbackTicketInput, FeedbackTicketStatus } from './local-feedback';
 import type { MotionRequestChannel, MotionRequestDecision, MotionRequestDetail, MotionRequestInput, MotionRequestPreview, MotionRequestThread } from './motion-requests';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter } from './member-lifecycle';
 import type { MeritThresholds } from './merit-tiers';
@@ -4427,6 +4428,26 @@ export interface DataService {
     submit(memberId: number, text: string): Promise<SystemFeedback>;
     /** Every report, newest first, with its sender. Only an Active Super Admin may read it (SUPER_ADMIN_REQUIRED). */
     listInbox(actorId: number): Promise<FeedbackInboxEntry[]>;
+  };
+
+  /**
+   * Sprint 11 Revision 20.0: the Local Feedback Portal (local-feedback.ts). A ticket is a ChatThreads row whose first
+   * message opens it; the ticket ID is the thread id. Members open and follow their own tickets; the council's Admins and
+   * Super Admins triage every ticket of the council.
+   */
+  localFeedback: {
+    /** Opens a ticket for the actor's home council (INVALID_INPUT for a bad category or a blank or too-long field). */
+    submitTicket(actorId: number, input: FeedbackTicketInput): Promise<FeedbackTicket>;
+    /** The actor's own tickets, newest activity first. */
+    listMyTickets(actorId: number): Promise<FeedbackTicket[]>;
+    /** Every ticket of `councilId`, Open first (ADMIN_REQUIRED unless the actor is its Admin or a Super Admin). */
+    listCouncilTickets(actorId: number, councilId: number): Promise<FeedbackTicket[]>;
+    /** One ticket's chat log, oldest first (RECORD_NOT_FOUND, COUNCIL_ACCESS_DENIED). */
+    getTicketChat(actorId: number, ticketId: number): Promise<FeedbackTicketChat>;
+    /** Adds a reply to the ticket's chat log and resolves to the log. Its member and its triagers may post. */
+    postTicketMessage(actorId: number, ticketId: number, text: string): Promise<FeedbackTicketChat>;
+    /** A triager sets the ticket's status, with an optional note on the chat log (ADMIN_REQUIRED otherwise). */
+    setTicketStatus(actorId: number, ticketId: number, status: FeedbackTicketStatus, note?: string | null): Promise<FeedbackTicketChat>;
   };
 
   messages: {

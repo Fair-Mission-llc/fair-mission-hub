@@ -13,6 +13,7 @@
 // GET answers whether hub mode is on, for the pilot checklist. 404 while hub mode is off (npm run build:web).
 // Sprint 11 Revision 13.0: GET ?handshake=1 (npm run dev:pilot calls it at launch) opens the vault - creating it and running
 // the central sync handshake when it does not exist yet - and every GET reports the sync receipt (null: never synced).
+// Sprint 11 Revision 20.0: GET also answers dataMode (production, testing or training) and the mode's vault file.
 import { NextResponse } from 'next/server';
 import {
   assertHubCallAllowed,
@@ -24,7 +25,7 @@ import {
   type HubCall,
   type HubReply,
 } from '@kofc/shared';
-import { callHub, hubDataDir, hubModeOn, hubService } from '@/services/server/hub/hub-vault';
+import { callHub, hubDataDir, hubDataMode, hubModeOn, hubService, hubVaultFile } from '@/services/server/hub/hub-vault';
 import { readSyncReceipt } from '@/services/server/hub/central-sync';
 import { readPortalSession, signInOnServer } from '@/services/server/session';
 import { issueTwoFactorChallenge, TwoFactorContactMissingError } from '@/services/server/two-factor';
@@ -51,7 +52,16 @@ export async function GET(req?: Request) {
     opened = true;
   }
   return NextResponse.json(
-    { hub, vault: HUB_VAULT_RELATIVE_PATH, schemaVersion: PLATFORM_SCHEMA_VERSION, opened, sync: hub ? readSyncReceipt(hubDataDir()) : null },
+    {
+      hub,
+      vault: HUB_VAULT_RELATIVE_PATH,
+      schemaVersion: PLATFORM_SCHEMA_VERSION,
+      opened,
+      sync: hub ? readSyncReceipt(hubDataDir()) : null,
+      // Sprint 11 Revision 20.0: the data mode and its file (the Testing / Training banners read dataMode).
+      dataMode: hub ? hubDataMode() : 'production',
+      vaultFile: hub ? hubVaultFile() : null,
+    },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }

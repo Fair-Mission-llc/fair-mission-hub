@@ -101,3 +101,5 @@ export * from './setup-wizard';
 export * from './regional';
 export * from './merit-tiers';
 export * from './two-factor';
+export * from './local-feedback';
+export * from './data-modes';

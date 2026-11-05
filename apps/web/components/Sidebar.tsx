@@ -265,6 +265,8 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'answers/help': { href: '/answers/help', label: 'Interactive Help Desk', hint: 'Type what you need to do and see the steps from the member guide' },
   'answers/sop': { href: '/answers/sop', label: 'SOP Center', hint: 'Standard operating procedures, kept as markdown files' },
+  // Sprint 11 Revision 20.0: the Local Feedback Portal, a plain text link.
+  'answers/feedback': { href: '/answers/feedback', label: 'Feedback Support', hint: "Ask your council's Admins for help and follow your tickets" },
   'resources/bulletins': { href: '/resources/bulletins', label: 'Council Artifacts', hint: 'Google Drive files and the compliance reports the portal compiles' },
   'resources/marketing': {
     href: '/resources/marketing',
@@ -621,6 +623,7 @@ function FinancesEntries({
 
 export function Sidebar({ user, pathname, features, tenant }: { user: SessionUser; pathname: string; features: FeatureFlags; tenant: TenantType }) {
   // Sprint 11 Revision 19.5: a council Admin's sidebar drops the links the Admin Desk already holds as drawers.
+  // Sprint 11 Revision 20.0: and no Admin or Super Admin gets the looping 'Admin Desk' link; the Active Desks tab opens it.
   const groups = portalSidebar(user, features, tenant)
     .map((g) => ({ ...g, entries: g.entries.filter((e) => !isRedundantAdminDeskNavItem(user.memberType, e.item)) }))
     .filter((g) => g.entries.length > 0);

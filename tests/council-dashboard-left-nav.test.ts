@@ -16,6 +16,7 @@ import {
   DASHBOARD_TABS,
   dashboardTabsFor,
   DESK_FOCUS_TARGETS,
+  MEMBER_DESK_DRAWER_FLAGS,
   EXECUTIVE_DASHBOARD_HREF,
   expenseCounterSignBlock,
   GRAND_KNIGHT_AUTHORITY_ROLE_NAMES,
@@ -257,6 +258,11 @@ describe('the click-through desk badges', () => {
     const drawerRows = new Set(DESK_DRAWERS.map((d) => d.rowId));
     for (const [key, target] of Object.entries(DESK_FOCUS_TARGETS)) {
       if (drawerRows.has(target.rowId)) continue;
+      // Sprint 11 Revision 20.0: the Member Desk's expense sheets are a left action drawer whose handle carries the row id.
+      if (key === 'mine') {
+        expect(desks).toContain("rowId: d.id === 'expense-sheets' ? DESK_FOCUS_TARGETS.mine.rowId : undefined");
+        continue;
+      }
       expect(desks).toContain(`<DeskRow id={DESK_FOCUS_TARGETS.${key}.rowId}`);
     }
     expect(drawerRows).toContain(DESK_FOCUS_TARGETS.vouchers.rowId);
@@ -309,7 +315,9 @@ describe('the Member Desk cards', () => {
     expect(desks).toContain('My Charity Requests (${rows.length})');
     expect(desks).toContain('db.charities.listMyCharitableRequests(user.memberId)');
     expect(desks).toContain('<TrackingSteps request={request} />');
-    expect(desks).toContain('{flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}');
+    // Sprint 11 Revision 20.0: the card opens in the Member Desk's 'My Charity Requests' drawer, which follows the switch.
+    expect(desks).toContain("case 'charity-requests':\n      return <MyCharityRequestsCard user={user} />;");
+    expect(MEMBER_DESK_DRAWER_FLAGS['charity-requests']).toBe('flag_charity_proposals');
   });
 
   it('shows the merit tier milestones read-only outside the Council Lookup Tables drawer (Sprint 11 Revision 6.0)', () => {

@@ -126,7 +126,10 @@ describe('4. Form 1728, Motion Requests, the Admin sidebar and the annals name',
       expect(isRedundantAdminDeskNavItem('Admin', item)).toBe(true);
       expect(isRedundantAdminDeskNavItem('Super Admin', item)).toBe(false);
     }
-    expect(isRedundantAdminDeskNavItem('Admin', 'admin-desk')).toBe(false);
+    // Sprint 11 Revision 20.0: the sidebar's own Admin Desk link looped back to the desk the Active Desks tab opens.
+    expect(isRedundantAdminDeskNavItem('Admin', 'admin-desk')).toBe(true);
+    expect(isRedundantAdminDeskNavItem('Super Admin', 'admin-desk')).toBe(true);
+    expect(isRedundantAdminDeskNavItem('Member', 'admin-desk')).toBe(false);
   });
 
   it("names the history page and its switch '[ 📜 Fraternal Annals & Oral History ]'", () => {

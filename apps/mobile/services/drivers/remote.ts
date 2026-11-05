@@ -274,6 +274,14 @@ export function createRemoteDataService(): DataService {
       create: notImplemented('parentOrganizations.create'),
       mapCouncil: notImplemented('parentOrganizations.mapCouncil'),
     },
+    localFeedback: {
+      submitTicket: notImplemented('localFeedback.submitTicket'),
+      listMyTickets: notImplemented('localFeedback.listMyTickets'),
+      listCouncilTickets: notImplemented('localFeedback.listCouncilTickets'),
+      getTicketChat: notImplemented('localFeedback.getTicketChat'),
+      postTicketMessage: notImplemented('localFeedback.postTicketMessage'),
+      setTicketStatus: notImplemented('localFeedback.setTicketStatus'),
+    },
     motionRequests: {
       preview: notImplemented('motionRequests.preview'),
       listMine: notImplemented('motionRequests.listMine'),

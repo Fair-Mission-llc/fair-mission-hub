@@ -33,6 +33,12 @@
   --color-mission-community: #1F57A4;
   --color-mission-family: #17692F;
   --color-mission-life: #C8102E;
+  /* Sprint 11 Revision 20.0 (DATA_MODE_BANNER_COLORS): the Testing Mode amber banner and the Training Mode cobalt banner. */
+  --color-banner-amber: #F2A900;
+  --color-banner-amber-edge: #8A5A00;
+  --color-banner-cobalt: #0047AB;
+  --color-banner-cobalt-edge: #00205B;
+  --color-banner-ink: #000000;
 
   --font-sans: Arial, sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;

@@ -15,7 +15,8 @@
 //       3. Secure Access Vault                 pinned to the reader's home council (the server's vault gate says the same)
 //       4. Global Charities Registry         the /charities/registry module (verified panel, search and filters)
 //       5. Council Asset Management          the /expenses/assets inventory (Trustees add asset photos)
-//       6. Administrative Feedback Loops     the note to the platform owner (feedback.submit)
+//       6. Member Feedback Queue             Sprint 11 Revision 20.0: the council's member feedback tickets (localFeedback)
+//       7. Administrative Feedback Loops     the note to the platform owner (feedback.submit)
 // The server also rebuilds every manual each night (apps/web/instrumentation.ts, nextNightlyManualRebuild).
 //
 // The rest of this file holds the small pure rules the wave added elsewhere:
@@ -56,6 +57,7 @@ export type AdminDeskDrawerId =
   | 'credentials-vault'
   | 'charities-registry'
   | 'asset-management'
+  | 'member-feedback'
   | 'feedback';
 
 export interface AdminDeskDrawer {
@@ -64,13 +66,17 @@ export interface AdminDeskDrawer {
   hint: string;
 }
 
-/** The six Admin Desk drawers below the top deck, top to bottom. Every one starts closed. */
+/**
+ * The seven Admin Desk drawers below the top deck, top to bottom. Every one starts closed. Sprint 11 Revision 20.0 adds the
+ * Member Feedback Queue (local-feedback.ts) above the Administrative Feedback Loops.
+ */
 export const ADMIN_DESK_DRAWERS: readonly AdminDeskDrawer[] = [
   { id: 'council-settings', label: 'Council Wide Settings', hint: 'Standard bank accounts, limits, timing, roster control and the feature matrix' },
   { id: 'council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types and payment methods, each Active or Inactive' },
   { id: 'credentials-vault', label: 'Secure Access Vault', hint: "Your home council's email, Drive and file server keys" },
   { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Browse, filter, verify and add charities' },
   { id: 'asset-management', label: 'Council Asset Management', hint: "The council's capital assets and the Trustees' asset photos" },
+  { id: 'member-feedback', label: 'Member Feedback Queue', hint: "Your members' feedback tickets, their status and their chat logs" },
   { id: 'feedback', label: 'Administrative Feedback Loops', hint: 'Send a note or bug report to the platform owner' },
 ];
 
@@ -98,11 +104,20 @@ export const ADMIN_DESK_REDUNDANT_NAV_ITEMS = [
   'credentials-vault',
   'charities/registry',
   'expenses/assets',
+  // Sprint 11 Revision 20.0: the Administrative Feedback Loops are the desk's own drawer too.
+  'system-settings/feedback',
 ] as const;
 
-/** Whether the sidebar drops `item` for this reader, because the Admin Desk already holds it as a drawer. */
+/**
+ * Sprint 11 Revision 20.0: the sidebar's own 'Admin Desk' link only looped back to the desk the Active Desks row already
+ * opens (showsAdminDeskTab), so every reader who has that tab - council Admins and Super Admins - loses the link.
+ */
+export const ADMIN_DESK_LINK_LOOP_ITEM = 'admin-desk';
+
+/** Whether the sidebar drops `item` for this reader, because the Admin Desk already holds it (or its tab opens it). */
 export const isRedundantAdminDeskNavItem = (memberType: string | undefined, item: string): boolean =>
-  memberType === 'Admin' && (ADMIN_DESK_REDUNDANT_NAV_ITEMS as readonly string[]).includes(item);
+  (item === ADMIN_DESK_LINK_LOOP_ITEM && (memberType === 'Admin' || memberType === 'Super Admin')) ||
+  (memberType === 'Admin' && (ADMIN_DESK_REDUNDANT_NAV_ITEMS as readonly string[]).includes(item));
 
 export const isAdminDeskDrawerId =(value: unknown): value is AdminDeskDrawerId => ADMIN_DESK_DRAWERS.some((d) => d.id === value);
 

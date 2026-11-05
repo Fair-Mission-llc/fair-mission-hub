@@ -117,7 +117,8 @@ describe('Home expansion', () => {
   it('documents the search bar and the request access link', () => {
     const admin = readOfficerManuals();
     expect(admin).toContain('## 19. The global search bar');
-    expect(admin).toContain('**Request Access**');
+    // Sprint 11 Revision 20.0: council access requests are a Super Admin task, in the Super Admin System Manual.
+    expect(readFileSync('docs/SUPER_ADMIN_SYSTEM_MANUAL.md', 'utf8')).toContain('**Request Access**');
     expect(admin).not.toContain('Register Your Council / Request Access');
   });
 });

@@ -122,6 +122,8 @@ import {
   hoursRemindersDue,
   MEMBER_DESK_OPEN_SHIFT_DAYS,
   memberDeskOpenShifts,
+  memberDeskDrawersFor,
+  type MemberDeskDrawerId,
   signupWindow,
   feastDayTracker,
   FEAST_TRACKER_DAYS,
@@ -147,6 +149,9 @@ import {
 } from '@kofc/shared';
 import { BankStatementMatchWindow, BudgetVsActualsModule, MotionsLedgerModule } from '@/components/DeskModules';
 import { DeskBlotter } from '@/components/DeskDrawers';
+import { LeftActionDrawers } from '@/components/LeftActionDrawers';
+import { FeedbackTicketForm, MyFeedbackTickets } from '@/components/LocalFeedbackParts';
+import { HourLedger } from '@/components/VolunteerCenter';
 import { CouncilMotionRequests, MyMotionRequestsPanel } from '@/components/MotionRequestParts';
 import { DeskManualHeader } from '@/components/DeskManualHeader';
 import { AuthorizationDesk as ApprovedExpenseSigning } from '@/components/modules/ApprovedExpenseSigning';
@@ -1152,11 +1157,24 @@ function MyCharityRequestsCard({ user }: { user: SessionUser }) {
  */
 export function MemberDesk({ user }: { user: SessionUser }) {
   const flags = useFeatureFlags();
+  const [open, setOpen] = useState<string | null>(null);
+  const drawers = memberDeskDrawersFor(flags).map((d) => ({ ...d, title: d.label, rowId: d.id === 'expense-sheets' ? DESK_FOCUS_TARGETS.mine.rowId : undefined }));
+  return (
+    <LeftActionDrawers
+      label="Member Desk drawers"
+      drawers={drawers}
+      open={open}
+      onOpen={setOpen}
+      render={(id) => <MemberDeskDrawerBody id={id as MemberDeskDrawerId} user={user} />}
+    />
+  );
+}
+
+/** The two shift trackers side by side, then the member's hour ledger (log time and see what is logged). */
+function MyHoursAndShifts({ user }: { user: SessionUser }) {
   const today = toIsoDate(new Date());
   const through = toIsoDate(new Date(Date.now() + MEMBER_DESK_SHIFT_DAYS * 86_400_000));
-  const sheets = useLoad(async () => (flags.feature_expense_reporting ? db.expenses.listUserReports(user.memberId) : []), [user.memberId, flags.feature_expense_reporting]);
   const shifts = useLoad(() => db.events.listMemberShifts(user.memberId, { fromDate: today, toDate: through }), [user.memberId, today, through]);
-  const open = (sheets.data ?? []).filter((d) => d.report.Status !== 'Reimbursed');
   return (
     <div className="flex flex-col gap-4">
       <div role="group" aria-label="Shift trackers" className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
@@ -1182,46 +1200,112 @@ export function MemberDesk({ user }: { user: SessionUser }) {
           </p>
         </Panel>
       </div>
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        {flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}
-        {/* Sprint 11 Revision 18.0: the member's own motion requests and the form to send one. Sprint 11 Revision 19.6: it
-            leaves the desk while the council's own Motion requests switch (flag_motion_requests) is off. */}
-        {flags.flag_motion_requests ? (
-          <DeskRow id="member-motion-requests" label={MY_MOTION_REQUESTS_TITLE}>
-            <MyMotionRequestsPanel user={user} />
-          </DeskRow>
-        ) : null}
-        {/* Sprint 11 Revision 18.5: the expense card leaves the desk while Expense Reporting is off. */}
-        {flags.feature_expense_reporting ? (
-        <DeskRow id={DESK_FOCUS_TARGETS.mine.rowId} label="My open expense sheets">
-          <Panel title={`My open expense sheets (${open.length})`}>
-            {sheets.error ? <Notice tone="error">{sheets.error}</Notice> : null}
-            {sheets.data && open.length === 0 ? <Empty>You have no open expense sheet.</Empty> : null}
-            {open.length > 0 ? (
-              <Table caption="Your expense sheets not yet paid" head={['Sheet', 'Amount', 'Status']}>
-                {open.slice(0, DESK_ROWS).map((d) => (
-                  <tr key={d.report.id}>
-                    <Td className="font-bold">#{d.report.id}</Td>
-                    <Td className="text-right">{formatMoney(d.total)}</Td>
-                    <Td>
-                      <ExpenseStatusPill report={d.report} />
-                    </Td>
-                  </tr>
-                ))}
-              </Table>
-            ) : null}
-            <p className="mt-2 text-sm">
-              <Link href="/expenses" className="font-bold underline">
-                Open my expenses
-              </Link>
-            </p>
-          </Panel>
-        </DeskRow>
-        ) : null}
-      </div>
-      {/* Sprint 10 Revision 2.0: the Roster & Achievements directory sits on the desk itself (member-roster.ts MEMBER_ROSTER_DESKS). */}
+      <Panel title="My hour ledger">
+        <HourLedger />
+      </Panel>
+    </div>
+  );
+}
+
+/** Sprint 11 Revision 20.0: one Member Desk drawer's module, mounted only while the drawer is open. */
+function MemberDeskDrawerBody({ id, user }: { id: MemberDeskDrawerId; user: SessionUser }) {
+  switch (id) {
+    case 'roster-profile':
+      return <MyRosterProfile user={user} />;
+    case 'hours':
+      return <MyHoursAndShifts user={user} />;
+    case 'motion-requests':
+      return <MyMotionRequestsPanel user={user} />;
+    case 'feedback-support':
+      return <MemberDeskFeedback />;
+    case 'charity-requests':
+      return <MyCharityRequestsCard user={user} />;
+    case 'expense-sheets':
+      return <MyOpenExpenseSheets user={user} />;
+  }
+}
+
+/** The member's own roster card, then the council's Roster & Achievements directory (member-roster.ts MEMBER_ROSTER_DESKS). */
+function MyRosterProfile({ user }: { user: SessionUser }) {
+  const member = useLoad(() => db.members.get(user.memberId), [user.memberId]);
+  const m = member.data;
+  return (
+    <div className="flex flex-col gap-4">
+      {member.error ? <Notice tone="error">{member.error}</Notice> : null}
+      {m ? (
+        <Panel title="My roster profile">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-bold uppercase text-navy">Name</dt>
+              <dd>{formatPersonName(m.MemberFirstName, m.MemberLastName)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-bold uppercase text-navy">Member number</dt>
+              <dd>#{m.MemberNumber}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-bold uppercase text-navy">Email</dt>
+              <dd>{m.Email ?? '–'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-bold uppercase text-navy">Phone</dt>
+              <dd>{formatPhone(m.Phone)}</dd>
+            </div>
+          </dl>
+          <p className="mt-3 text-sm">
+            <Link href="/profile" className="font-bold underline">
+              Change my details in My Profile
+            </Link>
+          </p>
+        </Panel>
+      ) : null}
       {deskMountsMemberRoster('member') ? <MemberRosterDirectory compact /> : null}
     </div>
+  );
+}
+
+/** Feedback Support on the desk: the form, then the member's tickets with their chat logs. */
+function MemberDeskFeedback() {
+  const [version, setVersion] = useState(0);
+  return (
+    <div className="flex flex-col gap-4">
+      <Panel title="Send feedback">
+        <FeedbackTicketForm onSent={() => setVersion((v) => v + 1)} />
+      </Panel>
+      <Panel title="My tickets">
+        <MyFeedbackTickets version={version} />
+      </Panel>
+    </div>
+  );
+}
+
+/** The member's expense sheets not yet paid. */
+function MyOpenExpenseSheets({ user }: { user: SessionUser }) {
+  const sheets = useLoad(() => db.expenses.listUserReports(user.memberId), [user.memberId]);
+  const open = (sheets.data ?? []).filter((d) => d.report.Status !== 'Reimbursed');
+  return (
+    <Panel title={`My open expense sheets (${open.length})`}>
+      {sheets.error ? <Notice tone="error">{sheets.error}</Notice> : null}
+      {sheets.data && open.length === 0 ? <Empty>You have no open expense sheet.</Empty> : null}
+      {open.length > 0 ? (
+        <Table caption="Your expense sheets not yet paid" head={['Sheet', 'Amount', 'Status']}>
+          {open.slice(0, DESK_ROWS).map((d) => (
+            <tr key={d.report.id}>
+              <Td className="font-bold">#{d.report.id}</Td>
+              <Td className="text-right">{formatMoney(d.total)}</Td>
+              <Td>
+                <ExpenseStatusPill report={d.report} />
+              </Td>
+            </tr>
+          ))}
+        </Table>
+      ) : null}
+      <p className="mt-2 text-sm">
+        <Link href="/expenses" className="font-bold underline">
+          Open my expenses
+        </Link>
+      </p>
+    </Panel>
   );
 }
 

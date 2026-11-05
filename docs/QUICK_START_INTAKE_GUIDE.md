@@ -22,7 +22,7 @@
 
 The wizard covers the **Admin Desk** until you finish it or skip it. The wizard opens by itself when your council has no accounts and no members other than you.
 
-**Start point:** Sidebar → System Settings → **Admin Desk**.
+**Start point:** **Active Desks** row → **Admin Desk**.
 
 **Steps:**
 1. If the wizard is not open, select **Run Setup Wizard** at the top of the Admin Desk.
@@ -124,4 +124,4 @@ To remove the practice data, go to the top of the **Admin Desk**. Turn off the *
 
 **Motion requests.** A member opens **Motion Request** (Faith In Action) and writes what the motion does, why, and its cost. Officers advise in **Officer advisory** messages. The member does not see them. The Grand Knight (GK) approves or denies the request in **Motion Requests** on the **Grand Knight Desk**. A red border means a request waits. An approved motion goes on the next Monthly meeting with a 5-minute slot. The request must be in 5 days before the meeting (**Council Wide Settings**).
 
-**Super Admin Desk.** Super Admins keep the **Admin Desk** link and see the **Super Admin Desk** tab. Its filing spine holds the **Communications Cabinet** (**Feedback Communication Center**, **Council Access Request Approval Queue**), the **Settings Cabinet** (**Global System Parameters**, **Global Lookup Tables**, **System Feature Flag Control Panel**, **Secure Access Vault**) and the freestanding **Global Charities Registry**. **Global System Parameters** sets the **Form 1728 suggestion confidence cutoff** (60 percent by default).
+**Super Admin Desk.** Super Admins open the **Admin Desk** and the **Super Admin Desk** from their tabs on the **Active Desks** row. The full platform tasks are in the [Super Admin System Manual](SUPER_ADMIN_SYSTEM_MANUAL.md). Its filing spine holds the **Communications Cabinet** (**Feedback Communication Center**, **Council Access Request Approval Queue**), the **Settings Cabinet** (**Global System Parameters**, **Global Lookup Tables**, **System Feature Flag Control Panel**, **Secure Access Vault**) and the freestanding **Global Charities Registry**. **Global System Parameters** sets the **Form 1728 suggestion confidence cutoff** (60 percent by default).

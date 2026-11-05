@@ -106,6 +106,9 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   help: { member: 'Searches answers from the user manuals.' },
   'answers/help': { member: 'Type what you want to do and see the steps from the member guide.' },
   'answers/sop': { member: "Reads the council's standard operating procedures." },
+  'answers/feedback': {
+    member: "Sends a question, a problem or an idea to your council's Admins and keeps the answers on each ticket's chat log.",
+  },
   councils: { member: 'Adds, edits and deletes councils and their registration details.' },
   'feature-flags': { member: "Switches each council's optional modules on and off." },
   'system-settings/global-settings': {

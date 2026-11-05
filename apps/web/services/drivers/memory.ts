@@ -5,6 +5,24 @@
 // of against Azure SQL. State is per browser tab and resets on reload.
 // Nothing outside /services may import this file.
 import {
+  assertMayOpenFeedbackTicket,
+  assertMayReadFeedbackTicket,
+  assertMaySetFeedbackTicketStatus,
+  assertMayTriageCouncilFeedback,
+  buildFeedbackTicketChat,
+  buildFeedbackTickets,
+  cleanFeedbackChatText,
+  cleanFeedbackTicketInput,
+  cleanFeedbackTicketStatus,
+  encodeFeedbackStatusChange,
+  encodeFeedbackTicketOpening,
+  FEEDBACK_CHAT_MAX_LENGTH,
+  feedbackTicketNotFound,
+  sortFeedbackTicketsForTriage,
+  type FeedbackTicketChat,
+  type FeedbackTicketRows,
+} from '@kofc/shared';
+import {
   assertMayDispatchRoadmapAlerts,
   assertMayManageMeetingGeofence,
   assertMayReadRoadmap,
@@ -2412,7 +2430,7 @@ export class MemoryDataService implements DataService {
       const actor = this.memberWriteActor(s, actorId);
       const row = s.rows('Member').find((m) => m.id === memberId);
       if (!row) throw new BusinessRuleError('MEMBER_NOT_FOUND', `No member with id ${memberId}.`, { memberId });
-      assertMayViewAsMember(actor, { memberId, councilId: row.CouncilID as number });
+      assertMayViewAsMember(actor, { memberId, councilId: row.CouncilID as number, memberType: this.memberTypeName(s, row.MemberTypeID as number) });
       const council = s.rows('Council').find((c) => c.id === row.CouncilID);
       return {
         member: withoutPushToken({ ...row }) as unknown as Member,
@@ -8208,6 +8226,85 @@ export class MemoryDataService implements DataService {
         s.rows('Member') as unknown as Member[],
         s.rows('Council') as unknown as Council[],
       );
+    },
+  };
+
+  // ---- Sprint 11 Revision 20.0: the Local Feedback Portal (local-feedback.ts) ---------------------------------------
+
+  private feedbackTicketRows(s: MemoryStore, councilId?: number): FeedbackTicketRows {
+    const rows = this.messagingRows(s);
+    return { threads: councilId === undefined ? rows.threads : rows.threads.filter((t) => t.CouncilID === councilId), messages: rows.messages, names: rows.names };
+  }
+
+  private feedbackTicketChat(s: MemoryStore, ticketId: number): FeedbackTicketChat {
+    const rows = this.feedbackTicketRows(s);
+    const thread = rows.threads.find((t) => t.id === ticketId);
+    const chat = thread ? buildFeedbackTicketChat(thread, rows) : null;
+    if (!chat) throw feedbackTicketNotFound(ticketId);
+    return chat;
+  }
+
+  localFeedback: DataService['localFeedback'] = {
+    submitTicket: async (actorId, input) => {
+      const clean = cleanFeedbackTicketInput(input);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayOpenFeedbackTicket(actor);
+      const ticketId = s.transaction(() => {
+        const at = toTimestamp(this.now());
+        const thread = s.insert('ChatThreads', { CouncilID: actor.councilId, IsGroupChat: 0, CreatedAt: at });
+        s.insert('Messages', { ThreadID: thread.id, SenderID: actorId, ParentMessageID: null, MessageText: encodeFeedbackTicketOpening(clean), IsDraft: 0, CreatedAt: at });
+        return thread.id as number;
+      });
+      return this.feedbackTicketChat(s, ticketId).ticket;
+    },
+
+    listMyTickets: async (actorId) => {
+      const s = await this.ready();
+      this.memberWriteActor(s, actorId);
+      return buildFeedbackTickets(this.feedbackTicketRows(s)).filter((t) => t.memberId === actorId);
+    },
+
+    listCouncilTickets: async (actorId, councilId) => {
+      const s = await this.ready();
+      assertMayTriageCouncilFeedback(this.memberWriteActor(s, actorId), councilId);
+      return sortFeedbackTicketsForTriage(buildFeedbackTickets(this.feedbackTicketRows(s, councilId)));
+    },
+
+    getTicketChat: async (actorId, ticketId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const chat = this.feedbackTicketChat(s, ticketId);
+      assertMayReadFeedbackTicket(actor, chat.ticket);
+      return chat;
+    },
+
+    postTicketMessage: async (actorId, ticketId, text) => {
+      const clean = cleanFeedbackChatText(text);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const chat = this.feedbackTicketChat(s, ticketId);
+      assertMayReadFeedbackTicket(actor, chat.ticket);
+      s.insert('Messages', { ThreadID: ticketId, SenderID: actorId, ParentMessageID: chat.entries[0]!.id, MessageText: clean, IsDraft: 0, CreatedAt: toTimestamp(this.now()) });
+      return this.feedbackTicketChat(s, ticketId);
+    },
+
+    setTicketStatus: async (actorId, ticketId, status, note) => {
+      const next = cleanFeedbackTicketStatus(status);
+      const cleanNote = note == null ? '' : assertText(note, 'Note', FEEDBACK_CHAT_MAX_LENGTH, false);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const chat = this.feedbackTicketChat(s, ticketId);
+      assertMaySetFeedbackTicketStatus(actor, chat.ticket);
+      s.insert('Messages', {
+        ThreadID: ticketId,
+        SenderID: actorId,
+        ParentMessageID: chat.entries[0]!.id,
+        MessageText: encodeFeedbackStatusChange(next, cleanNote),
+        IsDraft: 0,
+        CreatedAt: toTimestamp(this.now()),
+      });
+      return this.feedbackTicketChat(s, ticketId);
     },
   };
 

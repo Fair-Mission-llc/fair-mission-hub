@@ -7,6 +7,7 @@
                                                  docs/FINANCIAL_SECRETARY_MANUAL.md -> docs/FINANCIAL_SECRETARY_MANUAL.pdf
                                                  docs/EXECUTIVE_GOVERNANCE_MANUAL.md -> docs/EXECUTIVE_GOVERNANCE_MANUAL.pdf
                                                  docs/QUICK_START_INTAKE_GUIDE.md -> docs/QUICK_START_INTAKE_GUIDE.pdf
+                                                 docs/SUPER_ADMIN_SYSTEM_MANUAL.md -> docs/SUPER_ADMIN_SYSTEM_MANUAL.pdf
     py scripts/compile_all_manuals.py --only treasurer   (or financial-secretary, executive)
     py scripts/compile_all_manuals.py --check    run each guide's wording check only; write nothing
     py scripts/compile_all_manuals.py --only member
@@ -117,6 +118,15 @@ MANUALS = (
         title='Executive Governance Manual',
         disclaimer=layout.DISCLAIMER,
         required_screen_names=layout.REQUIRED_SCREEN_NAMES,
+    ),
+    # Sprint 11 Revision 20.0: the platform tracks split out of the Administrator guide into their own manual.
+    Manual(
+        key='super-admin',
+        source='docs/SUPER_ADMIN_SYSTEM_MANUAL.md',
+        output='docs/SUPER_ADMIN_SYSTEM_MANUAL.pdf',
+        title='Super Admin System Manual',
+        disclaimer=layout.DISCLAIMER,
+        required_screen_names=(),
     ),
     # Sprint 11 Revision 4.1: the short leaflet the Admin Desk Setup Wizard's last step hands out.
     Manual(

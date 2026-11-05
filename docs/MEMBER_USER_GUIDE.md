@@ -89,7 +89,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 <summary>Overview — read this first</summary>
 
 - Every time you sign in, the portal opens on **Home**: the newsletters, the feast days, your reminders, today's agenda, the Top 5 volunteers and the prayer list. Tap **Praying Hands** on the prayer list to pray for an intention. When more cards are below the first screen, the line **Scroll down for more council info ↓** shows at the bottom. The line fades away when you start to scroll down.
-- Your volunteer check-in is on the **Member Actions Hub**. Select **Member Actions Hub** in the sidebar to open it. The page has four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. Your shift trackers, charity requests and sheets are on the **Member Desk** tab.
+- Your volunteer check-in is on the **Member Actions Hub**. Select **Member Actions Hub** in the sidebar to open it. The page has four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. Your shift trackers, charity requests and sheets are on the **Member Desk** tab. The **Member Desk** opens each module in a drawer down the left side: **My Roster Profile**, **My Hours & Shifts**, **My Motion Requests**, **Feedback Support**, **My Charity Requests** and **My Open Expense Sheets**. All drawers are closed when the desk opens. Select a drawer to open it on the right.
 - **Council Roster** is the first link in the **Faith In Action** pillar. It lists the phone and email of active brothers of your council and its sister councils.
 - **Navigation Guide** shows a short summary of each page that you can open.
 - The sidebar stays in place when you scroll down a page. On a desk, the list of drawers on the left also stays in place, and the open drawer keeps a gold border.
@@ -1697,23 +1697,28 @@ The activity tiles fill the screen width, one tile per row. The web portal store
 
 ### 9.6 Report a problem or share an idea
 
-> **Who can do this:** any member.
+> **Who can do this:** any active member.
 
-**Goal:** Tell your council's Admin about a problem or an idea.
+**Goal:** Tell your council's Admins about a problem, ask a question or share an idea, and follow their answer.
 
-**Start point:** Header → **Messaging** → the Communications Hub.
+**Start point:** Sidebar → Answers → **Feedback Support**. The same tools are in the **Feedback Support** drawer of the **Member Desk**.
 
 **Steps:**
-1. Start a message to your council's Admin.
-2. Describe the screen you were on, what you did and what you expected.
-3. Send the message.
+1. Select the **Send feedback** drawer.
+2. Choose a **Category**: **Question**, **Problem**, **Suggestion** or **Praise**.
+3. Type a **Subject** and describe the screen you were on, what you did and what you expected.
+4. Select **Send feedback**.
+5. To follow a ticket, select the **My tickets** drawer. Select **Open chat log** on the ticket's card.
+6. To answer the Admin, type in **Reply** and select **Send**.
 
-**Expected result:** Your council's Admin gets the message. The Admin sends the note on to the platform owner from **Administrative Feedback Loops** when needed.
+**Expected result:** A message gives your ticket number. The ticket's card shows its status (**Open**, **In Progress** or **Resolved**) and the number of replies.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| The Online Help Center has no feedback form. | Since Sprint 8O, only council Admins send notes to the platform owner. | Message your council's Admin. |
+| The Online Help Center has no feedback form. | Feedback has its own page. | Open Sidebar → Answers → **Feedback Support**. |
+| You cannot change the status of your ticket. | Only your council's Admins set the status. | Write a reply. The Admin reads it on the ticket's chat log. |
+| Another member cannot read your ticket. | Only you and your council's Admins read a ticket. | No fix is needed. |
 
 ### 9.7 Open the Council Dashboard
 

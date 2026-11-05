@@ -15,13 +15,34 @@
 // Sprint 11 Revision 13.0: a vault created while PILOT_SYNC_COUNCIL is set (npm run dev:pilot sets it) is filled from the
 // simulated central database right after its seed: that council's roster, logged hours and module switches
 // (central-sync.ts). An existing vault is never synced over.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+// Sprint 11 Revision 20.0 (data-modes.ts): KOFC_DATA_MODE picks the file - production central-hub-vault.db, testing
+// testing-sandbox.db, training training-playground.db. Training's file is deleted and seeded again (seedTrainingPlayground)
+// the first time each server process opens it. Every start also makes sure the other two files exist (provisionDataCores),
+// so all three sit in the vault folder. In testing mode each save made through callHub is also sent to the hall's other
+// laptops (lan-mesh.ts).
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { HUB_DATA_DRIVER, HUB_VAULT_RELATIVE_PATH, isHubMethodName, type DataService, type HubCall } from '@kofc/shared';
+import {
+  DATA_MODE_ENV,
+  DATA_MODE_VAULT_FILES,
+  DATA_MODES,
+  HUB_DATA_DRIVER,
+  HUB_VAULT_RELATIVE_PATH,
+  isEphemeralDataMode,
+  isHubMethodName,
+  isMeshReplicatedMethod,
+  parseDataMode,
+  seedTrainingPlayground,
+  type DataMode,
+  type DataService,
+  type HubCall,
+} from '@kofc/shared';
 import { SqliteDataService, type SqliteModule } from '../../../../mobile/services/drivers/sqlite';
 import { deliverServerEmail } from '../notify';
-import { createNodeSqlite, HUB_VAULT_FILE } from './node-sqlite';
+import { createNodeSqlite } from './node-sqlite';
+import { broadcastMeshSave, startLanMesh } from './lan-mesh';
+import { seedTrainingProfiles } from './training-profiles';
 import { pilotSyncCouncil, syncVaultFromCentral } from './central-sync';
 
 if (typeof window !== 'undefined') {
@@ -53,8 +74,62 @@ function repositoryRoot(start = process.cwd()): string {
 export const hubDataDir = (env: Env = process.env): string =>
   env.HUB_VAULT_DIR?.trim() ? resolve(/*turbopackIgnore: true*/ env.HUB_VAULT_DIR.trim()) : dirname(join(/*turbopackIgnore: true*/ repositoryRoot(), HUB_VAULT_RELATIVE_PATH));
 
+/** The data mode the server runs in (KOFC_DATA_MODE; Production when unset). */
+export const hubDataMode = (env: Env = process.env): DataMode => parseDataMode(env[DATA_MODE_ENV]);
+
+/** The database file of the server's data mode. */
+export const hubVaultFile = (env: Env = process.env): string => DATA_MODE_VAULT_FILES[hubDataMode(env)];
+
 /** The vault file's full path. */
-export const hubVaultPath = (env: Env = process.env): string => join(/*turbopackIgnore: true*/ hubDataDir(env), HUB_VAULT_FILE);
+export const hubVaultPath = (env: Env = process.env): string => join(/*turbopackIgnore: true*/ hubDataDir(env), hubVaultFile(env));
+
+/** Deletes a database file and its journal files. */
+function eraseDatabaseFile(path: string): void {
+  for (const suffix of ['', '-wal', '-shm', '-journal']) rmSync(path + suffix, { force: true });
+}
+
+/** A data service over one mode's file in `dir`. */
+function openModeService(dir: string, file: string): SqliteDataService {
+  return new SqliteDataService({
+    sqlite: createNodeSqlite(dir, file) as unknown as SqliteModule,
+    persistent: true,
+    presentationData: true,
+    ballotSecret: ballotSecret(dir),
+    sendEmail: deliverServerEmail,
+    log: () => {},
+  });
+}
+
+/** Builds a fresh training playground at `path` in `service` (already opened on an empty file). */
+async function seedPlayground(service: SqliteDataService, path: string): Promise<void> {
+  const seeded = await seedTrainingPlayground(service);
+  // The generic sign-in accounts of the Training Profile Selection Board.
+  const profiles = seedTrainingProfiles(path);
+  console.info(
+    `[hub] training playground seeded: ${seeded.members} members, ${seeded.events} events, ${seeded.cashBoxes} cash boxes (${seeded.cashDonations} cash donations), ${profiles} training profiles.`,
+  );
+}
+
+/**
+ * Sprint 11 Revision 20.0: makes sure every mode's file exists in `dir`. The active mode's file is opened by hubService;
+ * each other missing file is created, seeded (the training file with its playground) and closed again. Production is
+ * skipped while a central sync council is set, so its first open still runs the sync handshake.
+ */
+export async function provisionDataCores(dir: string, active: DataMode, env: Env = process.env): Promise<DataMode[]> {
+  const created: DataMode[] = [];
+  for (const mode of DATA_MODES) {
+    if (mode === active) continue;
+    if (mode === 'production' && pilotSyncCouncil(env) !== null) continue;
+    const file = DATA_MODE_VAULT_FILES[mode];
+    if (existsSync(join(/*turbopackIgnore: true*/ dir, file))) continue;
+    const service = openModeService(dir, file);
+    await service.init();
+    if (isEphemeralDataMode(mode)) await seedPlayground(service, join(/*turbopackIgnore: true*/ dir, file));
+    await service.close();
+    created.push(mode);
+  }
+  return created;
+}
 
 /** The ballot secret, made once and kept beside the vault so every session hashes ballots the same way. */
 function ballotSecret(dir: string): string {
@@ -68,7 +143,9 @@ function ballotSecret(dir: string): string {
   return secret;
 }
 
-let opened: { dir: string; service: SqliteDataService; ready: Promise<void> } | null = null;
+let opened: { dir: string; file: string; service: SqliteDataService; ready: Promise<void> } | null = null;
+/** The training files this process already rebuilt, so a reopen after an error does not wipe it twice. */
+const rebuiltPlaygrounds = new Set<string>();
 let queue: Promise<unknown> = Promise.resolve();
 
 /** Runs `task` after every call before it has finished, so the vault sees one call at a time. */
@@ -81,21 +158,27 @@ export function onHub<T>(task: () => Promise<T>): Promise<T> {
 /** The vault's data service, opened (and on first use created and seeded) once per process. */
 export async function hubService(env: Env = process.env): Promise<SqliteDataService> {
   const dir = hubDataDir(env);
-  if (!opened || opened.dir !== dir) {
+  const mode = hubDataMode(env);
+  const file = DATA_MODE_VAULT_FILES[mode];
+  if (!opened || opened.dir !== dir || opened.file !== file) {
     mkdirSync(dir, { recursive: true });
-    const vaultPath = join(/*turbopackIgnore: true*/ dir, HUB_VAULT_FILE);
+    const vaultPath = join(/*turbopackIgnore: true*/ dir, file);
+    // Training starts from nothing on every launch: the old playground is erased before it is opened.
+    const rebuild = isEphemeralDataMode(mode) && !rebuiltPlaygrounds.has(vaultPath);
+    if (rebuild) {
+      eraseDatabaseFile(vaultPath);
+      rebuiltPlaygrounds.add(vaultPath);
+    }
     const fresh = !existsSync(vaultPath);
-    const council = fresh ? pilotSyncCouncil(env) : null;
-    const service = new SqliteDataService({
-      sqlite: createNodeSqlite(dir) as unknown as SqliteModule,
-      persistent: true,
-      presentationData: true,
-      ballotSecret: ballotSecret(dir),
-      sendEmail: deliverServerEmail,
-      log: () => {},
-    });
+    // Only the production vault takes the central sync handshake.
+    const council = fresh && mode === 'production' ? pilotSyncCouncil(env) : null;
+    const service = openModeService(dir, file);
     const open = async () => {
       await service.init();
+      if (rebuild) await seedPlayground(service, vaultPath);
+      if (mode === 'testing') startLanMesh(dir, env, (call) => replayMeshCall(call, env));
+      const created = await provisionDataCores(dir, mode, env);
+      if (created.length > 0) console.info(`[hub] created the ${created.join(' and ')} database file${created.length === 1 ? '' : 's'}.`);
       if (council === null) return;
       try {
         const receipt = await syncVaultFromCentral(dir, vaultPath, council, env);
@@ -108,7 +191,7 @@ export async function hubService(env: Env = process.env): Promise<SqliteDataServ
         console.warn(`[hub] the central sync handshake for council ${council} failed: ${err instanceof Error ? err.message : String(err)}`);
       }
     };
-    opened = { dir, service, ready: onHub(open) };
+    opened = { dir, file, service, ready: onHub(open) };
   }
   const current = opened;
   try {
@@ -143,6 +226,19 @@ export async function serializedHub(env: Env = process.env): Promise<DataService
  * call cannot reach the service's internals (open, reset) or anything inherited. INVALID_INPUT-style Error for the rest.
  */
 export async function callHub(call: HubCall, env: Env = process.env): Promise<unknown> {
+  const result = await runHubCall(call, env);
+  // Testing mode: a save also goes to the hall's other laptops. Reads, sign-ins and passkeys stay here.
+  if (hubDataMode(env) === 'testing' && isMeshReplicatedMethod(call.method)) broadcastMeshSave(call);
+  return result;
+}
+
+/** Replays a save heard from another laptop's testing mesh. It is not sent on again. */
+async function replayMeshCall(call: HubCall, env: Env): Promise<void> {
+  if (hubDataMode(env) !== 'testing' || !isMeshReplicatedMethod(call.method)) return;
+  await runHubCall(call, env);
+}
+
+async function runHubCall(call: HubCall, env: Env): Promise<unknown> {
   const service = await hubService(env);
   if (call.method === 'init') return undefined;
   if (!isHubMethodName(call.method)) throw new Error(`"${call.method}" is not a hub method.`);

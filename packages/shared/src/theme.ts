@@ -51,6 +51,18 @@ export const MEMORIAL_COLORS = {
  * text (gold under white text is ~2.3:1); the other three take white text, each 4.5:1 or better. They mark calendar
  * categories only, never navigation or status.
  */
+/**
+ * Sprint 11 Revision 20.0 (data-modes.ts): the global data-mode banners only - the amber Testing Mode warning (black text,
+ * about 11:1) and the cobalt blue Training Mode notice (white text, about 8.6:1). Never used for navigation or status.
+ */
+export const DATA_MODE_BANNER_COLORS = {
+  amber: '#F2A900',
+  amberEdge: '#8A5A00',
+  cobalt: '#0047AB',
+  cobaltEdge: '#00205B',
+  ink: '#000000',
+} as const;
+
 export const MISSION_AREA_COLORS = {
   faith: BRAND.gold,
   community: '#1F57A4',

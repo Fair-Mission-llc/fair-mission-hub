@@ -281,7 +281,7 @@ function LogForm({ title, children, onSubmit, busy, submitLabel }: { title: stri
   );
 }
 
-function HourLedger() {
+export function HourLedger() {
   const user = useUser();
   const { run, banner } = useAction();
   const [busy, setBusy] = useState(false);

@@ -151,6 +151,7 @@ describe('portal permissions', () => {
       'profile',
       'help',
       'answers/help',
+      'answers/feedback',
       'governance/bylaws',
       'answers/sop',
       'resources/bulletins',
@@ -211,6 +212,7 @@ describe('portal permissions', () => {
       'profile',
       'help',
       'answers/help',
+      'answers/feedback',
       'governance/bylaws',
       'answers/sop',
       'resources/bulletins',
@@ -228,8 +230,8 @@ describe('portal permissions', () => {
       'inventory/loaner-library',
       'navigation-guide',
     ]);
-    expect(portalAreas(officer)).toEqual(['home', 'member-actions', 'roster', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'system-settings/knowledge-archive', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'motion-requests', 'inventory/loaner-library', 'navigation-guide']);
-    expect(portalAreas(member)).toEqual(['home', 'member-actions', 'roster', 'calendar', 'gallery', 'meetings', 'elections', 'ledger', 'expenses', 'charities/propose', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'history', 'faith-center', 'member-center', 'motion-requests', 'inventory/loaner-library', 'navigation-guide']);
+    expect(portalAreas(officer)).toEqual(['home', 'member-actions', 'roster', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'answers/feedback', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'system-settings/knowledge-archive', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'motion-requests', 'inventory/loaner-library', 'navigation-guide']);
+    expect(portalAreas(member)).toEqual(['home', 'member-actions', 'roster', 'calendar', 'gallery', 'meetings', 'elections', 'ledger', 'expenses', 'charities/propose', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'answers/feedback', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'history', 'faith-center', 'member-center', 'motion-requests', 'inventory/loaner-library', 'navigation-guide']);
   });
 
   it('gives every member their own expense reports, leadership the audit queue, and only finance officers and Super Admins the check ledger', () => {
@@ -277,7 +279,7 @@ describe('portal permissions', () => {
     it('opens the help center to every member from the Answers pillar (Sprint 6Z)', () => {
       for (const u of [superAdmin, admin, officer, member]) {
         expect(portalAreas(u)).toContain('help');
-        expect(portalSidebar(u).find((g) => g.id === 'answers')?.entries.map((e) => e.item)).toEqual(['help', 'answers/help', 'answers/sop']);
+        expect(portalSidebar(u).find((g) => g.id === 'answers')?.entries.map((e) => e.item)).toEqual(['help', 'answers/help', 'answers/sop', 'answers/feedback']);
         // Sprint 6Z: every member reads the bylaws vault and the bulletins board too.
         expect(portalAreas(u)).toEqual(expect.arrayContaining(['governance/bylaws', 'resources/bulletins']));
       }
@@ -327,7 +329,7 @@ describe('portal permissions', () => {
         ['Finances', ['expenses', 'charities/propose', 'finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget', 'finance/treasurer-desk', 'expenses/audit', 'expenses/authorize', 'finance/audit', 'donations']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger', 'lessons-registry']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
-        ['Answers', ['help', 'answers/help', 'answers/sop']],
+        ['Answers', ['help', 'answers/help', 'answers/sop', 'answers/feedback']],
         ['System Settings', ['admin-desk', 'system-settings/view-as-member', 'system-settings/feedback', 'system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault', 'expenses/assets', 'charities/registry', 'parishes']],
       ]);
     });
@@ -339,7 +341,7 @@ describe('portal permissions', () => {
         ['Finances', ['expenses', 'charities/propose', 'finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget', 'finance/treasurer-desk', 'finance/audit', 'expenses/disbursements', 'charities/queue', 'donations']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
-        ['Answers', ['help', 'answers/help', 'answers/sop']],
+        ['Answers', ['help', 'answers/help', 'answers/sop', 'answers/feedback']],
         ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'supreme-sync', 'council-lookups', 'credentials-vault', 'expenses/assets']],
       ]);
     });
@@ -351,7 +353,7 @@ describe('portal permissions', () => {
         ['Finances', ['expenses', 'charities/propose', 'finance/ledger', 'finance/balance-sheet', 'finance/dashboard', 'financials/budget', 'expenses/authorize', 'finance/audit']],
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
-        ['Answers', ['help', 'answers/help', 'answers/sop']],
+        ['Answers', ['help', 'answers/help', 'answers/sop', 'answers/feedback']],
         ['System Settings', ['system-settings/council-settings', 'system-settings/affiliations', 'system-settings/knowledge-archive', 'council-lookups', 'credentials-vault', 'expenses/assets']],
       ]);
     });
@@ -367,7 +369,7 @@ describe('portal permissions', () => {
         // Sprint 5Z-2.5: officers read the executive dashboard.
         ['Performance', ['member-center', 'dashboard', 'performance/charts', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'resources/marketing', 'inventory/loaner-library']],
-        ['Answers', ['help', 'answers/help', 'answers/sop']],
+        ['Answers', ['help', 'answers/help', 'answers/sop', 'answers/feedback']],
         ['System Settings', ['system-settings/council-settings', 'system-settings/knowledge-archive', 'credentials-vault']],
       ]);
       expect(shape(member)).toEqual([
@@ -377,7 +379,7 @@ describe('portal permissions', () => {
         ['Finances', ['expenses', 'charities/propose', 'financials/budget']],
         ['Performance', ['member-center', 'history', 'ledger']],
         ['Resources', ['resources/bulletins', 'inventory/loaner-library']],
-        ['Answers', ['help', 'answers/help', 'answers/sop']],
+        ['Answers', ['help', 'answers/help', 'answers/sop', 'answers/feedback']],
       ]);
     });
 
@@ -550,6 +552,7 @@ describe('portal permissions', () => {
         'profile',
         'help',
         'answers/help',
+        'answers/feedback',
         'governance/bylaws',
         'answers/sop',
         'resources/bulletins',
@@ -567,7 +570,7 @@ describe('portal permissions', () => {
         'navigation-guide',
       ]);
     }
-    expect(portalAreas(actor({ isOfficer: true, roles: ['Recorder'] }))).toEqual(['home', 'member-actions', 'roster', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'system-settings/knowledge-archive', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'motion-requests', 'inventory/loaner-library', 'navigation-guide']);
+    expect(portalAreas(actor({ isOfficer: true, roles: ['Recorder'] }))).toEqual(['home', 'member-actions', 'roster', 'calendar', 'gallery', 'meetings', 'meetings/live', 'elections', 'ledger', 'expenses', 'charities/propose', 'charities/vetting', 'dashboard', 'finance/dashboard', 'finance/ledger', 'finance/balance-sheet', 'finance/audit', 'financials/budget', 'messages', 'distribution-lists', 'profile', 'help', 'answers/help', 'answers/feedback', 'governance/bylaws', 'answers/sop', 'resources/bulletins', 'governance/advisor', 'credentials-vault', 'system-settings/council-settings', 'system-settings/knowledge-archive', 'performance/charts', 'history', 'faith-center', 'resources/marketing', 'member-center', 'motion-requests', 'inventory/loaner-library', 'navigation-guide']);
   });
 
   it('gives council leadership the Supreme sync and the alert dispatch, each for their own council (Sprint 5T)', () => {

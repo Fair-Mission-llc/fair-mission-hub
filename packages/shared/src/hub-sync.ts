@@ -74,6 +74,8 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'charities.searchGlobalRegistry', 'charities.setCharityVerified', 'charities.submitCharitableRequest', 'charities.triageRequestStatus',
   'motionRequests.decide', 'motionRequests.listForCouncil', 'motionRequests.listMessages', 'motionRequests.listMine',
   'motionRequests.postMessage', 'motionRequests.preview', 'motionRequests.submit', 'motionRequests.withdraw',
+  'localFeedback.submitTicket', 'localFeedback.listMyTickets', 'localFeedback.listCouncilTickets', 'localFeedback.getTicketChat',
+  'localFeedback.postTicketMessage', 'localFeedback.setTicketStatus',
   'councils.create', 'councils.getMeetingGeofence', 'councils.listAffiliationDirectory', 'councils.remove',
   'councils.requestAffiliation', 'councils.respondToAffiliation', 'councils.setBiometricLoginEnabled',
   'councils.setBylaws', 'councils.setCouncilWideSettings', 'councils.setDuesRate', 'councils.setEmailGateway',

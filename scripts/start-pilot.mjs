@@ -17,6 +17,8 @@
 // and pulls that council's roster, logged hours and module switches from the simulated central database
 // (packages/backend/data/simulated-central.db, made from the seed the first time). An existing vault is never synced
 // over: run npm run hub:archive first for a fresh pull. The launcher prints the handshake receipt.
+// Sprint 11 Revision 20.0: --mode production|testing|training (or KOFC_DATA_MODE) picks the hub's database file
+// (central-hub-vault.db, testing-sandbox.db or training-playground.db; packages/shared/src/data-modes.ts).
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { networkInterfaces } from 'node:os';
@@ -39,6 +41,17 @@ if (councilAt >= 0) {
     process.exit(2);
   }
 }
+let dataMode = (process.env.KOFC_DATA_MODE ?? 'production').trim().toLowerCase() || 'production';
+const modeAt = args.indexOf('--mode');
+if (modeAt >= 0) {
+  dataMode = (args[modeAt + 1] ?? '').trim().toLowerCase();
+  args.splice(modeAt, 2);
+}
+if (!['production', 'testing', 'training'].includes(dataMode)) {
+  console.error('[pilot] --mode needs production, testing or training.');
+  process.exit(2);
+}
+console.info(`[pilot] data mode: ${dataMode}.`);
 const noSync = args.includes('--no-sync');
 if (noSync) args.splice(args.indexOf('--no-sync'), 1);
 
@@ -46,7 +59,7 @@ console.warn('[pilot] PORTAL_ALLOW_HTTP_COOKIES=1: session cookies work over pla
 
 const child = spawn(process.execPath, [nextBin, 'start', web, '-H', '0.0.0.0', '-p', '3000', ...args], {
   stdio: 'inherit',
-  env: { ...process.env, PORTAL_ALLOW_HTTP_COOKIES: '1', ...(noSync ? {} : { PILOT_SYNC_COUNCIL: council }) },
+  env: { ...process.env, PORTAL_ALLOW_HTTP_COOKIES: '1', KOFC_DATA_MODE: dataMode, ...(noSync ? {} : { PILOT_SYNC_COUNCIL: council }) },
 });
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill(signal));
 

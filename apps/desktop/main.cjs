@@ -6,6 +6,14 @@
 // window. Nothing listens on the network. The data lives in the hub vault, a SQLite file in this computer's user-data
 // folder (%APPDATA%/KofC Tracking Platform/vault), so records survive restarts and updates. A session key is made on
 // first run and kept beside the vault, so sign-ins survive restarts too. Links to other sites open in the browser.
+//
+// Sprint 11 Revision 20.0 (packages/shared/src/data-modes.ts): the vault folder holds three database files, one per data
+// mode - central-hub-vault.db (Production), testing-sandbox.db (Testing, shared with laptops in the same hall over
+// the Wi-Fi) and training-playground.db (Training, rebuilt with practice records on every start). At start-up the
+// shell asks which mode to open (the last choice is the default, kept in data-mode.json) and passes it to the portal as
+// KOFC_DATA_MODE; setting KOFC_DATA_MODE before launch skips the question. The portal server creates all three files.
+// Testing mode only reaches the network when a mesh passphrase is set (KOFC_MESH_PASSPHRASE or
+// testing-mesh-passphrase.txt in the vault folder); otherwise it works alone on this computer.
 'use strict';
 const { app, BrowserWindow, dialog, shell } = require('electron');
 const { spawn } = require('node:child_process');
@@ -16,6 +24,10 @@ const net = require('node:net');
 const path = require('node:path');
 
 const HOST = '127.0.0.1';
+const DATA_MODES = ['production', 'testing', 'training'];
+const DATA_MODE_FILES = { production: 'central-hub-vault.db', testing: 'testing-sandbox.db', training: 'training-playground.db' };
+const DATA_MODE_BUTTONS = ['Production', 'Testing (hall Wi-Fi)', 'Training (practice)'];
+let dataMode = 'production';
 const STARTUP_TIMEOUT_MS = 60_000;
 let server = null;
 
@@ -69,6 +81,42 @@ function sessionSecret(dataDir) {
   return secret;
 }
 
+/** The remembered mode choice, or Production. */
+function rememberedDataMode() {
+  try {
+    const saved = JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'data-mode.json'), 'utf8')).mode;
+    return DATA_MODES.includes(saved) ? saved : 'production';
+  } catch {
+    return 'production';
+  }
+}
+
+/** Asks which data mode to open, unless KOFC_DATA_MODE already names one. Remembers the answer. */
+async function chooseDataMode() {
+  const preset = String(process.env.KOFC_DATA_MODE || '').trim().toLowerCase();
+  if (DATA_MODES.includes(preset)) return preset;
+  const last = rememberedDataMode();
+  const { response } = await dialog.showMessageBox({
+    type: 'question',
+    title: 'KofC Tracking Platform',
+    message: 'Which records do you want to open?',
+    detail:
+      'Production: the council\'s real records.\n' +
+      'Testing: a practice copy. Laptops in the same hall share it over the Wi-Fi; alone, it stays on this computer.\n' +
+      'Training: a throwaway copy with practice members, events and cash boxes. It starts fresh every time.',
+    buttons: DATA_MODE_BUTTONS,
+    defaultId: DATA_MODES.indexOf(last),
+    cancelId: DATA_MODES.indexOf(last),
+  });
+  const mode = DATA_MODES[response] || 'production';
+  try {
+    fs.writeFileSync(path.join(app.getPath('userData'), 'data-mode.json'), JSON.stringify({ mode }));
+  } catch {
+    // The choice is still used for this run.
+  }
+  return mode;
+}
+
 async function startPortal() {
   const dir = portalDir();
   const entry = path.join(dir, 'server.js');
@@ -87,6 +135,7 @@ async function startPortal() {
       HOSTNAME: HOST,
       PORT: String(port),
       HUB_VAULT_DIR: dataDir,
+      KOFC_DATA_MODE: dataMode,
       PORTAL_SESSION_SECRET: sessionSecret(dataDir),
       // The window talks to the server over plain http on the loopback address, where a Secure cookie is dropped.
       PORTAL_ALLOW_HTTP_COOKIES: '1',
@@ -130,7 +179,7 @@ function getJson(url) {
 
 /** The vault's PRAGMA user_version, or 0 when there is no vault yet. Read-only; the server has not opened it yet. */
 function vaultVersion(dataDir) {
-  const file = path.join(dataDir, 'central-hub-vault.db');
+  const file = path.join(dataDir, DATA_MODE_FILES[dataMode]);
   if (!fs.existsSync(file)) return 0;
   const { DatabaseSync } = require('node:sqlite');
   const db = new DatabaseSync(file, { readOnly: true });
@@ -176,6 +225,7 @@ async function ensureVaultVersion(url) {
 }
 
 async function createWindow() {
+  dataMode = await chooseDataMode();
   let url = await startPortal();
   if (!(await ensureVaultVersion(url))) {
     app.quit();
@@ -187,7 +237,7 @@ async function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    title: 'KofC Tracking Platform',
+    title: dataMode === 'production' ? 'KofC Tracking Platform' : `KofC Tracking Platform - ${dataMode === 'testing' ? 'Testing Mode' : 'Training Mode'}`,
     show: false,
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
   });

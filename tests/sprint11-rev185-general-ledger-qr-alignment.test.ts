@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  memberDeskDrawersFor,
   assertMayInviteAdvisoryPanelist,
   assertMayKeepAdvisoryPanel,
   assertMayReadAdvisoryPanel,
@@ -105,7 +106,9 @@ describe('3. Expense Reporting and Charitable Contributions off for Council 1529
     }
     // The general ledger stays on the Treasurer Desk.
     expect(deskDrawersFor(superAdmin, 'treasurer', OWN, COUNCIL_15295_SEED_FLAGS).map((d) => d.id)).toContain('chart-of-accounts');
-    expect(read('apps/web/components/DashboardDesks.tsx')).toContain('flags.feature_expense_reporting ? (');
+    // Sprint 11 Revision 20.0: the Member Desk's expense drawer follows the switch (memberDeskDrawersFor).
+    expect(memberDeskDrawersFor(COUNCIL_15295_SEED_FLAGS).map((d) => d.id)).not.toContain('expense-sheets');
+    expect(memberDeskDrawersFor(COUNCIL_15295_SEED_FLAGS).map((d) => d.id)).not.toContain('charity-requests');
   });
 
   it.each(drivers)('$name driver: Council 15295 starts with both off', async (d) => {

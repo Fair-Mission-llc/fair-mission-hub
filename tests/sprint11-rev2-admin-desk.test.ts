@@ -44,13 +44,15 @@ const seat = (memberType: 'Member' | 'Admin' | 'Super Admin', roles: string[] = 
 });
 
 describe('1. the Admin Desk', () => {
-  it('lists the six drawers in the exact order (Sprint 11 Revision 3.0 moved the manual panels to the top deck)', () => {
+  // Sprint 11 Revision 20.0 adds the Member Feedback Queue above the Administrative Feedback Loops.
+  it('lists the seven drawers in the exact order (Sprint 11 Revision 3.0 moved the manual panels to the top deck)', () => {
     expect(ADMIN_DESK_DRAWERS.map((d) => d.label)).toEqual([
       'Council Wide Settings',
       'Council Lookup Tables',
       'Secure Access Vault',
       'Global Charities Registry',
       'Council Asset Management',
+      'Member Feedback Queue',
       'Administrative Feedback Loops',
     ]);
   });

@@ -132,8 +132,9 @@ describe('4. screens', () => {
     expect(read('apps/mobile/app/(app)/index.tsx')).toContain('features.feature_capital_assets && canAttachAssetPhoto');
   });
 
-  it('describes the grid in the Administrator guide', () => {
-    const guide = read('docs/ADMIN_USER_GUIDE.md');
+  // Sprint 11 Revision 20.0: the grid is a Super Admin tool, documented in the Super Admin System Manual.
+  it('describes the grid in the Super Admin System Manual', () => {
+    const guide = read('docs/SUPER_ADMIN_SYSTEM_MANUAL.md');
     expect(guide).toContain('**Master Feature Deployment Grid**');
     expect(guide).toContain('`feature_advanced_audits`');
     expect(guide).toContain('lightweight footprint');

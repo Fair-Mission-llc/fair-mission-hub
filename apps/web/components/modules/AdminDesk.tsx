@@ -13,7 +13,8 @@
 //   3. Secure Access Vault                pinned to the reader's home council (homeCouncilOnly; the server's vault gate agrees)
 //   4. Global Charities Registry        components/modules/GlobalCharitiesRegistry.tsx
 //   5. Council Asset Management         the inventory of components/modules/CouncilAssetManagement.tsx
-//   6. Administrative Feedback Loops    the note to the platform owner, and the inbox for Super Admins
+//   6. Member Feedback Queue            Sprint 11 Revision 20.0: the triage ledger of the council's member feedback tickets
+//   7. Administrative Feedback Loops    the note to the platform owner, and the inbox for Super Admins
 // A drawer's panel mounts only while it is open, so a closed drawer reads no data.
 //
 // Sprint 11 Revision 4.1: the Council Setup Wizard (components/modules/SetupWizard.tsx) masks the desk on its first visit
@@ -39,6 +40,7 @@ import {
 } from '@kofc/shared';
 import { DeskManualHeader } from '@/components/DeskManualHeader';
 import { AdminFeedbackForm, FeedbackInbox } from '@/components/FeedbackParts';
+import { MemberFeedbackQueue } from '@/components/LocalFeedbackParts';
 import { CouncilAssetInventory } from '@/components/modules/CouncilAssetManagement';
 import { CouncilLookups } from '@/components/modules/CouncilLookupTables';
 import { CouncilWideSettings } from '@/components/modules/CouncilWideSettings';
@@ -198,9 +200,17 @@ function DrawerPanel({ id }: { id: AdminDeskDrawerId }) {
       return <GlobalCharitiesRegistry embedded />;
     case 'asset-management':
       return <CouncilAssetInventory />;
+    case 'member-feedback':
+      return <MemberFeedbackQueuePanel />;
     case 'feedback':
       return <AdministrativeFeedbackPanel />;
   }
+}
+
+/** Sprint 11 Revision 20.0: the council's member feedback tickets (local-feedback.ts), for the reader's home council. */
+function MemberFeedbackQueuePanel() {
+  const user = useUser();
+  return <MemberFeedbackQueue councilId={user.councilId} />;
 }
 
 /** The Practice Sandbox master switch: on seeds the practice records, off purges them (councils.*PracticeSandbox). */

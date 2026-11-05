@@ -34,6 +34,7 @@
 - [18. Revenue split profiles](#18-revenue-split-profiles)
 - [19. The global search bar](#19-the-global-search-bar)
 - [20. The Navigation Guide screen](#20-the-navigation-guide-screen)
+- [21. Testing and training sandboxes](#21-testing-and-training-sandboxes)
 - [Manual map](#manual-map)
 
 ### How to read a tutorial
@@ -60,7 +61,7 @@ This part maps every link of the left navigation, then the **Active Desks** tabs
 - **The Navigation Guide is at the top.** It explains each link that your sidebar shows (sections 1.7 and 1.8).
 - **Three pages open from the header.** **Messaging** (envelope icon) opens **Council Messages & Alerts** and **My Distribution Lists**. **Help** (question-mark icon) opens the **Online Help Center**. Your name opens **My Profile**.
 - **The Active Desks row is on every page.** It holds **Home** and the desks that your seat clears (section 1.4).
-- **Switched-off modules are gone.** A module that your council switched off has no link (section 2 of the Administrator User Guide).
+- **Switched-off modules are gone.** A module that your council switched off has no link (section 2 of the Super Admin System Manual).
 
 </details>
 
@@ -198,7 +199,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Media & Memory Center** (**Browse Gallery**, **Gallery Administration Hub**) | Top of the sidebar | Every member | Event and meeting photos, albums and photo uploads | 6.2 |
 | **Council Artifacts** | Resources | Every member | Flyers, minutes and photo albums filed in Google Drive | 6.2 |
 | **Constitutional Bylaws** | Governance | Every member | The council's bylaws | 2.8 |
-| **SOP Center** | Answers | Every member | The standard operating procedures | 4.2 (Administrator User Guide) |
+| **SOP Center** | Answers | Every member | The standard operating procedures | 4.1 (Administrator User Guide) |
 
 </details>
 
@@ -236,15 +237,15 @@ The categories group the links by the work you do. A link can sit in a different
 | **Council Wide Settings** | Officers, Admins, Super Admins | Five drawers: Standard Bank Accounts, User Access & Roster Control, System Settings, Feature Controls, Council Feature Deployment Matrix | 11 |
 | **Council Lookup Tables** | Admins, finance officers | Payment methods, lists and the email gateway | 5.1 (Administrator User Guide) |
 | **Secure Access Vault** | Officers, Admins, Super Admins | Sealed keys for Drive, mail and receipt reading | 5.2 (Administrator User Guide) |
-| **Master Feature Deployment Grid** | Super Admins | The module switches of each council | 2 (Administrator User Guide) |
-| **Global System Parameters** | Super Admins | Dues, organization type and platform settings | 8.5 (Administrator User Guide) |
-| **Councils** | Super Admins | The council list | 5.3 (Administrator User Guide) |
-| **Global Charities Registry** | Super Admins | The shared charity list | 5.3 (Administrator User Guide) |
-| **Global Lookup Tables** | Super Admins | The global lookup tables | 5.3 (Administrator User Guide) |
-| **Parish & Pastors Linkage** | Admins | Parishes and their pastors | 5.3 (Administrator User Guide) |
+| **Master Feature Deployment Grid** | Super Admins | The module switches of each council | 2 (Super Admin System Manual) |
+| **Global System Parameters** | Super Admins | Dues, organization type and platform settings | 4.1 (Super Admin System Manual) |
+| **Councils** | Super Admins | The council list | 3.4 (Super Admin System Manual) |
+| **Global Charities Registry** | Super Admins | The shared charity list | 3.4 (Super Admin System Manual) |
+| **Global Lookup Tables** | Super Admins | The global lookup tables | 3.4 (Super Admin System Manual) |
+| **Parish & Pastors Linkage** | Admins | Parishes and their pastors | 3.4 (Super Admin System Manual) |
 | **Remote Assistance Desk** | Super Admins | Co-watching help sessions | 12.3 |
-| **Impersonate Council Admin** | Super Admins | View the portal as a council Admin you are helping | 9.4 (Administrator User Guide) |
-| **View As Member** | Council Admins, Super Admins | A read-only picture of what one member of your own council sees | 9.4.2 (Administrator User Guide) |
+| **Impersonate Council Admin** | Super Admins | View the portal as a council Admin you are helping | 6.2 (Super Admin System Manual) |
+| **View As Member** | Council Admins, Super Admins | A read-only picture of what one member of your own council sees | 9.1 (Administrator User Guide) |
 | **Administrative Feedback Loops** | Admins, Super Admins | Notes to the platform owner | 10.1 (Administrator User Guide) |
 
 </details>
@@ -271,7 +272,7 @@ Two changes came with Sprint 10:
 
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page.
 - **Media & Memory Center** sits above the pillars, under **Navigation Guide**. Its two links are **Browse Gallery** and **Gallery Administration Hub**.
-- The sidebar shows its links as plain text, with no icons. Admins and Super Admins see **Admin Desk** first under **System Settings**.
+- The sidebar shows its links as plain text, with no icons. Admins and Super Admins open the **Admin Desk** from its tab on the **Active Desks** row.
 
 The menu button (three lines) at the top of the sidebar hides the sidebar. Select the menu button again to show the sidebar. The portal remembers the choice on each computer.
 
@@ -307,7 +308,7 @@ The menu button (three lines) at the top of the sidebar hides the sidebar. Selec
 | **Days without service before a member counts as inactive** | 365 days | **Council Wide Settings** → **System Settings** drawer → **Volunteer & Meeting Operations** | Officers, Admins, Super Admins | 3.4 (Financial Secretary Manual) |
 | **Days after a shift before the first hours reminder** | 5 days | **Council Wide Settings** → **System Settings** drawer → **Reminder Cadences** | Officers, Admins, Super Admins | 11.2 |
 | **Days between follow-up hours reminders** | 7 days | **Council Wide Settings** → **System Settings** drawer → **Reminder Cadences** | Officers, Admins, Super Admins | 11.2 |
-| Invitation lead time, sign-in length, record retention | See section 8.6 of the Administrator User Guide | **Global System Parameters** → **Platform Settings** | Super Admins | 8.6 (Administrator User Guide) |
+| Invitation lead time, sign-in length, record retention | See section 4.2 of the Super Admin System Manual | **Global System Parameters** → **Platform Settings** | Super Admins | 4.2 (Super Admin System Manual) |
 
 The settings marked **Not used yet** on the page are saved for future features (section 11.2). Your own **Navigation Guide** shows the numbers in force for your council now.
 
@@ -341,7 +342,7 @@ The page reads your member type and your officer roles. The page then lists only
 | Member | Summary | One short sentence for each page that you can open, for example **Home**, **Member Actions Hub**, **Visual Master Calendar** and the **Member Desk**. No leadership, finance desk or settings page. |
 | Council Officer | Full | The member pages and the desks of your office, with the sidebar pillar of each link and every drawer of each desk. For example **GK Expense Authorize** and the **Grand Knight Desk** drawers for the Grand Knight. |
 | Council Admin | Full | The member pages and the leadership, finance and settings pages of your council, with every drawer of each desk. |
-| Super Admin | Full | Every page, including **Global System Parameters**, the **Admin Desk** link, and the **Super Admin Desk** tab on the **Active Desks** row. |
+| Super Admin | Full | Every page, including **Global System Parameters**, and the **Admin Desk** and **Super Admin Desk** tabs on the **Active Desks** row. |
 
 A few pages read differently for leaders. For example, a member reads that **Annual Budget Center** shows the budget. A leader also reads that budget keepers draft and approve the budget there.
 A module that your council switched off is not in the guide, because the module is not in your sidebar.
@@ -371,7 +372,7 @@ The **Your time limits** part of the guide lists the time windows and reminder d
 | Problem | Cause | Fix |
 | --- | --- | --- |
 | A page that a colleague uses is not in your guide. | Your role cannot open the page. | Ask a council Admin about your role. |
-| A whole module is missing from the guide. | Your council switched the module off (section 2 of the Administrator User Guide). | Ask a Super Admin to switch the module on. |
+| A whole module is missing from the guide. | Your council switched the module off (section 2 of the Super Admin System Manual). | Ask a Super Admin to switch the module on. |
 
 ---
 
@@ -473,7 +474,7 @@ The **Your time limits** part of the guide lists the time windows and reminder d
 <!-- /KEEP_IMAGE -->
 
 **Expected result:** The platform creates one meeting per month, July through June. Each meeting lasts 120 minutes.
-Invitations are released 5 days before each meeting by default. A Super Admin sets the number of days for every council (section 8.6 of the Administrator User Guide).
+Invitations are released 5 days before each meeting by default. A Super Admin sets the number of days for every council (section 4.2 of the Super Admin System Manual).
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -559,7 +560,7 @@ At a live meeting, members vote in the **Cast Active Ballot** drawer. Each membe
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| Both pages are missing. | The council switched off **Officer elections**. | Ask a Super Admin (section 2 of the Administrator User Guide). |
+| Both pages are missing. | The council switched off **Officer elections**. | Ask a Super Admin (section 2 of the Super Admin System Manual). |
 
 ### 2.8 Concept: the Council Bylaws Data Vault
 The vault holds one bylaws document per council. Every member of the council reads the bylaws.
@@ -1200,7 +1201,7 @@ The tiers count hours, events, meeting check-ins and new members recruited in th
 
 You change the milestones on the **Admin Desk** only. Every other page shows the tiers as read-only text.
 
-**Start point:** Sidebar → System Settings → **Admin Desk** → **Council Lookup Tables** drawer → **Merit Tier Milestones** tab.
+**Start point:** **Active Desks** row → **Admin Desk** → **Council Lookup Tables** drawer → **Merit Tier Milestones** tab.
 
 **Steps:**
 1. Enter the **Hours**, **Events** and **Meetings** for Tiers 2, 3 and 4.
@@ -1289,7 +1290,7 @@ The rules apply to regular members only. These members are exempt. The platform 
 
 Appointed officers, such as the Financial Secretary (FS), follow the rules.
 
-A Super Admin can switch the flagged hours review off. The Super Admin turns off **Flagged hours review** in the Master Feature Deployment Grid (section 2 of the Administrator User Guide).
+A Super Admin can switch the flagged hours review off. The Super Admin turns off **Flagged hours review** in the Master Feature Deployment Grid (section 2 of the Super Admin System Manual).
 When the switch is off, every entry counts at once. The desk is hidden. Entries that wait for review stay flagged until the switch is on again.
 
 ### 10.5 Approve or reject held volunteer time
@@ -2765,7 +2766,7 @@ The screen is built again each time it opens. It reads three things:
 
 - Your member type: Member, Admin or Super Admin.
 - Your officer roles, for example Grand Knight or Treasurer.
-- The modules that your council has switched on (section 2 of the Administrator User Guide).
+- The modules that your council has switched on (section 2 of the Super Admin System Manual).
 
 The screen then lists only the links and desks that you can open. A page that your role cannot open is not on the screen. A module that your council switched off is not on the screen.
 
@@ -2832,7 +2833,79 @@ Select a link name to open that page. Select a desk name to open that desk tab o
 | A desk shows no drawers. | You signed in as a plain member, so the guide shows the summary depth. | No action. Drawers show only for officers, Admins and Super Admins. |
 | A group that you opened is closed again. | The screen starts with every category group closed on each visit. | Select the group title again. |
 | A page that a colleague uses is not on the screen. | Your role cannot open the page. | Ask a council Admin about your role. |
-| A whole module is missing. | Your council switched the module off (section 2 of the Administrator User Guide). | Ask a Super Admin to switch the module on. |
+| A whole module is missing. | Your council switched the module off (section 2 of the Super Admin System Manual). | Ask a Super Admin to switch the module on. |
+
+---
+
+## 21. Testing and training sandboxes
+
+### 21.1 Concept: the three record sets
+The desktop program keeps three separate sets of records on every laptop. At start-up it asks which set to open.
+
+| Choice at start-up | File | Banner at the top of every page | Who sees your saves |
+| --- | --- | --- | --- |
+| **Production** | `central-hub-vault.db` | None | The council: these are the real records. |
+| **Testing (hall Wi-Fi)** | `testing-sandbox.db` | Amber **Testing Mode** banner | The other testing laptops in the same hall, while you share its Wi-Fi |
+| **Training (practice)** | `training-playground.db` | Cobalt blue **Training Mode** banner | Nobody. The file is erased and built again at every start. |
+
+A save in one set never shows in another set. Practice in Testing or Training. Do real work only in Production.
+
+### 21.2 Practice with other officers in the same hall (Testing Mode)
+> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the hall mesh passphrase (a council Admin sets it).
+> **Warning:** testing laptops share saves only while they are on the same Wi-Fi at the same time.
+
+**Goal:** Practice a workflow together, for example a cash count or an expense sign-off, without touching the real records.
+
+**Start point:** Start the desktop program.
+
+**Steps:**
+1. Connect the laptop to the hall Wi-Fi.
+2. At the question *"Which records do you want to open?"*, select **Testing (hall Wi-Fi)**.
+3. Make sure the amber **Testing Mode** banner shows at the top of the page.
+4. Sign in with your own account and do the practice work.
+
+**Expected result:** Your saves show on the other testing laptops in the hall within a few seconds.
+
+**Working alone (standalone):** away from the hall, or with no Wi-Fi, Testing Mode still works. Your saves are kept in `testing-sandbox.db` on your laptop only. They are not sent later: a laptop that was away does not receive the saves it missed, and the other laptops do not receive its saves. Do shared practice while every laptop is in the hall.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| Another officer's save does not show. | The laptops are on different Wi-Fi networks, or the passphrase is not set. | Join the same Wi-Fi. Ask a council Admin to set the passphrase. |
+| Two laptops show different records. | One laptop worked alone for a while. | Practice from a fresh start, or keep using one laptop for that work. |
+
+### 21.3 Practice alone with a training account (Training Mode)
+> **Prerequisite (who can do this):** Everyone. No account of your own is needed.
+> **Warning:** everything in Training Mode is erased when the program starts again.
+
+**Goal:** Learn a role on practice records: ten practice members, three upcoming practice fundraisers and three training cash boxes.
+
+**Start point:** Start the desktop program.
+
+**Steps:**
+1. At the question *"Which records do you want to open?"*, select **Training (practice)**.
+2. Make sure the cobalt blue **Training Mode** banner shows at the top of the page.
+3. Under the sign-in card, find the **Training Profile Selection Board**.
+4. Select the role to practice. The program signs in at once.
+
+| Board button | Email | Password |
+| --- | --- | --- |
+| **Council Admin** | `admin@training` | `training` |
+| **Grand Knight** | `gk@training` | `training` |
+| **Financial Secretary** | `fs@training` | `training` |
+| **Treasurer** | `tr@training` | `training` |
+| **Recorder** | `rec@training` | `training` |
+| **Council Historian** | `hist@training` | `training` |
+| **Member** | `mem@training` | `training` |
+
+**Expected result:** The desks and sidebar of that role open on the practice records. The Council Admin account signs in without a sign-in code in Training Mode only.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The board is not shown. | The program opened Production or Testing. | Restart the program. Select **Training (practice)**. |
+| Yesterday's practice work is gone. | Training Mode starts fresh at every start. | No fix is needed. Use Testing Mode to keep practice work. |
+| A training email does not sign in on Production. | The training accounts exist only in Training Mode. | Restart in Training Mode. |
 
 ---
 
@@ -2845,19 +2918,20 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 1. Roles and access
 - 2. Module feature flags
 - 3. The Google Drive archive vault
-- 4. The feedback inbox and SOP publishing
+- 4. SOP publishing
 - 5. Lookup tables, service connections and global lists
 - 6. Data protection rules
 - 7. Troubleshooting reference
-- 8. Council Wide Settings and platform settings
-- 9. Access requests, impersonation and remote help
-- 10. Feedback loops and the Super Admin Desk
+- 8. Council Wide Settings
+- 9. View As Member and remote help
+- 10. Feedback loops
 - 11. Run a room pilot on the hub laptop
 - 12. Reset the database to the seed data
 - 13. Network addresses, ports and configuration keys
 - 14. Firewall clearance
 - 15. The software bill of materials (SBOM)
 - 16. The Admin Desk
+- 18. Testing and training sandboxes
 - Appendix: QR code files
 
 **Executive Governance Manual**
@@ -2882,6 +2956,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 18. Parish fundraiser split setup
 - 19. The global search bar
 - 20. The Navigation Guide screen
+- 21. Testing and training sandboxes
 
 **Financial Secretary Manual**
 
@@ -2896,6 +2971,7 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 9. Revenue split profiles
 - 10. Payment account ownership
 - 11. Budget categories and payment account names
+- 12. Testing and training sandboxes
 
 **Treasurer Manual**
 
@@ -2911,3 +2987,4 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 10. Batch coding and cash box audits
 - 11. Account ownership and parish-held revenue
 - 12. Split accounts, budget categories and payment account names
+- 13. Testing and training sandboxes

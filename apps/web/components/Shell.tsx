@@ -19,6 +19,7 @@ import { GlobalSearch } from '@/components/GlobalSearch';
 import { LegalFooter, LegalNoticePanel } from '@/components/LegalFooter';
 import { MemberAvatar } from '@/components/MemberAvatar';
 import { AccessRequestForm, RemoteAssistButton, ViewAsBanner } from '@/components/PlatformAccessParts';
+import { TrainingProfileBoard } from '@/components/TrainingProfileBoard';
 import { NAV, Sidebar } from '@/components/Sidebar';
 import { Button, cx, Field, Input, Notice, PasswordInput } from '@/components/ui';
 import { WorkspaceTabs } from '@/components/WorkspaceTabs';
@@ -489,6 +490,8 @@ function SignIn() {
   const page = (card: ReactNode) => (
     <div data-surface="navy" className="flex min-h-screen flex-col items-center justify-center bg-navy p-6">
       {card}
+      {/* Sprint 11 Revision 20.0: training mode lists the generic role accounts under the card. */}
+      {!notice && !twoFactor && !registering && !resetting ? <TrainingProfileBoard signIn={signIn} /> : null}
       <LegalFooter onOpen={setNotice} />
     </div>
   );

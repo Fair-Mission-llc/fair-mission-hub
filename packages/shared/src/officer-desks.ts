@@ -50,7 +50,7 @@
 // =========================================================================
 import type { CalendarEntry, SessionUser, ShiftFeedItem } from './contract';
 import { observancesBetween, liturgicalBanner, type Observance } from './liturgical';
-import type { FeatureFlags } from './features';
+import type { FeatureFlagName, FeatureFlags } from './features';
 import {
   type PortalArea,
   canOpenExpenseAuditDesk,
@@ -180,6 +180,44 @@ export const MEMBER_DESK_SECTIONS = [
   'My Motion Requests',
   'My open expense sheets',
 ] as const;
+
+/**
+ * Sprint 11 Revision 20.0: the Member Desk opens every module inside Left Vertical Action Drawers
+ * (apps/web/components/LeftActionDrawers.tsx), all closed on arrival, so the desk keeps its white space. Top to bottom:
+ * the member's roster profile, hours (the two shift trackers and the hour ledger), motion requests, Feedback Support
+ * (local-feedback.ts), charity requests and open expense sheets. The last three leave the desk while their council
+ * switch is off (MEMBER_DESK_DRAWER_FLAGS). MEMBER_DESK_SECTIONS still names the cards inside them.
+ */
+export type MemberDeskDrawerId = 'roster-profile' | 'hours' | 'motion-requests' | 'feedback-support' | 'charity-requests' | 'expense-sheets';
+
+export interface MemberDeskDrawer {
+  id: MemberDeskDrawerId;
+  label: string;
+  hint: string;
+}
+
+export const MEMBER_DESK_DRAWERS: readonly MemberDeskDrawer[] = [
+  { id: 'roster-profile', label: 'My Roster Profile', hint: 'Your roster card and the Roster & Achievements directory' },
+  { id: 'hours', label: 'My Hours & Shifts', hint: 'Open shifts, your coming shifts and your hour ledger' },
+  { id: 'motion-requests', label: 'My Motion Requests', hint: 'Ask to put a motion before the council and follow it' },
+  { id: 'feedback-support', label: 'Feedback Support', hint: "Send feedback to your council's Admins and follow your tickets" },
+  { id: 'charity-requests', label: 'My Charity Requests', hint: 'The grant requests you shepherd, step by step' },
+  { id: 'expense-sheets', label: 'My Open Expense Sheets', hint: 'Your expense sheets not yet paid' },
+];
+
+/** The council switch each optional Member Desk drawer follows. */
+export const MEMBER_DESK_DRAWER_FLAGS: Partial<Record<MemberDeskDrawerId, FeatureFlagName>> = {
+  'motion-requests': 'flag_motion_requests',
+  'charity-requests': 'flag_charity_proposals',
+  'expense-sheets': 'feature_expense_reporting',
+};
+
+/** The Member Desk drawers a council's switches leave on the desk, in order. */
+export const memberDeskDrawersFor = (flags: FeatureFlags): MemberDeskDrawer[] =>
+  MEMBER_DESK_DRAWERS.filter((d) => {
+    const flag = MEMBER_DESK_DRAWER_FLAGS[d.id];
+    return flag === undefined || flags[flag];
+  });
 
 /** The Home card over the council's open prayer intentions (Sprint 8L). */
 export const COMMUNITY_PRAYER_CARD_TITLE = 'Community Prayer Request List';
