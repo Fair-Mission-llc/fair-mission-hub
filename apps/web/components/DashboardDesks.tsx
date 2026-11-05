@@ -1184,10 +1184,13 @@ export function MemberDesk({ user }: { user: SessionUser }) {
       </div>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         {flags.flag_charity_proposals ? <MyCharityRequestsCard user={user} /> : null}
-        {/* Sprint 11 Revision 18.0: the member's own motion requests and the form to send one. */}
-        <DeskRow id="member-motion-requests" label={MY_MOTION_REQUESTS_TITLE}>
-          <MyMotionRequestsPanel user={user} />
-        </DeskRow>
+        {/* Sprint 11 Revision 18.0: the member's own motion requests and the form to send one. Sprint 11 Revision 19.5: it
+            leaves the desk while the council's Meeting management switch (which carries Motion Requests) is off. */}
+        {flags.flag_meeting_management ? (
+          <DeskRow id="member-motion-requests" label={MY_MOTION_REQUESTS_TITLE}>
+            <MyMotionRequestsPanel user={user} />
+          </DeskRow>
+        ) : null}
         {/* Sprint 11 Revision 18.5: the expense card leaves the desk while Expense Reporting is off. */}
         {flags.feature_expense_reporting ? (
         <DeskRow id={DESK_FOCUS_TARGETS.mine.rowId} label="My open expense sheets">
@@ -1893,7 +1896,7 @@ function OralHistories({ user, councilId }: { user: SessionUser; councilId: numb
       <p className="text-xs text-muted">
         Recordings are filed in Google Drive under Oral Histories. Each member records one.{' '}
         <Link href="/history" className="font-bold underline">
-          Open Historical Chronology
+          Open Fraternal Annals &amp; Oral History
         </Link>
       </p>
     </section>

@@ -67,7 +67,7 @@ describe('2. core systems and the new switches (pure)', () => {
     expect(FEATURE_FLAG_AREAS.feature_advanced_audits).toEqual(['finance/audit']);
     expect(FEATURE_FLAG_AREAS.feature_capital_assets).not.toContain('inventory/loaner-library');
     expect(FEATURE_FLAG_AREAS.feature_document_compilation).not.toContain('resources/marketing');
-    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe('Historical Chronology');
+    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe('[ 📜 Fraternal Annals & Oral History ]');
     for (const name of REV80_FEATURE_FLAGS) {
       const full = portalAreas(superAdmin, ALL_FEATURES_ON);
       const masked = portalAreas(superAdmin, off(name));

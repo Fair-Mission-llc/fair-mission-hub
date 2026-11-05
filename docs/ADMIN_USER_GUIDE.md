@@ -103,6 +103,14 @@ The navy header shows your own council, your name, your member type and your off
 - The Faith In Action link and the page title read **Motion Request**. The member's own requests are in **My Motion Requests** at the bottom of the page and on the **Member Desk**.
 - Sidebar links show plain words only, with no icons and no brackets. A long name ends in "…".
 - **Activities** and **Meeting Center** list their rows in full-width tables. Each table has a search box and shows 15 rows per page.
+- The sidebar stays in place when you scroll a page. A long sidebar scrolls on its own. The left rail of each desk (the **Admin Desk** drawers and the folder list of each officer desk) also stays in place while the panel on the right scrolls. The open drawer keeps a gold and navy border, so you always see which drawer you work in.
+- The **Master Feature Deployment Grid** groups the councils by parent organization. Select a parent organization tab above the grid to show only its councils. Each module row has an **Every council in** column that turns the module on or off for all councils of that parent organization at once (2.2). A new parent organization shows as a tab when the first council with that parent organization is on file.
+- When a Super Admin has councils of more than one parent organization, the **Council** list on the lookup and settings pages groups the councils under their parent organization.
+- **Motion Request** follows the council's **Meeting management** switch. When the switch is off, the Faith In Action link, the **My Motion Requests** panel on the **Member Desk** and the **Motion Requests** drawer of the **Grand Knight Desk** are hidden.
+- A council Admin's sidebar no longer repeats the **Admin Desk** drawers. **Council Wide Settings**, **Council Lookups**, **Secure Access Vault**, **Global Charities Registry** and **Council Asset Management** open from the **Admin Desk**. The **Navigation Guide** still lists them. Super Admins keep every link.
+- **Historical Chronology** is again **Fraternal Annals & Oral History**: the sidebar link, the page title and the module switch (**[ 📜 Fraternal Annals & Oral History ]**).
+- The **'How Do I...' Local Help Search** ranks answers by keyword weight. It ignores filler words such as *how*, *please* and *I want to*, matches word forms (*submitted* finds *submit*) and puts tasks with the keyword in the title first.
+- In the Form 1728 popup, the list of every line shows 12 rows (it showed 6). When no suggestion is at least 60% sure, no line is selected. Choose a line before you select **Confirm line and save**. The **Activities** grid of **Council Lookup Tables** shows the Form 1728 line of each row.
 
 ---
 
@@ -120,12 +128,12 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `flag_mobile_elections` | **Officer elections** | Council Election Center, Appointed Leadership Matrix | None |
 | `flag_fundraising_inflow` | **Fundraising inflow** | Donations History | **Collect** |
 | `flag_charity_proposals` | **Charity proposals** | Propose Charity Grant, Charity Vetting Queue, Charity Check Issuance (the Charitable Grants Registry drawers) | None |
-| `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console | **Mtgs** |
+| `flag_meeting_management` | **Meeting management** | Meeting Center, Recurring Meetings, Live Meeting Console, Motion Request, the **My Motion Requests** panel and the **Motion Requests** drawer of the **Grand Knight Desk** | **Mtgs** |
 | `feature_expense_reporting` | **Expense reporting** | My Expense Reports, Leadership Auditing Queue, FS Expense Audit Queue, Treasurer Ledger Audit, GK Expense Authorize, Disbursed Check Registry | The expense screen and the **Expense reports** card on **Home** |
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
-| `feature_council_history` | **Historical Chronology** | Council history (Team Legacy), the **Fraternal Diary Entry Logs** and **Oral History Recordings** drawers of the **Historian Desk** | None |
+| `feature_council_history` | **[ 📜 Fraternal Annals & Oral History ]** | Council history (Team Legacy), the **Fraternal Diary Entry Logs** and **Oral History Recordings** drawers of the **Historian Desk** | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
 | `feature_capital_assets` | **Capital asset tracking** | Council Asset Management, the **Council Asset Management** drawer of the **Admin Desk** | The **Council assets** button and screen |
 | `feature_charity_registry` | **Global charity registry** | Global Charities Registry, the **Global Charities Registry** drawer of the **Admin Desk** | None |
@@ -156,10 +164,11 @@ The council's custom manuals follow the flags too. When an Admin prints a counci
 **Start point:** Sidebar → System Settings → **Master Feature Deployment Grid**. The address `/super-admin` opens the same grid.
 
 **Steps:**
-1. Find the row of the module. The rows are in two groups: **Lightweight footprint** and **Premium modules**. Each row shows the label, the flag column and the pages the flag hides.
-2. Find the column of the council. Each column shows the council number and how many modules are on.
-3. Clear the box to hide the module. Select the box to show the module.
-4. To put a council back to the lightweight footprint, select **Lightweight** under the council number.
+1. Select the parent organization tab above the grid, for example **Knights of Columbus council**. The tab shows how many councils it has. The grid shows only the councils of that parent organization.
+2. Find the row of the module. The rows are in two groups: **Core systems (always on)** and **Premium modules**. Each row shows the label, the flag column and the pages the flag hides.
+3. To change one council, find the column of the council. Each column shows the council number and how many modules are on. Clear the box to hide the module. Select the box to show the module.
+4. To change every council of the parent organization, use the box in the **Every council in** column. A row with some councils on shows, for example, *2 of 5* under the box.
+5. To put a council back to the lightweight footprint, select **Lightweight** under the council number.
 
 **Expected result:** The platform saves each switch at once. Members of the council see the change the next time each page loads.
 
@@ -169,6 +178,7 @@ The council's custom manuals follow the flags too. When an Admin prints a counci
 | A member still sees a phone tab. | The phone read the flags before the change. | Ask the member to sign out and sign in again. |
 | *"… is not a feature flag"* | The request named an unknown flag. | Use one of the sixteen flags in 2.1. |
 | *"… is switched off for this council."* | A premium module is off. | Ask a Super Admin to turn it on in the **Master Feature Deployment Grid**. |
+| A council is not in the grid. | The grid shows one parent organization at a time. | Select the tab of the council's parent organization. |
 
 ---
 

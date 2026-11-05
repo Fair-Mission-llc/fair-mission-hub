@@ -94,6 +94,9 @@ export function Form1728Preview({
   );
 }
 
+/** Sprint 11 Revision 19.5: the rows the popup's 'choose any line' list shows at once (doubled from 6). */
+export const FORM_1728_LIST_ROWS = 12;
+
 /**
  * The suggestion popup. Opens over the event form when the officer saves; Esc, Cancel or the backdrop close it without
  * saving. `initial` is the line already stored on the event, if any.
@@ -124,9 +127,9 @@ export function Form1728SuggestionDialog({
     [title, description, context, report, cutoff],
   );
   const best = suggestions[0];
-  const [chosen, setChosen] = useState<Form1728LineCode>(
-    isForm1728LineCode(initial) ? initial : (best?.code ?? resolveForm1728Line(null, title, description, context).code),
-  );
+  // Sprint 11 Revision 19.5: when no suggestion clears the cutoff, nothing is preselected - no fallback line is
+  // highlighted, and the officer must pick a line before Confirm is enabled.
+  const [chosen, setChosen] = useState<Form1728LineCode | null>(isForm1728LineCode(initial) ? initial : (best?.code ?? null));
   // The cutoff arrives after the first render; pick the new best card unless the officer already chose a line.
   const touched = useRef(false);
   useEffect(() => {
@@ -143,7 +146,7 @@ export function Form1728SuggestionDialog({
     if (dialog && !dialog.open) dialog.showModal();
     return () => dialog?.close();
   }, []);
-  const picked = form1728Line(chosen);
+  const picked = chosen ? form1728Line(chosen) : null;
   return (
     <dialog
       ref={ref}
@@ -206,12 +209,15 @@ export function Form1728SuggestionDialog({
             Or choose any line
           </label>
           <Input id="form-1728-search" type="search" placeholder="Search, e.g. rosary, Life, blood" value={query} onChange={(e) => setQuery(e.target.value)} />
+          {/* Sprint 11 Revision 19.5: twice the old height (12 rows, was 6). */}
           <select
             aria-label="Every Form 1728 line"
-            size={6}
+            size={FORM_1728_LIST_ROWS}
             className="w-full rounded border border-line bg-white p-1 text-sm"
-            value={chosen}
-            onChange={(e) => choose(e.target.value as Form1728LineCode)}
+            value={chosen ?? ''}
+            onChange={(e) => {
+              if (isForm1728LineCode(e.target.value)) choose(e.target.value);
+            }}
           >
             {(matches.length > 0 ? matches : FORM_1728_LINES).map((l) => (
               <option key={l.code} value={l.code}>
@@ -223,15 +229,21 @@ export function Form1728SuggestionDialog({
         </div>
         <p className="text-sm">
           Selected:{' '}
-          <span className="font-bold">
-            {picked.section} line {picked.line} · {picked.label}
-          </span>
+          {picked ? (
+            <span className="font-bold">
+              {picked.section} line {picked.line} · {picked.label}
+            </span>
+          ) : (
+            <span className="text-muted">No line yet. Choose one above.</span>
+          )}
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
-          <Button onClick={() => onConfirm(chosen)}>Confirm line and save</Button>
+          <Button disabled={!chosen} onClick={() => chosen && onConfirm(chosen)}>
+            Confirm line and save
+          </Button>
         </div>
       </div>
     </dialog>

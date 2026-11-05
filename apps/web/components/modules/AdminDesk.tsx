@@ -301,7 +301,8 @@ export function AdminDesk({ embedded = false }: { embedded?: boolean } = {}) {
         <StaticTopDeck />
       </EmbeddedModuleContext.Provider>
       <div className="mt-4 grid items-start gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <nav aria-label="Admin Desk drawers" className="flex flex-col gap-2">
+        {/* Sprint 11 Revision 19.5: the rail stays in place (desk-rail-lock) and the open drawer keeps its active border. */}
+        <nav aria-label="Admin Desk drawers" className="desk-rail-lock flex flex-col gap-2 py-1">
           {drawers.map((d, i) => {
             const here = d.id === open;
             return (
@@ -310,11 +311,13 @@ export function AdminDesk({ embedded = false }: { embedded?: boolean } = {}) {
                 type="button"
                 id={`admin-desk-drawer-${d.id}`}
                 aria-expanded={here}
+                aria-current={here ? 'true' : undefined}
                 aria-controls="admin-desk-panel"
+                data-drawer-state={here ? 'open' : 'closed'}
                 onClick={() => setOpen(here ? null : d.id)}
                 className={cx(
                   'flex w-full flex-col gap-0.5 rounded border-2 border-navy border-l-8 px-3 py-2 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
-                  here ? 'border-l-gold bg-navy text-white' : 'border-l-gold bg-white text-navy hover:bg-gold/20',
+                  here ? 'drawer-context-active border-l-gold bg-navy text-white' : 'border-l-gold bg-white text-navy hover:bg-gold/20',
                 )}
               >
                 <span className="flex items-center justify-between gap-2 font-serif text-base font-bold">

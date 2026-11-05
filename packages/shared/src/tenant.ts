@@ -53,6 +53,49 @@ export function councilParentOrganization(
   return parentOrganizationForTenant(tenantFromTenantType(council?.tenant_type));
 }
 
+// ---- Parent organization nodes (Sprint 11 Revision 19.5, schema 111 unchanged) -------------------------------------
+// The Super Admin screens that span councils (the Master Feature Deployment Grid, the council pickers of the lookup and
+// settings pages) group councils under their parent organization. The nodes are read from the council rows themselves,
+// so a parent organization appears as soon as a council carries it, with no fixed list to edit: the known ones first
+// (PARENT_ORGANIZATIONS order), then any other stored value, A to Z. Grouping is for display only; access still goes
+// through councilParentOrganization, so an unknown value never unlocks the fraternal extensions.
+
+export interface ParentOrganizationNode {
+  /** The stored parent_organization value ('KofC', 'SECULAR_CHARITY' or another), or the one tenant_type implies. */
+  id: string;
+  label: string;
+  /** The council ids under this node, in the order given. */
+  councilIds: number[];
+}
+
+/** The node key of one council row: its parent_organization as stored ('kofc' in any case is 'KofC'), else tenant_type's. */
+export function parentOrganizationNodeId(council: Partial<Pick<Council, 'tenant_type' | 'parent_organization'>> | null | undefined): string {
+  const raw = council?.parent_organization;
+  if (isBlank(raw)) return councilParentOrganization(council);
+  const text = String(raw).trim();
+  const known = PARENT_ORGANIZATIONS.find((p) => p.toUpperCase() === text.toUpperCase());
+  return known ?? text;
+}
+
+/** The label of a node id: the known label, or the stored value itself. */
+export const parentOrganizationNodeLabel = (id: string): string => (PARENT_ORGANIZATION_LABELS as Record<string, string>)[id] ?? id;
+
+/** The parent organization nodes of these councils: only nodes with at least one council, known ones first. */
+export function parentOrganizationNodes(councils: readonly (Pick<Council, 'id'> & Partial<Pick<Council, 'tenant_type' | 'parent_organization'>>)[]): ParentOrganizationNode[] {
+  const byId = new Map<string, number[]>();
+  for (const c of councils) {
+    const id = parentOrganizationNodeId(c);
+    byId.set(id, [...(byId.get(id) ?? []), c.id]);
+  }
+  const rank = (id: string) => {
+    const at = (PARENT_ORGANIZATIONS as readonly string[]).indexOf(id);
+    return at < 0 ? PARENT_ORGANIZATIONS.length : at;
+  };
+  return [...byId.entries()]
+    .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
+    .map(([id, councilIds]) => ({ id, label: parentOrganizationNodeLabel(id), councilIds }));
+}
+
 /** A parent organization a Super Admin may save: exactly 'KofC' or 'SECULAR_CHARITY', ignoring case. */
 export function cleanParentOrganization(value: unknown): ParentOrganization {
   const text = typeof value === 'string' ? value.trim().toUpperCase() : '';

@@ -24,6 +24,7 @@
 - [9. Revenue split profiles](#9-revenue-split-profiles)
 - [10. Payment account ownership](#10-payment-account-ownership)
 - [11. Budget categories and payment account names](#11-budget-categories-and-payment-account-names)
+- Appendix A: Cross-Entity Joint-Event Settlement Guide
 - [Manual map](#manual-map)
 
 ### How to read a tutorial
@@ -172,6 +173,7 @@ Seated officers and Admins read the three pages. Only the FS, the Treasurer and 
 2. To transfer: select **Transfer Funds**. Choose two asset accounts. Enter the amount. Select **Post transfer**. The button is also on the **General Ledger** page and in its Treasurer Desk folder.
 3. To add an account: open Sidebar → Finances → **FINANCIAL REPORTS** → **General Ledger**. Select **Add Account**. Enter the **Account name** and choose the **Account type** (Assets, Liabilities, Revenue or Expenses). Select **Add Account**.
 4. To change an account: select **Edit** on its row. Change the name, or the type of an unused account. Select **Save account**.
+   To split a Revenue account (Treasurer and Super Admins only): turn on **Split Revenue** in the drawer. For each share, choose **Internal Ledger Account** or **Affiliated Sister Council**, choose the destination, and enter the percentage. The shares must total 100. Turn the toggle off and save to end a split.
 5. To delete an account: select **Delete** on its row. Confirm. Only an account with no postings, sub-accounts or links can be deleted.
 6. To reconcile: open **Active Desks** → **Treasurer Desk** → **Bank Statement Match-Window**. Upload the bank CSV file. The Financial Dashboard has no bank statement table.
 7. Read the matched rows and the unmatched rows.
@@ -1261,6 +1263,16 @@ A table under the charts lists each category with its figures. The first eight c
 
 ---
 
+## Appendix A: Cross-Entity Joint-Event Settlement Guide
+
+When the local council executes a joint fundraising event with an affiliated sister council (e.g., Council 1024), but processes electronic payments using parish-owned digital infrastructure (Venmo, Zelle, Zeffy, Parishsoft), the Financial Secretary must enforce the following data-tier validation checks before endorsing an order voucher:
+
+1. Verification of the Ingestion Source: Confirm that all electronic intake rows from the event are cleanly mapped to the specialized joint-event revenue category row in the ledger, verifiably indicating a 0.00% allocation setting for the parish.
+2. Order Voucher Isolation: The Financial Secretary must issue a standard expense order voucher for exactly 50.00% of the combined gross event intake pool (Cash + Electronic) made out directly to the participating sister council. 
+3. Evidentiary Chain-of-Custody: The physical order voucher must cross-reference the unique Event ID and contain the signed cash bag witness signatures from the pavement reconciliation log before being forwarded to the Treasurer for check layout coding.
+
+---
+
 ## Manual map
 
 The chapters of the four officer manuals. A shared task is printed in each manual that lists its chapter.
@@ -1336,3 +1348,4 @@ The chapters of the four officer manuals. A shared task is printed in each manua
 - 10. Batch coding and cash box audits
 - 11. Account ownership and parish-held revenue
 - 12. Split accounts, budget categories and payment account names
+

@@ -98,6 +98,12 @@ export const COUNCIL_15295_SEED_FLAGS: FeatureFlags = {
   ...Object.fromEntries(COUNCIL_15295_SEED_OFF_FLAGS.map((k) => [k, false])),
 };
 
+/**
+ * Sprint 11 Revision 19.5: the council history page (/history) and its switch read '[ 📜 Fraternal Annals & Oral History ]'
+ * again, in place of 'Historical Chronology'. The sidebar and page titles draw it as plain words (plainTitle).
+ */
+export const FRATERNAL_ANNALS_TITLE = '[ 📜 Fraternal Annals & Oral History ]';
+
 /** Sprint 11 Revision 7.0: the Super Admin page's title (/feature-flags and /super-admin). */
 export const MASTER_FEATURE_GRID_TITLE = 'Master Feature Deployment Grid';
 
@@ -130,7 +136,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
     hint: 'Recorded donations, the phone app Collect tab: event point-of-sale, card and QR collections, gate intake drawers',
   },
   flag_charity_proposals: { label: 'Charity proposals', hint: 'Member charity grant proposals, the vetting desk that tracks them and the charity check drawers' },
-  flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager and the phone app Meetings tab' },
+  flag_meeting_management: { label: 'Meeting management', hint: 'Meeting center, cadence manager, Motion Requests and the phone app Meetings tab' },
   feature_expense_reporting: {
     label: 'Expense reporting',
     hint: 'Member expense reports, the FS, Treasurer and GK signature desks, check payments made and the phone app expense screen',
@@ -142,7 +148,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   feature_constitutional_advisor: { label: 'Constitutional Advisor', hint: 'The parliamentary question desk that cites the bylaws' },
   feature_council_bylaws: { label: 'Council bylaws', hint: "The council's constitutional bylaws page" },
   feature_council_history: {
-    label: 'Historical Chronology',
+    label: FRATERNAL_ANNALS_TITLE,
     hint: "The Team Legacy history page (annals, diary, oral histories, In Memoriam) and the Historian Desk's diary and oral history drawers",
   },
   feature_live_meeting_console: { label: 'Live meeting console', hint: 'The live meeting console: agenda, check-ins, secret ballots and hand tallies' },
@@ -181,7 +187,9 @@ export const FEATURE_FLAG_AREAS: Record<FeatureFlagName, readonly PortalArea[]> 
   // Sprint 11 Revision 18.5: the Charitable Contribution module - proposals, vetting and the FS / Treasurer charity check
   // drawers (charities/queue), so no charity workflow row is left on any desk while it is off.
   flag_charity_proposals: ['charities/propose', 'charities/vetting', 'charities/queue'],
-  flag_meeting_management: ['meetings', 'meetings/cadence', 'meetings/live'],
+  // Sprint 11 Revision 19.5: Motion Requests (motion-requests.ts) ride this per-council switch - a motion is asked for a
+  // meeting agenda - so the page, the Faith In Action link and the Grand Knight's drawer hide with it (schema 111 kept).
+  flag_meeting_management: ['meetings', 'meetings/cadence', 'meetings/live', 'motion-requests'],
   // The Treasurer's desk codes expense sheets, so it goes with them; the general ledger and the budget stay.
   feature_expense_reporting: ['expenses', 'expenses/queue', 'expenses/audit', 'expenses/authorize', 'expenses/disbursements', 'finance/treasurer-desk'],
   feature_faith_center: ['faith-center'],

@@ -342,7 +342,7 @@ function FraternalYearSimulator({ data, onDone }: { data: DeskData; onDone: () =
               Fraternal year concluded. {result.rotated ? 'The chairs rotated' : 'No chairs moved'}; new terms start in {result.fraternalYear}, and{' '}
               {result.ballotsReset} ballot switch{result.ballotsReset === 1 ? ' was' : 'es were'} cleared. The {result.closingMetrics.fraternalYear} closing
               metrics ({result.closingMetrics.volunteerHours.total} volunteer hours, {result.closingMetrics.officers.length} officer terms) are saved in that
-              year&apos;s Historical Chronology annals.
+              year&apos;s Fraternal Annals &amp; Oral History.
             </Notice>
             {result.changes.length ? <ConclusionSummary result={result} names={namesAtRun} /> : null}
           </div>

@@ -266,41 +266,163 @@ export const plainDocText = (text: string): string =>
     .map((s) => s.text)
     .join('');
 
-const SEARCH_STOPWORDS = new Set(['a', 'an', 'and', 'are', 'can', 'do', 'for', 'how', 'i', 'in', 'is', 'it', 'my', 'of', 'on', 'or', 'the', 'to', 'what', 'where', 'with']);
+// ---- Sprint 11 Revision 19.5: the keyword TF-IDF ranker -------------------------------------------------------------
+// The 'How do I...' searches (the Help Desk, each desk's manual search) rank task workflows by keyword weight, not by
+// literal text. A query is normalized (normalizeSearchText), stripped of conversational filler (SEARCH_STOPWORDS) and
+// cut to its operational tokens ('expense', 'report', 'submit'). Each token scores by how often it appears in a task
+// section (term frequency), how rare it is across the manual (inverse document frequency) and how much that section
+// weighs (GUIDE_SECTION_WEIGHTS: the title most, the steps least). A task that matches more tokens always ranks first.
 
-/** The keywords of a search: lower-case words of two letters or more, without filler words such as 'how' or 'the'. */
-export const guideSearchTerms = (query: string): string[] =>
-  [...new Set(query.toLowerCase().match(/[a-z0-9]+/g) ?? [])].filter((w) => w.length >= 2 && !SEARCH_STOPWORDS.has(w));
+/** Conversational filler that carries no task meaning: question words, pronouns, polite phrases and helper verbs. */
+export const SEARCH_STOPWORDS: ReadonlySet<string> = new Set([
+  'a', 'about', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'been', 'but', 'by', 'can', 'could', 'did', 'do',
+  'does', 'doing', 'for', 'from', 'get', 'go', 'going', 'got', 'had', 'has', 'have', 'hello', 'help', 'hey', 'hi', 'how',
+  'i', 'id', 'if', 'im', 'in', 'into', 'is', 'it', 'its', 'just', 'know', 'let', 'like', 'me', 'might', 'must', 'my',
+  'need', 'needs', 'no', 'not', 'now', 'of', 'off', 'ok', 'okay', 'on', 'one', 'or', 'our', 'please', 'should', 'so',
+  'some', 'someone', 'something', 'than', 'thank', 'thanks', 'that', 'the', 'their', 'them', 'then', 'there', 'these',
+  'they', 'this', 'those', 'to', 'trying', 'try', 'us', 'very', 'want', 'wanted', 'wants', 'was', 'way', 'we', 'were',
+  'what', 'when', 'where', 'which', 'who', 'whom', 'why', 'will', 'with', 'would', 'you', 'your',
+]);
+
+/** How much a keyword found in each part of a task counts. */
+export const GUIDE_SECTION_WEIGHTS = { title: 6, chapter: 3, goal: 3, startPoint: 2, body: 1 } as const;
+
+const CP1252_BYTES: Record<string, number> = {
+  '€': 0x80, '‚': 0x82, 'ƒ': 0x83, '„': 0x84, '…': 0x85, '†': 0x86, '‡': 0x87, 'ˆ': 0x88, '‰': 0x89, 'Š': 0x8a, '‹': 0x8b,
+  'Œ': 0x8c, 'Ž': 0x8e, '‘': 0x91, '’': 0x92, '“': 0x93, '”': 0x94, '•': 0x95, '–': 0x96, '—': 0x97, '˜': 0x98, '™': 0x99,
+  'š': 0x9a, '›': 0x9b, 'œ': 0x9c, 'ž': 0x9e, 'Ÿ': 0x9f,
+};
+
+/** One pass of undoing UTF-8 text that was decoded as Windows-1252 ('â€”' -> '—'); the text unchanged when it is clean. */
+function undoMojibakePass(text: string): string {
+  if (!/[Â-ô][\u0080-¿Œ-™]/.test(text)) return text;
+  // Each run of high Windows-1252 characters is repaired on its own, so a real 'é' elsewhere in the text is kept.
+  return text.replace(/[\u0080-ÿŒ-™]+/g, (run) => {
+    const bytes: number[] = [];
+    for (const ch of run) {
+      const code = ch.codePointAt(0)!;
+      if (code < 0x100) bytes.push(code);
+      else if (CP1252_BYTES[ch] !== undefined) bytes.push(CP1252_BYTES[ch]);
+      else return run; // a real character outside Windows-1252: this run was not double-decoded
+    }
+    return decodeUtf8Strict(bytes) ?? run;
+  });
+}
+
+/** Strict UTF-8 decoding without platform APIs (the phone app shares this file); null on any invalid sequence. */
+function decodeUtf8Strict(bytes: readonly number[]): string | null {
+  let out = '';
+  for (let i = 0; i < bytes.length; ) {
+    const b = bytes[i]!;
+    const len = b < 0x80 ? 1 : b >= 0xc2 && b <= 0xdf ? 2 : b >= 0xe0 && b <= 0xef ? 3 : b >= 0xf0 && b <= 0xf4 ? 4 : 0;
+    if (len === 0 || i + len > bytes.length) return null;
+    let code = len === 1 ? b : b & (0xff >> (len + 1));
+    for (let k = 1; k < len; k += 1) {
+      const c = bytes[i + k]!;
+      if ((c & 0xc0) !== 0x80) return null;
+      code = (code << 6) | (c & 0x3f);
+    }
+    if ((len === 3 && code < 0x800) || (len === 4 && (code < 0x10000 || code > 0x10ffff)) || (code >= 0xd800 && code <= 0xdfff)) return null;
+    out += String.fromCodePoint(code);
+    i += len;
+  }
+  return out;
+}
 
 /**
- * The tasks that match a member's keywords, best match first. A keyword in the title counts most, then the goal, the
- * start point, and last the steps, expected result and problems. A word matches the start of a word ('expense' finds
- * 'expenses'). A query with no keywords matches nothing.
+ * Search text in one canonical form: double-decoded characters repaired (up to three layers deep), Unicode compatibility
+ * forms folded (NFKC), accents dropped ('Café' -> 'cafe'), curly quotes and dashes made plain, and lower case.
+ */
+export function normalizeSearchText(text: string): string {
+  let out = text;
+  for (let i = 0; i < 3; i += 1) {
+    const next = undoMojibakePass(out);
+    if (next === out) break;
+    out = next;
+  }
+  return out
+    .normalize('NFKC')
+    .normalize('NFD')
+    .replace(/\p{M}+/gu, '')
+    .replace(/[‘’ʼ`´]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[‐-―]/g, '-')
+    .replace(/'/g, '')
+    .toLowerCase();
+}
+
+/** The words of a text after normalization: runs of letters and digits. */
+const searchWords = (text: string): string[] => normalizeSearchText(text).match(/[a-z0-9]+/g) ?? [];
+
+/**
+ * A light stem, so 'submitted', 'submitting' and 'submits' all reduce to 'submit' and 'expenses' to 'expens'. Words of
+ * four letters or fewer are kept whole.
+ */
+export function stemSearchToken(word: string): string {
+  if (word.length <= 4) return word;
+  let w = word;
+  if (w.endsWith('ies') && w.length > 5) w = `${w.slice(0, -3)}y`;
+  else if (/(?:ing|ed)$/.test(w) && w.length > 5) {
+    w = w.replace(/(?:ing|ed)$/, '');
+    if (/([b-df-hj-np-tv-z])\1$/.test(w)) w = w.slice(0, -1);
+  } else if (w.endsWith('es') && w.length > 5) w = w.slice(0, -2);
+  else if (w.endsWith('s') && !w.endsWith('ss')) w = w.slice(0, -1);
+  return w;
+}
+
+/** The keywords of a search: normalized words of two letters or more, without filler words such as 'how' or 'the'. */
+export const guideSearchTerms = (query: string): string[] =>
+  [...new Set(searchWords(query))].filter((w) => w.length >= 2 && !SEARCH_STOPWORDS.has(w));
+
+/** Whether a document word answers a query token: it starts with the token ('activit') or shares its stem. */
+const wordMatches = (word: string, term: string, termStem: string) => word.startsWith(term) || word.startsWith(termStem);
+
+/**
+ * The tasks that match a member's keywords, best match first, ranked by TF-IDF with section weights. A task that matches
+ * more keywords always outranks one that matches fewer; within that, the weighted TF-IDF score decides, then document
+ * order. A query with no keywords matches nothing.
  */
 export function searchGuideTasks(tasks: readonly GuideTask[], query: string): GuideTask[] {
   const terms = guideSearchTerms(query);
   if (terms.length === 0) return [];
-  const words = (text: string) => plainDocText(text).toLowerCase().match(/[a-z0-9]+/g) ?? [];
-  const scored = tasks.map((task, index) => {
-    const fields: [string[], number][] = [
-      [words(`${task.title} ${task.chapter}`), 6],
-      [words(task.goal), 3],
-      [words(task.startPoint), 2],
-      [words([...task.steps, task.expected, ...task.problems.flatMap((p) => [p.problem, p.cause, p.fix])].join(' ')), 1],
+  const stems = terms.map(stemSearchToken);
+  const sections = tasks.map((task) => {
+    const out: [string[], number][] = [
+      [searchWords(plainDocText(task.title)), GUIDE_SECTION_WEIGHTS.title],
+      [searchWords(plainDocText(task.chapter)), GUIDE_SECTION_WEIGHTS.chapter],
+      [searchWords(plainDocText(task.goal)), GUIDE_SECTION_WEIGHTS.goal],
+      [searchWords(plainDocText(task.startPoint)), GUIDE_SECTION_WEIGHTS.startPoint],
+      [
+        searchWords(plainDocText([...task.steps, task.expected, ...task.problems.flatMap((p) => [p.problem, p.cause, p.fix])].join(' '))),
+        GUIDE_SECTION_WEIGHTS.body,
+      ],
     ];
-    let score = 0;
+    return out;
+  });
+  // Term frequency of each keyword in each section of each task.
+  const counts = sections.map((fields) => terms.map((term, t) => fields.map(([ws]) => ws.filter((w) => wordMatches(w, term, stems[t])).length)));
+  // Inverse document frequency: a keyword in few tasks counts for more than one in most of them.
+  const n = tasks.length;
+  const idf = terms.map((_, t) => {
+    const df = counts.filter((perTerm) => perTerm[t].some((c) => c > 0)).length;
+    return df === 0 ? 0 : Math.log(1 + n / df);
+  });
+  const scored = tasks.map((task, index) => {
     let matched = 0;
-    for (const term of terms) {
-      const best = Math.max(0, ...fields.map(([ws, weight]) => (ws.some((w) => w.startsWith(term)) ? weight : 0)));
-      if (best > 0) matched += 1;
-      score += best;
-    }
-    // Every keyword found outranks a higher score from fewer keywords.
-    return { task, index, rank: matched * 100 + score };
+    let score = 0;
+    terms.forEach((_, t) => {
+      const perSection = counts[index][t];
+      if (!perSection.some((c) => c > 0)) return;
+      matched += 1;
+      // Sublinear term frequency per section, weighted by the section, summed, times the keyword's rarity.
+      const weighted = perSection.reduce((sum, c, s) => sum + (c > 0 ? (1 + Math.log(c)) * sections[index][s][1] : 0), 0);
+      score += idf[t] * weighted;
+    });
+    return { task, index, matched, score };
   });
   return scored
-    .filter((s) => s.rank > 0)
-    .sort((a, b) => b.rank - a.rank || a.index - b.index)
+    .filter((s) => s.matched > 0)
+    .sort((a, b) => b.matched - a.matched || b.score - a.score || a.index - b.index)
     .map((s) => s.task);
 }
 

@@ -259,7 +259,7 @@ const ELECTION_SUMMARY = 'The ballot, May nominations, the June vote and the Jul
 export const DESK_DRAWERS: readonly DeskDrawerSpec[] = [
   // ---- Grand Knight Desk (and the Deputy's)
   { desk: 'grand-knight', id: 'approved-expenses', title: 'Approved Expenses', summary: 'Counter-sign and release sheets for payment', area: 'expenses/authorize', rowId: DESK_FOCUS_TARGETS.vouchers.rowId, alerts: true },
-  { desk: 'grand-knight', id: 'motion-requests', title: MOTION_REQUESTS_TITLE, summary: 'Approve or deny the motions members ask to bring to the council', gate: 'grand-knight-seat', rowId: 'drawer-gk-motion-requests', alerts: true },
+  { desk: 'grand-knight', id: 'motion-requests', title: MOTION_REQUESTS_TITLE, summary: 'Approve or deny the motions members ask to bring to the council', area: 'motion-requests', gate: 'grand-knight-seat', rowId: 'drawer-gk-motion-requests', alerts: true },
   { desk: 'grand-knight', id: 'flagged-hours', title: 'Flagged Hours Review', summary: 'Approve or reject time entries held for review', gate: 'quarantine', rowId: DESK_FOCUS_TARGETS.quarantine.rowId, alerts: true },
   { desk: 'grand-knight', id: 'shifts-awaiting-hours', title: 'Shifts Awaiting Hours', summary: 'Volunteers who served but have not logged time', gate: 'executive-audits', rowId: DESK_FOCUS_TARGETS.hours.rowId, alerts: true },
   // Sprint 10 Revision 1.0: the Inbound Council Mail Center drawer left this desk; access requests live only on Super Admin Desk.

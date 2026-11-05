@@ -87,7 +87,24 @@ export const adminDeskDrawersFor = (flags: FeatureFlags): AdminDeskDrawer[] =>
     return flag === undefined || flags[flag];
   });
 
-export const isAdminDeskDrawerId = (value: unknown): value is AdminDeskDrawerId => ADMIN_DESK_DRAWERS.some((d) => d.id === value);
+/**
+ * Sprint 11 Revision 19.5: the sidebar links that only repeat an Admin Desk drawer (the drawer opens the same module in
+ * place). A council Admin's sidebar leaves them out; the Admin Desk link stays. Super Admins, who work across councils,
+ * keep every link, and the Navigation Guide still lists them all.
+ */
+export const ADMIN_DESK_REDUNDANT_NAV_ITEMS = [
+  'system-settings/council-settings',
+  'council-lookups',
+  'credentials-vault',
+  'charities/registry',
+  'expenses/assets',
+] as const;
+
+/** Whether the sidebar drops `item` for this reader, because the Admin Desk already holds it as a drawer. */
+export const isRedundantAdminDeskNavItem = (memberType: string | undefined, item: string): boolean =>
+  memberType === 'Admin' && (ADMIN_DESK_REDUNDANT_NAV_ITEMS as readonly string[]).includes(item);
+
+export const isAdminDeskDrawerId =(value: unknown): value is AdminDeskDrawerId => ADMIN_DESK_DRAWERS.some((d) => d.id === value);
 
 // ---- manual regeneration -------------------------------------------------------------------------------------------
 

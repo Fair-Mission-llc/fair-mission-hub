@@ -77,7 +77,7 @@ import { MeritMilestonesPanel } from '@/components/MeritTierParts';
 import { Button, cx, Empty, Field, Input, Notice, PageTitle, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
-import { FORM_1728_CANCELLED_MESSAGE, needsForm1728Confirmation, useForm1728Confirm, useForm1728Enabled } from '@/components/Form1728Parts';
+import { Form1728Badge, FORM_1728_CANCELLED_MESSAGE, needsForm1728Confirmation, useForm1728Confirm, useForm1728Enabled } from '@/components/Form1728Parts';
 import { db } from '@/services/db';
 
 interface Column {
@@ -92,7 +92,8 @@ interface Column {
   /** Sprint 11 Revision 1.0: with `options`, a first choice stored as null (the 'Council Account' token), and the default. */
   emptyOption?: string;
   /** Sprint 11 Revision 1.0: 'status' is the Active/Inactive select; 'qr' the QR checkbox and upload button. */
-  kind?: 'status' | 'qr';
+  /** 'form1728' (Sprint 11 Revision 19.5): the row's Form 1728 line as a read-only badge, set through the popup. */
+  kind?: 'status' | 'qr' | 'form1728';
   /** Sprint 11 Revision 1.0: placeholder text for a free-text cell, from the row's values. */
   placeholderFor?: (values: Values) => string | undefined;
   /**
@@ -164,8 +165,9 @@ function useColumns(table: CouncilLookupTableName, councilId: number): ColumnDat
       { key: 'ActivityDescription', label: 'Description', maxLength: 255 },
       { key: 'CategoryID', label: 'Category', options: options.data.options },
       STATUS_COLUMN,
-      // Sprint 11 Revision 11.0: the confirmed Form 1728 line rides along unseen; the popup sets it on save.
-      { key: 'form_1728_line', label: 'Form 1728 line', hidden: { fallback: '' }, optional: true },
+      // Sprint 11 Revision 11.0: the popup sets the confirmed Form 1728 line on save. Sprint 11 Revision 19.5: each row
+      // shows its active classification as a read-only badge (Knights of Columbus tenants only).
+      { key: 'form_1728_line', label: 'Form 1728 line', kind: 'form1728', optional: true },
     ],
     DonationType: [{ key: 'DonationType', label: 'Donation type', maxLength: 100 }, STATUS_COLUMN],
     CouncilDonationMethod: [
@@ -304,7 +306,7 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
   if (!columns) return columnsError ? <Notice tone="error">{columnsError}</Notice> : <p className="text-sm text-muted">Loading…</p>;
 
   const noun = NOUNS[table];
-  const shown = columns.filter((c) => !c.hidden);
+  const shown = columns.filter((c) => !c.hidden && (c.kind !== 'form1728' || form1728));
   const pending = drafts.filter(isChanged);
   // Sprint 8O: the payment configuration gate - every edited payment method must name its account owner.
   const gate = table === 'CouncilDonationMethod' ? accountOwnerGateMessage(pending.map((d) => d.values.account_owner_entity)) : null;
@@ -403,6 +405,12 @@ function LookupEditor({ councilId, table }: { councilId: number; table: CouncilL
                         </option>
                       ))}
                     </Select>
+                  ) : c.kind === 'form1728' ? (
+                    d.values.ActivityName?.trim() || d.values[c.key] ? (
+                      <Form1728Badge title={d.values.ActivityName ?? ''} description={d.values.ActivityDescription} stored={d.values[c.key] || null} />
+                    ) : (
+                      <span className="text-xs text-muted">Set on save</span>
+                    )
                   ) : c.kind === 'qr' ? (
                     <QrCodeCell
                       councilId={councilId}

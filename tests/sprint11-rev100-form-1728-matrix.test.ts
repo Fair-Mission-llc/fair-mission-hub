@@ -186,14 +186,14 @@ describe('4. the six standard screen names', () => {
     };
     for (const [area, name] of Object.entries(STANDARD_SCREEN_NAMES) as [keyof typeof STANDARD_SCREEN_NAMES, string][]) {
       expect(read(pages[area]), area).toContain(name);
-      if (area !== 'gallery') expect(sidebar, area).toMatch(new RegExp(`'?${area.replace('/', '\\/')}'?: \\{[^}]*label: '${name.replace('&', '&')}'`));
+      if (area !== 'gallery') expect(sidebar, area).toMatch(new RegExp(`'?${area.replace('/', '\\/')}'?: \\{[^}]*label: '${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`));
     }
     expect(OPERATIONS_KNOWLEDGE_ARCHIVE_TITLE).toBe('Operations Knowledge Vault');
     expect(FEATURE_FLAG_LABELS.feature_photo_gallery.label).toBe('Media & Memory Center');
     expect(FEATURE_FLAG_LABELS.feature_marketing_factory.label).toBe('Recruitment Factory');
     expect(FEATURE_FLAG_LABELS.feature_loaner_library.label).toBe('Shared Equipment Library');
     expect(FEATURE_FLAG_LABELS.feature_advanced_audits.label).toBe('Trustee Semiannual Audit');
-    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe('Historical Chronology');
+    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe('[ 📜 Fraternal Annals & Oral History ]');
   });
 
   it('uses the same names on the officer desk drawers', () => {

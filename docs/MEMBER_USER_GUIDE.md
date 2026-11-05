@@ -92,6 +92,9 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - Your volunteer check-in is on the **Member Actions Hub**. Select **Member Actions Hub** in the sidebar to open it. The page has four tabs: **My active shifts**, **Registration desk**, **Fraternal roster** and **Hour ledger**. Your shift trackers, charity requests and sheets are on the **Member Desk** tab.
 - **Council Roster** is the first link in the **Faith In Action** pillar. It lists the phone and email of active brothers of your council and its sister councils.
 - **Navigation Guide** shows a short summary of each page that you can open.
+- The sidebar stays in place when you scroll down a page. On a desk, the list of drawers on the left also stays in place, and the open drawer keeps a gold border.
+- The council history page is **Fraternal Annals & Oral History** (Performance pillar). It was called **Historical Chronology**.
+- The help search finds tasks by their key words. Type a question in your own words, for example *How do I submit my expense report?* The search ignores words such as *how*, *do* and *please*.
 - The sidebar on the left has seven groups, called pillars. The sidebar shows only the pages that you can open.
 - **Navigation Guide** at the top of the sidebar explains each of your links.
 - **Media & Memory Center** sits under **Navigation Guide**, above the pillars. Its two links open **Browse Gallery** and the **Gallery Administration Hub**.

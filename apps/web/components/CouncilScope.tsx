@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { councilLabel, isSuperAdmin, portalAreaHref, portalAreas, sortCouncils, type Council, type PortalArea } from '@kofc/shared';
+import { councilLabel, isSuperAdmin, parentOrganizationNodes, portalAreaHref, portalAreas, sortCouncils, type Council, type PortalArea } from '@kofc/shared';
 import { Field, Notice, Select } from '@/components/ui';
 import { useFeatureFlags, useTenantType, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -87,15 +87,25 @@ export function CouncilSelect({ scope }: { scope: CouncilScope }) {
   if (!scope.canChoose) {
     return <p className="text-sm font-bold">{current ? councilLabel(current) : ''}</p>;
   }
+  // Sprint 11 Revision 19.5: with more than one parent organization on file, the councils are grouped under their
+  // parent organization node (tenant.ts parentOrganizationNodes), so a lookup or setting is chosen within its tier.
+  const nodes = parentOrganizationNodes(scope.councils);
+  const option = (c: Council) => (
+    <option key={c.id} value={c.id}>
+      {councilLabel(c)}
+    </option>
+  );
   return (
     <Field label="Council" className="w-72">
       {(id) => (
         <Select id={id} value={scope.councilId} onChange={(e) => scope.setCouncilId(Number(e.target.value))}>
-          {scope.councils.map((c) => (
-            <option key={c.id} value={c.id}>
-              {councilLabel(c)}
-            </option>
-          ))}
+          {nodes.length > 1
+            ? nodes.map((node) => (
+                <optgroup key={node.id} label={node.label}>
+                  {scope.councils.filter((c) => node.councilIds.includes(c.id)).map(option)}
+                </optgroup>
+              ))
+            : scope.councils.map(option)}
         </Select>
       )}
     </Field>

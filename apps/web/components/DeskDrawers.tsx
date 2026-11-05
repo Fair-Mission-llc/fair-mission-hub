@@ -68,13 +68,14 @@ function SpineFolder({ spec, status, selected, onOpen }: { spec: DeskDrawerSpec;
       onClick={onOpen}
       aria-current={selected ? 'true' : undefined}
       aria-controls="desk-blotter-stage"
+      data-drawer-state={selected ? 'open' : 'closed'}
       data-alert-boundary={alert ? 'true' : undefined}
       data-featured={spec.featured ? 'true' : undefined}
       aria-label={`${spec.title}${status?.count != null ? `, ${status.count} waiting` : ''}${alert ? `, ${alertText}` : ''}. Open on the Desk Blotter.`}
       className={cx(
         'flex w-full flex-col gap-1 rounded bg-white px-3 py-2 text-left text-navy hover:bg-gold/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
         spec.featured && 'bg-gold/10',
-        selected && 'bg-gold/30',
+        selected && 'drawer-context-active bg-gold/30',
         alert ? 'border-4 border-brand-red motion-safe:animate-alert-boundary' : cx('border-2 border-navy', selected && 'border-l-8 border-l-gold'),
       )}
     >
@@ -176,7 +177,8 @@ export function DeskBlotter({
 
   return (
     <div data-desk={desk} className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_3fr]">
-      <nav aria-label={`${deskTitle} filing spine`} className="flex min-w-0 flex-col gap-4 self-start md:sticky md:top-4">
+      {/* Sprint 11 Revision 19.5: the spine is locked in place (desk-rail-lock: sticky, top 0, 100vh, scrolls inside). */}
+      <nav aria-label={`${deskTitle} filing spine`} className="desk-rail-lock flex min-w-0 flex-col gap-4 self-start py-1">
         {sections.map((section) => (
           <div
             key={section.id}

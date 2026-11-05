@@ -48,6 +48,7 @@ import {
   EXECUTIVE_DASHBOARD_HREF,
   GALLERY_VIEWS,
   galleryViewFromAnchor,
+  isRedundantAdminDeskNavItem,
   portalAreas,
   portalSidebar,
   whiteLabel,
@@ -277,7 +278,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'inventory/loaner-library': { href: '/inventory/loaner-library', label: 'Shared Equipment Library', hint: 'Equipment councils lend to each other' },
   'performance/charts': { href: '/performance/charts', label: 'Growth & Hours Charts', hint: 'Membership growth velocity and council hours by month' },
-  history: { href: '/history', label: 'Historical Chronology', hint: "Each year's officer core, collective accomplishments and oral histories" },
+  history: { href: '/history', label: 'Fraternal Annals & Oral History', hint: "Each year's officer core, collective accomplishments and oral histories" },
   profile: { href: '/profile', label: 'My Profile', hint: 'Photo, biography, contact details, skills' },
 };
 
@@ -619,7 +620,10 @@ function FinancesEntries({
 }
 
 export function Sidebar({ user, pathname, features, tenant }: { user: SessionUser; pathname: string; features: FeatureFlags; tenant: TenantType }) {
-  const groups = portalSidebar(user, features, tenant);
+  // Sprint 11 Revision 19.5: a council Admin's sidebar drops the links the Admin Desk already holds as drawers.
+  const groups = portalSidebar(user, features, tenant)
+    .map((g) => ({ ...g, entries: g.entries.filter((e) => !isRedundantAdminDeskNavItem(user.memberType, e.item)) }))
+    .filter((g) => g.entries.length > 0);
   const hash = useHash();
   const [collapsed, toggle] = useCollapsed();
   const areas = portalAreas(user, features, tenant);
@@ -629,7 +633,8 @@ export function Sidebar({ user, pathname, features, tenant }: { user: SessionUse
     <nav
       data-surface="navy"
       aria-label="Portal sections"
-      className={cx('flex shrink-0 flex-col overflow-hidden bg-navy py-3 text-white motion-safe:transition-[width] motion-safe:duration-200', collapsed ? 'w-12' : 'w-64')}
+      // Sprint 11 Revision 19.5: the sidebar is locked in place (nav-context-lock: sticky, top 0, 100vh, scrolls inside).
+      className={cx('nav-context-lock flex shrink-0 flex-col self-start bg-navy py-3 text-white motion-safe:transition-[width] motion-safe:duration-200', collapsed ? 'w-12' : 'w-64')}
     >
       {/* Sprint 11 Revision 2.1: ◀ at the open rail's top right hides it; ▶ on the slim strip's left edge brings it back. */}
       <div className={cx('flex pb-2', collapsed ? 'justify-start pl-1' : 'justify-end px-3')}>

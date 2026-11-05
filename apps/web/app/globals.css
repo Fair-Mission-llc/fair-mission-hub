@@ -175,3 +175,32 @@
     min-width: 0;
   }
 }
+
+/*
+ * Sprint 11 Revision 19.5: sticky navigation context locks. The portal sidebar and every desk's left rail of drawers
+ * stay in place while the form panel on the right scrolls; a long rail scrolls inside itself. On narrow screens the
+ * desk rails stack above their panel, so they only lock from the md breakpoint up.
+ */
+@layer components {
+  .nav-context-lock {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  @media (min-width: 768px) {
+    .desk-rail-lock {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      align-self: start;
+    }
+  }
+  /* The open drawer's button keeps a high-contrast active border while its panel scrolls. */
+  .drawer-context-active {
+    box-shadow: inset 0 0 0 3px var(--color-gold), 0 0 0 2px var(--color-navy);
+  }
+}

@@ -25,6 +25,7 @@
 - [10. Batch coding and cash box audits](#10-batch-coding-and-cash-box-audits)
 - [11. Account ownership and parish-held revenue](#11-account-ownership-and-parish-held-revenue)
 - [12. Split accounts, budget categories and payment account names](#12-split-accounts-budget-categories-and-payment-account-names)
+- [13. Semi-Annual Joint-Event Remittance & Netting Code](#13-Semi-Annual Joint-Event Remittance & Netting Code)
 - [Manual map](#manual-map)
 
 ### How to read a tutorial
@@ -1349,6 +1350,18 @@ A table under the charts lists each category with its figures. The first eight c
 | --- | --- | --- |
 | The phone shows *"Pays into the council's account"* only. | The method has no account name. | Enter the account name (step 3). |
 | The phone shows the wrong owner. | The method's recorded owner is wrong. | Ask the platform owner to correct the owner. |
+
+### 13. Semi-Annual Joint-Event Remittance & Netting Code
+
+The local council holds a strict 6-month accounting remittance policy with the parish. For joint-council events where digital funds are held temporarily inside the church's bank accounts, the Treasurer must execute a full Netting Reduction during the semi-annual reconciliation pass to recover our capital from the parish asset rows.
+
+### The Full Remittance Netting Protocol:
+1. Sister Council Settlement: The Treasurer writes an immediate check out of the council's local checking account to the participating sister council for their full 50% event share. This clears the external fraternal liability completely from our ledger.
+2. Parish Withholding Calculation: Because the parish owns exactly 0.00% of the digital funds captured through their QR codes for this specific event, the parish is technically holding 100% of those electronic assets as un-belonging capital owed to our council.
+3. The Net Check Reduction: During the twice-yearly reconciliation, the Treasurer must subtract the FULL electronic volume of the joint event straight from the standard council remittance invoice voucher before drawing a check to the parish. 
+
+Formula Matrix:
+[Final Remittance Paid to Church] = [Standard Parish-Split Balance Owed] - [100% of Joint-Event Electronic Funds Held by Church]
 
 ---
 
