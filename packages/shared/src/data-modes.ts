@@ -1,5 +1,5 @@
 // =========================================================================
-// THE THREE-CORE LOCAL DATABASES (Sprint 11 Revision 20.0, schema 112 - no table change)
+// THE THREE-CORE LOCAL DATABASES (Sprint 11 Revision 20.0; seed fixture and testing key Sprint 11 Revision 21.0)
 //
 // Every desktop installation keeps three separate SQLite files in its vault folder, one per data mode:
 //   production  central-hub-vault.db     the council's real records (Production, synced over the WAN)
@@ -11,8 +11,8 @@
 //
 // Testing mode on a hall Wi-Fi: each save is sent to the other laptops as an encrypted UDP broadcast
 // (apps/web/services/server/hub/lan-mesh.ts) and replayed on their testing-sandbox.db. The laptops must share one mesh
-// passphrase (KOFC_MESH_PASSPHRASE or testing-mesh-passphrase.txt beside the vault). With no passphrase, or no network,
-// testing mode simply works alone on its own file.
+// passphrase: KOFC_MESH_PASSPHRASE, or the .testing-key.json file beside the vault, which the server writes with a random
+// passphrase on the first testing start (copy it to the other laptops). With no network, testing mode works alone.
 //
 // Training mode: training-playground.db is deleted and built again on every start, then seeded with a practice
 // fraternal universe (seedTrainingPlayground): the ten Practice Sandbox members, its three upcoming fundraisers with
@@ -31,6 +31,7 @@
 import type { DataService } from './contract';
 import { isViewAsReadMethod } from './platform-access';
 import { isPracticeEventName } from './setup-wizard';
+import { TRAINING_SEED } from './training-seed';
 
 export const DATA_MODES = ['production', 'testing', 'training'] as const;
 export type DataMode = (typeof DATA_MODES)[number];
@@ -97,7 +98,18 @@ export const dataModeBanner = (mode: DataMode): DataModeBannerSpec | null =>
 /** The UDP port the testing mesh broadcasts on. */
 export const LAN_MESH_PORT = 41295;
 export const LAN_MESH_PASSPHRASE_ENV = 'KOFC_MESH_PASSPHRASE';
-export const LAN_MESH_PASSPHRASE_FILE = 'testing-mesh-passphrase.txt';
+/**
+ * Sprint 11 Revision 21.0: the testing key file in the vault folder, replacing testing-mesh-passphrase.txt. When testing
+ * mode starts with no KOFC_MESH_PASSPHRASE and no key file, the server writes one with a random passphrase
+ * (lan-mesh.ts ensureTestingKeyFile). Copy that one file to every laptop in the hall so they share one key.
+ */
+export const TESTING_KEY_FILE = '.testing-key.json';
+/** The shape of TESTING_KEY_FILE. */
+export interface TestingKeyFile {
+  version: 1;
+  passphrase: string;
+  createdAt: string;
+}
 /** The largest encrypted packet the mesh sends; a larger save (a photo) stays on the laptop that made it. */
 export const LAN_MESH_MAX_PACKET_BYTES = 60_000;
 /** A packet older than this is ignored, so a replayed capture cannot write old saves again. */
@@ -186,12 +198,11 @@ export const TRAINING_PLAYGROUND_COUNCIL_ID = 1;
 export const TRAINING_PLAYGROUND_ADMIN_ID = 2;
 /** How far ahead the seed looks for the practice fundraisers. */
 const TRAINING_EVENT_WINDOW_DAYS = 60;
-/** The cash logged into each training cash box, in dollars: one list per box (one box per practice fundraiser). */
-export const TRAINING_CASH_BOXES: readonly (readonly number[])[] = [
-  [20, 20, 10, 5],
-  [50, 25, 5],
-  [100, 40, 12.5],
-];
+/**
+ * The cash logged into each training cash box, in dollars: one list per box (one box per practice fundraiser). Sprint 11
+ * Revision 21.0: read from the training seed fixture (training-seed.ts, fixtures/training-seed.json).
+ */
+export const TRAINING_CASH_BOXES: readonly (readonly number[])[] = TRAINING_SEED.cashBoxes.map((b) => b.amounts);
 
 export interface TrainingPlaygroundSeedResult {
   members: number;
@@ -203,8 +214,8 @@ export interface TrainingPlaygroundSeedResult {
 
 const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-/** The Donor name of training cash box `n` (1-based). */
-export const trainingCashBoxName = (n: number): string => `Training Cash Box ${n}`;
+/** The Donor name of training cash box `n` (1-based): the fixture's label for it. */
+export const trainingCashBoxName = (n: number): string => TRAINING_SEED.cashBoxes[n - 1]?.label ?? `Training Cash Box ${n}`;
 
 /**
  * Seeds a fresh training playground through the data service itself, so every rule a real save runs also runs here:

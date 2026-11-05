@@ -7,8 +7,10 @@
 // Security:
 //   - Every packet is sealed with AES-256-GCM under a key made from the hall's mesh passphrase (scrypt). A laptop
 //     without the same passphrase can neither read nor forge a packet: a bad packet fails its tag check and is dropped.
-//   - The passphrase comes from KOFC_MESH_PASSPHRASE or testing-mesh-passphrase.txt beside the vault, at least
-//     LAN_MESH_MIN_PASSPHRASE_LENGTH characters. Without one the mesh stays off and testing mode works alone.
+//   - The passphrase comes from KOFC_MESH_PASSPHRASE or .testing-key.json beside the vault (TESTING_KEY_FILE), at least
+//     LAN_MESH_MIN_PASSPHRASE_LENGTH characters. Sprint 11 Revision 21.0: when neither exists, testing mode writes a new
+//     key file with a random 256-bit passphrase on boot (ensureTestingKeyFile, owner read/write only). Every laptop in
+//     the hall needs the same file: copy the first laptop's file to the others.
 //   - Only saves are sent (isMeshReplicatedMethod): never reads, sign-ins or passkeys. A replayed save still runs every
 //     rule of the data service, as the actor it names.
 //   - A packet older than LAN_MESH_MAX_AGE_MS, or one already heard (origin + seq), is dropped.
@@ -19,16 +21,17 @@
 // add records at the same moment can number them differently, which is acceptable for a practice copy.
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'node:crypto';
 import { createSocket, type Socket } from 'node:dgram';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   isFreshLanMeshEnvelope,
   LAN_MESH_MAX_PACKET_BYTES,
   LAN_MESH_MIN_PASSPHRASE_LENGTH,
   LAN_MESH_PASSPHRASE_ENV,
-  LAN_MESH_PASSPHRASE_FILE,
   LAN_MESH_PORT,
   readLanMeshEnvelope,
+  TESTING_KEY_FILE,
+  type TestingKeyFile,
   type HubCall,
   type LanMeshEnvelope,
 } from '@kofc/shared';
@@ -41,13 +44,47 @@ const IV_BYTES = 12;
 const TAG_BYTES = 16;
 const SEEN_LIMIT = 5000;
 
+const keyFilePath = (dir: string) => join(/*turbopackIgnore: true*/ dir, TESTING_KEY_FILE);
+
+/** The passphrase in the vault's testing key file, or '' when the file is missing or unreadable. */
+function readTestingKeyFile(dir: string): string {
+  const file = keyFilePath(dir);
+  if (!existsSync(file)) return '';
+  try {
+    const parsed = JSON.parse(readFileSync(file, 'utf8')) as Partial<TestingKeyFile>;
+    return typeof parsed.passphrase === 'string' ? parsed.passphrase.trim() : '';
+  } catch {
+    console.warn(`[mesh] ${TESTING_KEY_FILE} could not be read; testing mode works alone until the file is fixed or deleted.`);
+    return '';
+  }
+}
+
 /** The hall's mesh passphrase, or null when none is set (the mesh stays off). */
 export function meshPassphrase(dir: string, env: Env = process.env): string | null {
-  const fromEnv = env[LAN_MESH_PASSPHRASE_ENV]?.trim();
-  const file = join(/*turbopackIgnore: true*/ dir, LAN_MESH_PASSPHRASE_FILE);
-  const fromFile = !fromEnv && existsSync(file) ? readFileSync(file, 'utf8').trim() : '';
-  const value = fromEnv || fromFile;
+  const value = env[LAN_MESH_PASSPHRASE_ENV]?.trim() || readTestingKeyFile(dir);
   return value && value.length >= LAN_MESH_MIN_PASSPHRASE_LENGTH ? value : null;
+}
+
+/**
+ * Writes the vault's testing key file with a random passphrase when testing mode boots without one. Does nothing when
+ * KOFC_MESH_PASSPHRASE is set or the file already exists (an existing file is never overwritten). Returns the path of
+ * the file it wrote, or null.
+ */
+export function ensureTestingKeyFile(dir: string, env: Env = process.env, now: Date = new Date()): string | null {
+  if (env[LAN_MESH_PASSPHRASE_ENV]?.trim()) return null;
+  const file = keyFilePath(dir);
+  if (existsSync(file)) return null;
+  const key: TestingKeyFile = { version: 1, passphrase: randomBytes(32).toString('base64url'), createdAt: now.toISOString() };
+  try {
+    // 'wx' refuses to overwrite a file another process wrote a moment ago; 0o600 keeps it to this Windows/Unix user.
+    writeFileSync(file, `${JSON.stringify(key, null, 2)}
+`, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'EEXIST') return null;
+    throw err;
+  }
+  console.info(`[mesh] made a new testing key at ${file}. Copy this file to the vault folder of every laptop in the hall.`);
+  return file;
 }
 
 /** The 32-byte key every laptop with the same passphrase derives. */
@@ -107,6 +144,11 @@ let mesh: Mesh | null = null;
  */
 export function startLanMesh(dir: string, env: Env, replay: (call: HubCall) => Promise<void>): boolean {
   if (mesh) return true;
+  try {
+    ensureTestingKeyFile(dir, env);
+  } catch (err) {
+    console.warn(`[mesh] the testing key could not be written (${err instanceof Error ? err.message : String(err)}).`);
+  }
   const passphrase = meshPassphrase(dir, env);
   if (!passphrase) {
     console.info('[mesh] testing mode is working alone: no mesh passphrase is set, so no saves are shared with other laptops.');

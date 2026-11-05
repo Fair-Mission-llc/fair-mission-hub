@@ -118,7 +118,7 @@ Many-to-many relationship mapping shared data permissions between distinct counc
 •	PrimaryCouncilID (INTEGER, NOT NULL) — Composite Primary Key / Foreign Key references Council(id).
 •	AffiliatedCouncilID (INTEGER, NOT NULL) — Composite Primary Key / Foreign Key references Council(id).
 [Parish]
-Physical church venues associated with one anchoring council.
+Physical church venues associated with one anchoring council. Dropped at schema 113: see section 66 (Parishes, Pastors, PastorParishMappings).
 •	id (INTEGER, NOT NULL) — Primary Key. Auto-incrementing identifier.
 •	Name (VARCHAR(100), NOT NULL) — Church parish title text.
 •	StreetAddress1 (VARCHAR(255), NOT NULL) — Main physical delivery address line.
@@ -128,7 +128,7 @@ Physical church venues associated with one anchoring council.
 •	Phone (VARCHAR(50), NULL) — Primary rectory contact line.
 •	CouncilID (INTEGER, NOT NULL) — Foreign Key references Council(id).
 [Pastor]
-Clergy records tied to individual church venues.
+Clergy records tied to individual church venues. Dropped at schema 113: see section 66.
 •	id (INTEGER, NOT NULL) — Primary Key. Auto-incrementing identifier.
 •	FirstName (VARCHAR(50), NOT NULL) — Given name.
 •	LastName (VARCHAR(50), NOT NULL) — Surname.
@@ -1424,3 +1424,40 @@ Seed. The four Degree rows belong to the Knights of Columbus (parent_org_id 1). 
 •	parent_org_id (INT, NULL, FK ParentOrganizations, filtered unique index PlatformSettings_ParentOrg_Idx) — NULL on row 1, the platform default; a value on a parent organization's own override row. getPlatformSettings(scope) reads the scope's row when it has one, otherwise row 1 (platformSettingsRowFor). setPlatformSettings(actorId, settings, parentOrgId) writes that row, made from the default on its first save. The drivers read the council's row for the diary, prayer intention and cadence invitation limits. The portal server's sign-in length stays platform-wide (row 1).
 New methods. parentOrganizations.list, listMappings, resolveForCouncil, create, mapCouncil.
 Screens. Global System Parameters and the Super Admin Desk's Settings Cabinet: the Parent organizations card (list, add, map a council and its parent council). Global Lookup Tables and Platform Settings: a Parent organization picker (shared, or one organization). The lookup drop-downs of the portal pass the reader's council.
+
+# 66. The Relational Parish Matrix and Local Feedback Tickets (Sprint 11 Revision 21.0)
+Schema version 113; the phone database version moves to 113. A hub vault at 112 must be archived first (npm run hub:archive). Rules: parish-registry.ts, maintenance.ts, council-accounts.ts, local-feedback.ts, training-seed.ts.
+[Parish], [Pastor] (dropped)
+•	Replaced by Parishes, Pastors and PastorParishMappings. No rows are carried over (the seed had none).
+[Parishes] (new table)
+•	id (INT, IDENTITY, PK).
+•	council_id (INT, NOT NULL, FK Council) — the council that keeps the record; its Active Admins and any Active Super Admin edit it. A council may keep several parishes. parish_name is unique per council (unique index Parishes_Council_Name_Idx; the drivers also refuse a name that differs only in case).
+•	parish_name (VARCHAR(100), NOT NULL), street_address_1 (VARCHAR(255), NOT NULL), street_address_2 (VARCHAR(255), NULL), city (VARCHAR(50), NOT NULL), state (VARCHAR(50), NOT NULL), phone (VARCHAR(50), NULL).
+•	associated_council_id (INT, NULL, FK Council, filtered unique index Parishes_AssociatedCouncil_Idx) — the council linked to this parish, its home parish. Unique: a council links to one parish, and a parish to one council. Set only by parishes.setCouncilAssociation, and only to the council that keeps the parish.
+•	gl_account_id (INT, NULL, FK GLAccount) — the parish's Account Owner in the linked council's General Ledger. While a parish names it, the account cannot be deleted (GL_ACCOUNT_REFERENCES).
+•	created_at (DATETIME, NULL).
+[Pastors] (new table)
+•	id (INT, IDENTITY, PK).
+•	council_id (INT, NOT NULL, FK Council) — the council that keeps the record.
+•	first_name (VARCHAR(50), NOT NULL), last_name (VARCHAR(50), NOT NULL), phone (VARCHAR(50), NULL), email (VARCHAR(100), NULL).
+•	created_at (DATETIME, NULL).
+[PastorParishMappings] (new table)
+•	id (INT, IDENTITY, PK).
+•	pastor_id (INT, NOT NULL, FK Pastors), parish_id (INT, NOT NULL, FK Parishes) — one pastor serving one parish; the pair is unique (PastorParishMappings_Pair_Idx). A pastor may serve any number of parishes.
+•	assigned_at (DATETIME, NULL).
+Rules. Assigning needs rights over both the pastor's and the parish's council. A pastor's rows are deleted with the pastor. A parish is kept (RECORD_IN_USE) while a pastor is assigned to it or while it is a home parish; a linked parish cannot move to another council.
+Home parish link (parishes.setCouncilAssociation). In one transaction: the council's link to any other parish ends; the parish's Account Owner is found (the account gl_account_id names, then an account named 'Parish - ' + the parish name) or added — an Asset GLAccount, ownership_type PARENT_ORGANIZATION, account_display_name the parish name, contact_number the parish phone; the missing baseline Asset rows are added under it (ParentAccountID): 'Parish - <name> - Electronic Giving' and 'Parish - <name> - Cash & Check Collections' (PARISH_BASELINE_ASSET_ACCOUNTS); associated_council_id and gl_account_id are set. An existing account of the same name that is not a PARENT_ORGANIZATION Asset account is INVALID_INPUT. Unlinking (parishId null) clears associated_council_id only; the accounts stay.
+[LocalFeedbackTickets] (new table)
+•	id (INT, IDENTITY, PK) — the ticket ID.
+•	council_id (INT, NOT NULL, FK Council) — the member's council; member_id (INT, NOT NULL, FK Member) — the member who opened it.
+•	category (VARCHAR(20), NOT NULL, CHECK IN ('Question', 'Problem', 'Suggestion', 'Praise')), subject (VARCHAR(120), NOT NULL), body (VARCHAR(2000), NOT NULL).
+•	status (VARCHAR(20), NOT NULL, DEFAULT 'Open', CHECK IN ('Open', 'In Progress', 'Resolved')).
+•	opened_at (DATETIME, NOT NULL), last_activity_at (DATETIME, NOT NULL), resolved_at (DATETIME, NULL — set when the status becomes Resolved, cleared when it leaves Resolved).
+[LocalFeedbackTicketMessages] (new table)
+•	id (INT, IDENTITY, PK); ticket_id (INT, NOT NULL, FK LocalFeedbackTickets); sender_id (INT, NOT NULL, FK Member).
+•	entry_kind (VARCHAR(10), NOT NULL, DEFAULT 'reply', CHECK IN ('reply', 'status')); status_to (VARCHAR(20), NULL, CK_LocalFeedbackTicketMessages_status_to: NULL or a ticket status) — the new status of a status change.
+•	message_text (VARCHAR(2000), NOT NULL, DEFAULT '') — the reply, or the optional note of a status change.
+•	created_at (DATETIME, NOT NULL).
+Rules. The Local Feedback Portal no longer writes ChatThreads or Messages. Ticket conversations saved there under schema 112 are not carried over.
+New methods. parishes.setCouncilAssociation, pastors.listAssignments, pastors.assignToParish, pastors.unassignFromParish. parishes.* and pastors.* take the snake_case columns above.
+Fixtures and files. packages/shared/src/fixtures/training-seed.json holds the ten practice members, three practice fundraisers and three training cash boxes (training-seed.ts checks it at load). Testing mode writes .testing-key.json (a random 256-bit mesh passphrase) to the vault folder on boot when no key exists and KOFC_MESH_PASSPHRASE is unset; testing-mesh-passphrase.txt is no longer read.

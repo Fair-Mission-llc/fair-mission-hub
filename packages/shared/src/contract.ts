@@ -87,6 +87,7 @@ import type {
   OfficerNominations,
   Parish,
   Pastor,
+  PastorParishMapping,
   ReadReceipt,
   Role,
   Shift,
@@ -124,6 +125,7 @@ import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
 import type { CouncilParentMapping, ParentOrganizationInput, ParentOrganizationRecord, ParentOrgScope } from './parent-organizations';
 import type { FeedbackTicket, FeedbackTicketChat, FeedbackTicketInput, FeedbackTicketStatus } from './local-feedback';
+import type { ParishAssociationResult } from './parish-registry';
 import type { MotionRequestChannel, MotionRequestDecision, MotionRequestDetail, MotionRequestInput, MotionRequestPreview, MotionRequestThread } from './motion-requests';
 import type { AffiliationHistoryEntry, CouncilEngagement, DevotionalEntry, DevotionalProgress, MemberCenter } from './member-lifecycle';
 import type { MeritThresholds } from './merit-tiers';
@@ -479,10 +481,13 @@ export interface MeetingSchedules {
  * (councils.setBylaws, Sprint 6Z) or its email gateway (councils.setEmailGateway, Sprint 6Z-Email-Proxy).
  */
 export type NewCouncil = Omit<Council, 'id' | FeatureFlagName | 'BylawsMarkdown' | 'BylawsUpdatedAt' | EmailGatewayColumn>;
-/** A parish row without its generated id. */
-export type NewParish = Omit<Parish, 'id'>;
-/** A pastor row without its generated id. */
-export type NewPastor = Omit<Pastor, 'id'>;
+/**
+ * A parish row as an Admin writes it (schema 113). The council link (associated_council_id) and the ledger account
+ * (gl_account_id) are set only by parishes.setCouncilAssociation; created_at is stamped by the driver.
+ */
+export type NewParish = Omit<Parish, 'id' | 'associated_council_id' | 'gl_account_id' | 'created_at'>;
+/** A pastor row as an Admin writes it (schema 113); parish assignments go through pastors.assignToParish. */
+export type NewPastor = Omit<Pastor, 'id' | 'created_at'>;
 /** An activity row without its generated id. */
 export type NewActivity = Omit<Activities, 'id'>;
 
@@ -2686,27 +2691,46 @@ export interface DataService {
    * RECORD_NOT_FOUND; a delete is refused with RECORD_IN_USE while other rows still point at the row.
    */
   parishes: {
-    /** The council's parishes, ordered by name. */
+    /** The parishes the council keeps (council_id), ordered by name. */
     listByCouncil(councilId: number): Promise<Parish[]>;
     get(id: number): Promise<Parish | null>;
     /** Rejects INVALID_INPUT for a bad field, an unknown council, or a name already used in the council (ignoring case). */
     create(actorId: number, parish: NewParish): Promise<Parish>;
-    /** Moving a parish to another council requires rights over both councils. */
+    /** Moving a parish to another council requires rights over both councils; a linked parish cannot move. */
     update(actorId: number, id: number, changes: RecordChanges<NewParish>): Promise<Parish>;
-    /** Refused (RECORD_IN_USE) while the parish still has pastors. */
+    /** Refused (RECORD_IN_USE) while pastors are assigned to the parish or a council is linked to it. */
     remove(actorId: number, id: number): Promise<void>;
+    /**
+     * Sprint 11 Revision 21.0 (schema 113): links `councilId` to one of its own parishes (associated_council_id), or
+     * unlinks it with `parishId` null. A council links to one parish at a time: linking another moves the link. In the
+     * same transaction the link provisions the parish's Account Owner in the council's General Ledger - a
+     * PARENT_ORGANIZATION Asset account named for the parish - and its baseline Asset rows (parish-registry.ts),
+     * reusing any that already exist. Unlinking keeps the accounts. The council's Active Admins and any Active Super
+     * Admin may link (ADMIN_REQUIRED, COUNCIL_ACCESS_DENIED); a parish another council keeps is INVALID_INPUT.
+     */
+    setCouncilAssociation(actorId: number, councilId: number, parishId: number | null): Promise<ParishAssociationResult>;
   };
 
   pastors: {
-    /** The parish's pastors, ordered by last name, then first name. */
+    /** The pastors assigned to the parish (PastorParishMappings), ordered by last name, then first name. */
     listByParish(parishId: number): Promise<Pastor[]>;
-    /** Pastors of every parish of the council, ordered like `listByParish`. */
+    /** The pastors the council keeps (council_id), ordered like `listByParish`. */
     listByCouncil(councilId: number): Promise<Pastor[]>;
-    /** A pastor's council is their parish's. Rejects INVALID_INPUT for a bad field or an unknown parish. */
+    /** Every parish assignment of the council's pastors, ordered by pastor, then parish. */
+    listAssignments(councilId: number): Promise<PastorParishMapping[]>;
+    /** Rejects INVALID_INPUT for a bad field or an unknown council. */
     create(actorId: number, pastor: NewPastor): Promise<Pastor>;
-    /** Moving a pastor to another parish requires rights over both parishes' councils. */
+    /** Moving a pastor's record to another council requires rights over both councils. */
     update(actorId: number, id: number, changes: RecordChanges<NewPastor>): Promise<Pastor>;
+    /** Removes the pastor and their parish assignments. */
     remove(actorId: number, id: number): Promise<void>;
+    /**
+     * Assigns the pastor to one more parish; a pastor may serve any number of parishes. Requires rights over the
+     * pastor's council and the parish's council. Assigning a pair already on file returns that row.
+     */
+    assignToParish(actorId: number, pastorId: number, parishId: number): Promise<PastorParishMapping>;
+    /** Ends one assignment (RECORD_NOT_FOUND when the pastor does not serve that parish). */
+    unassignFromParish(actorId: number, pastorId: number, parishId: number): Promise<void>;
   };
 
   activities: {
@@ -4431,9 +4455,9 @@ export interface DataService {
   };
 
   /**
-   * Sprint 11 Revision 20.0: the Local Feedback Portal (local-feedback.ts). A ticket is a ChatThreads row whose first
-   * message opens it; the ticket ID is the thread id. Members open and follow their own tickets; the council's Admins and
-   * Super Admins triage every ticket of the council.
+   * Sprint 11 Revision 20.0: the Local Feedback Portal (local-feedback.ts). Sprint 11 Revision 21.0 (schema 113): a ticket
+   * is a LocalFeedbackTickets row (the ticket ID) and each chat log line a LocalFeedbackTicketMessages row. Members open
+   * and follow their own tickets; the council's Admins and Super Admins triage every ticket of the council.
    */
   localFeedback: {
     /** Opens a ticket for the actor's home council (INVALID_INPUT for a bad category or a blank or too-long field). */

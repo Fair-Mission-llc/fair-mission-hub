@@ -2,7 +2,7 @@
 
 **Audience:** council Admins and the pilot facilitator who keeps the council's copy of the platform running.
 
-**Covers:** council system maintenance only: roles and access, lookup tables, service connections, Council Wide Settings, View As Member and remote help, the three local databases, the hub laptop, database resets, network ports, firewall clearance and the software bill of materials.
+**Covers:** council system maintenance only: roles and access, lookup tables, the parishes and pastors with the home parish link, service connections, Council Wide Settings, View As Member and remote help, the three local databases, the hub laptop, database resets, network ports, firewall clearance and the software bill of materials.
 
 > **Officer work is in the role manuals.** Payments, ledgers, budgets, meetings and desks are in the [Treasurer Manual](TREASURER_MANUAL.md), the [Financial Secretary Manual](FINANCIAL_SECRETARY_MANUAL.md) and the [Executive Governance Manual](EXECUTIVE_GOVERNANCE_MANUAL.md).
 > **Every administrator is also a member.** Signing up, logging hours and taking donations are in the [Member User Guide](MEMBER_USER_GUIDE.md).
@@ -342,6 +342,51 @@ A meeting counts when the member checks in to it. A recruit counts when the recr
 | The milestones are refused. | A value is not a whole number, or a higher tier asks for less than a lower tier. | Correct the value. |
 | A founding member has no **📜 Charter Member** badge. | The institution date or the member's **First Degree / Initiation Date** is empty. | Enter both dates. Save the member record again. |
 | The tab is missing. | You are not an Admin of this council. | Ask a council Admin. |
+
+### 5.6 Keep the parishes and pastors, and link the home parish (Parish & Pastors Linkage)
+> **Prerequisite (who can do this):** You must be a council Admin of the council, or a Super Admin. Other members can open the page but cannot change it.
+> **Note:** the council can link to one parish at a time. When you link a different parish, the old link ends.
+> **Warning:** **Link as home parish** adds accounts to the council's General Ledger at once. Unlinking does not remove them.
+
+**Goal:** Keep the council's list of parishes and pastors, assign each pastor to the parishes that the pastor serves, and link the council to its home parish.
+
+**Concept: the parish matrix.** The page keeps three kinds of records:
+- **Parishes:** the parishes that your council keeps. The council can keep many parishes.
+- **Council pastors:** the pastors that your council keeps. A pastor can serve more than one parish.
+- **Pastor assignments:** one line for each pastor and each parish that the pastor serves.
+
+**Concept: the home parish and its ledger accounts.** One parish can be the council's **Home parish**. When you link a parish, the portal adds these accounts to the council's General Ledger in the same step:
+- The parish's account owner: an **Asset** account named `Parish - ` and the parish name (for example `Parish - St. Mary's Cathedral Parish`). It is owned by **Parish**. Its **Name members see** is the parish name. Its contact number is the parish phone.
+- Two baseline **Asset** accounts under the account owner: `Parish - <parish name> - Electronic Giving` and `Parish - <parish name> - Cash & Check Collections`.
+
+Money in these accounts belongs to the parish. Gifts paid into them stay off the Treasurer's batch coder. The accounts show in the **Account Owners Matrix** (8.6) and on the **Account** list of **Enabled donation methods** (5.1). When you link the same parish again, the portal uses the accounts that are already there. It does not add them twice.
+
+**Start point:** Sidebar → System Settings → **Parish & Pastors Linkage**.
+
+**Steps:**
+1. Super Admins: in the council list at the top of the page, select the council.
+2. To add a parish, select **Add parish** under **Parishes**. Enter the name, street address, city, state and phone. Select **Save**.
+3. To add a pastor, select **Add pastor** under **Council pastors**. Enter the name, phone and email. Select **Save**.
+4. In **Parishes**, select the parish row. The parish panel opens under the list.
+5. In the parish panel, choose the pastor in **Assign a pastor**. Select **Assign**. Do this step again for each pastor who serves the parish.
+6. To end an assignment, select **End assignment** beside the pastor's name.
+7. To link the council to the parish, select **Link as home parish**.
+8. Read the message. It names the General Ledger accounts that were added, or says that they were already on file.
+
+<!-- KEEP_IMAGE: parishes and pastors capture -->
+![Parishes and pastors (/parishes)](../generated/dashboard_visual_catalog/parishes.png)
+<!-- /KEEP_IMAGE -->
+
+**Expected result:** The parish row shows the **Home parish** badge. The **Council pastors** list shows the parishes that each pastor serves. The new accounts show in the General Ledger and in the **Account Owners Matrix** with the owner **Parish**.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"… is kept by another council …"* | The parish belongs to the list of a different council. | Add the parish to your own council first. Then link it. |
+| *"… already has an account named … that is not a parish account."* | A council account has the same name as the parish's account owner. | Rename that account in the **Account Owners Matrix** (8.6). Then select **Link as home parish** again. |
+| A parish will not delete. | Pastors are still assigned to it, or it is the home parish. | End each pastor assignment. Select **Unlink home parish**. Then delete the parish. |
+| The parish's account owner will not delete from the **Account Owners Matrix**. | The parish record still names the account. | Keep the account. It holds the parish's money history. |
+| The assign list says *"Add the pastor under Council pastors first"*. | Every council pastor already serves this parish, or the council has no pastors. | Add the pastor under **Council pastors**. |
 
 ## 6. Data protection rules
 - **Nothing cascades.** The platform refuses to delete a record that other records use. The message names the record in use.
@@ -1310,7 +1355,7 @@ The desktop program keeps three separate sets of records on every laptop. At sta
 A save in one set never shows in another set. Practice in Testing or Training. Do real work only in Production.
 
 ### 18.2 Practice with other officers in the same hall (Testing Mode)
-> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the hall mesh passphrase (a council Admin sets it).
+> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the same testing key file (a council Admin copies it, Administrator User Guide 18.4).
 > **Warning:** testing laptops share saves only while they are on the same Wi-Fi at the same time.
 
 **Goal:** Practice a workflow together, for example a cash count or an expense sign-off, without touching the real records.
@@ -1366,27 +1411,30 @@ A save in one set never shows in another set. Practice in Testing or Training. D
 | Yesterday's practice work is gone. | Training Mode starts fresh at every start. | No fix is needed. Use Testing Mode to keep practice work. |
 | A training email does not sign in on Production. | The training accounts exist only in Training Mode. | Restart in Training Mode. |
 
-### 18.4 Set the hall mesh passphrase
+### 18.4 Share the testing key with every laptop in the hall
 > **Prerequisite (who can do this):** You must be a council Admin with access to each laptop's vault folder.
-> **Warning:** keep the passphrase private. A laptop with the passphrase can send saves to every testing laptop in the hall.
+> **Warning:** keep the key file private. A laptop with the key can send saves to every testing laptop in the hall.
 
 **Goal:** Let the laptops in one hall share the testing sandbox.
 
-**Start point:** File Explorer → `%APPDATA%\KofC Tracking Platform\vault` on each laptop.
+**Concept: the testing key.** The first time a laptop starts in **Testing (hall Wi-Fi)**, the program makes the file `.testing-key.json` in the vault folder. The file holds a random passphrase. The program never replaces a key file that is already there. All laptops in the hall must have the same file. A laptop with a different key works alone.
+
+**Start point:** File Explorer → `%APPDATA%\KofC Tracking Platform\vault` on the first laptop.
 
 **Steps:**
-1. Choose one passphrase of 12 characters or more.
-2. On each laptop, make a text file named `testing-mesh-passphrase.txt` in the vault folder.
-3. Type the passphrase on the first line. Save the file.
+1. On the first laptop, start the program. Choose **Testing (hall Wi-Fi)**. Close the program.
+2. In the vault folder, find `.testing-key.json`. If File Explorer hides the file, select **View** → **Show** → **Hidden items**.
+3. Copy the file to the vault folder of each other laptop. Replace the file if the laptop already made one.
 4. Restart the program on each laptop. Choose **Testing (hall Wi-Fi)**.
 
-**Expected result:** A save on one laptop shows on the other laptops within a few seconds.
+**Expected result:** Your saves show on the other testing laptops in the hall within a few seconds.
 
 **Common problems:**
 | Problem | Cause | Fix |
 | --- | --- | --- |
-| Saves stay on one laptop. | The passphrase files are different, or one file is missing. | Copy the same file to every laptop. Restart the program. |
-| Saves stay on one laptop after the passphrase is set. | The Windows firewall blocks UDP port 41295, or the Wi-Fi blocks broadcasts between devices. | Allow UDP port 41295 for the program. Use a network that allows devices to see each other. |
+| Saves stay on one laptop. | The laptops have different `.testing-key.json` files. Each laptop made its own key. | Copy the first laptop's file to every laptop. Restart the program. |
+| Saves stay on one laptop after the key is copied. | The Windows firewall blocks UDP port 41295, or the Wi-Fi blocks broadcasts between devices. | Allow UDP port 41295 for the program. Use a network that allows devices to see each other. |
+| An old passphrase text file is in the vault folder. | Earlier versions used a text file for the passphrase. The program no longer reads it. | Delete the old file. Use `.testing-key.json`. |
 
 ---
 

@@ -1189,134 +1189,6 @@ export const TABLES: Record<string, TableMeta> = {
     "foreignKeys": [],
     "uniqueKeys": []
   },
-  "Parish": {
-    "primaryKey": [
-      "id"
-    ],
-    "columns": [
-      {
-        "name": "id",
-        "kind": "int",
-        "notNull": true,
-        "identity": true,
-        "default": null
-      },
-      {
-        "name": "Name",
-        "kind": "text",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "StreetAddress1",
-        "kind": "text",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "StreetAddress2",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "City",
-        "kind": "text",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "State",
-        "kind": "text",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "Phone",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "CouncilID",
-        "kind": "int",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      }
-    ],
-    "foreignKeys": [
-      {
-        "column": "CouncilID",
-        "refTable": "Council",
-        "refColumn": "id"
-      }
-    ],
-    "uniqueKeys": []
-  },
-  "Pastor": {
-    "primaryKey": [
-      "id"
-    ],
-    "columns": [
-      {
-        "name": "id",
-        "kind": "int",
-        "notNull": true,
-        "identity": true,
-        "default": null
-      },
-      {
-        "name": "FirstName",
-        "kind": "text",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "LastName",
-        "kind": "text",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "Phone",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "Email",
-        "kind": "text",
-        "notNull": false,
-        "identity": false,
-        "default": null
-      },
-      {
-        "name": "ParishID",
-        "kind": "int",
-        "notNull": true,
-        "identity": false,
-        "default": null
-      }
-    ],
-    "foreignKeys": [
-      {
-        "column": "ParishID",
-        "refTable": "Parish",
-        "refColumn": "id"
-      }
-    ],
-    "uniqueKeys": []
-  },
   "Meeting": {
     "primaryKey": [
       "id"
@@ -9327,6 +9199,428 @@ export const TABLES: Record<string, TableMeta> = {
       [
         "council_id"
       ]
+    ]
+  },
+  "Parishes": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "parish_name",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "street_address_1",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "street_address_2",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "city",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "state",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "phone",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "associated_council_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "gl_account_id",
+        "kind": "int",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "associated_council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "gl_account_id",
+        "refTable": "GLAccount",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "associated_council_id"
+      ],
+      [
+        "council_id",
+        "parish_name"
+      ]
+    ]
+  },
+  "Pastors": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "first_name",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "last_name",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "phone",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "email",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
+  },
+  "PastorParishMappings": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "pastor_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "parish_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "assigned_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "pastor_id",
+        "refTable": "Pastors",
+        "refColumn": "id"
+      },
+      {
+        "column": "parish_id",
+        "refTable": "Parishes",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [
+      [
+        "pastor_id",
+        "parish_id"
+      ]
+    ]
+  },
+  "LocalFeedbackTickets": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "council_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "member_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "category",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null,
+        "allowed": [
+          "Question",
+          "Problem",
+          "Suggestion",
+          "Praise"
+        ]
+      },
+      {
+        "name": "subject",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "body",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "status",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "Open"
+        },
+        "allowed": [
+          "Open",
+          "In Progress",
+          "Resolved"
+        ]
+      },
+      {
+        "name": "opened_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "last_activity_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "resolved_at",
+        "kind": "datetime",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "council_id",
+        "refTable": "Council",
+        "refColumn": "id"
+      },
+      {
+        "column": "member_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": []
+  },
+  "LocalFeedbackTicketMessages": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "kind": "int",
+        "notNull": true,
+        "identity": true,
+        "default": null
+      },
+      {
+        "name": "ticket_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "sender_id",
+        "kind": "int",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "entry_kind",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": "reply"
+        },
+        "allowed": [
+          "reply",
+          "status"
+        ]
+      },
+      {
+        "name": "status_to",
+        "kind": "text",
+        "notNull": false,
+        "identity": false,
+        "default": null
+      },
+      {
+        "name": "message_text",
+        "kind": "text",
+        "notNull": true,
+        "identity": false,
+        "default": {
+          "kind": "literal",
+          "value": ""
+        }
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "notNull": true,
+        "identity": false,
+        "default": null
+      }
+    ],
+    "foreignKeys": [
+      {
+        "column": "ticket_id",
+        "refTable": "LocalFeedbackTickets",
+        "refColumn": "id"
+      },
+      {
+        "column": "sender_id",
+        "refTable": "Member",
+        "refColumn": "id"
+      }
+    ],
+    "uniqueKeys": [],
+    "rowChecks": [
+      {
+        "name": "CK_LocalFeedbackTicketMessages_status_to",
+        "nullColumn": "status_to",
+        "column": "status_to",
+        "allowed": [
+          "Open",
+          "In Progress",
+          "Resolved"
+        ]
+      }
     ]
   }
 };

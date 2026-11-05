@@ -239,24 +239,42 @@ export interface AffiliatedCouncils {
   AffiliatedCouncilID: number;
 }
 
+/**
+ * Sprint 11 Revision 21.0 (schema 113): Parishes replaces Parish. council_id keeps the record; associated_council_id
+ * (unique) marks the one council linked to this parish, and gl_account_id is the parish's Account Owner in that
+ * council's General Ledger (parish-registry.ts).
+ */
 export interface Parish {
   id: number;
-  Name: string;
-  StreetAddress1: string;
-  StreetAddress2?: string;
-  City: string;
-  State: string;
-  Phone?: string;
-  CouncilID: number;
+  council_id: number;
+  parish_name: string;
+  street_address_1: string;
+  street_address_2?: string | null;
+  city: string;
+  state: string;
+  phone?: string | null;
+  associated_council_id?: number | null;
+  gl_account_id?: number | null;
+  created_at?: string | null;
 }
 
+/** Sprint 11 Revision 21.0 (schema 113): Pastors replaces Pastor; PastorParishMappings assigns a pastor to parishes. */
 export interface Pastor {
   id: number;
-  FirstName: string;
-  LastName: string;
-  Phone?: string;
-  Email?: string;
-  ParishID: number;
+  council_id: number;
+  first_name: string;
+  last_name: string;
+  phone?: string | null;
+  email?: string | null;
+  created_at?: string | null;
+}
+
+/** One pastor serving one parish (unique pair). */
+export interface PastorParishMapping {
+  id: number;
+  pastor_id: number;
+  parish_id: number;
+  assigned_at?: string | null;
 }
 
 

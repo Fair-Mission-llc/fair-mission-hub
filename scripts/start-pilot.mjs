@@ -19,7 +19,12 @@
 // over: run npm run hub:archive first for a fresh pull. The launcher prints the handshake receipt.
 // Sprint 11 Revision 20.0: --mode production|testing|training (or KOFC_DATA_MODE) picks the hub's database file
 // (central-hub-vault.db, testing-sandbox.db or training-playground.db; packages/shared/src/data-modes.ts).
+// Sprint 11 Revision 21.0: in testing mode the launcher makes sure the vault folder holds .testing-key.json before the
+// server starts - a random 256-bit mesh passphrase, written once and never overwritten - unless KOFC_MESH_PASSPHRASE is
+// set. The server (lan-mesh.ts ensureTestingKeyFile) applies the same rule, so the desktop shell gets the file too.
 import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { networkInterfaces } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -52,6 +57,23 @@ if (!['production', 'testing', 'training'].includes(dataMode)) {
   process.exit(2);
 }
 console.info(`[pilot] data mode: ${dataMode}.`);
+if (dataMode === 'testing' && !process.env.KOFC_MESH_PASSPHRASE?.trim()) {
+  const vaultDir = process.env.HUB_VAULT_DIR?.trim() || join(root, 'packages', 'backend', 'data');
+  const keyFile = join(vaultDir, '.testing-key.json');
+  if (existsSync(keyFile)) {
+    console.info(`[pilot] testing key: ${keyFile}.`);
+  } else {
+    mkdirSync(vaultDir, { recursive: true });
+    const key = { version: 1, passphrase: randomBytes(32).toString('base64url'), createdAt: new Date().toISOString() };
+    try {
+      writeFileSync(keyFile, `${JSON.stringify(key, null, 2)}
+`, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+      console.info(`[pilot] made a new testing key at ${keyFile}. Copy it to the vault folder of every laptop in the hall.`);
+    } catch (err) {
+      if (err?.code !== 'EEXIST') throw err;
+    }
+  }
+}
 const noSync = args.includes('--no-sync');
 if (noSync) args.splice(args.indexOf('--no-sync'), 1);
 

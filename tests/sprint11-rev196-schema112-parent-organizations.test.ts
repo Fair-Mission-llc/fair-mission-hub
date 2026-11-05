@@ -25,8 +25,8 @@ const read = (path: string) => readFileSync(path, 'utf8');
 
 describe('0. schema 112', () => {
   it('moves the platform and the phone database to 112', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(112);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 112;');
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(112);
+    expect(read('apps/mobile/services/drivers/sqlite.ts')).toMatch(/const SCHEMA_VERSION = 11[2-9];/);
     expect(read('Schema.sql')).toContain('RELATIONAL PARENT ORGANIZATIONS AND INDEPENDENT MOTION FLAGS (schema version 112)');
   });
 

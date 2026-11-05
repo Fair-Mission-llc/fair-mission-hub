@@ -14,13 +14,29 @@ import {
   cleanFeedbackChatText,
   cleanFeedbackTicketInput,
   cleanFeedbackTicketStatus,
-  encodeFeedbackStatusChange,
-  encodeFeedbackTicketOpening,
   FEEDBACK_CHAT_MAX_LENGTH,
+  feedbackStatusChange,
   feedbackTicketNotFound,
+  newFeedbackTicketRow,
   sortFeedbackTicketsForTriage,
   type FeedbackTicketChat,
   type FeedbackTicketRows,
+  type FeedbackTicketStatus,
+  type LocalFeedbackTicketMessageRow,
+  type LocalFeedbackTicketRow,
+  assertMayAssignPastor,
+  assertMayAssociateParish,
+  assertParishKeptByCouncil,
+  isParishLedgerAccount,
+  linkedParishError,
+  noPastorAssignment,
+  PARISH_BASELINE_ASSET_ACCOUNTS,
+  parishBaselineAccountName,
+  parishBaselineAccountRow,
+  parishOwnerAccountName,
+  parishOwnerAccountRow,
+  reusableParishAccount,
+  type ParishAssociationResult,
 } from '@kofc/shared';
 import {
   assertMayDispatchRoadmapAlerts,
@@ -725,6 +741,7 @@ import type {
   NewPastor,
   Parish,
   Pastor,
+  PastorParishMapping,
   ProfileOptions,
   Skill,
   SkillLevel,
@@ -2052,39 +2069,43 @@ export class MemoryDataService implements DataService {
   };
 
   // ---- council-level maintenance: parishes, pastors, activities, lists ----
+  // Sprint 11 Revision 21.0 (schema 113): Parishes, Pastors and PastorParishMappings (parish-registry.ts).
 
   parishes: DataService['parishes'] = {
     listByCouncil: async (councilId) => {
       const s = await this.ready();
-      return this.sortedParishes(s, (p) => p.CouncilID === councilId);
+      return this.sortedParishes(s, (p) => p.council_id === councilId);
     },
 
     get: async (id) => {
       const s = await this.ready();
-      const row = s.rows('Parish').find((p) => p.id === id);
+      const row = s.rows('Parishes').find((p) => p.id === id);
       return row ? ({ ...row } as unknown as Parish) : null;
     },
 
     create: async (actorId, parish) => {
       const clean = cleanParish(parish);
       const s = await this.ready();
-      assertMayMaintainCouncilRecords(this.memberWriteActor(s, actorId), clean.CouncilID, 'add parishes');
+      assertMayMaintainCouncilRecords(this.memberWriteActor(s, actorId), clean.council_id, 'add parishes');
       return s.transaction(() => {
-        this.assertCouncilsExist(s, [clean.CouncilID]);
+        this.assertCouncilsExist(s, [clean.council_id]);
         this.assertParishNameUnique(s, clean);
-        return { ...s.insert('Parish', rowValues(PARISH_COLUMNS, clean)) } as unknown as Parish;
+        return {
+          ...s.insert('Parishes', { ...rowValues(PARISH_COLUMNS, clean), associated_council_id: null, gl_account_id: null, created_at: toTimestamp(this.now()) }),
+        } as unknown as Parish;
       });
     },
 
     update: async (actorId, id, changes) => {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      const row = this.requireRecord(s, 'Parish', id);
-      assertMayMaintainCouncilRecords(actor, row.CouncilID as number, `change parish ${id}`);
+      const row = this.requireRecord(s, 'Parishes', id);
+      assertMayMaintainCouncilRecords(actor, row.council_id as number, `change parish ${id}`);
       const clean = cleanParish(mergeRecordChanges<NewParish>(row, changes, PARISH_COLUMNS));
-      if (clean.CouncilID !== row.CouncilID) {
-        assertMayMaintainCouncilRecords(actor, clean.CouncilID, `move parish ${id}`);
-        this.assertCouncilsExist(s, [clean.CouncilID]);
+      if (clean.council_id !== row.council_id) {
+        assertMayMaintainCouncilRecords(actor, clean.council_id, `move parish ${id}`);
+        this.assertCouncilsExist(s, [clean.council_id]);
+        if (row.associated_council_id != null) throw linkedParishError(row as unknown as Parish, 'move');
       }
       this.assertParishNameUnique(s, clean, id);
       Object.assign(row, rowValues(PARISH_COLUMNS, clean));
@@ -2094,56 +2115,110 @@ export class MemoryDataService implements DataService {
     remove: async (actorId, id) => {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      const row = this.requireRecord(s, 'Parish', id);
-      assertMayMaintainCouncilRecords(actor, row.CouncilID as number, `delete parish ${id}`);
-      this.assertRecordUnused(s, 'Parish', row, String(row.Name));
-      s.remove('Parish', (r) => r.id === id);
+      const row = this.requireRecord(s, 'Parishes', id);
+      assertMayMaintainCouncilRecords(actor, row.council_id as number, `delete parish ${id}`);
+      if (row.associated_council_id != null) throw linkedParishError(row as unknown as Parish, 'delete');
+      this.assertRecordUnused(s, 'Parishes', row, String(row.parish_name));
+      s.remove('Parishes', (r) => r.id === id);
+    },
+
+    setCouncilAssociation: async (actorId, councilId, parishId) => {
+      const s = await this.ready();
+      assertMayAssociateParish(this.memberWriteActor(s, actorId), councilId);
+      return s.transaction((): ParishAssociationResult => {
+        this.requireRecord(s, 'Council', councilId);
+        const current = s.rows('Parishes').find((p) => p.associated_council_id === councilId);
+        if (parishId === null) {
+          if (current) current.associated_council_id = null;
+          return { councilId, parish: null, ownerAccount: null, baselineAccounts: [], accountsCreated: 0 };
+        }
+        const parish = this.requireRecord(s, 'Parishes', parishId);
+        assertParishKeptByCouncil(parish as unknown as Parish, councilId);
+        // A council links to one parish at a time (associated_council_id is unique): the old link ends first.
+        if (current && current.id !== parish.id) current.associated_council_id = null;
+        parish.associated_council_id = councilId;
+        const ledger = this.provisionParishLedger(s, parish, councilId);
+        parish.gl_account_id = ledger.ownerAccount.id;
+        return { councilId, parish: { ...parish } as unknown as Parish, ...ledger };
+      });
     },
   };
 
+  /**
+   * The parish's Account Owner and baseline Asset rows in `councilId`'s ledger, reusing what already exists (the owner the
+   * parish names, then an account of the owner's name, then the baseline rows filed under the owner).
+   */
+  private provisionParishLedger(s: MemoryStore, parish: Row, councilId: number): Pick<ParishAssociationResult, 'baselineAccounts' | 'accountsCreated'> & { ownerAccount: GLAccount } {
+    const p = parish as unknown as Parish;
+    let created = 0;
+    const accounts = () => s.rows('GLAccount').filter((a) => a.CouncilID === councilId) as unknown as GLAccount[];
+    const linked = p.gl_account_id == null ? undefined : accounts().find((a) => a.id === p.gl_account_id && isParishLedgerAccount(a));
+    let owner = linked ?? reusableParishAccount(accounts(), parishOwnerAccountName(p.parish_name)) ?? undefined;
+    if (!owner) {
+      owner = s.insert('GLAccount', { ...parishOwnerAccountRow(p, councilId) }) as unknown as GLAccount;
+      created += 1;
+    }
+    const baselineAccounts: GLAccount[] = [];
+    for (const { suffix } of PARISH_BASELINE_ASSET_ACCOUNTS) {
+      const name = parishBaselineAccountName(p.parish_name, suffix);
+      let row = accounts().find((a) => a.ParentAccountID === owner!.id && a.AccountName.toLowerCase() === name.toLowerCase()) ?? reusableParishAccount(accounts(), name);
+      if (!row) {
+        row = s.insert('GLAccount', { ...parishBaselineAccountRow(p, councilId, owner.id, suffix) }) as unknown as GLAccount;
+        created += 1;
+      }
+      baselineAccounts.push({ ...row });
+    }
+    return { ownerAccount: { ...owner }, baselineAccounts, accountsCreated: created };
+  }
+
   private sortedParishes(s: MemoryStore, keep: (row: Row) => boolean): Parish[] {
-    const rows = s.rows('Parish').filter(keep).map((r) => ({ ...r })) as unknown as Parish[];
-    return rows.sort((a, b) => a.Name.localeCompare(b.Name) || a.id - b.id);
+    const rows = s.rows('Parishes').filter(keep).map((r) => ({ ...r })) as unknown as Parish[];
+    return rows.sort((a, b) => a.parish_name.localeCompare(b.parish_name) || a.id - b.id);
   }
 
   private assertParishNameUnique(s: MemoryStore, clean: NewParish, ignoreId?: number): void {
-    const siblings = s.rows('Parish').filter((p) => p.CouncilID === clean.CouncilID);
-    assertRecordValueUnique('Parish', siblings, 'Name', clean.Name, `in council ${clean.CouncilID}`, ignoreId);
+    const siblings = s.rows('Parishes').filter((p) => p.council_id === clean.council_id);
+    assertRecordValueUnique('Parishes', siblings, 'parish_name', clean.parish_name, `in council ${clean.council_id}`, ignoreId);
   }
 
   pastors: DataService['pastors'] = {
     listByParish: async (parishId) => {
       const s = await this.ready();
-      return this.sortedPastors(s, [parishId]);
+      const ids = new Set(s.rows('PastorParishMappings').filter((m) => m.parish_id === parishId).map((m) => m.pastor_id as number));
+      return this.sortedPastors(s, (p) => ids.has(p.id as number));
     },
 
     listByCouncil: async (councilId) => {
       const s = await this.ready();
-      const parishIds = s.rows('Parish').filter((p) => p.CouncilID === councilId).map((p) => p.id as number);
-      return this.sortedPastors(s, parishIds);
+      return this.sortedPastors(s, (p) => p.council_id === councilId);
+    },
+
+    listAssignments: async (councilId) => {
+      const s = await this.ready();
+      const pastorIds = new Set(s.rows('Pastors').filter((p) => p.council_id === councilId).map((p) => p.id as number));
+      const rows = s.rows('PastorParishMappings').filter((m) => pastorIds.has(m.pastor_id as number)).map((m) => ({ ...m })) as unknown as PastorParishMapping[];
+      return rows.sort((a, b) => a.pastor_id - b.pastor_id || a.parish_id - b.parish_id);
     },
 
     create: async (actorId, pastor) => {
       const clean = cleanPastor(pastor);
       const s = await this.ready();
-      const actor = this.memberWriteActor(s, actorId);
-      const parish = s.rows('Parish').find((p) => p.id === clean.ParishID);
-      // A non-admin hears ADMIN_REQUIRED even for an unknown parish; the parish only decides the tenant.
-      assertMayMaintainCouncilRecords(actor, (parish?.CouncilID as number | undefined) ?? actor.councilId, 'add pastors');
-      if (!parish) throw noParish(clean.ParishID);
-      return { ...s.insert('Pastor', rowValues(PASTOR_COLUMNS, clean)) } as unknown as Pastor;
+      assertMayMaintainCouncilRecords(this.memberWriteActor(s, actorId), clean.council_id, 'add pastors');
+      return s.transaction(() => {
+        this.assertCouncilsExist(s, [clean.council_id]);
+        return { ...s.insert('Pastors', { ...rowValues(PASTOR_COLUMNS, clean), created_at: toTimestamp(this.now()) }) } as unknown as Pastor;
+      });
     },
 
     update: async (actorId, id, changes) => {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      const row = this.requireRecord(s, 'Pastor', id);
-      assertMayMaintainCouncilRecords(actor, this.parishCouncilId(s, row.ParishID as number), `change pastor ${id}`);
+      const row = this.requireRecord(s, 'Pastors', id);
+      assertMayMaintainCouncilRecords(actor, row.council_id as number, `change pastor ${id}`);
       const clean = cleanPastor(mergeRecordChanges<NewPastor>(row, changes, PASTOR_COLUMNS));
-      if (clean.ParishID !== row.ParishID) {
-        const parish = s.rows('Parish').find((p) => p.id === clean.ParishID);
-        assertMayMaintainCouncilRecords(actor, (parish?.CouncilID as number | undefined) ?? actor.councilId, `move pastor ${id}`);
-        if (!parish) throw noParish(clean.ParishID);
+      if (clean.council_id !== row.council_id) {
+        assertMayMaintainCouncilRecords(actor, clean.council_id, `move pastor ${id}`);
+        this.assertCouncilsExist(s, [clean.council_id]);
       }
       Object.assign(row, rowValues(PASTOR_COLUMNS, clean));
       return { ...row } as unknown as Pastor;
@@ -2152,22 +2227,42 @@ export class MemoryDataService implements DataService {
     remove: async (actorId, id) => {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      const row = this.requireRecord(s, 'Pastor', id);
-      assertMayMaintainCouncilRecords(actor, this.parishCouncilId(s, row.ParishID as number), `delete pastor ${id}`);
-      s.remove('Pastor', (r) => r.id === id);
+      const row = this.requireRecord(s, 'Pastors', id);
+      assertMayMaintainCouncilRecords(actor, row.council_id as number, `delete pastor ${id}`);
+      s.transaction(() => {
+        // The pastor's parish assignments belong to the pastor and go with them.
+        s.remove('PastorParishMappings', (m) => m.pastor_id === id);
+        s.remove('Pastors', (r) => r.id === id);
+      });
+    },
+
+    assignToParish: async (actorId, pastorId, parishId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const pastor = this.requireRecord(s, 'Pastors', pastorId);
+      const parish = s.rows('Parishes').find((p) => p.id === parishId);
+      // A non-admin hears ADMIN_REQUIRED even for an unknown parish; the parish only decides the second tenant.
+      assertMayAssignPastor(actor, pastor.council_id as number, (parish?.council_id as number | undefined) ?? (pastor.council_id as number));
+      if (!parish) throw noParish(parishId);
+      const existing = s.rows('PastorParishMappings').find((m) => m.pastor_id === pastorId && m.parish_id === parishId);
+      if (existing) return { ...existing } as unknown as PastorParishMapping;
+      return { ...s.insert('PastorParishMappings', { pastor_id: pastorId, parish_id: parishId, assigned_at: toTimestamp(this.now()) }) } as unknown as PastorParishMapping;
+    },
+
+    unassignFromParish: async (actorId, pastorId, parishId) => {
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      const pastor = this.requireRecord(s, 'Pastors', pastorId);
+      const parish = s.rows('Parishes').find((p) => p.id === parishId);
+      assertMayAssignPastor(actor, pastor.council_id as number, (parish?.council_id as number | undefined) ?? (pastor.council_id as number));
+      if (!s.rows('PastorParishMappings').some((m) => m.pastor_id === pastorId && m.parish_id === parishId)) throw noPastorAssignment(pastorId, parishId);
+      s.remove('PastorParishMappings', (m) => m.pastor_id === pastorId && m.parish_id === parishId);
     },
   };
 
-  private sortedPastors(s: MemoryStore, parishIds: readonly number[]): Pastor[] {
-    const rows = s
-      .rows('Pastor')
-      .filter((p) => parishIds.includes(p.ParishID as number))
-      .map((p) => ({ ...p })) as unknown as Pastor[];
-    return rows.sort((a, b) => a.LastName.localeCompare(b.LastName) || a.FirstName.localeCompare(b.FirstName) || a.id - b.id);
-  }
-
-  private parishCouncilId(s: MemoryStore, parishId: number): number {
-    return s.rows('Parish').find((p) => p.id === parishId)?.CouncilID as number;
+  private sortedPastors(s: MemoryStore, keep: (row: Row) => boolean): Pastor[] {
+    const rows = s.rows('Pastors').filter(keep).map((p) => ({ ...p })) as unknown as Pastor[];
+    return rows.sort((a, b) => a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name) || a.id - b.id);
   }
 
   private sortedCouncils(s: MemoryStore): Council[] {
@@ -8230,18 +8325,40 @@ export class MemoryDataService implements DataService {
   };
 
   // ---- Sprint 11 Revision 20.0: the Local Feedback Portal (local-feedback.ts) ---------------------------------------
+  // Sprint 11 Revision 21.0 (schema 113): LocalFeedbackTickets and LocalFeedbackTicketMessages.
 
-  private feedbackTicketRows(s: MemoryStore, councilId?: number): FeedbackTicketRows {
-    const rows = this.messagingRows(s);
-    return { threads: councilId === undefined ? rows.threads : rows.threads.filter((t) => t.CouncilID === councilId), messages: rows.messages, names: rows.names };
+  private feedbackTicketRows(s: MemoryStore, keep: (ticket: Row) => boolean): FeedbackTicketRows {
+    const tickets = s.rows('LocalFeedbackTickets').filter(keep).map((r) => ({ ...r })) as unknown as LocalFeedbackTicketRow[];
+    const ids = new Set(tickets.map((t) => t.id));
+    return {
+      tickets,
+      messages: s.rows('LocalFeedbackTicketMessages').filter((m) => ids.has(m.ticket_id as number)).map((m) => ({ ...m })) as unknown as LocalFeedbackTicketMessageRow[],
+      names: new Map(s.rows('Member').map((m) => [m.id as number, `${m.MemberFirstName} ${m.MemberLastName}`])),
+    };
   }
 
   private feedbackTicketChat(s: MemoryStore, ticketId: number): FeedbackTicketChat {
-    const rows = this.feedbackTicketRows(s);
-    const thread = rows.threads.find((t) => t.id === ticketId);
-    const chat = thread ? buildFeedbackTicketChat(thread, rows) : null;
-    if (!chat) throw feedbackTicketNotFound(ticketId);
-    return chat;
+    const rows = this.feedbackTicketRows(s, (t) => t.id === ticketId);
+    const ticket = rows.tickets[0];
+    if (!ticket) throw feedbackTicketNotFound(ticketId);
+    return buildFeedbackTicketChat(ticket, rows);
+  }
+
+  /** Adds one chat log line and moves the ticket's columns (activity time, and the status on a status change). */
+  private addFeedbackLine(s: MemoryStore, ticketId: number, senderId: number, text: string, status: FeedbackTicketStatus | null): void {
+    const at = toTimestamp(this.now());
+    s.transaction(() => {
+      s.insert('LocalFeedbackTicketMessages', {
+        ticket_id: ticketId,
+        sender_id: senderId,
+        entry_kind: status ? 'status' : 'reply',
+        status_to: status,
+        message_text: text,
+        created_at: at,
+      });
+      const ticket = s.rows('LocalFeedbackTickets').find((t) => t.id === ticketId)!;
+      Object.assign(ticket, status ? feedbackStatusChange(status, at) : { last_activity_at: at });
+    });
   }
 
   localFeedback: DataService['localFeedback'] = {
@@ -8250,25 +8367,20 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
       assertMayOpenFeedbackTicket(actor);
-      const ticketId = s.transaction(() => {
-        const at = toTimestamp(this.now());
-        const thread = s.insert('ChatThreads', { CouncilID: actor.councilId, IsGroupChat: 0, CreatedAt: at });
-        s.insert('Messages', { ThreadID: thread.id, SenderID: actorId, ParentMessageID: null, MessageText: encodeFeedbackTicketOpening(clean), IsDraft: 0, CreatedAt: at });
-        return thread.id as number;
-      });
-      return this.feedbackTicketChat(s, ticketId).ticket;
+      const row = s.insert('LocalFeedbackTickets', { ...newFeedbackTicketRow(clean, actor.councilId, actorId, toTimestamp(this.now())) });
+      return this.feedbackTicketChat(s, row.id as number).ticket;
     },
 
     listMyTickets: async (actorId) => {
       const s = await this.ready();
       this.memberWriteActor(s, actorId);
-      return buildFeedbackTickets(this.feedbackTicketRows(s)).filter((t) => t.memberId === actorId);
+      return buildFeedbackTickets(this.feedbackTicketRows(s, (t) => t.member_id === actorId));
     },
 
     listCouncilTickets: async (actorId, councilId) => {
       const s = await this.ready();
       assertMayTriageCouncilFeedback(this.memberWriteActor(s, actorId), councilId);
-      return sortFeedbackTicketsForTriage(buildFeedbackTickets(this.feedbackTicketRows(s, councilId)));
+      return sortFeedbackTicketsForTriage(buildFeedbackTickets(this.feedbackTicketRows(s, (t) => t.council_id === councilId)));
     },
 
     getTicketChat: async (actorId, ticketId) => {
@@ -8283,9 +8395,8 @@ export class MemoryDataService implements DataService {
       const clean = cleanFeedbackChatText(text);
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      const chat = this.feedbackTicketChat(s, ticketId);
-      assertMayReadFeedbackTicket(actor, chat.ticket);
-      s.insert('Messages', { ThreadID: ticketId, SenderID: actorId, ParentMessageID: chat.entries[0]!.id, MessageText: clean, IsDraft: 0, CreatedAt: toTimestamp(this.now()) });
+      assertMayReadFeedbackTicket(actor, this.feedbackTicketChat(s, ticketId).ticket);
+      this.addFeedbackLine(s, ticketId, actorId, clean, null);
       return this.feedbackTicketChat(s, ticketId);
     },
 
@@ -8294,16 +8405,8 @@ export class MemoryDataService implements DataService {
       const cleanNote = note == null ? '' : assertText(note, 'Note', FEEDBACK_CHAT_MAX_LENGTH, false);
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
-      const chat = this.feedbackTicketChat(s, ticketId);
-      assertMaySetFeedbackTicketStatus(actor, chat.ticket);
-      s.insert('Messages', {
-        ThreadID: ticketId,
-        SenderID: actorId,
-        ParentMessageID: chat.entries[0]!.id,
-        MessageText: encodeFeedbackStatusChange(next, cleanNote),
-        IsDraft: 0,
-        CreatedAt: toTimestamp(this.now()),
-      });
+      assertMaySetFeedbackTicketStatus(actor, this.feedbackTicketChat(s, ticketId).ticket);
+      this.addFeedbackLine(s, ticketId, actorId, cleanNote, next);
       return this.feedbackTicketChat(s, ticketId);
     },
   };

@@ -22,6 +22,7 @@
 import type { NewEvent, SupremeRosterRow } from './contract';
 import { COUNCIL_WIDE_SETTING_NAMES, type CouncilWideSettings } from './council-settings';
 import { BusinessRuleError } from './rules';
+import { TRAINING_SEED } from './training-seed';
 import type { Activities, CouncilDonationMethod, DonationType, GLAccount } from './types';
 
 export type SetupWizardStepId = 'roster' | 'storage-email' | 'founding-template' | 'practice-sandbox' | 'quick-start';
@@ -230,18 +231,8 @@ export interface PracticeSandboxStatus {
 
 export const practiceSandboxStatus = (members: number, events: number): PracticeSandboxStatus => ({ members, events, active: members > 0 || events > 0 });
 
-const PRACTICE_NAMES: readonly [string, string][] = [
-  ['Peter', 'Practice'],
-  ['Andrew', 'Sample'],
-  ['James', 'Trialson'],
-  ['John', 'Demoworth'],
-  ['Philip', 'Mockley'],
-  ['Thomas', 'Testwell'],
-  ['Matthew', 'Rehearsal'],
-  ['Simon', 'Drillman'],
-  ['Jude', 'Sandbury'],
-  ['Mark', 'Exampleton'],
-];
+/** Sprint 11 Revision 21.0: the practice members' names come from the training seed fixture (training-seed.ts). */
+const PRACTICE_NAMES: readonly [string, string][] = TRAINING_SEED.members.map((m) => [m.firstName, m.lastName] as [string, string]);
 
 const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const addDays = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
@@ -275,11 +266,8 @@ export interface PracticeFundraiser {
 
 /** The three practice fundraisers: 1, 2 and 3 weeks out, each with one shift and three practice volunteers. */
 export function practiceFundraisers(today: Date): PracticeFundraiser[] {
-  const plans: [string, string, string][] = [
-    ['Pancake Breakfast', 'Practice pancake breakfast after Sunday Mass', 'Parish Hall'],
-    ['Tootsie Roll Drive', 'Practice Tootsie Roll drive for people with intellectual disabilities', 'Church Entrance'],
-    ['Fish Fry', 'Practice Lenten-style fish fry dinner', 'Parish Hall Kitchen'],
-  ];
+  // Sprint 11 Revision 21.0: the fundraisers come from the training seed fixture (training-seed.ts).
+  const plans: [string, string, string][] = TRAINING_SEED.fundraisers.map((f) => [f.name, f.description, f.location]);
   return plans.slice(0, PRACTICE_FUNDRAISER_COUNT).map(([name, description, location], i) => {
     const day = isoDay(addDays(today, 7 * (i + 1)));
     return {

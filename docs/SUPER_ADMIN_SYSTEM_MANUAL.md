@@ -223,7 +223,7 @@ The council's parent organization mapping (3.3) moves with the new code.
 | A council cannot be deleted. | A chapter is mapped under it. | Map the chapter to another parent council first. |
 
 ### 3.4 Keep the global lists, councils, parishes and charities
-> **Prerequisite (who can do this):** You must be a Super Admin for **Global Lookup Tables** and **Councils**. You must be a council Admin or a Super Admin for **Parish & Pastors Linkage**. You must be a charity registry keeper for **Global Charities Registry**.
+> **Prerequisite (who can do this):** You must be a Super Admin for **Global Lookup Tables** and **Councils**. You must be a council Admin or a Super Admin for **Parish & Pastors Linkage** (the parish matrix and the home parish link: 3.5, and section 5.6 of the Administrator User Guide). You must be a charity registry keeper for **Global Charities Registry**.
 > **Warning:** a value marked **Built in** cannot be renamed or deleted.
 
 **Goal:** Keep the lists that every council shares, or the lists of one parent organization.
@@ -262,6 +262,29 @@ The base dues rate, the tenant type and the **Platform Settings** are not on **G
 | Finance officers lost access. | A role named Treasurer or Financial Secretary was renamed. | Restore the exact role name. |
 | *"… already exists"* when you add a row for one organization. | A shared row has the same name. Every council already reads it. | Use the shared row, or give the new row a different name. |
 | A council does not see a new row. | The row is filed under another parent organization. | Choose the council's parent organization in the list and add the row there, or add it as shared. |
+
+### 3.5 Concept: Parish & Pastors Linkage and the parish ledger accounts
+Schema 113 keeps parishes and pastors in three tables:
+
+| Table | What it holds | Key rule |
+| --- | --- | --- |
+| `Parishes` | The parishes that a council keeps (`council_id`). `associated_council_id` marks the one council linked to the parish (its home parish). `gl_account_id` names the parish's account owner in that council's General Ledger. | `associated_council_id` is unique. A council links to one parish, and a parish to one council. |
+| `Pastors` | The pastors that a council keeps (`council_id`). | A pastor no longer belongs to one parish. |
+| `PastorParishMappings` | One row for each pastor and each parish that the pastor serves. | The pastor and parish pair is unique. The rows go with the pastor when the pastor is deleted. |
+
+When an Admin or a Super Admin selects **Link as home parish**, the portal does these steps in one transaction (`parishes.setCouncilAssociation`):
+1. It ends the council's link to any other parish.
+2. It finds the parish's account owner: first the account that `gl_account_id` names, then an account named `Parish - ` and the parish name. If there is none, it adds one: an **Asset** account, owned by **Parish** (`PARENT_ORGANIZATION`), with the parish name as **Name members see** and the parish phone as the contact number.
+3. It adds the missing baseline **Asset** accounts under the account owner: `Parish - <parish name> - Electronic Giving` and `Parish - <parish name> - Cash & Check Collections`.
+4. It sets `associated_council_id` and `gl_account_id` on the parish.
+
+The link refuses a parish that another council keeps. It refuses an account of the same name that is not a Parish **Asset** account; the Admin renames that account first. **Unlink home parish** clears `associated_council_id` only. The ledger accounts and their postings stay. A linked parish cannot move to another council or be deleted until it is unlinked. Its account owner cannot be deleted while the parish names it.
+
+A Super Admin uses the same page as a council Admin, and picks the council at the top. The step-by-step task is in the Administrator User Guide, section 5.6.
+
+<!-- KEEP_IMAGE: parish matrix capture -->
+![Parishes and pastors (/parishes)](../generated/dashboard_visual_catalog/parishes.png)
+<!-- /KEEP_IMAGE -->
 
 ---
 
@@ -515,8 +538,8 @@ Every desktop installation keeps three SQLite files in its vault folder (`%APPDA
 
 The server creates all three files on its first start. `KOFC_DATA_MODE` (`production`, `testing` or `training`) picks the file without the start-up question. `npm run dev:pilot -- --mode testing` does the same on the hub laptop.
 
-Testing mode shares saves only when every laptop has the same mesh passphrase: `KOFC_MESH_PASSPHRASE` in the environment, or the file `testing-mesh-passphrase.txt` in the vault folder, at least 12 characters. Without a passphrase, testing mode works alone on its own file. Each packet is sealed with AES-256-GCM. A laptop without the passphrase cannot read or forge a packet. Reads, sign-ins and passkeys are never sent. A packet older than five minutes, or one already heard, is dropped.
+Testing mode shares saves only when every laptop has the same mesh passphrase: `KOFC_MESH_PASSPHRASE` in the environment, or the file `.testing-key.json` in the vault folder, at least 12 characters. When testing mode starts with neither, the server (and `npm run dev:pilot -- --mode testing`) writes a new `.testing-key.json` with a random 256-bit passphrase, readable by the signed-in Windows user only. An existing key file is never replaced. Copy the first laptop's file to every laptop in the hall. A laptop with a different key works alone on its own file. The old `testing-mesh-passphrase.txt` file is no longer read. Each packet is sealed with AES-256-GCM. A laptop without the passphrase cannot read or forge a packet. Reads, sign-ins and passkeys are never sent. A packet older than five minutes, or one already heard, is dropped.
 
-Training mode builds a practice council every start: the ten Practice Sandbox members, three upcoming practice fundraisers with volunteers, three training cash boxes and seven generic sign-in accounts (`admin@training`, `gk@training`, `fs@training`, `tr@training`, `rec@training`, `hist@training`, `mem@training`, password `training`). The sign-in screen lists them on the **Training Profile Selection Board**. These accounts skip the Admin sign-in code, in training mode only.
+Training mode builds a practice council every start: the ten Practice Sandbox members, three upcoming practice fundraisers with volunteers, three training cash boxes (names and amounts in `packages/shared/src/fixtures/training-seed.json`) and seven generic sign-in accounts (`admin@training`, `gk@training`, `fs@training`, `tr@training`, `rec@training`, `hist@training`, `mem@training`, password `training`). The sign-in screen lists them on the **Training Profile Selection Board**. These accounts skip the Admin sign-in code, in training mode only.
 
 The window shows an amber **Testing Mode** banner or a cobalt blue **Training Mode** banner across the top of every page. Production shows no banner.

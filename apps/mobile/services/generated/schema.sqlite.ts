@@ -17,8 +17,6 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [MeetingType] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [Type] TEXT,\n  [Description] TEXT,\n  [parent_org_id] INTEGER,\n  FOREIGN KEY ([parent_org_id]) REFERENCES [ParentOrganizations]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [Council] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilNumber] INTEGER NOT NULL,\n  [CouncilName] TEXT NOT NULL,\n  [State] TEXT NOT NULL,\n  [Phone] TEXT,\n  [Email] TEXT,\n  [flag_mobile_elections] INTEGER NOT NULL DEFAULT 1,\n  [flag_fundraising_inflow] INTEGER NOT NULL DEFAULT 1,\n  [flag_charity_proposals] INTEGER NOT NULL DEFAULT 1,\n  [flag_complex_shifts] INTEGER NOT NULL DEFAULT 1,\n  [flag_meeting_management] INTEGER NOT NULL DEFAULT 1,\n  [BylawsMarkdown] TEXT,\n  [BylawsUpdatedAt] TEXT,\n  [EmailProvider] TEXT,\n  [SmtpHost] TEXT,\n  [SmtpPort] INTEGER,\n  [SmtpUsername] TEXT,\n  [tenant_type] TEXT NOT NULL DEFAULT 'KOFC',\n  [base_dues_rate] REAL NOT NULL DEFAULT 40,\n  [ein_number] TEXT,\n  [feature_expense_reporting] INTEGER NOT NULL DEFAULT 1,\n  [feature_faith_center] INTEGER NOT NULL DEFAULT 1,\n  [feature_constitutional_advisor] INTEGER NOT NULL DEFAULT 1,\n  [feature_council_bylaws] INTEGER NOT NULL DEFAULT 1,\n  [feature_council_history] INTEGER NOT NULL DEFAULT 1,\n  [feature_live_meeting_console] INTEGER NOT NULL DEFAULT 1,\n  [feature_volunteer_quarantine] INTEGER NOT NULL DEFAULT 1,\n  [quarantine_max_daily_activities] INTEGER NOT NULL DEFAULT 5,\n  [quarantine_max_single_hours] REAL NOT NULL DEFAULT 5,\n  [max_shift_padding_hours] REAL NOT NULL DEFAULT 1,\n  [inactivity_threshold_days] INTEGER NOT NULL DEFAULT 365,\n  [er_submission_window_days] INTEGER NOT NULL DEFAULT 30,\n  [volunteer_logging_window_days] INTEGER NOT NULL DEFAULT 90,\n  [reminder_delay_days] INTEGER NOT NULL DEFAULT 5,\n  [reminder_cadence_days] INTEGER NOT NULL DEFAULT 7,\n  [expense_draft_expiry_days] INTEGER NOT NULL DEFAULT 90,\n  [charity_proposal_voting_days] INTEGER NOT NULL DEFAULT 14,\n  [shift_signup_lock_hours] REAL NOT NULL DEFAULT 2,\n  [officer_signature_reminder_days] INTEGER NOT NULL DEFAULT 3,\n  [meeting_minutes_due_days] INTEGER NOT NULL DEFAULT 7,\n  [special_election_notice_days] INTEGER NOT NULL DEFAULT 60,\n  [meeting_latitude] REAL,\n  [meeting_longitude] REAL,\n  [meeting_geofence_radius_meters] INTEGER NOT NULL DEFAULT 100,\n  [meeting_pin_token] TEXT NOT NULL DEFAULT '0000',\n  [is_loaner_library_enabled] INTEGER NOT NULL DEFAULT 0,\n  [district_number] INTEGER,\n  [parish_split_enabled] INTEGER NOT NULL DEFAULT 0,\n  [parish_split_percentage] REAL NOT NULL DEFAULT 50,\n  [parish_split_gl_line_id] INTEGER,\n  [biometric_login_enabled] INTEGER NOT NULL DEFAULT 1,\n  [file_repository_mode] TEXT NOT NULL DEFAULT 'CLOUD',\n  [file_server_path] TEXT,\n  [file_server_username] TEXT,\n  [council_level] TEXT NOT NULL DEFAULT 'LOCAL' CHECK ([council_level] IN ('LOCAL', 'STATE')),\n  [institution_date] TEXT,\n  [merit_t2_hours] INTEGER NOT NULL DEFAULT 1,\n  [merit_t2_events] INTEGER NOT NULL DEFAULT 1,\n  [merit_t2_meetings] INTEGER NOT NULL DEFAULT 1,\n  [merit_t3_hours] INTEGER NOT NULL DEFAULT 20,\n  [merit_t3_events] INTEGER NOT NULL DEFAULT 4,\n  [merit_t3_meetings] INTEGER NOT NULL DEFAULT 4,\n  [merit_t4_hours] INTEGER NOT NULL DEFAULT 60,\n  [merit_t4_events] INTEGER NOT NULL DEFAULT 8,\n  [merit_t4_meetings] INTEGER NOT NULL DEFAULT 8,\n  [merit_t5_meetings] INTEGER NOT NULL DEFAULT 3,\n  [merit_t5_events] INTEGER NOT NULL DEFAULT 3,\n  [merit_t5_recruits] INTEGER NOT NULL DEFAULT 1,\n  [feature_capital_assets] INTEGER NOT NULL DEFAULT 1,\n  [feature_charity_registry] INTEGER NOT NULL DEFAULT 1,\n  [feature_document_compilation] INTEGER NOT NULL DEFAULT 1,\n  [feature_financial_management] INTEGER NOT NULL DEFAULT 1,\n  [feature_photo_gallery] INTEGER NOT NULL DEFAULT 1,\n  [feature_lessons_registry] INTEGER NOT NULL DEFAULT 1,\n  [feature_marketing_factory] INTEGER NOT NULL DEFAULT 1,\n  [feature_loaner_library] INTEGER NOT NULL DEFAULT 1,\n  [feature_advanced_audits] INTEGER NOT NULL DEFAULT 1,\n  [parent_organization] TEXT NOT NULL DEFAULT 'KofC',\n  [motion_request_lead_days] INTEGER NOT NULL DEFAULT 5,\n  [flag_motion_requests] INTEGER NOT NULL DEFAULT 1,\n  FOREIGN KEY ([parish_split_gl_line_id]) REFERENCES [GLAccount]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [AffiliatedCouncils] (\n  [PrimaryCouncilID] INTEGER NOT NULL,\n  [AffiliatedCouncilID] INTEGER NOT NULL,\n  PRIMARY KEY ([PrimaryCouncilID], [AffiliatedCouncilID])\n);",
-  "CREATE TABLE IF NOT EXISTS [Parish] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [Name] TEXT NOT NULL,\n  [StreetAddress1] TEXT NOT NULL,\n  [StreetAddress2] TEXT,\n  [City] TEXT NOT NULL,\n  [State] TEXT NOT NULL,\n  [Phone] TEXT,\n  [CouncilID] INTEGER NOT NULL,\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id])\n);",
-  "CREATE TABLE IF NOT EXISTS [Pastor] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [FirstName] TEXT NOT NULL,\n  [LastName] TEXT NOT NULL,\n  [Phone] TEXT,\n  [Email] TEXT,\n  [ParishID] INTEGER NOT NULL,\n  FOREIGN KEY ([ParishID]) REFERENCES [Parish]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [Meeting] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER,\n  [Meeting Name] TEXT NOT NULL,\n  [Meeting Description] TEXT,\n  [Date] TEXT NOT NULL,\n  [Time Start] TEXT NOT NULL,\n  [Time End] TEXT NOT NULL,\n  [Location] TEXT NOT NULL,\n  [Agenda] TEXT NOT NULL,\n  [MinutesURL] TEXT NOT NULL,\n  [MeetingType] INTEGER NOT NULL,\n  [GoogleDriveMinutesURL] TEXT,\n  [GoogleDriveFlyerURL] TEXT,\n  [OwnerID] INTEGER,\n  [IsMultiDay] INTEGER NOT NULL DEFAULT 0,\n  [MeetingTypeID] INTEGER,\n  [EndDate] TEXT,\n  [MissionAreaID] INTEGER,\n  [InviteReleaseDate] TEXT,\n  [ActiveAgendaItemName] TEXT,\n  [ActiveAgendaItemTimeRemaining] INTEGER,\n  [IsLiveInProgress] INTEGER NOT NULL DEFAULT 0,\n  [ActiveAgendaItemStartedAt] TEXT,\n  [LiveQuorumRosterCount] INTEGER,\n  [ActiveAgendaLineKey] TEXT,\n  [photo_url] TEXT,\n  [minutes_text] TEXT,\n  [minutes_published_at] TEXT,\n  FOREIGN KEY ([MeetingType]) REFERENCES [MeetingType]([id]),\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([OwnerID]) REFERENCES [Member]([id]),\n  FOREIGN KEY ([MeetingTypeID]) REFERENCES [CouncilMeetingType]([id]),\n  FOREIGN KEY ([MissionAreaID]) REFERENCES [CouncilMissionArea]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [MeetingInvites] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [MeetingID] INTEGER,\n  [MemberID] INTEGER,\n  [Attended] INTEGER DEFAULT 0,\n  [ResponseStatus] TEXT NOT NULL DEFAULT 'NoResponse',\n  FOREIGN KEY ([MeetingID]) REFERENCES [Meeting]([id]),\n  FOREIGN KEY ([MemberID]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [Member] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [CouncilID] INTEGER NOT NULL,\n  [MemberNumber] INTEGER NOT NULL,\n  [MemberFirstName] TEXT NOT NULL,\n  [MemberLastName] TEXT NOT NULL,\n  [Phone] TEXT NOT NULL,\n  [StreetAddress1] TEXT NOT NULL,\n  [StreetAddress2] TEXT,\n  [City] TEXT NOT NULL,\n  [State] TEXT NOT NULL,\n  [ZipCode] TEXT NOT NULL,\n  [Email] TEXT NOT NULL,\n  [DateOfBirth] TEXT NOT NULL,\n  [StatusID] INTEGER NOT NULL,\n  [DegreeID] INTEGER NOT NULL,\n  [MemberTypeID] INTEGER NOT NULL,\n  [CredentialID] INTEGER NOT NULL,\n  [WorkingStatusID] INTEGER,\n  [ProfilePhotoURL] TEXT,\n  [Biography] TEXT,\n  [ExpoPushToken] TEXT,\n  [IsBudgetDirector] INTEGER NOT NULL DEFAULT 0,\n  [DateJoinedCouncil] TEXT,\n  [flag_large_text_mode] INTEGER NOT NULL DEFAULT 0,\n  [flag_charter_member] INTEGER NOT NULL DEFAULT 0,\n  [join_date] TEXT,\n  [recruited_by_member_id] INTEGER,\n  [flag_honorary_shield] INTEGER NOT NULL DEFAULT 0,\n  FOREIGN KEY ([CredentialID]) REFERENCES [Credentials]([id]),\n  FOREIGN KEY ([DegreeID]) REFERENCES [Degree]([id]),\n  FOREIGN KEY ([MemberTypeID]) REFERENCES [MemberType]([id]),\n  FOREIGN KEY ([CouncilID]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([StatusID]) REFERENCES [MemberStatus]([id]),\n  FOREIGN KEY ([WorkingStatusID]) REFERENCES [WorkingStatus]([id]),\n  FOREIGN KEY ([recruited_by_member_id]) REFERENCES [Member]([id])\n);",
@@ -114,6 +112,11 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE TABLE IF NOT EXISTS [MotionRequestMessage] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [motion_request_id] INTEGER NOT NULL,\n  [channel] TEXT NOT NULL CHECK ([channel] IN ('MEMBER_GK', 'OFFICER_ADVISORY')),\n  [author_member_id] INTEGER NOT NULL,\n  [posted_at] TEXT NOT NULL,\n  [message_body] TEXT NOT NULL,\n  FOREIGN KEY ([motion_request_id]) REFERENCES [MotionRequest]([id]),\n  FOREIGN KEY ([author_member_id]) REFERENCES [Member]([id])\n);",
   "CREATE TABLE IF NOT EXISTS [ParentOrganizations] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [org_name] TEXT NOT NULL,\n  [org_code] TEXT NOT NULL,\n  [vertical_type] TEXT NOT NULL DEFAULT 'FRATERNAL' CHECK ([vertical_type] IN ('FRATERNAL', 'SECULAR_NONPROFIT')),\n  [created_at] TEXT\n);",
   "CREATE TABLE IF NOT EXISTS [CouncilParentMappings] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [parent_org_id] INTEGER NOT NULL,\n  [parent_council_id] INTEGER,\n  [mapped_at] TEXT,\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([parent_org_id]) REFERENCES [ParentOrganizations]([id]),\n  FOREIGN KEY ([parent_council_id]) REFERENCES [Council]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [Parishes] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [parish_name] TEXT NOT NULL,\n  [street_address_1] TEXT NOT NULL,\n  [street_address_2] TEXT,\n  [city] TEXT NOT NULL,\n  [state] TEXT NOT NULL,\n  [phone] TEXT,\n  [associated_council_id] INTEGER,\n  [gl_account_id] INTEGER,\n  [created_at] TEXT,\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([associated_council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([gl_account_id]) REFERENCES [GLAccount]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [Pastors] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [first_name] TEXT NOT NULL,\n  [last_name] TEXT NOT NULL,\n  [phone] TEXT,\n  [email] TEXT,\n  [created_at] TEXT,\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [PastorParishMappings] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [pastor_id] INTEGER NOT NULL,\n  [parish_id] INTEGER NOT NULL,\n  [assigned_at] TEXT,\n  FOREIGN KEY ([pastor_id]) REFERENCES [Pastors]([id]),\n  FOREIGN KEY ([parish_id]) REFERENCES [Parishes]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [LocalFeedbackTickets] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [council_id] INTEGER NOT NULL,\n  [member_id] INTEGER NOT NULL,\n  [category] TEXT NOT NULL CHECK ([category] IN ('Question', 'Problem', 'Suggestion', 'Praise')),\n  [subject] TEXT NOT NULL,\n  [body] TEXT NOT NULL,\n  [status] TEXT NOT NULL DEFAULT 'Open' CHECK ([status] IN ('Open', 'In Progress', 'Resolved')),\n  [opened_at] TEXT NOT NULL,\n  [last_activity_at] TEXT NOT NULL,\n  [resolved_at] TEXT,\n  FOREIGN KEY ([council_id]) REFERENCES [Council]([id]),\n  FOREIGN KEY ([member_id]) REFERENCES [Member]([id])\n);",
+  "CREATE TABLE IF NOT EXISTS [LocalFeedbackTicketMessages] (\n  [id] INTEGER PRIMARY KEY AUTOINCREMENT,\n  [ticket_id] INTEGER NOT NULL,\n  [sender_id] INTEGER NOT NULL,\n  [entry_kind] TEXT NOT NULL DEFAULT 'reply' CHECK ([entry_kind] IN ('reply', 'status')),\n  [status_to] TEXT,\n  [message_text] TEXT NOT NULL DEFAULT '',\n  [created_at] TEXT NOT NULL,\n  CONSTRAINT [CK_LocalFeedbackTicketMessages_status_to] CHECK ([status_to] IS NULL OR [status_to] IN ('Open', 'In Progress', 'Resolved')),\n  FOREIGN KEY ([ticket_id]) REFERENCES [LocalFeedbackTickets]([id]),\n  FOREIGN KEY ([sender_id]) REFERENCES [Member]([id])\n);",
   "CREATE INDEX IF NOT EXISTS [Member_CouncilID_Idx] ON [Member] ([CouncilID]);",
   "CREATE INDEX IF NOT EXISTS [Council_Sort_Idx] ON [Council] ([CouncilNumber], [CouncilName]);",
   "CREATE INDEX IF NOT EXISTS [Member_Name_Idx] ON [Member] ([MemberLastName], [MemberFirstName]);",
@@ -202,6 +205,13 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   "CREATE UNIQUE INDEX IF NOT EXISTS [ParentOrganizations_Code_Idx] ON [ParentOrganizations] ([org_code]);",
   "CREATE UNIQUE INDEX IF NOT EXISTS [CouncilParentMappings_Council_Idx] ON [CouncilParentMappings] ([council_id]);",
   "CREATE UNIQUE INDEX IF NOT EXISTS [PlatformSettings_ParentOrg_Idx] ON [PlatformSettings] ([parent_org_id]) WHERE [parent_org_id] IS NOT NULL;",
+  "CREATE UNIQUE INDEX IF NOT EXISTS [Parishes_AssociatedCouncil_Idx] ON [Parishes] ([associated_council_id]) WHERE [associated_council_id] IS NOT NULL;",
+  "CREATE UNIQUE INDEX IF NOT EXISTS [Parishes_Council_Name_Idx] ON [Parishes] ([council_id], [parish_name]);",
+  "CREATE UNIQUE INDEX IF NOT EXISTS [PastorParishMappings_Pair_Idx] ON [PastorParishMappings] ([pastor_id], [parish_id]);",
+  "CREATE INDEX IF NOT EXISTS [PastorParishMappings_Parish_Idx] ON [PastorParishMappings] ([parish_id]);",
+  "CREATE INDEX IF NOT EXISTS [LocalFeedbackTickets_Council_Idx] ON [LocalFeedbackTickets] ([council_id], [status]);",
+  "CREATE INDEX IF NOT EXISTS [LocalFeedbackTickets_Member_Idx] ON [LocalFeedbackTickets] ([member_id]);",
+  "CREATE INDEX IF NOT EXISTS [LocalFeedbackTicketMessages_Ticket_Idx] ON [LocalFeedbackTicketMessages] ([ticket_id]);",
   "DROP VIEW IF EXISTS [view_Member];",
   "CREATE VIEW [view_Member] AS\nSELECT\n[Council].[CouncilNumber],\n[Council].[CouncilName],\n[Member].[MemberNumber],\n[Member].[MemberFirstName],\n[Member].[MemberLastName],\n[Member].[Phone],\n[Member].[Email],\n[Member].[StreetAddress1],\n[Member].[City],\n[Member].[State],\n[Member].[ZipCode],\n[Role].[Role],\n[Degree].[Degree],\n[MemberStatus].[Status]\nFROM [Member]\nINNER JOIN [Degree] ON [Member].[DegreeID] = [Degree].[id]\nINNER JOIN [Council] ON [Member].[CouncilID] = [Council].[id]\nINNER JOIN [MemberStatus] ON [Member].[StatusID] = [MemberStatus].[id]\nINNER JOIN [MemberRoles] ON [Member].[id] = [MemberRoles].[MemberID]\nINNER JOIN [Role] ON [MemberRoles].[RoleID] = [Role].[id];",
   "DROP VIEW IF EXISTS [view_Event];",
@@ -359,24 +369,6 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
   "AffiliatedCouncils": [
     "PrimaryCouncilID",
     "AffiliatedCouncilID"
-  ],
-  "Parish": [
-    "id",
-    "Name",
-    "StreetAddress1",
-    "StreetAddress2",
-    "City",
-    "State",
-    "Phone",
-    "CouncilID"
-  ],
-  "Pastor": [
-    "id",
-    "FirstName",
-    "LastName",
-    "Phone",
-    "Email",
-    "ParishID"
   ],
   "Meeting": [
     "id",
@@ -1334,6 +1326,55 @@ export const TABLE_COLUMNS: Readonly<Record<string, readonly string[]>> = {
     "parent_org_id",
     "parent_council_id",
     "mapped_at"
+  ],
+  "Parishes": [
+    "id",
+    "council_id",
+    "parish_name",
+    "street_address_1",
+    "street_address_2",
+    "city",
+    "state",
+    "phone",
+    "associated_council_id",
+    "gl_account_id",
+    "created_at"
+  ],
+  "Pastors": [
+    "id",
+    "council_id",
+    "first_name",
+    "last_name",
+    "phone",
+    "email",
+    "created_at"
+  ],
+  "PastorParishMappings": [
+    "id",
+    "pastor_id",
+    "parish_id",
+    "assigned_at"
+  ],
+  "LocalFeedbackTickets": [
+    "id",
+    "council_id",
+    "member_id",
+    "category",
+    "subject",
+    "body",
+    "status",
+    "opened_at",
+    "last_activity_at",
+    "resolved_at"
+  ],
+  "LocalFeedbackTicketMessages": [
+    "id",
+    "ticket_id",
+    "sender_id",
+    "entry_kind",
+    "status_to",
+    "message_text",
+    "created_at"
   ]
 };
 

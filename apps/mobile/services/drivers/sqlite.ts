@@ -14,12 +14,30 @@ import {
   cleanFeedbackChatText,
   cleanFeedbackTicketInput,
   cleanFeedbackTicketStatus,
-  encodeFeedbackStatusChange,
-  encodeFeedbackTicketOpening,
   FEEDBACK_CHAT_MAX_LENGTH,
+  feedbackStatusChange,
   feedbackTicketNotFound,
+  newFeedbackTicketRow,
   sortFeedbackTicketsForTriage,
   type FeedbackTicketChat,
+  type FeedbackTicketRows,
+  type FeedbackTicketStatus,
+  type LocalFeedbackTicketMessageRow,
+  type LocalFeedbackTicketRow,
+  assertMayAssignPastor,
+  assertMayAssociateParish,
+  assertParishKeptByCouncil,
+  isParishLedgerAccount,
+  linkedParishError,
+  noPastorAssignment,
+  PARISH_BASELINE_ASSET_ACCOUNTS,
+  parishBaselineAccountName,
+  parishBaselineAccountRow,
+  parishOwnerAccountName,
+  parishOwnerAccountRow,
+  reusableParishAccount,
+  type ParishAssociationResult,
+  type ParishLedgerAccountRow,
 } from '@kofc/shared';
 import {
   assertMayDecideMotionRequests,
@@ -728,6 +746,7 @@ import type {
   NewPastor,
   Parish,
   Pastor,
+  PastorParishMapping,
   ProfileOptions,
   Skill,
   SkillLevel,
@@ -1098,8 +1117,11 @@ const DB_NAME = 'kofc.db';
  *     and PlatformSettings.global_ai_confidence_cutoff (Sprint 11 Revision 18.0).
  * 112: ParentOrganizations and CouncilParentMappings (the relational parent-child hierarchy), Council.flag_motion_requests
  *     and parent_org_id on the eight global lookup tables and PlatformSettings (Sprint 11 Revision 19.6).
+ * 113: Parishes, Pastors and PastorParishMappings replace Parish and Pastor (the relational parish matrix and the
+ *     parish's General Ledger Account Owner), and LocalFeedbackTickets / LocalFeedbackTicketMessages take the Local
+ *     Feedback Portal off the messaging tables (Sprint 11 Revision 21.0).
  */
-const SCHEMA_VERSION = 112;
+const SCHEMA_VERSION = 113;
 
 /** A time entry the Sprint 7B guards judge (volunteer-quarantine.ts). */
 interface QuarantineEntry {
@@ -2450,82 +2472,156 @@ export class SqliteDataService implements DataService {
   };
 
   // ---- council-level maintenance: parishes, pastors, activities, lists ----
+  // Sprint 11 Revision 21.0 (schema 113): Parishes, Pastors and PastorParishMappings (parish-registry.ts).
 
   parishes: DataService['parishes'] = {
     listByCouncil: async (councilId) => {
       const db = await this.ready();
-      return db.getAllAsync<Parish>('SELECT * FROM [Parish] WHERE [CouncilID] = ? ORDER BY [Name] COLLATE NOCASE, [id]', [councilId]);
+      return db.getAllAsync<Parish>('SELECT * FROM [Parishes] WHERE [council_id] = ? ORDER BY [parish_name] COLLATE NOCASE, [id]', [councilId]);
     },
 
     get: async (id) => {
       const db = await this.ready();
-      return (await db.getFirstAsync<Parish>('SELECT * FROM [Parish] WHERE [id] = ?', [id])) ?? null;
+      return (await db.getFirstAsync<Parish>('SELECT * FROM [Parishes] WHERE [id] = ?', [id])) ?? null;
     },
 
     create: async (actorId, parish) => {
       const clean = cleanParish(parish);
       const db = await this.ready();
-      assertMayMaintainCouncilRecords(await this.memberWriteActor(db, actorId), clean.CouncilID, 'add parishes');
+      assertMayMaintainCouncilRecords(await this.memberWriteActor(db, actorId), clean.council_id, 'add parishes');
       let id = 0;
       await db.withTransactionAsync(async () => {
-        await this.assertCouncilsExist(db, [clean.CouncilID]);
+        await this.assertCouncilsExist(db, [clean.council_id]);
         await this.assertParishNameUnique(db, clean);
-        id = await this.insertRecord(db, 'Parish', PARISH_COLUMNS, clean);
+        id = await this.insertRecord(db, 'Parishes', PARISH_COLUMNS, clean);
+        await db.runAsync('UPDATE [Parishes] SET [created_at] = ? WHERE [id] = ?', [toTimestamp(this.now()), id]);
       });
-      return (await db.getFirstAsync<Parish>('SELECT * FROM [Parish] WHERE [id] = ?', [id]))!;
+      return (await db.getFirstAsync<Parish>('SELECT * FROM [Parishes] WHERE [id] = ?', [id]))!;
     },
 
     update: async (actorId, id, changes) => {
       const db = await this.ready();
       await db.withTransactionAsync(async () => {
         const actor = await this.memberWriteActor(db, actorId);
-        const row = await this.requireRecord(db, 'Parish', id);
-        assertMayMaintainCouncilRecords(actor, row.CouncilID as number, `change parish ${id}`);
+        const row = await this.requireRecord(db, 'Parishes', id);
+        assertMayMaintainCouncilRecords(actor, row.council_id as number, `change parish ${id}`);
         const clean = cleanParish(mergeRecordChanges<NewParish>(row, changes, PARISH_COLUMNS));
-        if (clean.CouncilID !== row.CouncilID) {
-          assertMayMaintainCouncilRecords(actor, clean.CouncilID, `move parish ${id}`);
-          await this.assertCouncilsExist(db, [clean.CouncilID]);
+        if (clean.council_id !== row.council_id) {
+          assertMayMaintainCouncilRecords(actor, clean.council_id, `move parish ${id}`);
+          await this.assertCouncilsExist(db, [clean.council_id]);
+          if (row.associated_council_id != null) throw linkedParishError(row as unknown as Parish, 'move');
         }
         await this.assertParishNameUnique(db, clean, id);
-        await this.updateRecord(db, 'Parish', id, PARISH_COLUMNS, clean);
+        await this.updateRecord(db, 'Parishes', id, PARISH_COLUMNS, clean);
       });
-      return (await db.getFirstAsync<Parish>('SELECT * FROM [Parish] WHERE [id] = ?', [id]))!;
+      return (await db.getFirstAsync<Parish>('SELECT * FROM [Parishes] WHERE [id] = ?', [id]))!;
     },
 
     remove: async (actorId, id) => {
       const db = await this.ready();
       await db.withTransactionAsync(async () => {
         const actor = await this.memberWriteActor(db, actorId);
-        const row = await this.requireRecord(db, 'Parish', id);
-        assertMayMaintainCouncilRecords(actor, row.CouncilID as number, `delete parish ${id}`);
-        await this.assertRecordUnused(db, 'Parish', id, String(row.Name));
-        await db.runAsync('DELETE FROM [Parish] WHERE [id] = ?', [id]);
+        const row = await this.requireRecord(db, 'Parishes', id);
+        assertMayMaintainCouncilRecords(actor, row.council_id as number, `delete parish ${id}`);
+        if (row.associated_council_id != null) throw linkedParishError(row as unknown as Parish, 'delete');
+        await this.assertRecordUnused(db, 'Parishes', id, String(row.parish_name));
+        await db.runAsync('DELETE FROM [Parishes] WHERE [id] = ?', [id]);
       });
+    },
+
+    setCouncilAssociation: async (actorId, councilId, parishId) => {
+      const db = await this.ready();
+      let result: ParishAssociationResult = { councilId, parish: null, ownerAccount: null, baselineAccounts: [], accountsCreated: 0 };
+      await db.withTransactionAsync(async () => {
+        assertMayAssociateParish(await this.memberWriteActor(db, actorId), councilId);
+        await this.requireRecord(db, 'Council', councilId);
+        if (parishId === null) {
+          await db.runAsync('UPDATE [Parishes] SET [associated_council_id] = NULL WHERE [associated_council_id] = ?', [councilId]);
+          return;
+        }
+        const parish = (await this.requireRecord(db, 'Parishes', parishId)) as unknown as Parish;
+        assertParishKeptByCouncil(parish, councilId);
+        // A council links to one parish at a time (associated_council_id is unique): the old link ends first.
+        await db.runAsync('UPDATE [Parishes] SET [associated_council_id] = NULL WHERE [associated_council_id] = ? AND [id] <> ?', [councilId, parishId]);
+        const ledger = await this.provisionParishLedger(db, parish, councilId);
+        await db.runAsync('UPDATE [Parishes] SET [associated_council_id] = ?, [gl_account_id] = ? WHERE [id] = ?', [councilId, ledger.ownerAccount.id, parishId]);
+        const linked = (await db.getFirstAsync<Parish>('SELECT * FROM [Parishes] WHERE [id] = ?', [parishId]))!;
+        result = { councilId, parish: linked, ...ledger };
+      });
+      return result;
     },
   };
 
+  /** Inserts one GLAccount row and returns it. */
+  private async insertGLAccountRow(db: SQLite.SQLiteDatabase, row: ParishLedgerAccountRow): Promise<GLAccount> {
+    const columns = Object.keys(row) as (keyof ParishLedgerAccountRow)[];
+    const added = await db.runAsync(
+      `INSERT INTO [GLAccount] (${columns.map((c) => `[${c}]`).join(', ')}) VALUES (${marks(columns.length)})`,
+      columns.map((c) => (row[c] ?? null) as Bind),
+    );
+    return (await db.getFirstAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [id] = ?', [added.lastInsertRowId]))!;
+  }
+
+  /**
+   * The parish's Account Owner and baseline Asset rows in `councilId`'s ledger, reusing what already exists (the owner the
+   * parish names, then an account of the owner's name, then the baseline rows filed under the owner).
+   */
+  private async provisionParishLedger(
+    db: SQLite.SQLiteDatabase,
+    parish: Parish,
+    councilId: number,
+  ): Promise<Pick<ParishAssociationResult, 'baselineAccounts' | 'accountsCreated'> & { ownerAccount: GLAccount }> {
+    let created = 0;
+    const accounts = () => db.getAllAsync<GLAccount>('SELECT * FROM [GLAccount] WHERE [CouncilID] = ?', [councilId]);
+    const linked = parish.gl_account_id == null ? undefined : (await accounts()).find((a) => a.id === parish.gl_account_id && isParishLedgerAccount(a));
+    let owner = linked ?? reusableParishAccount(await accounts(), parishOwnerAccountName(parish.parish_name)) ?? undefined;
+    if (!owner) {
+      owner = await this.insertGLAccountRow(db, parishOwnerAccountRow(parish, councilId));
+      created += 1;
+    }
+    const baselineAccounts: GLAccount[] = [];
+    for (const { suffix } of PARISH_BASELINE_ASSET_ACCOUNTS) {
+      const name = parishBaselineAccountName(parish.parish_name, suffix);
+      const all = await accounts();
+      let row = all.find((a) => a.ParentAccountID === owner!.id && a.AccountName.toLowerCase() === name.toLowerCase()) ?? reusableParishAccount(all, name);
+      if (!row) {
+        row = await this.insertGLAccountRow(db, parishBaselineAccountRow(parish, councilId, owner.id, suffix));
+        created += 1;
+      }
+      baselineAccounts.push(row);
+    }
+    return { ownerAccount: owner, baselineAccounts, accountsCreated: created };
+  }
+
   private async assertParishNameUnique(db: SQLite.SQLiteDatabase, clean: NewParish, ignoreId?: number): Promise<void> {
-    const siblings = await db.getAllAsync<Record<string, unknown>>('SELECT [id], [Name] FROM [Parish] WHERE [CouncilID] = ?', [
-      clean.CouncilID,
-    ]);
-    assertRecordValueUnique('Parish', siblings, 'Name', clean.Name, `in council ${clean.CouncilID}`, ignoreId);
+    const siblings = await db.getAllAsync<Record<string, unknown>>('SELECT [id], [parish_name] FROM [Parishes] WHERE [council_id] = ?', [clean.council_id]);
+    assertRecordValueUnique('Parishes', siblings, 'parish_name', clean.parish_name, `in council ${clean.council_id}`, ignoreId);
   }
 
   pastors: DataService['pastors'] = {
     listByParish: async (parishId) => {
       const db = await this.ready();
       return db.getAllAsync<Pastor>(
-        'SELECT * FROM [Pastor] WHERE [ParishID] = ? ORDER BY [LastName] COLLATE NOCASE, [FirstName] COLLATE NOCASE, [id]',
+        `SELECT p.* FROM [Pastors] p JOIN [PastorParishMappings] m ON m.[pastor_id] = p.[id]
+          WHERE m.[parish_id] = ?
+          ORDER BY p.[last_name] COLLATE NOCASE, p.[first_name] COLLATE NOCASE, p.[id]`,
         [parishId],
       );
     },
 
     listByCouncil: async (councilId) => {
       const db = await this.ready();
-      return db.getAllAsync<Pastor>(
-        `SELECT p.* FROM [Pastor] p JOIN [Parish] pa ON pa.[id] = p.[ParishID]
-          WHERE pa.[CouncilID] = ?
-          ORDER BY p.[LastName] COLLATE NOCASE, p.[FirstName] COLLATE NOCASE, p.[id]`,
+      return db.getAllAsync<Pastor>('SELECT * FROM [Pastors] WHERE [council_id] = ? ORDER BY [last_name] COLLATE NOCASE, [first_name] COLLATE NOCASE, [id]', [
+        councilId,
+      ]);
+    },
+
+    listAssignments: async (councilId) => {
+      const db = await this.ready();
+      return db.getAllAsync<PastorParishMapping>(
+        `SELECT m.* FROM [PastorParishMappings] m JOIN [Pastors] p ON p.[id] = m.[pastor_id]
+          WHERE p.[council_id] = ?
+          ORDER BY m.[pastor_id], m.[parish_id]`,
         [councilId],
       );
     },
@@ -2533,49 +2629,79 @@ export class SqliteDataService implements DataService {
     create: async (actorId, pastor) => {
       const clean = cleanPastor(pastor);
       const db = await this.ready();
+      assertMayMaintainCouncilRecords(await this.memberWriteActor(db, actorId), clean.council_id, 'add pastors');
       let id = 0;
       await db.withTransactionAsync(async () => {
-        const actor = await this.memberWriteActor(db, actorId);
-        const councilId = await this.parishCouncilId(db, clean.ParishID);
-        // A non-admin hears ADMIN_REQUIRED even for an unknown parish; the parish only decides the tenant.
-        assertMayMaintainCouncilRecords(actor, councilId ?? actor.councilId, 'add pastors');
-        if (councilId === null) throw noParish(clean.ParishID);
-        id = await this.insertRecord(db, 'Pastor', PASTOR_COLUMNS, clean);
+        await this.assertCouncilsExist(db, [clean.council_id]);
+        id = await this.insertRecord(db, 'Pastors', PASTOR_COLUMNS, clean);
+        await db.runAsync('UPDATE [Pastors] SET [created_at] = ? WHERE [id] = ?', [toTimestamp(this.now()), id]);
       });
-      return (await db.getFirstAsync<Pastor>('SELECT * FROM [Pastor] WHERE [id] = ?', [id]))!;
+      return (await db.getFirstAsync<Pastor>('SELECT * FROM [Pastors] WHERE [id] = ?', [id]))!;
     },
 
     update: async (actorId, id, changes) => {
       const db = await this.ready();
       await db.withTransactionAsync(async () => {
         const actor = await this.memberWriteActor(db, actorId);
-        const row = await this.requireRecord(db, 'Pastor', id);
-        assertMayMaintainCouncilRecords(actor, (await this.parishCouncilId(db, row.ParishID as number))!, `change pastor ${id}`);
+        const row = await this.requireRecord(db, 'Pastors', id);
+        assertMayMaintainCouncilRecords(actor, row.council_id as number, `change pastor ${id}`);
         const clean = cleanPastor(mergeRecordChanges<NewPastor>(row, changes, PASTOR_COLUMNS));
-        if (clean.ParishID !== row.ParishID) {
-          const councilId = await this.parishCouncilId(db, clean.ParishID);
-          assertMayMaintainCouncilRecords(actor, councilId ?? actor.councilId, `move pastor ${id}`);
-          if (councilId === null) throw noParish(clean.ParishID);
+        if (clean.council_id !== row.council_id) {
+          assertMayMaintainCouncilRecords(actor, clean.council_id, `move pastor ${id}`);
+          await this.assertCouncilsExist(db, [clean.council_id]);
         }
-        await this.updateRecord(db, 'Pastor', id, PASTOR_COLUMNS, clean);
+        await this.updateRecord(db, 'Pastors', id, PASTOR_COLUMNS, clean);
       });
-      return (await db.getFirstAsync<Pastor>('SELECT * FROM [Pastor] WHERE [id] = ?', [id]))!;
+      return (await db.getFirstAsync<Pastor>('SELECT * FROM [Pastors] WHERE [id] = ?', [id]))!;
     },
 
     remove: async (actorId, id) => {
       const db = await this.ready();
       await db.withTransactionAsync(async () => {
         const actor = await this.memberWriteActor(db, actorId);
-        const row = await this.requireRecord(db, 'Pastor', id);
-        assertMayMaintainCouncilRecords(actor, (await this.parishCouncilId(db, row.ParishID as number))!, `delete pastor ${id}`);
-        await db.runAsync('DELETE FROM [Pastor] WHERE [id] = ?', [id]);
+        const row = await this.requireRecord(db, 'Pastors', id);
+        assertMayMaintainCouncilRecords(actor, row.council_id as number, `delete pastor ${id}`);
+        // The pastor's parish assignments belong to the pastor and go with them.
+        await db.runAsync('DELETE FROM [PastorParishMappings] WHERE [pastor_id] = ?', [id]);
+        await db.runAsync('DELETE FROM [Pastors] WHERE [id] = ?', [id]);
+      });
+    },
+
+    assignToParish: async (actorId, pastorId, parishId) => {
+      const db = await this.ready();
+      let mappingId = 0;
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const pastor = await this.requireRecord(db, 'Pastors', pastorId);
+        const parishCouncil = await this.parishCouncilId(db, parishId);
+        // A non-admin hears ADMIN_REQUIRED even for an unknown parish; the parish only decides the second tenant.
+        assertMayAssignPastor(actor, pastor.council_id as number, parishCouncil ?? (pastor.council_id as number));
+        if (parishCouncil === null) throw noParish(parishId);
+        const existing = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [PastorParishMappings] WHERE [pastor_id] = ? AND [parish_id] = ?', [pastorId, parishId]);
+        mappingId =
+          existing?.id ??
+          (await db.runAsync('INSERT INTO [PastorParishMappings] ([pastor_id], [parish_id], [assigned_at]) VALUES (?, ?, ?)', [pastorId, parishId, toTimestamp(this.now())]))
+            .lastInsertRowId;
+      });
+      return (await db.getFirstAsync<PastorParishMapping>('SELECT * FROM [PastorParishMappings] WHERE [id] = ?', [mappingId]))!;
+    },
+
+    unassignFromParish: async (actorId, pastorId, parishId) => {
+      const db = await this.ready();
+      await db.withTransactionAsync(async () => {
+        const actor = await this.memberWriteActor(db, actorId);
+        const pastor = await this.requireRecord(db, 'Pastors', pastorId);
+        const parishCouncil = await this.parishCouncilId(db, parishId);
+        assertMayAssignPastor(actor, pastor.council_id as number, parishCouncil ?? (pastor.council_id as number));
+        const res = await db.runAsync('DELETE FROM [PastorParishMappings] WHERE [pastor_id] = ? AND [parish_id] = ?', [pastorId, parishId]);
+        if (res.changes === 0) throw noPastorAssignment(pastorId, parishId);
       });
     },
   };
 
   /** The parish's council, or null when there is no such parish. */
   private async parishCouncilId(db: SQLite.SQLiteDatabase, parishId: number): Promise<number | null> {
-    return (await db.getFirstAsync<{ CouncilID: number }>('SELECT [CouncilID] FROM [Parish] WHERE [id] = ?', [parishId]))?.CouncilID ?? null;
+    return (await db.getFirstAsync<{ council_id: number }>('SELECT [council_id] FROM [Parishes] WHERE [id] = ?', [parishId]))?.council_id ?? null;
   }
 
   activities: DataService['activities'] = {
@@ -9774,23 +9900,47 @@ export class SqliteDataService implements DataService {
   };
 
   // ---- Sprint 11 Revision 20.0: the Local Feedback Portal (local-feedback.ts) ---------------------------------------
+  // Sprint 11 Revision 21.0 (schema 113): LocalFeedbackTickets and LocalFeedbackTicketMessages.
 
-  private async feedbackTicketChat(db: SQLite.SQLiteDatabase, ticketId: number): Promise<FeedbackTicketChat> {
-    const rows = await this.loadMessaging(db, [ticketId]);
-    const thread = rows.threads.find((t) => t.id === ticketId);
-    const chat = thread ? buildFeedbackTicketChat(thread, rows) : null;
-    if (!chat) throw feedbackTicketNotFound(ticketId);
-    return chat;
+  /** The tickets `where` selects (a WHERE clause on LocalFeedbackTickets), their chat log lines and the member names. */
+  private async feedbackTicketRows(db: SQLite.SQLiteDatabase, where: string, params: Bind[]): Promise<FeedbackTicketRows> {
+    const tickets = await db.getAllAsync<LocalFeedbackTicketRow>(`SELECT * FROM [LocalFeedbackTickets] WHERE ${where}`, params);
+    const messages = await selectIn<LocalFeedbackTicketMessageRow>(
+      db,
+      (m) => `SELECT * FROM [LocalFeedbackTicketMessages] WHERE [ticket_id] IN (${m})`,
+      tickets.map((t) => t.id),
+    );
+    const members = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string }>('SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member]');
+    return { tickets, messages, names: new Map(members.map((m) => [m.id, `${m.MemberFirstName} ${m.MemberLastName}`])) };
   }
 
-  private async addFeedbackMessage(db: SQLite.SQLiteDatabase, ticketId: number, senderId: number, parentId: number | null, text: string): Promise<void> {
-    await db.runAsync('INSERT INTO [Messages] ([ThreadID], [SenderID], [ParentMessageID], [MessageText], [IsDraft], [CreatedAt]) VALUES (?, ?, ?, ?, 0, ?)', [
-      ticketId,
-      senderId,
-      parentId,
-      text,
-      toTimestamp(this.now()),
-    ]);
+  private async feedbackTicketChat(db: SQLite.SQLiteDatabase, ticketId: number): Promise<FeedbackTicketChat> {
+    const rows = await this.feedbackTicketRows(db, '[id] = ?', [ticketId]);
+    const ticket = rows.tickets[0];
+    if (!ticket) throw feedbackTicketNotFound(ticketId);
+    return buildFeedbackTicketChat(ticket, rows);
+  }
+
+  /** Adds one chat log line and moves the ticket's columns (activity time, and the status on a status change). */
+  private async addFeedbackLine(db: SQLite.SQLiteDatabase, ticketId: number, senderId: number, text: string, status: FeedbackTicketStatus | null): Promise<void> {
+    const at = toTimestamp(this.now());
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        'INSERT INTO [LocalFeedbackTicketMessages] ([ticket_id], [sender_id], [entry_kind], [status_to], [message_text], [created_at]) VALUES (?, ?, ?, ?, ?, ?)',
+        [ticketId, senderId, status ? 'status' : 'reply', status, text, at],
+      );
+      if (status) {
+        const change = feedbackStatusChange(status, at);
+        await db.runAsync('UPDATE [LocalFeedbackTickets] SET [status] = ?, [last_activity_at] = ?, [resolved_at] = ? WHERE [id] = ?', [
+          change.status,
+          change.last_activity_at,
+          change.resolved_at ?? null,
+          ticketId,
+        ]);
+      } else {
+        await db.runAsync('UPDATE [LocalFeedbackTickets] SET [last_activity_at] = ? WHERE [id] = ?', [at, ticketId]);
+      }
+    });
   }
 
   localFeedback: DataService['localFeedback'] = {
@@ -9799,27 +9949,25 @@ export class SqliteDataService implements DataService {
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
       assertMayOpenFeedbackTicket(actor);
-      let ticketId = 0;
-      await db.withTransactionAsync(async () => {
-        const res = await db.runAsync('INSERT INTO [ChatThreads] ([CouncilID], [IsGroupChat], [CreatedAt]) VALUES (?, 0, ?)', [actor.councilId, toTimestamp(this.now())]);
-        ticketId = res.lastInsertRowId;
-        await this.addFeedbackMessage(db, ticketId, actorId, null, encodeFeedbackTicketOpening(clean));
-      });
-      return (await this.feedbackTicketChat(db, ticketId)).ticket;
+      const row = newFeedbackTicketRow(clean, actor.councilId, actorId, toTimestamp(this.now()));
+      const res = await db.runAsync(
+        `INSERT INTO [LocalFeedbackTickets] ([council_id], [member_id], [category], [subject], [body], [status], [opened_at], [last_activity_at], [resolved_at])
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+        [row.council_id, row.member_id, row.category, row.subject, row.body, row.status, row.opened_at, row.last_activity_at],
+      );
+      return (await this.feedbackTicketChat(db, res.lastInsertRowId)).ticket;
     },
 
     listMyTickets: async (actorId) => {
       const db = await this.ready();
       await this.memberWriteActor(db, actorId);
-      const ids = await db.getAllAsync<{ ThreadID: number }>('SELECT DISTINCT [ThreadID] FROM [Messages] WHERE [SenderID] = ? AND [ThreadID] IS NOT NULL', [actorId]);
-      return buildFeedbackTickets(await this.loadMessaging(db, ids.map((r) => r.ThreadID))).filter((t) => t.memberId === actorId);
+      return buildFeedbackTickets(await this.feedbackTicketRows(db, '[member_id] = ?', [actorId]));
     },
 
     listCouncilTickets: async (actorId, councilId) => {
       const db = await this.ready();
       assertMayTriageCouncilFeedback(await this.memberWriteActor(db, actorId), councilId);
-      const ids = await db.getAllAsync<{ id: number }>('SELECT [id] FROM [ChatThreads] WHERE [CouncilID] = ?', [councilId]);
-      return sortFeedbackTicketsForTriage(buildFeedbackTickets(await this.loadMessaging(db, ids.map((r) => r.id))));
+      return sortFeedbackTicketsForTriage(buildFeedbackTickets(await this.feedbackTicketRows(db, '[council_id] = ?', [councilId])));
     },
 
     getTicketChat: async (actorId, ticketId) => {
@@ -9834,9 +9982,8 @@ export class SqliteDataService implements DataService {
       const clean = cleanFeedbackChatText(text);
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
-      const chat = await this.feedbackTicketChat(db, ticketId);
-      assertMayReadFeedbackTicket(actor, chat.ticket);
-      await this.addFeedbackMessage(db, ticketId, actorId, chat.entries[0]!.id, clean);
+      assertMayReadFeedbackTicket(actor, (await this.feedbackTicketChat(db, ticketId)).ticket);
+      await this.addFeedbackLine(db, ticketId, actorId, clean, null);
       return this.feedbackTicketChat(db, ticketId);
     },
 
@@ -9845,9 +9992,8 @@ export class SqliteDataService implements DataService {
       const cleanNote = note == null ? '' : assertText(note, 'Note', FEEDBACK_CHAT_MAX_LENGTH, false);
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
-      const chat = await this.feedbackTicketChat(db, ticketId);
-      assertMaySetFeedbackTicketStatus(actor, chat.ticket);
-      await this.addFeedbackMessage(db, ticketId, actorId, chat.entries[0]!.id, encodeFeedbackStatusChange(next, cleanNote));
+      assertMaySetFeedbackTicketStatus(actor, (await this.feedbackTicketChat(db, ticketId)).ticket);
+      await this.addFeedbackLine(db, ticketId, actorId, cleanNote, next);
       return this.feedbackTicketChat(db, ticketId);
     },
   };

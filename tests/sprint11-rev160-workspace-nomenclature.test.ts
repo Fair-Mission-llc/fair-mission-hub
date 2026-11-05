@@ -30,7 +30,7 @@ const read = (path: string) => readFileSync(path, 'utf8');
 
 describe('0. schema', () => {
   it('stays at version 110', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(112); // Sprint 11 Revision 19.6 moved the platform to schema 112.
+    expect(PLATFORM_SCHEMA_VERSION).toBe(113); // Sprint 11 Revision 21.0 moved the platform to schema 113.
   });
 });
 

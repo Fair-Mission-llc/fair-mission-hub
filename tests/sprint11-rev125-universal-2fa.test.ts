@@ -37,7 +37,7 @@ const UNIVERSAL = { ...TWILIO, [TWO_FACTOR_REQUIRED_ENV]: '1' };
 
 describe('1. the universal switch', () => {
   it('keeps schema 110', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(112); // Sprint 11 Revision 19.6 moved the platform to schema 112.
+    expect(PLATFORM_SCHEMA_VERSION).toBe(113); // Sprint 11 Revision 21.0 moved the platform to schema 113.
   });
 
   it('reads TWO_FACTOR_REQUIRED=1 (or true) from the environment', () => {

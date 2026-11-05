@@ -4557,3 +4557,167 @@ ALTER TABLE [LessonsLearnedCategory] ADD FOREIGN KEY([parent_org_id]) REFERENCES
 GO
 ALTER TABLE [PlatformSettings] ADD FOREIGN KEY([parent_org_id]) REFERENCES [ParentOrganizations]([id]) ON UPDATE NO ACTION ON DELETE NO ACTION;
 GO
+
+-- =========================================================================
+-- Sprint 11 Revision 21.0: THE RELATIONAL PARISH MATRIX AND LOCAL FEEDBACK TICKETS (schema version 113)
+--
+-- Parishes replaces Parish. council_id is the council that keeps the record (its Admins and Super Admins edit it); a
+-- council may keep several. associated_council_id marks the one parish a council is linked to (its home parish): it is
+-- unique, so a council links to at most one parish and a parish to at most one council. Linking a parish
+-- (parishes.setCouncilAssociation) provisions the parish's Account Owner in the council's General Ledger in the same
+-- transaction: a PARENT_ORGANIZATION Asset account named for the parish (gl_account_id), with its baseline Asset rows
+-- underneath (parish-registry.ts PARISH_BASELINE_ASSET_ACCOUNTS). Unlinking keeps the accounts and their history.
+-- Pastors replaces Pastor. A pastor no longer belongs to one parish: council_id is the council that keeps the record,
+-- and PastorParishMappings assigns a pastor to any number of parishes (one row per pair, unique).
+-- Parish and Pastor are dropped. No rows are carried over (the seed had none); a hub vault at 112 is archived first.
+--
+-- LocalFeedbackTickets and LocalFeedbackTicketMessages hold the Local Feedback Portal (local-feedback.ts), which until
+-- now kept each ticket as a hidden ChatThreads / Messages conversation. A ticket row carries its category, subject,
+-- the member's words and its status; each later chat log line is one LocalFeedbackTicketMessages row, entry_kind
+-- 'reply' or 'status' (a status change, status_to = the new status). Ticket conversations left in the old messaging
+-- tables are not carried over; they show as ordinary threads from now on.
+-- =========================================================================
+CREATE TABLE [Parishes] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[council_id] INTEGER NOT NULL,
+	[parish_name] VARCHAR(100) NOT NULL,
+	[street_address_1] VARCHAR(255) NOT NULL,
+	[street_address_2] VARCHAR(255) NULL,
+	[city] VARCHAR(50) NOT NULL,
+	[state] VARCHAR(50) NOT NULL,
+	[phone] VARCHAR(50) NULL,
+	[associated_council_id] INTEGER NULL,
+	[gl_account_id] INTEGER NULL,
+	[created_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+CREATE UNIQUE INDEX [Parishes_AssociatedCouncil_Idx] ON [Parishes] ([associated_council_id]) WHERE [associated_council_id] IS NOT NULL;
+GO
+CREATE UNIQUE INDEX [Parishes_Council_Name_Idx] ON [Parishes] ([council_id], [parish_name]);
+GO
+
+ALTER TABLE [Parishes]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Parishes]
+ADD FOREIGN KEY([associated_council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [Parishes]
+ADD FOREIGN KEY([gl_account_id])
+REFERENCES [GLAccount]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE TABLE [Pastors] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[council_id] INTEGER NOT NULL,
+	[first_name] VARCHAR(50) NOT NULL,
+	[last_name] VARCHAR(50) NOT NULL,
+	[phone] VARCHAR(50) NULL,
+	[email] VARCHAR(100) NULL,
+	[created_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [Pastors]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE TABLE [PastorParishMappings] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[pastor_id] INTEGER NOT NULL,
+	[parish_id] INTEGER NOT NULL,
+	[assigned_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+CREATE UNIQUE INDEX [PastorParishMappings_Pair_Idx] ON [PastorParishMappings] ([pastor_id], [parish_id]);
+GO
+CREATE INDEX [PastorParishMappings_Parish_Idx] ON [PastorParishMappings] ([parish_id]);
+GO
+
+ALTER TABLE [PastorParishMappings]
+ADD FOREIGN KEY([pastor_id])
+REFERENCES [Pastors]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [PastorParishMappings]
+ADD FOREIGN KEY([parish_id])
+REFERENCES [Parishes]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+DROP TABLE [Pastor];
+GO
+DROP TABLE [Parish];
+GO
+
+CREATE TABLE [LocalFeedbackTickets] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[council_id] INTEGER NOT NULL,
+	[member_id] INTEGER NOT NULL,
+	[category] VARCHAR(20) NOT NULL CHECK ([category] IN ('Question', 'Problem', 'Suggestion', 'Praise')),
+	[subject] VARCHAR(120) NOT NULL,
+	[body] VARCHAR(2000) NOT NULL,
+	[status] VARCHAR(20) NOT NULL DEFAULT 'Open' CHECK ([status] IN ('Open', 'In Progress', 'Resolved')),
+	[opened_at] DATETIME NOT NULL,
+	[last_activity_at] DATETIME NOT NULL,
+	[resolved_at] DATETIME NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+CREATE INDEX [LocalFeedbackTickets_Council_Idx] ON [LocalFeedbackTickets] ([council_id], [status]);
+GO
+CREATE INDEX [LocalFeedbackTickets_Member_Idx] ON [LocalFeedbackTickets] ([member_id]);
+GO
+
+ALTER TABLE [LocalFeedbackTickets]
+ADD FOREIGN KEY([council_id])
+REFERENCES [Council]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [LocalFeedbackTickets]
+ADD FOREIGN KEY([member_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+
+CREATE TABLE [LocalFeedbackTicketMessages] (
+	[id] INTEGER NOT NULL IDENTITY,
+	[ticket_id] INTEGER NOT NULL,
+	[sender_id] INTEGER NOT NULL,
+	[entry_kind] VARCHAR(10) NOT NULL DEFAULT 'reply' CHECK ([entry_kind] IN ('reply', 'status')),
+	[status_to] VARCHAR(20) NULL,
+	[message_text] VARCHAR(2000) NOT NULL DEFAULT '',
+	[created_at] DATETIME NOT NULL,
+	PRIMARY KEY([id])
+);
+GO
+
+ALTER TABLE [LocalFeedbackTicketMessages] ADD CONSTRAINT [CK_LocalFeedbackTicketMessages_status_to] CHECK ([status_to] IS NULL OR [status_to] IN ('Open', 'In Progress', 'Resolved'));
+GO
+
+CREATE INDEX [LocalFeedbackTicketMessages_Ticket_Idx] ON [LocalFeedbackTicketMessages] ([ticket_id]);
+GO
+
+ALTER TABLE [LocalFeedbackTicketMessages]
+ADD FOREIGN KEY([ticket_id])
+REFERENCES [LocalFeedbackTickets]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO
+ALTER TABLE [LocalFeedbackTicketMessages]
+ADD FOREIGN KEY([sender_id])
+REFERENCES [Member]([id])
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+GO

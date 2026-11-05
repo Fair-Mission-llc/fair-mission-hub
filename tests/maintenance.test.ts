@@ -10,6 +10,7 @@ import {
   type DataService,
   type NewActivity,
   type NewParish,
+  type NewPastor,
 } from '@kofc/shared';
 import { TABLES } from '../apps/web/services/generated/schema.generated';
 import { COUNCIL_ACTIVITIES, drivers, expectRule, MEMBER } from './helpers';
@@ -26,13 +27,20 @@ const EMAIL_AT_LIMIT = `${'a'.repeat(90)}@gmail.com`;
 const EMAIL_OVER_LIMIT = `${'a'.repeat(91)}@gmail.com`;
 const MALFORMED_EMAILS = ['kofc15295gmail.com', 'kofc15295@', 'kofc15295@gmail', '@gmail.com', 'kofc 15295@gmail.com'];
 
-const parishFor =(councilId: number, name = "St. Mary's Cathedral Parish"): NewParish => ({
-  Name: name,
-  StreetAddress1: '100 Church St',
-  City: 'Portland',
-  State: 'OR',
-  Phone: '503-555-0100',
-  CouncilID: councilId,
+const parishFor = (councilId: number, name = "St. Mary's Cathedral Parish"): NewParish => ({
+  parish_name: name,
+  street_address_1: '100 Church St',
+  city: 'Portland',
+  state: 'OR',
+  phone: '503-555-0100',
+  council_id: councilId,
+});
+
+const pastorFor = (councilId: number, first: string, last: string, email?: string): NewPastor => ({
+  first_name: first,
+  last_name: last,
+  ...(email ? { email } : {}),
+  council_id: councilId,
 });
 
 async function serviceCategory(db: DataService): Promise<number> {
@@ -103,7 +111,7 @@ describe('maintenance rules', () => {
     });
     expect(() => cleanCouncil({ CouncilNumber: 0, CouncilName: 'x', State: 'OR' })).toThrow(/whole number/);
     expect(() => cleanCouncil({ CouncilNumber: 1, CouncilName: 'x', State: 'OR', Motto: 'x' } as never)).toThrow(/no field "Motto"/);
-    expect(() => cleanPastor({ FirstName: 'John', LastName: 'Doe', Email: 'not-an-email', ParishID: 1 })).toThrow(/not a valid address/);
+    expect(() => cleanPastor({ first_name: 'John', last_name: 'Doe', email: 'not-an-email', council_id: 1 })).toThrow(/not a valid address/);
   });
 
   it('keeps a valid council email, clears a blank one and rejects malformed or overlong addresses', () => {
@@ -130,14 +138,16 @@ describe('maintenance rules', () => {
   it('lists every schema column that points at a maintained table, so no delete can orphan a row', () => {
     const targets: Record<string, keyof typeof RECORD_REFERENCES> = {
       Council: 'Council',
-      Parish: 'Parish',
+      Parishes: 'Parishes',
+      Pastors: 'Pastors',
       Activities: 'Activities',
       DistributionLists: 'DistributionLists',
     };
     for (const [table, meta] of Object.entries(TABLES)) {
       for (const fk of meta.foreignKeys) {
         const target = targets[fk.refTable];
-        if (!target || (table === 'DistributionListMembers' && fk.column === 'ListID')) continue;
+        // A list's member entries and a pastor's parish assignments are deleted with their owner.
+        if (!target || (table === 'DistributionListMembers' && fk.column === 'ListID') || (table === 'PastorParishMappings' && fk.column === 'pastor_id')) continue;
         expect(RECORD_REFERENCES[target], `${table}.${fk.column}`).toContainEqual(expect.objectContaining({ table, column: fk.column }));
       }
       for (const col of meta.columns) {
@@ -276,63 +286,94 @@ describe.each(drivers)('$name driver: council email', (d) => {
 });
 
 describe.each(drivers)('$name driver: parishes and pastors', (d) => {
+  // Sprint 11 Revision 21.0 (schema 113): Parishes, Pastors and PastorParishMappings.
   it('lets a council Admin maintain their parishes and pastors', async () => {
     const db = await d.make();
-    const parish = await db.parishes.create(MEMBER.admin, { ...parishFor(OWN), StreetAddress2: '  ' });
-    expect(parish).toMatchObject({ Name: "St. Mary's Cathedral Parish", CouncilID: OWN });
-    expect(parish.StreetAddress2 ?? null).toBeNull();
+    const parish = await db.parishes.create(MEMBER.admin, { ...parishFor(OWN), street_address_2: '  ' });
+    expect(parish).toMatchObject({ parish_name: "St. Mary's Cathedral Parish", council_id: OWN, associated_council_id: null, gl_account_id: null });
+    expect(parish.street_address_2 ?? null).toBeNull();
+    expect(parish.created_at).toBeTruthy();
 
-    const pastor = await db.pastors.create(MEMBER.admin, { FirstName: 'Thomas', LastName: 'Aquino', Email: 'fr.thomas@example.org', ParishID: parish.id });
-    await db.pastors.create(MEMBER.admin, { FirstName: 'Anne', LastName: 'Burke', ParishID: parish.id });
-    expect((await db.pastors.listByParish(parish.id)).map((p) => p.LastName)).toEqual(['Aquino', 'Burke']);
-    expect((await db.pastors.listByCouncil(OWN)).map((p) => p.LastName)).toEqual(['Aquino', 'Burke']);
+    const pastor = await db.pastors.create(MEMBER.admin, pastorFor(OWN, 'Thomas', 'Aquino', 'fr.thomas@example.org'));
+    const burke = await db.pastors.create(MEMBER.admin, pastorFor(OWN, 'Anne', 'Burke'));
+    await db.pastors.assignToParish(MEMBER.admin, pastor.id, parish.id);
+    await db.pastors.assignToParish(MEMBER.admin, burke.id, parish.id);
+    expect((await db.pastors.listByParish(parish.id)).map((p) => p.last_name)).toEqual(['Aquino', 'Burke']);
+    expect((await db.pastors.listByCouncil(OWN)).map((p) => p.last_name)).toEqual(['Aquino', 'Burke']);
 
-    expect(await db.pastors.update(MEMBER.admin, pastor.id, { Phone: '503-555-0101' })).toMatchObject({ Phone: '503-555-0101', LastName: 'Aquino' });
-    expect(await db.parishes.update(MEMBER.admin, parish.id, { City: 'Beaverton' })).toMatchObject({ City: 'Beaverton', Name: "St. Mary's Cathedral Parish" });
+    expect(await db.pastors.update(MEMBER.admin, pastor.id, { phone: '503-555-0101' })).toMatchObject({ phone: '503-555-0101', last_name: 'Aquino' });
+    expect(await db.parishes.update(MEMBER.admin, parish.id, { city: 'Beaverton' })).toMatchObject({ city: 'Beaverton', parish_name: "St. Mary's Cathedral Parish" });
     expect((await db.parishes.listByCouncil(OWN)).map((p) => p.id)).toEqual([parish.id]);
-    expect(await db.parishes.get(parish.id)).toMatchObject({ City: 'Beaverton' });
+    expect(await db.parishes.get(parish.id)).toMatchObject({ city: 'Beaverton' });
+  });
+
+  it('assigns one pastor to several parishes, once per pair, and ends an assignment', async () => {
+    const db = await d.make();
+    const a = await db.parishes.create(MEMBER.admin, parishFor(OWN));
+    const b = await db.parishes.create(MEMBER.admin, parishFor(OWN, 'St. Patrick Parish'));
+    const pastor = await db.pastors.create(MEMBER.admin, pastorFor(OWN, 'Thomas', 'Aquino'));
+    const first = await db.pastors.assignToParish(MEMBER.admin, pastor.id, a.id);
+    await db.pastors.assignToParish(MEMBER.admin, pastor.id, b.id);
+    expect((await db.pastors.assignToParish(MEMBER.admin, pastor.id, a.id)).id).toBe(first.id); // the same pair twice
+    expect(d.count(db, 'PastorParishMappings')).toBe(2);
+    expect((await db.pastors.listAssignments(OWN)).map((m) => m.parish_id)).toEqual([a.id, b.id]);
+    expect((await db.pastors.listByParish(b.id)).map((p) => p.id)).toEqual([pastor.id]);
+
+    await db.pastors.unassignFromParish(MEMBER.admin, pastor.id, a.id);
+    expect(await db.pastors.listByParish(a.id)).toEqual([]);
+    await expectRule(db.pastors.unassignFromParish(MEMBER.admin, pastor.id, a.id), 'RECORD_NOT_FOUND');
+    await expectRule(db.pastors.assignToParish(MEMBER.admin, pastor.id, 999), 'INVALID_INPUT');
+
+    // Removing the pastor removes their assignments with them.
+    await db.pastors.remove(MEMBER.admin, pastor.id);
+    expect(d.count(db, 'PastorParishMappings')).toBe(0);
   });
 
   it('keeps an Admin out of other councils, including moving a parish or pastor there', async () => {
     const db = await d.make();
     const own = await db.parishes.create(MEMBER.admin, parishFor(OWN));
     const other = await db.parishes.create(MEMBER.superAdmin, parishFor(OTHER, 'Our Lady of Peace Parish'));
-    const pastor = await db.pastors.create(MEMBER.admin, { FirstName: 'Thomas', LastName: 'Aquino', ParishID: own.id });
-    const parishes = d.count(db, 'Parish');
-    const pastors = d.count(db, 'Pastor');
+    const pastor = await db.pastors.create(MEMBER.admin, pastorFor(OWN, 'Thomas', 'Aquino'));
+    await db.pastors.assignToParish(MEMBER.admin, pastor.id, own.id);
+    const parishes = d.count(db, 'Parishes');
+    const pastors = d.count(db, 'Pastors');
 
     await expectPrivilege(db.parishes.create(MEMBER.admin, parishFor(OTHER, 'Sneaky Parish')), 'COUNCIL_ACCESS_DENIED');
-    await expectPrivilege(db.parishes.update(MEMBER.admin, other.id, { Name: 'Renamed' }), 'COUNCIL_ACCESS_DENIED');
-    await expectPrivilege(db.parishes.update(MEMBER.admin, own.id, { CouncilID: OTHER }), 'COUNCIL_ACCESS_DENIED');
+    await expectPrivilege(db.parishes.update(MEMBER.admin, other.id, { parish_name: 'Renamed' }), 'COUNCIL_ACCESS_DENIED');
+    await expectPrivilege(db.parishes.update(MEMBER.admin, own.id, { council_id: OTHER }), 'COUNCIL_ACCESS_DENIED');
     await expectPrivilege(db.parishes.remove(MEMBER.admin, other.id), 'COUNCIL_ACCESS_DENIED');
-    await expectPrivilege(db.pastors.create(MEMBER.admin, { FirstName: 'X', LastName: 'Y', ParishID: other.id }), 'COUNCIL_ACCESS_DENIED');
-    await expectPrivilege(db.pastors.update(MEMBER.admin, pastor.id, { ParishID: other.id }), 'COUNCIL_ACCESS_DENIED');
+    await expectPrivilege(db.pastors.create(MEMBER.admin, pastorFor(OTHER, 'X', 'Y')), 'COUNCIL_ACCESS_DENIED');
+    await expectPrivilege(db.pastors.update(MEMBER.admin, pastor.id, { council_id: OTHER }), 'COUNCIL_ACCESS_DENIED');
+    await expectPrivilege(db.pastors.assignToParish(MEMBER.admin, pastor.id, other.id), 'COUNCIL_ACCESS_DENIED');
 
     const otherAdmin = await otherCouncilAdmin(db);
     await expectPrivilege(db.pastors.remove(otherAdmin, pastor.id), 'COUNCIL_ACCESS_DENIED');
+    await expectPrivilege(db.pastors.unassignFromParish(otherAdmin, pastor.id, own.id), 'COUNCIL_ACCESS_DENIED');
 
-    expect(d.count(db, 'Parish')).toBe(parishes);
-    expect(d.count(db, 'Pastor')).toBe(pastors);
-    expect((await db.parishes.get(own.id))?.CouncilID).toBe(OWN);
+    expect(d.count(db, 'Parishes')).toBe(parishes);
+    expect(d.count(db, 'Pastors')).toBe(pastors);
+    expect((await db.parishes.get(own.id))?.council_id).toBe(OWN);
     expect((await db.pastors.listByParish(own.id)).map((p) => p.id)).toEqual([pastor.id]);
 
-    // A Super Admin may move them anywhere.
-    expect((await db.pastors.update(MEMBER.superAdmin, pastor.id, { ParishID: other.id })).ParishID).toBe(other.id);
-    expect((await db.parishes.update(MEMBER.superAdmin, own.id, { CouncilID: OTHER, Name: 'Moved Parish' })).CouncilID).toBe(OTHER);
+    // A Super Admin may assign across councils and move records anywhere.
+    await db.pastors.assignToParish(MEMBER.superAdmin, pastor.id, other.id);
+    expect((await db.pastors.listByParish(other.id)).map((p) => p.id)).toEqual([pastor.id]);
+    expect((await db.pastors.update(MEMBER.superAdmin, pastor.id, { council_id: OTHER })).council_id).toBe(OTHER);
+    expect((await db.parishes.update(MEMBER.superAdmin, own.id, { council_id: OTHER, parish_name: 'Moved Parish' })).council_id).toBe(OTHER);
   });
 
-  it('refuses Members and inactive Admins, and unknown parishes', async () => {
+  it('refuses Members and inactive Admins, and unknown councils', async () => {
     const db = await d.make();
     await expectPrivilege(db.parishes.create(MEMBER.member, parishFor(OWN)), 'ADMIN_REQUIRED');
-    await expectPrivilege(db.pastors.create(MEMBER.member, { FirstName: 'X', LastName: 'Y', ParishID: 999 }), 'ADMIN_REQUIRED');
+    await expectPrivilege(db.pastors.create(MEMBER.member, pastorFor(OWN, 'X', 'Y')), 'ADMIN_REQUIRED');
     const inactive = await otherCouncilAdmin(db, true);
     await expectPrivilege(db.parishes.create(inactive, parishFor(OTHER)), 'ADMIN_REQUIRED');
-    expect(d.count(db, 'Parish')).toBe(0);
+    expect(d.count(db, 'Parishes')).toBe(0);
 
-    await expectRule(db.pastors.create(MEMBER.admin, { FirstName: 'X', LastName: 'Y', ParishID: 999 }), 'INVALID_INPUT');
+    await expectRule(db.pastors.create(MEMBER.superAdmin, pastorFor(999, 'X', 'Y')), 'INVALID_INPUT');
     await expectRule(db.parishes.create(MEMBER.superAdmin, parishFor(999)), 'INVALID_INPUT');
     await expectRule(db.parishes.remove(MEMBER.admin, 999), 'RECORD_NOT_FOUND');
-    expect(d.count(db, 'Pastor')).toBe(0);
+    expect(d.count(db, 'Pastors')).toBe(0);
   });
 
   it('rejects a duplicate parish name within a council but allows it in another', async () => {
@@ -340,21 +381,23 @@ describe.each(drivers)('$name driver: parishes and pastors', (d) => {
     await db.parishes.create(MEMBER.admin, parishFor(OWN));
     await expectRule(db.parishes.create(MEMBER.admin, parishFor(OWN, "st. mary's cathedral parish")), 'INVALID_INPUT');
     await db.parishes.create(MEMBER.superAdmin, parishFor(OTHER));
-    expect(d.count(db, 'Parish')).toBe(2);
+    expect(d.count(db, 'Parishes')).toBe(2);
   });
 
-  it('keeps a parish while it has pastors, then deletes it once they are gone', async () => {
+  it('keeps a parish while pastors serve it, then deletes it once they are gone', async () => {
     const db = await d.make();
     const parish = await db.parishes.create(MEMBER.admin, parishFor(OWN));
-    const pastor = await db.pastors.create(MEMBER.admin, { FirstName: 'Thomas', LastName: 'Aquino', ParishID: parish.id });
+    const pastor = await db.pastors.create(MEMBER.admin, pastorFor(OWN, 'Thomas', 'Aquino'));
+    await db.pastors.assignToParish(MEMBER.admin, pastor.id, parish.id);
 
     const err = await expectRule(db.parishes.remove(MEMBER.admin, parish.id), 'RECORD_IN_USE');
-    expect(err.message).toContain('1 pastor');
-    expect(d.count(db, 'Pastor')).toBe(1);
+    expect(err.message).toContain('1 pastor assignment');
+    expect(d.count(db, 'Pastors')).toBe(1);
 
-    await db.pastors.remove(MEMBER.admin, pastor.id);
+    await db.pastors.unassignFromParish(MEMBER.admin, pastor.id, parish.id);
     await db.parishes.remove(MEMBER.admin, parish.id);
     expect(await db.parishes.get(parish.id)).toBeNull();
+    expect(d.count(db, 'Pastors')).toBe(1); // the pastor's own record stays
   });
 });
 

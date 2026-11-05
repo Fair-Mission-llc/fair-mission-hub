@@ -242,7 +242,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Councils** | Super Admins | The council list | 3.4 (Super Admin System Manual) |
 | **Global Charities Registry** | Super Admins | The shared charity list | 3.4 (Super Admin System Manual) |
 | **Global Lookup Tables** | Super Admins | The global lookup tables | 3.4 (Super Admin System Manual) |
-| **Parish & Pastors Linkage** | Admins | Parishes and their pastors | 3.4 (Super Admin System Manual) |
+| **Parish & Pastors Linkage** | Admins | Parishes, pastors, pastor assignments and the home parish link (adds the parish's General Ledger accounts) | 5.6 (Administrator User Guide), 3.5 (Super Admin System Manual) |
 | **Remote Assistance Desk** | Super Admins | Co-watching help sessions | 12.3 |
 | **Impersonate Council Admin** | Super Admins | View the portal as a council Admin you are helping | 6.2 (Super Admin System Manual) |
 | **View As Member** | Council Admins, Super Admins | A read-only picture of what one member of your own council sees | 9.1 (Administrator User Guide) |
@@ -2851,7 +2851,7 @@ The desktop program keeps three separate sets of records on every laptop. At sta
 A save in one set never shows in another set. Practice in Testing or Training. Do real work only in Production.
 
 ### 21.2 Practice with other officers in the same hall (Testing Mode)
-> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the hall mesh passphrase (a council Admin sets it).
+> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the same testing key file (a council Admin copies it, Administrator User Guide 18.4).
 > **Warning:** testing laptops share saves only while they are on the same Wi-Fi at the same time.
 
 **Goal:** Practice a workflow together, for example a cash count or an expense sign-off, without touching the real records.

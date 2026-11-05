@@ -1,4 +1,4 @@
-// Sprint 11 Revision 20.0 (schema 112, no table change): the Local Feedback Portal with ticket chat logs, the Member Desk's
+// Sprint 11 Revision 20.0 (schema 112; tickets moved to their own tables at schema 113): the Local Feedback Portal with ticket chat logs, the Member Desk's
 // Left Vertical Action Drawers, the council-only View As Member lock, the three local database files with the seeded
 // training playground and its Training Profile Selection Board, the testing LAN mesh, the data-mode banners, the
 // sidebar without Admin Desk link loops and the Super Admin System Manual.
@@ -14,11 +14,7 @@ import {
   DATA_MODE_BANNER_COLORS,
   DATA_MODE_VAULT_FILES,
   dataModeBanner,
-  encodeFeedbackStatusChange,
-  encodeFeedbackTicketOpening,
-  FEEDBACK_TICKET_MARKER,
   HUB_ACTOR_FIRST_METHODS,
-  isFeedbackTicketText,
   isMeshReplicatedMethod,
   isRedundantAdminDeskNavItem,
   isTrainingProfileUsername,
@@ -30,8 +26,6 @@ import {
   MEMBER_FEEDBACK_QUEUE_TITLE,
   memberDeskDrawersFor,
   parseDataMode,
-  parseFeedbackStatusChange,
-  parseFeedbackTicketOpening,
   PLATFORM_SCHEMA_VERSION,
   portalAreas,
   portalSidebar,
@@ -59,25 +53,14 @@ async function otherPeople(_db: DataService) {
   return { plain: { id: MEMBER.newMember } };
 }
 
-describe('0. schema stays at 112', () => {
-  it('adds no table: tickets live on ChatThreads and Messages', () => {
-    expect(PLATFORM_SCHEMA_VERSION).toBe(112);
-    expect(read('apps/mobile/services/drivers/sqlite.ts')).toContain('const SCHEMA_VERSION = 112;');
-    expect(read('Schema.sql')).not.toContain('FeedbackTicket');
+describe('0. schema', () => {
+  it('kept tickets on the messaging tables at 112; Sprint 11 Revision 21.0 gave them their own tables at 113', () => {
+    expect(PLATFORM_SCHEMA_VERSION).toBeGreaterThanOrEqual(113);
+    expect(read('Schema.sql')).toContain('CREATE TABLE [LocalFeedbackTickets]');
   });
 });
 
 describe('1. the Local Feedback Portal rules', () => {
-  it('stores a ticket opening and a status change as marked message text and reads them back', () => {
-    const text = encodeFeedbackTicketOpening({ category: 'Problem', subject: 'Login loop', body: 'It keeps\nasking.' });
-    expect(text.startsWith(`${FEEDBACK_TICKET_MARKER}\n`)).toBe(true);
-    expect(isFeedbackTicketText(text)).toBe(true);
-    expect(isFeedbackTicketText('hello')).toBe(false);
-    expect(parseFeedbackTicketOpening(text)).toEqual({ category: 'Problem', subject: 'Login loop', body: 'It keeps\nasking.' });
-    expect(parseFeedbackStatusChange(encodeFeedbackStatusChange('Resolved', 'Fixed it'))).toEqual({ status: 'Resolved', note: 'Fixed it' });
-    expect(parseFeedbackStatusChange('#local-feedback-status Bogus')).toBeNull();
-  });
-
   it('orders the triage ledger Open, In Progress, then Resolved', () => {
     const t = (id: number, status: FeedbackTicket['status'], at: string) => ({ id, status, lastActivityAt: at }) as FeedbackTicket;
     expect(sortFeedbackTicketsForTriage([t(1, 'Resolved', '9'), t(2, 'Open', '1'), t(3, 'In Progress', '5'), t(4, 'Open', '3')]).map((x) => x.id)).toEqual([4, 2, 3, 1]);
@@ -126,10 +109,12 @@ describe.each(drivers)('2. $name driver: feedback tickets and their chat logs', 
     await expectRule(db.localFeedback.submitTicket(MEMBER.member, { category: 'Nope' as never, subject: 'x', body: 'y' }), 'INVALID_INPUT');
     await expectRule(db.localFeedback.submitTicket(MEMBER.member, { category: 'Question', subject: ' ', body: 'y' }), 'INVALID_INPUT');
 
+    // Schema 113: a ticket never writes to the messaging tables, so the Communications Hub cannot show it.
+    const threads = d.count(db, 'ChatThreads');
+    const messages = d.count(db, 'Messages');
     await db.localFeedback.postTicketMessage(MEMBER.admin, ticket.id, 'On it.');
-    for (const who of [MEMBER.member, MEMBER.admin]) {
-      expect((await db.messages.listThreads(who)).map((t) => t.thread.id)).not.toContain(ticket.id);
-    }
+    expect(d.count(db, 'ChatThreads')).toBe(threads);
+    expect(d.count(db, 'Messages')).toBe(messages);
   });
 });
 

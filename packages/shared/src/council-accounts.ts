@@ -171,6 +171,8 @@ export const GL_ACCOUNT_REFERENCES: readonly { table: string; column: string; no
   { table: 'ParishDisbursementRequest', column: 'gl_account_id', noun: 'parish disbursement' },
   { table: 'GLAccountSplitAllocation', column: 'source_gl_account_id', noun: 'split profile' },
   { table: 'GLAccountSplitAllocation', column: 'destination_gl_account_id', noun: 'split share' },
+  // Sprint 11 Revision 21.0 (schema 113): a parish's Account Owner stays while the parish names it.
+  { table: 'Parishes', column: 'gl_account_id', noun: 'parish record' },
 ];
 
 /** RECORD_IN_USE naming what still points at the account. */

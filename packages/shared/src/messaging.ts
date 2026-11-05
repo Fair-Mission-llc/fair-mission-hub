@@ -5,7 +5,6 @@
 // ReadReceipts. Drivers fetch the raw rows and hand them to these pure
 // functions, so both drivers answer identically.
 // =========================================================================
-import { isFeedbackTicketThread } from './local-feedback';
 import type { ThreadMessage, ThreadSummary } from './contract';
 import { BusinessRuleError } from './rules';
 import type { ChatThread, Message, MessageAttachment, ReadReceipt, Role } from './types';
@@ -51,8 +50,6 @@ export function buildThreadSummaries(memberId: number, rows: MessagingRows): Thr
   for (const thread of rows.threads) {
     const participants = participantIds(thread.id, rows.messages, rows.receipts);
     if (!participants.includes(memberId)) continue;
-    // Sprint 11 Revision 20.0: a Local Feedback Portal ticket keeps its chat log on its own screens, not in the hub.
-    if (isFeedbackTicketThread(thread.id, rows.messages)) continue;
 
     const inThread = rows.messages.filter((m) => m.ThreadID === thread.id);
     const sent = inThread.filter((m) => m.IsDraft !== 1).sort(byTimeThenId);

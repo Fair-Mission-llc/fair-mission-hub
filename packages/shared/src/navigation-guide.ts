@@ -163,7 +163,7 @@ export const NAVIGATION_EXPLANATIONS: Record<PortalNavItem, NavigationExplanatio
   'credentials-vault': { member: "Connects the council's email account and Google Drive." },
   'charities/registry': { member: 'Searches the shared list of charities and adds new ones.' },
   lookups: { member: 'Keeps the lists every council shares, such as categories and member types.' },
-  parishes: { member: 'Keeps the parishes linked to the council and their pastors.' },
+  parishes: { member: "Keeps the council's parishes and pastors, and links the home parish (adding its General Ledger accounts)." },
 };
 
 /** The links in the header bar, which every member has: they are not in the sidebar, so the guide lists them apart. */

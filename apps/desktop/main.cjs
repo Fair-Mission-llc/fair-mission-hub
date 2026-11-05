@@ -12,8 +12,9 @@
 // the Wi-Fi) and training-playground.db (Training, rebuilt with practice records on every start). At start-up the
 // shell asks which mode to open (the last choice is the default, kept in data-mode.json) and passes it to the portal as
 // KOFC_DATA_MODE; setting KOFC_DATA_MODE before launch skips the question. The portal server creates all three files.
-// Testing mode only reaches the network when a mesh passphrase is set (KOFC_MESH_PASSPHRASE or
-// testing-mesh-passphrase.txt in the vault folder); otherwise it works alone on this computer.
+// Testing mode shares saves over the hall Wi-Fi under one mesh passphrase: KOFC_MESH_PASSPHRASE, or the vault folder's
+// .testing-key.json, which the portal server writes with a random passphrase on the first testing start (Sprint 11
+// Revision 21.0). Copy that file to every laptop in the hall; a laptop with a different key works alone.
 'use strict';
 const { app, BrowserWindow, dialog, shell } = require('electron');
 const { spawn } = require('node:child_process');

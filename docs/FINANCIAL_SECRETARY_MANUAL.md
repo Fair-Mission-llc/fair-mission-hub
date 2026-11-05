@@ -1278,7 +1278,7 @@ The desktop program keeps three separate sets of records on every laptop. At sta
 A save in one set never shows in another set. Practice in Testing or Training. Do real work only in Production.
 
 ### 12.2 Practice with other officers in the same hall (Testing Mode)
-> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the hall mesh passphrase (a council Admin sets it).
+> **Prerequisite (who can do this):** Every officer. Each laptop must have the desktop program and the same testing key file (a council Admin copies it, Administrator User Guide 18.4).
 > **Warning:** testing laptops share saves only while they are on the same Wi-Fi at the same time.
 
 **Goal:** Practice a workflow together, for example a cash count or an expense sign-off, without touching the real records.

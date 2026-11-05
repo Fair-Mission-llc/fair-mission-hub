@@ -36,8 +36,8 @@ import {
 
 export type MaintainedTable =
   | 'Council'
-  | 'Parish'
-  | 'Pastor'
+  | 'Parishes'
+  | 'Pastors'
   | 'Activities'
   | 'DistributionLists'
   | 'DonationType'
@@ -47,8 +47,8 @@ export type MaintainedTable =
 /** What a maintained row is called in messages. */
 export const RECORD_LABELS: Record<MaintainedTable, string> = {
   Council: 'Council',
-  Parish: 'Parish',
-  Pastor: 'Pastor',
+  Parishes: 'Parish',
+  Pastors: 'Pastor',
   Activities: 'Activity',
   DistributionLists: 'Distribution list',
   DonationType: 'Donation type',
@@ -70,7 +70,11 @@ export interface RecordReference {
 export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference[]> = {
   Council: [
     { table: 'Member', column: 'CouncilID', noun: ['member', 'members'] },
-    { table: 'Parish', column: 'CouncilID', noun: ['parish', 'parishes'] },
+    // Sprint 11 Revision 21.0 (schema 113): the parish matrix.
+    { table: 'Parishes', column: 'council_id', noun: ['parish', 'parishes'] },
+    { table: 'Parishes', column: 'associated_council_id', noun: ['home parish link', 'home parish links'] },
+    { table: 'Pastors', column: 'council_id', noun: ['pastor', 'pastors'] },
+    { table: 'LocalFeedbackTickets', column: 'council_id', noun: ['feedback ticket', 'feedback tickets'] },
     { table: 'EventCouncils', column: 'CouncilID', noun: ['event link', 'event links'] },
     { table: 'Meeting', column: 'CouncilID', noun: ['meeting', 'meetings'] },
     { table: 'Activities', column: 'CouncilID', noun: ['activity', 'activities'] },
@@ -135,8 +139,8 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
     { table: 'CouncilOperationsKnowledge', column: 'council_id', noun: ['operations knowledge entry', 'operations knowledge entries'] },
     { table: 'ParishDisbursementRequest', column: 'council_id', noun: ['church disbursement request', 'church disbursement requests'] },
   ],
-  Parish: [{ table: 'Pastor', column: 'ParishID', noun: ['pastor', 'pastors'] }],
-  Pastor: [],
+  Parishes: [{ table: 'PastorParishMappings', column: 'parish_id', noun: ['pastor assignment', 'pastor assignments'] }],
+  Pastors: [], // PastorParishMappings rows are deleted with their pastor
   Activities: [
     { table: 'ActivityTime', column: 'ActivityID', noun: ['time entry', 'time entries'] },
     { table: 'ExpenseReport', column: 'LinkedActivityID', noun: ['expense report', 'expense reports'] },
@@ -150,16 +154,17 @@ export const RECORD_REFERENCES: Record<MaintainedTable, readonly RecordReference
 
 /** Columns each maintained table's create/update writes, besides its id. */
 export const COUNCIL_COLUMNS = ['CouncilNumber', 'CouncilName', 'State', 'Phone', 'Email', 'ein_number', 'district_number', 'council_level'] as const satisfies readonly (keyof NewCouncil)[];
+/** Sprint 11 Revision 21.0 (schema 113): the Parishes and Pastors columns an Admin writes. */
 export const PARISH_COLUMNS = [
-  'Name',
-  'StreetAddress1',
-  'StreetAddress2',
-  'City',
-  'State',
-  'Phone',
-  'CouncilID',
+  'parish_name',
+  'street_address_1',
+  'street_address_2',
+  'city',
+  'state',
+  'phone',
+  'council_id',
 ] as const satisfies readonly (keyof NewParish)[];
-export const PASTOR_COLUMNS = ['FirstName', 'LastName', 'Phone', 'Email', 'ParishID'] as const satisfies readonly (keyof NewPastor)[];
+export const PASTOR_COLUMNS = ['first_name', 'last_name', 'phone', 'email', 'council_id'] as const satisfies readonly (keyof NewPastor)[];
 /** Sprint 11 Revision 11.0 (schema 109) adds form_1728_line, the confirmed Form 1728 line. */
 export const ACTIVITY_COLUMNS = ['ActivityName', 'ActivityDescription', 'CategoryID', 'CouncilID', 'form_1728_line'] as const satisfies readonly (keyof NewActivity)[];
 
@@ -211,28 +216,28 @@ export function cleanCouncil(input: NewCouncil): NewCouncil {
 }
 
 export function cleanParish(input: NewParish): NewParish {
-  assertKnownFields(input, PARISH_COLUMNS, 'Parish');
+  assertKnownFields(input, PARISH_COLUMNS, 'Parishes');
   return {
-    Name: assertText(input.Name ?? '', 'Parish name', 100),
-    StreetAddress1: assertText(input.StreetAddress1 ?? '', 'Street address', 255),
-    StreetAddress2: optionalText(input.StreetAddress2, 'Street address line 2', 255) ?? undefined,
-    City: assertText(input.City ?? '', 'City', 50),
-    State: assertText(input.State ?? '', 'State', 50),
-    Phone: optionalText(input.Phone, 'Phone', 50) ?? undefined,
-    CouncilID: assertInteger(input.CouncilID, 'Council', 1),
+    parish_name: assertText(input.parish_name ?? '', 'Parish name', 100),
+    street_address_1: assertText(input.street_address_1 ?? '', 'Street address', 255),
+    street_address_2: optionalText(input.street_address_2, 'Street address line 2', 255),
+    city: assertText(input.city ?? '', 'City', 50),
+    state: assertText(input.state ?? '', 'State', 50),
+    phone: optionalText(input.phone, 'Phone', 50),
+    council_id: assertInteger(input.council_id, 'Council', 1),
   };
 }
 
 export function cleanPastor(input: NewPastor): NewPastor {
-  assertKnownFields(input, PASTOR_COLUMNS, 'Pastor');
-  const email = optionalText(input.Email, 'Email', 50);
+  assertKnownFields(input, PASTOR_COLUMNS, 'Pastors');
+  const email = optionalText(input.email, 'Email', 100);
   if (email !== null && !EMAIL.test(email)) throw invalid(`Email "${email}" is not a valid address.`, { email });
   return {
-    FirstName: assertText(input.FirstName ?? '', 'First name', 50),
-    LastName: assertText(input.LastName ?? '', 'Last name', 50),
-    Phone: optionalText(input.Phone, 'Phone', 50) ?? undefined,
-    Email: email ?? undefined,
-    ParishID: assertInteger(input.ParishID, 'Parish', 1),
+    first_name: assertText(input.first_name ?? '', 'First name', 50),
+    last_name: assertText(input.last_name ?? '', 'Last name', 50),
+    phone: optionalText(input.phone, 'Phone', 50),
+    email,
+    council_id: assertInteger(input.council_id, 'Council', 1),
   };
 }
 

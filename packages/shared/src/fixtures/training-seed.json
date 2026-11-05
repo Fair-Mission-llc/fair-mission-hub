@@ -1,0 +1,26 @@
+{
+  "$comment": "Sprint 11 Revision 21.0: the practice data the Practice Sandbox and the training playground seed (training-seed.ts reads and checks this file). Edit names and amounts here, not in code.",
+  "version": 1,
+  "members": [
+    { "firstName": "Peter", "lastName": "Practice" },
+    { "firstName": "Andrew", "lastName": "Sample" },
+    { "firstName": "James", "lastName": "Trialson" },
+    { "firstName": "John", "lastName": "Demoworth" },
+    { "firstName": "Philip", "lastName": "Mockley" },
+    { "firstName": "Thomas", "lastName": "Testwell" },
+    { "firstName": "Matthew", "lastName": "Rehearsal" },
+    { "firstName": "Simon", "lastName": "Drillman" },
+    { "firstName": "Jude", "lastName": "Sandbury" },
+    { "firstName": "Mark", "lastName": "Exampleton" }
+  ],
+  "fundraisers": [
+    { "name": "Pancake Breakfast", "description": "Practice pancake breakfast after Sunday Mass", "location": "Parish Hall" },
+    { "name": "Tootsie Roll Drive", "description": "Practice Tootsie Roll drive for people with intellectual disabilities", "location": "Church Entrance" },
+    { "name": "Fish Fry", "description": "Practice Lenten-style fish fry dinner", "location": "Parish Hall Kitchen" }
+  ],
+  "cashBoxes": [
+    { "label": "Training Cash Box 1", "amounts": [20, 20, 10, 5] },
+    { "label": "Training Cash Box 2", "amounts": [50, 25, 5] },
+    { "label": "Training Cash Box 3", "amounts": [100, 40, 12.5] }
+  ]
+}

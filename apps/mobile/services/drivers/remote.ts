@@ -77,13 +77,17 @@ export function createRemoteDataService(): DataService {
       create: notImplemented('parishes.create'),
       update: notImplemented('parishes.update'),
       remove: notImplemented('parishes.remove'),
+      setCouncilAssociation: notImplemented('parishes.setCouncilAssociation'),
     },
     pastors: {
       listByParish: notImplemented('pastors.listByParish'),
       listByCouncil: notImplemented('pastors.listByCouncil'),
+      listAssignments: notImplemented('pastors.listAssignments'),
       create: notImplemented('pastors.create'),
       update: notImplemented('pastors.update'),
       remove: notImplemented('pastors.remove'),
+      assignToParish: notImplemented('pastors.assignToParish'),
+      unassignFromParish: notImplemented('pastors.unassignFromParish'),
     },
     activities: {
       listByCouncil: notImplemented('activities.listByCouncil'),

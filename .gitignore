@@ -33,3 +33,6 @@ packages/backend/data/*
 
 # Sprint 11 Revision 10.0: the desktop executable npm run build:exe writes.
 /dist-desktop/
+
+# Sprint 11 Revision 21.0: the testing mesh key is a secret; never commit it.
+.testing-key.json

@@ -60,6 +60,8 @@ export * from './file-repository';
 export * from './advisory-panel';
 export * from './motion-requests';
 export * from './parent-organizations';
+export * from './parish-registry';
+export * from './training-seed';
 export * from './desk-seats';
 export * from './volunteer-quarantine';
 export * from './gl-splits';
