@@ -10,7 +10,7 @@ import {
   ALL_FEATURES_ON,
   deskDrawersFor,
   FEATURE_FLAG_LABELS,
-  FRATERNAL_ANNALS_TITLE,
+  COUNCIL_HISTORY_TITLE,
   guideSearchTerms,
   isRedundantAdminDeskNavItem,
   normalizeSearchText,
@@ -132,9 +132,10 @@ describe('4. Form 1728, Motion Requests, the Admin sidebar and the annals name',
     expect(isRedundantAdminDeskNavItem('Member', 'admin-desk')).toBe(false);
   });
 
-  it("names the history page and its switch '[ 📜 Fraternal Annals & Oral History ]'", () => {
-    expect(FRATERNAL_ANNALS_TITLE).toBe('[ 📜 Fraternal Annals & Oral History ]');
-    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe(FRATERNAL_ANNALS_TITLE);
-    expect(read('apps/web/app/history/page.tsx')).toContain(`<PageTitle>${FRATERNAL_ANNALS_TITLE}</PageTitle>`);
+  // Sprint 11 Revision 21.7: renamed 'Council History'.
+  it("names the history page and its switch 'Council History'", () => {
+    expect(COUNCIL_HISTORY_TITLE).toBe('Council History');
+    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe(COUNCIL_HISTORY_TITLE);
+    expect(read('apps/web/app/history/page.tsx')).toContain('<PageTitle>{COUNCIL_HISTORY_TITLE}</PageTitle>');
   });
 });

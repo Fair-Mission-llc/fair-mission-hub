@@ -196,10 +196,11 @@
     overflow-x: hidden;
   }
   @media (min-width: 768px) {
+    /* Sprint 11 Revision 21.7: max-height, so a short rail does not stretch to the window's full height. */
     .desk-rail-lock {
       position: sticky;
       top: 0;
-      height: 100vh;
+      max-height: 100vh;
       overflow-y: auto;
       overflow-x: hidden;
       align-self: start;

@@ -14,6 +14,8 @@
 // Sprint 11 Revision 21.5: each row draws the image its live CouncilDonationMethod row points to (paymentQrDisplay). A
 // placeholder:// seed link, or no link, shows the sample code bundled with the portal, like the phone; 'No QR code yet'
 // appears only for a method with neither. The card re-reads the rows each time it opens.
+// Sprint 11 Revision 21.7: the image still comes from the live, Active CouncilDonationMethod row (DonationMethodURL). A
+// row with no loadable image and no bundled sample draws the SampleCodeBadge SVG instead of the 'No QR code yet' text.
 import { useState } from 'react';
 import {
   canManageCouncilLookups,
@@ -52,12 +54,46 @@ export async function uploadPaymentQrImage(councilId: number, file: File): Promi
   return answer.url;
 }
 
-/** A compact QR preview: the image when the link can be shown, else a small placeholder. */
+/** The text of the badge drawn for a method with no QR code image. */
+export const SAMPLE_CODE_BADGE_LABEL = 'Sample Code';
+
+/** A clean placeholder for a method with no QR code: a stylized code with a 'Sample Code' ribbon, drawn as SVG. */
+export function SampleCodeBadge({ name, className }: { name: string; className?: string }) {
+  // The three finder squares of a QR code and a few modules, on a 21 x 21 grid.
+  const finder = (x: number, y: number) => (
+    <g key={`f-${x}-${y}`}>
+      <rect x={x} y={y} width={7} height={7} fill="currentColor" />
+      <rect x={x + 1} y={y + 1} width={5} height={5} fill="white" />
+      <rect x={x + 2} y={y + 2} width={3} height={3} fill="currentColor" />
+    </g>
+  );
+  const modules = [
+    [9, 1], [11, 2], [9, 4], [12, 5], [10, 9], [13, 9], [9, 11], [15, 10], [17, 9], [19, 11],
+    [9, 14], [11, 16], [13, 13], [15, 15], [17, 13], [19, 16], [10, 19], [14, 18], [17, 19], [19, 19],
+  ];
+  return (
+    <svg viewBox="0 0 21 21" role="img" aria-label={`${SAMPLE_CODE_BADGE_LABEL}: no ${name} QR code uploaded yet`} data-qr-source="none" className={cx('text-navy/40', className)}>
+      <rect width={21} height={21} fill="white" />
+      {finder(0, 0)}
+      {finder(14, 0)}
+      {finder(0, 14)}
+      {modules.map(([x, y]) => (
+        <rect key={`m-${x}-${y}`} x={x} y={y} width={1} height={1} fill="currentColor" />
+      ))}
+      <rect x={0} y={8.2} width={21} height={4.6} rx={0.6} className="fill-navy" />
+      <text x={10.5} y={11.4} textAnchor="middle" fontSize={2.6} fontWeight={700} fill="white" fontFamily="sans-serif">
+        {SAMPLE_CODE_BADGE_LABEL.toUpperCase()}
+      </text>
+    </svg>
+  );
+}
+
+/** A compact QR preview: the image when the link can be shown, else the Sample Code badge. */
 export function QrThumbnail({ url, name, className }: { url: string | null | undefined; name: string; className?: string }) {
   const shown = paymentQrDisplay(url, name);
   return (
     <span className={cx('inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded border border-line bg-white', className)}>
-      {shown.src ? <img src={shown.src} alt={`${name} QR code`} className="size-full object-contain" /> : <span className="px-0.5 text-center text-[10px] leading-tight text-muted">None</span>}
+      {shown.src ? <img src={shown.src} alt={`${name} QR code`} className="size-full object-contain" /> : <SampleCodeBadge name={name} className="size-full" />}
     </span>
   );
 }
@@ -102,7 +138,7 @@ function QrRow({ council, row, name, onSaved }: { council: Council; row: Council
         {shown.src ? (
           <img src={shown.src} alt={`${name} QR code`} data-qr-source={shown.source} className="size-full object-contain" />
         ) : (
-          <span className="px-1 text-center text-xs text-muted">No QR code yet</span>
+          <SampleCodeBadge name={name} className="size-full" />
         )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-2">

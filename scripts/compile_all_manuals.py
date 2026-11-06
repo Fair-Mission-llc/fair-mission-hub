@@ -151,7 +151,7 @@ MODULE_SECTIONS: dict[str, tuple[str, str]] = {
     'feature_faith_center': ('Faith Center', r'faith center|prayer|devotion'),
     'feature_constitutional_advisor': ('Constitutional Advisor', r'constitutional advisor'),
     'feature_council_bylaws': ('Council bylaws', r'bylaws'),
-    'feature_council_history': ('[ 📜 Fraternal Annals & Oral History ]', r'annals|diary|oral histor|in memoriam|team legacy|council history|historical chronology'),
+    'feature_council_history': ('Council History', r'annals|diary|oral histor|in memoriam|team legacy|council history|historical chronology'),
     'feature_live_meeting_console': ('Live meeting console', r'live meeting|secret ballot|hand tall'),
     'feature_capital_assets': ('Capital asset tracking', r'\basset'),
     'feature_charity_registry': ('Global charity registry', r'verified charit|charities registry|global charit'),

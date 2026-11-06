@@ -186,7 +186,11 @@ describe('history rules (pure)', () => {
     expect(y.diary.map((d) => d.authorLastName)).toEqual(['Able']);
     expect(matrix.founding).toEqual({ establishmentDate: '1952-03-01', originalChaplain: 'Fr. Example', charterPhotoUrl: null });
     expect(matrix.myEntryToday?.id).toBe(1);
-    expect(JSON.stringify(matrix)).not.toMatch(/Hours|hours|score/);
+    // Sprint 11 Revision 21.7: each year carries council-wide ledger totals (0 here: no ledger rows were passed), but no
+    // officer seat, diary entry or charter member carries a member's own hours or score.
+    expect(y.ledger).toEqual({ membersRecruited: 0, serviceHours: 0, fundsRaised: 0 });
+    expect(JSON.stringify({ ...matrix, years: matrix.years.map(({ ledger: _ledger, ...rest }) => rest) })).not.toMatch(/Hours|hours|score/);
+    expect(matrix.charterMembers).toEqual([]);
   });
 });
 

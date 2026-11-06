@@ -1989,7 +1989,7 @@ function OralHistories({ user, councilId }: { user: SessionUser; councilId: numb
       <p className="text-xs text-muted">
         Recordings are filed in Google Drive under Oral Histories. Each member records one.{' '}
         <Link href="/history" className="font-bold underline">
-          Open Fraternal Annals &amp; Oral History
+          Open Council History
         </Link>
       </p>
     </section>

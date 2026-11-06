@@ -280,7 +280,7 @@ export const NAV: Record<PortalNavItem | 'profile' | 'messages' | 'distribution-
   },
   'inventory/loaner-library': { href: '/inventory/loaner-library', label: 'Shared Equipment Library', hint: 'Equipment councils lend to each other' },
   'performance/charts': { href: '/performance/charts', label: 'Growth & Hours Charts', hint: 'Membership growth velocity and council hours by month' },
-  history: { href: '/history', label: 'Fraternal Annals & Oral History', hint: "Each year's officer core, collective accomplishments and oral histories" },
+  history: { href: '/history', label: 'Council History', hint: "The founding charter, oral histories, In Memoriam and each fraternal year's summary" },
   profile: { href: '/profile', label: 'My Profile', hint: 'Photo, biography, contact details, skills' },
 };
 

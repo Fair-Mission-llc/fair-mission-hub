@@ -10,6 +10,7 @@
 // =========================================================================
 import type {
   ClosingOfficerSeat,
+  CharterMemberEntry,
   CouncilAnnalsInput,
   CouncilFounding,
   CouncilLegacyMatrix,
@@ -17,6 +18,7 @@ import type {
   FraternalYearClosingMetrics,
   LegacyOfficerSeat,
   LegacyYear,
+  LegacyYearLedger,
   NewDiaryEntryInput,
 } from './contract';
 import { assertFraternalYear, currentFraternalYear, fraternalYearBounds } from './budget';
@@ -445,10 +447,12 @@ export function buildCouncilLegacyMatrix(input: {
   leadership: readonly CouncilLeadershipHistory[];
   diary: readonly CouncilSpiritualDiary[];
   roles: readonly Role[];
-  members: readonly Pick<Member, 'id' | 'MemberFirstName' | 'MemberLastName'>[];
+  members: readonly (Pick<Member, 'id' | 'MemberFirstName' | 'MemberLastName'> & Partial<Pick<Member, 'CouncilID' | 'DateJoinedCouncil' | 'flag_charter_member'>>)[];
   actorId: number;
   canKeepAnnals: boolean;
   today: Date;
+  /** Sprint 11 Revision 21.7: the council's ledger rows for each year's totals; without them every total is 0. */
+  closingRows?: YearClosingRows;
 }): CouncilLegacyMatrix {
   const { councilId, today } = input;
   const annals = input.annals.filter((a) => a.council_id === councilId);
@@ -484,10 +488,21 @@ export function buildCouncilLegacyMatrix(input: {
         authorLastName: member.get(entry.user_id)?.MemberLastName ?? `Member ${entry.user_id}`,
       }));
 
+  const ledgerOf = (year: string): LegacyYearLedger => {
+    if (!input.closingRows) return { membersRecruited: 0, serviceHours: 0, fundsRaised: 0 };
+    const m = buildYearClosingMetrics(councilId, year, input.closingRows, today);
+    return { membersRecruited: m.newMembers, serviceHours: m.volunteerHours.total, fundsRaised: m.fundsRaised.total };
+  };
+
   const rows: LegacyYear[] = years.map((fraternalYear) => {
     const row = annals.find((a) => a.fraternal_year === fraternalYear);
-    return { fraternalYear, annals: row ? { ...row } : null, officers: seatsOf(fraternalYear), diary: diaryOf(fraternalYear) };
+    return { fraternalYear, annals: row ? { ...row } : null, officers: seatsOf(fraternalYear), diary: diaryOf(fraternalYear), ledger: ledgerOf(fraternalYear) };
   });
+
+  const charterMembers: CharterMemberEntry[] = input.members
+    .filter((m) => m.CouncilID === councilId && Number(m.flag_charter_member ?? 0) === 1)
+    .map((m) => ({ memberId: m.id, firstName: m.MemberFirstName ?? '', lastName: m.MemberLastName ?? '', dateJoined: m.DateJoinedCouncil ? String(m.DateJoinedCouncil).slice(0, 10) : null }))
+    .sort((a, b) => (a.dateJoined ?? '9999').localeCompare(b.dateJoined ?? '9999') || a.lastName.localeCompare(b.lastName) || a.memberId - b.memberId);
 
   const oldestFirst = [...annals].sort((a, b) => a.fraternal_year.localeCompare(b.fraternal_year));
   const first = (key: 'establishment_date' | 'original_chaplain' | 'charter_photo_url'): string | null => oldestFirst.find((a) => a[key])?.[key] ?? null;
@@ -508,6 +523,7 @@ export function buildCouncilLegacyMatrix(input: {
     myEntryToday: mine ? { ...mine } : null,
     myTestimonial: testimonial ? { ...testimonial } : null,
     currentFraternalYear: current,
+    charterMembers,
   };
 }
 

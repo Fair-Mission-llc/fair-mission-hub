@@ -1294,3 +1294,25 @@ VALUES
 (12, 16, '2026-06-06', 4.00, 'Special Olympics track meet'),
 (13, 16, '2026-09-19', 3.25, 'Special Olympics bowling awards');
 GO
+
+-- ==============================================================================
+-- Sprint 11 Revision 21.7 (schema 113): a second secular parent organization, Secular Charity Corp (ParentOrganizations
+-- row 3), with two regional chapters under it (Council 10-11). The chapters carry no members, ledgers or lookups of
+-- their own, so a Super Admin can switch between parent organizations and see clean cross-tenant separation.
+-- Each chapter's Council.parent_organization holds the org code and tenant_type is GENERIC (councilColumnsForParentOrg).
+-- ==============================================================================
+INSERT INTO [ParentOrganizations] ([org_name], [org_code], [vertical_type], [created_at])
+VALUES ('Secular Charity Corp', 'SECULAR_CHARITY_CORP', 'SECULAR_NONPROFIT', '2026-11-06 00:00:00'); -- id 3
+GO
+
+INSERT INTO [Council] ([CouncilNumber], [CouncilName], [State], [Phone], [Email], [council_level], [parent_organization], [tenant_type])
+VALUES
+(800001, 'Secular Charity Chapter 1', 'OR', '503-555-0801', NULL, 'LOCAL', 'SECULAR_CHARITY_CORP', 'GENERIC'), -- id 10
+(800002, 'Secular Charity Chapter 2', 'WA', '360-555-0802', NULL, 'LOCAL', 'SECULAR_CHARITY_CORP', 'GENERIC'); -- id 11
+GO
+
+INSERT INTO [CouncilParentMappings] ([council_id], [parent_org_id], [parent_council_id], [mapped_at])
+VALUES
+(10, 3, NULL, '2026-11-06 00:00:00'),
+(11, 3, NULL, '2026-11-06 00:00:00');
+GO

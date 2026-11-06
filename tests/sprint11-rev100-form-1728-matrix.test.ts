@@ -193,7 +193,7 @@ describe('4. the six standard screen names', () => {
     expect(FEATURE_FLAG_LABELS.feature_marketing_factory.label).toBe('Recruitment Factory');
     expect(FEATURE_FLAG_LABELS.feature_loaner_library.label).toBe('Shared Equipment Library');
     expect(FEATURE_FLAG_LABELS.feature_advanced_audits.label).toBe('Trustee Semiannual Audit');
-    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe('[ 📜 Fraternal Annals & Oral History ]');
+    expect(FEATURE_FLAG_LABELS.feature_council_history.label).toBe('Council History'); // Sprint 11 Revision 21.7
   });
 
   it('uses the same names on the officer desk drawers', () => {

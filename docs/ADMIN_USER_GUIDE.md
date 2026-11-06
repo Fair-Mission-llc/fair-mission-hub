@@ -107,7 +107,9 @@ The navy header shows your own council, your name, your member type and your off
 - The sidebar stays in place when you scroll a page. A long sidebar scrolls on its own. The left rail of each desk (the **Admin Desk** drawers and the folder list of each officer desk) also stays in place while the panel on the right scrolls. The open drawer keeps a gold and navy border, so you always see which drawer you work in.
 - **Motion Request** has its own module switch, **Motion requests**. It no longer follows **Meeting management**. When the switch is off, the Faith In Action link, the **My Motion Requests** panel on the **Member Desk** and the **Motion Requests** drawer of the **Grand Knight Desk** are hidden. A new council starts with the switch off.
 - A council Admin's sidebar no longer repeats the **Admin Desk** drawers. **Council Wide Settings**, **Council Lookups**, **Secure Access Vault**, **Global Charities Registry** and **Council Asset Management** open from the **Admin Desk**. The **Navigation Guide** still lists them. Super Admins keep every link.
-- **Historical Chronology** is again **Fraternal Annals & Oral History**: the sidebar link, the page title and the module switch (**[ 📜 Fraternal Annals & Oral History ]**).
+- **Fraternal Annals & Oral History** is now **Council History**: the sidebar link, the page title and the module switch. The page has four tabs: **Founding Charter**, **Oral History & Diaries**, **In Memoriam** and **Fraternal Year Summaries**. The **[ Edit Founding Info ]** button is always on the **Founding Charter** tab, above the **Charter Members** list. The year summaries calculate members recruited, service hours and funds raised from the council records. Nobody types these totals.
+- On the **Admin Desk**, every drawer opens on the right in the same frame as the officer desks: a navy title bar with **Close**, and **Back to Desk Blotter** at the bottom. The **Setup Wizard** runs inside its drawer. The **Administration Manual** and the **'How Do I...' Help Search** are in a blue **File cabinets** box on the left rail. The left rail stays at the top of the window while you scroll a long form.
+- In **Payment QR Codes**, a method with no image and no sample shows a **Sample Code** badge.
 - The **'How Do I...' Local Help Search** ranks answers by keyword weight. It ignores filler words such as *how*, *please* and *I want to*, matches word forms (*submitted* finds *submit*) and puts tasks with the keyword in the title first.
 - In the Form 1728 popup, the list of every line shows 12 rows (it showed 6). When no suggestion is at least 60% sure, no line is selected. Choose a line before you select **Confirm line and save**. The **Activities** grid of **Council Lookup Tables** shows the Form 1728 line of each row.
 
@@ -668,7 +670,7 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 2. Drag the QR code image onto **Upload QR Code Image**, or click the box and choose the image (PNG, JPEG or WebP, up to 5 MB).
 3. Wait for the message.
 
-**Expected result:** The new code shows in the row. The phone's collection screen shows it to donors. Before an upload, a row shows the sample code that comes with the portal, marked **Sample code**. The image is kept in the council's file repository, or on the portal server for a Google Drive council.
+**Expected result:** The new code shows in the row. The phone's collection screen shows it to donors. Before an upload, a row shows the sample code that comes with the portal, marked **Sample code**. A method with no sample shows a **Sample Code** badge. The image is kept in the council's file repository, or on the portal server for a Google Drive council.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1158,13 +1160,13 @@ The script reads only `package.json` and `package-lock.json`. It opens no networ
 
 ### 16.1 Concept: one desk for the council's Admin work
 The **Admin Desk** collects the council Admin's tools in one page. The drawers are down the left side. All drawers are closed when the page opens.
-Select a drawer to open its panel on the right. Select another drawer to change the panel.
+Select a drawer to open its panel on the right. Select another drawer to change the panel. Each panel has a navy title bar with **Close**, and **Back to Desk Blotter** at the bottom, the same as on the officer desks. The **Administration Manual** and the **'How Do I...' Help Search** are in a blue **File cabinets** box. The left rail stays at the top of the window while you scroll a long form on the right.
 
 Two kinds of drawer are on the desk. A **file cabinet** holds reference material and has a blue left edge. A **functional drawer** is where you do work and has a gold left edge. The Super Admin Desk uses the same colors.
 
 | Drawer | Kind | What the panel holds |
 | --- | --- | --- |
-| **Setup Wizard** | Functional drawer | **Run Setup Wizard** (16.4). The drawer leaves the desk after the wizard runs |
+| **Setup Wizard** | Functional drawer | **Run Setup Wizard** (16.4). The wizard runs inside the drawer. The drawer leaves the desk after the wizard runs |
 | **Administration Manual** | File cabinet | This guide as a PDF, and the **Regenerate Manuals On-Demand** button |
 | **'How Do I...' Help Search** | File cabinet | A search over the tasks of this guide |
 | **Council Wide Settings** | Functional drawer | The same drawers as **System Settings** → **Council Wide Settings**, with the **Council Instance Record** first and **Council Setup** last |
@@ -1229,9 +1231,9 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 2. **File Storage and Email Gateway:** choose the file repository provider. Type the mail server, the sign-in email and the password. Select **Save**. The password goes to the **Secure Access Vault** for your home council only.
 3. **Clone Founding Template:** select **Clone Founding Template**. The platform copies the chart of accounts, the **Council Lookup Tables** rows and the **Council Wide Settings** of Founding Council 15295.
 4. **Practice Sandbox:** to try the desks first, select **Activate Safe Practice Sandbox**.
-5. **Quick-Start Guide:** select **Download the Quick-Start Intake Guide**. Select **Open the Admin Desk**.
+5. **Quick-Start Guide:** select **Download the Quick-Start Intake Guide**. Select **Finish setup** (in the Admin Desk drawer) or **Open the Admin Desk** (from **Council Setup**).
 
-**Expected result:** The wizard closes and the Admin Desk shows. Select **Skip for now** to close the wizard before the end. Select **?** beside a field to read what the field does.
+**Expected result:** The wizard closes and the Admin Desk shows. On the Admin Desk, the wizard runs inside the **Setup Wizard** drawer, not over the whole page. Select **Skip for now** to close the wizard before the end. Select **?** beside a field to read what the field does.
 
 **Common problems:**
 | Problem | Cause | Fix |

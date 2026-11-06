@@ -15711,5 +15711,58 @@ export const PRESENTATION_SEED_DATA: readonly SeedTable[] = [
         "ActivityNotes": "Special Olympics bowling awards"
       }
     ]
+  },
+  {
+    "table": "ParentOrganizations",
+    "rows": [
+      {
+        "org_name": "Secular Charity Corp",
+        "org_code": "SECULAR_CHARITY_CORP",
+        "vertical_type": "SECULAR_NONPROFIT",
+        "created_at": "2026-11-06 00:00:00"
+      }
+    ]
+  },
+  {
+    "table": "Council",
+    "rows": [
+      {
+        "CouncilNumber": 800001,
+        "CouncilName": "Secular Charity Chapter 1",
+        "State": "OR",
+        "Phone": "503-555-0801",
+        "Email": null,
+        "council_level": "LOCAL",
+        "parent_organization": "SECULAR_CHARITY_CORP",
+        "tenant_type": "GENERIC"
+      },
+      {
+        "CouncilNumber": 800002,
+        "CouncilName": "Secular Charity Chapter 2",
+        "State": "WA",
+        "Phone": "360-555-0802",
+        "Email": null,
+        "council_level": "LOCAL",
+        "parent_organization": "SECULAR_CHARITY_CORP",
+        "tenant_type": "GENERIC"
+      }
+    ]
+  },
+  {
+    "table": "CouncilParentMappings",
+    "rows": [
+      {
+        "council_id": 10,
+        "parent_org_id": 3,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-06 00:00:00"
+      },
+      {
+        "council_id": 11,
+        "parent_org_id": 3,
+        "parent_council_id": null,
+        "mapped_at": "2026-11-06 00:00:00"
+      }
+    ]
   }
 ];

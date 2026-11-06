@@ -96,7 +96,7 @@ A new council starts with the **lightweight footprint**: the core systems only. 
 | `feature_faith_center` | **Faith Center** | Faith Center | The feast-day banner, the Daily Bible Quote, the praying hands and the prayer intentions |
 | `feature_constitutional_advisor` | **Constitutional Advisor** | Constitutional Advisor | None |
 | `feature_council_bylaws` | **Council bylaws** | Constitutional Bylaws | None |
-| `feature_council_history` | **[ 📜 Fraternal Annals & Oral History ]** | Council history (Team Legacy), the **Fraternal Diary Entry Logs** and **Oral History Recordings** drawers of the **Historian Desk** | None |
+| `feature_council_history` | **Council History** | Council history (Team Legacy), the **Fraternal Diary Entry Logs** and **Oral History Recordings** drawers of the **Historian Desk** | None |
 | `feature_live_meeting_console` | **Live meeting console** | Live Meeting Console | None |
 | `feature_capital_assets` | **Capital asset tracking** | Council Asset Management, the **Council Asset Management** drawer of the **Admin Desk** | The **Council assets** button and screen |
 | `feature_charity_registry` | **Global charity registry** | Global Charities Registry, the **Global Charities Registry** drawer of the **Admin Desk** | None |
@@ -128,13 +128,13 @@ The council's custom manuals follow the flags too. When an Admin prints a counci
 **Start point:** Sidebar → System Settings → **Master Feature Deployment Grid**. The address `/super-admin` opens the same grid.
 
 **Steps:**
-1. Select the parent organization tab above the grid, for example **Knights of Columbus council**. The tab shows how many councils it has. The grid shows only the councils of that parent organization.
+1. Choose the parent organization in the **Parent organization tier** list above the grid, for example **Knights of Columbus**. Each entry shows how many councils it has. The list holds every parent organization, so it does not grow wider when you add one. The grid shows only the councils of that parent organization.
 2. Find the row of the module. The rows are in two groups: **Core systems (always on)** and **Premium modules**. Each row shows the label, the flag column and the pages the flag hides.
 3. To change one council, find the column of the council. Each column shows the council number and how many modules are on. Clear the box to hide the module. Select the box to show the module.
-4. To change every council of the parent organization, use the box in the **Every council in** column. A row with some councils on shows, for example, *2 of 5* under the box.
+4. To change every council of the parent organization, use the box in the **TOGGLE ALL MODULES FOR THIS ORGANIZATIONAL TIER** column. A row with some councils on shows, for example, *2 of 5* under the box.
 5. To put a council back to the lightweight footprint, select **Lightweight** under the council number.
 
-**Expected result:** The platform saves each switch at once. Members of the council see the change the next time each page loads.
+**Expected result:** The platform saves each switch at once. Members of the council see the change the next time each page loads. The column headings stay at the top of the grid while you scroll down the rows.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -142,7 +142,7 @@ The council's custom manuals follow the flags too. When an Admin prints a counci
 | A member still sees a phone tab. | The phone read the flags before the change. | Ask the member to sign out and sign in again. |
 | *"… is not a feature flag"* | The request named an unknown flag. | Use one of the nineteen flags in 2.1. |
 | *"… is switched off for this council."* | A premium module is off. | Ask a Super Admin to turn it on in the **Master Feature Deployment Grid**. |
-| A council is not in the grid. | The grid shows one parent organization at a time. | Select the tab of the council's parent organization. |
+| A council is not in the grid. | The grid shows one parent organization at a time. | Choose the council's parent organization in the **Parent organization tier** list. |
 
 ---
 
@@ -153,7 +153,7 @@ Schema 112 files every council under one parent organization. Two tables hold th
 
 | Table | Columns | What a row means |
 | --- | --- | --- |
-| `ParentOrganizations` | `id`, `org_name`, `org_code`, `vertical_type` (`FRATERNAL` or `SECULAR_NONPROFIT`), `created_at` | One parent organization. The seed holds the Knights of Columbus (`KofC`, `FRATERNAL`) and the Secular Charity (`SECULAR_CHARITY`, `SECULAR_NONPROFIT`). |
+| `ParentOrganizations` | `id`, `org_name`, `org_code`, `vertical_type` (`FRATERNAL` or `SECULAR_NONPROFIT`), `created_at` | One parent organization. The seed holds the Knights of Columbus (`KofC`, `FRATERNAL`) and the Secular Charity (`SECULAR_CHARITY`, `SECULAR_NONPROFIT`). The presentation data adds **Secular Charity Corp** (`SECULAR_CHARITY_CORP`, `SECULAR_NONPROFIT`) with two chapters, **Secular Charity Chapter 1** and **Secular Charity Chapter 2**, to show that each parent organization's councils stay apart. |
 | `CouncilParentMappings` | `id`, `council_id`, `parent_org_id`, `parent_council_id`, `mapped_at` | One row for each council: its parent organization and, for a chapter, the parent council above it. |
 
 The platform finds a council's parent organization in this order:

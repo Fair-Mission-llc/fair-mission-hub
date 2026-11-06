@@ -7,7 +7,10 @@
 // Super Admin (SUPER_ADMIN_REQUIRED), and the page is a Super Admin area, so council Admins never see it.
 // Sprint 11 Revision 8.0: every switch is premium now. The top block lists the core systems (ALWAYS_ON_MODULES) with an
 // 'Always on' cell per council and no checkbox.
-import { useState } from 'react';
+// Sprint 11 Revision 21.7: the parent organization tabs became one dropdown (any number of ParentOrganizations rows, each
+// shown by its org_name), the header row is pinned (TABLE_HEADER_STICKY_STYLE) inside a scrolling frame, and column 2
+// reads TIER_TOGGLE_COLUMN_HEADER.
+import { useState, type CSSProperties } from 'react';
 import {
   ALWAYS_ON_MODULES,
   councilFeatureFlags,
@@ -20,8 +23,9 @@ import {
   type Council,
   type FeatureFlagName,
   type FeatureFlags,
+  type ParentOrganizationRecord,
 } from '@kofc/shared';
-import { Button, cx, Notice, Panel } from '@/components/ui';
+import { Button, cx, Field, Notice, Panel, Select } from '@/components/ui';
 import { useSession, useUser } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
@@ -30,6 +34,12 @@ const GROUPS = [{ tier: 'premium' as const, title: 'Premium modules', note: 'Off
 
 /** The title of the grid's top block: the core systems, which have no switch. */
 export const CORE_SYSTEMS_TITLE = 'Core systems (always on)';
+
+/** Column 2's header: the switch that sets a module for every council of the chosen tier. */
+export const TIER_TOGGLE_COLUMN_HEADER = 'TOGGLE ALL MODULES FOR THIS ORGANIZATIONAL TIER';
+
+/** Keeps the column labels at the top of the grid's scrolling frame. */
+export const TABLE_HEADER_STICKY_STYLE: CSSProperties = { position: 'sticky', top: 0, zIndex: 40 };
 
 function FlagGrid({ councils, tierLabel, onSaved }: { councils: Council[]; tierLabel: string; onSaved: () => Promise<void> }) {
   const user = useUser();
@@ -80,22 +90,22 @@ function FlagGrid({ councils, tierLabel, onSaved }: { councils: Council[]; tierL
           {message.text}
         </Notice>
       ) : null}
-      <div className="overflow-x-auto rounded border border-line">
+      <div className="max-h-[70vh] overflow-auto rounded border border-line">
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">Module switches of every council: a row per module, a column per council</caption>
-          <thead>
+          <thead style={TABLE_HEADER_STICKY_STYLE}>
             <tr className="bg-navy text-left text-xs uppercase tracking-wide text-white">
-              <th scope="col" className="sticky left-0 bg-navy px-3 py-2 font-bold">
+              <th scope="col" style={{ ...TABLE_HEADER_STICKY_STYLE, left: 0, zIndex: 41 }} className="bg-navy px-3 py-2 font-bold">
                 Module
               </th>
-              <th scope="col" className="border-x-2 border-gold px-2 py-2 text-center font-bold">
-                <span className="block whitespace-nowrap">Every council</span>
-                <span className="block font-normal normal-case tracking-normal">in {tierLabel}</span>
+              <th scope="col" style={TABLE_HEADER_STICKY_STYLE} className="max-w-48 border-x-2 border-gold bg-navy px-2 py-2 text-center font-bold">
+                <span className="block">{TIER_TOGGLE_COLUMN_HEADER}</span>
+                <span className="block font-normal normal-case tracking-normal">{tierLabel}</span>
               </th>
               {councils.map((c) => {
                 const on = FEATURE_FLAG_NAMES.filter((n) => flagsOf.get(c.id)?.[n]).length;
                 return (
-                  <th key={c.id} scope="col" className="px-2 py-2 text-center font-bold">
+                  <th key={c.id} scope="col" style={TABLE_HEADER_STICKY_STYLE} className="bg-navy px-2 py-2 text-center font-bold">
                     <span className="block whitespace-nowrap">No. {c.CouncilNumber}</span>
                     <span className="block font-normal normal-case tracking-normal">
                       {on} / {FEATURE_FLAG_NAMES.length} on
@@ -199,50 +209,44 @@ function FlagGrid({ councils, tierLabel, onSaved }: { councils: Council[]; tierL
 }
 
 /**
- * Sprint 11 Revision 19.5: one parent organization tier of the grid. The tabs list the parent organization nodes read from
- * the council rows (parentOrganizationNodes); the chosen tier shows only its councils, and each module row gains an
- * 'Every council in this organization' switch that sets the module for the whole tier in one pass. The per-council
- * checkboxes stay for granular control.
+ * Sprint 11 Revision 19.5: one parent organization tier of the grid. The tiers are the parent organization nodes read from
+ * the council rows (parentOrganizationNodes); the chosen tier shows only its councils, and each module row gains a
+ * column 2 switch that sets the module for the whole tier in one pass. The per-council checkboxes stay for granular
+ * control. Sprint 11 Revision 21.7: a dropdown picks the tier, so any number of parent organizations fits; a node whose
+ * code matches a ParentOrganizations row shows that row's org_name.
  */
-function ParentOrganizationTiers({ councils, onSaved }: { councils: Council[]; onSaved: () => Promise<void> }) {
+function ParentOrganizationTiers({ councils, orgs, onSaved }: { councils: Council[]; orgs: readonly ParentOrganizationRecord[]; onSaved: () => Promise<void> }) {
   const nodes = parentOrganizationNodes(councils);
   const [chosen, setChosen] = useState<string | null>(null);
   const node = nodes.find((n) => n.id === chosen) ?? nodes[0];
   if (!node) return <p className="text-sm text-muted">No council is on file yet.</p>;
+  const labelOf = (n: (typeof nodes)[number]) => orgs.find((o) => o.org_code.toUpperCase() === n.id.toUpperCase())?.org_name ?? n.label;
   const tier = councils.filter((c) => node.councilIds.includes(c.id));
   return (
     <div className="flex flex-col gap-3">
-      <div role="tablist" aria-label={PARENT_ORGANIZATION_TIERS_LABEL} className="flex flex-wrap gap-2">
-        {nodes.map((n) => {
-          const here = n.id === node.id;
-          return (
-            <button
-              key={n.id}
-              type="button"
-              role="tab"
-              aria-selected={here}
-              onClick={() => setChosen(n.id)}
-              className={cx(
-                'rounded border-2 px-3 py-1.5 text-sm font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
-                here ? 'drawer-context-active border-navy bg-navy text-white' : 'border-navy bg-white text-navy hover:bg-gold/20',
-              )}
-            >
-              {n.label} ({n.councilIds.length})
-            </button>
-          );
-        })}
-      </div>
-      <FlagGrid key={node.id} councils={tier} tierLabel={node.label} onSaved={onSaved} />
+      <Field label={PARENT_ORGANIZATION_TIERS_LABEL} hint={`${nodes.length} parent organization${nodes.length === 1 ? '' : 's'} on file.`} className="max-w-md">
+        {(id) => (
+          <Select id={id} value={node.id} onChange={(e) => setChosen(e.target.value)}>
+            {nodes.map((n) => (
+              <option key={n.id} value={n.id}>
+                {labelOf(n)} ({n.councilIds.length} {n.councilIds.length === 1 ? 'council' : 'councils'})
+              </option>
+            ))}
+          </Select>
+        )}
+      </Field>
+      <FlagGrid key={node.id} councils={tier} tierLabel={labelOf(node)} onSaved={onSaved} />
     </div>
   );
 }
 
-/** The label of the parent organization tabs above the grid. */
-export const PARENT_ORGANIZATION_TIERS_LABEL = 'Parent organization tiers';
+/** The label of the parent organization dropdown above the grid. */
+export const PARENT_ORGANIZATION_TIERS_LABEL = 'Parent organization tier';
 
 /** The module switches of every council, loaded and ready to toggle. */
 export function FeatureFlagControlPanel({ title = 'Module switches by council' }: { title?: string }) {
   const councils = useLoad(() => db.councils.list(), []);
+  const orgs = useLoad(() => db.parentOrganizations.list(), []);
   return (
     <Panel title={title}>
       <div className="flex flex-col gap-3">
@@ -252,7 +256,7 @@ export function FeatureFlagControlPanel({ title = 'Module switches by council' }
           always show. Nothing is deleted; ticking the box again restores the module. A new council starts with the lightweight footprint.
         </p>
         {councils.error ? <Notice tone="error">{councils.error}</Notice> : null}
-        {councils.data ? <ParentOrganizationTiers councils={councils.data} onSaved={councils.reload} /> : <p className="text-sm text-muted">Loading councils…</p>}
+        {councils.data ? <ParentOrganizationTiers councils={councils.data} orgs={orgs.data ?? []} onSaved={councils.reload} /> : <p className="text-sm text-muted">Loading councils…</p>}
       </div>
     </Panel>
   );

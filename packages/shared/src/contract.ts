@@ -2093,6 +2093,26 @@ export interface LegacyYear {
   officers: LegacyOfficerSeat[];
   /** The year's diary entries, oldest first. */
   diary: DiaryEntryDetail[];
+  /** Sprint 11 Revision 21.7: the year's team totals, read from the ledgers (buildYearClosingMetrics); nobody types them. */
+  ledger: LegacyYearLedger;
+}
+
+/** Council-wide totals of one fraternal year, computed from the member roll, the hours logs and the event ledgers. */
+export interface LegacyYearLedger {
+  /** Members whose DateJoinedCouncil falls in the year. */
+  membersRecruited: number;
+  /** Event shift hours plus council activity hours dated in the year. */
+  serviceHours: number;
+  /** FundsRaised-Cash plus FundsRaised-Electronic of the council's events that started in the year. */
+  fundsRaised: number;
+}
+
+/** One charter member of the council (Member.flag_charter_member = 1). */
+export interface CharterMemberEntry {
+  memberId: number;
+  firstName: string;
+  lastName: string;
+  dateJoined: string | null;
 }
 
 /** The council's founding facts, from the earliest year that records each one. */
@@ -2115,6 +2135,8 @@ export interface CouncilLegacyMatrix {
   /** Sprint 6L Extension 5: the caller's Oral History Testimonial, if any; a member records at most one. */
   myTestimonial: CouncilSpiritualDiary | null;
   currentFraternalYear: string;
+  /** Sprint 11 Revision 21.7: the council's charter members, by join date then last name. */
+  charterMembers: CharterMemberEntry[];
 }
 
 // 20b1. ASSET DETAILS, PLANNING HOURS AND THE MEDIA VAULT (Sprint 6P)

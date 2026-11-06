@@ -193,7 +193,7 @@ The categories group the links by the work you do. A link can sit in a different
 
 | Link | Pillar | Who sees it | What it holds | Section |
 | --- | --- | --- | --- | --- |
-| **Fraternal Annals & Oral History** | Performance | Every member | Annals, the diary, oral histories and the In Memoriam roll | 5 |
+| **Council History** | Performance | Every member | Four tabs: **Founding Charter** (with **Charter Members**), **Oral History & Diaries**, **In Memoriam** and **Fraternal Year Summaries** (totals calculated from the council records) | 5 |
 | **Operations Knowledge Vault** | System Settings | Officers, Admins | Every lesson the councils filed | 17.3 |
 | **Lessons Registry** | Performance | Officers, Admins | Lessons from past events | 5.5 |
 | **Media & Memory Center** (**Browse Gallery**, **Gallery Administration Hub**) | Top of the sidebar | Every member | Event and meeting photos, albums and photo uploads | 6.2 |
@@ -261,7 +261,7 @@ The categories group the links by the work you do. A link can sit in a different
 | **Governance** | Live Meeting Console, Recurring Meetings, Meeting Center, Council Election Center, Appointed Leadership Matrix, Constitutional Bylaws, Constitutional Advisor, Charity Vetting Queue |
 | **Faith In Action** | Member Activities, Member Actions Hub, Event Planner, Visual Master Calendar, Faith Center |
 | **Finances** | My Expense Reports, Propose Charity Grant (always at the top); then the **FINANCIAL REPORTS** accordion (Chart of Accounts & GL, Balance Sheet, Financial Dashboard, Annual Budget Center) and the **FINANCIAL ACTIONS** accordion (Treasurer Ledger Audit, FS Expense Audit Queue, GK Expense Authorize, Trustee Semiannual Audit, Disbursed Check Registry, Charitable Grants Registry, Donations History) |
-| **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Fraternal Annals & Oral History, Post-event Ledger, Lessons Registry |
+| **Performance** | Council Dashboard, Executive Dashboard, Growth & Hours Charts, Council History, Post-event Ledger, Lessons Registry |
 | **Resources** | Council Artifacts, Recruitment Factory, Shared Equipment Library |
 | **Answers** | Online Help Center, Interactive Help Desk, SOP Center |
 | **System Settings** | Councils, Master Feature Deployment Grid, Global System Parameters, Remote Assistance Desk, Impersonate Council Admin, View As Member, Administrative Feedback Loops, Council Wide Settings, Connected Councils, Operations Knowledge Vault, Supreme Council Sync, Council Lookup Tables, Secure Access Vault, Council Asset Management, Global Charities Registry, Global Lookup Tables, Parish & Pastors Linkage |

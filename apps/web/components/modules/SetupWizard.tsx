@@ -167,8 +167,11 @@ function QuickStartStep() {
   );
 }
 
-/** The overlay. `onClose(finished)` runs when the Admin opens the desk (true) or skips (false). */
-export function SetupWizard({ onClose }: { onClose: (finished: boolean) => void }) {
+/**
+ * The overlay. `onClose(finished)` runs when the Admin opens the desk (true) or skips (false). Sprint 11 Revision 21.7:
+ * `inline` draws the same steps inside the Admin Desk's Setup Wizard drawer, with no full-screen mask.
+ */
+export function SetupWizard({ onClose, inline = false }: { onClose: (finished: boolean) => void; inline?: boolean }) {
   const user = useUser();
   const councilId = user.councilId;
   const [index, setIndex] = useState(0);
@@ -186,17 +189,8 @@ export function SetupWizard({ onClose }: { onClose: (finished: boolean) => void 
     onClose(finished);
   };
 
-  return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-navy/80 p-4 sm:p-8">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="setup-wizard-step-title"
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') close(false);
-        }}
-        className="flex w-full max-w-3xl flex-col gap-4 rounded border-2 border-navy border-t-8 border-t-gold bg-white p-5"
-      >
+  const body = (
+    <>
         <header className="flex flex-col gap-2">
           <p className="text-xs font-bold uppercase tracking-wide text-muted">
             {SETUP_WIZARD_TITLE} · Step {step.number} of {SETUP_WIZARD_STEPS.length}
@@ -242,9 +236,32 @@ export function SetupWizard({ onClose }: { onClose: (finished: boolean) => void 
             <Button variant="secondary" onClick={() => setIndex((i) => i - 1)} disabled={index === 0}>
               Back
             </Button>
-            {last ? <Button onClick={() => close(true)}>Open the Admin Desk</Button> : <Button onClick={() => setIndex((i) => i + 1)}>Next</Button>}
+            {last ? <Button onClick={() => close(true)}>{inline ? 'Finish setup' : 'Open the Admin Desk'}</Button> : <Button onClick={() => setIndex((i) => i + 1)}>Next</Button>}
           </div>
         </footer>
+    </>
+  );
+
+  if (inline) {
+    return (
+      <section aria-labelledby="setup-wizard-step-title" className="flex min-w-0 flex-col gap-4">
+        {body}
+      </section>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-navy/80 p-4 sm:p-8">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="setup-wizard-step-title"
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') close(false);
+        }}
+        className="flex w-full max-w-3xl flex-col gap-4 rounded border-2 border-navy border-t-8 border-t-gold bg-white p-5"
+      >
+        {body}
       </div>
     </div>
   );

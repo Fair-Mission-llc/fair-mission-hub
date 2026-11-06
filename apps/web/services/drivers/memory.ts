@@ -8028,6 +8028,7 @@ export class MemoryDataService implements DataService {
         actorId,
         canKeepAnnals: mayKeepCouncilAnnals(actor, councilId),
         today: this.now(),
+        closingRows: this.yearClosingRows(s, councilId),
       });
     },
 

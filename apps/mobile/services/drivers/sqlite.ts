@@ -9492,17 +9492,20 @@ export class SqliteDataService implements DataService {
       const actor = await this.memberWriteActor(db, actorId);
       assertMayReadCouncilHistory(actor, councilId, `read the history of council ${councilId}`);
       await this.assertCouncilsExist(db, [councilId]);
-      const [annals, leadership, diary, roles, members] = await Promise.all([
+      // Sprint 11 Revision 21.7: the council's charter members, and the ledger rows behind each year's totals.
+      const [annals, leadership, diary, roles, members, closingRows] = await Promise.all([
         db.getAllAsync<CouncilHistoryAnnals>('SELECT * FROM [CouncilHistoryAnnals] WHERE [council_id] = ?', [councilId]),
         db.getAllAsync<CouncilLeadershipHistory>('SELECT * FROM [CouncilLeadershipHistory] WHERE [CouncilID] = ?', [councilId]),
         db.getAllAsync<CouncilSpiritualDiary>('SELECT * FROM [CouncilSpiritualDiary] WHERE [council_id] = ?', [councilId]),
         db.getAllAsync<Role>('SELECT * FROM [Role]'),
         db.getAllAsync<Member>(
-          `SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member]
+          `SELECT [id], [MemberFirstName], [MemberLastName], [CouncilID], [DateJoinedCouncil], [flag_charter_member] FROM [Member]
             WHERE [id] IN (SELECT [MemberID] FROM [CouncilLeadershipHistory] WHERE [CouncilID] = ?)
-               OR [id] IN (SELECT [user_id] FROM [CouncilSpiritualDiary] WHERE [council_id] = ?)`,
-          [councilId, councilId],
+               OR [id] IN (SELECT [user_id] FROM [CouncilSpiritualDiary] WHERE [council_id] = ?)
+               OR ([CouncilID] = ? AND [flag_charter_member] = 1)`,
+          [councilId, councilId, councilId],
         ),
+        this.yearClosingRows(db, councilId),
       ]);
       return buildCouncilLegacyMatrix({
         councilId,
@@ -9514,6 +9517,7 @@ export class SqliteDataService implements DataService {
         actorId,
         canKeepAnnals: mayKeepCouncilAnnals(actor, councilId),
         today: this.now(),
+        closingRows,
       });
     },
 

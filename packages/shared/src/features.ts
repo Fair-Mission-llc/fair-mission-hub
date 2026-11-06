@@ -101,10 +101,22 @@ export const COUNCIL_15295_SEED_FLAGS: FeatureFlags = {
 };
 
 /**
- * Sprint 11 Revision 19.5: the council history page (/history) and its switch read '[ 📜 Fraternal Annals & Oral History ]'
- * again, in place of 'Historical Chronology'. The sidebar and page titles draw it as plain words (plainTitle).
+ * Sprint 11 Revision 21.7 (named '[ 📜 Fraternal Annals & Oral History ]' from Revision 19.5): the council history page (/history), its sidebar link and its module switch read 'Council
+ * History'. The page is a tabbed workspace: Founding Charter, Oral History & Diaries, In Memoriam and Fraternal Year
+ * Summaries (COUNCIL_HISTORY_TABS).
  */
-export const FRATERNAL_ANNALS_TITLE = '[ 📜 Fraternal Annals & Oral History ]';
+export const COUNCIL_HISTORY_TITLE = 'Council History';
+
+/** The four tabs of the Council History page, in order. */
+export const COUNCIL_HISTORY_TABS = [
+  { id: 'founding', label: 'Founding Charter' },
+  { id: 'oral-history', label: 'Oral History & Diaries' },
+  { id: 'in-memoriam', label: 'In Memoriam' },
+  { id: 'year-summaries', label: 'Fraternal Year Summaries' },
+] as const;
+
+/** The Founding Charter tab's edit button, shown at all times. */
+export const EDIT_FOUNDING_INFO_LABEL = '[ Edit Founding Info ]';
 
 /** Sprint 11 Revision 7.0: the Super Admin page's title (/feature-flags and /super-admin). */
 export const MASTER_FEATURE_GRID_TITLE = 'Master Feature Deployment Grid';
@@ -150,7 +162,7 @@ export const FEATURE_FLAG_LABELS: Record<FeatureFlagName, { label: string; hint:
   feature_constitutional_advisor: { label: 'Constitutional Advisor', hint: 'The parliamentary question desk that cites the bylaws' },
   feature_council_bylaws: { label: 'Council bylaws', hint: "The council's constitutional bylaws page" },
   feature_council_history: {
-    label: FRATERNAL_ANNALS_TITLE,
+    label: COUNCIL_HISTORY_TITLE,
     hint: "The Team Legacy history page (annals, diary, oral histories, In Memoriam) and the Historian Desk's diary and oral history drawers",
   },
   feature_live_meeting_console: { label: 'Live meeting console', hint: 'The live meeting console: agenda, check-ins, secret ballots and hand tallies' },

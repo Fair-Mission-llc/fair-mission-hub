@@ -213,7 +213,8 @@ export const STANDARD_SCREEN_NAMES = {
   'inventory/loaner-library': 'Shared Equipment Library',
   'finance/audit': 'Trustee Semiannual Audit',
   // Sprint 11 Revision 19.5: 'Historical Chronology' is Fraternal Annals & Oral History again (switch label: features.ts FRATERNAL_ANNALS_TITLE).
-  history: 'Fraternal Annals & Oral History',
+  // Sprint 11 Revision 21.7: 'Council History' (features.ts COUNCIL_HISTORY_TITLE).
+  history: 'Council History',
 } as const satisfies Partial<Record<PortalNavItem, string>>;
 
 /** Sprint 10 Revision 1.0: the links pinned at the top of the sidebar, outside the seven pillars. */
