@@ -14,6 +14,7 @@ import {
   HOME_LANDING_ROUTE,
   impersonationCouncilContext,
   registerCouncilGates,
+  type ClientUpgradeNotice,
   type Council,
   type FeatureFlags,
   type SessionUser,
@@ -96,6 +97,9 @@ interface SessionValue {
    * the server reads from its own data (PATCH /api/auth/session).
    */
   rolesChanged(roles: string[]): void;
+  /** Sprint 11 Revision 21.5: the server's upgrade notice from the last sign-in (client-telemetry.ts), or null. */
+  upgradeNotice: ClientUpgradeNotice | null;
+  dismissUpgradeNotice(): void;
 }
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -118,6 +122,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const router = useRouter();
   const [twoFactor, setTwoFactor] = useState<{ prompt: TwoFactorPrompt; found: SessionUser | null } | null>(null);
+  const [upgradeNotice, setUpgradeNotice] = useState<ClientUpgradeNotice | null>(null);
+  const dismissUpgradeNotice = useCallback(() => setUpgradeNotice(null), []);
   const signIn = useCallback(
     async (username: string, password: string) => {
       let found: SessionUser | null;
@@ -136,6 +142,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       // vault, Supreme and email routes require. A member it does not know (added in this tab) simply gets no cookie.
       if (found) {
         const server = await openServerSession(username.trim(), password);
+        setUpgradeNotice(server.upgrade ?? null);
         // Sprint 11 Revision 12.0: the member may first have to type the code the server sent (Admins and Super Admins,
         // or everyone under TWO_FACTOR_REQUIRED=1 since Revision 12.5).
         if (server.twoFactor) {
@@ -275,8 +282,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       tenantType,
       featuresChanged,
       rolesChanged,
+      upgradeNotice,
+      dismissUpgradeNotice,
     }),
-    [user, ready, startupError, signIn, twoFactor, verifyTwoFactor, cancelTwoFactor, signInWithFaceId, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged, rolesChanged],
+    [user, ready, startupError, signIn, twoFactor, verifyTwoFactor, cancelTwoFactor, signInWithFaceId, signOut, impersonator, viewAsCouncil, impersonate, stopImpersonating, profileVersion, profileChanged, alertsVersion, alertsChanged, messagesVersion, messagesChanged, features, featuresLoaded, tenantType, featuresChanged, rolesChanged, upgradeNotice, dismissUpgradeNotice],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

@@ -5,6 +5,16 @@ import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import * as SQLite from 'expo-sqlite';
 import {
+  assertPlainFeedbackTopic,
+  buildFeatureList,
+  cleanFeatureComment,
+  cleanFeatureEntry,
+  cleanFeatureIdea,
+  cleanFeatureRating,
+  featureEntryBody,
+  isWorkshopTopic,
+  WORKSHOP_TOPIC,
+  type FeatureListEntry,
   assertMayOpenFeedbackTicket,
   assertMayReadFeedbackTicket,
   assertMaySetFeedbackTicketStatus,
@@ -7224,6 +7234,7 @@ export class SqliteDataService implements DataService {
       assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       const rows = await db.getAllAsync<AdvisoryFeedback & { MemberFirstName: string | null; MemberLastName: string | null }>(
         `SELECT f.*, m.[MemberFirstName], m.[MemberLastName] FROM [AdvisoryFeedback] f LEFT JOIN [Member] m ON m.[id] = f.[member_id]
+          WHERE f.[topic] NOT LIKE '[ffl:%'
           ORDER BY f.[submitted_at] DESC, f.[id] DESC`,
       );
       const councils = await db.getAllAsync<Council>('SELECT * FROM [Council]');
@@ -7238,6 +7249,7 @@ export class SqliteDataService implements DataService {
     },
     submitFeedback: async (actorId, input) => {
       const clean = cleanAdvisoryFeedback(input);
+      assertPlainFeedbackTopic(clean.topic);
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
       assertMayReadAdvisoryPanel(actor, await this.actorUsername(db, actorId));
@@ -7256,6 +7268,61 @@ export class SqliteDataService implements DataService {
       const db = await this.ready();
       assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId), await this.actorUsername(db, actorId));
       return this.advisoryPanelists(db);
+    },
+    // Sprint 11 Revision 21.5: the Future Feature List workshop (advisory-workshop.ts), on tagged AdvisoryFeedback rows.
+    listFeatureList: async (actorId) => {
+      const db = await this.ready();
+      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      return this.featureList(db, actorId);
+    },
+    saveFeature: async (actorId, input) => {
+      const fields = cleanFeatureEntry(input);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayKeepAdvisoryPanel(actor);
+      if (input.id != null) {
+        await this.requireFeatureEntry(db, input.id);
+        await db.runAsync('UPDATE [AdvisoryFeedback] SET [body] = ? WHERE [id] = ?', [featureEntryBody(fields), input.id]);
+      } else {
+        await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
+      }
+      return this.featureList(db, actorId);
+    },
+    removeFeature: async (actorId, id) => {
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      await this.requireFeatureEntry(db, id);
+      await db.runAsync('DELETE FROM [AdvisoryFeedback] WHERE [id] = ? OR [topic] IN (?, ?)', [id, WORKSHOP_TOPIC.comment(id), WORKSHOP_TOPIC.rating(id)]);
+      return this.featureList(db, actorId);
+    },
+    submitFeatureIdea: async (actorId, input) => {
+      const fields = cleanFeatureIdea(input);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
+      return this.featureList(db, actorId);
+    },
+    commentOnFeature: async (actorId, id, body) => {
+      const text = cleanFeatureComment(body);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      await this.requireFeatureEntry(db, id);
+      await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.comment(id), text);
+      return this.featureList(db, actorId);
+    },
+    rateFeature: async (actorId, id, score) => {
+      const value = cleanFeatureRating(score);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      await this.requireFeatureEntry(db, id);
+      await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM [AdvisoryFeedback] WHERE [member_id] = ? AND [topic] = ?', [actorId, WORKSHOP_TOPIC.rating(id)]);
+        await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.rating(id), String(value));
+      });
+      return this.featureList(db, actorId);
     },
     setPanelist: async (actorId, memberId, designated) => {
       const db = await this.ready();
@@ -7320,6 +7387,39 @@ export class SqliteDataService implements DataService {
   };
 
   /** Every holder of the panelist role, by last name (Sprint 10 Revision 3.1). */
+  /** Sprint 11 Revision 21.5: the ranked Future Feature List as `readerId` reads it. */
+  private async featureList(db: SQLite.SQLiteDatabase, readerId: number): Promise<FeatureListEntry[]> {
+    const rows = await db.getAllAsync<AdvisoryFeedback>("SELECT * FROM [AdvisoryFeedback] WHERE [topic] LIKE '[ffl:%'");
+    const ids = [...new Set(rows.map((r) => r.member_id))];
+    const people = ids.length
+      ? await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string; CouncilID: number }>(
+          `SELECT [id], [MemberFirstName], [MemberLastName], [CouncilID] FROM [Member] WHERE [id] IN (${ids.map(() => '?').join(', ')})`,
+          ids,
+        )
+      : [];
+    const councils = await db.getAllAsync<Council>('SELECT * FROM [Council]');
+    return buildFeatureList(rows, readerId, (memberId) => {
+      const m = people.find((p) => p.id === memberId);
+      const c = m ? councils.find((x) => x.id === m.CouncilID) : undefined;
+      return { name: m ? `${m.MemberFirstName} ${m.MemberLastName}` : `Member ${memberId}`, councilLabel: c ? rosterCouncilLabel(c) : 'Unknown council' };
+    });
+  }
+
+  private async requireFeatureEntry(db: SQLite.SQLiteDatabase, id: number): Promise<void> {
+    const row = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [AdvisoryFeedback] WHERE [id] = ? AND [topic] = ?', [id, WORKSHOP_TOPIC.entry]);
+    if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No Future Feature List entry ${id}.`, { id });
+  }
+
+  private async insertWorkshopRow(db: SQLite.SQLiteDatabase, actor: MemberWriteActor, topic: string, body: string): Promise<void> {
+    await db.runAsync('INSERT INTO [AdvisoryFeedback] ([member_id], [council_id], [topic], [body], [submitted_at]) VALUES (?, ?, ?, ?, ?)', [
+      actor.memberId,
+      actor.councilId,
+      topic,
+      body,
+      toTimestamp(this.now()),
+    ]);
+  }
+
   private async advisoryPanelists(db: SQLite.SQLiteDatabase): Promise<AdvisoryPanelist[]> {
     const rows = await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string; CouncilID: number }>(
       `SELECT m.[id], m.[MemberFirstName], m.[MemberLastName], m.[CouncilID] FROM [Member] m

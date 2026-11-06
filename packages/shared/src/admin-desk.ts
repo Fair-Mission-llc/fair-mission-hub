@@ -3,20 +3,11 @@
 //
 // The Admin Desk (/admin-desk) is a council Admin's own workspace (Super Admins included, canOpenAdminDesk).
 //
-// Sprint 11 Revision 3.0: the desk has two parts.
-//   - The Static Top Deck (ADMIN_DESK_TOP_PANELS): three panels in a row at the top of the page. They never collapse.
-//       A. Council Instance Identity Record   the home council's name, number, state, EIN and contact (councils.get)
-//       B. Administration Manual PDF          the compiled ADMIN_USER_GUIDE.pdf and 'Regenerate Manuals On-Demand'
-//       C. 'How Do I...' Local Help Search    the Administration Manual's task workflows (GET /api/manuals?manual=admin)
-//   - The left rail of drawers (ADMIN_DESK_DRAWERS), below the deck, all closed on landing. A drawer opens its panel to
-//     the right of the rail. In this exact order:
-//       1. Council Wide Settings             the /system-settings/council-settings module (Standard Bank Accounts first)
-//       2. Council Lookup Tables             the /council-lookups module (Active/Inactive status on every grid)
-//       3. Secure Access Vault                 pinned to the reader's home council (the server's vault gate says the same)
-//       4. Global Charities Registry         the /charities/registry module (verified panel, search and filters)
-//       5. Council Asset Management          the /expenses/assets inventory (Trustees add asset photos)
-//       6. Member Feedback Queue             Sprint 11 Revision 20.0: the council's member feedback tickets (localFeedback)
-//       7. Administrative Feedback Loops     the note to the platform owner (feedback.submit)
+// Sprint 11 Revision 21.5: the desk is one left rail of drawers (ADMIN_DESK_DRAWERS), all closed on landing. The Static
+// Top Deck and the control bar are gone:
+//   - the Administration Manual and the 'How Do I...' Help Search are file-cabinet drawers (DESK_HANDLE_TONES);
+//   - the Council Instance Record and the Practice Sandbox switch moved into Council Wide Settings;
+//   - the Setup Wizard drawer shows until the wizard has run, then lives in Council Wide Settings: Council Setup.
 // The server also rebuilds every manual each night (apps/web/instrumentation.ts, nextNightlyManualRebuild).
 //
 // The rest of this file holds the small pure rules the wave added elsewhere:
@@ -34,24 +25,23 @@ import type { FeatureFlagName, FeatureFlags } from './features';
 export const ADMIN_DESK_HREF = '/admin-desk';
 export const ADMIN_DESK_TITLE = 'Admin Desk';
 
-export type AdminDeskTopPanelId = 'council-identity' | 'admin-manual' | 'help-search';
+/**
+ * Sprint 11 Revision 21.5: the two kinds of desk handle, told apart by a subtle left-edge color on the Admin Desk rail and
+ * the Super Admin Desk spine. A file cabinet holds reference material (manuals, help, records, grouped cabinets); a
+ * functional drawer is where work is done.
+ */
+export type DeskHandleKind = 'cabinet' | 'drawer';
 
-export interface AdminDeskTopPanel {
-  id: AdminDeskTopPanelId;
-  /** 'A', 'B' or 'C', left to right. */
-  tier: string;
-  label: string;
-  hint: string;
-}
-
-/** The Static Top Deck's three panels, left to right. They are always open. */
-export const ADMIN_DESK_TOP_PANELS: readonly AdminDeskTopPanel[] = [
-  { id: 'council-identity', tier: 'A', label: 'Council Instance Identity Record', hint: 'The council this desk works on' },
-  { id: 'admin-manual', tier: 'B', label: 'Administration Manual PDF', hint: 'Open the printed Administration Manual, or rebuild every manual now' },
-  { id: 'help-search', tier: 'C', label: "'How Do I...' Local Help Search", hint: 'Search the Administration Manual for the steps of a task' },
-];
+/** The left-edge (and cabinet group) border classes for each kind. Cobalt marks a file cabinet, gold a working drawer. */
+export const DESK_HANDLE_TONES: Readonly<Record<DeskHandleKind, { edge: string; group: string }>> = {
+  cabinet: { edge: 'border-l-mission-community', group: 'border-mission-community/60 bg-mission-community/5' },
+  drawer: { edge: 'border-l-gold', group: 'border-navy' },
+};
 
 export type AdminDeskDrawerId =
+  | 'setup-wizard'
+  | 'admin-manual'
+  | 'help-search'
   | 'council-settings'
   | 'council-lookups'
   | 'credentials-vault'
@@ -64,20 +54,26 @@ export interface AdminDeskDrawer {
   id: AdminDeskDrawerId;
   label: string;
   hint: string;
+  kind: DeskHandleKind;
 }
 
 /**
- * The seven Admin Desk drawers below the top deck, top to bottom. Every one starts closed. Sprint 11 Revision 20.0 adds the
- * Member Feedback Queue (local-feedback.ts) above the Administrative Feedback Loops.
+ * The Admin Desk's left rail, top to bottom; every drawer starts closed. Sprint 11 Revision 21.5: the Static Top Deck and
+ * the control bar are gone. The Administration Manual and the Help Search are file-cabinet drawers; the Council Instance
+ * Record and the Practice Sandbox moved into Council Wide Settings. The Setup Wizard drawer shows until the wizard has run
+ * once (adminDeskDrawersFor), then lives only in Council Wide Settings: Council Setup.
  */
 export const ADMIN_DESK_DRAWERS: readonly AdminDeskDrawer[] = [
-  { id: 'council-settings', label: 'Council Wide Settings', hint: 'Standard bank accounts, limits, timing, roster control and the feature matrix' },
-  { id: 'council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types and payment methods, each Active or Inactive' },
-  { id: 'credentials-vault', label: 'Secure Access Vault', hint: "Your home council's email, Drive and file server keys" },
-  { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Browse, filter, verify and add charities' },
-  { id: 'asset-management', label: 'Council Asset Management', hint: "The council's capital assets and the Trustees' asset photos" },
-  { id: 'member-feedback', label: 'Member Feedback Queue', hint: "Your members' feedback tickets, their status and their chat logs" },
-  { id: 'feedback', label: 'Administrative Feedback Loops', hint: 'Send a note or bug report to the platform owner' },
+  { id: 'setup-wizard', label: 'Setup Wizard', hint: 'First-run council setup', kind: 'drawer' },
+  { id: 'admin-manual', label: 'Administration Manual', hint: 'Printed manual and rebuild', kind: 'cabinet' },
+  { id: 'help-search', label: "'How Do I...' Help Search", hint: 'Task steps from the manual', kind: 'cabinet' },
+  { id: 'council-settings', label: 'Council Wide Settings', hint: 'Accounts, limits, setup and instance record', kind: 'drawer' },
+  { id: 'council-lookups', label: 'Council Lookup Tables', hint: 'Activities, donation types, payment methods', kind: 'drawer' },
+  { id: 'credentials-vault', label: 'Secure Access Vault', hint: 'Home council email, Drive and file keys', kind: 'drawer' },
+  { id: 'charities-registry', label: 'Global Charities Registry', hint: 'Browse, verify and add charities', kind: 'drawer' },
+  { id: 'asset-management', label: 'Council Asset Management', hint: 'Capital assets and asset photos', kind: 'drawer' },
+  { id: 'member-feedback', label: 'Member Feedback Queue', hint: 'Member tickets, status and chat logs', kind: 'drawer' },
+  { id: 'feedback', label: 'Administrative Feedback Loops', hint: 'Note or bug report to the platform owner', kind: 'drawer' },
 ];
 
 /** Sprint 11 Revision 7.0: the drawers a premium module switch hides when it is off. */
@@ -87,8 +83,9 @@ export const ADMIN_DESK_DRAWER_FLAGS: Partial<Record<AdminDeskDrawerId, FeatureF
 };
 
 /** The drawers a council's switches leave on the desk, in order. */
-export const adminDeskDrawersFor = (flags: FeatureFlags): AdminDeskDrawer[] =>
+export const adminDeskDrawersFor = (flags: FeatureFlags, { setupWizardDone = false }: { setupWizardDone?: boolean } = {}): AdminDeskDrawer[] =>
   ADMIN_DESK_DRAWERS.filter((d) => {
+    if (d.id === 'setup-wizard' && setupWizardDone) return false;
     const flag = ADMIN_DESK_DRAWER_FLAGS[d.id];
     return flag === undefined || flags[flag];
   });
@@ -119,7 +116,7 @@ export const isRedundantAdminDeskNavItem = (memberType: string | undefined, item
   (item === ADMIN_DESK_LINK_LOOP_ITEM && (memberType === 'Admin' || memberType === 'Super Admin')) ||
   (memberType === 'Admin' && (ADMIN_DESK_REDUNDANT_NAV_ITEMS as readonly string[]).includes(item));
 
-export const isAdminDeskDrawerId =(value: unknown): value is AdminDeskDrawerId => ADMIN_DESK_DRAWERS.some((d) => d.id === value);
+export const isAdminDeskDrawerId = (value: unknown): value is AdminDeskDrawerId => ADMIN_DESK_DRAWERS.some((d) => d.id === value);
 
 // ---- manual regeneration -------------------------------------------------------------------------------------------
 

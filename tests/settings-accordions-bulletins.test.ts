@@ -71,8 +71,9 @@ describe('the Honorary Expense lexicon', () => {
 });
 
 describe('the Council Feature Deployment Matrix (pure)', () => {
-  it('names the five settings drawers (Sprint 10 Revision 3.0)', () => {
-    expect(COUNCIL_SETTINGS_DRAWERS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'User Access & Roster Control', 'System Settings', 'Feature Controls', 'Council Feature Deployment Matrix']);
+  // Sprint 11 Revision 21.5: the Council Instance Record and Council Setup drawers join the five.
+  it('names the seven settings drawers (Sprint 10 Revision 3.0; seven since Sprint 11 Revision 21.5)', () => {
+    expect(COUNCIL_SETTINGS_DRAWERS.map((t) => t.label)).toEqual(['Council Instance Record', 'Standard Bank Accounts', 'User Access & Roster Control', 'System Settings', 'Feature Controls', 'Council Feature Deployment Matrix', 'Council Setup']);
   });
 
   it('reads each capability from the council row, then lists every module', () => {
@@ -108,15 +109,17 @@ describe('the Council Feature Deployment Matrix (pure)', () => {
     const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
     const tab = (id: string, next?: string) => page.slice(page.indexOf(`'${id}': (`), next ? page.indexOf(`'${next}': (`) : page.indexOf('}}', page.indexOf(`'${id}': (`)));
     const placement: Record<string, string[]> = {
-      // Sprint 11 Revision 1.0: the lookups and vault link cards left; the Council Instance Record is the page header.
+      // Sprint 11 Revision 21.5: the Council Instance Record is a drawer again, and Council Setup closes the stack.
+      'instance-record': ['CouncilInstanceRecord'],
       'bank-accounts': ['AccountOwnersMatrix', 'PaymentQrUploader'],
       'access-roster': ['InactivitySweepCard'],
       'system-settings': ['GroupedSettingsCards', 'FileRepositoryCard', 'CustomGuidesCard'],
       'feature-controls': ['LoanerLibrarySharingCard', 'PLATFORM_SWITCH_PAGES'],
       'feature-matrix': ['FeatureDeploymentMatrix'],
+      'council-setup': ['CouncilSetupPanel'],
     };
     expect(page).not.toContain('BANK_ACCOUNT_SETTINGS_PAGES');
-    expect(page.indexOf('<CouncilInstanceRecord')).toBeLessThan(page.indexOf('<SettingsDrawers'));
+    expect(page.indexOf('<CouncilInstanceRecord')).toBeGreaterThan(page.indexOf('<SettingsDrawers'));
     const ids = Object.keys(placement);
     ids.forEach((id, i) => {
       for (const card of placement[id]!) expect(tab(id, ids[i + 1]), `${card} in ${id}`).toContain(card);

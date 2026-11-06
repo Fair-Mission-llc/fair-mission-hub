@@ -24,12 +24,12 @@ export interface TwoFactorMethod {
 }
 
 export const TWO_FACTOR_METHODS: readonly TwoFactorMethod[] = [
-  { id: 'sms', label: 'SMS text tokens', summary: 'A 6-digit code sent by text message to the cell phone on file.' },
-  { id: 'email', label: 'Email secure passcodes', summary: 'A one-time passcode sent to the email address on file.' },
+  { id: 'sms', label: 'SMS text tokens', summary: '6-digit code by text to the cell phone on file.' },
+  { id: 'email', label: 'Email secure passcodes', summary: 'One-time passcode to the email on file.' },
   {
     id: 'passkey',
     label: 'WebAuthn biometric hardware passkeys',
-    summary: "The device's own face or fingerprint check unlocks a passkey; no code is typed and nothing is sent.",
+    summary: 'Face or fingerprint check on this device. No code, nothing sent.',
   },
 ];
 
@@ -82,22 +82,22 @@ export function twoFactorRows(facts: TwoFactorFacts): TwoFactorRow[] {
   return TWO_FACTOR_METHODS.map((method): TwoFactorRow => {
     switch (method.id) {
       case 'sms':
-        if (normalizeSmsNumber(facts.phone) === null) return { method, status: 'needs-contact', detail: 'Add a cell phone under Contact details first.' };
-        if (!facts.delivery?.sms) return { method, status: 'not-wired', detail: 'Your phone is on file, but the portal has no Twilio account connected, so no code can be sent.' };
+        if (normalizeSmsNumber(facts.phone) === null) return { method, status: 'needs-contact', detail: 'Add a cell phone under Contact details.' };
+        if (!facts.delivery?.sms) return { method, status: 'not-wired', detail: 'Phone on file. No Twilio account connected.' };
         return facts.requiredForMember
-          ? { method, status: 'ready', detail: 'At each password sign-in a 6-digit code is texted to the cell phone on file.' }
-          : { method, status: 'available', detail: 'Codes are texted to Admins and Super Admins at sign-in. Other members sign in with a password until the council turns on sign-in codes for everyone.' };
+          ? { method, status: 'ready', detail: 'Code texted at each password sign-in.' }
+          : { method, status: 'available', detail: 'Texted to Admins and Super Admins. Others: password only until codes are on for everyone.' };
       case 'email':
-        if (!hasText(facts.email)) return { method, status: 'needs-contact', detail: 'Add an email address under Contact details first.' };
-        if (!facts.delivery?.email) return { method, status: 'not-wired', detail: `The portal has no SendGrid account connected, so no passcode can be emailed. Codes come from ${PLATFORM_OPERATIONS_SENDER} once it is.` };
+        if (!hasText(facts.email)) return { method, status: 'needs-contact', detail: 'Add an email under Contact details.' };
+        if (!facts.delivery?.email) return { method, status: 'not-wired', detail: `No SendGrid account connected. Sender once connected: ${PLATFORM_OPERATIONS_SENDER}.` };
         return facts.requiredForMember
-          ? { method, status: 'ready', detail: `At each password sign-in a 6-digit passcode is emailed from ${PLATFORM_OPERATIONS_SENDER} when no text can be sent.` }
-          : { method, status: 'available', detail: 'Passcodes are emailed to Admins and Super Admins at sign-in. Other members sign in with a password until the council turns on sign-in codes for everyone.' };
+          ? { method, status: 'ready', detail: `Emailed from ${PLATFORM_OPERATIONS_SENDER} when no text can be sent.` }
+          : { method, status: 'available', detail: 'Emailed to Admins and Super Admins. Others: password only until codes are on for everyone.' };
       case 'passkey':
-        if (!facts.passkeySupported) return { method, status: 'not-wired', detail: 'This browser cannot make a passkey. Try Chrome on Android or Safari on iOS.' };
+        if (!facts.passkeySupported) return { method, status: 'not-wired', detail: 'This browser cannot make a passkey. Use Chrome (Android) or Safari (iOS).' };
         return facts.passkeyOnThisDevice
-          ? { method, status: 'ready', detail: 'This device holds your passkey. Use Sign in with FaceID on the sign-in page.' }
-          : { method, status: 'available', detail: "Set up a passkey with this device's face or fingerprint check." };
+          ? { method, status: 'ready', detail: 'Passkey on this device. Use Sign in with FaceID.' }
+          : { method, status: 'available', detail: 'Set up with face or fingerprint.' };
     }
   });
 }

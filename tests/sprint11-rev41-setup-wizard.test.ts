@@ -62,8 +62,13 @@ describe('1. the five wizard steps', () => {
     const desk = read('apps/web/components/modules/AdminDesk.tsx');
     expect(desk).toContain('<SetupWizard');
     expect(desk).toContain('Run Setup Wizard');
-    expect(desk).toContain('<PracticeSandboxSwitch');
-    expect(desk).toContain('db.councils.purgePracticeSandbox(user.memberId, user.councilId)');
+    // Sprint 11 Revision 21.5: the Practice Sandbox switch and a second wizard button live in Council Wide Settings:
+    // Council Setup (CouncilSetupPanel), off the Admin Desk.
+    const setup = read('apps/web/components/modules/CouncilSetupPanel.tsx');
+    expect(setup).toContain('<SetupWizard');
+    expect(setup).toContain('Run Setup Wizard');
+    expect(setup).toContain('<PracticeSandboxSwitch');
+    expect(setup).toContain('db.councils.purgePracticeSandbox(user.memberId, user.councilId)');
   });
 
   it("puts '?' context tips beside the deep admin inputs", () => {

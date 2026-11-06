@@ -32,13 +32,15 @@ describe('the Council Wide Settings drawer panels (Sprint 10 Revision 3.0, was a
   const parts = read('apps/web/components/FeatureDeploymentParts.tsx');
   const drawers = parts.slice(parts.indexOf('export function SettingsDrawers('), parts.indexOf('function StatusBadge('));
 
-  it('has five drawers in order, the matrix on its own', () => {
+  it('has seven drawers in order, the matrix on its own (Sprint 11 Revision 21.5 added the record and Council Setup)', () => {
     expect(COUNCIL_SETTINGS_DRAWERS.map((t) => [t.id, t.label])).toEqual([
+      ['instance-record', 'Council Instance Record'],
       ['bank-accounts', 'Standard Bank Accounts'],
       ['access-roster', 'User Access & Roster Control'],
       ['system-settings', 'System Settings'],
       ['feature-controls', 'Feature Controls'],
       ['feature-matrix', 'Council Feature Deployment Matrix'],
+      ['council-setup', 'Council Setup'],
     ]);
   });
 

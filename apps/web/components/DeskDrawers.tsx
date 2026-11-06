@@ -16,7 +16,7 @@
 // prefers reduced motion, so the opened module is in full view.
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type FocusEvent, type ReactNode } from 'react';
-import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, deskSpineSections, isReferenceDrawer, plainTitle, type DeskDrawerSpec } from '@kofc/shared';
+import { ALERT_BOUNDARY_LABEL, BACK_TO_DESK_BLOTTER_LABEL, DESK_HANDLE_TONES, DESK_RETURN_STORAGE_KEY, DASHBOARD_TABS, deskSpineSections, isReferenceDrawer, plainTitle, type DeskDrawerSpec } from '@kofc/shared';
 import { cx, EmbeddedModuleContext } from '@/components/ui';
 import { DeskLink, DeskRow } from '@/components/WorkspaceTabs';
 
@@ -59,7 +59,7 @@ export function snapViewportToTop() {
 }
 
 /** One folder link on the left filing spine: the module's name and its status, flat (no nesting). */
-function SpineFolder({ spec, status, selected, onOpen }: { spec: DeskDrawerSpec; status?: DeskDrawerStatus; selected: boolean; onOpen: () => void }) {
+function SpineFolder({ spec, status, selected, onOpen, inCabinet = false }: { spec: DeskDrawerSpec; status?: DeskDrawerStatus; selected: boolean; onOpen: () => void; inCabinet?: boolean }) {
   const alert = !!status?.alert;
   const alertText = status?.alertText ?? ALERT_BOUNDARY_LABEL;
   return (
@@ -71,12 +71,16 @@ function SpineFolder({ spec, status, selected, onOpen }: { spec: DeskDrawerSpec;
       data-drawer-state={selected ? 'open' : 'closed'}
       data-alert-boundary={alert ? 'true' : undefined}
       data-featured={spec.featured ? 'true' : undefined}
+      data-handle-kind={inCabinet ? 'cabinet' : 'drawer'}
       aria-label={`${spec.title}${status?.count != null ? `, ${status.count} waiting` : ''}${alert ? `, ${alertText}` : ''}. Open on the Desk Blotter.`}
       className={cx(
         'flex w-full flex-col gap-1 rounded bg-white px-3 py-2 text-left text-navy hover:bg-gold/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold',
         spec.featured && 'bg-gold/10',
         selected && 'drawer-context-active bg-gold/30',
-        alert ? 'border-4 border-brand-red motion-safe:animate-alert-boundary' : cx('border-2 border-navy', selected && 'border-l-8 border-l-gold'),
+        // Sprint 11 Revision 21.5: a folder in a file cabinet carries the cabinet's cobalt edge, a freestanding drawer gold.
+        alert
+          ? 'border-4 border-brand-red motion-safe:animate-alert-boundary'
+          : cx('border-2 border-navy border-l-4', DESK_HANDLE_TONES[inCabinet ? 'cabinet' : 'drawer'].edge, selected && 'border-l-8'),
       )}
     >
       <span className="flex items-start justify-between gap-2">
@@ -185,10 +189,11 @@ export function DeskBlotter({
             role="group"
             aria-label={section.label || `${deskTitle} folders`}
             data-spine-section={section.id}
+            data-handle-kind={section.id !== 'priority' && section.label ? 'cabinet' : undefined}
             className={cx(
               'flex flex-col gap-2',
               section.id === 'priority' && 'rounded border-4 border-brand-red bg-brand-red/5 p-2',
-              section.id !== 'priority' && section.label && 'rounded border-2 border-navy p-2',
+              section.id !== 'priority' && section.label && cx('rounded border-2 p-2', DESK_HANDLE_TONES.cabinet.group),
             )}
           >
             {section.label ? (
@@ -204,6 +209,7 @@ export function DeskBlotter({
                       spec={spec}
                       status={status(spec)}
                       selected={spec.rowId === openId}
+                      inCabinet={section.id !== 'priority' && !!section.label}
                       onOpen={() => {
                         openDrawer(spec);
                         snapViewportToTop();

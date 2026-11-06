@@ -11,8 +11,12 @@
 // gets no cookie yet: the answer is { signedIn: false, twoFactor: { challenge, channel, sentTo, expiresInSeconds } } and
 // the code goes by SMS or email. POST /api/auth/two-factor with the challenge and the code sets the cookie.
 // Sprint 11 Revision 12.5: TWO_FACTOR_REQUIRED=1 asks every member; a member with no usable phone or email is refused (403).
+// Sprint 11 Revision 21.5: every accepted password also records the client's version and platform (parseClientTelemetry,
+// services/server/client-telemetry.ts), and the answer carries `client: { telemetry, upgrade }` - upgrade is the notice
+// card for a client older than CLIENT_RELEASE_BASELINE, or null.
 import { NextResponse } from 'next/server';
-import { describeError } from '@kofc/shared';
+import { clientUpgradeNotice, describeError, parseClientTelemetry } from '@kofc/shared';
+import { recordClientSignIn } from '@/services/server/client-telemetry';
 import { memberDirectory, readPortalSession, requirePortalSession, signInOnServer, signOutCookie } from '@/services/server/session';
 import { issueTwoFactorChallenge, TwoFactorContactMissingError } from '@/services/server/two-factor';
 import { portalSessionSecret } from '@/services/server/secrets';
@@ -29,15 +33,18 @@ export async function POST(req: Request) {
   }
   const outcome = await signInOnServer(username, password);
   if (!outcome.ok) return NextResponse.json({ signedIn: false, message: outcome.message }, { status: outcome.status });
+  const telemetry = parseClientTelemetry(req.headers);
+  await recordClientSignIn({ ...telemetry, memberId: outcome.user.memberId, councilId: outcome.user.councilId, at: new Date().toISOString(), route: 'portal' });
+  const client = { telemetry, upgrade: clientUpgradeNotice(telemetry) };
   try {
     const twoFactor = await issueTwoFactorChallenge(outcome, outcome.contact, { requested: channel });
-    if (twoFactor) return NextResponse.json({ signedIn: false, twoFactor });
+    if (twoFactor) return NextResponse.json({ signedIn: false, twoFactor, client });
   } catch (err) {
     if (err instanceof TwoFactorContactMissingError) return NextResponse.json({ signedIn: false, message: err.message }, { status: 403 });
     console.error('[two-factor] the sign-in code could not be sent:', describeError(err));
     return NextResponse.json({ signedIn: false, message: 'The sign-in code could not be sent. Try again in a minute.' }, { status: 502 });
   }
-  const res = NextResponse.json({ signedIn: true, memberId: outcome.user.memberId });
+  const res = NextResponse.json({ signedIn: true, memberId: outcome.user.memberId, client });
   res.headers.set('Set-Cookie', outcome.cookie);
   return res;
 }

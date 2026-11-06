@@ -1,13 +1,13 @@
 'use client';
-// The Application Advisory Panel workspace (Sprint 10 Revision 3.1, advisory-panel.ts): four views for the panelists of
-// every council and the Super Admins - the Development Roadmap and Future Feature Releases (kept in code by the
-// development team), the Panel Meeting Dates and the Consultation Feedback rows (db.advisory). Super Admins also keep the
+// The Application Advisory Panel workspace (Sprint 10 Revision 3.1, advisory-panel.ts): five views for the panelists of
+// every council and the Super Admins - the Development Roadmap (kept in code, with target dates), the Future Feature List
+// and the Platform Calendar (Sprint 11 Revision 21.5, AdvisoryWorkshopParts.tsx), the Panel Meeting Dates and the
+// Consultation Feedback rows (db.advisory). Super Admins also keep the
 // meeting dates and designate panelists from any council; the drivers check every call.
 import { useState } from 'react';
 import {
   ADVISORY_BODY_MAX_LENGTH,
   ADVISORY_PANEL_VIEWS,
-  ADVISORY_RELEASES,
   ADVISORY_ROADMAP,
   ADVISORY_TOPIC_MAX_LENGTH,
   councilLabel,
@@ -18,6 +18,7 @@ import {
   type AdvisoryPanelMeeting,
   type AdvisoryPanelViewId,
 } from '@kofc/shared';
+import { FutureFeatureList, PlatformCalendarView } from '@/components/AdvisoryWorkshopParts';
 import { Drawer } from '@/components/Drawer';
 import { Button, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';
@@ -49,6 +50,7 @@ function Roadmap() {
                 <span>
                   <span className="block font-bold">{r.title}</span>
                   <span className="block text-sm text-muted">{r.summary}</span>
+                  <span className="block text-xs font-bold text-navy">Target: {r.target_date ? formatFullDate(r.target_date) : 'Not set'}</span>
                 </span>
                 <Pill tone={statusTone(r.status)}>{r.status}</Pill>
               </li>
@@ -57,28 +59,6 @@ function Roadmap() {
         </Panel>
       ))}
     </div>
-  );
-}
-
-function Releases() {
-  return (
-    <Panel title="Future feature releases">
-      <div className="overflow-x-auto">
-        <Table caption="Future feature releases" head={['Feature', 'Target', 'Status', 'Notes']}>
-          {ADVISORY_RELEASES.map((r) => (
-            <tr key={r.id}>
-              <Td className="font-bold">{r.title}</Td>
-              <Td className="whitespace-nowrap">{r.target}</Td>
-              <Td>
-                <Pill tone={statusTone(r.status)}>{r.status}</Pill>
-              </Td>
-              <Td>{r.notes}</Td>
-            </tr>
-          ))}
-        </Table>
-      </div>
-      <p className="mt-2 text-xs text-muted">Send your review of any release on the Consultation Feedback view.</p>
-    </Panel>
   );
 }
 
@@ -350,8 +330,7 @@ function InvitePanelistDrawer({ onClose }: { onClose: () => void }) {
   return (
     <Drawer title={INVITE_PANELIST_LABEL} onClose={onClose}>
       <p className="text-sm">
-        Invite a member of any council to the Application Advisory Panel. The invitation appears in the portal: on the member&apos;s alert bell and Home,
-        and on their phone. No email is sent. The member becomes a panelist the moment they select Accept; the invitation stays open for 14 days.
+        In-app invitation to any council member: alert bell, Home and phone. No email. Accept makes them a panelist. Open 14 days.
       </p>
       <Banner message={message} onDismiss={() => setMessage(null)} />
       <Field label="Council">
@@ -403,7 +382,7 @@ export function AdvisoryPanelWorkspace() {
       {inviting ? <InvitePanelistDrawer onClose={() => setInviting(false)} /> : null}
       <Tabs tabs={ADVISORY_PANEL_VIEWS.map((v) => ({ id: v.id, label: v.label }))} value={view} onChange={setView} label="Advisory Panel views" idPrefix="advisory" />
       <div role="tabpanel" id="advisory-panel" aria-labelledby={`advisory-tab-${view}`}>
-        {view === 'roadmap' ? <Roadmap /> : view === 'releases' ? <Releases /> : view === 'meetings' ? <Meetings /> : <Feedback />}
+        {view === 'roadmap' ? <Roadmap /> : view === 'features' ? <FutureFeatureList /> : view === 'calendar' ? <PlatformCalendarView /> : view === 'meetings' ? <Meetings /> : <Feedback />}
       </div>
       {isSuperAdmin(user) ? <Panelists /> : null}
     </div>

@@ -123,6 +123,7 @@ import {
   MEMBER_DESK_OPEN_SHIFT_DAYS,
   memberDeskOpenShifts,
   memberDeskDrawersFor,
+  ownRosterRow,
   type MemberDeskDrawerId,
   signupWindow,
   feastDayTracker,
@@ -1170,38 +1171,42 @@ export function MemberDesk({ user }: { user: SessionUser }) {
   );
 }
 
-/** The two shift trackers side by side, then the member's hour ledger (log time and see what is logged). */
-function MyHoursAndShifts({ user }: { user: SessionUser }) {
+/** Sprint 11 Revision 21.5: 'Record Hours' - log service time and read the hour ledger. */
+function RecordHours() {
+  return (
+    <Panel title="My hour ledger">
+      <HourLedger />
+    </Panel>
+  );
+}
+
+/** Sprint 11 Revision 21.5: 'My Scheduled Shifts' - the two shift trackers side by side. */
+function MyScheduledShifts({ user }: { user: SessionUser }) {
   const today = toIsoDate(new Date());
   const through = toIsoDate(new Date(Date.now() + MEMBER_DESK_SHIFT_DAYS * 86_400_000));
   const shifts = useLoad(() => db.events.listMemberShifts(user.memberId, { fromDate: today, toDate: through }), [user.memberId, today, through]);
   return (
-    <div className="flex flex-col gap-4">
-      <div role="group" aria-label="Shift trackers" className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
-        <OpenShiftsCard user={user} />
-        <Panel className="h-full" title={`My shifts: next ${MEMBER_DESK_SHIFT_DAYS} days (${shifts.data?.length ?? 0})`}>
-          {shifts.error ? <Notice tone="error">{shifts.error}</Notice> : null}
-          {shifts.data && shifts.data.length === 0 ? <Empty>You are not signed up for a shift in the next {MEMBER_DESK_SHIFT_DAYS} days.</Empty> : null}
-          {shifts.data && shifts.data.length > 0 ? (
-            <Table caption="Your coming shifts" head={['When', 'Event', 'Shift']}>
-              {shifts.data.slice(0, DESK_ROWS).map((s) => (
-                <tr key={s.signup.id}>
-                  <Td className="whitespace-nowrap">{formatShiftWhen(s.shift)}</Td>
-                  <Td>{s.event.EventName}</Td>
-                  <Td>{s.shift.ShiftName}</Td>
-                </tr>
-              ))}
-            </Table>
-          ) : null}
-          <p className="mt-2 text-sm">
-            <Link href="/member-center" className="font-bold underline">
-              Open the Council Dashboard
-            </Link>
-          </p>
-        </Panel>
-      </div>
-      <Panel title="My hour ledger">
-        <HourLedger />
+    <div role="group" aria-label="Shift trackers" className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
+      <OpenShiftsCard user={user} />
+      <Panel className="h-full" title={`My shifts: next ${MEMBER_DESK_SHIFT_DAYS} days (${shifts.data?.length ?? 0})`}>
+        {shifts.error ? <Notice tone="error">{shifts.error}</Notice> : null}
+        {shifts.data && shifts.data.length === 0 ? <Empty>You are not signed up for a shift in the next {MEMBER_DESK_SHIFT_DAYS} days.</Empty> : null}
+        {shifts.data && shifts.data.length > 0 ? (
+          <Table caption="Your coming shifts" head={['When', 'Event', 'Shift']}>
+            {shifts.data.slice(0, DESK_ROWS).map((s) => (
+              <tr key={s.signup.id}>
+                <Td className="whitespace-nowrap">{formatShiftWhen(s.shift)}</Td>
+                <Td>{s.event.EventName}</Td>
+                <Td>{s.shift.ShiftName}</Td>
+              </tr>
+            ))}
+          </Table>
+        ) : null}
+        <p className="mt-2 text-sm">
+          <Link href="/member-center" className="font-bold underline">
+            Open the Council Dashboard
+          </Link>
+        </p>
       </Panel>
     </div>
   );
@@ -1212,8 +1217,10 @@ function MemberDeskDrawerBody({ id, user }: { id: MemberDeskDrawerId; user: Sess
   switch (id) {
     case 'roster-profile':
       return <MyRosterProfile user={user} />;
-    case 'hours':
-      return <MyHoursAndShifts user={user} />;
+    case 'record-hours':
+      return <RecordHours />;
+    case 'scheduled-shifts':
+      return <MyScheduledShifts user={user} />;
     case 'motion-requests':
       return <MyMotionRequestsPanel user={user} />;
     case 'feedback-support':
@@ -1227,7 +1234,9 @@ function MemberDeskDrawerBody({ id, user }: { id: MemberDeskDrawerId; user: Sess
 
 /** The member's own roster card, then the council's Roster & Achievements directory (member-roster.ts MEMBER_ROSTER_DESKS). */
 function MyRosterProfile({ user }: { user: SessionUser }) {
-  const member = useLoad(() => db.members.get(user.memberId), [user.memberId]);
+  // Sprint 11 Revision 21.5: the card reads the member's own row of the council roster (members.listRoster, the same
+  // Member rows the directory below and the Financial Secretary maintain), so there is no second copy to keep.
+  const member = useLoad(async () => ownRosterRow(await db.members.listRoster(user.memberId), user.memberId) ?? (await db.members.get(user.memberId)), [user.memberId]);
   const m = member.data;
   return (
     <div className="flex flex-col gap-4">

@@ -7,7 +7,6 @@ import { describe, expect, it } from 'vitest';
 import {
   ADMIN_DESK_DRAWERS,
   ADMIN_DESK_HREF,
-  ADMIN_DESK_TOP_PANELS,
   ADMIN_MANUAL,
   canBroadcastToDistributionGroups,
   canMessageEventAttendees,
@@ -45,8 +44,13 @@ const seat = (memberType: 'Member' | 'Admin' | 'Super Admin', roles: string[] = 
 
 describe('1. the Admin Desk', () => {
   // Sprint 11 Revision 20.0 adds the Member Feedback Queue above the Administrative Feedback Loops.
-  it('lists the seven drawers in the exact order (Sprint 11 Revision 3.0 moved the manual panels to the top deck)', () => {
+  // Sprint 11 Revision 21.5: the top deck is gone - the manual and the help search are file-cabinet drawers, and the
+  // Setup Wizard drawer leads until the wizard has run.
+  it('lists the drawers in the exact order (Sprint 11 Revision 21.5 folded the top deck into the rail)', () => {
     expect(ADMIN_DESK_DRAWERS.map((d) => d.label)).toEqual([
+      'Setup Wizard',
+      'Administration Manual',
+      "'How Do I...' Help Search",
       'Council Wide Settings',
       'Council Lookup Tables',
       'Secure Access Vault',
@@ -57,21 +61,12 @@ describe('1. the Admin Desk', () => {
     ]);
   });
 
-  it('keeps a three-panel static top deck above the drawers (Sprint 11 Revision 3.0)', () => {
-    expect(ADMIN_DESK_TOP_PANELS.map((p) => `${p.tier}. ${p.label}`)).toEqual([
-      'A. Council Instance Identity Record',
-      'B. Administration Manual PDF',
-      "C. 'How Do I...' Local Help Search",
-    ]);
-    // No top panel is also a drawer.
-    const drawerIds = new Set<string>(ADMIN_DESK_DRAWERS.map((d) => d.id));
-    expect(ADMIN_DESK_TOP_PANELS.some((p) => drawerIds.has(p.id))).toBe(false);
+  it('has no static top deck: the rail is the whole desk (Sprint 11 Revision 21.5; a three-panel deck from Revision 3.0)', () => {
     const desk = read('apps/web/components/modules/AdminDesk.tsx');
-    // The deck renders before the drawer rail and has no open/close state.
-    expect(desk.indexOf('<StaticTopDeck />')).toBeGreaterThan(-1);
-    expect(desk.indexOf('<StaticTopDeck />')).toBeLessThan(desk.indexOf('aria-label="Admin Desk drawers"'));
-    expect(desk).toContain('db.councils.get(user.councilId)');
-    expect(desk).toContain('lg:grid-cols-3');
+    expect(desk).not.toContain('StaticTopDeck');
+    expect(desk).not.toContain('CouncilIdentityRecord');
+    expect(desk).not.toContain('PracticeSandboxSwitch');
+    expect(desk).toContain('aria-label="Admin Desk drawers"');
   });
 
   it('opens for Admins and Super Admins only, at the head of the System Settings pillar', () => {

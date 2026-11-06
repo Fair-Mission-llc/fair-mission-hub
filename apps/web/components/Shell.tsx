@@ -22,6 +22,7 @@ import { AccessRequestForm, RemoteAssistButton, ViewAsBanner } from '@/component
 import { TrainingProfileBoard } from '@/components/TrainingProfileBoard';
 import { NAV, Sidebar } from '@/components/Sidebar';
 import { Button, cx, Field, Input, Notice, PasswordInput } from '@/components/ui';
+import { UpgradeNoticeCard } from '@/components/UpgradeNoticeCard';
 import { WorkspaceTabs } from '@/components/WorkspaceTabs';
 import { useSession } from '@/lib/session';
 import { useLoad } from '@/lib/use-load';
@@ -613,6 +614,8 @@ function Frame({ children }: { children: ReactNode }) {
       {/* Sprint 7J Extension 2: Home and the reader's Officer Desks, on every page. Sprint 8R: every member opens Home. */}
       {featuresLoaded && portalAreas(user, features, tenantType).includes('home') ? <WorkspaceTabs user={user} /> : null}
       <ViewAsBanner />
+      {/* Sprint 11 Revision 21.5: the upgrade notice for an outdated client (client-telemetry.ts). */}
+      <UpgradeNoticeCard />
       {/* Sprint 8P Stage 2: the way back after a desk drawer had to open another page. */}
       <BackToDeskBlotterAnchor />
       <div className="flex flex-1">

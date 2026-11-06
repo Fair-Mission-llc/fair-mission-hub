@@ -537,3 +537,15 @@ moves with it on `hub:archive`, is reported by every GET of the hub route and is
 no change: charts, the leaderboard behind the merit badges and the Admin Desk drawers already read the vault through the data
 service, and the Form 1728 popups versus the organization matrices already follow the council row's parent_organization
 (useTenantType). The pilot persona list moved from the phone onboarding module to shared `pilot-sync.ts`.
+
+**Sprint 11 Revision 21.5 (schema 113, no table change).** Admin Desk: the Static Top Deck and control bar are gone; the
+Administration Manual and 'How Do I...' Help Search are file-cabinet drawers (`DESK_HANDLE_TONES`: cobalt edge for file
+cabinets, gold for functional drawers, on the Admin Desk rail and the Super Admin Desk spine); the Setup Wizard drawer
+shows until the wizard has run. Council Wide Settings gains the Council Instance Record drawer (was the page header) and
+Council Setup (Setup Wizard, Practice Sandbox switch). The Payment QR Codes card draws the live `DonationMethodURL`, or the
+bundled sample code for a placeholder or missing link (`paymentQrDisplay`). The Member Desk splits 'My Hours & Shifts' into
+Record Hours and My Scheduled Shifts; My Roster Profile reads `members.listRoster`. The Advisory Panel's Future Feature
+List (`advisory-workshop.ts`) stores entries, ideas, comments and 1-5 priority ratings as tagged `AdvisoryFeedback` rows
+(topic prefix `[ffl:`), ranked by average rating; the Platform Calendar merges releases, meetings and the pilot timeline.
+Sign-ins record client release and platform (`client-telemetry.ts`, `client-telemetry.json`) and answer an upgrade notice
+below `CLIENT_RELEASE_BASELINE`.

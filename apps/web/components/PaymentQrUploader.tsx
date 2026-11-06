@@ -11,10 +11,15 @@
 // Sprint 11 Revision 18.5: the card reads the live Enabled donation methods rows and draws an upload panel only for the
 // Active methods that take a QR code (paymentQrUploadRows); the old disabled 'No QR code' rows are gone. The upload itself (uploadPaymentQrImage) and the compact preview
 // (QrThumbnail) are shared with the Council Lookups grid, where a QR code is a checkbox that reveals a small upload button.
+// Sprint 11 Revision 21.5: each row draws the image its live CouncilDonationMethod row points to (paymentQrDisplay). A
+// placeholder:// seed link, or no link, shows the sample code bundled with the portal, like the phone; 'No QR code yet'
+// appears only for a method with neither. The card re-reads the rows each time it opens.
 import { useState } from 'react';
 import {
   canManageCouncilLookups,
   describeError,
+  isLoadableQrUrl,
+  paymentQrDisplay,
   paymentQrUploadRows,
   PAYMENT_QR_MAX_BYTES,
   PAYMENT_QR_ROUTE,
@@ -29,8 +34,7 @@ import { useLoad } from '@/lib/use-load';
 import { db } from '@/services/db';
 
 /** Whether a stored link is one a browser can show (placeholder:// seed links are not). */
-export const showableQrUrl = (url: string | null | undefined): url is string => !!url && (/^https?:\/\//i.test(url) || url.startsWith('/api/'));
-const showable = showableQrUrl;
+export const showableQrUrl = isLoadableQrUrl;
 
 /**
  * Checks and uploads one QR image for the council (PAYMENT_QR_ROUTE) and resolves to its link. Rejects with a readable
@@ -50,9 +54,10 @@ export async function uploadPaymentQrImage(councilId: number, file: File): Promi
 
 /** A compact QR preview: the image when the link can be shown, else a small placeholder. */
 export function QrThumbnail({ url, name, className }: { url: string | null | undefined; name: string; className?: string }) {
+  const shown = paymentQrDisplay(url, name);
   return (
     <span className={cx('inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded border border-line bg-white', className)}>
-      {showable(url) ? <img src={url} alt={`${name} QR code`} className="size-full object-contain" /> : <span className="px-0.5 text-center text-[10px] leading-tight text-muted">{url ? 'Saved' : 'None'}</span>}
+      {shown.src ? <img src={shown.src} alt={`${name} QR code`} className="size-full object-contain" /> : <span className="px-0.5 text-center text-[10px] leading-tight text-muted">None</span>}
     </span>
   );
 }
@@ -90,17 +95,21 @@ function QrRow({ council, row, name, onSaved }: { council: Council; row: Council
   };
 
   const inputId = `qr-upload-${row.id}`;
+  const shown = paymentQrDisplay(row.DonationMethodURL, name);
   return (
     <li className="flex flex-wrap items-center gap-4 rounded border-2 border-navy bg-white p-3">
       <div className="flex size-24 shrink-0 items-center justify-center rounded border border-line bg-white">
-        {showable(row.DonationMethodURL) ? (
-          <img src={row.DonationMethodURL} alt={`${name} QR code`} className="size-full object-contain" />
+        {shown.src ? (
+          <img src={shown.src} alt={`${name} QR code`} data-qr-source={shown.source} className="size-full object-contain" />
         ) : (
           <span className="px-1 text-center text-xs text-muted">No QR code yet</span>
         )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <span className="font-bold text-navy">{name}</span>
+        <span className="font-bold text-navy">
+          {name}
+          {shown.source === 'sample' ? <span className="ml-2 text-xs font-normal text-muted">Sample code. Upload yours to replace it.</span> : null}
+        </span>
         <label
           htmlFor={inputId}
           onDragOver={(e) => {
@@ -145,7 +154,7 @@ export function PaymentQrUploader({ council }: { council: Council }) {
   if (!allowed) return null;
   return (
     <Panel title="Payment QR Codes" className="mt-6">
-      <p className="mb-3 text-sm">The QR code donors scan for each enabled payment method. Upload the image your Venmo, Zelle or Square account gives you.</p>
+      <p className="mb-3 text-sm">Donor QR code per active payment method. Upload the image from your Venmo, Zelle or Square account.</p>
       {data.error ? <Notice tone="error">{data.error}</Notice> : null}
       {data.data && data.data.rows.length === 0 ? <Empty>No active payment method takes a QR code. Turn on Venmo, Zelle, Zeffy or ParishSoft under Council Lookups.</Empty> : null}
       <ul className="flex flex-col gap-3">

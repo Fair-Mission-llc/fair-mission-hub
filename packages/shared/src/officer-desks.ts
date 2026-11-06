@@ -184,11 +184,12 @@ export const MEMBER_DESK_SECTIONS = [
 /**
  * Sprint 11 Revision 20.0: the Member Desk opens every module inside Left Vertical Action Drawers
  * (apps/web/components/LeftActionDrawers.tsx), all closed on arrival, so the desk keeps its white space. Top to bottom:
- * the member's roster profile, hours (the two shift trackers and the hour ledger), motion requests, Feedback Support
+ * the member's roster profile, Record Hours (the hour ledger), My Scheduled Shifts (the two shift trackers; Sprint 11
+ * Revision 21.5 split them from one 'My Hours & Shifts' drawer), motion requests, Feedback Support
  * (local-feedback.ts), charity requests and open expense sheets. The last three leave the desk while their council
  * switch is off (MEMBER_DESK_DRAWER_FLAGS). MEMBER_DESK_SECTIONS still names the cards inside them.
  */
-export type MemberDeskDrawerId = 'roster-profile' | 'hours' | 'motion-requests' | 'feedback-support' | 'charity-requests' | 'expense-sheets';
+export type MemberDeskDrawerId = 'roster-profile' | 'record-hours' | 'scheduled-shifts' | 'motion-requests' | 'feedback-support' | 'charity-requests' | 'expense-sheets';
 
 export interface MemberDeskDrawer {
   id: MemberDeskDrawerId;
@@ -198,7 +199,9 @@ export interface MemberDeskDrawer {
 
 export const MEMBER_DESK_DRAWERS: readonly MemberDeskDrawer[] = [
   { id: 'roster-profile', label: 'My Roster Profile', hint: 'Your roster card and the Roster & Achievements directory' },
-  { id: 'hours', label: 'My Hours & Shifts', hint: 'Open shifts, your coming shifts and your hour ledger' },
+  // Sprint 11 Revision 21.5: 'My Hours & Shifts' is split into two drawers.
+  { id: 'record-hours', label: 'Record Hours', hint: 'Log service time; your hour ledger' },
+  { id: 'scheduled-shifts', label: 'My Scheduled Shifts', hint: 'Your coming shifts and open shifts' },
   { id: 'motion-requests', label: 'My Motion Requests', hint: 'Ask to put a motion before the council and follow it' },
   { id: 'feedback-support', label: 'Feedback Support', hint: "Send feedback to your council's Admins and follow your tickets" },
   { id: 'charity-requests', label: 'My Charity Requests', hint: 'The grant requests you shepherd, step by step' },

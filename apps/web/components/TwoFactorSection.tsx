@@ -57,8 +57,7 @@ export function TwoFactorSection({ facts, passkeySetup }: { facts: TwoFactorFact
   return (
     <Panel title={TWO_FACTOR_SECTION_TITLE}>
       <p className="mb-3 text-sm text-muted">
-        A second step after your password keeps your council&apos;s records safe if your password is ever guessed. A passkey counts as the second step on
-        its own. Text and email codes work once the portal has a provider connected.
+        Second sign-in step after the password. A passkey counts alone. Text and email codes need a connected provider.
       </p>
       <ul className="flex flex-col divide-y divide-line rounded border border-line" aria-label="Second-step methods">
         {rows.map(({ method, status, detail }) => (
@@ -96,14 +95,14 @@ export function TwoFactorDeliveryPanel({ emailGatewayConnected }: { emailGateway
   const who = universal ? 'every member' : 'Admins and Super Admins';
   const delivery: Record<(typeof TWO_FACTOR_METHODS)[number]['id'], { status: TwoFactorStatus; detail: string }> = {
     sms: server?.sms
-      ? { status: 'ready', detail: `Twilio is connected. Sign-in codes are texted to ${who}.` }
-      : { status: 'not-wired', detail: 'No Twilio account is connected to the portal server.' },
+      ? { status: 'ready', detail: `Twilio connected. Codes texted to ${who}.` }
+      : { status: 'not-wired', detail: 'No Twilio account connected.' },
     email: server?.email
-      ? { status: 'ready', detail: `SendGrid is connected. Codes are emailed to ${who} when no text can be sent.` }
+      ? { status: 'ready', detail: `SendGrid connected. Codes emailed to ${who} when no text can be sent.` }
       : emailGatewayConnected
-        ? { status: 'available', detail: "Sign-in codes go through the platform's SendGrid account, not the council mail account above. SendGrid is not connected yet." }
-        : { status: 'not-wired', detail: 'No SendGrid account is connected to the portal server.' },
-    passkey: { status: 'ready', detail: 'Members set up a passkey on My Profile (Android, iOS and desktop browsers). A passkey sign-in needs no code.' },
+        ? { status: 'available', detail: "Codes use the platform's SendGrid account, not the council mail account. SendGrid not connected." }
+        : { status: 'not-wired', detail: 'No SendGrid account connected.' },
+    passkey: { status: 'ready', detail: 'Passkey set up on My Profile (Android, iOS, desktop browsers). No code needed.' },
   };
   return (
     <Panel title={`${TWO_FACTOR_SECTION_TITLE}: delivery channels`}>
@@ -111,9 +110,9 @@ export function TwoFactorDeliveryPanel({ emailGatewayConnected }: { emailGateway
         <span className="font-bold">Sign-in codes for every member:</span>{' '}
         {universal
           ? server?.sms || server?.email
-            ? 'On. Every member, officer and admin types a code at each password sign-in.'
-            : 'On, but no provider is connected, so sign-in stays one step until Twilio or SendGrid is connected.'
-          : 'Off. Only Admins and Super Admins type a code. The platform operator turns it on with TWO_FACTOR_REQUIRED=1 on the portal server.'}
+            ? 'On. Every member types a code at each password sign-in.'
+            : 'On, but no provider is connected. Sign-in stays one step.'
+          : 'Off. Admins and Super Admins only. Server switch: TWO_FACTOR_REQUIRED=1.'}
       </p>
       <ul className="flex flex-col divide-y divide-line rounded border border-line" aria-label="Second-step delivery channels">
         {TWO_FACTOR_METHODS.map((m) => (

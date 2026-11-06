@@ -19,6 +19,7 @@
 - [6. Impersonation and screen watching](#6-impersonation-and-screen-watching)
 - [7. The platform feedback inbox](#7-the-platform-feedback-inbox)
 - [8. The three local database files](#8-the-three-local-database-files)
+- [9. Client versions and upgrade notices](#9-client-versions-and-upgrade-notices)
 
 ---
 
@@ -543,3 +544,37 @@ Testing mode shares saves only when every laptop has the same mesh passphrase: `
 Training mode builds a practice council every start: the ten Practice Sandbox members, three upcoming practice fundraisers with volunteers, three training cash boxes (names and amounts in `packages/shared/src/fixtures/training-seed.json`) and seven generic sign-in accounts (`admin@training`, `gk@training`, `fs@training`, `tr@training`, `rec@training`, `hist@training`, `mem@training`, password `training`). The sign-in screen lists them on the **Training Profile Selection Board**. These accounts skip the Admin sign-in code, in training mode only.
 
 The window shows an amber **Testing Mode** banner or a cobalt blue **Training Mode** banner across the top of every page. Production shows no banner.
+
+---
+
+## 9. Client versions and upgrade notices
+
+### 9.1 Concept: sign-in client telemetry
+Each password sign-in records the client release and the device platform. The portal and the hub both record it.
+
+| Item | Source |
+| --- | --- |
+| Client release | The `X-KofC-Client-Version` header the web portal sends. Without it, a `KofCClient/<release>` token in the browser identification. |
+| Device platform | The `X-KofC-Client-Platform` header, or the browser identification. The Windows desktop client shows as **Windows Desktop**. |
+
+The server keeps the log in `client-telemetry.json` beside the hub data: the last 500 sign-ins and the latest sign-in of each member. The database does not change.
+
+A client older than the release baseline gets an **Upgrade recommended** notice card at the top of the portal. A browser gets a **Reload now** button. A desktop or phone client gets the update steps. A client that sends no release gets no notice.
+
+### 9.2 Read the client versions
+> **Who can do this:** Super Admins.
+
+**Goal:** See which release and platform each member signed in with.
+
+**Start point:** A signed-in Super Admin browser.
+
+**Steps:**
+1. Open `/api/auth/client-telemetry` on the portal server.
+
+**Expected result:** The answer shows the current release, the release baseline, the latest sign-in of each member and the recent sign-ins.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| The answer is 403. | Your account is not a Super Admin. | Sign in with a Super Admin account. |
+| The list is empty. | No password sign-in since the release. | Sign in again. |

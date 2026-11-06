@@ -57,7 +57,7 @@ export function MeritTierInfo({ council }: { council: Council }) {
           </li>
         ))}
       </ul>
-      <p className="mt-1 text-muted">Read only. The council&apos;s Admins change the milestones in the Admin Desk: Council Lookup Tables.</p>
+      <p className="mt-1 text-muted">Read only. Edited in Admin Desk: Council Lookup Tables.</p>
     </section>
   );
 }
@@ -163,12 +163,11 @@ export function MeritMilestonesPanel({ councilId }: { councilId: number }) {
       }}
     >
       <p className="text-sm">
-        Members earn the highest tier they qualify for. Hours, events, meetings and recruits count inside the current fraternal year (July 1 to June 30) and reset every July
-        1. Tier 1 ({NEW_MEMBER_WINDOW_DAYS} days from the First Degree / Initiation Date) and Tier 6 (executive office, {HONORARY_TENURE_YEARS}+ years, or the Admin&apos;s
-        Honorary switch on the member record) are fixed.
+        Highest qualifying tier. Counts run July 1 to June 30. Fixed tiers: Tier 1 ({NEW_MEMBER_WINDOW_DAYS} days from initiation), Tier 6 (executive office,{' '}
+        {HONORARY_TENURE_YEARS}+ years, or Honorary switch).
       </p>
       {council.error ? <Notice tone="error">{council.error}</Notice> : null}
-      <Field label="Council institution date" help={`Members whose First Degree / Initiation Date is on or before this date + ${CHARTER_WINDOW_DAYS} days are marked charter members when saved.`} className="w-56">
+      <Field label="Council institution date" help={`Charter members: initiated by this date + ${CHARTER_WINDOW_DAYS} days. Marked on save.`} className="w-56">
         {(id) => <Input id={id} type="date" value={instituted} onChange={(e) => setInstituted(e.target.value)} />}
       </Field>
       {ROWS.map((row) => (

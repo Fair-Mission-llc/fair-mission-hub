@@ -25,7 +25,7 @@ The wizard covers the **Admin Desk** until you finish it or skip it. The wizard 
 **Start point:** **Active Desks** row → **Admin Desk**.
 
 **Steps:**
-1. If the wizard is not open, select **Run Setup Wizard** at the top of the Admin Desk.
+1. If the wizard is not open, open the **Setup Wizard** drawer on the Admin Desk. Select **Run Setup Wizard**.
 2. Read the step title and the sentence below it.
 3. Select **Next** to go to the next step. Select **Back** to go to the step before.
 4. To close the wizard now, select **Skip for now**. You can open it again at any time.
@@ -98,7 +98,7 @@ The clone keeps every item your council already has with the same name. You can 
 
 **Expected result:** The platform adds 10 practice members and 3 practice fundraisers. Each fundraiser has one shift with 3 practice volunteers. Practice members get no email. Practice fundraisers start with **[Practice]**.
 
-To remove the practice data, go to the top of the **Admin Desk**. Turn off the **Practice Sandbox** switch.
+To remove the practice data, open **Admin Desk** → **Council Wide Settings** → **Council Setup**. Turn off the **Practice Sandbox** switch.
 
 | Problem | Cause | Fix |
 | --- | --- | --- |
@@ -116,7 +116,7 @@ To remove the practice data, go to the top of the **Admin Desk**. Turn off the *
 1. Select **Download the Quick-Start Intake Guide**.
 2. Select **Open the Admin Desk**.
 
-**Expected result:** The wizard closes. The Admin Desk shows the top deck and the six drawers. The wizard does not open by itself again in this browser.
+**Expected result:** The wizard closes. The Admin Desk shows its drawers. The **Setup Wizard** drawer leaves the desk. To run the wizard again, use **Council Wide Settings** → **Council Setup**.
 
 > **Note:** while **Trustee Semiannual Audit** is off, the inspection drawers do not show on the **Financial Secretary Desk** and the **Treasurer Desk**. The drawers that pay checks stay.
 

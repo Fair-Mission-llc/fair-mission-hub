@@ -18,22 +18,33 @@ import { NextResponse } from 'next/server';
 import {
   assertHubCallAllowed,
   BusinessRuleError,
+  clientUpgradeNotice,
+  CLIENT_UPGRADE_HEADER,
   describeError,
   encodeHubError,
   HUB_VAULT_RELATIVE_PATH,
+  parseClientTelemetry,
   PLATFORM_SCHEMA_VERSION,
+  type ClientTelemetry,
   type HubCall,
   type HubReply,
 } from '@kofc/shared';
 import { callHub, hubDataDir, hubDataMode, hubModeOn, hubService, hubVaultFile } from '@/services/server/hub/hub-vault';
 import { readSyncReceipt } from '@/services/server/hub/central-sync';
 import { readPortalSession, signInOnServer } from '@/services/server/session';
+import { recordClientSignIn } from '@/services/server/client-telemetry';
 import { issueTwoFactorChallenge, TwoFactorContactMissingError } from '@/services/server/two-factor';
 
 export const runtime = 'nodejs';
 
 const reply = (body: HubReply, status = 200, headers: Record<string, string> = {}) =>
   NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
+
+/** Sprint 11 Revision 21.5: a client older than the release baseline gets the notice in a header (the reply stays a HubReply). */
+const upgradeHeader = (telemetry: ClientTelemetry): Record<string, string> => {
+  const notice = clientUpgradeNotice(telemetry);
+  return notice ? { [CLIENT_UPGRADE_HEADER]: encodeURIComponent(notice.body) } : {};
+};
 
 const failure = (err: unknown, status: number) => reply({ ok: false, error: encodeHubError(err) }, status);
 
@@ -98,7 +109,12 @@ export async function POST(req: Request) {
         return failure(new BusinessRuleError('TWO_FACTOR_UNAVAILABLE', 'The sign-in code could not be sent. Try again in a minute.', {}), 200);
       }
     }
-    if (outcome.ok) return reply({ ok: true, result: outcome.user }, 200, { 'Set-Cookie': outcome.cookie });
+    if (outcome.ok) {
+      // Sprint 11 Revision 21.5: the hub sign-in records the client's version and platform too (client-telemetry.ts).
+      const telemetry = parseClientTelemetry(req.headers);
+      await recordClientSignIn({ ...telemetry, memberId: outcome.user.memberId, councilId: outcome.user.councilId, at: new Date().toISOString(), route: 'hub' });
+      return reply({ ok: true, result: outcome.user }, 200, { 'Set-Cookie': outcome.cookie, ...upgradeHeader(telemetry) });
+    }
     if (outcome.status === 429) return failure(new BusinessRuleError('INVALID_INPUT', outcome.message, {}), 429);
     return reply({ ok: true, result: null });
   }

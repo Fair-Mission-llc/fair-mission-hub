@@ -107,7 +107,7 @@ export function DeskManualHeader({ manual: token, show = 'both' }: { manual: Des
             })}
           </ul>
         ) : (
-          <p className="text-sm">No task in the {manual.title} matches. Try other words, for example a button or page name.</p>
+          <p className="text-sm">No matching task. Try a button or page name.</p>
         )
       ) : null}
     </section>

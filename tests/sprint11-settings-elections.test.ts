@@ -103,7 +103,8 @@ describe.each(drivers)('$name driver: payment method accounts', ({ make }) => {
 describe('Council Wide Settings and Council Lookups', () => {
   it('pins the Council Instance Record, closes every drawer and routes the email gateway to the vault', () => {
     const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
-    expect(page.indexOf('<CouncilInstanceRecord')).toBeLessThan(page.indexOf('<SettingsDrawers'));
+    // Sprint 11 Revision 21.5: the record is the first drawer, no longer pinned above the stack.
+    expect(page.indexOf("'instance-record': (")).toBeGreaterThan(page.indexOf('<SettingsDrawers'));
     expect(page).not.toMatch(/BANK_ACCOUNT_SETTINGS_PAGES|href="\/council-lookups"/);
     expect(read('apps/web/components/FeatureDeploymentParts.tsx')).toContain('open={false}');
     const gateway = councilFeatureDeployment({}).find((r) => r.id === 'email-gateway')!;

@@ -117,6 +117,7 @@ export const HUB_ACTOR_FIRST_METHODS: ReadonlySet<string> = new Set([
   'councils.cloneFoundingTemplate', 'councils.getPracticeSandboxStatus', 'councils.seedPracticeSandbox', 'councils.purgePracticeSandbox',
   'regional.getAssignmentWorkspace', 'regional.saveAssignment', 'regional.removeAssignment', 'regional.getRegionalDesk',
   'advisory.listMeetings', 'advisory.saveMeeting', 'advisory.removeMeeting', 'advisory.listFeedback', 'advisory.submitFeedback',
+  'advisory.listFeatureList', 'advisory.saveFeature', 'advisory.removeFeature', 'advisory.submitFeatureIdea', 'advisory.commentOnFeature', 'advisory.rateFeature',
   'advisory.listPanelists', 'advisory.setPanelist', 'advisory.inviteMember', 'advisory.acceptInvitation',
   'members.resendWelcome', 'members.sweepInactive', 'members.update', 'notifications.dispatchHighPriorityAlert',
   'notifications.listMemberAlerts', 'notifications.markAsRead', 'notifications.registerDeviceToken',

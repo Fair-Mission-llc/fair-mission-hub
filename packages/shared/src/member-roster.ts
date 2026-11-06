@@ -114,3 +114,6 @@ export const ROSTER_ADD_MEMBER_PICK_COUNCIL_HINT = 'Choose one council in the Co
 
 /** Sprint 11 Revision 17.0: true only for the desks listed in MEMBER_ROSTER_DESKS; the Financial Secretary Desk never mounts the roster. */
 export const deskMountsMemberRoster = (desk: string): desk is MemberRosterDesk => (MEMBER_ROSTER_DESKS as readonly string[]).includes(desk);
+
+/** Sprint 11 Revision 21.5: the reader's own row of a roster listing (the Member Desk's My Roster Profile), or null. */
+export const ownRosterRow = (result: Pick<MemberRosterResult, 'members'>, memberId: number): Member | null => result.members.find((m) => m.id === memberId) ?? null;

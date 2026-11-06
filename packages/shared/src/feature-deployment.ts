@@ -30,11 +30,15 @@ import type { Council } from './types';
  * Archives' links are gone; the Annual Budget Planner banner moved to the Annual Budget Center.
  */
 export const COUNCIL_SETTINGS_DRAWERS = [
-  { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: 'The Account Owners Matrix and the payment QR codes.' },
-  { id: 'access-roster', label: 'User Access & Roster Control', hint: 'The inactivity sweep and the member rank benchmarks.' },
-  { id: 'system-settings', label: 'System Settings', hint: 'Time limits, windows and reminders, where uploaded files are kept, and the printable custom guides.' },
-  { id: 'feature-controls', label: 'Feature Controls', hint: 'Loaner library sharing and the module switch pages.' },
-  { id: 'feature-matrix', label: 'Council Feature Deployment Matrix', hint: 'Which advanced capabilities and modules are on for the council, and where each switch lives.' },
+  // Sprint 11 Revision 21.5: the Council Instance Record leaves the page header for its own drawer, and Council Setup
+  // (the Setup Wizard and the Practice Sandbox switch, off the Admin Desk) closes the stack.
+  { id: 'instance-record', label: 'Council Instance Record', hint: 'Read-only council facts and schema version.' },
+  { id: 'bank-accounts', label: 'Standard Bank Accounts', hint: 'Account Owners Matrix and payment QR codes.' },
+  { id: 'access-roster', label: 'User Access & Roster Control', hint: 'Roster inactivity sweep.' },
+  { id: 'system-settings', label: 'System Settings', hint: 'Time limits, reminders, file storage and custom guides.' },
+  { id: 'feature-controls', label: 'Feature Controls', hint: 'Loaner library sharing and module switch pages.' },
+  { id: 'feature-matrix', label: 'Council Feature Deployment Matrix', hint: 'Modules on or off, and where each switch lives.' },
+  { id: 'council-setup', label: 'Council Setup', hint: 'Setup Wizard and Practice Sandbox.' },
 ] as const;
 export type CouncilSettingsDrawerId = (typeof COUNCIL_SETTINGS_DRAWERS)[number]['id'];
 

@@ -279,3 +279,34 @@ export function repositoryFileName(prefix: string, originalName: string, random:
   const ext = /\.([A-Za-z0-9]{1,8})$/.exec(originalName)?.[1]?.toLowerCase() ?? 'bin';
   return `${prefix.replace(/[^a-z0-9-]/gi, '').toLowerCase() || 'file'}-${now}-${random.replace(/[^a-z0-9]/gi, '')}.${ext}`;
 }
+
+// ---- Sprint 11 Revision 21.5: the QR image a card shows -------------------------------------------------------------
+
+/** The sample QR codes bundled with the portal (apps/web/public), by DonationMethod name in lower case. */
+export const BUNDLED_PAYMENT_QR: Readonly<Record<string, string>> = {
+  venmo: '/assets/images/qr/venmo-collection.png',
+  zelle: '/assets/images/qr/zelle-collection.png',
+  zeffy: '/assets/images/qr/zeffy-collection.png',
+  parishsoft: '/assets/images/qr/parishsoft-collection.png',
+};
+
+/** Whether a stored link is one a browser can load: http(s) or a portal /api/ route. */
+export const isLoadableQrUrl = (url: string | null | undefined): url is string => !!url && (/^https?:\/\//i.test(url) || url.startsWith('/api/'));
+
+export interface PaymentQrDisplay {
+  /** The image to draw, or null when there is none. */
+  src: string | null;
+  /** 'uploaded': the council's own image; 'sample': the bundled code (a placeholder:// seed link or no link). */
+  source: 'uploaded' | 'sample' | 'none';
+}
+
+/**
+ * What the Payment QR Codes card draws for one method, read from the live CouncilDonationMethod.DonationMethodURL: the
+ * stored image when the browser can load it; else, like the phone (CollectionQrModal), the bundled sample code for that
+ * method; else nothing. A placeholder:// seed link therefore shows the sample, never 'No QR code yet'.
+ */
+export function paymentQrDisplay(url: string | null | undefined, methodName: string): PaymentQrDisplay {
+  if (isLoadableQrUrl(url)) return { src: url, source: 'uploaded' };
+  const sample = BUNDLED_PAYMENT_QR[methodName.trim().toLowerCase()];
+  return sample ? { src: sample, source: 'sample' } : { src: null, source: 'none' };
+}

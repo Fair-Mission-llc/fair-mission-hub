@@ -123,6 +123,7 @@ import type { CouncilAccount, CouncilAccountInput, GLAccountInput, SplitSisterCo
 import type { FileRepositorySettings } from './file-repository';
 import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
+import type { FeatureEntryInput, FeatureIdeaInput, FeatureListEntry } from './advisory-workshop';
 import type { CouncilParentMapping, ParentOrganizationInput, ParentOrganizationRecord, ParentOrgScope } from './parent-organizations';
 import type { FeedbackTicket, FeedbackTicketChat, FeedbackTicketInput, FeedbackTicketStatus } from './local-feedback';
 import type { ParishAssociationResult } from './parish-registry';
@@ -3770,6 +3771,21 @@ export interface DataService {
      * an invitation, INVALID_INPUT for an expired invitation.
      */
     acceptInvitation(actorId: number, alertId: number): Promise<{ roles: string[] }>;
+    /**
+     * Sprint 11 Revision 21.5 (advisory-workshop.ts): the Future Feature List, ranked by the panel's priority ratings, with
+     * each entry's comments and the reader's own rating. Panelists and Super Admins (assertMayReadAdvisoryPanel).
+     */
+    listFeatureList(actorId: number): Promise<FeatureListEntry[]>;
+    /** Adds (no id) or edits an entry; resolves to the new list. Super Admins only (SUPER_ADMIN_REQUIRED). */
+    saveFeature(actorId: number, input: FeatureEntryInput): Promise<FeatureListEntry[]>;
+    /** Deletes an entry with its comments and ratings; resolves to the new list. Super Admins only. */
+    removeFeature(actorId: number, id: number): Promise<FeatureListEntry[]>;
+    /** A panelist's feature idea, added with status 'Idea'; resolves to the new list. */
+    submitFeatureIdea(actorId: number, input: FeatureIdeaInput): Promise<FeatureListEntry[]>;
+    /** A review comment on entry `id`; RECORD_NOT_FOUND for an unknown entry. */
+    commentOnFeature(actorId: number, id: number, body: string): Promise<FeatureListEntry[]>;
+    /** The actor's priority rating (1-5) of entry `id`, replacing their earlier one; RECORD_NOT_FOUND for an unknown entry. */
+    rateFeature(actorId: number, id: number, score: number): Promise<FeatureListEntry[]>;
   };
 
   /**

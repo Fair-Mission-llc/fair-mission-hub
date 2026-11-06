@@ -1461,3 +1461,20 @@ Home parish link (parishes.setCouncilAssociation). In one transaction: the counc
 Rules. The Local Feedback Portal no longer writes ChatThreads or Messages. Ticket conversations saved there under schema 112 are not carried over.
 New methods. parishes.setCouncilAssociation, pastors.listAssignments, pastors.assignToParish, pastors.unassignFromParish. parishes.* and pastors.* take the snake_case columns above.
 Fixtures and files. packages/shared/src/fixtures/training-seed.json holds the ten practice members, three practice fundraisers and three training cash boxes (training-seed.ts checks it at load). Testing mode writes .testing-key.json (a random 256-bit mesh passphrase) to the vault folder on boot when no key exists and KOFC_MESH_PASSPHRASE is unset; testing-mesh-passphrase.txt is no longer read.
+
+# 67. Advisory Panel workshop rows and client telemetry (Sprint 11 Revision 21.5, schema 113, no table change)
+
+[AdvisoryFeedback] also holds the Future Feature List. A row whose topic starts with `[ffl:` is a workshop row, never a
+consultation note: advisory.listFeedback leaves it out, and advisory.submitFeedback refuses such a topic.
+
+| topic | body | Written by |
+| --- | --- | --- |
+| `[ffl:entry]` | JSON: title (120), target_date (YYYY-MM-DD or null), status (Idea, Planned, In testing, Released), notes (1200) | advisory.saveFeature (Super Admins), advisory.submitFeatureIdea (status Idea) |
+| `[ffl:comment:<entry id>]` | The comment text (1000) | advisory.commentOnFeature |
+| `[ffl:rating:<entry id>]` | A whole number 1-5; one row per member and entry | advisory.rateFeature (replaces the member's earlier row) |
+
+advisory.removeFeature deletes the entry with its comment and rating rows. The priority rank sorts by average rating, then
+rating count, then target date.
+
+Client telemetry is not in the database. The portal server writes `client-telemetry.json` beside the hub data: `recent` (the
+last 500 sign-ins) and `latestByMember`, each with memberId, councilId, at, route (portal or hub), version, platform and kind.

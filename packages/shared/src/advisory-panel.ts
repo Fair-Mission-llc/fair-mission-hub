@@ -3,9 +3,10 @@
 //
 // A top-level workspace ('🔊 Application Advisory Panel', /advisory-panel) for the people who advise on the platform:
 // members of any council whom a Super Admin designates by giving them the 'Application Advisory Panelist' role, plus
-// every Super Admin. Four views:
+// every Super Admin. Five views:
 //   - Development Roadmap       where the platform is heading (ADVISORY_ROADMAP);
-//   - Future Feature Releases   what is planned, in testing or released, for the panel to review (ADVISORY_RELEASES);
+//   - Future Feature List       Sprint 11 Revision 21.5: an editable, rated, commented list (advisory-workshop.ts);
+//   - Platform Calendar         Sprint 11 Revision 21.5: releases, panel meetings and the pilot timeline by date;
 //   - Panel Meeting Dates       the panel's meetings (AdvisoryPanelMeetings), kept by Super Admins;
 //   - Consultation Feedback     one text row per note a panelist sends (AdvisoryFeedback), which the whole panel reads.
 // The roadmap and release lists are kept here, in code, by the development team; meetings and feedback are data.
@@ -20,7 +21,10 @@ export const ADVISORY_PANELIST_ROLE = 'Application Advisory Panelist';
 
 export const ADVISORY_PANEL_VIEWS = [
   { id: 'roadmap', label: 'Development Roadmap' },
-  { id: 'releases', label: 'Future Feature Releases' },
+  // Sprint 11 Revision 21.5: 'Future Feature Releases' is the editable Future Feature List (advisory-workshop.ts), and the
+  // Platform Calendar view is added.
+  { id: 'features', label: 'Future Feature List' },
+  { id: 'calendar', label: 'Platform Calendar' },
   { id: 'meetings', label: 'Panel Meeting Dates' },
   { id: 'feedback', label: 'Consultation Feedback' },
 ] as const;
@@ -31,33 +35,40 @@ export interface AdvisoryRoadmapItem {
   title: string;
   summary: string;
   status: 'Done' | 'In progress' | 'Planned';
+  /** Sprint 11 Revision 21.5: calendar target date (YYYY-MM-DD), or null. */
+  target_date: string | null;
 }
 
 /** Where the platform is heading. Edited here by the development team. */
 export const ADVISORY_ROADMAP: readonly AdvisoryRoadmapItem[] = [
-  { phase: 'Pilot', title: 'Conference room pilot at St. Mary’s Cathedral', summary: 'Seated pilot runways for every officer desk on one shared hub laptop.', status: 'Done' },
-  { phase: 'Pilot', title: 'Multi-tenant isolation', summary: 'Each council’s keys, files and account owners kept apart on the server, not only on screen.', status: 'In progress' },
-  { phase: 'Rollout', title: 'Council network file servers', summary: 'Councils that keep files on their own hall server instead of Google Drive.', status: 'In progress' },
-  { phase: 'Rollout', title: 'Second council onboarding', summary: 'A neighboring council joins through the access request queue with its own settings.', status: 'Planned' },
-  { phase: 'Rollout', title: 'Phone app store release', summary: 'The phone app published to the app stores instead of Expo Go.', status: 'Planned' },
-  { phase: 'Growth', title: 'Live Google Drive vault for every council', summary: 'Every council’s uploads filed in its own shared drive once each council connects one.', status: 'Planned' },
+  { phase: 'Pilot', title: 'Conference room pilot at St. Mary’s Cathedral', summary: 'Seated pilot runways for every officer desk on one shared hub laptop.', status: 'Done', target_date: '2026-10-15' },
+  { phase: 'Pilot', title: 'Multi-tenant isolation', summary: 'Each council’s keys, files and account owners kept apart on the server, not only on screen.', status: 'In progress', target_date: '2026-12-01' },
+  { phase: 'Rollout', title: 'Council network file servers', summary: 'Councils that keep files on their own hall server instead of Google Drive.', status: 'In progress', target_date: '2027-01-15' },
+  { phase: 'Rollout', title: 'Second council onboarding', summary: 'A neighboring council joins through the access request queue with its own settings.', status: 'Planned', target_date: '2027-03-01' },
+  { phase: 'Rollout', title: 'Phone app store release', summary: 'The phone app published to the app stores instead of Expo Go.', status: 'Planned', target_date: '2027-05-01' },
+  { phase: 'Growth', title: 'Live Google Drive vault for every council', summary: 'Every council’s uploads filed in its own shared drive once each council connects one.', status: 'Planned', target_date: '2027-07-01' },
 ];
 
 export interface AdvisoryReleaseItem {
   id: string;
   title: string;
   target: string;
+  /** Sprint 11 Revision 21.5: the calendar target date the starter entry is loaded with. */
+  target_date: string;
   status: 'Released' | 'In testing' | 'Planned';
   notes: string;
 }
 
-/** What is coming, for the panel to review before release. Edited here by the development team. */
+/**
+ * Sprint 11 Revision 21.5: the starter Future Feature List. The list itself is data now (advisory-workshop.ts); a Super
+ * Admin loads these entries into an empty list with one click.
+ */
 export const ADVISORY_RELEASES: readonly AdvisoryReleaseItem[] = [
-  { id: 'account-owners', title: 'Account Owners Matrix', target: 'Sprint 10', status: 'Released', notes: 'Who to call about each electronic account, kept per council.' },
-  { id: 'network-files', title: 'Local Network Server file repository', target: 'Sprint 10', status: 'In testing', notes: 'Uploads written to a council file server through the portal server.' },
-  { id: 'view-as-member', title: 'View As Member for council Admins', target: 'Sprint 10', status: 'Released', notes: 'A read-only picture of what one member sees, inside the Admin’s own council.' },
-  { id: 'advisory-panel', title: 'Application Advisory Panel', target: 'Sprint 10', status: 'In testing', notes: 'This workspace: roadmap, releases, meeting dates and feedback.' },
-  { id: 'phone-hub-photos', title: 'Hub upload for every phone photo type', target: 'Next', status: 'Planned', notes: 'Receipts and gallery photos sent to the hub like check photos already are.' },
+  { id: 'account-owners', title: 'Account Owners Matrix', target: 'Sprint 10', target_date: '2026-08-01', status: 'Released', notes: 'Who to call about each electronic account, kept per council.' },
+  { id: 'network-files', title: 'Local Network Server file repository', target: 'Sprint 10', target_date: '2026-11-20', status: 'In testing', notes: 'Uploads written to a council file server through the portal server.' },
+  { id: 'view-as-member', title: 'View As Member for council Admins', target: 'Sprint 10', target_date: '2026-08-15', status: 'Released', notes: 'A read-only picture of what one member sees, inside the Admin’s own council.' },
+  { id: 'advisory-panel', title: 'Application Advisory Panel', target: 'Sprint 10', target_date: '2026-11-30', status: 'In testing', notes: 'This workspace: roadmap, releases, meeting dates and feedback.' },
+  { id: 'phone-hub-photos', title: 'Hub upload for every phone photo type', target: 'Next', target_date: '2027-02-01', status: 'Planned', notes: 'Receipts and gallery photos sent to the hub like check photos already are.' },
 ];
 
 export interface AdvisoryPanelMeeting {

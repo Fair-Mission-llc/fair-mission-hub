@@ -51,14 +51,16 @@ describe('1. Council Wide Settings: two accordions, no text spill', () => {
   const page = read('apps/web/components/modules/CouncilWideSettings.tsx');
   const parts = read('apps/web/components/FeatureDeploymentParts.tsx');
 
-  it('keeps exactly the five drawer panels (Sprint 10 Revision 3.0; four cabinet tabs in 8S Revision 10.1)', () => {
-    expect(COUNCIL_SETTINGS_DRAWERS.map((t) => t.label)).toEqual(['Standard Bank Accounts', 'User Access & Roster Control', 'System Settings', 'Feature Controls', 'Council Feature Deployment Matrix']);
+  it('keeps exactly the seven drawer panels (Sprint 10 Revision 3.0; seven since Sprint 11 Revision 21.5)', () => {
+    expect(COUNCIL_SETTINGS_DRAWERS.map((t) => t.label)).toEqual(['Council Instance Record', 'Standard Bank Accounts', 'User Access & Roster Control', 'System Settings', 'Feature Controls', 'Council Feature Deployment Matrix', 'Council Setup']);
     expect(page.match(/^ {8}'[a-z-]+': \(/gm)).toEqual([
+      "        'instance-record': (",
       "        'bank-accounts': (",
       "        'access-roster': (",
       "        'system-settings': (",
       "        'feature-controls': (",
       "        'feature-matrix': (",
+      "        'council-setup': (",
     ]);
     for (const t of COUNCIL_SETTINGS_DRAWERS) expect(t.label, t.id).not.toMatch(/[^\x20-\x7E]/);
   });

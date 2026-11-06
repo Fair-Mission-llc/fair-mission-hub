@@ -62,6 +62,8 @@
 // Sprint 11 Revision 1.0: the Council Instance Record is pinned above the drawers as the page's permanent header, every
 // drawer lands closed, and the Council Lookups and Secure Access Vault link cards are gone from Standard Bank Accounts (the
 // matrix's email gateway row links to the Secure Access Vault).
+// Sprint 11 Revision 21.5: the Council Instance Record moved from the page header into its own drawer, and the Council
+// Setup drawer (CouncilSetupPanel: Setup Wizard, Practice Sandbox) joined the stack.
 import { useState } from 'react';
 import {
   canAdministerCouncil,
@@ -92,6 +94,7 @@ import { LoanerLibrarySharingCard } from '@/components/PlanningWorkflowParts';
 import { AccountOwnersMatrix } from '@/components/AccountOwnersMatrix';
 import { PaymentQrUploader } from '@/components/PaymentQrUploader';
 import { FileRepositoryCard } from '@/components/FileRepositoryCard';
+import { CouncilSetupPanel } from '@/components/modules/CouncilSetupPanel';
 import { GroupedSettingsCards } from '@/components/SettingsParts';
 import { Button, Notice, PageTitle, Panel, Select } from '@/components/ui';
 import { useUser } from '@/lib/session';
@@ -126,8 +129,7 @@ function InactivitySweepCard({ council }: { council: Council }) {
   return (
     <Panel title="Roster Inactivity Sweep" className="mt-6">
       <p className="mb-3 text-base">
-        Marks Inactive every active plain member of {council.CouncilName} with no logged service in more than <strong>{days} days</strong> (the inactivity
-        window in the System Settings drawer). There is no scheduler, so an Admin runs it here.
+        Marks Inactive every active member of {council.CouncilName} with no logged service in <strong>{days} days</strong>. Manual run; no scheduler.
       </p>
       {canAdministerCouncil(user, council.id) ? (
         <Button variant="secondary" disabled={sweeping} onClick={() => void sweep()}>
@@ -189,10 +191,7 @@ function CustomGuidesCard({ council }: { council: Council }) {
   };
   return (
     <Panel title="Custom User Guides" className="mt-6">
-      <p className="mb-3 text-base">
-        Print a user guide for {council.CouncilName} with the council&apos;s saved numbers in place of the defaults. Save any changed card first. The server
-        compiles the PDF; the larger guides take a few seconds.
-      </p>
+      <p className="mb-3 text-base">User guide PDFs for {council.CouncilName}, built with the council&apos;s saved numbers. Save changed cards first.</p>
       <div className="flex flex-wrap gap-3">
         {CUSTOM_GUIDE_BUTTONS.map(({ guide, label }) => (
           <Button key={guide} variant="gold" disabled={busy !== null} onClick={() => void generate(guide)}>
@@ -220,13 +219,15 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
     return `Saved for council ${saved.CouncilNumber}. The new numbers apply from now on.`;
   };
   return (
-    <>
-    <div className="mb-4">
-      <CouncilInstanceRecord council={council} />
-    </div>
     <SettingsDrawers
       key={council.id}
       panels={{
+        // Sprint 11 Revision 21.5: the Council Instance Record is a drawer (was the page header).
+        'instance-record': (
+          <>
+            <CouncilInstanceRecord council={council} />
+          </>
+        ),
         'bank-accounts': (
           <>
             <AccountOwnersMatrix council={council} />
@@ -241,8 +242,7 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
         'system-settings': (
           <>
             <p className="mb-4 text-base">
-              Each card saves on its own. Click <strong>(i)</strong> beside a field to see where and how the number changes the portal. A field marked{' '}
-              <strong>Not used yet</strong> is saved for a future feature and changes nothing today.
+              Each card saves on its own. <strong>(i)</strong>: where the number applies. <strong>Not used yet</strong>: reserved, no effect today.
             </p>
             <GroupedSettingsCards
               formKey={`${council.id}-${COUNCIL_WIDE_SETTING_NAMES.map((n) => values[n]).join('-')}`}
@@ -268,9 +268,14 @@ function SettingsPanels({ council, onSaved }: { council: Council; onSaved: () =>
             <FeatureDeploymentMatrix council={council} onSaved={onSaved} />
           </>
         ),
+        // Sprint 11 Revision 21.5: the Setup Wizard and the Practice Sandbox switch, off the Admin Desk.
+        'council-setup': (
+          <>
+            <CouncilSetupPanel council={council} />
+          </>
+        ),
       }}
     />
-    </>
   );
 }
 

@@ -124,7 +124,7 @@ describe('4. screens', () => {
   });
 
   it('masks the premium pieces on the desks, the routes and the phone', () => {
-    expect(read('apps/web/components/modules/AdminDesk.tsx')).toContain('adminDeskDrawersFor(useFeatureFlags())');
+    expect(read('apps/web/components/modules/AdminDesk.tsx')).toContain('adminDeskDrawersFor(useFeatureFlags(), { setupWizardDone: wizardDone })');
     expect(read('apps/web/components/modules/CouncilWideSettings.tsx')).toContain('councilFeatureFlags(council).feature_document_compilation ? <CustomGuidesCard');
     expect(read('apps/web/app/api/council/compile-manual/route.ts')).toContain("featureSwitchedOff(payload.council.id, 'feature_document_compilation')");
     expect(read('apps/web/app/api/marketing/copilot/route.ts')).toContain("featureSwitchedOff(session.actor.councilId, 'feature_marketing_factory')");

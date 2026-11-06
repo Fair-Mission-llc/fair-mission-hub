@@ -5,6 +5,16 @@
 // of against Azure SQL. State is per browser tab and resets on reload.
 // Nothing outside /services may import this file.
 import {
+  assertPlainFeedbackTopic,
+  buildFeatureList,
+  cleanFeatureComment,
+  cleanFeatureEntry,
+  cleanFeatureIdea,
+  cleanFeatureRating,
+  featureEntryBody,
+  isWorkshopTopic,
+  WORKSHOP_TOPIC,
+  type FeatureListEntry,
   assertMayOpenFeedbackTicket,
   assertMayReadFeedbackTicket,
   assertMaySetFeedbackTicketStatus,
@@ -2790,6 +2800,25 @@ export class MemoryDataService implements DataService {
       memberName: member ? `${member.MemberFirstName} ${member.MemberLastName}` : `Member ${row.member_id}`,
       councilLabel: council ? rosterCouncilLabel(council as unknown as Council) : `Council ${row.council_id}`,
     };
+  }
+
+  /** Sprint 11 Revision 21.5: the ranked Future Feature List as `readerId` reads it. */
+  private featureList(s: MemoryStore, readerId: number): FeatureListEntry[] {
+    const rows = s.rows('AdvisoryFeedback').filter((r) => isWorkshopTopic(String(r.topic))) as unknown as AdvisoryFeedback[];
+    return buildFeatureList(rows, readerId, (memberId) => {
+      const d = this.advisoryFeedbackDetail(s, { id: 0, member_id: memberId, council_id: Number(s.rows('Member').find((m) => m.id === memberId)?.CouncilID ?? 0), topic: '', body: '', submitted_at: '' });
+      return { name: d.memberName, councilLabel: d.councilLabel };
+    });
+  }
+
+  private requireFeatureEntry(s: MemoryStore, id: number): Row {
+    const row = s.rows('AdvisoryFeedback').find((r) => r.id === id && r.topic === WORKSHOP_TOPIC.entry);
+    if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No Future Feature List entry ${id}.`, { id });
+    return row;
+  }
+
+  private insertWorkshopRow(s: MemoryStore, actor: MemberWriteActor, topic: string, body: string): void {
+    s.insert('AdvisoryFeedback', { member_id: actor.memberId, council_id: actor.councilId, topic, body, submitted_at: toTimestamp(this.now()) });
   }
 
   /** Every holder of the panelist role, by last name (Sprint 10 Revision 3.1). */
@@ -6117,12 +6146,14 @@ export class MemoryDataService implements DataService {
     listFeedback: async (actorId) => {
       const s = await this.ready();
       assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
-      return (s.rows('AdvisoryFeedback').map((r) => this.advisoryFeedbackDetail(s, r as unknown as AdvisoryFeedback)) as AdvisoryFeedbackDetail[]).sort(
+      // Sprint 11 Revision 21.5: the workshop's tagged rows (advisory-workshop.ts) are not consultation notes.
+      return (s.rows('AdvisoryFeedback').filter((r) => !isWorkshopTopic(String(r.topic))).map((r) => this.advisoryFeedbackDetail(s, r as unknown as AdvisoryFeedback)) as AdvisoryFeedbackDetail[]).sort(
         (a, b) => b.submitted_at.localeCompare(a.submitted_at) || b.id - a.id,
       );
     },
     submitFeedback: async (actorId, input) => {
       const clean = cleanAdvisoryFeedback(input);
+      assertPlainFeedbackTopic(clean.topic);
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
       assertMayReadAdvisoryPanel(actor, this.actorUsername(s, actorId));
@@ -6132,6 +6163,61 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId), this.actorUsername(s, actorId));
       return this.advisoryPanelists(s);
+    },
+    // Sprint 11 Revision 21.5: the Future Feature List workshop (advisory-workshop.ts), on tagged AdvisoryFeedback rows.
+    listFeatureList: async (actorId) => {
+      const s = await this.ready();
+      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId));
+      return this.featureList(s, actorId);
+    },
+    saveFeature: async (actorId, input) => {
+      const fields = cleanFeatureEntry(input);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayKeepAdvisoryPanel(actor);
+      if (input.id != null) {
+        const row = this.requireFeatureEntry(s, input.id);
+        row.body = featureEntryBody(fields);
+      } else {
+        this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
+      }
+      return this.featureList(s, actorId);
+    },
+    removeFeature: async (actorId, id) => {
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      this.requireFeatureEntry(s, id);
+      s.remove('AdvisoryFeedback', (r) => r.id === id || r.topic === WORKSHOP_TOPIC.comment(id) || r.topic === WORKSHOP_TOPIC.rating(id));
+      return this.featureList(s, actorId);
+    },
+    submitFeatureIdea: async (actorId, input) => {
+      const fields = cleanFeatureIdea(input);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
+      return this.featureList(s, actorId);
+    },
+    commentOnFeature: async (actorId, id, body) => {
+      const text = cleanFeatureComment(body);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      this.requireFeatureEntry(s, id);
+      this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.comment(id), text);
+      return this.featureList(s, actorId);
+    },
+    rateFeature: async (actorId, id, score) => {
+      const value = cleanFeatureRating(score);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayReadAdvisoryPanel(actor);
+      this.requireFeatureEntry(s, id);
+      s.transaction(() => {
+        s.remove('AdvisoryFeedback', (r) => r.member_id === actorId && r.topic === WORKSHOP_TOPIC.rating(id));
+        this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.rating(id), String(value));
+      });
+      return this.featureList(s, actorId);
     },
     setPanelist: async (actorId, memberId, designated) => {
       const s = await this.ready();

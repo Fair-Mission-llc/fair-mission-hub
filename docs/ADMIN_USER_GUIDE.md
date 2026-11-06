@@ -449,17 +449,19 @@ Some fields show a red **Not used yet** tag. The portal saves the number for a f
 The screenshot above shows the page before the cards were added. The fields and their labels are the same.
 
 ### 8.2.1 Concept: the settings drawers
-The read-only **Council Instance Record** is at the top of **Council Wide Settings**. It always shows, and you cannot close it. Under it is a stack of five drawers. Select a drawer's title to open or close it. All the drawers are closed when the page opens. More than one drawer can be open at the same time.
+**Council Wide Settings** is a stack of seven drawers. The first drawer is the read-only **Council Instance Record**. The last drawer is **Council Setup**. Select a drawer's title to open or close it. All the drawers are closed when the page opens. More than one drawer can be open at the same time.
 
 A number that you typed but did not save stays in its card when you close the drawer. Save each card before you leave the page.
 
 | Drawer | What the drawer holds |
 | --- | --- |
+| **Council Instance Record** | Read-only council facts and the database schema version. |
 | **Standard Bank Accounts** | The **Account Owners Matrix** (8.6) and the **Payment QR Codes** card (8.8). |
 | **User Access & Roster Control** | The **Roster Inactivity Sweep** card. The merit tier milestones are on **Council Lookup Tables** → **Merit Tier Milestones** (5.5). The meeting PIN is on the **Recorder Desk** (and the **Grand Knight Desk** when the Recorder is absent). |
 | **System Settings** | The **Financial Submissions**, **Volunteer & Meeting Operations** and **Reminder Cadences** cards (section 8.3), the **File Repository Mode** card (8.5) and the **Custom User Guides** card. |
 | **Feature Controls** | The **Shared Equipment Library Sharing** card and the **Module & Platform Switches** links. |
 | **Council Feature Deployment Matrix** | The matrix only (section 8.2.2). |
+| **Council Setup** | **Run Setup Wizard** (16.4) and the **Practice Sandbox** switch (16.5). Your home council only. |
 
 The page has no **Global Revenue Splits** tab and no **Reference Archives** links. The **Annual Budget Planner** banner is on the **Annual Budget Center** (Sidebar → Finances → **FINANCIAL REPORTS**).
 
@@ -666,7 +668,7 @@ The matrix shows the council's money (Asset) accounts from the chart of accounts
 2. Drag the QR code image onto **Upload QR Code Image**, or click the box and choose the image (PNG, JPEG or WebP, up to 5 MB).
 3. Wait for the message.
 
-**Expected result:** The new code shows in the row. The phone's collection screen shows it to donors. The image is kept in the council's file repository, or on the portal server for a Google Drive council.
+**Expected result:** The new code shows in the row. The phone's collection screen shows it to donors. Before an upload, a row shows the sample code that comes with the portal, marked **Sample code**. The image is kept in the council's file repository, or on the portal server for a Google Drive council.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -789,12 +791,13 @@ Only sessions with Admin clearance or higher see **Administrative Feedback Loops
 
 **Start point:** Sidebar → **Application Advisory Panel** (under **Navigation Guide**).
 
-The panel has four views:
+The panel has five views:
 
 | View | What it holds |
 | --- | --- |
-| **Development Roadmap** | Where the platform is heading, by phase, with a status for each item. |
-| **Future Feature Releases** | What is planned, in testing or released, for the panel to review. |
+| **Development Roadmap** | Platform phases, a status and a target date for each item. |
+| **Future Feature List** | Ranked feature list. Super Admins edit it. Panelists submit ideas, rate and comment. |
+| **Platform Calendar** | Scheduled releases, advisory meetings and pilot milestones, by date. |
 | **Panel Meeting Dates** | The panel's meetings. Super Admins add, edit and delete them. |
 | **Consultation Feedback** | The notes panelists send. Every panelist and Super Admin reads them. |
 
@@ -803,6 +806,12 @@ The panel has four views:
 2. To add a meeting, select **Add meeting** on **Panel Meeting Dates**. Enter the date and the title. Select **Save meeting**.
 3. To send feedback, open **Consultation Feedback**. Type the **Topic** and **Your feedback**. Select **Send feedback**.
 4. To add a panelist (Super Admins), choose the **Council** and the **Member** under **Panelists**. Select **Add panelist**.
+5. To submit a feature idea, open **Future Feature List**. Select **Submit idea**. Type the feature. Select **Submit idea**. The idea shows with the status **Idea**.
+6. To rate an entry, select a number from 1 (low) to 5 (high) beside **Your rating**. Select another number to change your rating.
+7. To comment on an entry, select **Comments**. Type the **Review comment**. Select **Post**.
+8. To add or edit an entry (Super Admins), select **Add entry** or **Edit**. Enter the feature, the target date, the status and the notes. Select **Save entry**. On an empty list, select **Load starter list** to add the starter entries.
+
+The list sorts by priority rank. The rank comes from the average of all panelist ratings. Rank 1 is the highest priority. Entries with no rating come last.
 5. To invite a member of any council (Super Admins), select **Invite Panelist**. Choose the **Council** and the **Member**. Select **Post invitation**. No email is sent: the invitation card appears on the member's alert bell and **Home**, and on their phone's **Home**. It stays open for 14 days.
 6. The invited member selects **Accept** on the card. The member becomes a panelist at once, and **Application Advisory Panel** appears in the sidebar.
 
@@ -1148,28 +1157,23 @@ The script reads only `package.json` and `package-lock.json`. It opens no networ
 ## 16. The Admin Desk
 
 ### 16.1 Concept: one desk for the council's Admin work
-The **Admin Desk** collects the council Admin's tools in one page. The page has two parts.
-
-The **top deck** is a row of three panels at the top of the page. The panels are always open. You cannot close them.
-
-| Panel | What the panel holds |
-| --- | --- |
-| **A. Council Instance Identity Record** | Your home council's name, number, state, EIN, phone, email and record number |
-| **B. Administration Manual PDF** | This guide as a PDF, and the **Regenerate Manuals On-Demand** button |
-| **C. 'How Do I...' Local Help Search** | A search over the tasks of this guide |
-
-Below the top deck, seven drawers are down the left side. All drawers are closed when the page opens.
+The **Admin Desk** collects the council Admin's tools in one page. The drawers are down the left side. All drawers are closed when the page opens.
 Select a drawer to open its panel on the right. Select another drawer to change the panel.
 
-| Drawer | What the panel holds |
-| --- | --- |
-| **1. Council Wide Settings** | The same panels as **System Settings** → **Council Wide Settings**, with **Standard Bank Accounts** first |
-| **2. Council Lookup Tables** | Activities, donation types and payment methods. Each row is **Active** or **Inactive**. The **Merit Tier Milestones** tab sets the merit tiers (5.5) |
-| **3. Secure Access Vault** | The keys of your home council only |
-| **4. Global Charities Registry** | Verified charities, suggestions, search, filters and the add form |
-| **5. Council Asset Management** | The council's assets inventory. Trustees add the asset photos |
-| **6. Member Feedback Queue** | The council's member feedback tickets, their status and their chat logs (section 10.3) |
-| **7. Administrative Feedback Loops** | The note to the platform owner (section 10.2) |
+Two kinds of drawer are on the desk. A **file cabinet** holds reference material and has a blue left edge. A **functional drawer** is where you do work and has a gold left edge. The Super Admin Desk uses the same colors.
+
+| Drawer | Kind | What the panel holds |
+| --- | --- | --- |
+| **Setup Wizard** | Functional drawer | **Run Setup Wizard** (16.4). The drawer leaves the desk after the wizard runs |
+| **Administration Manual** | File cabinet | This guide as a PDF, and the **Regenerate Manuals On-Demand** button |
+| **'How Do I...' Help Search** | File cabinet | A search over the tasks of this guide |
+| **Council Wide Settings** | Functional drawer | The same drawers as **System Settings** → **Council Wide Settings**, with the **Council Instance Record** first and **Council Setup** last |
+| **Council Lookup Tables** | Functional drawer | Activities, donation types and payment methods. Each row is **Active** or **Inactive**. The **Merit Tier Milestones** tab sets the merit tiers (5.5) |
+| **Secure Access Vault** | Functional drawer | The keys of your home council only |
+| **Global Charities Registry** | Functional drawer | Verified charities, suggestions, search, filters and the add form |
+| **Council Asset Management** | Functional drawer | The council's assets inventory. Trustees add the asset photos |
+| **Member Feedback Queue** | Functional drawer | The council's member feedback tickets, their status and their chat logs (section 10.3) |
+| **Administrative Feedback Loops** | Functional drawer | The note to the platform owner (section 10.2) |
 
 The server rebuilds every manual PDF each night at 2:00. The **Regenerate Manuals On-Demand** button rebuilds them at once.
 To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
@@ -1186,7 +1190,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 2. Work in the panel on the right.
 3. To close the panel, select the same drawer again.
 
-**Expected result:** The panel of the drawer shows on the right. The drawer is dark blue while its panel is open. The three panels of the top deck stay open above the drawers.
+**Expected result:** The panel of the drawer shows on the right. The drawer is dark blue while its panel is open.
 
 **Common problems:**
 | Problem | Cause | Fix |
@@ -1199,7 +1203,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 
 **Goal:** Rebuild every manual PDF from the current manual text.
 
-**Start point:** **Active Desks** row → **Admin Desk** → top deck → **B. Administration Manual PDF**.
+**Start point:** **Active Desks** row → **Admin Desk** → **Administration Manual** drawer.
 
 **Steps:**
 1. Select **Regenerate Manuals On-Demand**.
@@ -1218,7 +1222,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 
 **Goal:** Set up a new council in five steps.
 
-**Start point:** **Active Desks** row → **Admin Desk** → **Run Setup Wizard**. The wizard also opens by itself the first time you open the desk of a council with no accounts and no other members.
+**Start point:** **Active Desks** row → **Admin Desk** → **Setup Wizard** drawer → **Run Setup Wizard**. After the wizard runs, use **Council Wide Settings** → **Council Setup** → **Run Setup Wizard**. The wizard also opens by itself the first time you open the desk of a council with no accounts and no other members.
 
 **Steps:**
 1. **Supreme CSV Roster Ingestion:** drop the Supreme roster CSV file. Select **Sync**.
@@ -1240,7 +1244,7 @@ To stop the nightly rebuild, set the server key `KOFC_NIGHTLY_MANUALS` to `off`.
 
 **Goal:** Remove all practice members and practice fundraisers.
 
-**Start point:** **Active Desks** row → **Admin Desk** → **Practice Sandbox** switch.
+**Start point:** **Active Desks** row → **Admin Desk** → **Council Wide Settings** → **Council Setup** → **Practice Sandbox** switch.
 
 **Steps:**
 1. Turn off the **Practice Sandbox** switch.

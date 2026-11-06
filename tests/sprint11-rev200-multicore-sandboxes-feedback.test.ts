@@ -140,12 +140,13 @@ describe('3. the Feedback Support link and the Admin Desk queue', () => {
 });
 
 describe('4. the Member Desk drawers', () => {
+  // Sprint 11 Revision 21.5: 'My Hours & Shifts' split into 'Record Hours' and 'My Scheduled Shifts'.
   it('opens Roster Profile, Hours, Motion Requests and Feedback Support in Left Vertical Action Drawers', () => {
-    expect(MEMBER_DESK_DRAWERS.slice(0, 4).map((x) => x.label)).toEqual(['My Roster Profile', 'My Hours & Shifts', 'My Motion Requests', 'Feedback Support']);
-    expect(memberDeskDrawersFor(ALL_FEATURES_ON)).toHaveLength(6);
-    expect(memberDeskDrawersFor(LIGHTWEIGHT_FEATURE_FLAGS).map((x) => x.id)).toEqual(['roster-profile', 'hours', 'feedback-support']);
+    expect(MEMBER_DESK_DRAWERS.slice(0, 5).map((x) => x.label)).toEqual(['My Roster Profile', 'Record Hours', 'My Scheduled Shifts', 'My Motion Requests', 'Feedback Support']);
+    expect(memberDeskDrawersFor(ALL_FEATURES_ON)).toHaveLength(7);
+    expect(memberDeskDrawersFor(LIGHTWEIGHT_FEATURE_FLAGS).map((x) => x.id)).toEqual(['roster-profile', 'record-hours', 'scheduled-shifts', 'feedback-support']);
     const desks = read('apps/web/components/DashboardDesks.tsx');
-    const memberDesk = desks.slice(desks.indexOf('export function MemberDesk('), desks.indexOf('/** The two shift trackers'));
+    const memberDesk = desks.slice(desks.indexOf('export function MemberDesk('), desks.indexOf("/** Sprint 11 Revision 21.5: 'Record Hours'"));
     expect(memberDesk).toContain('<LeftActionDrawers');
     expect(read('apps/web/components/LeftActionDrawers.tsx')).toContain('aria-expanded={selected}');
   });

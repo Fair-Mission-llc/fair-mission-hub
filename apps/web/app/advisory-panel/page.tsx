@@ -11,10 +11,7 @@ export default function AdvisoryPanelPage() {
   return (
     <RequireArea area="advisory-panel">
       <PageTitle>{ADVISORY_PANEL_TITLE}</PageTitle>
-      <p className="mb-4 text-sm text-muted">
-        For the members of every council who advise on the platform: where it is heading, what is coming next, when the panel meets, and a place to send your
-        feedback.
-      </p>
+      <p className="mb-4 text-sm text-muted">Platform advisors' workshop: roadmap, ranked feature list, calendar, meetings, feedback.</p>
       <AdvisoryPanelWorkspace />
     </RequireArea>
   );
