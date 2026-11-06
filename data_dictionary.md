@@ -1478,3 +1478,21 @@ rating count, then target date.
 
 Client telemetry is not in the database. The portal server writes `client-telemetry.json` beside the hub data: `recent` (the
 last 500 sign-ins) and `latestByMember`, each with memberId, councilId, at, route (portal or hub), version, platform and kind.
+
+# 68. Idea vs. Feature lifecycle and the Release Registry (Sprint 11 Revision 22.0, schema 113, no table change)
+
+New [AdvisoryFeedback] workshop topics (section 67 rules apply: never consultation notes):
+
+| topic | body | Written by |
+| --- | --- | --- |
+| `[ffl:comment:<entry id>:<parent comment id>]` | A reply to that comment on the same entry (1000) | advisory.commentOnFeature with parentId |
+| `[ffl:release]` | JSON: name (120), target_version (major.minor.patch), scheduled_date, status (Scheduled, Released), executed_at, change_list, commits ({hash, subject}), feature_ids | advisory.saveRelease, advisory.executeRelease (Super Admins) |
+
+Rules. An entry with status Idea takes no rating (advisory.rateFeature: INVALID_INPUT) and has no priority rank; a stored
+rating on an Idea is ignored. advisory.convertIdeaToFeature (Super Admins) sets status Planned. No save may set a feature back
+to Idea. advisory.removeFeature also deletes the replies. A Released block is read-only (save, remove and execute refuse it);
+execution needs a target_version above every released one. advisory.getLatestRelease is read by every signed-in member.
+
+Fixture. packages/shared/src/fixtures/release-commits.json: the newest 40 Git commits (hash, UTC date, subject, body
+bullets), written by scripts/gen-release-log.mjs before build:pilot and build:exe. Execution reads the commits dated after the
+previous release and not after now.

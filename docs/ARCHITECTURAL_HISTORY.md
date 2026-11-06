@@ -549,3 +549,12 @@ List (`advisory-workshop.ts`) stores entries, ideas, comments and 1-5 priority r
 (topic prefix `[ffl:`), ranked by average rating; the Platform Calendar merges releases, meetings and the pilot timeline.
 Sign-ins record client release and platform (`client-telemetry.ts`, `client-telemetry.json`) and answer an upgrade notice
 below `CLIENT_RELEASE_BASELINE`.
+
+**Sprint 11 Revision 22.0 (schema 113, no table change).** The Future Feature List splits into an Idea track (threaded
+comments, replies tagged `[ffl:comment:<entry>:<parent>]`, no rating, no rank) and a Feature track ranked by the Overall
+Priority Rank; `advisory.convertIdeaToFeature` moves an idea across, and a feature never returns to an idea. The Release
+Registry (`release-registry.ts`, `[ffl:release]` rows) holds release blocks; `advisory.executeRelease` checks the version
+increment and builds the change list from released features and `fixtures/release-commits.json`, the Git manifest that
+`scripts/gen-release-log.mjs` writes before each pilot and desktop build. Home shows the newest release as the What's New card
+(`WhatsNewCard`, 30 days, dismissed version kept per browser). The Platform Calendar is a month grid (`calendarMonthGrid`)
+with a day drawer. Six core SOP modules (SOP 003-008) join `docs/sop/`. `CLIENT_RELEASE_VERSION` is 11.22.0.

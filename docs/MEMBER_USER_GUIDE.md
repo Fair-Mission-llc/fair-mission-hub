@@ -101,6 +101,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 - The sidebar shows its links as plain text, with no icons.
 - The sidebar has no **Home** link. Select the **Home** tab in the tab row above every page to go back to **Home**.
 - Select the menu button (three lines) at the top of the sidebar to hide the sidebar. Select the menu button again to show the sidebar. The portal remembers your choice on this computer.
+- After a new platform release, the **What's New** card shows at the top of the web **Home** for 30 days. The card lists the changes of the release. Select **Show all** to read every change. Select **Got it** to hide the card until the next release.
 - If a Super Admin invites you to the **Application Advisory Panel**, an invitation card shows at the top of **Home**, on your alert bell and on your phone's **Home**. Select **Accept** to join.
 - **Terms of Service** and **Privacy Policy** are at the foot of the sidebar. When the sidebar is hidden, select **** to read them. Both are dated October 26, 2026.
 - If a Super Admin made you an **Application Advisory Panelist**, **Application Advisory Panel** shows under **Navigation Guide**.
@@ -163,7 +164,7 @@ Each block below is collapsible. Only the overview is open. Select a title to op
 | **Council Artifacts** | Resources | Flyers, minutes and photo albums |
 | **Constitutional Bylaws** | Governance | The council's bylaws |
 | **Online Help Center** | Answers | Answers to common questions |
-| **SOP Center** | Answers | The standard operating procedures |
+| **SOP Center** | Answers | The standard operating procedures, including the core modules SOP 003 to SOP 008 |
 
 </details>
 

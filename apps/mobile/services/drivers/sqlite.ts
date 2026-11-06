@@ -15,6 +15,23 @@ import {
   isWorkshopTopic,
   WORKSHOP_TOPIC,
   type FeatureListEntry,
+  aggregateReleaseChange,
+  assertLifecycleEdit,
+  assertRateable,
+  assertReleaseScheduled,
+  assertVersionIncrement,
+  buildReleaseRegistry,
+  cleanReleaseBlock,
+  convertIdeaFields,
+  latestRelease,
+  parseFeatureEntryBody,
+  parseReleaseBlockBody,
+  releaseBlockBody,
+  scheduledReleaseFields,
+  workshopReplyPattern,
+  workshopRowTarget,
+  type ReleaseBlock,
+  type ReleaseBlockFields,
   assertMayOpenFeedbackTicket,
   assertMayReadFeedbackTicket,
   assertMaySetFeedbackTicketStatus,
@@ -7281,7 +7298,8 @@ export class SqliteDataService implements DataService {
       const actor = await this.memberWriteActor(db, actorId);
       assertMayKeepAdvisoryPanel(actor);
       if (input.id != null) {
-        await this.requireFeatureEntry(db, input.id);
+        const before = await this.featureEntryFields(db, input.id);
+        if (before) assertLifecycleEdit(before, fields);
         await db.runAsync('UPDATE [AdvisoryFeedback] SET [body] = ? WHERE [id] = ?', [featureEntryBody(fields), input.id]);
       } else {
         await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
@@ -7292,7 +7310,7 @@ export class SqliteDataService implements DataService {
       const db = await this.ready();
       assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
       await this.requireFeatureEntry(db, id);
-      await db.runAsync('DELETE FROM [AdvisoryFeedback] WHERE [id] = ? OR [topic] IN (?, ?)', [id, WORKSHOP_TOPIC.comment(id), WORKSHOP_TOPIC.rating(id)]);
+      await db.runAsync('DELETE FROM [AdvisoryFeedback] WHERE [id] = ? OR [topic] IN (?, ?) OR [topic] LIKE ?', [id, WORKSHOP_TOPIC.comment(id), WORKSHOP_TOPIC.rating(id), workshopReplyPattern(id)]);
       return this.featureList(db, actorId);
     },
     submitFeatureIdea: async (actorId, input) => {
@@ -7303,13 +7321,19 @@ export class SqliteDataService implements DataService {
       await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
       return this.featureList(db, actorId);
     },
-    commentOnFeature: async (actorId, id, body) => {
+    commentOnFeature: async (actorId, id, body, parentId) => {
       const text = cleanFeatureComment(body);
       const db = await this.ready();
       const actor = await this.memberWriteActor(db, actorId);
       assertMayReadAdvisoryPanel(actor);
       await this.requireFeatureEntry(db, id);
-      await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.comment(id), text);
+      // Sprint 11 Revision 22.0: a reply names a comment on the same entry.
+      if (parentId != null) {
+        const parent = await db.getFirstAsync<{ topic: string }>('SELECT [topic] FROM [AdvisoryFeedback] WHERE [id] = ?', [parentId]);
+        const target = parent ? workshopRowTarget(parent.topic) : null;
+        if (target?.kind !== 'comment' || target.entryId !== id) throw new BusinessRuleError('RECORD_NOT_FOUND', `No comment ${parentId} on entry ${id}.`, { parentId });
+      }
+      await this.insertWorkshopRow(db, actor, parentId != null ? WORKSHOP_TOPIC.reply(id, parentId) : WORKSHOP_TOPIC.comment(id), text);
       return this.featureList(db, actorId);
     },
     rateFeature: async (actorId, id, score) => {
@@ -7318,11 +7342,68 @@ export class SqliteDataService implements DataService {
       const actor = await this.memberWriteActor(db, actorId);
       assertMayReadAdvisoryPanel(actor);
       await this.requireFeatureEntry(db, id);
+      const entry = await this.featureEntryFields(db, id);
+      if (entry) assertRateable(entry);
       await db.withTransactionAsync(async () => {
         await db.runAsync('DELETE FROM [AdvisoryFeedback] WHERE [member_id] = ? AND [topic] = ?', [actorId, WORKSHOP_TOPIC.rating(id)]);
         await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.rating(id), String(value));
       });
       return this.featureList(db, actorId);
+    },
+    // Sprint 11 Revision 22.0: the Idea vs. Feature lifecycle and the Release Registry (release-registry.ts).
+    convertIdeaToFeature: async (actorId, id, input) => {
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      await this.requireFeatureEntry(db, id);
+      const fields = await this.featureEntryFields(db, id);
+      if (!fields) throw new BusinessRuleError('RECORD_NOT_FOUND', `No Future Feature List entry ${id}.`, { id });
+      await db.runAsync('UPDATE [AdvisoryFeedback] SET [body] = ? WHERE [id] = ?', [featureEntryBody(convertIdeaFields(fields, input)), id]);
+      return this.featureList(db, actorId);
+    },
+    listReleases: async (actorId) => {
+      const db = await this.ready();
+      assertMayReadAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      return this.releaseRegistry(db);
+    },
+    saveRelease: async (actorId, input) => {
+      const clean = cleanReleaseBlock(input);
+      const db = await this.ready();
+      const actor = await this.memberWriteActor(db, actorId);
+      assertMayKeepAdvisoryPanel(actor);
+      if (input.id != null) {
+        const fields = await this.requireRelease(db, input.id);
+        assertReleaseScheduled(fields);
+        await db.runAsync('UPDATE [AdvisoryFeedback] SET [body] = ? WHERE [id] = ?', [releaseBlockBody({ ...fields, ...clean }), input.id]);
+      } else {
+        await this.insertWorkshopRow(db, actor, WORKSHOP_TOPIC.release, releaseBlockBody(scheduledReleaseFields(clean)));
+      }
+      return this.releaseRegistry(db);
+    },
+    removeRelease: async (actorId, id) => {
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      assertReleaseScheduled(await this.requireRelease(db, id));
+      await db.runAsync('DELETE FROM [AdvisoryFeedback] WHERE [id] = ?', [id]);
+      return this.releaseRegistry(db);
+    },
+    executeRelease: async (actorId, id) => {
+      const db = await this.ready();
+      assertMayKeepAdvisoryPanel(await this.memberWriteActor(db, actorId));
+      const fields = await this.requireRelease(db, id);
+      assertReleaseScheduled(fields);
+      const registry = await this.releaseRegistry(db);
+      assertVersionIncrement(fields.target_version, registry);
+      const change = aggregateReleaseChange({ block: fields, registry, features: await this.featureList(db, actorId), now: this.now() });
+      await db.runAsync('UPDATE [AdvisoryFeedback] SET [body] = ? WHERE [id] = ?', [
+        releaseBlockBody({ ...fields, status: 'Released', executed_at: toTimestamp(this.now()), ...change }),
+        id,
+      ]);
+      return (await this.releaseRegistry(db)).find((b) => b.id === id)!;
+    },
+    getLatestRelease: async (actorId) => {
+      const db = await this.ready();
+      await this.memberWriteActor(db, actorId);
+      return latestRelease(await this.releaseRegistry(db));
     },
     setPanelist: async (actorId, memberId, designated) => {
       const db = await this.ready();
@@ -7408,6 +7489,36 @@ export class SqliteDataService implements DataService {
   private async requireFeatureEntry(db: SQLite.SQLiteDatabase, id: number): Promise<void> {
     const row = await db.getFirstAsync<{ id: number }>('SELECT [id] FROM [AdvisoryFeedback] WHERE [id] = ? AND [topic] = ?', [id, WORKSHOP_TOPIC.entry]);
     if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No Future Feature List entry ${id}.`, { id });
+  }
+
+  /** Sprint 11 Revision 22.0: an entry's stored fields, or null when the body cannot be read. */
+  private async featureEntryFields(db: SQLite.SQLiteDatabase, id: number) {
+    const row = await db.getFirstAsync<{ body: string }>('SELECT [body] FROM [AdvisoryFeedback] WHERE [id] = ? AND [topic] = ?', [id, WORKSHOP_TOPIC.entry]);
+    if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No Future Feature List entry ${id}.`, { id });
+    return parseFeatureEntryBody(row.body);
+  }
+
+  /** Sprint 11 Revision 22.0: the Release Registry, newest first. */
+  private async releaseRegistry(db: SQLite.SQLiteDatabase): Promise<ReleaseBlock[]> {
+    const rows = await db.getAllAsync<AdvisoryFeedback>('SELECT * FROM [AdvisoryFeedback] WHERE [topic] = ?', [WORKSHOP_TOPIC.release]);
+    const ids = [...new Set(rows.map((r) => r.member_id))];
+    const people = ids.length
+      ? await db.getAllAsync<{ id: number; MemberFirstName: string; MemberLastName: string }>(
+          `SELECT [id], [MemberFirstName], [MemberLastName] FROM [Member] WHERE [id] IN (${ids.map(() => '?').join(', ')})`,
+          ids,
+        )
+      : [];
+    return buildReleaseRegistry(rows, (memberId) => {
+      const m = people.find((p) => p.id === memberId);
+      return { name: m ? `${m.MemberFirstName} ${m.MemberLastName}` : `Member ${memberId}` };
+    });
+  }
+
+  private async requireRelease(db: SQLite.SQLiteDatabase, id: number): Promise<ReleaseBlockFields> {
+    const row = await db.getFirstAsync<{ body: string }>('SELECT [body] FROM [AdvisoryFeedback] WHERE [id] = ? AND [topic] = ?', [id, WORKSHOP_TOPIC.release]);
+    const fields = row ? parseReleaseBlockBody(row.body) : null;
+    if (!fields) throw new BusinessRuleError('RECORD_NOT_FOUND', `No release block ${id}.`, { id });
+    return fields;
   }
 
   private async insertWorkshopRow(db: SQLite.SQLiteDatabase, actor: MemberWriteActor, topic: string, body: string): Promise<void> {

@@ -10,10 +10,14 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { writeSbom } from './generate-sbom.mjs';
+import { writeReleaseLog } from './gen-release-log.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const web = join(root, 'apps', 'web');
 const nextBin = createRequire(join(web, 'package.json')).resolve('next/dist/bin/next');
+
+// Sprint 11 Revision 22.0: refresh the release commit manifest the Release Registry reads (gen-release-log.mjs).
+console.log(writeReleaseLog());
 
 try {
   console.log(writeSbom(root));

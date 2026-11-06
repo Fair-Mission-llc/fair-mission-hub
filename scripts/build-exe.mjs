@@ -14,6 +14,7 @@ import { cpSync, existsSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeReleaseLog } from './gen-release-log.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const web = join(root, 'apps', 'web');
@@ -33,6 +34,8 @@ function step(label, command, args, env = {}) {
   }
 }
 
+// Sprint 11 Revision 22.0: refresh the release commit manifest the Release Registry reads (gen-release-log.mjs).
+console.log(writeReleaseLog());
 step('1/5 type-safety gate', npmCli ? process.execPath : 'npm', [...(npmCli ? [npmCli] : []), 'run', 'typecheck']);
 step('2/5 schema gate', process.execPath, [join(root, 'scripts', 'gen-db-assets.mjs'), '--check']);
 step('3/5 portal build (standalone, hub driver)', process.execPath, [nextBin, 'build', web], {

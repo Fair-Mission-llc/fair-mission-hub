@@ -15,6 +15,23 @@ import {
   isWorkshopTopic,
   WORKSHOP_TOPIC,
   type FeatureListEntry,
+  aggregateReleaseChange,
+  assertLifecycleEdit,
+  assertRateable,
+  assertReleaseScheduled,
+  assertVersionIncrement,
+  buildReleaseRegistry,
+  cleanReleaseBlock,
+  convertIdeaFields,
+  latestRelease,
+  parseFeatureEntryBody,
+  parseReleaseBlockBody,
+  releaseBlockBody,
+  scheduledReleaseFields,
+  belongsToFeatureEntry,
+  workshopRowTarget,
+  type ReleaseBlock,
+  type ReleaseBlockFields,
   assertMayOpenFeedbackTicket,
   assertMayReadFeedbackTicket,
   assertMaySetFeedbackTicketStatus,
@@ -2815,6 +2832,22 @@ export class MemoryDataService implements DataService {
     const row = s.rows('AdvisoryFeedback').find((r) => r.id === id && r.topic === WORKSHOP_TOPIC.entry);
     if (!row) throw new BusinessRuleError('RECORD_NOT_FOUND', `No Future Feature List entry ${id}.`, { id });
     return row;
+  }
+
+  /** Sprint 11 Revision 22.0: the Release Registry, newest first. */
+  private releaseRegistry(s: MemoryStore): ReleaseBlock[] {
+    const rows = s.rows('AdvisoryFeedback').filter((r) => r.topic === WORKSHOP_TOPIC.release) as unknown as AdvisoryFeedback[];
+    return buildReleaseRegistry(rows, (memberId) => {
+      const m = s.rows('Member').find((x) => x.id === memberId);
+      return { name: m ? `${m.MemberFirstName} ${m.MemberLastName}` : `Member ${memberId}` };
+    });
+  }
+
+  private requireRelease(s: MemoryStore, id: number): { row: Row; fields: ReleaseBlockFields } {
+    const row = s.rows('AdvisoryFeedback').find((r) => r.id === id && r.topic === WORKSHOP_TOPIC.release);
+    const fields = row ? parseReleaseBlockBody(String(row.body)) : null;
+    if (!row || !fields) throw new BusinessRuleError('RECORD_NOT_FOUND', `No release block ${id}.`, { id });
+    return { row, fields };
   }
 
   private insertWorkshopRow(s: MemoryStore, actor: MemberWriteActor, topic: string, body: string): void {
@@ -6177,6 +6210,8 @@ export class MemoryDataService implements DataService {
       assertMayKeepAdvisoryPanel(actor);
       if (input.id != null) {
         const row = this.requireFeatureEntry(s, input.id);
+        const before = parseFeatureEntryBody(String(row.body));
+        if (before) assertLifecycleEdit(before, fields);
         row.body = featureEntryBody(fields);
       } else {
         this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
@@ -6187,7 +6222,7 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
       this.requireFeatureEntry(s, id);
-      s.remove('AdvisoryFeedback', (r) => r.id === id || r.topic === WORKSHOP_TOPIC.comment(id) || r.topic === WORKSHOP_TOPIC.rating(id));
+      s.remove('AdvisoryFeedback', (r) => r.id === id || belongsToFeatureEntry(String(r.topic), id));
       return this.featureList(s, actorId);
     },
     submitFeatureIdea: async (actorId, input) => {
@@ -6198,13 +6233,19 @@ export class MemoryDataService implements DataService {
       this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.entry, featureEntryBody(fields));
       return this.featureList(s, actorId);
     },
-    commentOnFeature: async (actorId, id, body) => {
+    commentOnFeature: async (actorId, id, body, parentId) => {
       const text = cleanFeatureComment(body);
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
       assertMayReadAdvisoryPanel(actor);
       this.requireFeatureEntry(s, id);
-      this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.comment(id), text);
+      // Sprint 11 Revision 22.0: a reply names a comment on the same entry.
+      if (parentId != null) {
+        const parent = s.rows('AdvisoryFeedback').find((r) => r.id === parentId);
+        const target = parent ? workshopRowTarget(String(parent.topic)) : null;
+        if (target?.kind !== 'comment' || target.entryId !== id) throw new BusinessRuleError('RECORD_NOT_FOUND', `No comment ${parentId} on entry ${id}.`, { parentId });
+      }
+      this.insertWorkshopRow(s, actor, parentId != null ? WORKSHOP_TOPIC.reply(id, parentId) : WORKSHOP_TOPIC.comment(id), text);
       return this.featureList(s, actorId);
     },
     rateFeature: async (actorId, id, score) => {
@@ -6212,12 +6253,65 @@ export class MemoryDataService implements DataService {
       const s = await this.ready();
       const actor = this.memberWriteActor(s, actorId);
       assertMayReadAdvisoryPanel(actor);
-      this.requireFeatureEntry(s, id);
+      const entry = parseFeatureEntryBody(String(this.requireFeatureEntry(s, id).body));
+      if (entry) assertRateable(entry);
       s.transaction(() => {
         s.remove('AdvisoryFeedback', (r) => r.member_id === actorId && r.topic === WORKSHOP_TOPIC.rating(id));
         this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.rating(id), String(value));
       });
       return this.featureList(s, actorId);
+    },
+    // Sprint 11 Revision 22.0: the Idea vs. Feature lifecycle and the Release Registry (release-registry.ts).
+    convertIdeaToFeature: async (actorId, id, input) => {
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      const row = this.requireFeatureEntry(s, id);
+      const fields = parseFeatureEntryBody(String(row.body));
+      if (!fields) throw new BusinessRuleError('RECORD_NOT_FOUND', `No Future Feature List entry ${id}.`, { id });
+      row.body = featureEntryBody(convertIdeaFields(fields, input));
+      return this.featureList(s, actorId);
+    },
+    listReleases: async (actorId) => {
+      const s = await this.ready();
+      assertMayReadAdvisoryPanel(this.memberWriteActor(s, actorId));
+      return this.releaseRegistry(s);
+    },
+    saveRelease: async (actorId, input) => {
+      const clean = cleanReleaseBlock(input);
+      const s = await this.ready();
+      const actor = this.memberWriteActor(s, actorId);
+      assertMayKeepAdvisoryPanel(actor);
+      if (input.id != null) {
+        const { row, fields } = this.requireRelease(s, input.id);
+        assertReleaseScheduled(fields);
+        row.body = releaseBlockBody({ ...fields, ...clean });
+      } else {
+        this.insertWorkshopRow(s, actor, WORKSHOP_TOPIC.release, releaseBlockBody(scheduledReleaseFields(clean)));
+      }
+      return this.releaseRegistry(s);
+    },
+    removeRelease: async (actorId, id) => {
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      assertReleaseScheduled(this.requireRelease(s, id).fields);
+      s.remove('AdvisoryFeedback', (r) => r.id === id);
+      return this.releaseRegistry(s);
+    },
+    executeRelease: async (actorId, id) => {
+      const s = await this.ready();
+      assertMayKeepAdvisoryPanel(this.memberWriteActor(s, actorId));
+      const { row, fields } = this.requireRelease(s, id);
+      assertReleaseScheduled(fields);
+      const registry = this.releaseRegistry(s);
+      assertVersionIncrement(fields.target_version, registry);
+      const change = aggregateReleaseChange({ block: fields, registry, features: this.featureList(s, actorId), now: this.now() });
+      row.body = releaseBlockBody({ ...fields, status: 'Released', executed_at: toTimestamp(this.now()), ...change });
+      return this.releaseRegistry(s).find((b) => b.id === id)!;
+    },
+    getLatestRelease: async (actorId) => {
+      const s = await this.ready();
+      this.memberWriteActor(s, actorId);
+      return latestRelease(this.releaseRegistry(s));
     },
     setPanelist: async (actorId, memberId, designated) => {
       const s = await this.ready();

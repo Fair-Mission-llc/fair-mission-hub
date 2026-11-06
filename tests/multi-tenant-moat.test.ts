@@ -173,7 +173,8 @@ describe('5. vacant seats and the legal footer', () => {
 describe('6. the Application Advisory Panel', () => {
   it('opens to every Super Admin and panelists of any council', () => {
     expect(ADVISORY_PANEL_TITLE).toBe('Application Advisory Panel');
-    expect(ADVISORY_PANEL_VIEWS.map((v) => v.label)).toEqual(['Development Roadmap', 'Future Feature List', 'Platform Calendar', 'Panel Meeting Dates', 'Consultation Feedback']);
+    // Sprint 11 Revision 22.0: the Release Registry view follows the Platform Calendar.
+    expect(ADVISORY_PANEL_VIEWS.map((v) => v.label)).toEqual(['Development Roadmap', 'Future Feature List', 'Platform Calendar', 'Release Registry', 'Panel Meeting Dates', 'Consultation Feedback']);
     // Sprint 11 Revision 18.5: every Super Admin opens it again, whatever the sign-in name.
     expect(canOpenAdvisoryPanel(viewer('Super Admin'))).toBe(true);
     expect(canOpenAdvisoryPanel({ ...viewer('Super Admin'), username: 'testsuperadmin@kofc.org' })).toBe(true);

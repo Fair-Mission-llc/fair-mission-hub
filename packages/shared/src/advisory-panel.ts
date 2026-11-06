@@ -25,6 +25,8 @@ export const ADVISORY_PANEL_VIEWS = [
   // Platform Calendar view is added.
   { id: 'features', label: 'Future Feature List' },
   { id: 'calendar', label: 'Platform Calendar' },
+  // Sprint 11 Revision 22.0: the Release Registry (release-registry.ts).
+  { id: 'releases', label: 'Release Registry' },
   { id: 'meetings', label: 'Panel Meeting Dates' },
   { id: 'feedback', label: 'Consultation Feedback' },
 ] as const;

@@ -793,13 +793,14 @@ Only sessions with Admin clearance or higher see **Administrative Feedback Loops
 
 **Start point:** Sidebar → **Application Advisory Panel** (under **Navigation Guide**).
 
-The panel has five views:
+The panel has six views:
 
 | View | What it holds |
 | --- | --- |
 | **Development Roadmap** | Platform phases, a status and a target date for each item. |
-| **Future Feature List** | Ranked feature list. Super Admins edit it. Panelists submit ideas, rate and comment. |
-| **Platform Calendar** | Scheduled releases, advisory meetings and pilot milestones, by date. |
+| **Future Feature List** | Two tracks. **Ideas - open for discussion**: threaded comments, no rating. **Features - Overall Priority Rank**: rated 1-5 and ranked. |
+| **Platform Calendar** | A month grid of releases, advisory meetings and pilot milestones. Select a day for its details. |
+| **Release Registry** | Release blocks (**Release Name**, **Target Version**, **Scheduled Date**). Super Admins execute them; execution builds the change list. |
 | **Panel Meeting Dates** | The panel's meetings. Super Admins add, edit and delete them. |
 | **Consultation Feedback** | The notes panelists send. Every panelist and Super Admin reads them. |
 
@@ -808,12 +809,14 @@ The panel has five views:
 2. To add a meeting, select **Add meeting** on **Panel Meeting Dates**. Enter the date and the title. Select **Save meeting**.
 3. To send feedback, open **Consultation Feedback**. Type the **Topic** and **Your feedback**. Select **Send feedback**.
 4. To add a panelist (Super Admins), choose the **Council** and the **Member** under **Panelists**. Select **Add panelist**.
-5. To submit a feature idea, open **Future Feature List**. Select **Submit idea**. Type the feature. Select **Submit idea**. The idea shows with the status **Idea**.
-6. To rate an entry, select a number from 1 (low) to 5 (high) beside **Your rating**. Select another number to change your rating.
-7. To comment on an entry, select **Comments**. Type the **Review comment**. Select **Post**.
-8. To add or edit an entry (Super Admins), select **Add entry** or **Edit**. Enter the feature, the target date, the status and the notes. Select **Save entry**. On an empty list, select **Load starter list** to add the starter entries.
+5. To submit a feature idea, open **Future Feature List**. Select **Submit idea**. Type the idea. Select **Submit idea**. The idea shows under **Ideas - open for discussion**.
+6. To discuss an entry, select **Comments**. Type the comment. Select **Post**. To answer one comment, select **Reply** under it.
+7. To convert an idea (Super Admins), select **Convert to feature**. The entry moves to **Features - Overall Priority Rank**.
+8. To rate a feature, select a number from 1 (low) to 5 (high) beside **Your rating**. Select another number to change your rating. Ideas take no rating.
+9. To add or edit an entry (Super Admins), select **Add entry** or **Edit**. Enter the feature, the target date, the status and the notes. Select **Save entry**. On an empty list, select **Load starter list** to add the starter entries.
+10. To read a release, open **Release Registry** and select **Change list**. Super Admins add and execute releases (Super Admin System Manual, section 10.4).
 
-The list sorts by priority rank. The rank comes from the average of all panelist ratings. Rank 1 is the highest priority. Entries with no rating come last.
+Only features are ranked. The Overall Priority Rank comes from the average of all panelist ratings. Rank 1 is the highest priority. Features with no rating come last. A feature never goes back to an idea.
 5. To invite a member of any council (Super Admins), select **Invite Panelist**. Choose the **Council** and the **Member**. Select **Post invitation**. No email is sent: the invitation card appears on the member's alert bell and **Home**, and on their phone's **Home**. It stays open for 14 days.
 6. The invited member selects **Accept** on the card. The member becomes a panelist at once, and **Application Advisory Panel** appears in the sidebar.
 

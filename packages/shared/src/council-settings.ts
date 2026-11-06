@@ -452,7 +452,7 @@ export const PLATFORM_SETTING_RULES: Record<PlatformSettingName, SettingRule> = 
     group: 'limits',
     inUse: true,
     help:
-      'Used by the oral history recorder on Fraternal Annals & Oral History. A recording stops and saves on its own when this many seconds have passed, ' +
+      'Used by the oral history recorder on Council History. A recording stops and saves on its own when this many seconds have passed, ' +
       'with a warning in the last minute. Applies to every council.',
   },
   diary_text_max_length: {
@@ -464,7 +464,7 @@ export const PLATFORM_SETTING_RULES: Record<PlatformSettingName, SettingRule> = 
     group: 'limits',
     inUse: true,
     help:
-      'Used by the spiritual diary and the testimonial note on Fraternal Annals & Oral History. A longer text is refused. The limit cannot go past 4,000, ' +
+      'Used by the spiritual diary and the testimonial note on Council History. A longer text is refused. The limit cannot go past 4,000, ' +
       'the size of the database column. Applies to every council.',
   },
   prayer_intention_max_length: {

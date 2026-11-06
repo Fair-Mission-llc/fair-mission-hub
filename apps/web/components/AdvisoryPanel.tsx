@@ -1,7 +1,7 @@
 'use client';
 // The Application Advisory Panel workspace (Sprint 10 Revision 3.1, advisory-panel.ts): five views for the panelists of
 // every council and the Super Admins - the Development Roadmap (kept in code, with target dates), the Future Feature List
-// and the Platform Calendar (Sprint 11 Revision 21.5, AdvisoryWorkshopParts.tsx), the Panel Meeting Dates and the
+// and the Platform Calendar (Sprint 11 Revision 21.5, AdvisoryWorkshopParts.tsx), the Release Registry (Revision 22.0), the Panel Meeting Dates and the
 // Consultation Feedback rows (db.advisory). Super Admins also keep the
 // meeting dates and designate panelists from any council; the drivers check every call.
 import { useState } from 'react';
@@ -18,7 +18,7 @@ import {
   type AdvisoryPanelMeeting,
   type AdvisoryPanelViewId,
 } from '@kofc/shared';
-import { FutureFeatureList, PlatformCalendarView } from '@/components/AdvisoryWorkshopParts';
+import { FutureFeatureList, PlatformCalendarView, ReleaseRegistry } from '@/components/AdvisoryWorkshopParts';
 import { Drawer } from '@/components/Drawer';
 import { Button, Empty, Field, Input, Notice, Panel, Pill, Select, Table, Tabs, Td, Textarea } from '@/components/ui';
 import { formatFullDate } from '@/lib/format';
@@ -382,7 +382,7 @@ export function AdvisoryPanelWorkspace() {
       {inviting ? <InvitePanelistDrawer onClose={() => setInviting(false)} /> : null}
       <Tabs tabs={ADVISORY_PANEL_VIEWS.map((v) => ({ id: v.id, label: v.label }))} value={view} onChange={setView} label="Advisory Panel views" idPrefix="advisory" />
       <div role="tabpanel" id="advisory-panel" aria-labelledby={`advisory-tab-${view}`}>
-        {view === 'roadmap' ? <Roadmap /> : view === 'features' ? <FutureFeatureList /> : view === 'calendar' ? <PlatformCalendarView /> : view === 'meetings' ? <Meetings /> : <Feedback />}
+        {view === 'roadmap' ? <Roadmap /> : view === 'features' ? <FutureFeatureList /> : view === 'calendar' ? <PlatformCalendarView /> : view === 'releases' ? <ReleaseRegistry /> : view === 'meetings' ? <Meetings /> : <Feedback />}
       </div>
       {isSuperAdmin(user) ? <Panelists /> : null}
     </div>

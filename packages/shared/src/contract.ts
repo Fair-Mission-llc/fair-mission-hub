@@ -123,7 +123,8 @@ import type { CouncilAccount, CouncilAccountInput, GLAccountInput, SplitSisterCo
 import type { FileRepositorySettings } from './file-repository';
 import type { Form1728LineTotal } from './form-1728';
 import type { AdvisoryFeedback, AdvisoryFeedbackDetail, AdvisoryFeedbackInput, AdvisoryPanelist, AdvisoryPanelMeeting, AdvisoryPanelMeetingInput } from './advisory-panel';
-import type { FeatureEntryInput, FeatureIdeaInput, FeatureListEntry } from './advisory-workshop';
+import type { FeatureEntryInput, FeatureIdeaInput, FeatureListEntry, IdeaConversionInput } from './advisory-workshop';
+import type { ReleaseBlock, ReleaseBlockInput } from './release-registry';
 import type { CouncilParentMapping, ParentOrganizationInput, ParentOrganizationRecord, ParentOrgScope } from './parent-organizations';
 import type { FeedbackTicket, FeedbackTicketChat, FeedbackTicketInput, FeedbackTicketStatus } from './local-feedback';
 import type { ParishAssociationResult } from './parish-registry';
@@ -3804,10 +3805,34 @@ export interface DataService {
     removeFeature(actorId: number, id: number): Promise<FeatureListEntry[]>;
     /** A panelist's feature idea, added with status 'Idea'; resolves to the new list. */
     submitFeatureIdea(actorId: number, input: FeatureIdeaInput): Promise<FeatureListEntry[]>;
-    /** A review comment on entry `id`; RECORD_NOT_FOUND for an unknown entry. */
-    commentOnFeature(actorId: number, id: number, body: string): Promise<FeatureListEntry[]>;
-    /** The actor's priority rating (1-5) of entry `id`, replacing their earlier one; RECORD_NOT_FOUND for an unknown entry. */
+    /**
+     * A review comment on entry `id` (an Idea or a feature); RECORD_NOT_FOUND for an unknown entry. Sprint 11 Revision 22.0:
+     * `parentId` makes it a reply to that comment on the same entry (RECORD_NOT_FOUND for any other id).
+     */
+    commentOnFeature(actorId: number, id: number, body: string, parentId?: number | null): Promise<FeatureListEntry[]>;
+    /**
+     * The actor's priority rating (1-5) of entry `id`, replacing their earlier one; RECORD_NOT_FOUND for an unknown entry.
+     * Sprint 11 Revision 22.0: INVALID_INPUT for an Idea (assertRateable) - only features are rated and ranked.
+     */
     rateFeature(actorId: number, id: number, score: number): Promise<FeatureListEntry[]>;
+    /**
+     * Sprint 11 Revision 22.0: converts Idea `id` into a feature (status 'Planned' unless `input.status` says otherwise),
+     * which unlocks priority ratings. Super Admins only; INVALID_INPUT for an entry that is already a feature.
+     */
+    convertIdeaToFeature(actorId: number, id: number, input?: IdeaConversionInput): Promise<FeatureListEntry[]>;
+    /** Sprint 11 Revision 22.0 (release-registry.ts): the Release Registry, newest first. Panelists and Super Admins. */
+    listReleases(actorId: number): Promise<ReleaseBlock[]>;
+    /** Adds (no id) or edits a scheduled release block; resolves to the registry. Super Admins only. A released block is read-only. */
+    saveRelease(actorId: number, input: ReleaseBlockInput): Promise<ReleaseBlock[]>;
+    /** Deletes a scheduled release block; resolves to the registry. Super Admins only. A released block stays. */
+    removeRelease(actorId: number, id: number): Promise<ReleaseBlock[]>;
+    /**
+     * Executes scheduled block `id`: checks the version increment, builds the change list from the released features and
+     * the release commit manifest (aggregateReleaseChange) and marks the block Released. Super Admins only.
+     */
+    executeRelease(actorId: number, id: number): Promise<ReleaseBlock>;
+    /** The newest released block, or null - read by every signed-in member for the What's New notice on Home. */
+    getLatestRelease(actorId: number): Promise<ReleaseBlock | null>;
   };
 
   /**

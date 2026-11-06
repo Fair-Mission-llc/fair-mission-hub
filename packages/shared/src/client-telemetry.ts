@@ -12,8 +12,8 @@
 // when the version is older than CLIENT_RELEASE_BASELINE.
 // =========================================================================
 
-/** This build's release (Sprint 11 Revision 21.5). */
-export const CLIENT_RELEASE_VERSION = '11.21.5';
+/** This build's release (Sprint 11 Revision 22.0; was 11.21.5). */
+export const CLIENT_RELEASE_VERSION = '11.22.0';
 /** The oldest release still recommended. A client below it gets the upgrade notice. */
 export const CLIENT_RELEASE_BASELINE = '11.21.0';
 

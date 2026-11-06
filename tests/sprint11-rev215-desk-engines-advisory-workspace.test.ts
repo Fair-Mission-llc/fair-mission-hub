@@ -120,7 +120,8 @@ describe('2. Payment QR images and the Member Desk', () => {
 
 describe('3. the Advisory Panel workshop (pure)', () => {
   it("renames the releases view to 'Future Feature List' and adds the Platform Calendar", () => {
-    expect(ADVISORY_PANEL_VIEWS.map((v) => v.label)).toEqual(['Development Roadmap', FUTURE_FEATURE_LIST_TITLE, 'Platform Calendar', 'Panel Meeting Dates', 'Consultation Feedback']);
+    // Revision 22.0 adds the Release Registry after the Platform Calendar.
+    expect(ADVISORY_PANEL_VIEWS.map((v) => v.label)).toEqual(['Development Roadmap', FUTURE_FEATURE_LIST_TITLE, 'Platform Calendar', 'Release Registry', 'Panel Meeting Dates', 'Consultation Feedback']);
     for (const r of ADVISORY_ROADMAP) expect(r.target_date, r.title).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
@@ -176,6 +177,9 @@ describe.each(drivers)('3b. the Advisory Panel workshop ($name driver)', ({ make
     list = await db.advisory.submitFeatureIdea(MEMBER.member, { title: 'Parish bulletin export' });
     const idea = list.find((e) => e.title === 'Parish bulletin export')!;
     expect(idea.status).toBe('Idea');
+    // Revision 22.0: an Idea is not rated until a Super Admin converts it into a feature.
+    await expectRule(db.advisory.rateFeature(MEMBER.member, idea.id, 5), 'INVALID_INPUT');
+    await db.advisory.convertIdeaToFeature(MEMBER.superAdmin, idea.id);
 
     list = await db.advisory.rateFeature(MEMBER.member, idea.id, 5);
     list = await db.advisory.rateFeature(MEMBER.superAdmin, dues.id, 2);

@@ -2,7 +2,7 @@
 
 **Audience:** Super Admins: the platform owner and the people who run the platform for every council.
 
-**Covers:** platform work only: the Super Admin Desk, the module switches of every council, parent organizations and their schema, Global System Parameters and the platform settings, the AI suggestion cutoff, council access requests, Admin impersonation, screen watching, the platform feedback inbox and the three local database files.
+**Covers:** platform work only: the Super Admin Desk, the module switches of every council, parent organizations and their schema, Global System Parameters and the platform settings, the AI suggestion cutoff, council access requests, Admin impersonation, screen watching, the platform feedback inbox, the three local database files, client upgrade notices, the advisory vetting lifecycle with the Release Registry and What's New, and the core SOP modules.
 
 > **Council work is in the Administrator User Guide.** A council Admin's settings, lookups, vault, View As Member, the Admin Desk, the hub laptop, resets, ports and the firewall are in the [Administrator User Guide](ADMIN_USER_GUIDE.md). Officer work is in the [Treasurer Manual](TREASURER_MANUAL.md), the [Financial Secretary Manual](FINANCIAL_SECRETARY_MANUAL.md) and the [Executive Governance Manual](EXECUTIVE_GOVERNANCE_MANUAL.md).
 > **Numbering:** this manual numbers its own chapters from 1. A reference to a section in another manual names that manual.
@@ -20,6 +20,8 @@
 - [7. The platform feedback inbox](#7-the-platform-feedback-inbox)
 - [8. The three local database files](#8-the-three-local-database-files)
 - [9. Client versions and upgrade notices](#9-client-versions-and-upgrade-notices)
+- [10. The advisory vetting lifecycle, the Release Registry and What's New](#10-the-advisory-vetting-lifecycle-the-release-registry-and-whats-new)
+- [11. The core SOP modules](#11-the-core-sop-modules)
 
 ---
 
@@ -578,3 +580,98 @@ A client older than the release baseline gets an **Upgrade recommended** notice 
 | --- | --- | --- |
 | The answer is 403. | Your account is not a Super Admin. | Sign in with a Super Admin account. |
 | The list is empty. | No password sign-in since the release. | Sign in again. |
+
+---
+
+## 10. The advisory vetting lifecycle, the Release Registry and What's New
+
+### 10.1 Concept: ideas, features and the Overall Priority Rank
+The **Future Feature List** of the **Application Advisory Panel** has two tracks.
+
+| Track | Who adds | Comments | Priority rating | Rank |
+| --- | --- | --- | --- | --- |
+| **Ideas - open for discussion** | Any panelist (**Submit idea**) | Threaded: **Reply** under any comment | None | None |
+| **Features - Overall Priority Rank** | A Super Admin (**Add entry**, or **Convert to feature** on an idea) | Threaded | 1 (low) to 5 (high), one per panelist | By average, then number of ratings, then soonest target date |
+
+- An idea takes no rating. The platform refuses a rating on an idea.
+- **Convert to feature** sets the status to **Planned**. Ratings start from zero.
+- A feature never goes back to an idea. The status list of a feature has no **Idea** choice.
+- Deleting an entry deletes its comments, replies and ratings.
+
+The rows are `AdvisoryFeedback` rows with a reserved topic. A reply is `[ffl:comment:<entry>:<parent comment>]`. The schema stays at 113.
+
+### 10.2 Concept: release blocks and the automated change list
+A release block has a **Release Name**, a **Target Version** (`major.minor.patch`) and a **Scheduled Date**. A block is **Scheduled** until a Super Admin selects **Execute release**.
+
+Execution does four things on the server:
+1. It checks that the target version is higher than every released version.
+2. It lists every feature with status **Released** that no earlier release listed, with a target date on or before the scheduled date.
+3. It reads the release commit manifest (`packages/shared/src/fixtures/release-commits.json`). It takes each commit dated after the previous release and not after now: the commit's bullet lines, or its subject. At most 40 commits and 60 lines.
+4. It marks the block **Released** with the time, the change list, the commit hashes and the feature ids.
+
+`npm run build:pilot` and `npm run build:exe` write the manifest from Git first (`scripts/gen-release-log.mjs`, the newest 40 commits). Without Git, the build keeps the manifest on disk. A released block is read-only and cannot be deleted.
+
+### 10.3 Concept: the What's New notice and the Platform Calendar
+Every signed-in member reads the newest released block. Home shows it as the **What's New** card for 30 days after execution. The card shows the release name, the version and the first six change lines (**Show all** opens the rest). **Got it** hides the card until a higher version is released. The browser keeps the dismissed version; a cleared browser shows the card again.
+
+The **Platform Calendar** is a month grid: **‹ Prev**, **Next ›** and **Today** move between months. Each day shows chips for release blocks and feature target dates (navy), advisory meetings (gold) and pilot milestones (outlined). Selecting a day opens a drawer with each item's details: a release's change list, a meeting's agenda, a pilot item's summary.
+
+### 10.4 Schedule and execute a release
+> **Who can do this:** Super Admins. Panelists read the Release Registry.
+> **Warning:** an executed release cannot change or be deleted, and its notice goes to every member's Home.
+
+**Goal:** Release a version and publish its change list.
+
+**Start point:** Sidebar → **Application Advisory Panel** → **Release Registry**
+
+**Steps:**
+1. Mark each shipped feature **Released** on the **Future Feature List**.
+2. On **Release Registry**, select **Add release**.
+3. Enter the **Release Name**, the **Target Version** and the **Scheduled Date**. Select **Save release**.
+4. On the release date, select **Execute release**. You cannot undo this.
+5. Select **Change list** and read the result.
+
+**Expected result:** The block shows **Released** and its change list. Each member sees **What's New** on Home.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"Target version … must be higher than the released version …"* | The version is not an increment. | Select **Edit** and raise the **Target Version**. |
+| *"Target version must look like 11.22.0."* | The version is not three numbers. | Enter a version such as `11.22.0`. |
+| The change list has no commit lines. | The build that runs the server had no new commits in its manifest. | Run `npm run build:pilot` or `npm run build:exe` from the Git checkout, then execute. |
+
+### 10.5 Convert an idea into a feature
+> **Who can do this:** Super Admins.
+
+**Goal:** Move a discussed idea onto the ranked feature track.
+
+**Start point:** Sidebar → **Application Advisory Panel** → **Future Feature List**
+
+**Steps:**
+1. Find the idea under **Ideas - open for discussion**.
+2. Select **Comments** and read the discussion.
+3. Select **Convert to feature**.
+4. Select **Edit** to set the target date and the notes. Select **Save entry**.
+
+**Expected result:** The entry shows under **Features - Overall Priority Rank** with a rank number. Panelists can rate it.
+
+**Common problems:**
+| Problem | Cause | Fix |
+| --- | --- | --- |
+| *"… is already a feature."* | The entry was converted before. | No action. The entry is on the feature track. |
+
+---
+
+## 11. The core SOP modules
+
+### 11.1 Concept: the SOP library
+Each SOP is one file in `docs/sop/`. The **SOP Center** (Sidebar → Answers → **SOP Center**) shows every file after the next portal build. Each core module opens with a short **What it is** list, then one task in the five-heading workflow.
+
+| SOP | Title | Covers |
+| --- | --- | --- |
+| SOP 003 | Joint-Event Revenue Splitting | Split Accounts, destination shares, the Due to Sister Council clearing account |
+| SOP 004 | Automated Home Parish Onboarding | **Link as home parish** and the parish accounts it adds to the General Ledger |
+| SOP 005 | Platform Advisory Vetting Lifecycle | Ideas, features, the Overall Priority Rank, the Release Registry and What's New |
+| SOP 006 | Standalone Client Telemetry | Sign-in version records and the **Upgrade recommended** card |
+| SOP 007 | In-Person Cooperative Testing Mesh | Testing mode on a hall Wi-Fi and the shared `.testing-key.json` |
+| SOP 008 | Ephemeral Volunteer Training Simulator | Training mode and the seven training profiles (password `training`) |

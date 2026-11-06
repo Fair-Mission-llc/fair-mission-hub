@@ -93,6 +93,7 @@ import {
   TreasurerDesk,
 } from '@/components/DashboardDesks';
 import { HomeScrollCue } from '@/components/HomeScrollCue';
+import { WhatsNewCard } from '@/components/WhatsNewCard';
 import { SuperAdminDesk } from '@/components/SuperAdminDesk';
 import { useDashboardTab } from '@/components/WorkspaceTabs';
 import { PageTitle } from '@/components/ui';
@@ -107,6 +108,8 @@ function HomeDesk({ councilId, faithOn }: { councilId: number; faithOn: boolean 
   const user = useUser();
   return (
     <>
+      {/* Sprint 11 Revision 22.0: the What's New notice after a version increment (release-registry.ts). */}
+      <WhatsNewCard />
       <HomeWidgets user={user} councilId={councilId} faithOn={faithOn} />
       <HomeScrollCue />
     </>

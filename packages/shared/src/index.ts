@@ -106,4 +106,5 @@ export * from './two-factor';
 export * from './local-feedback';
 export * from './data-modes';
 export * from './advisory-workshop';
+export * from './release-registry';
 export * from './client-telemetry';

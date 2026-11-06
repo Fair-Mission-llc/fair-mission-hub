@@ -1,0 +1,496 @@
+[
+  {
+    "hash": "9e4f52b",
+    "date": "2026-11-06 18:07:32",
+    "subject": "Sprint 11 Revision 21.7 Final - Multi-Tenant Parent Organizations Seeded and Feature Flag Control Panel Optimized via Schema 113",
+    "bullets": [
+      "Seed: Secular Charity Corp (ParentOrganizations row 3) with Secular Charity Chapter 1 and 2 (Council 10-11) in the presentation data; baseline ids unchanged.",
+      "Master Feature Deployment Grid: parent organization dropdown (org_name from ParentOrganizations), sticky header (position: sticky; top: 0; z-index: 40) in a scrolling frame, column 2 reads TOGGLE ALL MODULES FOR THIS ORGANIZATIONAL TIER.",
+      "Council History (renamed from Fraternal Annals & Oral History): four tabs, always-shown [ Edit Founding Info ], Charter Members from Member.flag_charter_member, and year totals (members recruited, service hours, funds raised) computed from the ledgers on both drivers; the manual team metrics field is gone.",
+      "Admin Desk: every drawer in the standard desk frame, Setup Wizard inline in its drawer, file cabinets grouped, rail pinned (sticky, top 0, max-height 100vh, overflow-y auto); Payment QR Codes shows a Sample Code SVG badge when empty.",
+      "Docs repaired (mojibake/CRLF from an outside tool), updated and recompiled."
+    ]
+  },
+  {
+    "hash": "b355ea4",
+    "date": "2026-11-06 17:15:03",
+    "subject": "Sprint 11 Revision 21.5 Final - Desk Engines Streamlined and Advisory Workspace Overhauled via Schema 113",
+    "bullets": [
+      "Schema stays at 113: no table change",
+      "Admin Desk: the Static Top Deck and control bar are gone. Administration Manual and 'How Do I...' Help Search are file-cabinet drawers; the Setup Wizard drawer shows until the wizard has run. DESK_HANDLE_TONES: cobalt edge for file cabinets, gold for working drawers, on the Admin Desk rail and the Super Admin Desk spine",
+      "Council Wide Settings: Council Instance Record drawer (was the page header) and Council Setup drawer (CouncilSetupPanel: Run Setup Wizard, Practice Sandbox switch)",
+      "Telegraphic text on the manual builders, two-factor views, merit tier rules, settings and desk hints",
+      "Payment QR Codes: each row draws the live DonationMethodURL, or the bundled sample code for a placeholder:// or missing link (paymentQrDisplay); 'No QR code yet' only when neither exists. Sample PNGs copied to apps/web/public",
+      "Member Desk: 'My Hours & Shifts' split into Record Hours and My Scheduled Shifts; My Roster Profile reads the council roster (members.listRoster, ownRosterRow)",
+      "Advisory Panel: Future Feature List (advisory-workshop.ts) - Super Admin edits, panelist ideas, review comments and 1-5 priority ratings ranked by average, stored as tagged AdvisoryFeedback rows ([ffl:...]) on the memory and SQLite drivers. Roadmap target dates; Platform Calendar view (releases, meetings, pilot timeline)",
+      "Client telemetry (client-telemetry.ts): sign-ins on /api/auth/session and the hub record client release and platform in client-telemetry.json; an older client gets the Upgrade recommended notice card. Super Admins read GET /api/auth/client-telemetry",
+      "Admin, Member, Quick-Start and Super Admin manuals, data dictionary section 67 and architectural history updated; all PDFs recompiled",
+      "New Rev 21.5 test file; superseded assertions in older tests moved to the new layout. Typecheck, build:pilot, build:exe and 3,088 tests pass."
+    ]
+  },
+  {
+    "hash": "eb3c036",
+    "date": "2026-11-05 21:55:29",
+    "subject": "Sprint 11 Revision 21.0 Final - Database Migrated to Schema 113, Parish Registry Automated, and Core Technical Debt Liquidated",
+    "bullets": [
+      "Schema 113: Parishes (council_id keeps the record; associated_council_id with a filtered unique index = the council's home parish; gl_account_id = its Account Owner), Pastors (council_id) and PastorParishMappings (unique pastor/parish pair, multi-parish pastors) replace Parish and Pastor, which are dropped (no rows existed)",
+      "LocalFeedbackTickets and LocalFeedbackTicketMessages take the Local Feedback Portal off ChatThreads / Messages; the hidden-thread markers and the Communications Hub filter are removed. API shape unchanged",
+      "parishes.setCouncilAssociation (parish-registry.ts): linking a home parish, in one transaction, ends any other link and provisions a PARENT_ORGANIZATION Asset account 'Parish - <name>' plus baseline Asset rows (Electronic Giving, Cash & Check Collections) under it, reusing existing ones; unlinking keeps the accounts. A linked parish cannot move or be deleted; its owner account is in GL_ACCOUNT_REFERENCES. New pastors.listAssignments / assignToParish / unassignFromParish on the memory and SQLite drivers and the hub list",
+      "Parish & Pastors Linkage page rebuilt: Home parish badge and link button, pastor assignment panel, Council pastors grid with parishes served",
+      "Training practice data (10 members, 3 fundraisers, 3 cash boxes) moved to packages/shared/src/fixtures/training-seed.json, validated by training-seed.ts",
+      "Testing mode writes .testing-key.json (random 256-bit mesh passphrase, never overwritten, git-ignored) on boot from both lan-mesh.ts and start-pilot.mjs; testing-mesh-passphrase.txt is no longer read",
+      "PLATFORM_SCHEMA_VERSION and phone SCHEMA_VERSION at 113; generated DB assets rebuilt; schema pins in older tests moved to 113",
+      "Administrator guide 5.6 (Parish & Pastors Linkage) and 18.4 (testing key); Super Admin System Manual 3.5; cross-references in the officer manuals; data dictionary section 66; architectural history row 113; all PDFs recompiled",
+      "New Rev 21.0 test file. Typecheck, build:pilot, build:exe and 3,069 tests pass."
+    ]
+  },
+  {
+    "hash": "678c22a",
+    "date": "2026-11-05 20:03:38",
+    "subject": "Sprint 11 Revision 20.0 Final - Multi-Core Local Sandboxes Deployed and Super Admin System Manual Bifurcated via Schema 112",
+    "bullets": [
+      "Schema stays at 112: no table change",
+      "Local Feedback Portal (local-feedback.ts, localFeedback.* on the memory and SQLite drivers): a ticket is a ChatThreads row whose first Messages row opens it (ticket ID = thread id); later rows are its chat log and status changes (Open, In Progress, Resolved). Only the member and the council's Admins (and Super Admins) read a ticket; ticket threads stay out of the Communications Hub",
+      "'Feedback Support' text link in the ANSWERS pillar (/answers/feedback): the form and history cards in Left Vertical Action Drawers, each card opening its chat log",
+      "Admin Desk 'Member Feedback Queue' drawer: dense triage ledger, in-row status, chat log drawer",
+      "Member Desk rebuilt on LeftActionDrawers: My Roster Profile, My Hours & Shifts, My Motion Requests, Feedback Support, My Charity Requests, My Open Expense Sheets (the last three follow their council switches)",
+      "View As Member: rows of the matching council_id only, and a council Admin is never offered or shown a Super Admin account (UI filter and both drivers)",
+      "Sidebar: no Admin Desk link loop for Admins and Super Admins (the Active Desks tab opens it); Administrative Feedback Loops leaves a council Admin's sidebar",
+      "Three local database files (data-modes.ts, KOFC_DATA_MODE): central-hub-vault.db, testing-sandbox.db, training-playground.db. The hub creates all three; training is erased and reseeded every start (10 practice members, 3 upcoming fundraisers, 3 cash boxes, 7 generic accounts admin@/gk@/fs@/tr@/rec@/hist@/mem@training, password 'training'). Desktop shell asks for the mode at start-up; dev:pilot takes --mode",
+      "Training Profile Selection Board on the sign-in screen in training mode; the Admin sign-in code is skipped for those accounts in training mode only",
+      "Testing LAN mesh (lan-mesh.ts): saves broadcast over UDP 41295, sealed with AES-256-GCM under a shared hall passphrase, replay-guarded; reads, sign-ins and passkeys never sent; no passphrase or no network = standalone",
+      "Amber Testing Mode and cobalt Training Mode banners on the top edge (DATA_MODE_BANNER_COLORS tokens)",
+      "docs/SUPER_ADMIN_SYSTEM_MANUAL.md (+ PDF): Super Admin Desk lifecycle, global module flags, ParentOrganizations schema logic, Global System Parameters and the global_ai_confidence_cutoff, access requests, impersonation, feedback inbox, data modes. Platform sections removed from the Administrator guide and its sections renumbered; cross-references updated in every manual"
+    ]
+  },
+  {
+    "hash": "f65bcc1",
+    "date": "2026-11-05 18:01:55",
+    "subject": "Sprint 11 Revision 19.6 Final - Database Schema Upgraded to Version 112 with Relational Parent Organizations and Independent Motion Flags",
+    "bullets": [
+      "Schema 112: ParentOrganizations (org_name, org_code, vertical_type FRATERNAL / SECULAR_NONPROFIT) and CouncilParentMappings (one row per council, optional parent council for chapter hierarchies); seeded Knights of Columbus and Secular Charity, with all six seeded councils mapped to the Knights",
+      "Council.flag_motion_requests (BIT DEFAULT 1): Motion Requests get their own switch, freed from flag_meeting_management (page, Member Desk panel, GK drawer)",
+      "parent_org_id (NULL = shared) on the eight global lookup tables and on PlatformSettings; lookups.list and getPlatformSettings take a council or parent organization scope; per-organization lookup rows and settings override rows; the four fraternal degrees belong to the Knights",
+      "parentOrganizations.* on the memory and SQLite drivers (list, listMappings, resolveForCouncil, create, mapCouncil); mapping writes keep Council.parent_organization and tenant_type in step; only KofC is fraternal",
+      "Super Admin screens: Parent organizations card; Parent organization picker on Global Lookup Tables and Platform Settings; portal drop-downs pass the council",
+      "PLATFORM_SCHEMA_VERSION and phone SCHEMA_VERSION move to 112; generated DB assets rebuilt; schema version pins in older tests moved to 112",
+      "Data dictionary section 65, architectural history row 112, Admin / Executive / Member manuals updated and PDFs recompiled; new Rev 19.6 test file covers both drivers. Typecheck, build:pilot, build:exe and 3,018 tests pass."
+    ]
+  },
+  {
+    "hash": "61edc3d",
+    "date": "2026-11-05 17:24:14",
+    "subject": "Sprint 11 Revision 19.5 Final - System Configuration Scaled and Sticky Drawer Context Locks Implemented via Schema 111",
+    "bullets": [
+      "Master Feature Deployment Grid groups councils into parent organization tiers read from the council rows, with an \"Every council in\" bulk switch per module; council pickers group by parent organization",
+      "'How Do I...' searches use a TF-IDF ranker: filler-word stripping, light stemming, section weights, and text normalization that repairs double-decoded characters",
+      "Sidebar and desk rails locked with sticky 100vh context locks; the open drawer keeps a high-contrast active border",
+      "Form 1728 popup: list doubled to 12 rows, nothing preselected below the cutoff; Council Lookup Tables Activities grid shows each row's line",
+      "Motion Requests follow the per-council Meeting management switch (no schema change)",
+      "Council Admin sidebar drops links duplicated by Admin Desk drawers",
+      "Historical Chronology renamed [ 📜 Fraternal Annals & Oral History ]",
+      "Repaired mojibake and CRLF damage in the docs; kept the new Treasurer section 13 and FS Appendix A; mirrored the Split Revenue step into the FS manual",
+      "Manuals updated and recompiled"
+    ]
+  },
+  {
+    "hash": "c8df941",
+    "date": "2026-11-04 22:07:39",
+    "subject": "Sprint 11 Revision 19.0 Final - General Ledger Split Revenue Toggle with Dual-Target Destinations via Schema 111",
+    "bullets": [
+      "Schema stays at 111; no table change. Revenue splitting already exists (GLAccountSplitAllocation, schema 99; sister-council destinations since Rev 2.1) and the journal writer already splits every posting (expandSplitJournalLines), so no is_split_enabled / split_target_* columns or second engine path were added.",
+      "General Ledger: the Add Account / Edit Account drawer carries a 'Split Revenue' toggle on Revenue accounts for the Treasurer and Super Admins (canBatchCodeDonations). On, it shows the destination rows; off on a split account ends the split. Saving writes the account, then its profile (finance.setGLSplitProfile).",
+      "SplitShareRows: optional targetSwitch adds a per-row 'Internal Ledger Account' / 'Affiliated Sister Council' switch, with choices from active Revenue accounts or the council's active affiliates. Other editors are unchanged.",
+      "Shared: SPLIT_REVENUE_LABEL, SPLIT_TARGET_LABELS, SplitTargetType (gl-splits.ts).",
+      "Treasurer Manual documents the toggle; all manuals recompiled.",
+      "New Rev 19.0 test file. Typecheck, build:pilot, build:exe and 2,990 tests pass."
+    ]
+  },
+  {
+    "hash": "9815419",
+    "date": "2026-11-04 20:22:14",
+    "subject": "Sprint 11 Revision 18.6 Final - Admin Desk Tab Mobilized for Council Admins via Schema 111",
+    "bullets": [
+      "Schema stays at 111; no table, seed or generated-asset change.",
+      "Active Desks: showsAdminDeskTab now returns true for a council Admin as well as a Super Admin (matching canOpenAdminDesk / isAdmin), so a Council Admin lands on the 'Admin Desk' tab in the Active Desks row at boot, beside its council desks - not only via the sidebar link. The Super Admin Desk tab stays Super-Admin-only.",
+      "The local database keeps its standard, honest path (packages/backend/data/central-hub-vault.db); no file renaming or camouflage.",
+      "Tests updated for the Council Admin tab (officer-desks, recorder-historian, Rev 18.5 file). Typecheck, build:pilot and 2,984 tests pass."
+    ]
+  },
+  {
+    "hash": "ab2cf75",
+    "date": "2026-11-04 19:51:57",
+    "subject": "Sprint 11 Revision 18.5 Final - General Ledger Streamlined and QR Code Connections Synchronized via Schema 111",
+    "bullets": [
+      "Schema stays at 111; no table change. Seed.sql and the generated DB assets change only the Council 15295 row.",
+      "Advisory Panel: every Super Admin opens, keeps and invites again (canOpenAdvisoryPanel and the read / keep / invite guards no longer check the platform owner's sign-in name). Super Admins get an 'Admin Desk' Active Desks tab right beside 'Super Admin Desk' (showsAdminDeskTab; AdminDesk embedded on /dashboard#admin).",
+      "Payment QR Codes: the card lists only Active donation methods that take a QR code (paymentQrUploadRows); the disabled 'No QR code' rows are gone. Secure Access Vault: a 'Document storage provider' dropdown lists only the provider picked under File Repository Mode (vaultStorageProviderOptions), with only that provider's key card.",
+      "Council 15295 seeds feature_expense_reporting and flag_charity_proposals off. flag_charity_proposals now also hides charities/queue, so no charity drawer is left on the FS or Treasurer desk; the Member Desk expense card follows the expense switch. The Treasurer's General Ledger drawer moves to the finance/ledger area so it stays.",
+      "General Ledger: titled 'General Ledger'; the Financial Dashboard link and the Equity box are gone (Equity is on the Balance Sheet). New finance.saveGLAccount / finance.removeGLAccount on every driver back the Add Account button and each row's Edit / Delete links (posters only; a used account cannot be deleted or retyped).",
+      "Motion Request: the sidebar link and page heading read 'Motion Request'; the member's history sits apart at the foot of the page as 'My Motion Requests' (also on the Member Desk).",
+      "Manuals, data dictionary, architectural history and pilot kit updated; PDFs recompiled. Old tests updated for the changed rules; new Rev 18.5 test file. Typecheck, build:pilot, build:exe and 2,984 tests pass."
+    ]
+  },
+  {
+    "hash": "d91f8b1",
+    "date": "2026-11-04 18:19:45",
+    "subject": "Sprint 11 Revision 18.0 Final - Motion Request Pipeline Deployed and Super Admin Desk Restructured via Schema 111",
+    "bullets": [
+      "Schema 111 (agreed bump from 110): MotionRequest and MotionRequestMessage tables, Council.motion_request_lead_days (DEFAULT 5) and PlatformSettings.global_ai_confidence_cutoff (DEFAULT 60). Phone SCHEMA_VERSION and PLATFORM_SCHEMA_VERSION move to 111.",
+      "Motion Requests (packages/shared/src/motion-requests.ts, motionRequests.* on every driver): members submit proposed_by / summary_what / rationale_why / financial_impact_usd; the Grand Knight or Deputy Grand Knight approves or denies (a denial needs a note). An approval files a 5-minute ProposedMotion (SourceType 'GeneralMember') on the soonest Monthly meeting at least the council's lead days after submission. Chat logs per request: MEMBER_GK and OFFICER_ADVISORY (officers only, never the proposer).",
+      "Screens: My Motion Requests panel on the Member Desk and a new Faith In Action link (/motion-requests, which also lists the council's requests for officers); a Motion Requests drawer on the Grand Knight Desk, lit while a request waits.",
+      "Form 1728: suggestion cards carry a confidence percent; topForm1728Suggestions drops cards below global_ai_confidence_cutoff instead of padding to three. Editable on Global System Parameters (new Suggestion Engines group).",
+      "Super Admin Desk: the tab reads 'Super Admin Desk'. The horizontal folders and stacked drawers are replaced by the left filing spine: Communications Cabinet (Feedback Communication Center, Council Access Request Approval Queue), Settings Cabinet (Global System Parameters, Global Lookup Tables, System Feature Flag Control Panel, Secure Access Vault) and the freestanding Global Charities Registry. Super Admins keep the Admin Desk link.",
+      "Advisory Panel: visible only to the platform owner's own sign-in and panelists; the drivers also check the sign-in name on the panel's read and keep methods.",
+      "Manuals (Admin, Member, Executive, FS, Treasurer, 5-page Quick-Start), data dictionary and architectural history updated; PDFs recompiled. Old tests updated for the rename, schema 111 and the cutoff; new Rev 18.0 test file. Typecheck, build:pilot, build:exe and 2,969 tests pass."
+    ]
+  },
+  {
+    "hash": "de738c9",
+    "date": "2026-11-03 21:17:23",
+    "subject": "Sprint 11 Revision 17.7 Final - Navigation Typography Polished and In-App Functional Data Badges Restored via Schema 110",
+    "bullets": [
+      "Navigation and headings are text only: icons and [ ... ] brackets removed from string literals and JSX text across apps/web and packages/shared (sidebar links, the FINANCIAL REPORTS / FINANCIAL ACTIONS accordions, Active Desks folder tabs, desk drawer names, page titles, panels, notices, buttons, tabs). Button and Tabs now draw their text through plainText/plainTitle as a safety net.",
+      "Where an icon carried meaning it became a word (leaderboard 1st/2nd/3rd, tier number on the merit badge, Severe/Note, Connected/Not connected, step numbers, Verified by ...).",
+      "Data markers keep their icons: calendar day markers (needs-volunteers flag, holiday and feast marks, birthdays, Holy Day badge) and the New Member and Charter Member badges. The roster rows now show the Charter Member badge beside the New Member badge.",
+      "Manuals, pilot scripts and the manual compiler banner updated and recompiled; tests updated plus the Rev 17.7 typography and data-badge test file.",
+      "The phone app's own labels (apps/mobile) are unchanged."
+    ]
+  },
+  {
+    "hash": "976940a",
+    "date": "2026-11-03 18:37:50",
+    "subject": "Sprint 11 Revision 17.6 Final - Super Admin Granted Admin Desk Access and Floating Icons Evicted Universally via Schema 110",
+    "bullets": [
+      "Admin Desk: Super Admins already held full clearance (page, drawers, server gates); pinned with tests. Manual notes the vault drawer stays on the home council.",
+      "Plain titles: PageTitle, Panel, Notice, Drawer, desk drawers, Home cards and summary cards draw text through plainTitle/plainText (no icons, no brackets). Hand-typed heading icons removed from source.",
+      "Finances sidebar: My Expense Reports and Propose Charity Grant pinned above the accordions. Annual Budget Center joins FINANCIAL REPORTS; Trustee Semiannual Audit (renamed from Financial Inspections everywhere, switch included) joins FINANCIAL ACTIONS.",
+      "Manuals updated and recompiled; tests updated plus a Rev 17.6 test file."
+    ]
+  },
+  {
+    "hash": "6ddca16",
+    "date": "2026-11-03 18:16:19",
+    "subject": "Sprint 11 Revision 17.5 Final - Financial Accordions Re-Engineered and Super Admin Desk Tab Active via Schema 110",
+    "bullets": [
+      "Platform Management (Super Admin Desk) tab now shows on the Active Desks row for every Super Admin session, beside the council desks (showsSuperAdminDeskTab). isPlatformOwner still gates Advisory Panel invitations.",
+      "Member Activities wording: sidebar link, page title, and the Current Activities tab.",
+      "Finances pillar: the Financial Views accordion is replaced by two separate accordions, FINANCIAL REPORTS (GL, Balance Sheet, Financial Dashboard) and FINANCIAL ACTIONS (Treasurer Ledger Audit, FS Expense Audit Queue, GK Expense Authorize, Disbursed Check Registry, Charitable Grants Registry, Donations History).",
+      "Charity Vetting Queue moved to the Governance pillar.",
+      "Manuals updated and recompiled; tests updated plus a Rev 17.5 test file."
+    ]
+  },
+  {
+    "hash": "ab5e315",
+    "date": "2026-11-03 17:49:59",
+    "subject": "Sprint 11 Revision 17.0 Final - Enterprise Workspace Cockpit Polished and Expense Ingestion Streamlined via Schema 110",
+    "bullets": [
+      "Header: '[ 🛠️ Super Admin Desk ]' for Super Admin sessions (showsSuperAdminHeaderLink; hidden while viewing as a member), opening /super-admin",
+      "Recurring Meetings: cards read '[ 🟢 Held ]' or '[ 🛑 Past ]' once their end time passes (cadenceCardStatus); upcoming meetings carry '[ ⚙️ Customize Agenda & Location ]', a drawer backed by the new meetings.customizeAgendaAndLocation (memory, sqlite and hub; MEETING_ALREADY_HELD for past meetings)",
+      "Expense reports: one row per receipt with Gross Total Amount ($) and Reimbursement Requested ($), which follows the gross until changed (receiptRowsToSubmission writes a council line plus a personal remainder, so the split-ticket rule holds); the itemisation grid, Personal checkboxes and charity-request dropdown are gone",
+      "Bylaws editor: the preview scrolls inside 'overflow-y: scroll; max-height: 500px'",
+      "Roster: Add Member is disabled while the Council list reads All councils (rosterAddMemberLocked)",
+      "Sidebar: Financial Views splits into '📊 FINANCIAL REPORTS' and '⚡ RECORDED REGISTRIES'; links are plain words (sidebarLinkLabel: no icons, no brackets) and truncate",
+      "Activities and Meeting Center: full-width tables with search and 15-row pages (PagedTable, RecordGrid wide/pageSize)",
+      "Names: GK Expense Authorize, Charity Vetting Queue (help question mark replaces the footer), Financial Dashboard (corner links and quick actions removed), Donations History",
+      "Propose Charity Grant: duplicate My requests panel removed; the Request More Info thread moved to the Member Desk card",
+      "Charitable Grants Registry: FS/GK Compliance Endorsements is a tab inside the page",
+      "FS Desk: deskMountsMemberRoster guard keeps the roster off the desk",
+      "Manuals, role books and pilot kit updated and recompiled; new tests in sprint11-rev170-cockpit-expense-pipeline.test.ts; superseded assertions updated"
+    ]
+  },
+  {
+    "hash": "7211b79",
+    "date": "2026-11-02 23:43:38",
+    "subject": "Sprint 11 Revision 16.0 Final - Enterprise Workspace Nomenclature and Layout Drawer Definitions Completely Synchronized via Schema 110",
+    "bullets": [
+      "/council-lookups crash fixed: LookupEditor called useForm1728Confirm/useForm1728Enabled after its loading return, so React threw \"Rendered more hooks than during the previous render\" on every open; the hooks now run first",
+      "app/error.tsx: a page error stays inside the portal frame, so the in-memory session survives (no reload back to sign-in)",
+      "Form 1728: topForm1728Suggestions returns the Top 3 distinct lines (engine matches, Community N, then the busiest lines of a compiled report); the popup draws each as its own selection card",
+      ".sidebar-truncate (ellipsis, nowrap, overflow hidden) on the Event Planner list and sidebar links",
+      "Recurring Meetings: '[ 👁️ View Scheduled Releases ]' and '[ ⏳ Scheduled ]'",
+      "Bylaws vault: standard council bylaws template (bylaws-template.ts) previewed when empty and used as the editor start; '[ 🤖 AI Parliamentary Reasoning Stream ]' with a tip",
+      "Operations Knowledge Vault intro cut to one line",
+      "'[ 👥 Council Roster ]', '[ 🚫 Deactivate Member ]' confirmation modal; Charter Member and Shield Circle checkboxes locked to the membership dates (evaluatedMeritFlags; stored flags stay on)",
+      "Unified accounting names (desk-drawers.ts): Chart of Accounts & General Ledger, Transfer Funds modal, Treasurer Ledger Audit, Disbursed Check Registry (also mounted on the Treasurer Desk), Charitable Grants Registry, FS Expense Audit Queue",
+      "Sidebar: 'Financial Views' accordion in Finances, FS/GK Compliance Endorsements link (?folder= opens the desk folder)",
+      "FS Desk: roster table removed",
+      "Donations: event cards became a searchable, paginated ledger table; donation tables searchable and paginated"
+    ]
+  },
+  {
+    "hash": "7bbcad0",
+    "date": "2026-10-30 16:57:54",
+    "subject": "Sprint 11 Revision 15.6 Final - Legal Path Configurations Perfectly Synchronized to Parent Directory",
+    "bullets": []
+  },
+  {
+    "hash": "c691057",
+    "date": "2026-10-30 16:40:33",
+    "subject": "Sprint 11 Revision 15.5 Final - Legal Route Caches Flushed and Transformed Documents Compiled Directly Into Viewport",
+    "bullets": [
+      "Restore LEGAL_DOCUMENT_FILES paths relative to docs/ (the docs/ prefix made readDocsFile look in docs/docs/, so the route 404'd and the drawer showed the old placeholder text)",
+      "/api/legal: force-dynamic so the Markdown is read from disk on every request",
+      "Sidebar legal drawer: fetch with cache: 'no-store'",
+      "Terms and Privacy fallback paragraphs now summarize the October 26, 2026 Fair Mission LLC documents"
+    ]
+  },
+  {
+    "hash": "6fd51b6",
+    "date": "2026-10-30 03:01:59",
+    "subject": "Sprint 11 Revision 15.0 Final - Desktop Binaries Compacted, Deep Desk Drawing Masking Implemented, and Form 1728 Mapping Operational via Schema 110",
+    "bullets": [
+      "electron-builder: maximum compression, en-US locale only, prune source maps, build caches and test framework folders; afterPack copy filtered the same way",
+      "Financial Inspections off now masks FS (Financial Inspections, ER Routing Track, Charitable Donation Records) and Treasurer (Cash Box Audit, Bank Match) drawers, with a render guard in both desks; money-moving drawers stay",
+      "form-1728: compileForm1728Report (section subtotals, totals) and CSV export; YTD panel gains Print and Export CSV",
+      "Manuals updated and recompiled; new rev150 test file"
+    ]
+  },
+  {
+    "hash": "81e2930",
+    "date": "2026-10-29 21:20:42",
+    "subject": "Sprint 11 Revision 14.0 Final - Corporate Folder Migration Completed and Manual Path Tracking Synchronized",
+    "bullets": []
+  },
+  {
+    "hash": "3fed388",
+    "date": "2026-10-29 20:28:24",
+    "subject": "Sprint 11 Revision 13.0 Final - Room Pilot Script Migrated to Live Production Data Sync via Schema 110",
+    "bullets": [
+      "Simulated central database (packages/backend/data/simulated-central.db): every council, built from the seed once, kept across hub:archive",
+      "dev:pilot sets PILOT_SYNC_COUNCIL (15295, --council <n>, --no-sync) and calls GET /api/sync/replicate?handshake=1",
+      "A newly created hub vault pulls that council's Member rows, EventTime/ActivityTime hours and flag_*/feature_*/parent_organization/tenant_type in one transaction",
+      "Pilot personas untouched, nothing deleted, existing vaults never synced over; receipt hub-sync-receipt.json reported by the route and launcher",
+      "Charts, leaderboard/merit badges, Admin Desk and the Form 1728 vs secular split read the synced vault rows (tests prove it)",
+      "PILOT_PERSONA_EMAILS moved to shared pilot-sync.ts; SqliteDataService.close(); createNodeSqlite vaultFile param",
+      "turbopackIgnore on repositoryRoot resolve() clears two whole-project tracing warnings",
+      "Admin guide 11.1/11.1.1/13.2, developer README, architectural history section 12; PDFs recompiled",
+      "2,879 tests green; typecheck, build:web and build:exe pass"
+    ]
+  },
+  {
+    "hash": "7f54eda",
+    "date": "2026-10-29 18:16:34",
+    "subject": "Sprint 11 Revision 12.5 Final - Universal 1-Tap 2FA and Mobile Keyboard Autofill Hooks Deployed via Schema 110",
+    "bullets": [
+      "TWO_FACTOR_REQUIRED=1 asks every member, officer and admin for a sign-in code; switch off keeps the Admin/Super Admin baseline",
+      "Lockout guard: no provider keys -> one-step sign-in with a server warning; keys but no usable phone/email -> refused (403 / TWO_FACTOR_UNAVAILABLE)",
+      "Passkey and phone biometric sign-ins skip the code (already two factors)",
+      "Hub door issues the challenge (TWO_FACTOR_CODE_REQUIRED); web hub mode and the phone finish via /api/auth/two-factor",
+      "Phone twoFactorCode screen with textContentType=\"oneTimeCode\" + autoComplete=\"one-time-code\"; web box keeps one-time-code",
+      "Profile and Secure Access Vault cards report the universal switch",
+      "Manuals: Admin 13.2.1, Member 2.5.2-2.5.3, Treasurer 4.6, FS 4.5, Executive 11.3.2; PDFs recompiled",
+      "2,868 tests green; typecheck, build:web and build:exe pass"
+    ]
+  },
+  {
+    "hash": "ed270d6",
+    "date": "2026-10-29 17:28:13",
+    "subject": "Sprint 11 Revision 12.0 Final - Core Frameworks Upgraded to Zero Findings, Communication APIs Integrated, and Parent Organization Enums Active via Schema 110",
+    "bullets": []
+  },
+  {
+    "hash": "0cbcaee",
+    "date": "2026-10-29 16:15:04",
+    "subject": "Sprint 11 Revision 11.0 Final - Complete Sidebar Standardization and Activity Form 1728 Interaction Active",
+    "bullets": []
+  },
+  {
+    "hash": "1e7c265",
+    "date": "2026-10-29 15:16:35",
+    "subject": "Sprint 11 Revision 10.0 Final - Electron Packaging Integrated and Form 1728 Interactive Suggestion Engines Deployed via Schema 108",
+    "bullets": []
+  },
+  {
+    "hash": "ee1ee09",
+    "date": "2026-10-29 14:33:58",
+    "subject": "Sprint 11 Revision 9.0 Final - Form 107 AI Interrogation Engine Active and Council 15295 Seed Scope Locked",
+    "bullets": []
+  },
+  {
+    "hash": "d25b419",
+    "date": "2026-10-28 23:47:55",
+    "subject": "Sprint 11 Revision 8.0 Final - Feature Flags Synchronized and 2FA Security Infrastructure Active",
+    "bullets": [
+      "Schema 107: five premium Council switches (photo gallery, lessons registry, marketing factory, loaner library, advanced audits). Event shifts, flagged hours review and the finance dashboards are permanent core systems; their columns stay but are no longer read or switchable.",
+      "Switched-off modules leave the sidebar, the officer desk drawers and the Navigation Guide.",
+      "compile_all_manuals.py --disabled-modules adds a disabled banner to matching sections of a council's custom manual; the generic guides always show every module.",
+      "Two-Factor Authentication section on My Profile (SMS, email, WebAuthn passkeys for Android, iOS and desktop) and a delivery-channel panel on the Credentials Vault. Only passkeys work today.",
+      "2,752 tests green; typecheck and build:web clean; all manuals recompiled."
+    ]
+  },
+  {
+    "hash": "efb12a2",
+    "date": "2026-10-28 19:48:34",
+    "subject": "Sprint 11 Revision 7.0 Final - Master Feature Flag Architecture Deployed",
+    "bullets": [
+      "New councils start with LIGHTWEIGHT_FEATURE_FLAGS: event sign-ups on; service hours, communications and calendars have no switch; premium off.",
+      "Master Feature Deployment Grid at /feature-flags and /super-admin (Super Admins only): lightweight/premium groups, per-council Lightweight button. Admins see status only, no grid link.",
+      "Masking: sidebar areas, Admin Desk drawers, Custom user guides card, guide and flyer routes (403), phone Council Assets screen.",
+      "Admin guide ch. 2, data dictionary, architecture history, manuals rebuilt."
+    ]
+  },
+  {
+    "hash": "0b62299",
+    "date": "2026-10-28 17:54:39",
+    "subject": "Sprint 11 Revision 6.0 Final - 6-Tier Merit Badges Deployed and Automated Charter Member Boundaries Active",
+    "bullets": [
+      "merit-tiers.ts: six tiers counted in the fraternal year (reset July 1), highest held wins; Tier 6 by GK/DGK seat, 25+ years or Admin switch.",
+      "Roster CSV maps 'First Degree Date' / 'Initiation Date' to join_date; join date <= institution date + 30 days sets flag_charter_member on save.",
+      "councils.setMeritThresholds replaces setRankThresholds; Merit Tier Milestones tab in Council Lookup Tables (Admins and Super Admins).",
+      "Canonization shield replaced by MeritTierBadge on web and phone.",
+      "Manuals, data dictionary, architecture history and roster template updated."
+    ]
+  },
+  {
+    "hash": "d77c947",
+    "date": "2026-10-27 18:28:38",
+    "subject": "Sprint 11 Revision 5.0 Final - Regional Desks Active, Assignment Gates Deployed, Passkeys Migrated to DB, and Test Users Seeded via Schema 104",
+    "bullets": [
+      "UserPasskeys: web FaceID passkeys move off webauthn-credentials.json; public keys sealed (AES-256-GCM, vault key); legacy file migrated on first use; server-only (hub refuses the passkeys namespace from devices).",
+      "MemberRegionalAssignment / MemberRegionalCouncil + District Deputy, State Officer, State Admin roles; Council.council_level (LOCAL/STATE) with State Council books.",
+      "CouncilDonationMethod.payment_channel + CK_CouncilDonationMethod_qr_channel: the database refuses QR links on Cash, Check, card readers and Physical Items. The generator learns the table-level CHECK ([a] IS NULL OR [b] IN (...)) form.",
+      "District Deputy Desk (/district-desk) and State Oversight Desk (/state-desk): static top deck of regional totals + eight closed-on-landing drawers, incl. multi-select calendar and Top 10 / per-council Top 5 leaderboards.",
+      "Regional Jurisdiction Assignments panel: Super Admins anywhere, State Admins in their own state only.",
+      "Batch coder one-time override can send a share to an affiliated council."
+    ]
+  },
+  {
+    "hash": "e3d053f",
+    "date": "2026-10-27 17:03:43",
+    "subject": "Sprint 11 Revision 4.1 Final - Refined Onboarding Wizard and Email Gateway Integration Active",
+    "bullets": [
+      "Council Setup Wizard overlay on the Admin Desk (5 steps): Supreme CSV roster, file storage + SMTP gateway (password sealed in the home-council vault), Clone Founding Template, Practice Sandbox, Quick-Start Guide PDF.",
+      "councils.cloneFoundingTemplate: copies Council 15295's core GL accounts, council lookup rows and Council Wide Settings; skips names already held, goal/split/sister accounts.",
+      "councils.seed/purge/getPracticeSandboxStatus: 10 practice members + 3 practice fundraisers (marked by @practice.sandbox / [Practice]); Admin Desk master switch purges.",
+      "HelpTip '?' context tips on email gateway, file repository and wizard controls.",
+      "New 5-page docs/QUICK_START_INTAKE_GUIDE.pdf, served at /api/manuals/pdf?manual=quickstart.",
+      "Admin manual 16.4-16.5. Memory + SQLite drivers, remote stubs, hub list. Schema stays 103.",
+      "2,680 tests green."
+    ]
+  },
+  {
+    "hash": "e379c84",
+    "date": "2026-10-27 16:34:05",
+    "subject": "Sprint 11 Revision 3.0 Final - Admin Desk Built with Top Static Panels and Collapsible Drawers",
+    "bullets": [
+      "Static Top Deck (ADMIN_DESK_TOP_PANELS): A. Council Instance Identity Record, B. Administration Manual PDF + Regenerate Manuals On-Demand, C. 'How Do I...' help search.",
+      "Six left-rail drawers below the deck, all closed on landing: Council Wide Settings, Council Lookup Tables, Credentials Vault (home council only), Global Charities Registry, Council Asset Management, Administrative Feedback Loops.",
+      "Administration Manual ch. 16 and navigation guide updated; all manual PDFs recompiled.",
+      "Schema stays 103. 2,667 tests green."
+    ]
+  },
+  {
+    "hash": "67594e6",
+    "date": "2026-10-27 00:32:18",
+    "subject": "Sprint 11 Revision 2.2 Final - Account Ownership Refactored to Universal Non-Denominational Enums",
+    "bullets": [
+      "GLAccount.ownership_type: INTERNAL_OPERATING (default) / PARENT_ORGANIZATION / AFFILIATED_ENTITY (VARCHAR(20)); schema stays 103",
+      "Both external tokens engage the shield: linked methods record PARISH / THIRD_PARTY and THIRD_PARTY gifts now stay off the batch coder",
+      "Tenant-aware labels (accountOwnershipLabel) on the Account Owners Matrix, chart of accounts and payment method picker",
+      "Phone treats a 103 database built under the old CHECK as stale and rebuilds it",
+      "Manuals, data dictionary and architectural history updated; new tests"
+    ]
+  },
+  {
+    "hash": "3c77343",
+    "date": "2026-10-26 23:39:16",
+    "subject": "Sprint 11 Revision 2.1 Final - Database Migrated to Schema 103, Accounts Unified, and Split GLAs Calibrated",
+    "bullets": [
+      "Schema 103: AccountOwners dropped; its columns plus ownership_type (COUNCIL/PARISH) and due_to_council_id now live on GLAccount. CouncilDonationMethod.account_owner_id -> account_id (FK GLAccount).",
+      "Account Owners Matrix and the payment method picker read the council's money accounts from the chart. A Parish account makes its payment method parish-held, keeping those gifts off the batch coder.",
+      "Revenue splits can send a share to an ACTIVE affiliate through a 'Due to Sister Council' Liability clearing account in the council's own ledger; nothing is written to the other council.",
+      "Schema generator learns DROP TABLE; DROP COLUMN drops the column's foreign key.",
+      "Sidebar: hidden strip keeps the legal documents as vertical tabs beside the ▶ arrow.",
+      "Docs: data dictionary 58, architecture row 103, admin guide 8.10, split chapter task in three manuals."
+    ]
+  },
+  {
+    "hash": "d5cee38",
+    "date": "2026-10-26 23:12:25",
+    "subject": "Sprint 11 Revision 2.1 Final - Sidebar Arrows Refactored and Account Ledger Wiring Verified",
+    "bullets": [
+      "Sidebar: hamburger removed; ◀ hides the open rail, ▶ on a slim left-edge strip brings it back.",
+      "Payment method account picker: new test pins that a real account of another council is refused and that only the council's own AccountOwners rows are listed."
+    ]
+  },
+  {
+    "hash": "a558652",
+    "date": "2026-10-26 22:54:12",
+    "subject": "Sprint 11 Revision 2.0 Final - Admin Desk Created, Gallery Re-Architected, and Financial Metrics Synchronized",
+    "bullets": [
+      "Admin Desk (/admin-desk): eight closed vertical drawers with panels to the right; Regenerate Manuals On-Demand and a nightly manual rebuild",
+      "Monthly Activity card and Net Balance tile share one set of monthly figures; dues forecast and YOY analyzer off the Financial Dashboard",
+      "Built-in broadcast lists gated to officers, Admins and Super Admins (both drivers); Message All Attendants on the calendar",
+      "Gallery: Browse Gallery tabs, Gallery Administration Hub, selection grid with Save as Album beneath",
+      "Text-only sidebar; Council Lookups cleanup (no owner column, Check on row 3, account-name fallback, election grid moved)",
+      "Charity registry waits for the council and lists verified charities; optional fields truly optional",
+      "Legal footer reads the owner's converted Terms and Privacy Policy"
+    ]
+  },
+  {
+    "hash": "c1de378",
+    "date": "2026-10-26 18:49:17",
+    "subject": "Sprint 11 Revision 1.0 Final - Settings Drawers Refined, Gateway Routed to Vault, and In-Meeting Election Engine Deployed",
+    "bullets": [
+      "Schema 102: lookup_status ('Active'/'Inactive', CHECK) on Activities, DonationType and CouncilDonationMethod; CouncilDonationMethod.account_owner_id (FK AccountOwners, NULL = the 'Council Account' token). Drivers refuse another council's account and keep a linked account (RECORD_IN_USE). Inactive rows leave the phone Log/Donate pickers and the web Volunteer Center",
+      "Council Wide Settings: Council Instance Record pinned as a permanent header, every drawer closed on arrival, Council Lookups / Credentials Vault link cards removed, matrix email gateway row routed to /credentials-vault, 'live console' dropped from the Meeting management flag text",
+      "Council Lookups: Active/Inactive Status column, QR check box with a small upload button and thumbnail (URL column gone; disabled for Cash, Check, card readers and Physical Items, also on the Payment QR Codes card), Account picker defaulting to 'Council Account', 'Account Name Members See' defaulting to the account name, budget categories removed, live markdown agenda preview",
+      "/elections is the Council Election Center: pinned election progress bar, closed drawers for positions, nominations and '🗳️ Cast Active Ballot' (meeting PIN check-in, then the anonymous castAnonymousMobileVote)",
+      "Platform name 'Fraternal Council Archives™' across manuals, PDF scripts, the calendar feed and the sign-in card; sidebar legal footer reads docs/legal/TERMS_OF_SERVICE.md and PRIVACY_POLICY.md (effective 2026-10-26) through /api/legal",
+      "Three tests pinned to a fixed date (the seeded meetings are now in the past); manuals recompiled; 2,627 tests green"
+    ]
+  },
+  {
+    "hash": "f22966e",
+    "date": "2026-10-25 23:33:19",
+    "subject": "Sprint 10 Revision 5.0 Final - Asset Management Restored, FaceID Aligned, and System Audit Completed",
+    "bullets": [
+      "'🛠️ Council Asset Management' sidebar link under System Settings (area 'expenses/assets': asset managers, the GK/DGK and Trustees) to the existing /expenses/assets page",
+      "Web 'Sign in with FaceID' on the sign-in card, set up on My Profile: WebAuthn platform passkeys (Face ID, Touch ID, Windows Hello) verified by the server - challenge, origin, RP hash, UP/UV flags, ES256/RS256 signature, forward sign counter - then the same session cookie as a password sign-in; public keys kept in a JSON file beside the hub data (no schema change)",
+      "'Global Governance Matrices' renamed 'Global Lookup Tables'",
+      "Desk manual header: the Copy link button is removed",
+      "FS Excel Roster Imports drawer flattened to one 'Import Supreme Roster CSV' drag-and-drop zone",
+      "Payment QR Codes card on the Standard Bank Accounts drawer: '📁 Upload QR Code Image' per enabled donation method (/api/council/payment-qr), saved as DonationMethodURL; the phone resolves portal QR links through the hub",
+      "Manuals and history recompiled; schema stays 101; 2,615 tests green"
+    ]
+  },
+  {
+    "hash": "f83e6f6",
+    "date": "2026-10-25 23:07:04",
+    "subject": "Sprint 10 Revision 4.0 Final - Custom Manuals Linked to Repositories, PIN Pad Moved to Recorder Desk, and In-App Advisory Invites Deployed",
+    "bullets": [
+      "/api/council/compile-manual files each compiled guide in the 'Official Manuals' folder of the council's selected repository (Google Drive vault kind 'manual', OneDrive, Dropbox, network share), replacing older copies where the provider allows; X-Official-Manuals reports the outcome",
+      "Meeting Check-In card moved off Council Wide Settings to the Recorder Desk ('meeting-pin' drawer) and the Grand Knight Desk for an absent Recorder (GK, DGK and Admins open it); the Recorder may set the PIN on the server; 'Generate new PIN' saves a random non-0000 PIN in one click",
+      "Advisory invitations are in-app only: advisory.inviteMember posts a reserved-title alert (other alerts may not use the title) shown on web Home, the alert bell and phone Home and pushed to the phone; advisory.acceptInvitation grants the panelist role at once; the session takes the role via rolesChanged and PATCH /api/auth/session. The email route, signed-link module and accept page are deleted",
+      "Manuals, data dictionary and history recompiled; schema stays 101; 2,608 tests green"
+    ]
+  },
+  {
+    "hash": "4055af4",
+    "date": "2026-10-25 22:42:21",
+    "subject": "Sprint 10 Revision 3.2 Final - Advisory Invitation Active, Legacy Splits Purged, and Dynamic Storage Selectors Masked",
+    "bullets": [
+      "Advisory Panel invitations: the platform owner's Invite Panelist drawer emails a signed 14-day link (advisory-invite.ts, /api/advisory/invitations); accepting it while signed in adds the 'Application Advisory Panelist' role in the inviter's name and re-issues the session cookie",
+      "Parish split engine removed: parish-split.ts, ParishSplitParts.tsx, the four driver/contract methods (web, phone, remote), the Treasurer and FS drawers, permissions, error codes and the seed switch; revenue splits come only from the chart-of-accounts split profiles and the batch coder's Event Split Override. Columns and ParishDisbursementRequest stay in the locked schema, unused",
+      "File Repository Mode: GOOGLE_DRIVE, ONEDRIVE_SHAREPOINT (Microsoft Graph), DROPBOX_BUSINESS and LOCAL_NETWORK_SERVER; the card renders only the chosen provider's fields; secrets in the vault; stored links name the provider; legacy CLOUD / LOCAL_NETWORK values still read",
+      "Pilot kit Treasurer chapter 2 rewritten around the Event Split Override; manuals, data dictionary and history updated and recompiled; schema stays 101; 2,601 tests green"
+    ]
+  },
+  {
+    "hash": "f34b16a",
+    "date": "2026-10-25 21:02:18",
+    "subject": "Sprint 10 Revision 3.1 Final - Multi-Tenant Hardened, Network Storage Integrated, Account Matrices Built, and Advisory Panel Deployed",
+    "bullets": [
+      "Schema 101: AccountOwners (per council), Council.file_repository_mode / file_server_path / file_server_username, AdvisoryPanelMeetings, AdvisoryFeedback, 'Application Advisory Panelist' role",
+      "Council Financial Secretary may resend setup codes (assertMayResendSetupCode) from the roster row",
+      "Parish Fundraiser Split card deleted; splits come from Revenue account split profiles",
+      "Credentials Vault and email gateway routes answer 403 for any council but the session's home council, Super Admins included (vault-gate.ts); the vault page is home-council only",
+      "Local Network Server file repository: uploads and hub check photos written to the council's UNC share by the portal server, served back through /api/file-repository; password in the vault",
+      "Account Owners Matrix on Council Wide Settings; File Repository Mode card in System Settings",
+      "Officer desks render in DeskSeatFrame (Seat Vacant card + error boundary); Terms and Privacy in the sidebar footer",
+      "🔊 Application Advisory Panel: roadmap, future releases, meeting dates, consultation feedback, Super Admin panelist designation",
+      "Manuals, data dictionary and history recompiled; 2,609 tests green"
+    ]
+  }
+]
